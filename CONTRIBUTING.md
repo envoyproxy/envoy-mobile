@@ -31,7 +31,8 @@ maximize the chances of your PR being merged.
   PR. This person does not necessarily need to be a maintainer.
 * The above rule may be waived for PRs which only update docs or comments, or trivial changes to
   tests and tools (where trivial is decided by the maintainer in question).
-* If there is a question on who should review a PR please discuss in Slack.
+* If there is a question on who should review a PR please discuss in the #envoy-mobile room in
+  Envoy Slack.
 * Anyone is welcome to review any PR that they want, whether they are a maintainer or not.
 * Please **clean up the title and body** before merging. By default, GitHub fills the squash merge
   title with the original title, and the commit body with every individual commit from the PR.
@@ -41,7 +42,7 @@ maximize the chances of your PR being merged.
 
 # DCO: Sign your work
 
-Envoy ships commit hooks that allow you to auto-generate the DCO signoff line if
+Envoy Mobile ships commit hooks that allow you to auto-generate the DCO signoff line if
 it doesn't exist when you run `git commit`. Simply navigate to the project
 root and run:
 

@@ -6,8 +6,8 @@
 
 ## Swift coding style
 
-* TODO(mattklein123): Fill this in.
+* TODO(rebello95): Fill this in.
 
 ## Kotlin coding style
 
-* TODO(mattklein123): Fill this in.
+* TODO(buildbreaker): Fill this in.
