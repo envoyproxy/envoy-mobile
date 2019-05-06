@@ -34,10 +34,12 @@ mvfst provide.
 gRPC is a multi-platform message passing system out of Google. It uses an IDL to describe an RPC
 library and then implements application specific runtimes for a variety of different languages. The
 underlying transport is HTTP/2. gRPC does have mobile client libraries, though the production
-readiness is not equivalent to the server-side libraries. In terms of goals and feature set, gRPC
-is closer to Envoy Mobile than Cronet or proxygen/mvfst, and in fact gRPC is currently in the
-process of migrating its look-aside load balancing APIs to xDS. It is possible that in the future
-gRPC's mobile clients will continue to converge with Envoy Mobile, but in the near term we feel
-that Envoy Mobile can deliver a production ready iOS/Android feature set that includes xDS, QUIC,
-etc. in a shorter time frame. Note that Envoy Mobile will likely continue to use gRPC framing for
-calling IDL based unary and streaming APIs, making it wire compatible with gRPC on the server.
+readiness is not equivalent to the server-side libraries. In terms of goals and feature set, gRPC is
+closer to Envoy Mobile than Cronet or proxygen/mvfst, and in fact gRPC is currently in the process
+of migrating its look-aside load balancing APIs to `xDS
+<https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/dynamic_configuration>`_. It is
+possible that in the future gRPC's mobile clients will continue to converge with Envoy Mobile, but
+in the near term we feel that Envoy Mobile can deliver a production ready iOS/Android feature set
+that includes xDS, QUIC, etc. in a shorter time frame. Note that Envoy Mobile will likely continue
+to use gRPC framing for calling IDL based unary and streaming APIs, making it wire compatible with
+gRPC on the server.
