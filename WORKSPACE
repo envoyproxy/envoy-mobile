@@ -87,3 +87,17 @@ git_repository(
     remote = "https://github.com/bazelbuild/rules_jvm_external.git",
     shallow_since = "1552938175 -0400",
 )
+
+# kotlin 1.3 fix
+git_repository(
+    name = "io_bazel_rules_kotlin",
+    commit = "af3dea0853f2821e7ece6e028fad57bcd6ce2831", # from branch keith:ks/bazel-fixups
+    remote = "https://github.com/loreto/rules_kotlin.git",
+    shallow_since = "1544305265 -0800",
+)
+
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+
+kotlin_repositories()
+
+register_toolchains(":kotlin_toolchain")

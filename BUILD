@@ -51,3 +51,10 @@ chmod 755 dist/envoy.aar
 touch $@
 """,
 )
+
+load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
+
+define_kt_toolchain(
+    name = "kotlin_toolchain",
+    jvm_target = "1.6",
+)
