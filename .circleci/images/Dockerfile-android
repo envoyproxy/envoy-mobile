@@ -1,0 +1,51 @@
+FROM envoyproxy/envoy-build:cfc514546bc0284536893cca5fa43d7128edcd35
+
+# Install JDK
+RUN apt update && \
+    apt -y install openjdk-9-jre && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME /usr/lib/jvm/java-9-openjdk-amd64
+ENV PATH $JAVA_HOME/bin:$PATH
+
+# Install Android SDK
+ARG sdk_version=sdk-tools-linux-3859397.zip
+ARG android_home=/opt/android/sdk
+
+RUN mkdir -p ${android_home} && \
+    # chown -R circleci:circleci ${android_home} && \
+    curl --silent --show-error --location --fail --retry 3 --output /tmp/${sdk_version} https://dl.google.com/android/repository/${sdk_version} && \
+    unzip /tmp/${sdk_version} -d ${android_home} && \
+    rm /tmp/${sdk_version}
+
+ENV ANDROID_HOME ${android_home}
+ENV PATH=${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${PATH}
+
+RUN mkdir ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
+
+RUN yes | sdkmanager --licenses && yes | sdkmanager --update
+
+# Update SDK manager and install system image, platform and build tools
+RUN sdkmanager \
+    "tools" \
+    "platform-tools" \
+    "emulator"
+
+RUN sdkmanager \
+    "build-tools;28.0.0" \
+    "build-tools;28.0.1" \
+    "build-tools;28.0.2" \
+    "build-tools;28.0.3"
+
+RUN sdkmanager "platforms;android-28"
+
+# Install NDK
+ARG ndk_version=android-ndk-r17b
+ARG android_ndk_home=/opt/android/${ndk_version}
+
+RUN curl --show-error --location --fail --retry 3 --output /tmp/${ndk_version}.zip https://dl.google.com/android/repository/${ndk_version}-linux-x86_64.zip && \
+    unzip /tmp/${ndk_version}.zip -d /opt/android && \
+    rm /tmp/${ndk_version}.zip
+# chown -R circleci:circleci ${android_ndk_home}
+
+ENV ANDROID_NDK_HOME ${android_ndk_home}
