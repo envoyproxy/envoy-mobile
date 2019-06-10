@@ -34,7 +34,7 @@ jobs:
       - image: norionomura/swiftlint:0.33.0_swift-5.0
     steps:
       - checkout
-      - run: swiftlint lint --reporter junit | tee result.xml
+      - run: swiftlint lint
       - store_artifacts:
           path: result.xml
       - store_test_results:
