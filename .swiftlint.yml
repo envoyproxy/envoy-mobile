@@ -145,12 +145,15 @@ deployment_target:
   iOS_deployment_target: 10.0
 
 custom_rules:
-  space_before_comma:
-    name: "Commas should never have a space before them"
-    regex: '\s+,'
   newline_after_brace:
     name: "Opening braces shouldn't have empty lines under them"
     regex: '\{\n\n'
   newline_before_brace:
     name: "Closing braces shouldn't have empty lines before them"
     regex: '\n\n\}'
+  space_before_comma:
+    name: "Commas should never have a space before them"
+    regex: '\s+,'
+  spaces_over_tabs:
+    name: "Use (2) spaces instead of tabs"
+    regex: '\t'
