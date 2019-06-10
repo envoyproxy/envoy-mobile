@@ -35,8 +35,8 @@ whitelist_rules:
   - file_header
   - file_length
   - first_where
-  - force_unwrapping
   - for_where
+  - force_unwrapping
   - generic_type_name
   - identical_operands
   - identifier_name
@@ -112,8 +112,6 @@ trailing_comma:
   mandatory_comma: true
 line_length:
   - 100
-type_body_length:
-  - 300
 file_length:
   warning: 300
   ignore_comment_only_lines: true
