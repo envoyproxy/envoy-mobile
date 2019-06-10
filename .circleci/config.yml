@@ -29,6 +29,53 @@ jobs:
       - checkout
       - run: git submodule update --init
       - run: tools/check_format.sh
+  ios_dist:
+    macos:
+      xcode: "10.2.1"
+    steps:
+      - checkout
+      - run: git submodule update --init
+      - run: ./envoy/ci/mac_ci_setup.sh
+      - run: bazel build //:ios_dist --config=ios
+      - persist_to_workspace:
+          root: dist
+          paths:
+            - Envoy.framework
+  android_dist:
+    executor: ubuntu-build
+    steps:
+      - checkout
+      - run: git submodule update --init
+      - run: bazel build //:android_dist --config=android
+      - persist_to_workspace:
+          root: dist
+          paths:
+            - envoy.aar
+  objc_app:
+    macos:
+      xcode: "10.2.1"
+    executor: ubuntu-build
+    steps:
+      - checkout
+      - attach_workspace:
+          at: dist
+      - run: bazel build //examples/objective-c/hello_world:app --config=ios
+  swift_app:
+    macos:
+      xcode: "10.2.1"
+    executor: ubuntu-build
+    steps:
+      - checkout
+      - attach_workspace:
+          at: dist
+      - run: bazel build //examples/swift/hello_world:app --config=ios
+  java_app:
+    executor: ubuntu-build
+    steps:
+      - checkout
+      - attach_workspace:
+          at: dist
+      - run: bazel build //examples/java/hello_world:hello_envoy --fat_apk_cpu=x86
 
 workflows:
   version: 2
@@ -39,3 +86,14 @@ workflows:
             tags:
               only: /^v.*/
       - format
+      - ios_dist
+      - android_dist
+      - objc_app:
+          requires:
+            - ios_dist
+      - swift_app:
+          requires:
+            - ios_dist
+      - java_app:
+          requires:
+            - android_dist
