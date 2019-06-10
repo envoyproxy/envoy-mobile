@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
     recyclerView.addItemDecoration(dividerItemDecoration);
     HandlerThread thread = new HandlerThread("");
     thread.start();
+
     final Handler handler = new Handler(thread.getLooper());
     handler.postDelayed(new Runnable() {
       @Override
@@ -66,6 +67,7 @@ public class MainActivity extends Activity {
         } catch (IOException e) {
           Log.d("MainActivity", "exception making request.", e);
         }
+
         // Make a call again
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1));
       }
