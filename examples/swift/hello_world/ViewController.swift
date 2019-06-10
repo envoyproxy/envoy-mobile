@@ -1,6 +1,7 @@
 import UIKit
 
 private let kCellID = "cell-id"
+// swiftlint:disable:next force_unwrapping
 private let kURL = URL(string: "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt")!
 
 final class ViewController: UITableViewController {
@@ -29,7 +30,9 @@ final class ViewController: UITableViewController {
         let request = URLRequest(url: kURL)
         NSLog("Starting request to '\(kURL.path)")
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            if let response = response as? HTTPURLResponse, response.statusCode == 200, let data = data {
+            if let response = response as? HTTPURLResponse,
+                response.statusCode == 200, let data = data
+            {
                 self?.handle(response: response, with: data)
             } else if let error = error {
                 NSLog("Received error: \(error)")
@@ -47,7 +50,8 @@ final class ViewController: UITableViewController {
         }
 
         let untypedHeaders = response.allHeaderFields
-        let headers = Dictionary(uniqueKeysWithValues: untypedHeaders.map { header -> (String, String) in
+        let headers = Dictionary(uniqueKeysWithValues: untypedHeaders.map
+        { header -> (String, String) in
             return (header.key as? String ?? String(describing: header.key), "\(header.value)")
         })
 
@@ -70,7 +74,9 @@ final class ViewController: UITableViewController {
         return self.responses.count
     }
 
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
+        -> UITableViewCell
+    {
         let cell = tableView.dequeueReusableCell(withIdentifier: kCellID) ??
             UITableViewCell(style: .subtitle, reuseIdentifier: kCellID)
 
