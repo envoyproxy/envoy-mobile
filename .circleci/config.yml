@@ -54,7 +54,6 @@ jobs:
   objc_app:
     macos:
       xcode: "10.2.1"
-    executor: ubuntu-build
     steps:
       - checkout
       - attach_workspace:
@@ -63,7 +62,6 @@ jobs:
   swift_app:
     macos:
       xcode: "10.2.1"
-    executor: ubuntu-build
     steps:
       - checkout
       - attach_workspace:
