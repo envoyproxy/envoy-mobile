@@ -8,6 +8,12 @@ executors:
     # TODO(mattklein123): Get xlarge class enabled
     resource_class: medium
     working_directory: /source
+  android:
+    description: "A build executor for envoy that has Android SDK and NDK"
+    docker:
+      - image: junr03/envoy-android:latest
+    resource_class: medium
+    working_directory: /source
 
 jobs:
   docs:
@@ -42,7 +48,7 @@ jobs:
           paths:
             - Envoy.framework
   android_dist:
-    executor: ubuntu-build
+    executor: android
     steps:
       - checkout
       - run: git submodule update --init
@@ -68,7 +74,7 @@ jobs:
           at: dist
       - run: bazel build //examples/swift/hello_world:app --config=ios
   java_app:
-    executor: ubuntu-build
+    executor: android
     steps:
       - checkout
       - attach_workspace:
