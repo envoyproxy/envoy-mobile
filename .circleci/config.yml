@@ -56,7 +56,7 @@ jobs:
       - run: export CC=clang
       - run: export CXX=clang++
       - run: export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-8/bin/llvm-symbolizer
-      - run: bazel build @envoy//source/exe:envoy-static
+      - run: bazel build @envoy//source/common/buffer:watermark_buffer_lib
       - persist_to_workspace:
           root: dist
           paths:
