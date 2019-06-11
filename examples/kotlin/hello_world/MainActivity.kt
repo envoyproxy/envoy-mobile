@@ -63,7 +63,7 @@ class MainActivity : Activity() {
         val connection = url.openConnection() as HttpURLConnection
         val status = connection.responseCode
         if (status != 200) {
-            Log.d("MainActivity", "non 200 status: $status")
+            throw IOException("non 200 status: $status")
         }
 
         val serverHeaderField = connection.headerFields["server"]
