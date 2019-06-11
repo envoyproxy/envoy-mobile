@@ -94,14 +94,14 @@ workflows:
             tags:
               only: /^v.*/
       - format
-      - ios_dist
+      # - ios_dist
       - android_dist
-      - objc_app:
-          requires:
-            - ios_dist
-      - swift_app:
-          requires:
-            - ios_dist
+      # - objc_app:
+      #     requires:
+      #       - ios_dist
+      # - swift_app:
+      #     requires:
+      #       - ios_dist
       - java_app:
           requires:
             - android_dist

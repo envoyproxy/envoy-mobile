@@ -1,13 +1,5 @@
 FROM envoyproxy/envoy-build:ec38ecb88fd1abe55ab1daa2f6bd239ffccc9d98
 
-# Install JDK
-RUN apt update && \
-    apt -y install openjdk-9-jre && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV JAVA_HOME /usr/lib/jvm/java-9-openjdk-amd64
-ENV PATH $JAVA_HOME/bin:$PATH
-
 # Install Android SDK
 ARG sdk_version=sdk-tools-linux-3859397.zip
 ARG android_home=/opt/android/sdk
