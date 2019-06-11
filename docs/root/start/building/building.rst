@@ -34,7 +34,8 @@ This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and 
 
 Upon completion of the build, you'll see an ``envoy.aar`` file at :repo:`dist/envoy.aar <dist>`.
 
-The ``envoy_mobile_android`` Bazel rule defined in the :repo:`dist BUILD file <dist/BUILD>` provides an example of how this artifact may be used.
+The ``envoy_mobile_android`` Bazel rule defined in the :repo:`dist BUILD file <dist/BUILD>` provides
+an example of how this artifact may be used.
 
 For a demo of a working app using this artifact, see the :ref:`hello_world` example.
 
@@ -49,7 +50,8 @@ This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and 
 
 ``bazel build ios_dist --config=ios``
 
-Upon completion of the build, you'll see a ``Envoy.framework`` directory at :repo:`dist/Envoy.framework <dist>`.
+Upon completion of the build, you'll see a ``Envoy.framework`` directory at
+:repo:`dist/Envoy.framework <dist>`.
 
 The ``envoy_mobile_ios`` Bazel rule defined in the :repo:`dist BUILD file <dist/BUILD>` provides an
 example of how this artifact may be used.

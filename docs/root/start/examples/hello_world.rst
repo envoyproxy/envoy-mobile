@@ -3,9 +3,11 @@
 Hello World
 ===========
 
-The "hello world" example project starts the Envoy process and uses it as a proxy for listening in on requests being made to a "hello world" endpoint on a 1 second timer.
+The "hello world" example project starts the Envoy process and uses it as a proxy for listening in
+on requests being made to a "hello world" endpoint on a 1 second timer.
 
-Upon receiving a response, the body text and ``Server`` header are displayed in a table. In the example output, you'll see that this header is set by Envoy:
+Upon receiving a response, the body text and ``Server`` header are displayed in a table.
+In the example output, you'll see that this header is set by Envoy:
 
 ::
 
@@ -45,7 +47,8 @@ Objective-C
 
 First, build the :ref:`ios_framework` artifact.
 
-Next, run the :repo:`sample app <examples/objective-c/hello_world>` using the following Bazel build rule.
+Next, run the :repo:`sample app <examples/objective-c/hello_world>` using the following Bazel build
+rule.
 
 ``bazel run //examples/objective-c/hello_world:app --config=ios``
 
