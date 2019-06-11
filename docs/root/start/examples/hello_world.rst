@@ -12,9 +12,12 @@ Upon receiving a response, the body text and ``Server`` header are displayed in 
     Response: Hello, world!
     'Server' header: envoy
 
-You'll notice that the demo source code *doesn't directly call Envoy Mobile to make API requests*.
-Instead, the Envoy process is started on app launch, and listens in on requests being made via the native stack.
-Envoy Mobile will soon be a full-fledged networking library capable of executing requests, but for these demos, it acts *purely as a proxy sitting on top of the existing native networking*.
+You'll notice that the demo source code *doesn't directly call Envoy Mobile to perform
+API requests*.
+Instead, the Envoy process is started on app launch, and listens in on requests/responses
+being made via the native stack.
+Envoy Mobile will soon allow consumers to call directly into it (i.e., via ``envoy.request(...)``),
+but for these demos, it acts *purely as a proxy sitting on top of the existing native networking*.
 
 The demo is available below (along with building instructions) in the following languages:
 
