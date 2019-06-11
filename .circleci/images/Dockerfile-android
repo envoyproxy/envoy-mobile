@@ -1,4 +1,4 @@
-FROM envoyproxy/envoy-build:cfc514546bc0284536893cca5fa43d7128edcd35
+FROM envoyproxy/envoy-build:ec38ecb88fd1abe55ab1daa2f6bd239ffccc9d98
 
 # Install JDK
 RUN apt update && \
