@@ -28,3 +28,4 @@ kt_android_library(
             "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
         ],
 )
+
