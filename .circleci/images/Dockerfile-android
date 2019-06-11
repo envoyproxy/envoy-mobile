@@ -13,7 +13,7 @@ ARG sdk_version=sdk-tools-linux-3859397.zip
 ARG android_home=/opt/android/sdk
 
 RUN mkdir -p ${android_home} && \
-    # chown -R circleci:circleci ${android_home} && \
+    chmod 777 ${android_home} && \
     curl --silent --show-error --location --fail --retry 3 --output /tmp/${sdk_version} https://dl.google.com/android/repository/${sdk_version} && \
     unzip /tmp/${sdk_version} -d ${android_home} && \
     rm /tmp/${sdk_version}
@@ -45,7 +45,7 @@ ARG android_ndk_home=/opt/android/${ndk_version}
 
 RUN curl --show-error --location --fail --retry 3 --output /tmp/${ndk_version}.zip https://dl.google.com/android/repository/${ndk_version}-linux-x86_64.zip && \
     unzip /tmp/${ndk_version}.zip -d /opt/android && \
-    rm /tmp/${ndk_version}.zip
-# chown -R circleci:circleci ${android_ndk_home}
+    rm /tmp/${ndk_version}.zip && \
+    chmod 777 ${android_ndk_home}
 
 ENV ANDROID_NDK_HOME ${android_ndk_home}
