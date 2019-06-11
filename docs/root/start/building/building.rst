@@ -18,7 +18,7 @@ iOS requirements
 
 - Bazel 0.26.0
 - Xcode 10.2.1
-  - iOS 12.2 / Swift 5.0
+- iOS 12.2 / Swift 5.0
 - Note: Requirements are listed in the :repo:`.bazelrc file <.bazelrc>`
 
 .. _android_aar:
