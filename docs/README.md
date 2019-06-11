@@ -1,7 +1,8 @@
 # Envoy Mobile docs
 
 Envoy Mobile's docs are generated using [Sphinx](http://www.sphinx-doc.org),
-and are published [here](https://envoy-mobile.github.io/docs/envoy-mobile/latest/index.html).
+and are published
+[here](https://envoy-mobile.github.io/docs/envoy-mobile/latest/index.html).
 
 ## Generating docs locally
 
@@ -15,4 +16,5 @@ The output can be then be found in `generated/docs`.
 
 ## Updating the Envoy Mobile website and docs
 
-TODO(mattklein123): Fill in when publishing is setup.
+The docs website is automatically updated with the latest docs when a commit is
+merged to master. This is done via the :repo:`publish script <docs/publish.sh>`.
