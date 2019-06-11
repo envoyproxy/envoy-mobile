@@ -41,13 +41,11 @@ jobs:
   steps:
     - checkout: self
       submodules: true
-    # - script: ./envoy/ci/mac_ci_setup.sh
-    #   displayName: 'Install dependencies'
+    - script: ./envoy/ci/mac_ci_setup.sh
+      displayName: 'Install dependencies'
     - script: mkdir -p dist/Envoy.framework
     - task: DownloadPipelineArtifact@0
       inputs:
         artifactName: Envoy.framework
         targetPath: ./dist/Envoy.framework
-    - script: ls -lh ./dist
-    - script: ls -lh ./dist/Envoy.framework
     - script: bazel run //examples/swift/hello_world:app --config=ios
