@@ -11,7 +11,7 @@ executors:
   android:
     description: "A build executor for envoy that has Android SDK and NDK"
     docker:
-      - image: junr03/envoy-android:latest
+      - image: junr03/envoy-android:d56a80266a64d1b8fbf41559c966bf2527b41b13
     resource_class: medium
     working_directory: /source
 
