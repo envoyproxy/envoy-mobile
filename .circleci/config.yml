@@ -48,7 +48,7 @@ jobs:
           paths:
             - Envoy.framework
   android_dist:
-    executor: android
+    executor: ubuntu-build
     steps:
       - checkout
       - run: git submodule update --init
