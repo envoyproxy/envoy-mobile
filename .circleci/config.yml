@@ -52,6 +52,10 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init
+      - run: export PATH=/usr/lib/llvm-8/bin:$PATH
+      - run: export CC=clang
+      - run: export CXX=clang++
+      - run: export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-8/bin/llvm-symbolizer
       - run: bazel build //:android_dist --config=android
       - persist_to_workspace:
           root: dist
