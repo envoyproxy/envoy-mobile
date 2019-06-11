@@ -88,7 +88,8 @@ git_repository(
     shallow_since = "1552938175 -0400",
 )
 
-# kotlin 1.3 fix
+# kotlin 1.3 fix.
+# TODO: https://github.com/lyft/envoy-mobile/issues/68
 git_repository(
     name = "io_bazel_rules_kotlin",
     commit = "af3dea0853f2821e7ece6e028fad57bcd6ce2831", # from branch ks/bazel-fixups
