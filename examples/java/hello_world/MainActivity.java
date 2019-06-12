@@ -31,6 +31,8 @@ public class MainActivity extends Activity {
 
   private RecyclerView recyclerView;
 
+  private HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -55,7 +57,6 @@ public class MainActivity extends Activity {
     DividerItemDecoration dividerItemDecoration =
         new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
     recyclerView.addItemDecoration(dividerItemDecoration);
-    HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
     thread.start();
 
     final Handler handler = new Handler(thread.getLooper());
@@ -73,6 +74,11 @@ public class MainActivity extends Activity {
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1));
       }
     }, TimeUnit.SECONDS.toMillis(1));
+  }
+
+  protected void onDestroy() {
+    super.onDestroy();
+    thread.quit();
   }
 
   private Response makeRequest() throws IOException {

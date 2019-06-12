@@ -24,6 +24,7 @@ private const val ENVOY_SERVER_HEADER_KEY = "server"
 
 class MainActivity : Activity() {
   private lateinit var recyclerView: RecyclerView
+  private val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -40,7 +41,6 @@ class MainActivity : Activity() {
     recyclerView.adapter = adapter
     val dividerItemDecoration = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
     recyclerView.addItemDecoration(dividerItemDecoration)
-    val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
     thread.start()
     val handler = Handler(thread.looper)
 
@@ -57,6 +57,11 @@ class MainActivity : Activity() {
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1))
       }
     }, TimeUnit.SECONDS.toMillis(1))
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    thread.quit()
   }
 
   private fun makeRequest(): Response {
