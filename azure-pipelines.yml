@@ -7,7 +7,6 @@ stages:
   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
   jobs:
     - job: iOS_dist
-      displayName: iOS Distribution
       timeoutInMinutes: 360
       pool:
         vmImage: 'macos-latest'
