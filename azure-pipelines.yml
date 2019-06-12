@@ -2,7 +2,7 @@ trigger:
 - master
 
 jobs:
-  - job: iOS_dist
+  - job: swift_lint
     timeoutInMinutes: 360
     pool:
       vmImage: 'macos-10.14'
