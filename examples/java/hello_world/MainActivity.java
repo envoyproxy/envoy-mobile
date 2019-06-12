@@ -25,11 +25,9 @@ public class MainActivity extends Activity {
   private static final String ENDPOINT =
       "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt";
 
-  private static final String ENVOY_SERVER_HEADER_KEY =
-          "server";
+  private static final String ENVOY_SERVER_HEADER_KEY = "server";
 
-  private static final String REQUEST_HANDLER_THREAD_NAME =
-          "hello_envoy_java";
+  private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
 
   private RecyclerView recyclerView;
 
