@@ -23,64 +23,64 @@ private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello
 private const val ENVOY_SERVER_HEADER_KEY = "server"
 
 class MainActivity : Activity() {
-    private lateinit var recyclerView: RecyclerView
+  private lateinit var recyclerView: RecyclerView
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
 
-        val envoy = Envoy()
-        envoy.load()
-        envoy.run(baseContext, loadEnvoyConfig(baseContext, R.raw.config))
+    val envoy = Envoy()
+    envoy.load()
+    envoy.run(baseContext, loadEnvoyConfig(baseContext, R.raw.config))
 
-        recyclerView = findViewById(R.id.recycler_view) as RecyclerView
-        recyclerView.layoutManager = LinearLayoutManager(this)
+    recyclerView = findViewById(R.id.recycler_view) as RecyclerView
+    recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val adapter = ResponseRecyclerViewAdapter()
-        recyclerView.adapter = adapter
-        val dividerItemDecoration = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
-        recyclerView.addItemDecoration(dividerItemDecoration)
-        val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
-        thread.start()
-        val handler = Handler(thread.looper)
+    val adapter = ResponseRecyclerViewAdapter()
+    recyclerView.adapter = adapter
+    val dividerItemDecoration = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
+    recyclerView.addItemDecoration(dividerItemDecoration)
+    val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
+    thread.start()
+    val handler = Handler(thread.looper)
 
-        handler.postDelayed(object : Runnable {
-            override fun run() {
-                try {
-                    val response = makeRequest()
-                    recyclerView.post({ adapter.add(response) })
-                } catch (e: IOException) {
-                    Log.d("MainActivity", "exception making request.", e)
-                }
-
-                // Make a call again
-                handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1))
-            }
-        }, TimeUnit.SECONDS.toMillis(1))
-    }
-
-    private fun makeRequest(): Response {
-        val url = URL(ENDPOINT)
-        val connection = url.openConnection() as HttpURLConnection
-        val status = connection.responseCode
-        if (status != 200) {
-            throw IOException("non 200 status: $status")
+    handler.postDelayed(object : Runnable {
+      override fun run() {
+        try {
+          val response = makeRequest()
+          recyclerView.post({ adapter.add(response) })
+        } catch (e: IOException) {
+          Log.d("MainActivity", "exception making request.", e)
         }
 
-        val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER_KEY]
-        val inputStream = connection.inputStream
-        val body = deserialize(inputStream)
-        inputStream.close()
-        return Response(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
+        // Make a call again
+        handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1))
+      }
+    }, TimeUnit.SECONDS.toMillis(1))
+  }
+
+  private fun makeRequest(): Response {
+    val url = URL(ENDPOINT)
+    val connection = url.openConnection() as HttpURLConnection
+    val status = connection.responseCode
+    if (status != 200) {
+      throw IOException("non 200 status: $status")
     }
 
-    private fun deserialize(inputStream: InputStream): String {
-        return inputStream.bufferedReader().use { reader -> reader.readText() }
-    }
+    val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER_KEY]
+    val inputStream = connection.inputStream
+    val body = deserialize(inputStream)
+    inputStream.close()
+    return Response(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
+  }
 
-    private fun loadEnvoyConfig(context: Context, configResourceId: Int): String {
-        val inputStream = context.getResources().openRawResource(configResourceId)
-        return inputStream.bufferedReader().use { reader -> reader.readText() }
-    }
+  private fun deserialize(inputStream: InputStream): String {
+    return inputStream.bufferedReader().use { reader -> reader.readText() }
+  }
+
+  private fun loadEnvoyConfig(context: Context, configResourceId: Int): String {
+    val inputStream = context.getResources().openRawResource(configResourceId)
+    return inputStream.bufferedReader().use { reader -> reader.readText() }
+  }
 }
 
