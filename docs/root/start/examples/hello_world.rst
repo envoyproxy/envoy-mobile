@@ -16,10 +16,10 @@ In the example output, you'll see that this header is set by Envoy:
 
 You'll notice that the demo source code *doesn't directly call Envoy Mobile to perform
 API requests*.
-Instead, Envoy is started on app launch, and listens in on requests/responses
-being made via the native stack.
+Instead, Envoy is started on app launch and listens in on requests/responses
+being made via the existing stack.
 Envoy Mobile will soon allow consumers to call directly into it (i.e., via ``envoy.request(...)``),
-but for these demos, it acts *purely as a proxy sitting on top of the existing native networking*.
+but for these demos, it acts *purely as a proxy*.
 
 The demo is available below (along with building instructions) in the following languages:
 
