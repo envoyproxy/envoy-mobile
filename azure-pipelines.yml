@@ -5,7 +5,7 @@ jobs:
   - job: iOS_dist
     timeoutInMinutes: 360
     pool:
-      vmImage: 'macos-latest'
+      vmImage: 'macos-10.14'
     steps:
       - checkout: self
         submodules: true
@@ -22,7 +22,7 @@ jobs:
     dependsOn: iOS_dist
     timeoutInMinutes: 360
     pool:
-      vmImage: 'macos-latest'
+      vmImage: 'macos-10.14'
     steps:
       - checkout: self
         submodules: true
@@ -41,7 +41,7 @@ jobs:
     dependsOn: iOS_dist
     timeoutInMinutes: 360
     pool:
-      vmImage: 'macos-latest'
+      vmImage: 'macos-10.14'
     steps:
       - checkout: self
         submodules: true
