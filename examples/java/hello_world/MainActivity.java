@@ -24,6 +24,13 @@ import io.envoyproxy.envoymobile.Envoy;
 public class MainActivity extends Activity {
   private static final String ENDPOINT =
       "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt";
+
+  private static final String ENVOY_SERVER_HEADER_KEY =
+          "server";
+
+  private static final String REQUEST_HANDLER_THREAD_NAME =
+          "hello_envoy_java";
+
   private RecyclerView recyclerView;
 
   @Override
@@ -50,7 +57,7 @@ public class MainActivity extends Activity {
     DividerItemDecoration dividerItemDecoration =
         new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
     recyclerView.addItemDecoration(dividerItemDecoration);
-    HandlerThread thread = new HandlerThread("");
+    HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
     thread.start();
 
     final Handler handler = new Handler(thread.getLooper());
@@ -78,7 +85,7 @@ public class MainActivity extends Activity {
       throw new IOException("non 200 status: " + status);
     }
 
-    List<String> serverHeaderField = connection.getHeaderFields().get("server");
+    List<String> serverHeaderField = connection.getHeaderFields().get(ENVOY_SERVER_HEADER_KEY);
     InputStream inputStream = connection.getInputStream();
     String body = deserialize(inputStream);
     inputStream.close();

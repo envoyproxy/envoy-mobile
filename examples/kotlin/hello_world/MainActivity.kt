@@ -19,7 +19,9 @@ import java.util.concurrent.TimeUnit
 
 import io.envoyproxy.envoymobile.Envoy
 
+private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt"
+private const val ENVOY_SERVER_HEADER_KEY = "server"
 
 class MainActivity : Activity() {
     private lateinit var recyclerView: RecyclerView
@@ -39,7 +41,7 @@ class MainActivity : Activity() {
         recyclerView.adapter = adapter
         val dividerItemDecoration = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
         recyclerView.addItemDecoration(dividerItemDecoration)
-        val thread = HandlerThread("hello_envoy_kt")
+        val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
         thread.start()
         val handler = Handler(thread.looper)
 
@@ -66,20 +68,20 @@ class MainActivity : Activity() {
             throw IOException("non 200 status: $status")
         }
 
-        val serverHeaderField = connection.headerFields["server"]
+        val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER_KEY]
         val inputStream = connection.inputStream
         val body = deserialize(inputStream)
         inputStream.close()
-        return Response(body, serverHeaderField?.joinToString(separator = ",") ?: "")
+        return Response(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
     }
 
     private fun deserialize(inputStream: InputStream): String {
-        return inputStream.bufferedReader().use(BufferedReader::readText)
+        return inputStream.bufferedReader().use { reader -> reader.readText() }
     }
 
     private fun loadEnvoyConfig(context: Context, configResourceId: Int): String {
         val inputStream = context.getResources().openRawResource(configResourceId)
-        return inputStream.bufferedReader().use { it.readText() }
+        return inputStream.bufferedReader().use { reader -> reader.readText() }
     }
 }
 
