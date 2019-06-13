@@ -42,9 +42,9 @@ Make sure you have an Android simulator running already:
 You should see a new app installed on your simulator called ``Hello Envoy``.
 Open it up, and requests will start flowing!
 
-----
+------
 Kotlin
-----
+------
 
 First, build the :ref:`android_aar` artifact (or download it from one of the recent releases_).
 
