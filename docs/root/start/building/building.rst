@@ -5,8 +5,9 @@ Building
 
 .. _building_requirements:
 
-If you encounter issues compiling the Envoy submodule locally, see the
-`Envoy docs on building with Bazel <https://github.com/envoyproxy/envoy/tree/master/bazel>`_.
+In order to compile the artifacts used by the Envoy Mobile library,
+your system must also meet
+`these requirements for building Envoy <https://github.com/envoyproxy/envoy/tree/master/bazel>`_.
 
 --------------------
 Android requirements
