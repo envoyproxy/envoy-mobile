@@ -13,8 +13,8 @@ jobs:
       vmImage: 'macos-10.14'
     container: swiftlint-container
     steps:
-      - checkout: self
-        submodules: true
+      # - checkout: self
+      #   submodules: true
       - script: swiftlint lint --strict
         displayName: 'Run SwiftLint'
   # - job: iOS_dist
