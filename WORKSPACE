@@ -88,8 +88,12 @@ git_repository(
     shallow_since = "1552938175 -0400",
 )
 
-# kotlin 1.3 fix.
+# Bazel Kotlin 1.3 patch: https://github.com/bazelbuild/rules_kotlin/issues/159
+# bazelbuild/rules_kotlin currently doesn't work with Kotlin 1.3
 # TODO: https://github.com/lyft/envoy-mobile/issues/68
+#
+# keith/rules_kotlin is licensed under the Apache License 2.0
+# https://github.com/keith/rules_kotlin/blob/master/LICENSE
 git_repository(
     name = "io_bazel_rules_kotlin",
     commit = "af3dea0853f2821e7ece6e028fad57bcd6ce2831", # from branch ks/bazel-fixups
