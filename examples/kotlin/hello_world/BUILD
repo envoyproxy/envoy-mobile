@@ -1,6 +1,5 @@
 licenses(["notice"])  # Apache 2
 
-load("//tools:detekt.bzl", "detekt")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 
 
@@ -43,7 +42,8 @@ genrule(
 
 java_binary(
     name = "kotlin_linter",
-    deps = [
+    main_class = "io.gitlab.arturbosch.detekt.cli.Main",
+    runtime_deps = [
         "@kotlin_detekt_jar//jar"
     ],
     jvm_flags = ["--help"]
