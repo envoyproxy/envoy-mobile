@@ -7,8 +7,17 @@ trigger:
 - master
 
 jobs:
+  - job: all_format
+    timeoutInMinutes: 60
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - checkout: self
+        submodules: true
+      - script: ./tools/check_format.sh
+        displayName: 'Run formatters'
   - job: ios_swift_lint
-    timeoutInMinutes: 360
+    timeoutInMinutes: 60
     pool:
       vmImage: 'Ubuntu 16.04'
     container: swiftlint-container
