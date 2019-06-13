@@ -1,5 +1,5 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 
 # TODO remove once https://github.com/bazelbuild/rules_foreign_cc/pull/253 is resolved
 # NOTE: this version should be kept up to date with https://github.com/lyft/envoy-edge-fork/blob/3573b07af1ab5c4cf687ced0f80e2ccc0a0b7ec2/bazel/repository_locations.bzl#L225-L230 until this is removed
@@ -106,3 +106,13 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
 kotlin_repositories()
 
 register_toolchains(":kotlin_toolchain")
+
+# Kotlin static code analysis and linter: https://github.com/arturbosch/detekt
+#
+# arturbosch/detekt is licensed under the Apache License 2.0
+# https://github.com/arturbosch/detekt/blob/master/LICENSE
+http_jar(
+    name = "kotlin_detekt_jar",
+    urls = ["https://github.com/arturbosch/detekt/releases/download/1.0.0-RC15/detekt-cli-1.0.0-RC15-all.jar"],
+    sha256 = "8e074ae0feea94cd06482bc3ecab2fa29a87cbc6a1b7d71eeca90c8fe1e92b58"
+)
