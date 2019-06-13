@@ -20,7 +20,7 @@ import io.envoyproxy.envoymobile.Envoy
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt"
-private const val ENVOY_SERVER_HEADER_KEY = "server"
+private const val ENVOY_SERVER_HEADER = "server"
 
 class MainActivity : Activity() {
   private lateinit var recyclerView: RecyclerView
@@ -72,7 +72,7 @@ class MainActivity : Activity() {
       throw IOException("non 200 status: $status")
     }
 
-    val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER_KEY]
+    val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER]
     val inputStream = connection.inputStream
     val body = deserialize(inputStream)
     inputStream.close()

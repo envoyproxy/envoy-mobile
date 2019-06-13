@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
   private static final String ENDPOINT =
       "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt";
 
-  private static final String ENVOY_SERVER_HEADER_KEY = "server";
+  private static final String ENVOY_SERVER_HEADER = "server";
 
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
 
@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
       throw new IOException("non 200 status: " + status);
     }
 
-    List<String> serverHeaderField = connection.getHeaderFields().get(ENVOY_SERVER_HEADER_KEY);
+    List<String> serverHeaderField = connection.getHeaderFields().get(ENVOY_SERVER_HEADER);
     InputStream inputStream = connection.getInputStream();
     String body = deserialize(inputStream);
     inputStream.close();
