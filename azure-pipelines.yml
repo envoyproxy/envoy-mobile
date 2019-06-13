@@ -1,16 +1,20 @@
 trigger:
 - master
 
+resources:
+  containers:
+  - container: swiftlint
+    image: norionomura/swiftlint:0.33.0_swift-5.0
+
 jobs:
-  - job: swift_lint
+  - job: ios_swift_lint
     timeoutInMinutes: 360
+    container: swiftlint
     pool:
       vmImage: 'macos-10.14'
     steps:
       - checkout: self
         submodules: true
-      - script: docker build -t norionomura/swiftlint:0.33.0_swift-5.0
-        displayName: 'Set up SwiftLint image'
       - script: swiftlint lint --strict
         displayName: 'Run SwiftLint'
   - job: iOS_dist
