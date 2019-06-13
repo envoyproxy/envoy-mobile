@@ -13,10 +13,15 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
   }
 
+  // ares jvm init is necessary in order to let cares perform DNS resolution in Envoy.
+  // This became necessary after Android O.
+  // More information can be found at:
+  // https://c-ares.haxx.se/ares_library_init_android.html
   ares_library_init_jvm(vm);
   return JNI_VERSION_1_6;
 }
 
+// This export allows JNI based applications to call the c function in native code, i.e in Java.
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_Envoy_runEnvoy(JNIEnv* env,
                                                                                 jobject, // this
                                                                                 jstring config) {
@@ -27,6 +32,7 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_Envoy_initialize(JNIEnv* env,
                                                 jobject, // this
                                                 jobject connectivity_manager) {
+  // See note above about cares.
   return ares_library_init_android(connectivity_manager);
 }
 
