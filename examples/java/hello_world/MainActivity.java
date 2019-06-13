@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
 
   private Response makeRequest() throws IOException {
     URL url = new URL(ENDPOINT);
-    // Open connection to the envoy thread listening on port 9001.
+    // Open connection to the envoy thread listening locally on port 9001.
     HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     int status = connection.getResponseCode();
     if (status != 200) {
