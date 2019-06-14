@@ -29,7 +29,8 @@ maximize the chances of your PR being merged.
   ./envoy/support/bootstrap
   ```
 
-  Please see [envoy/support/README.md](envoy/support/README.md) for more information on these hooks.
+  Please see [envoy/support/README.md](https://github.com/envoyproxy/envoy/tree/master/support) for
+  more information on these hooks.
 
 * Create your PR.
 * Tests will automatically run for you.
