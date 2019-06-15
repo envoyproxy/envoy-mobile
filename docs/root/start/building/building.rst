@@ -11,7 +11,7 @@ your system must also meet
 
 Ensure that the ``envoy`` **submodule** is initialized when cloning by using ``--recursive``:
 
-``git clone git@github.com:lyft/envoy-mobile.git --recursive``
+``git clone https://github.com/lyft/envoy-mobile.git --recursive``
 
 If the repo was not initially cloned recursively, initialize the Envoy
 submodule with ``git submodule update --init``.
