@@ -9,6 +9,10 @@ In order to compile the artifacts used by the Envoy Mobile library,
 your system must also meet
 `these requirements for building Envoy <https://github.com/envoyproxy/envoy/tree/master/bazel>`_.
 
+Ensure that the ``envoy`` **submodule** is initialized when cloning by using ``--recursive``:
+
+``git clone git@github.com:lyft/envoy-mobile.git --recursive``
+
 --------------------
 Android requirements
 --------------------
