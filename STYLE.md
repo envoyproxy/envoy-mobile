@@ -13,7 +13,8 @@
 
 ## Kotlin coding style
 
-- TODO(buildbreaker): Fill this in after https://github.com/lyft/envoy-mobile/issues/27
+- Kotlin code style is validated using [detekt](https://github.com/arturbosch/detekt)
+- The rules enforced are available in the repo's [.kotlinlint.yml file](./.kotlinlint.yml)
 
 ## Swift coding style
 

@@ -1,0 +1,14 @@
+build:
+  maxIssues: 0
+
+processors:
+  active: true
+  exclude:
+
+console-reports:
+  active: true
+  exclude:
+
+style:
+  MagicNumber:
+    active: false
