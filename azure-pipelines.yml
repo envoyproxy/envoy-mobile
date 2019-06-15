@@ -44,8 +44,6 @@ jobs:
           export CC=clang
           export CXX=clang++
       - script: |
-          echo $CC
-          echo $CXX
           bazel build --fat_apk_cpu=x86 //:android_dist
         displayName: 'Build envoy.aar distributable'
       - task: PublishPipelineArtifact@0
