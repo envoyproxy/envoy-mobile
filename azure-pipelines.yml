@@ -43,6 +43,7 @@ jobs:
           export PATH=/usr/lib/llvm-8/bin:$PATH
           export CC=clang
           export CXX=clang++
+        displayName: 'Setup clang toolchain'
       - script: |
           bazel build --fat_apk_cpu=x86 //:android_dist
         displayName: 'Build envoy.aar distributable'

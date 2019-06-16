@@ -14,17 +14,11 @@ wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
 sudo apt-get update
 sudo apt-get install -y clang-8 lld-8 libc++-8-dev libc++abi-8-dev
-ls -lh /usr/bin/clang*
-ls -lh /etc/alternatives/clang*
 
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
-
 sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100
 sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 100
-
-ls -lh /usr/bin/clang*
-ls -lh /etc/alternatives/clang*
 
 # Bazel.
 sudo apt-get install -y curl
