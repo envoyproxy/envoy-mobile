@@ -20,8 +20,8 @@ ls -lh /etc/alternatives/clang*
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
 
-sudo update-alternatives /usr/bin/clang clang /usr/bin/clang-8 100
-sudo update-alternatives /usr/bin/clang++ clang++ /usr/bin/clang++-8 100
+sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 100
+sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-8 100
 
 ls -lh /usr/bin/clang*
 ls -lh /etc/alternatives/clang*
