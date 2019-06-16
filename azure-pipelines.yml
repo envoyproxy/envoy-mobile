@@ -93,7 +93,7 @@ jobs:
           artifactName: 'envoy.aar'
           targetPath: ./dist
       - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
-        displayName: 'Build java app'
+        displayName: 'Build kotlin app'
   - job: iOS_dist
     timeoutInMinutes: 360
     pool:
