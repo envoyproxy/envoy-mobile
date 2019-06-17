@@ -2,7 +2,7 @@
 
 set -e
 
-# Setup basic requirements and install them.
+# Set up basic requirements and install them.
 sudo apt-get update
 export DEBIAN_FRONTEND=noninteractive
 sudo apt-get install -y wget software-properties-common make cmake git \

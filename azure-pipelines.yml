@@ -43,7 +43,7 @@ jobs:
           export PATH=/usr/lib/llvm-8/bin:$PATH
           export CC=clang
           export CXX=clang++
-        displayName: 'Setup clang toolchain'
+        displayName: 'Set up clang toolchain'
       - script: |
           bazel build --fat_apk_cpu=x86 //:android_dist
         displayName: 'Build envoy.aar distributable'
@@ -67,10 +67,10 @@ jobs:
       - script: mkdir -p dist/
         displayName: 'Create directory for distributable'
       - task: DownloadPipelineArtifact@0
-        displayName: 'Download Envoy.framework distributable'
+        displayName: 'Download envoy.aar distributable'
         inputs:
           artifactName: 'envoy.aar'
-          targetPath: ./dist
+          targetPath: dist
       - script: bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
         displayName: 'Build java app'
   - job: android_kotlin_helloworld
@@ -88,10 +88,10 @@ jobs:
       - script: mkdir -p dist/
         displayName: 'Create directory for distributable'
       - task: DownloadPipelineArtifact@0
-        displayName: 'Download Envoy.framework distributable'
+        displayName: 'Download envoy.aar distributable'
         inputs:
           artifactName: 'envoy.aar'
-          targetPath: ./dist
+          targetPath: dist
       - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
         displayName: 'Build kotlin app'
   - job: iOS_dist
@@ -126,7 +126,7 @@ jobs:
         displayName: 'Download Envoy.framework distributable'
         inputs:
           artifactName: Envoy.framework
-          targetPath: ./dist/Envoy.framework
+          targetPath: dist/Envoy.framework
       - script: bazel build --config=ios //examples/objective-c/hello_world:app
         displayName: 'Build objective-c app'
   - job: iOS_swift
@@ -145,6 +145,6 @@ jobs:
         displayName: 'Download Envoy.framework distributable'
         inputs:
           artifactName: Envoy.framework
-          targetPath: ./dist/Envoy.framework
+          targetPath: dist/Envoy.framework
       - script: bazel build --config=ios //examples/swift/hello_world:app
         displayName: 'Build swift app'
