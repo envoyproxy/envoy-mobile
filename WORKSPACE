@@ -1,14 +1,13 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# TODO remove once https://github.com/bazelbuild/rules_foreign_cc/pull/253 is resolved
 # NOTE: this version should be kept up to date with https://github.com/lyft/envoy-edge-fork/blob/3573b07af1ab5c4cf687ced0f80e2ccc0a0b7ec2/bazel/repository_locations.bzl#L225-L230 until this is removed
 http_archive(
     name = "rules_foreign_cc",
-    patches = ["//bazel:ranlib.patch"],
-    sha256 = "e1b67e1fda647c7713baac11752573bfd4c2d45ef09afb4d4de9eb9bd4e5ac76",
-    strip_prefix = "rules_foreign_cc-8648b0446092ef2a34d45b02c8dc4c35c3a8df79",
-    urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/8648b0446092ef2a34d45b02c8dc4c35c3a8df79.tar.gz"],
+    sha256 = "980c1b74f5c18ea099889b0fb0479ee34b8a02845d3d302ecb16b15d73d624c8",
+    strip_prefix = "rules_foreign_cc-a0dc109915cea85909bef586e2b2a9bbdc6c8ff5",
+    # 2019-06-17
+    urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/a0dc109915cea85909bef586e2b2a9bbdc6c8ff5.tar.gz"],
 )
 
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
@@ -96,7 +95,7 @@ git_repository(
 # https://github.com/keith/rules_kotlin/blob/master/LICENSE
 git_repository(
     name = "io_bazel_rules_kotlin",
-    commit = "af3dea0853f2821e7ece6e028fad57bcd6ce2831", # from branch ks/bazel-fixups
+    commit = "af3dea0853f2821e7ece6e028fad57bcd6ce2831",  # from branch ks/bazel-fixups
     remote = "https://github.com/keith/rules_kotlin.git",
     shallow_since = "1544305265 -0800",
 )
