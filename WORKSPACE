@@ -1,15 +1,4 @@
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
-load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
-load("@envoy//bazel:repositories.bzl", "GO_VERSION", "envoy_dependencies")
-load("@envoy//bazel:cc_configure.bzl", "cc_configure")
-load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
-load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
-load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+
 
 # TODO remove once https://github.com/bazelbuild/rules_foreign_cc/pull/253 is resolved
 # NOTE: this version should be kept up to date with https://github.com/lyft/envoy-edge-fork/blob/3573b07af1ab5c4cf687ced0f80e2ccc0a0b7ec2/bazel/repository_locations.bzl#L225-L230 until this is removed
@@ -21,34 +10,18 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/8648b0446092ef2a34d45b02c8dc4c35c3a8df79.tar.gz"],
 )
 
-local_repository(
-    name = "envoy",
-    path = "envoy",
-)
-
-local_repository(
-    name = "envoy_build_config",
-    path = "envoy_build_config",
-)
-
 git_repository(
     name = "build_bazel_rules_apple",
     commit = "ff6a37b24fcbbd525a5bf61692a12c810d0ee3c1",
     remote = "https://github.com/bazelbuild/rules_apple.git",
     shallow_since = "1559833568 -0700",
 )
-
-envoy_api_dependencies()
-
-envoy_dependencies()
-
-rules_foreign_cc_dependencies()
-
-cc_configure()
-
-go_rules_dependencies()
-
-go_register_toolchains(go_version = GO_VERSION)
+git_repository(
+    name = "rules_jvm_external",
+    commit = "fc5bd21820581f342a4119a89bfdf36e79c6c549",
+    remote = "https://github.com/bazelbuild/rules_jvm_external.git",
+    shallow_since = "1552938175 -0400",
+)
 
 git_repository(
     name = "build_bazel_apple_support",
@@ -64,23 +37,6 @@ git_repository(
     shallow_since = "1559570694 -0700",
 )
 
-apple_support_dependencies()
-
-apple_rules_dependencies(ignore_version_differences = True)
-
-swift_rules_dependencies()
-
-android_sdk_repository(name = "androidsdk")
-
-android_ndk_repository(name = "androidndk")
-
-git_repository(
-    name = "rules_jvm_external",
-    commit = "fc5bd21820581f342a4119a89bfdf36e79c6c549",
-    remote = "https://github.com/bazelbuild/rules_jvm_external.git",
-    shallow_since = "1552938175 -0400",
-)
-
 # Bazel Kotlin 1.3 patch: https://github.com/bazelbuild/rules_kotlin/issues/159
 # bazelbuild/rules_kotlin currently doesn't work with Kotlin 1.3
 # TODO: https://github.com/lyft/envoy-mobile/issues/68
@@ -93,6 +49,51 @@ git_repository(
     remote = "https://github.com/keith/rules_kotlin.git",
     shallow_since = "1544305265 -0800",
 )
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
+load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
+load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
+load("@envoy//bazel:cc_configure.bzl", "cc_configure")
+load("@envoy//bazel:repositories.bzl", "GO_VERSION", "envoy_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+
+local_repository(
+    name = "envoy",
+    path = "envoy",
+)
+
+local_repository(
+    name = "envoy_build_config",
+    path = "envoy_build_config",
+)
+
+envoy_api_dependencies()
+
+envoy_dependencies()
+
+rules_foreign_cc_dependencies()
+
+cc_configure()
+
+go_rules_dependencies()
+
+go_register_toolchains(go_version = GO_VERSION)
+
+apple_support_dependencies()
+
+apple_rules_dependencies(ignore_version_differences = True)
+
+swift_rules_dependencies()
+
+android_sdk_repository(name = "androidsdk")
+
+android_ndk_repository(name = "androidndk")
 
 kotlin_repositories()
 
