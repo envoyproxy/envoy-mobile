@@ -1,5 +1,15 @@
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
+load("@envoy//bazel:repositories.bzl", "GO_VERSION", "envoy_dependencies")
+load("@envoy//bazel:cc_configure.bzl", "cc_configure")
+load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
+load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
 
 # TODO remove once https://github.com/bazelbuild/rules_foreign_cc/pull/253 is resolved
 # NOTE: this version should be kept up to date with https://github.com/lyft/envoy-edge-fork/blob/3573b07af1ab5c4cf687ced0f80e2ccc0a0b7ec2/bazel/repository_locations.bzl#L225-L230 until this is removed
@@ -10,8 +20,6 @@ http_archive(
     strip_prefix = "rules_foreign_cc-8648b0446092ef2a34d45b02c8dc4c35c3a8df79",
     urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/8648b0446092ef2a34d45b02c8dc4c35c3a8df79.tar.gz"],
 )
-
-load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 
 local_repository(
     name = "envoy",
@@ -30,22 +38,13 @@ git_repository(
     shallow_since = "1559833568 -0700",
 )
 
-load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
-
 envoy_api_dependencies()
 
-load("@envoy//bazel:repositories.bzl", "GO_VERSION", "envoy_dependencies")
-load("@envoy//bazel:cc_configure.bzl", "cc_configure")
-
 envoy_dependencies()
-
-load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 
 rules_foreign_cc_dependencies()
 
 cc_configure()
-
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
 go_rules_dependencies()
 
@@ -65,15 +64,9 @@ git_repository(
     shallow_since = "1559570694 -0700",
 )
 
-load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
-
 apple_support_dependencies()
 
-load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
-
 apple_rules_dependencies(ignore_version_differences = True)
-
-load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
 
 swift_rules_dependencies()
 
@@ -100,8 +93,6 @@ git_repository(
     remote = "https://github.com/keith/rules_kotlin.git",
     shallow_since = "1544305265 -0800",
 )
-
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
 
 kotlin_repositories()
 
