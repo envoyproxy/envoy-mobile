@@ -12,7 +12,7 @@ stages:
   - stage: format
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
     jobs:
-      - job: all
+      - job: all_lint
         timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
@@ -36,6 +36,7 @@ stages:
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
     jobs:
       - job: linux_dist
+        timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
         variables:
@@ -60,7 +61,7 @@ stages:
               targetPath: 'dist/envoy.aar'
       - job: linux_java_helloworld
         dependsOn: linux_dist
-        timeoutInMinutes: 360
+        timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
         variables:
@@ -81,7 +82,7 @@ stages:
             displayName: 'Build java app'
       - job: linux_kotlin_helloworld
         dependsOn: linux_dist
-        timeoutInMinutes: 360
+        timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
         variables:
@@ -104,7 +105,7 @@ stages:
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
     jobs:
       - job: dist
-        timeoutInMinutes: 360
+        timeoutInMinutes: 60
         pool:
           vmImage: 'macos-10.14'
         steps:
@@ -121,7 +122,7 @@ stages:
               targetPath: 'dist/Envoy.framework'
       - job: objc_helloworld
         dependsOn: dist
-        timeoutInMinutes: 360
+        timeoutInMinutes: 60
         pool:
           vmImage: 'macos-10.14'
         steps:
@@ -140,7 +141,7 @@ stages:
             displayName: 'Build objective-c app'
       - job: swift_helloworld
         dependsOn: dist
-        timeoutInMinutes: 360
+        timeoutInMinutes: 60
         pool:
           vmImage: 'macos-10.14'
         steps:
