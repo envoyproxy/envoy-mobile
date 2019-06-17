@@ -9,12 +9,20 @@ In order to compile the artifacts used by the Envoy Mobile library,
 your system must also meet
 `these requirements for building Envoy <https://github.com/envoyproxy/envoy/tree/master/bazel>`_.
 
+Ensure that the ``envoy`` **submodule** is initialized when cloning by using ``--recursive``:
+
+``git clone https://github.com/lyft/envoy-mobile.git --recursive``
+
+If the repo was not initially cloned recursively, initialize the Envoy
+submodule with ``git submodule update --init``.
+
 --------------------
 Android requirements
 --------------------
 
 - Bazel 0.26.0
-- TODO(junr03): Fill in after https://github.com/lyft/envoy-mobile/pull/60
+- Android SDK Platform 28
+- Android NDK 19.2.5345600
 
 ----------------
 iOS requirements
