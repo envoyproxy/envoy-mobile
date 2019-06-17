@@ -4,6 +4,8 @@ resources:
     image: envoyproxy/envoy-build:cfc514546bc0284536893cca5fa43d7128edcd35
   - container: swiftlint-container
     image: norionomura/swiftlint:0.33.0_swift-5.0
+  - container: jdk8
+    image: openjdk:8-jdk
 
 trigger:
 - master
@@ -22,7 +24,7 @@ stages:
             submodules: true
           - script: ./tools/check_format.sh
             displayName: 'Run formatters'
-      - job: ios_swift_lint
+      - job: swift_lint
         timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
@@ -32,6 +34,15 @@ stages:
             submodules: true
           - script: swiftlint lint --strict
             displayName: 'Run SwiftLint'
+      - job: kotlin_lint
+        timeoutInMinutes: 60
+        pool:
+          vmImage: 'Ubuntu 16.04'
+        container: jdk8
+        steps:
+          - checkout: self
+          - script: ./ci/kotlin_lint.sh
+            displayName: 'Run Kotlin lint'
   - stage: android
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
     jobs:
