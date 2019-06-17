@@ -32,4 +32,4 @@ sudo rm -rf /var/lib/apt/lists/*
 wget -c https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip
 unzip android-ndk-r20-linux-x86_64.zip
 sudo rm -rf /usr/local/lib/android/sdk/ndk-bundle
-sudo mv android-ndk-r20-linux-x86_64 /usr/local/lib/android/sdk/ndk-bundle
+sudo mv android-ndk-r20 /usr/local/lib/android/sdk/ndk-bundle
