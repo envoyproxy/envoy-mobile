@@ -18,6 +18,20 @@ build \
 # static framework.
 # More information on stamping can be found here:
 # https://github.com/envoyproxy/envoy/tree/master/bazel#enabling-optional-features
+#
+# TODO: migrate to python3
+# Note on the forcing of python2:
+# From bazel:
+#   Note: The failure of target @build_bazel_rules_apple//tools/codesigningtool:codesigningtool
+#   (with exit code 1) may have been caused by the fact that it is running under Python 3 instead of Python 2.
+#   Examine the error to determine if that appears to be the problem.
+#   Since this target is built in the host configuration,
+#   the only way to change its version is to set --host_force_python=PY2, which affects the entire build.
+#
+#   If this error started occurring in Bazel 0.27 and later,
+#   it may be because the Python toolchain now enforces that targets analyzed as PY2 and PY3 run under
+#   a Python 2 and Python 3 interpreter, respectively.
+#   See https://github.com/bazelbuild/bazel/issues/7899 for more information.
 build:ios --define=manual_stamp=manual_stamp --host_force_python=PY2
 
 build:android --fat_apk_cpu=x86,x86_64,armeabi-v7a,arm64-v8a
