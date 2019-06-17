@@ -81,5 +81,10 @@ jobs:
         inputs:
           artifactName: Envoy.framework
           targetPath: ./dist/Envoy.framework
+      - task: UsePythonVersion@0
+        displayName: 'Pin to Python2'
+        inputs:
+          versionSpec: '2.x'
+          addToPath: true
       - script: bazel build --config=ios //examples/swift/hello_world:app
         displayName: 'Build swift app'
