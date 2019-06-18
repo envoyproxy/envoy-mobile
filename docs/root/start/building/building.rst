@@ -58,6 +58,10 @@ This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and 
 
 Upon completion of the build, you'll see an ``envoy.aar`` file at :repo:`dist/envoy.aar <dist>`.
 
+Alternatively, you can use the prebuilt artifact from Envoy-Mobile's releases_.
+Download ``envoy-android-<platform>-v0.1.zip``, and place the unzipped contents at :repo:`dist/envoy.aar <dist>`.
+Note that android has both a macOS and a linux artifact.
+
 The ``envoy_mobile_android`` Bazel rule defined in the :repo:`dist BUILD file <dist/BUILD>` provides
 an example of how this artifact may be used.
 
@@ -77,7 +81,12 @@ This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and 
 Upon completion of the build, you'll see a ``Envoy.framework`` directory at
 :repo:`dist/Envoy.framework <dist>`.
 
+Alternatively, you can use the prebuilt artifact from Envoy-Mobile's releases_.
+Download ``envoy-ios-macos-v0.1.zip``, and place the unzipped contents at :repo:`dist/Envoy.framework <dist>`.
+
 The ``envoy_mobile_ios`` Bazel rule defined in the :repo:`dist BUILD file <dist/BUILD>` provides an
 example of how this artifact may be used.
 
 For a demo of a working app using this artifact, see the :ref:`hello_world` example.
+
+.. _releases: https://github.com/lyft/envoy-mobile/releases
