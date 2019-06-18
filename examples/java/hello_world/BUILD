@@ -3,10 +3,7 @@ licenses(["notice"])  # Apache 2
 android_binary(
     name = "hello_envoy",
     srcs = glob([
-        "MainActivity.java",
-        "Response.java",
-        "ResponseRecyclerViewAdapter.java",
-        "ResponseViewHolder.java",
+        "*.java",
     ]),
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
     manifest = "AndroidManifest.xml",
