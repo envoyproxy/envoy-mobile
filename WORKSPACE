@@ -13,6 +13,15 @@ http_archive(
 
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 
+# Patch upstream Abseil with patch to prevent Foundation dependency from leaking into Android builds
+# TODO: remove once rules_android properly supports platform toolchains
+http_archive(
+    name = "com_google_absl",
+    sha256 = "00d5ad2c5702be911239df287504f9da6985e8bc563ec6a8436552da1ac2938c",
+    strip_prefix = "abseil-cpp-d902eb869bcfacc1bad14933ed9af4bed006d481",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/d902eb869bcfacc1bad14933ed9af4bed006d481.tar.gz"],
+)
+
 local_repository(
     name = "envoy",
     path = "envoy",
