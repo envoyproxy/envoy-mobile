@@ -32,7 +32,7 @@ public class Envoy {
       return;
     }
 
-    synchronized(Envoy.class) {
+    synchronized (Envoy.class) {
       if (loader != null) {
         return;
       }
@@ -65,9 +65,7 @@ public class Envoy {
   }
 
   // Returns whether the Envoy instance is terminated.
-  public boolean isTerminated() {
-    return runner.getState() == Thread.State.TERMINATED;
-  }
+  public boolean isTerminated() { return runner.getState() == Thread.State.TERMINATED; }
 
   private static native int initialize(ConnectivityManager connectivityManager);
 
