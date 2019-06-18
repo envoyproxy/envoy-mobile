@@ -29,11 +29,6 @@ in order to see how to install a specific Bazel version in your environment.
 Android requirements
 --------------------
 
-.. attention::
-   Android currently fails to build on macOS.
-   We are working to resolve this ASAP.
-   More information in `this issue <https://github.com/lyft/envoy-mobile/issues/72>`_.
-
 - Android SDK Platform 28
 - Android NDK 19.2.5345600
 
