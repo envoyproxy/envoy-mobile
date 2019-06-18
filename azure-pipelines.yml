@@ -115,7 +115,7 @@ stages:
   - stage: ios
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
     jobs:
-      - job: dist
+      - job: mac_dist
         timeoutInMinutes: 60
         pool:
           vmImage: 'macos-10.14'
@@ -131,8 +131,8 @@ stages:
             inputs:
               artifactName: 'Envoy.framework'
               targetPath: 'dist/Envoy.framework'
-      - job: objc_helloworld
-        dependsOn: dist
+      - job: mac_objc_helloworld
+        dependsOn: mac_dist
         timeoutInMinutes: 60
         pool:
           vmImage: 'macos-10.14'
@@ -150,8 +150,8 @@ stages:
               targetPath: dist/Envoy.framework
           - script: bazel build --config=ios //examples/objective-c/hello_world:app
             displayName: 'Build objective-c app'
-      - job: swift_helloworld
-        dependsOn: dist
+      - job: mac_swift_helloworld
+        dependsOn: mac_dist
         timeoutInMinutes: 60
         pool:
           vmImage: 'macos-10.14'
