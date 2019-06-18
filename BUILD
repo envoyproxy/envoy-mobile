@@ -25,6 +25,7 @@ genrule(
 unzip -o $< -d dist/
 touch $@
 """,
+    stamp = True,
 )
 
 aar_with_jni(
