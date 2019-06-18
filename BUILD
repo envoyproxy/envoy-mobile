@@ -46,12 +46,12 @@ genrule(
     name = "android_dist",
     srcs = ["//:android_aar"],
     outs = ["android_out"],
-    stamp = True,
     cmd = """
 cp $< dist/envoy.aar
 chmod 755 dist/envoy.aar
 touch $@
 """,
+    stamp = True,
 )
 
 define_kt_toolchain(
