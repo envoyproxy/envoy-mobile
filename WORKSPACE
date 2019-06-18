@@ -13,19 +13,12 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_foreign_cc/archive/2b40a0098d4016f620c2ee4c10da0f46f5c90d57.tar.gz"],
 )
 
-# Workaround for https://github.com/abseil/abseil-cpp/issues/326.
-# Should be removed in https://github.com/lyft/envoy-mobile/issues/136 once resolved.
-http_archive(
-    name = "com_google_absl",
-    sha256 = "e35082e88b9da04f4d68094c05ba112502a5063712f3021adfa465306d238c76",
-    strip_prefix = "abseil-cpp-cc8dcd307b76a575d2e3e0958a4fe4c7193c2f68",
-    urls = ["https://github.com/abseil/abseil-cpp/archive/cc8dcd307b76a575d2e3e0958a4fe4c7193c2f68.tar.gz"],
-)
-
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 
-# Patch upstream Abseil with patch to prevent Foundation dependency from leaking into Android builds
-# TODO: remove once rules_android properly supports platform toolchains
+# Patch upstream Abseil to prevent Foundation dependency from leaking into Android builds.
+# Workaround for https://github.com/abseil/abseil-cpp/issues/326.
+# TODO: Should be removed in https://github.com/lyft/envoy-mobile/issues/136 once rules_android
+# supports platform toolchains.
 http_archive(
     name = "com_google_absl",
     patches = ["//bazel:abseil.patch"],
