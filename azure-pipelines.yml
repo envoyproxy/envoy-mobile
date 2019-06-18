@@ -156,7 +156,7 @@ stages:
             inputs:
               artifactName: 'envoy-mac.aar'
               targetPath: dist
-          - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+          - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kotlin
             displayName: 'Build kotlin app'
   - stage: ios
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
