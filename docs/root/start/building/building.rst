@@ -59,12 +59,8 @@ This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and 
 Upon completion of the build, you'll see an ``envoy.aar`` file at :repo:`dist/envoy.aar <dist>`.
 
 Alternatively, you can use the prebuilt artifact from Envoy Mobile's releases_.
-Download ``envoy-android-<platform>-v0.1.zip``, and place the unzipped contents at :repo:`dist/envoy.aar <dist>`.
-
-.. attention::
-   Per the note above, Android does not currently build on macOS.
-   Thus, the release does not currently have a macOS prebuilt artifact ready to download.
-   The artifact will be uploaded ASAP when `this issue <https://github.com/lyft/envoy-mobile/issues/72>`_ is fixed.
+Download ``envoy-android-<platform>-v0.1.zip``, and place the unzipped contents
+at :repo:`dist/envoy.aar <dist>`.
 
 The ``envoy_mobile_android`` Bazel rule defined in the :repo:`dist BUILD file <dist/BUILD>` provides
 an example of how this artifact may be used.
