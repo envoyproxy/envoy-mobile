@@ -23,6 +23,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# android_library's implicit aar doesn't flatten its transitive
+# dependencies. When using the kotlin rules, the kt_android_library rule
+# creates a few underlying libraries, because of this the classes.jar in
+# the aar we built was empty. This rule separately builds the underlying
+# kt.jar file, and replaces the aar's classes.jar with the kotlin jar
 def aar_with_jni(name, android_library, archive_name = "", visibility = None):
     if not archive_name:
         archive_name = name
