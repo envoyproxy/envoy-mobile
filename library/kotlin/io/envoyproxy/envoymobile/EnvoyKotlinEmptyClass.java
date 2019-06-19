@@ -9,4 +9,4 @@ package io.envoyproxy.envoymobile;
  * '//library/common:envoy_jni_interface_lib' does not have mandatory providers: 'JavaInfo' <p>
  * Could be related to: https://github.com/bazelbuild/rules_kotlin/issues/132
  */
-public class EnovyKotlinEmptyClass {}
+public class EnvoyKotlinEmptyClass {}
