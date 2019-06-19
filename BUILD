@@ -37,7 +37,10 @@ aar_with_jni(
 
 kt_android_library(
     name = "android_lib",
-    srcs = ["library/java/io/envoyproxy/envoymobile/Envoy.java", "library/java/io/envoyproxy/envoymobile/EnvoyEmptyClass.kt"],
+    srcs = [
+        "library/java/io/envoyproxy/envoymobile/Envoy.java",
+        "library/java/io/envoyproxy/envoymobile/EnvoyEmptyClass.kt",
+    ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "library/EnvoyManifest.xml",
     deps = ["java_cc_alias"],
