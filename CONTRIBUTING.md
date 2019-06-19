@@ -32,10 +32,11 @@ maximize the chances of your PR being merged.
   Please see [envoy/support/README.md](https://github.com/envoyproxy/envoy/tree/master/support) for
   more information on these hooks.
 
-  Note: these git hooks depend upon `realpath` which is part of `coreutils`. Install `coreutils` on macOS with:
+  Note: the git hooks depend upon many of the dependencies used to build envoy. Install these on macOS with:
 
   ```bash
-  brew install coreutils
+  brew install coreutils wget cmake libtool go bazel automake ninja clang-format autoconf aspell
+  go get github.com/bazelbuild/buildtools/buildifier
   ```
 
 * Create your PR.
