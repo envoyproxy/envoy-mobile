@@ -19,3 +19,5 @@ build \
 build:ios --define=manual_stamp=manual_stamp
 
 build:android --fat_apk_cpu=x86,x86_64,armeabi-v7a,arm64-v8a
+
+build:release --ios_multi_cpus=i386,x86_64,armv7,arm64
