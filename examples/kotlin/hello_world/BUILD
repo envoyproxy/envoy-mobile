@@ -6,7 +6,7 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 envoy_package()
 
 android_binary(
-    name = "hello_envoy_kotlin",
+    name = "hello_envoy_kt",
     custom_package = "io.envoyproxy.envoymobile.helloenvoykotlin",
     manifest = "AndroidManifest.xml",
     deps = [

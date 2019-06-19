@@ -35,6 +35,14 @@ aar_with_jni(
     visibility = ["//visibility:public"],
 )
 
+kt_android_library(
+    name = "android_lib",
+    srcs = ["library/java/io/envoyproxy/envoymobile/Envoy.java", "library/java/io/envoyproxy/envoymobile/EnvoyEmptyClass.kt"],
+    custom_package = "io.envoyproxy.envoymobile",
+    manifest = "library/EnvoyManifest.xml",
+    deps = ["java_cc_alias"],
+)
+
 # Work around for transtive dependencies related to not including cc_libraries for kt_jvm_library
 # Related to: https://github.com/bazelbuild/rules_kotlin/issues/132
 #
@@ -49,7 +57,7 @@ android_library(
 )
 
 kt_android_library(
-    name = "android_lib",
+    name = "android_lib_kotlin",
     srcs = ["library/kotlin/io/envoyproxy/envoymobile/Envoy.kt"],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "library/EnvoyManifest.xml",
