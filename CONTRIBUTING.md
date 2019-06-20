@@ -32,12 +32,7 @@ maximize the chances of your PR being merged.
   Please see [envoy/support/README.md](https://github.com/envoyproxy/envoy/tree/master/support) for
   more information on these hooks.
 
-  Note: the git hooks depend upon many of the dependencies used to build envoy. Install these on macOS with:
-
-  ```bash
-  brew install coreutils wget cmake libtool go bazel automake ninja clang-format autoconf aspell
-  go get github.com/bazelbuild/buildtools/buildifier
-  ```
+  Note: the git hooks depend upon many of the dependencies used to build envoy via Bazel. To install these, folow the [Quick start Bazel build for developers](https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#quick-start-bazel-build-for-developers) guide.
 
 * Create your PR.
 * Tests will automatically run for you.
