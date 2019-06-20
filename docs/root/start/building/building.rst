@@ -49,7 +49,7 @@ Android AAR
 Envoy Mobile can be compiled into an ``.aar`` file for use with Android apps.
 This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and may be run locally:
 
-``bazel build android_dist --config=android # omit release for development``
+``bazel build android_dist --config=android --config=release # omit release for development``
 
 Upon completion of the build, you'll see an ``envoy.aar`` file at :repo:`dist/envoy.aar <dist>`.
 
