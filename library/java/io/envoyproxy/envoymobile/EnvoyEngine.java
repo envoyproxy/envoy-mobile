@@ -31,7 +31,6 @@ public class EnvoyEngine {
     }
   }
 
-
   private static native int initialize(ConnectivityManager connectivityManager);
 
   private static native boolean isAresInitialized();
