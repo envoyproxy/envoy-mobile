@@ -44,7 +44,6 @@ android_library(
     deps = ["//library/common:envoy_jni_interface_lib"],
 )
 
-
 # Work around for transitive dependencies related to not including cc_libraries for kt_jvm_library
 # Related to: https://github.com/bazelbuild/rules_kotlin/issues/132
 #
