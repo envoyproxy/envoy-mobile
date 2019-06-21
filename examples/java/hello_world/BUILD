@@ -9,7 +9,7 @@ android_binary(
     manifest = "AndroidManifest.xml",
     resource_files = [
         "res/layout/activity_main.xml",
-        "res/raw/config.yaml"
+        "res/raw/config.yaml",
     ],
     deps = [
         "//dist:envoy_mobile_android",

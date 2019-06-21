@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
     }
     Envoy envoy = new Envoy(context, config);
 
-    recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+    recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     final ResponseRecyclerViewAdapter adapter = new ResponseRecyclerViewAdapter();
@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
       @Override
       public void run() {
         final Response response = makeRequest();
-        recyclerView.post((Runnable) () -> adapter.add(response));
+        recyclerView.post((Runnable)() -> adapter.add(response));
 
         // Make a call again
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1));
@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
     try {
       URL url = new URL(ENDPOINT);
       // Open connection to the envoy thread listening locally on port 9001.
-      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      HttpURLConnection connection = (HttpURLConnection)url.openConnection();
       int status = connection.getResponseCode();
       if (status == 200) {
         List<String> serverHeaderField = connection.getHeaderFields().get(ENVOY_SERVER_HEADER);
@@ -95,7 +95,7 @@ public class MainActivity extends Activity {
         String body = deserialize(inputStream);
         inputStream.close();
         return new Success(body,
-            serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
+                           serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
       } else {
         return new Failure("failed with status " + status);
       }

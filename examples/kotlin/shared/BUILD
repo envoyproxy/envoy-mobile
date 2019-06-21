@@ -5,7 +5,6 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 
 envoy_package()
 
-
 kt_android_library(
     name = "hello_envoy_shared_lib",
     srcs = [
