@@ -36,11 +36,6 @@ aar_with_jni(
     visibility = ["//visibility:public"],
 )
 
-# Work around for transitive dependencies related to not including cc_libraries for kt_jvm_library
-# Related to: https://github.com/bazelbuild/rules_kotlin/issues/132
-#
-# Since these sources wont be included in the kt_android_library (it internally uses an export),
-#  we can just add the java source of EnvoyEngine.java instead
 android_library(
     name = "envoy_engine_lib",
     srcs = ["library/java/io/envoyproxy/envoymobile/EnvoyEngine.java"],
@@ -49,6 +44,16 @@ android_library(
     deps = ["//library/common:envoy_jni_interface_lib"],
 )
 
+
+# Work around for transitive dependencies related to not including cc_libraries for kt_jvm_library
+# Related to: https://github.com/bazelbuild/rules_kotlin/issues/132
+#
+# Android library drops exported dependencies from dependent rules. The kt_android_library
+#  internally is just a macro which wraps two rules into one:
+#  https://github.com/bazelbuild/rules_kotlin/blob/326661e7e705d14e754abc2765837aa61bddf205/kotlin/internal/jvm/android.bzl#L28.
+#  This causes the sources to be exported and dropped due to it being a transitive dependency.
+#  To get around this, we have to redeclare the sources from envoy_engine_lib here in order to be pulled into the
+#  kotlin jar.
 kt_android_library(
     name = "android_lib",
     srcs = [
