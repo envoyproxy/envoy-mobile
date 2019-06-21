@@ -52,8 +52,8 @@ android_library(
 kt_android_library(
     name = "android_lib",
     srcs = [
+        "library/java/io/envoyproxy/envoymobile/EnvoyEngine.java",
         "library/kotlin/io/envoyproxy/envoymobile/Envoy.kt",
-        "library/java/io/envoyproxy/envoymobile/EnvoyEngine.java"
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "library/EnvoyManifest.xml",
