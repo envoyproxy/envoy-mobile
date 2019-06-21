@@ -11,7 +11,7 @@
 
 @synthesize runner;
 
-- (id)initWithConfig:(NSString *)config {
+- (instancetype)initWithConfig:(NSString *)config {
   if (self = [super init]) {
     self.runner = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:config];
     [self.runner start];
