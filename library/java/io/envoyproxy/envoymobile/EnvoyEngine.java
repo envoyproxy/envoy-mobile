@@ -13,7 +13,7 @@ public class EnvoyEngine {
   // dependencies are loaded and initialized at most once.
   private EnvoyEngine(Context context) {
     System.loadLibrary("envoy_jni");
-    initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+    initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
   }
 
   // Load and initialize Envoy and its dependencies, but only once.
@@ -36,5 +36,4 @@ public class EnvoyEngine {
   private static native boolean isAresInitialized();
 
   public static native int run(String config);
-
 }
