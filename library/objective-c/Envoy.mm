@@ -12,12 +12,12 @@
 @synthesize runner;
 
 - (instancetype)initWithConfig:(NSString *)config {
-  if (self = [super init]) {
+  self = [super init];
+  if (self) {
     self.runner = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:config];
     [self.runner start];
-  } else {
-    return nil;
   }
+  return self;
 }
 
 - (BOOL)isRunning {
