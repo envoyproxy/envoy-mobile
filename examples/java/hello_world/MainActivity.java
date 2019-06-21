@@ -19,6 +19,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.envoyproxy.envoymobile.Envoy;
+
 public class MainActivity extends Activity {
   private static final String ENDPOINT =
       "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt";
