@@ -6,7 +6,7 @@ import android.view.ViewGroup
 
 class ResponseRecyclerViewAdapter : RecyclerView.Adapter<ResponseViewHolder>() {
   private val data = mutableListOf<Response>()
-  private var count = 0
+  private var count = 1
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ResponseViewHolder {
     val context = parent.context
