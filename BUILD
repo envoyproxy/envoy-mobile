@@ -31,20 +31,9 @@ touch $@
 
 aar_with_jni(
     name = "android_aar",
-    android_library = "android_lib_kotlin",
+    android_library = "android_lib",
     archive_name = "envoy",
     visibility = ["//visibility:public"],
-)
-
-kt_android_library(
-    name = "android_lib",
-    srcs = [
-        "library/java/io/envoyproxy/envoymobile/Envoy.java",
-        "library/java/io/envoyproxy/envoymobile/EnvoyEmptyClass.kt",
-    ],
-    custom_package = "io.envoyproxy.envoymobile",
-    manifest = "library/EnvoyManifest.xml",
-    deps = ["envoy_engine"],
 )
 
 # Work around for transitive dependencies related to not including cc_libraries for kt_jvm_library
@@ -53,7 +42,7 @@ kt_android_library(
 # This work around is to use an empty java_library to include the cc_library dependencies needed
 # for the kotlin jni layer
 android_library(
-    name = "envoy_engine",
+    name = "envoy_engine_lib",
     srcs = ["library/java/io/envoyproxy/envoymobile/EnvoyEngine.java"],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "library/EnvoyManifest.xml",
@@ -61,11 +50,11 @@ android_library(
 )
 
 kt_android_library(
-    name = "android_lib_kotlin",
+    name = "android_lib",
     srcs = ["library/kotlin/io/envoyproxy/envoymobile/Envoy.kt"],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "library/EnvoyManifest.xml",
-    deps = ["envoy_engine"],
+    deps = ["envoy_engine_lib"],
 )
 
 genrule(
