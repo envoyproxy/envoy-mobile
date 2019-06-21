@@ -39,8 +39,8 @@ aar_with_jni(
 # Work around for transitive dependencies related to not including cc_libraries for kt_jvm_library
 # Related to: https://github.com/bazelbuild/rules_kotlin/issues/132
 #
-# This work around is to use an empty java_library to include the cc_library dependencies needed
-# for the kotlin jni layer
+# Since these sources wont be included in the kt_android_library (it internally uses an export),
+#  we can just add the java source of EnvoyEngine.java instead
 android_library(
     name = "envoy_engine_lib",
     srcs = ["library/java/io/envoyproxy/envoymobile/EnvoyEngine.java"],
@@ -51,7 +51,10 @@ android_library(
 
 kt_android_library(
     name = "android_lib",
-    srcs = ["library/kotlin/io/envoyproxy/envoymobile/Envoy.kt"],
+    srcs = [
+        "library/kotlin/io/envoyproxy/envoymobile/Envoy.kt",
+        "library/java/io/envoyproxy/envoymobile/EnvoyEngine.java"
+    ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "library/EnvoyManifest.xml",
     deps = ["envoy_engine_lib"],
