@@ -15,7 +15,9 @@ kt_android_library(
     custom_package = "io.envoyproxy.envoymobile.shared",
     manifest = "AndroidManifest.xml",
     resource_files = glob([
-        "res/**/*.xml",
+        "res/layout/item.xml",
+        "res/values/colors.xml",
+        "res/values/strings.xml",
     ]),
     deps = [
         "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
