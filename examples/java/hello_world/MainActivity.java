@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.envoyproxy.envoymobile.Envoy;
+import io.envoyproxy.envoymobile.shared.Response;
+import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
 
 public class MainActivity extends Activity {
   private static final String ENDPOINT =

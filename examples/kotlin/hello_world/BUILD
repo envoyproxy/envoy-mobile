@@ -21,30 +21,13 @@ kt_android_library(
     ],
     custom_package = "io.envoyproxy.envoymobile.helloenvoykotlin",
     manifest = "AndroidManifest.xml",
-    resource_files = glob([
-        "res/**/*.yaml",
-    ]),
+    resource_files = [
+            "res/layout/activity_main.xml",
+            "res/raw/config.yaml"
+    ],
     deps = [
-        "hello_envoy_view_lib",
+        "//examples/kotlin/shared:hello_envoy_shared_lib",
         "//dist:envoy_mobile_android",
-        "@androidsdk//com.android.support:appcompat-v7-25.0.0",
-        "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
-    ],
-)
-
-kt_android_library(
-    name = "hello_envoy_view_lib",
-    srcs = [
-        "Response.kt",
-        "ResponseRecyclerViewAdapter.kt",
-        "ResponseViewHolder.kt",
-    ],
-    custom_package = "io.envoyproxy.envoymobile.helloenvoykotlin",
-    manifest = "AndroidManifest.xml",
-    resource_files = glob([
-        "res/**/*.xml",
-    ]),
-    deps = [
         "@androidsdk//com.android.support:appcompat-v7-25.0.0",
         "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
     ],

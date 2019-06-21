@@ -17,6 +17,8 @@ import java.net.URL
 import java.util.concurrent.TimeUnit
 
 import io.envoyproxy.envoymobile.Envoy
+import io.envoyproxy.envoymobile.shared.Response
+import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt"
