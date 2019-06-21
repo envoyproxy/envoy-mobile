@@ -7,21 +7,16 @@ private enum ConfigLoadError: Error {
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
+  var envoy: Envoy?
   var window: UIWindow?
 
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
   {
-    do {
-      let configYaml = try self.loadEnvoyConfig() as NSString
-      NSLog("Loading config:\n\(configYaml)")
-      Thread.detachNewThread {
-        run_envoy(configYaml.utf8String)
-      }
-    } catch let error {
-      NSLog("Failed to load config: \(error)")
-    }
+    let configYaml = try! self.loadEnvoyConfig()
+    NSLog("Loading config:\n\(configYaml)")
+    self.envoy = Envoy(config: configYaml)
 
     let window = UIWindow(frame: UIScreen.main.bounds)
     window.rootViewController = ViewController()

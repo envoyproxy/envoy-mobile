@@ -11,11 +11,14 @@ load("//bazel:aar_with_jni.bzl", "aar_with_jni")
 
 ios_static_framework(
     name = "ios_framework",
-    hdrs = ["//library/common:main_interface.h"],
+    hdrs = [
+        "//library/objective-c:envoy_framework_headers",
+        #"//library/objective-c:Envoy-Bridging-Header.h",
+    ],
     bundle_name = "Envoy",
     minimum_os_version = "10.0",
     visibility = ["//visibility:public"],
-    deps = ["//library/common:envoy_main_interface_lib"],
+    deps = ["//library/objective-c:envoy_objc_interface_lib"],
 )
 
 genrule(
