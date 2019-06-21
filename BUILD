@@ -13,7 +13,6 @@ ios_static_framework(
     name = "ios_framework",
     hdrs = [
         "//library/objective-c:envoy_framework_headers",
-        #"//library/objective-c:Envoy-Bridging-Header.h",
     ],
     bundle_name = "Envoy",
     minimum_os_version = "10.0",

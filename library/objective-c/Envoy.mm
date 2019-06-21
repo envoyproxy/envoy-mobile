@@ -11,21 +11,21 @@
 
 @synthesize runner;
 
-// Create a new Envoy instance. The Envoy runner NSThread is started as part of instance
-// initialization with the configuration provided.
 - (id)initWithConfig:(NSString *)config {
-  self.runner = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:config];
-  [self.runner start];
+  if (self = [super init]) {
+    self.runner = [[NSThread alloc] initWithTarget:self selector:@selector(run:) object:config];
+    [self.runner start];
+  } else {
+    return nil;
+  }
 }
 
-// Returns whether this Envoy instance is currently active and running.
 - (BOOL)isRunning {
-  return self.runner != NULL && self.runner.isExecuting;
+  return self.runner.isExecuting;
 }
 
-// Returns whether the Envoy instance is terminated.
 - (BOOL)isTerminated {
-  return self.runner != NULL && self.runner.isFinished;
+  return self.runner.isFinished;
 }
 
 #pragma mark private

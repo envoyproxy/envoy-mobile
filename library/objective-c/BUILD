@@ -16,9 +16,5 @@ objc_library(
     ],
     copts = ["-std=c++14"],
     visibility = ["//visibility:public"],
-    #sdk_dylibs = [
-    #    "resolv.9",
-    #    "c++",
-    #],
     deps = ["//library/common:envoy_main_interface_lib"],
 )
