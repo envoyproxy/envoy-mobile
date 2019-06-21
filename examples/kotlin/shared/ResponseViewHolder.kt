@@ -9,7 +9,15 @@ class ResponseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val headerTextView: TextView = itemView.findViewById(R.id.header_text_view) as TextView
 
   fun setResult(response: Response) {
-    responseTextView.text = responseTextView.resources.getString(R.string.title_string, response.title)
-    headerTextView.text = headerTextView.resources.getString(R.string.header_string, response.header)
+    response.fold(
+        { success ->
+          responseTextView.text = responseTextView.resources.getString(R.string.title_string, success.title)
+          headerTextView.text = headerTextView.resources.getString(R.string.header_string, success.header)
+        },
+        { failure ->
+          responseTextView.text = responseTextView.resources.getString(R.string.title_string, failure.message)
+          headerTextView.visibility = View.GONE
+          itemView.setBackgroundResource(R.color.failed_color)
+        })
   }
 }

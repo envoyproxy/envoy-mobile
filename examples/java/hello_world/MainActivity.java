@@ -9,6 +9,11 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import io.envoyproxy.envoymobile.Envoy;
+import io.envoyproxy.envoymobile.shared.Failure;
+import io.envoyproxy.envoymobile.shared.Response;
+import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
+import io.envoyproxy.envoymobile.shared.Success;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,10 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import io.envoyproxy.envoymobile.Envoy;
-import io.envoyproxy.envoymobile.shared.Response;
-import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
 
 public class MainActivity extends Activity {
   private static final String ENDPOINT =
@@ -35,8 +36,6 @@ public class MainActivity extends Activity {
 
   private HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
 
-  private Envoy envoy;
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -46,16 +45,16 @@ public class MainActivity extends Activity {
     Envoy.load(context);
 
     // Create envoy instance with config.
-    String config = null;
+    String config;
     try {
       config = loadEnvoyConfig(getBaseContext(), R.raw.config);
     } catch (RuntimeException e) {
       Log.d("MainActivity", "exception getting config.", e);
       throw new RuntimeException("Can't get config to run envoy.");
     }
-    envoy = new Envoy(context, config);
+    Envoy envoy = new Envoy(context, config);
 
-    recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
+    recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     final ResponseRecyclerViewAdapter adapter = new ResponseRecyclerViewAdapter();
@@ -70,12 +69,8 @@ public class MainActivity extends Activity {
     handler.postDelayed(new Runnable() {
       @Override
       public void run() {
-        try {
-          final Response response = makeRequest();
-          recyclerView.post((Runnable)() -> adapter.add(response));
-        } catch (IOException e) {
-          Log.d("MainActivity", "exception making request.", e);
-        }
+        final Response response = makeRequest();
+        recyclerView.post((Runnable) () -> adapter.add(response));
 
         // Make a call again
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1));
@@ -88,21 +83,25 @@ public class MainActivity extends Activity {
     thread.quit();
   }
 
-  private Response makeRequest() throws IOException {
-    URL url = new URL(ENDPOINT);
-    // Open connection to the envoy thread listening locally on port 9001.
-    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-    int status = connection.getResponseCode();
-    if (status != 200) {
-      throw new IOException("non 200 status: " + status);
+  private Response makeRequest() {
+    try {
+      URL url = new URL(ENDPOINT);
+      // Open connection to the envoy thread listening locally on port 9001.
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      int status = connection.getResponseCode();
+      if (status == 200) {
+        List<String> serverHeaderField = connection.getHeaderFields().get(ENVOY_SERVER_HEADER);
+        InputStream inputStream = connection.getInputStream();
+        String body = deserialize(inputStream);
+        inputStream.close();
+        return new Success(body,
+            serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
+      } else {
+        return new Failure("failed with status " + status);
+      }
+    } catch (Exception e) {
+      return new Failure(e.getMessage());
     }
-
-    List<String> serverHeaderField = connection.getHeaderFields().get(ENVOY_SERVER_HEADER);
-    InputStream inputStream = connection.getInputStream();
-    String body = deserialize(inputStream);
-    inputStream.close();
-    return new Response(body,
-                        serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
   }
 
   private String deserialize(InputStream inputStream) throws IOException {
