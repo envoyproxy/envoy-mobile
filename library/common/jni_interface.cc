@@ -21,15 +21,15 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_EnvoyEngine_run(JNIEnv* env,
-                                                                           jobject, // this
-                                                                           jstring config) {
+                                                                                 jobject, // this
+                                                                                 jstring config) {
   return run_envoy(env->GetStringUTFChars(config, nullptr));
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_EnvoyEngine_initialize(JNIEnv* env,
-                                                jclass, // class
-                                                jobject connectivity_manager) {
+                                                      jclass, // class
+                                                      jobject connectivity_manager) {
   // See note above about c-ares.
   return ares_library_init_android(connectivity_manager);
 }
