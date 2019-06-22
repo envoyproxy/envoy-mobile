@@ -70,7 +70,7 @@ class MainActivity : Activity() {
   }
 
   private fun makeRequest(): Response {
-    try {
+    return  try {
       val url = URL(ENDPOINT)
       // Open connection to the envoy thread listening locally on port 9001
       val connection = url.openConnection() as HttpURLConnection
@@ -80,12 +80,12 @@ class MainActivity : Activity() {
         val inputStream = connection.inputStream
         val body = deserialize(inputStream)
         inputStream.close()
-        return Success(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
+        Success(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
       } else {
-        return Failure("failed with status: $status")
+        Failure("failed with status: $status")
       }
-    } catch (e: Exception) {
-      return Failure(e.message ?: "failed with exception")
+    } catch (e: IOException) {
+      Failure(e.message ?: "failed with exception")
     }
   }
 
