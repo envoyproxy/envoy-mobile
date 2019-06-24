@@ -11,6 +11,10 @@
 
     <application
             android:label="Hello Control">
+        <service
+                android:name=".PersistentService"
+        >
+        </service>
         <activity
                 android:name=".MainActivity"
                 android:label="Hello Control Kotlin">
