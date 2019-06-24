@@ -27,8 +27,8 @@ kt_android_library(
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "kotlin/io/envoyproxy/envoymobile/EnvoyManifest.xml",
-    deps = ["envoy_engine_lib"],
     visibility = ["//visibility:public"],
+    deps = ["envoy_engine_lib"],
 )
 
 android_library(
@@ -36,6 +36,6 @@ android_library(
     srcs = ["java/io/envoyproxy/envoymobile/engine/EnvoyEngine.java"],
     custom_package = "io.envoyproxy.envoymobile.engine",
     manifest = "java/io/envoyproxy/envoymobile/engine/EnvoyEngineManifest.xml",
-    deps = ["//library/common:envoy_jni_interface_lib"],
     visibility = ["//visibility:public"],
+    deps = ["//library/common:envoy_jni_interface_lib"],
 )
