@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
 
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
 
+  private Envoy envoy;
   private RecyclerView recyclerView;
 
   private HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
@@ -52,7 +53,7 @@ public class MainActivity extends Activity {
       Log.d("MainActivity", "exception getting config.", e);
       throw new RuntimeException("Can't get config to run envoy.");
     }
-    Envoy envoy = new Envoy(context, config);
+    envoy = new Envoy(context, config);
 
     recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
