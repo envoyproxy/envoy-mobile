@@ -2,16 +2,8 @@ licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
-load("//bazel:aar_with_jni.bzl", "aar_with_jni")
 
 envoy_package()
-
-aar_with_jni(
-    name = "android_aar",
-    android_library = "android_lib",
-    archive_name = "envoy",
-    visibility = ["//visibility:public"],
-)
 
 # Android library drops exported dependencies from dependent rules. The kt_android_library
 #  internally is just a macro which wraps two rules into one:
