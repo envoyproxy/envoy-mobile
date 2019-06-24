@@ -2,8 +2,16 @@ licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
+load("//bazel:aar_with_jni.bzl", "aar_with_jni")
 
 envoy_package()
+
+aar_with_jni(
+    name = "android_aar",
+    android_library = "//library:android_lib",
+    archive_name = "envoy",
+    visibility = ["//visibility:public"],
+)
 
 # Android library drops exported dependencies from dependent rules. The kt_android_library
 #  internally is just a macro which wraps two rules into one:
@@ -14,18 +22,20 @@ envoy_package()
 kt_android_library(
     name = "android_lib",
     srcs = [
-        "java/io/envoyproxy/envoymobile/EnvoyEngine.java",
+        "java/io/envoyproxy/envoymobile/engine/EnvoyEngine.java",
         "kotlin/io/envoyproxy/envoymobile/Envoy.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "kotlin/io/envoyproxy/envoymobile/EnvoyManifest.xml",
     deps = ["envoy_engine_lib"],
+    visibility = ["//visibility:public"],
 )
 
 android_library(
     name = "envoy_engine_lib",
-    srcs = ["java/io/envoyproxy/envoymobile/EnvoyEngine.java"],
-    custom_package = "io.envoyproxy.envoymobile.envoyengine",
-    manifest = "java/io/envoyproxy/envoymobile/EnvoyEngineManifest.xml",
+    srcs = ["java/io/envoyproxy/envoymobile/engine/EnvoyEngine.java"],
+    custom_package = "io.envoyproxy.envoymobile.engine",
+    manifest = "java/io/envoyproxy/envoymobile/engine/EnvoyEngineManifest.xml",
     deps = ["//library/common:envoy_jni_interface_lib"],
+    visibility = ["//visibility:public"],
 )
