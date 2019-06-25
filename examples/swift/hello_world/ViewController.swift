@@ -5,7 +5,7 @@ private let kCellID = "cell-id"
 private let kURL = URL(string: "http://localhost:9001/api.lyft.com/static/demo/hello_world.txt")!
 
 final class ViewController: UITableViewController {
-  private var responses = [Response]()
+  private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
 
   override func viewDidLoad() {
@@ -31,21 +31,27 @@ final class ViewController: UITableViewController {
     let request = URLRequest(url: kURL)
     NSLog("Starting request to '\(kURL.path)'")
     let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-      if let response = response as? HTTPURLResponse, response.statusCode == 200, let data = data {
-        self?.handle(response: response, with: data)
-      } else if let error = error {
-        NSLog("Received error: \(error)")
-      } else {
-        NSLog("Failed to receive data from the server")
-      }
+      self?.handle(response: response, with: data, error: error)
     }
 
     task.resume()
   }
 
-  private func handle(response: HTTPURLResponse, with data: Data) {
+  private func handle(response: URLResponse?, with data: Data?, error: Error?) {
+    if let error = error {
+      return self.add(result: .failure(RequestError(description: "\(error)")))
+    }
+
+    guard let response = response as? HTTPURLResponse, let data = data else {
+      return self.add(result: .failure(RequestError(description: "Missing response data")))
+    } 
+
+    guard response.statusCode == 200 else {
+      return self.add(result: .failure(RequestError(description: "failed with status \(response.statusCode)")))
+    }
+
     guard let body = String(data: data, encoding: .utf8) else {
-      return NSLog("Failed to deserialize response string")
+      return self.add(result: .failure(RequestError(description: "Failed to deserialize body")))
     }
 
     let untypedHeaders = response.allHeaderFields
@@ -58,8 +64,12 @@ final class ViewController: UITableViewController {
 
     // Deserialize the response, which will include a `Server` header set by Envoy.
     let value = Response(body: body, serverHeader: headers["Server"] ?? "")
+    self.add(result: .success(value))
+  }
+  
+  private func add(result: Result<Response, RequestError>) {
     DispatchQueue.main.async {
-      self.responses.append(value)
+      self.results.insert(result, at: 0)
       self.tableView.reloadData()
     }
   }
@@ -71,7 +81,7 @@ final class ViewController: UITableViewController {
   }
 
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return self.responses.count
+    return self.results.count
   }
 
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath)
@@ -80,9 +90,19 @@ final class ViewController: UITableViewController {
     let cell = tableView.dequeueReusableCell(withIdentifier: kCellID) ??
       UITableViewCell(style: .subtitle, reuseIdentifier: kCellID)
 
-    let response = self.responses[indexPath.row]
-    cell.textLabel?.text = "Response: \(response.body)"
-    cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
+    let result = self.results[indexPath.row]
+    switch result {
+      case .success(let response):
+        cell.textLabel?.text = "[\(indexPath.row + 1)] Response: \(response.body)"
+        cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
+        cell.textLabel?.textColor = .black
+        cell.contentView.backgroundColor = .white
+      case .failure(let error):
+        cell.textLabel?.text = "[\(indexPath.row + 1)] \(error.description)"
+        cell.detailTextLabel?.text = nil
+        cell.textLabel?.textColor = .white
+        cell.contentView.backgroundColor = .red
+    }
     return cell
   }
 }
