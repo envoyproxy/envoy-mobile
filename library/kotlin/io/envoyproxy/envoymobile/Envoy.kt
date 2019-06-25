@@ -4,7 +4,7 @@ import android.content.Context
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 
 // Wrapper class that allows for easy calling of Envoy's JNI interface in native Java.
-class Envoy(
+class Envoy @JvmOverloads constructor(
     context: Context,
     config: String,
     logLevel: String = "info"
