@@ -2,8 +2,8 @@
 
 #import "library/common/main_interface.h"
 
-NSString *const kConfig = @"config";
-NSString *const kLogLevel = @"logLevel";
+static NSString *const kConfig = @"config";
+static NSString *const kLogLevel = @"logLevel";
 
 @interface Envoy ()
 @property (nonatomic, strong) NSThread *runner;
