@@ -23,8 +23,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_EnvoyEngine_run(JNIEnv* env,
                                                       jobject, // this
-                                                      jstring config,
-                                                      jstring log_level) {
+                                                      jstring config, jstring log_level) {
   return run_envoy(env->GetStringUTFChars(config, nullptr),
                    env->GetStringUTFChars(log_level, nullptr));
 }

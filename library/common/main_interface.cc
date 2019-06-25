@@ -18,7 +18,7 @@ extern "C" int run_envoy(const char* config, const char* log_level) {
   std::unique_ptr<Envoy::MainCommon> main_common;
 
   char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),
-      strdup("-l"), strdup(log_level), nullptr};
+                        strdup("-l"),    strdup(log_level),       nullptr};
 
   // Ensure static factory registration occurs on time.
   // Envoy's static factory registration happens when main is run.
