@@ -24,8 +24,8 @@ cc_library(
 )
 
 envoy_cc_binary(
-    name = "test_binary",
-    srcs = ["test_binary.cc"],
+    name = "test_binary_size",
+    srcs = ["test_binary_size.cc"],
     repository = "@envoy",
     stamped = True,
     deps = ["envoy_main_interface_lib"],
