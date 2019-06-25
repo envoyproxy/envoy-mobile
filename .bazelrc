@@ -16,7 +16,7 @@ build \
 # static framework.
 # More information on stamping can be found here:
 # https://github.com/envoyproxy/envoy/tree/master/bazel#enabling-optional-features
-build:ios --define=manual_stamp=manual_stamp 
+build:ios --define=manual_stamp=manual_stamp
 
 build:android --fat_apk_cpu=x86,x86_64
 
