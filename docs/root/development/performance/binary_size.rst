@@ -14,9 +14,9 @@ Getting a binary
 
 In order to have consistency of results this is the toolchain used to build the binary for analysis:
 
-1.  clang-8
-2.  lld (installed with clang)
-3.  arm64 machine
+1. clang-8
+2. lld (installed with clang)
+3. arm64 machine
 
 The binary being compiled is ``//library/common:test_binary_size``.
 The binary is getting built with the following build command::
@@ -27,14 +27,14 @@ The binary is getting built with the following build command::
 
 .. _envoy_docs: https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#enabling-optional-features
 
-1.  ``-c opt``: bazel compilation option for size optimization.
-2.  ``--copt -Os``: optimize for size.
-3.  ``--copt=-ggdb3``: keep debug symbols. Later stripped with ``strip``
-4.  ``--linkopt=-fuse-ld=lld``: use the lld linker.
-5.  ``--define=google_grpc=disabled``: more info in the `envoy docs <envoy_docs>`_.
-6.  ``--define=signal_trace=disabled``: more info in the `envoy docs <envoy_docs>`_.
-7.  ``--define=tcmalloc=disabled``: more info in the `envoy docs <envoy_docs>`_.
-8.  ``--define=hot_restart=disabled``: more info in the `envoy docs <envoy_docs>`_.
+1. ``-c opt``: bazel compilation option for size optimization.
+2. ``--copt -Os``: optimize for size.
+3. ``--copt=-ggdb3``: keep debug symbols. Later stripped with ``strip``
+4. ``--linkopt=-fuse-ld=lld``: use the lld linker.
+5. ``--define=google_grpc=disabled``: more info in the `envoy docs <envoy_docs>`_.
+6. ``--define=signal_trace=disabled``: more info in the `envoy docs <envoy_docs>`_.
+7. ``--define=tcmalloc=disabled``: more info in the `envoy docs <envoy_docs>`_.
+8. ``--define=hot_restart=disabled``: more info in the `envoy docs <envoy_docs>`_.
 
 After compiling, the binary can be stripped of all symbols by using ``strip``::
 
