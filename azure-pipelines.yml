@@ -6,8 +6,6 @@ resources:
     image: norionomura/swiftlint:0.33.0_swift-5.0
   - container: jdk8
     image: openjdk:8-jdk
-  - container: python
-    image: python:3.6-alpine
 
 trigger:
 - master
@@ -31,11 +29,10 @@ stages:
       - job: precommit_lint
         timeoutInMinutes: 60
         pool:
-          vmImage: 'Ubuntu 16.04'
-        container: python
+          vmImage: 'macos-10.14'
         steps:
           - checkout: self
-          - script: pip install pre-commit
+          - script: brew install pre-commit
             displayName: 'Install pre-commit'
           - script: pre-commit run --all-files
             displayName: 'Running pre-commit'
