@@ -5,7 +5,7 @@ licenses(["notice"])  # Apache 2
 filegroup(
     name = "envoy_engine_srcs",
     srcs = ["EnvoyEngine.java"],
-    visibility = ["//visibility:public",],
+    visibility = ["//visibility:public"],
 )
 
 android_library(
