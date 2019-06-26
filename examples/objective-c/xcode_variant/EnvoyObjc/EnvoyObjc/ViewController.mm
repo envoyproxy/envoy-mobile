@@ -20,6 +20,7 @@ NSString* _ENDPOINT = @"http://localhost:9001/api.lyft.com/static/demo/hello_wor
 - (instancetype)init {
     self = [super init];
     if (self) {
+
         self.tableView.allowsSelection = FALSE;
     }
     return self;
@@ -49,7 +50,10 @@ NSString* _ENDPOINT = @"http://localhost:9001/api.lyft.com/static/demo/hello_wor
 }
 
 - (void)performRequest {
-    NSURLSession* session = [NSURLSession sharedSession];
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    config.URLCache = nil;
+    NSURLSession* session = [NSURLSession sessionWithConfiguration:config];
+
     // Note that the request is sent to the envoy thread listening locally on port 9001.
     NSURL* url = [NSURL URLWithString:_ENDPOINT];
     NSURLRequest* request = [NSURLRequest requestWithURL:url];
@@ -58,13 +62,13 @@ NSString* _ENDPOINT = @"http://localhost:9001/api.lyft.com/static/demo/hello_wor
     __weak ViewController* weakSelf = self;
     NSURLSessionDataTask* task =
     [session dataTaskWithRequest:request
-               completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
-                   if (error == nil && [(NSHTTPURLResponse*)response statusCode] == 200) {
-                       [weakSelf handleResponse:(NSHTTPURLResponse*)response data:data];
-                   } else {
-                       NSLog(@"Received error: %@", error);
-                   }
-               }];
+                    completionHandler:^(NSData* data, NSURLResponse* response, NSError* error) {
+                        if (error == nil && [(NSHTTPURLResponse*)response statusCode] == 200) {
+                            [weakSelf handleResponse:(NSHTTPURLResponse*)response data:data];
+                        } else {
+                            NSLog(@"Received error: %@", error);
+                        }
+                    }];
     [task resume];
 }
 

@@ -49,7 +49,10 @@ NSString* _ENDPOINT = @"https://s3.amazonaws.com/api.lyft.com/static/demo/hello_
 }
 
 - (void)performRequest {
-    NSURLSession* session = [NSURLSession sharedSession];
+    NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    config.URLCache = nil;
+    NSURLSession* session = [NSURLSession sessionWithConfiguration:config];
+
     // Note that the request is sent to the envoy thread listening locally on port 9001.
     NSURL* url = [NSURL URLWithString:_ENDPOINT];
     NSURLRequest* request = [NSURLRequest requestWithURL:url];
