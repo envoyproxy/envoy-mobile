@@ -1,6 +1,7 @@
 licenses(["notice"])  # Apache 2
 
-# These source files must re-exported to the kotlin custom library rule to ensure their inclusion.
+# These source files must be re-exported to the kotlin custom library rule to ensure their
+# inclusion.
 filegroup(
     name = "envoy_engine_srcs",
     srcs = ["EnvoyEngine.java"],
