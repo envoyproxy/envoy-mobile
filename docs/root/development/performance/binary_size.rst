@@ -52,9 +52,9 @@ necessary tools::
 The binary being compiled is ``//test/performance:test_binary_size``.
 The binary is getting built with the following build command::
 
-  bazel build //test/performance:test_binary_size --config=sizeopt
+  bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
 
-``sizeopt`` has the following flags:
+Thus the binary is compiled with the following flags:
 
 .. _envoy_docs: https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#enabling-optional-features
 
