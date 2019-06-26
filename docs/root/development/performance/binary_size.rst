@@ -12,16 +12,47 @@ Object files analysis
 Getting a binary
 ~~~~~~~~~~~~~~~~
 
-In order to have consistency of results this is the toolchain used to build the binary for analysis:
+In order to have consistency of results this is the toolchain used to build the
+binary for analysis:
 
 1. clang-8
 2. lld (installed with clang)
 3. arm64 machine
 
-The binary being compiled is ``//library/common:test_binary_size``.
+The arm64 machine used to build the test binary was an arm64 ec2 a1.2xlarge
+instance with Ubuntu 18.04. The following script was run to set up the
+necessary tools::
+
+  # basic toolchain
+  sudo apt-get install build-essential openjdk-8-jdk python zip unzip \
+    software-properties-common make cmake bc libtool ninja-build automake \
+    time apt-transport-https
+  # clang-8
+  wget http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-aarch64-linux-gnu.tar.xz
+  sudo tar -C /usr/local/ -xvf clang+llvm-8.0.0-aarch64-linux-gnu.tar.xz --strip 1
+  rm -rf clang+llvm-8.0.0-aarch64-linux-gnu.tar.xz
+  # bazel 0.26.1
+  wget https://github.com/bazelbuild/bazel/releases/download/0.26.1/bazel-0.26.1-dist.zip
+  mkdir -p /tmp/bazel_build
+  unzip -o bazel-0.26.1-dist.zip -d /tmp/bazel_build
+  rm -rf bazel-0.26.1-dist.zip
+  cd /tmp/bazel_build
+  env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
+  sudo cp output/bazel /usr/local/bin/bazel
+  rm -rf /tmp/bazel_build
+  # bloaty
+  git clone https://github.com/google/bloaty
+  cd bloaty
+  mkdir build
+  cd build
+  cmake ..
+  make -j6
+  cp bloaty /usr/local/bin/bloaty
+
+The binary being compiled is ``//test/performance:test_binary_size``.
 The binary is getting built with the following build command::
 
-  bazel build //library/common:test_binary_size --config=sizeopt
+  bazel build //test/performance:test_binary_size --config=sizeopt
 
 ``sizeopt`` has the following flags:
 
@@ -38,18 +69,20 @@ The binary is getting built with the following build command::
 
 After compiling, the binary can be stripped of all symbols by using ``strip``::
 
-  strip -s bazel-bin/library/common/test_binary_size
+  strip -s bazel-bin/test/performance/test_binary_size
 
 The unstripped and stripped binary can then be used for analysis.
 
 Analysis
 ~~~~~~~~
 
-While there are a lot of tools out there that can be used for binary size analysis (otool, objdump, jtool),
-`Bloaty <https://github.com/google/bloaty>`_ has been the tool of choice to run object file analysis.
+While there are a lot of tools out there that can be used for binary size
+analysis (otool, objdump, jtool), `Bloaty <https://github.com/google/bloaty>`_
+has been the tool of choice to run object file analysis.
 
-Bloaty's layering of data sources is extremely helpful in being able to explode the binary in all sorts of different ways.
-For example, one can look at the composition of each compile unit in terms of sections::
+Bloaty's layering of data sources is extremely helpful in being able to explode
+the binary in all sorts of different ways. For example, one can look at the
+composition of each compile unit in terms of sections::
 
   $ bloaty --debug-file=bin/test_binary_size -c envoy.bloaty -d sections,bloaty_package,compileunits bin/test_binary_size.stripped
   ...
@@ -76,9 +109,10 @@ Or one might want to see how sections of the binary map to compilation units::
            0.9%  1.26Ki   0.9%  1.26Ki external/boringssl/src/crypto/x509v3/v3_crld.c
            0.7%  1.06Ki   0.7%  1.06Ki external/boringssl/src/crypto/asn1/tasn_typ.c
 
-These different representations will give you perspective about how different changes in the binary will affect size.
-Note that the ``envoy.bloaty`` config refers to a bloaty config that has regexes to capture output.
-The example config used in this type of analysis is::
+These different representations will give you perspective about how different
+changes in the binary will affect size. Note that the ``envoy.bloaty`` config
+refers to a bloaty config that has regexes to capture output. The example
+config used in this type of analysis is::
 
   custom_data_source: {
     name: "bloaty_package"
@@ -107,26 +141,21 @@ Open issues regarding size
 --------------------------
 
 
-``perf/size`` is a label tagging all current open issues that can improve binary size.
-Check out the issues `here <https://github.com/lyft/envoy-mobile/labels/perf%2Fsize>`_.
-After performing any change that tries to address these issues you should run through the analysis pipeline described above, and make sure your changes match expectations.
-
-The following issues are listed in priority order maximizing complexity vs. size win:
-
-- https://github.com/lyft/envoy-mobile/issues/174
-- https://github.com/lyft/envoy-mobile/issues/175
-- https://github.com/lyft/envoy-mobile/issues/180
-- https://github.com/lyft/envoy-mobile/issues/178
-- https://github.com/lyft/envoy-mobile/issues/177
-- https://github.com/lyft/envoy-mobile/issues/179
-- https://github.com/lyft/envoy-mobile/issues/176
+``perf/size`` is a label tagging all current open issues that can improve
+binary size. Check out the issues `here
+<https://github.com/lyft/envoy-mobile/labels/perf%2Fsize>`_. After performing
+any change that tries to address these issues you should run through the
+analysis pipeline described above, and make sure your changes match
+expectations.
 
 Current status
 ~~~~~~~~~~~~~~
 
-As of https://github.com/lyft/envoy-mobile/tree/f17caebcfce09ec5dcda905dc8418fea4d382da7
-The test_binary_size_size as built by the toolchain against the architecture described above
-compiles to a stripped size of 8.9mb and a compressed size of 3mb.
+As of
+https://github.com/lyft/envoy-mobile/tree/f17caebcfce09ec5dcda905dc8418fea4d382da7
+The test_binary_size_size as built by the toolchain against the architecture
+described above compiles to a stripped size of 8.9mb and a compressed size of
+3mb.
 
 CI Integration
 --------------
