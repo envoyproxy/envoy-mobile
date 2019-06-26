@@ -1,15 +1,7 @@
 licenses(["notice"])  # Apache 2
 
-filegroup(
-    name = "envoy_framework_headers",
-    srcs = [
-        "Envoy.h",
-    ],
-    visibility = ["//visibility:public"],
-)
-
 objc_library(
-    name = "envoy_objc_interface_lib",
+    name = "envoy_engine_objc_lib",
     srcs = [
         "Envoy.h",
         "Envoy.mm",

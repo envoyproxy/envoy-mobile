@@ -8,13 +8,10 @@ envoy_package()
 
 ios_static_framework(
     name = "ios_framework",
-    hdrs = [
-        "//library/objective-c:envoy_framework_headers",
-    ],
     bundle_name = "Envoy",
     minimum_os_version = "10.0",
     visibility = ["//visibility:public"],
-    deps = ["//library/objective-c:envoy_objc_interface_lib"],
+    deps = ["//library/swift:envoy_swift_lib"],
 )
 
 genrule(
