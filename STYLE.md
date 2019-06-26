@@ -2,7 +2,7 @@
 
 - General style guidelines -- like newlines at the end of file -- are linted
 for using [pre-commit](https://pre-commit.com/)
-- The rules enfornced are available in the
+- The rules enforced are available in the
 repo's [.pre-commit-config.yaml file](.pre-commit-config.yaml).
 - You can install pre-commit locally with these [instructions](https://pre-commit.com/#install).
 - The linter may be run locally using `pre-commit run --all-files`.
