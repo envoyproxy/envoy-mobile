@@ -177,8 +177,26 @@ stages:
         steps:
           - checkout: self
             submodules: true
-          - script: android create avd -n kotlin_app -k "system-images;android-24;default;x86_64" -g "default"
-          - script: emulator -list-avds
+          - bash: |
+              $ANDROID_HOME/tools/bin/sdkmanager --list
+            displayName: "list already installed Android packages"
+          - bash: |
+              echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install 'system-images;android-27;google_apis;x86'
+            displayName: 'install Android image'
+          - script: |
+              $ANDROID_HOME/emulator/emulator -list-avds
+              echo '---'
+              echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd -n test_android_emulator -k 'system-images;android-27;google_apis;x86' --force
+              echo '---'
+              $ANDROID_HOME/emulator/emulator -list-avds
+            displayName: 'create AVD'
+          - script: |
+              $ANDROID_HOME/platform-tools/adb devices
+              echo '---'
+              nohup $ANDROID_HOME/emulator/emulator -avd test_android_emulator -no-snapshot > /dev/null 2>&1 & $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
+              echo '---'
+              $ANDROID_HOME/platform-tools/adb devices
+            displayName: 'start Android emulator'
   # - stage: ios
   #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
   #   jobs:
