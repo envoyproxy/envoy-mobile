@@ -237,7 +237,8 @@ stages:
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: npm install -g ios-sim
-          - script: ios-sim start "iPhone-X, 12.2"
+          - script: ios-sim start --devicetypeid "iPhone-X, 12.2"
           - script: cd dist && tar -xvf f.tar.gz && unzip ios_framework.zip && cd ../
+          - script: sleep 180
           - script: bazel run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
           - script: cat /tmp/envoy.log | grep Hello
