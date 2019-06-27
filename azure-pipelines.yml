@@ -232,5 +232,7 @@ stages:
         pool:
           vmImage: 'macos-10.14'
         steps:
-          - script: npm install -g ios-sim
-          - script: cd dist && unzip app.zip && cd Payload && ios-sim --devicetypeid "iPhone-X, 12.2" launch app.app
+          - script: ./ci/mac_ci_setup.sh
+            displayName: 'Install dependencies'
+          - script: cd dist && tar -xvf f.tar.gz && unzip ios_framework.zip
+          - script: bazel run --config=ios //examples/swift/hello_world:app
