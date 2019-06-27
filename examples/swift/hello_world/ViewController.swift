@@ -54,7 +54,7 @@ final class ViewController: UITableViewController {
 
     guard let response = response as? HTTPURLResponse, let data = data else {
       return self.add(result: .failure(RequestError(id: id, message: "missing response data")))
-    } 
+    }
 
     guard response.statusCode == 200 else {
       let error = RequestError(id: id, message: "failed with status \(response.statusCode)")
@@ -75,7 +75,7 @@ final class ViewController: UITableViewController {
     NSLog("Response:\n\(data.count) bytes\n\(body)\n\(headers)")
     self.add(result: .success(Response(id: id, body: body, serverHeader: headers["Server"] ?? "")))
   }
-  
+
   private func add(result: Result<Response, RequestError>) {
     self.results.insert(result, at: 0)
     self.tableView.reloadData()
@@ -99,22 +99,23 @@ final class ViewController: UITableViewController {
 
     let result = self.results[indexPath.row]
     switch result {
-      case .success(let response):
-        cell.textLabel?.text = "[\(response.id)] \(response.body)"
-        cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
+    case .success(let response):
+      cell.textLabel?.text = "[\(response.id)] \(response.body)"
+      cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
 
-        cell.textLabel?.textColor = .black
-        cell.detailTextLabel?.textColor = .black
-        cell.contentView.backgroundColor = .white
-        
-      case .failure(let error):
-        cell.textLabel?.text = "[\(error.id)]"
-        cell.detailTextLabel?.text = error.message
+      cell.textLabel?.textColor = .black
+      cell.detailTextLabel?.textColor = .black
+      cell.contentView.backgroundColor = .white
 
-        cell.textLabel?.textColor = .white
-        cell.detailTextLabel?.textColor = .white
-        cell.contentView.backgroundColor = .red
+    case .failure(let error):
+      cell.textLabel?.text = "[\(error.id)]"
+      cell.detailTextLabel?.text = error.message
+
+      cell.textLabel?.textColor = .white
+      cell.detailTextLabel?.textColor = .white
+      cell.contentView.backgroundColor = .red
     }
+
     return cell
   }
 }
