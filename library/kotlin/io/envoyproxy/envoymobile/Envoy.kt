@@ -6,7 +6,8 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 /**
  * Available logging levels for an Envoy instance. Note some levels may be compiled out.
  */
-enum class LogLevel {
+enum class LogLevel(internal val level: String) {
+>>>>>>> missed a step
   TRACE("trace"),
   DEBUG("debug"),
   INFO("info"),
@@ -39,7 +40,7 @@ class Envoy @JvmOverloads constructor(
     load(context)
 
     runner = Thread(Runnable {
-      EnvoyEngine.run(config.trim(), logLevel.toString())
+      EnvoyEngine.run(config.trim(), logLevel.level)
     })
 
     runner.start()
