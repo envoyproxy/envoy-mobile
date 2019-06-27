@@ -4,12 +4,29 @@ import android.content.Context
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 
 /**
+ * Available logging levels for an Envoy instance. Note some levels may be compiled out.
+ */
+enum class LogLevel {
+  Trace,
+  Debug,
+  Info,
+  Warn,
+  Error,
+  Critical,
+  Off;
+
+  override fun toString(): String {
+    return super.toString().toLowerCase()
+  }
+}
+
+/**
  * Wrapper class that allows for easy calling of Envoy's JNI interface in native Java.
  */
 class Envoy @JvmOverloads constructor(
     context: Context,
     config: String,
-    logLevel: String = "info"
+    logLevel: LogLevel = LogLevel.Info
 ) {
 
   // Dedicated thread for running this instance of Envoy.
@@ -26,7 +43,7 @@ class Envoy @JvmOverloads constructor(
     load(context)
 
     runner = Thread(Runnable {
-      EnvoyEngine.run(config.trim(), logLevel)
+      EnvoyEngine.run(config.trim(), logLevel.toString())
     })
 
     runner.start()
