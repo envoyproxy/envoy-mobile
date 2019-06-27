@@ -209,8 +209,9 @@ stages:
           - script: bazel build --config=ios //examples/objective-c/hello_world:app
             displayName: 'Build objective-c app'
           # Now check that the app actually runs on the simulator.
-          # This is a non-ideal way to check for liveliness, but does for now.
-          # First start the iOS simulator. Interestingly bazel run does start the simulator in CI.
+          # This is a non-ideal way to check for liveliness, but works for now.
+          # First start the iOS simulator.
+          # Interestingly bazel run does not start the simulator in CI.
           # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
           - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
             displayName: 'Start the iOS simulator'
@@ -243,8 +244,9 @@ stages:
           - script: bazel build --config=ios //examples/swift/hello_world:app
             displayName: 'Build swift app'
           # Now check that the app actually runs on the simulator.
-          # This is a non-ideal way to check for liveliness, but does for now.
-          # First start the iOS simulator. Interestingly bazel run does start the simulator in CI.
+          # This is a non-ideal way to check for liveliness, but works for now.
+          # First start the iOS simulator.
+          # Interestingly bazel run does not start the simulator in CI.
           # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
           - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
             displayName: 'Start the iOS simulator'
