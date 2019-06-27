@@ -177,16 +177,20 @@ stages:
         steps:
           - checkout: self
             submodules: true
+          - script: ./ci/mac_ci_setup.sh
+            displayName: 'Install dependencies'
+          - script: cd dist && tar -xvf envoy.tar.gz && cd ..
+          - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
           - bash: |
               $ANDROID_HOME/tools/bin/sdkmanager --list
             displayName: "list already installed Android packages"
           - bash: |
-              echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install 'system-images;android-27;google_apis;x86'
+              echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install 'system-images;android-28;google_apis;x86'
             displayName: 'install Android image'
           - script: |
               $ANDROID_HOME/emulator/emulator -list-avds
               echo '---'
-              echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd -n test_android_emulator -k 'system-images;android-27;google_apis;x86' --force
+              echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd -n test_android_emulator -k 'system-images;android-28;google_apis;x86' --force
               echo '---'
               $ANDROID_HOME/emulator/emulator -list-avds
             displayName: 'create AVD'
@@ -197,6 +201,7 @@ stages:
               echo '---'
               $ANDROID_HOME/platform-tools/adb devices
             displayName: 'start Android emulator'
+          - script: bazel mobile-install --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
   # - stage: ios
   #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
   #   jobs:
