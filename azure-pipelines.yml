@@ -233,6 +233,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - script: npm install -g ios-sim
+          - script: cd dist
           - script: unzip app.zip
           - script: cd Payload
           - script: ios-sim --devicetypeid "iPhone-X, 12.2" app.app
