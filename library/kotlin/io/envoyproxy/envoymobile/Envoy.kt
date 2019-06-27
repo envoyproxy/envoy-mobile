@@ -22,7 +22,7 @@ enum class LogLevel(internal val level: String) {
 class Envoy @JvmOverloads constructor(
     context: Context,
     config: String,
-    logLevel: LogLevel = LogLevel.Info
+    logLevel: LogLevel = LogLevel.INFO
 ) {
 
   // Dedicated thread for running this instance of Envoy.
