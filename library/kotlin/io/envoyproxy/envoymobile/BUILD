@@ -1,15 +1,10 @@
 licenses(["notice"])  # Apache 2
 
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
-load("//bazel:envoy_build_system.bzl", "envoy_package")
-
-envoy_package()
-
-load("//bazel:envoy_build_system.bzl", "envoy_package")
-
-envoy_package()
-
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
+
+envoy_package()
 
 aar_with_jni(
     name = "android_aar",
