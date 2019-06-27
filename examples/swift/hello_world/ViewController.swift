@@ -100,15 +100,15 @@ final class ViewController: UITableViewController {
     let result = self.results[indexPath.row]
     switch result {
       case .success(let response):
-        cell.textLabel?.text = "[\(response.id)] Response: \(response.body)"
+        cell.textLabel?.text = "[\(response.id)] \(response.body)"
         cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
 
         cell.textLabel?.textColor = .black
         cell.contentView.backgroundColor = .white
         
       case .failure(let error):
-        cell.textLabel?.text = "[\(error.id)] Error: \(error.message)"
-        cell.detailTextLabel?.text = nil
+        cell.textLabel?.text = "[\(error.id)] failed"
+        cell.detailTextLabel?.text = error.message
 
         cell.textLabel?.textColor = .white
         cell.contentView.backgroundColor = .red
