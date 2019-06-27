@@ -232,6 +232,8 @@ stages:
         pool:
           vmImage: 'macos-10.14'
         steps:
+          - checkout: self
+            submodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: cd dist && tar -xvf f.tar.gz && unzip ios_framework.zip && cd ../
