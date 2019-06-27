@@ -7,17 +7,13 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
  * Available logging levels for an Envoy instance. Note some levels may be compiled out.
  */
 enum class LogLevel {
-  Trace,
-  Debug,
-  Info,
-  Warn,
-  Error,
-  Critical,
-  Off;
-
-  override fun toString(): String {
-    return super.toString().toLowerCase()
-  }
+  TRACE("trace"),
+  DEBUG("debug"),
+  INFO("info"),
+  WARN("warn"),
+  ERROR("error"),
+  CRITICAL("critical"),
+  OFF("off");
 }
 
 /**
