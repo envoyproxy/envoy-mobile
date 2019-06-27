@@ -177,7 +177,7 @@ stages:
         steps:
           - checkout: self
             submodules: true
-          - script: avdmanager create avd -n kotlin_app -k "system-images;android-24;default;x86_64" -g "default"
+          - script: android create avd -n kotlin_app -k "system-images;android-24;default;x86_64" -g "default"
           - script: emulator -list-avds
   # - stage: ios
   #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
