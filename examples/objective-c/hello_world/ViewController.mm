@@ -160,13 +160,15 @@ NSString *_ENDPOINT = @"http://localhost:9001/api.lyft.com/static/demo/hello_wor
         [NSString stringWithFormat:@"'Server' header: %@", result.serverHeader];
 
     cell.textLabel.textColor = [UIColor blackColor];
+    cell.detailTextLabel.textColor = [UIColor blackColor];
     cell.contentView.backgroundColor = [UIColor whiteColor];
   } else {
     cell.textLabel.text =
-        [NSString stringWithFormat:@"[%d] failed", result.identifier];
+        [NSString stringWithFormat:@"[%d]", result.identifier];
     cell.detailTextLabel.text = result.error;
 
     cell.textLabel.textColor = [UIColor whiteColor];
+    cell.detailTextLabel.textColor = [UIColor whiteColor];
     cell.contentView.backgroundColor = [UIColor redColor];
   }
 

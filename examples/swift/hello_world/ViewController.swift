@@ -104,13 +104,15 @@ final class ViewController: UITableViewController {
         cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
 
         cell.textLabel?.textColor = .black
+        cell.detailTextLabel?.textColor = .black
         cell.contentView.backgroundColor = .white
         
       case .failure(let error):
-        cell.textLabel?.text = "[\(error.id)] failed"
+        cell.textLabel?.text = "[\(error.id)]"
         cell.detailTextLabel?.text = error.message
 
         cell.textLabel?.textColor = .white
+        cell.detailTextLabel?.textColor = .white
         cell.contentView.backgroundColor = .red
     }
     return cell
