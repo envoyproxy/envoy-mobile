@@ -234,5 +234,5 @@ stages:
         steps:
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: cd dist && tar -xvf f.tar.gz && unzip ios_framework.zip
+          - script: cd dist && tar -xvf f.tar.gz && unzip ios_framework.zip && cd ../
           - script: bazel run --config=ios //examples/swift/hello_world:app
