@@ -22,8 +22,8 @@ aar_with_jni(
 kt_android_library(
     name = "android_lib",
     srcs = [
-        "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_srcs",
         "kotlin/io/envoyproxy/envoymobile/Envoy.kt",
+        "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_srcs",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "kotlin/io/envoyproxy/envoymobile/EnvoyManifest.xml",
