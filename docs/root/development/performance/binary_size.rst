@@ -54,18 +54,19 @@ The binary is getting built with the following build command::
 
   bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
 
-Thus the binary is compiled with the following flags:
+Thus the binary is compiled with the following flags pertinent to reducing
+binary size:
 
 .. _envoy_docs: https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#enabling-optional-features
 
-1. ``-c opt``: bazel compilation option for size optimization.
-2. ``--copt -Os``: optimize for size.
-3. ``--copt=-ggdb3``: keep debug symbols. Later stripped with ``strip``
-4. ``--linkopt=-fuse-ld=lld``: use the lld linker.
-5. ``--define=google_grpc=disabled``: more info in the `envoy docs <envoy_docs>`_.
-6. ``--define=signal_trace=disabled``: more info in the `envoy docs <envoy_docs>`_.
-7. ``--define=tcmalloc=disabled``: more info in the `envoy docs <envoy_docs>`_.
-8. ``--define=hot_restart=disabled``: more info in the `envoy docs <envoy_docs>`_.
+1. ``-c opt``: bazel compilation option for size optimization. Due to ``sizeopt``.
+2. ``--copt -Os``: optimize for size. Due to ``sizeopt``.
+3. ``--copt=-ggdb3``: keep debug symbols. Later stripped with ``strip``. Explicitly added.
+4. ``--linkopt=-fuse-ld=lld``: use the lld linker. Explicitly added.
+5. ``--define=google_grpc=disabled``: more info in the `envoy docs <envoy_docs>`_. Due to the project's ``.bazelrc``.
+6. ``--define=signal_trace=disabled``: more info in the `envoy docs <envoy_docs>`_. Due to the project's ``.bazelrc``.
+7. ``--define=tcmalloc=disabled``: more info in the `envoy docs <envoy_docs>`_. Due to the project's ``.bazelrc``.
+8. ``--define=hot_restart=disabled``: more info in the `envoy docs <envoy_docs>`_. Due to the project's ``.bazelrc``.
 
 After compiling, the binary can be stripped of all symbols by using ``strip``::
 
@@ -150,6 +151,8 @@ expectations.
 
 Current status
 ~~~~~~~~~~~~~~
+
+.. TODO: move this section to a 'releases' docs once we cut 0.2
 
 As of
 https://github.com/lyft/envoy-mobile/tree/f17caebcfce09ec5dcda905dc8418fea4d382da7

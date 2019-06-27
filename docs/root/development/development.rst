@@ -3,7 +3,7 @@
 Development
 ===========
 
-This section of the docs describe information useful to engineers actively
+This section of the docs describes information useful to engineers actively
 developing Envoy Mobile.
 
 .. toctree::
