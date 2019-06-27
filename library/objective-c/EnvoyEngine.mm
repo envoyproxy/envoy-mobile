@@ -4,11 +4,11 @@
 
 @implementation EnvoyEngine
 
-+ (int)runWithConfig:(NSString *config) {
++ (int)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
 
-+ (void)runWithConfig:(NSString *config) logLevel:(NSString *logLevel) {
++ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
   try {
     return run_envoy(config.UTF8String, logLevel.UTF8String);
   } catch (NSException *e) {

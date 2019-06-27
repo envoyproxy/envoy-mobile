@@ -2,9 +2,12 @@ licenses(["notice"])  # Apache 2
 
 objc_library(
     name = "envoy_engine_objc_lib",
+    hdrs = [
+        "EnvoyEngine.h",
+    ],
     srcs = [
-        "Envoy.h",
-        "Envoy.mm",
+        "EnvoyEngine.h",
+        "EnvoyEngine.mm",
     ],
     copts = ["-std=c++14"],
     visibility = ["//visibility:public"],

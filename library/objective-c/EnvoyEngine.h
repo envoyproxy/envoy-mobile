@@ -5,10 +5,10 @@
 
 /// Run the Envoy engine with the provided config and log level. This call is synchronous
 /// and will not yield.
-+ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
++ (int)runWithConfig:(NSString *)config;
 
 /// Run the Envoy engine with the provided config and log level. This call is synchronous
 /// and will not yield.
-+ (int)runWithConfig:(NSString *)config;
++ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
 
 @end

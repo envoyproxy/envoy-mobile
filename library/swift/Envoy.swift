@@ -1,15 +1,15 @@
 import Foundation
-import EnvoyEngine
+import library_objective_c_envoy_engine_objc_lib
 
 public class Envoy {
   private let runner: EnvoyRunner
 
   public var isRunning: Bool {
-    runner.isExecuting()
+    return runner.isExecuting
   }
 
   public var isTerminated: Bool {
-    runner.isFinished()
+    return runner.isFinished
   }
 
   public init(config: String, logLevel: String) {
@@ -30,8 +30,8 @@ public class Envoy {
       self.logLevel = logLevel
     }
 
-    func main() {
-      EngineEngine.run(config: config, logLevel: logLevel)
+    override func main() {
+      EnvoyEngine.run(withConfig: config, logLevel: logLevel)
     }
   }
 }
