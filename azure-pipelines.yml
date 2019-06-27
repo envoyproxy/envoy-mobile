@@ -236,7 +236,9 @@ stages:
             submodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          # - script: npm install -g ios-sim
-          # - script: ios-sim start "iPhone-X, 12.2"
+          - script: npm install -g ios-sim
+          - script: ios-sim start "iPhone-X, 12.2"
           - script: cd dist && tar -xvf f.tar.gz && unzip ios_framework.zip && cd ../
-          - script: bazel run -s --config=ios //examples/swift/hello_world:app
+          - script: bazel run -s --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
+          - script: expect -c "set echo \"-noecho\"; set timeout 120; spawn -noecho \"tail -f /tmp/envoy.log | grep 'Hello, world!'\"; expect timeout { exit 1 } eof { exit 0 }"
+          - script: cat /tmp/envoy.log
