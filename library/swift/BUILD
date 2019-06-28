@@ -1,9 +1,9 @@
 licenses(["notice"])  # Apache 2
 
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-load("//bazel:swift_static_framework.bzl", "prebuilt_swift_static_framework")
+load("//bazel:swift_static_framework.bzl", "swift_static_framework")
 
-prebuilt_swift_static_framework(
+swift_static_framework(
     name = "swift_framework",
     srcs = ["Envoy.swift"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"]
