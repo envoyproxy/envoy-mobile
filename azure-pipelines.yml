@@ -61,17 +61,12 @@ stages:
       - job: size_current
         timeoutInMinutes: 60
         pool:
-          vmImage: 'Ubuntu 16.04'
+          vmImage: 'macos-10.14'
         steps:
           - checkout: self
             submodules: true
-          - script: ./ci/linux_ci_setup.sh
+          - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: |
-              export PATH=/usr/lib/llvm-8/bin:$PATH
-              export CC=clang
-              export CXX=clang++
-            displayName: 'Set up clang toolchain'
           - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
             displayName: 'Build test binary'
           - script: |
@@ -86,19 +81,12 @@ stages:
       - job: size_master
         timeoutInMinutes: 60
         pool:
-          vmImage: 'Ubuntu 16.04'
+          vmImage: 'macos-10.14'
         steps:
           - checkout: self
             submodules: true
-          - script: git checkout master
-            displayName: 'Switch to master'
-          - script: ./ci/linux_ci_setup.sh
+          - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: |
-              export PATH=/usr/lib/llvm-8/bin:$PATH
-              export CC=clang
-              export CXX=clang++
-            displayName: 'Set up clang toolchain'
           - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
             displayName: 'Build test binary'
           - script: |
@@ -118,8 +106,6 @@ stages:
         pool:
           vmImage: 'Ubuntu 16.04'
         steps:
-          - checkout: self
-            submodules: true
           - task: DownloadPipelineArtifact@0
             displayName: 'Download current test binary'
             inputs:
