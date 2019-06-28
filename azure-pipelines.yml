@@ -72,7 +72,7 @@ stages:
               export CC=clang
               export CXX=clang++
             displayName: 'Set up clang toolchain'
-          - script: bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
+          - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
             displayName: 'Build test binary'
           - script: |
               strip -s zip -b current.zip bazel-bin/test/performance/test_binary_size.stripped
@@ -99,7 +99,7 @@ stages:
               export CC=clang
               export CXX=clang++
             displayName: 'Set up clang toolchain'
-          - script: bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
+          - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
             displayName: 'Build test binary'
           - script: |
               strip -s zip -b master.zip bazel-bin/test/performance/test_binary_size.stripped
