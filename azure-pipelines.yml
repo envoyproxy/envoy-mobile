@@ -46,3 +46,4 @@ stages:
               $ANDROID_HOME/platform-tools/adb devices
             displayName: 'start Android emulator'
           - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
+          - script: adb logcat -e "successful response!"
