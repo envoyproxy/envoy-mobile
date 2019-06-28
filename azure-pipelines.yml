@@ -99,11 +99,8 @@ stages:
             inputs:
               artifactName: 'envoy-linux.aar'
               targetPath: dist
-          - template: ci/templates/start_android_emulator.yaml
-          - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
-            displayName: 'Start java app'
-          - script: adb logcat -e "successful response!" -m 1
-            displayName: 'Check liveliness'
+          - script: bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+            displayName: 'Build java app'
       - job: linux_kotlin_helloworld
         dependsOn: linux_dist
         timeoutInMinutes: 60
@@ -121,11 +118,8 @@ stages:
             inputs:
               artifactName: 'envoy-linux.aar'
               targetPath: dist
-          - template: ci/templates/start_android_emulator.yaml
-          - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
-            displayName: 'Start kotlin app'
-          - script: adb logcat -e "successful response!" -m 1
-            displayName: 'Check liveliness'
+          - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+            displayName: 'Build kotlin app'
       - job: mac_dist
         timeoutInMinutes: 60
         pool:
