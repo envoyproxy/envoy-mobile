@@ -3,8 +3,9 @@
 Analysis of CPU impact
 ======================
 
-Getting a build
+Getting the data
 ~~~~~~~~~~~~~~~
+We currently are using the example hello world applications for
 
 Analysis
 ~~~~~~~~
