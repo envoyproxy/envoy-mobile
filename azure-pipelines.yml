@@ -77,7 +77,7 @@ stages:
           - script: |
               strip -s zip -b current.zip bazel-bin/test/performance/test_binary_size.stripped
               bazel-bin/test/performance/test_binary_size.stripped
-          - displayName: 'Strip and Zip binary'
+            displayName: 'Strip and Zip binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish current test binary'
             inputs:
@@ -104,7 +104,7 @@ stages:
           - script: |
               strip -s zip -b master.zip bazel-bin/test/performance/test_binary_size.stripped
               bazel-bin/test/performance/test_binary_size.stripped
-          - displayName: 'Strip and Zip binary'
+            displayName: 'Strip and Zip binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish master test binary'
             inputs:
