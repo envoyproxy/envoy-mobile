@@ -67,7 +67,7 @@ stages:
             submodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
+          - script: CC=clang  CXX=clang++ PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
             displayName: 'Build test binary'
           - script: |
               strip -s zip -b current.zip bazel-bin/test/performance/test_binary_size.stripped
@@ -87,7 +87,7 @@ stages:
             submodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
+          - script: CC=clang  CXX=clang++ PATH="/usr/local/opt/llvm/bin:$PATH" LDFLAGS="-L/usr/local/opt/llvm/lib" bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
             displayName: 'Build test binary'
           - script: |
               strip -s zip -b master.zip bazel-bin/test/performance/test_binary_size.stripped
