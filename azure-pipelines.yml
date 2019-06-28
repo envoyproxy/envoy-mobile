@@ -67,3 +67,9 @@ stages:
             inputs:
               artifactName: 'current.zip'
               targetPath: dist
+          - task: DownloadPipelineArtifact@0
+            displayName: 'Download master test binary'
+            inputs:
+              artifactName: 'master.zip'
+              targetPath: dist
+          - script: ./ci/test_binary_size.sh dist/master.zip dist/current.zip
