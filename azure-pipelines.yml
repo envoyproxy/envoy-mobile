@@ -23,7 +23,6 @@ stages:
             submodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: ls -lh /usr/local/opt/llvm/bin
           - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
             displayName: 'Build test binary'
           - script: |

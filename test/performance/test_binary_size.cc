@@ -1,4 +1,4 @@
-#include "main_interface.h"
+#include "library/common/main_interface.h"
 
 // NOLINT(namespace-envoy)
 
