@@ -26,8 +26,6 @@ do
     is_installed "${DEP}" || install "${DEP}"
 done
 
-brew install llvm
-
 # Install bazel manually until https://github.com/bazelbuild/continuous-integration/issues/128 is fixed.
 # Otherwise we always pull the latest release automatically.
 wget -c https://github.com/bazelbuild/bazel/releases/download/0.26.1/bazel-0.26.1-installer-darwin-x86_64.sh
