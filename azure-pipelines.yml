@@ -26,8 +26,8 @@ stages:
           - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
             displayName: 'Build test binary'
           - script: |
-              strip -s zip -b current.zip bazel-bin/test/performance/test_binary_size.stripped
-              bazel-bin/test/performance/test_binary_size.stripped
+              strip -s -o bazel-bin/test/performance/test_binary_size.stripped bazel-bin/test/performance/test_binary_size
+              zip -9 current.zip bazel-bin/test/performance/test_binary_size.stripped
             displayName: 'Strip and Zip binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish current test binary'
@@ -46,8 +46,8 @@ stages:
           - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
             displayName: 'Build test binary'
           - script: |
-              strip -s zip -b master.zip bazel-bin/test/performance/test_binary_size.stripped
-              bazel-bin/test/performance/test_binary_size.stripped
+              strip -s -o bazel-bin/test/performance/test_binary_size.stripped bazel-bin/test/performance/test_binary_size
+              zip -9 master.zip bazel-bin/test/performance/test_binary_size.stripped
             displayName: 'Strip and Zip binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish master test binary'
