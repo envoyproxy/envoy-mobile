@@ -21,15 +21,15 @@ stages:
         steps:
           - checkout: self
             submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
-            displayName: 'Build test binary'
+          # - script: ./ci/mac_ci_setup.sh
+          #   displayName: 'Install dependencies'
+          # - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
+            # displayName: 'Build test binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish current test binary'
             inputs:
               artifactName: 'current'
-              targetPath: bazel-bin/test/performance/test_binary_size
+              targetPath: bin/current/test_binary_size
       - job: size_master
         timeoutInMinutes: 60
         pool:
@@ -37,15 +37,15 @@ stages:
         steps:
           - checkout: self
             submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
-            displayName: 'Build test binary'
+          # - script: ./ci/mac_ci_setup.sh
+          #   displayName: 'Install dependencies'
+          # - script: CC=clang  CXX=clang++ bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3
+          #   displayName: 'Build test binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish master test binary'
             inputs:
               artifactName: 'master'
-              targetPath: bazel-bin/test/performance/test_binary_size
+              targetPath: bin/current/test_binary_size
       - job: size_compare
         dependsOn:
           - size_current
@@ -65,6 +65,9 @@ stages:
               artifactName: 'master'
               targetPath: dist
           - script: |
+              ls -lh dist
+              ls -lh dist/master
+              ls -lh dist/current
               strip -s -o dist/master.stripped dist/master/test_binary_size
               zip -9 dist/master.zip dist/master.stripped
               strip -s -o dist/current.stripped dist/current/test_binary_size
