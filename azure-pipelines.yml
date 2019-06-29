@@ -65,9 +65,9 @@ stages:
               artifactName: 'master'
               targetPath: dist
           - script: |
-              strip -s -o dist/master.stripped dist/master
+              strip -s -o dist/master.stripped dist/master/test_binary_size
               zip -9 dist/master.zip dist/master.stripped
-              strip -s -o dist/current.stripped dist/current
+              strip -s -o dist/current.stripped dist/current/test_binary_size
               zip -9 dist/current.zip dist/current.stripped
             displayName: 'Strip and Zip binary'
           - script: ./ci/test_binary_size.sh dist/master.zip dist/current.zip
