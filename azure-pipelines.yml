@@ -54,16 +54,17 @@ stages:
         pool:
           vmImage: 'Ubuntu 16.04'
         steps:
+          - script: mkdir -p dist/master && mkdir -p dist/current
           - task: DownloadPipelineArtifact@0
             displayName: 'Download current test binary'
             inputs:
               artifactName: 'current'
-              targetPath: dist
+              targetPath: dist/current
           - task: DownloadPipelineArtifact@0
             displayName: 'Download master test binary'
             inputs:
               artifactName: 'master'
-              targetPath: dist
+              targetPath: dist/master
           - script: |
               ls -lh dist
               ls -lh dist/master
