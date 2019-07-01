@@ -87,6 +87,7 @@ stages:
         steps:
           - checkout: self
             submodules: true
+          - script: git checkout master && git pull origin master
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
           - script: bazel build //test/performance:test_binary_size --config=sizeopt
@@ -121,7 +122,7 @@ stages:
               zip -9 dist/master.zip dist/master/test_binary_size.stripped
               zip -9 dist/current.zip dist/current/test_binary_size
             displayName: 'Zip binary'
-          - script: ./ci/test_binary_size.sh dist/master.zip dist/current.zip
+          - script: ./ci/test_size_regression.sh dist/master.zip dist/current.zip
   # - stage: android
   #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
   #   jobs:
