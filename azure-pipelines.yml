@@ -11,50 +11,50 @@ trigger:
 - master
 
 stages:
-  - stage: format
-    dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
-    jobs:
-      - job: all_lint
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        container: envoy-container
-        variables:
-          buildifier_bin: /usr/local/bin/buildifier
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./tools/check_format.sh
-            displayName: 'Run formatters'
-      - job: precommit_lint
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-          - script: brew install pre-commit
-            displayName: 'Install pre-commit'
-          - script: pre-commit run --all-files
-            displayName: 'Running pre-commit'
-      - job: swift_lint
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        container: swiftlint-container
-        steps:
-          - checkout: self
-            submodules: true
-          - script: swiftlint lint --strict
-            displayName: 'Run SwiftLint'
-      - job: kotlin_lint
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        container: jdk8
-        steps:
-          - checkout: self
-          - script: ./ci/kotlin_lint.sh
-            displayName: 'Run Kotlin lint'
+  # - stage: format
+  #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
+  #   jobs:
+  #     - job: all_lint
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'Ubuntu 16.04'
+  #       container: envoy-container
+  #       variables:
+  #         buildifier_bin: /usr/local/bin/buildifier
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./tools/check_format.sh
+  #           displayName: 'Run formatters'
+  #     - job: precommit_lint
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #         - script: brew install pre-commit
+  #           displayName: 'Install pre-commit'
+  #         - script: pre-commit run --all-files
+  #           displayName: 'Running pre-commit'
+  #     - job: swift_lint
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'Ubuntu 16.04'
+  #       container: swiftlint-container
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: swiftlint lint --strict
+  #           displayName: 'Run SwiftLint'
+  #     - job: kotlin_lint
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'Ubuntu 16.04'
+  #       container: jdk8
+  #       steps:
+  #         - checkout: self
+  #         - script: ./ci/kotlin_lint.sh
+  #           displayName: 'Run Kotlin lint'
   # Note: the size regression jobs are not ideal.
   # The size analysis described in the docs was ran on arm64 machines.
   # The binary size represented here is larger than that produced in arm64.
@@ -122,213 +122,213 @@ stages:
               zip -9 dist/current.zip dist/current/test_binary_size
             displayName: 'Zip binary'
           - script: ./ci/test_binary_size.sh dist/master.zip dist/current.zip
-  - stage: android
-    dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
-    jobs:
-      - job: linux_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        variables:
-          android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/linux_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: |
-              export PATH=/usr/lib/llvm-8/bin:$PATH
-              export CC=clang
-              export CXX=clang++
-            displayName: 'Set up clang toolchain'
-          - script: |
-              bazel build --fat_apk_cpu=x86 //:android_dist
-            displayName: 'Build envoy.aar distributable'
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish envoy.aar distributable'
-            inputs:
-              artifactName: 'envoy-linux.aar'
-              targetPath: 'dist/envoy.aar'
-      - job: linux_java_helloworld
-        dependsOn: linux_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        variables:
-          android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/linux_ci_setup.sh
-            displayName: 'Install dependencies'
-          - task: DownloadPipelineArtifact@0
-            displayName: 'Download envoy.aar distributable'
-            inputs:
-              artifactName: 'envoy-linux.aar'
-              targetPath: dist
-          - script: bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
-            displayName: 'Build java app'
-      - job: linux_kotlin_helloworld
-        dependsOn: linux_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'Ubuntu 16.04'
-        variables:
-          android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/linux_ci_setup.sh
-            displayName: 'Install dependencies'
-          - task: DownloadPipelineArtifact@0
-            displayName: 'Download envoy.aar distributable'
-            inputs:
-              artifactName: 'envoy-linux.aar'
-              targetPath: dist
-          - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
-            displayName: 'Build kotlin app'
-      - job: mac_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: bazel build --fat_apk_cpu=x86 //:android_dist
-            displayName: 'Build envoy.aar distributable'
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish envoy.aar distributable'
-            inputs:
-              artifactName: 'envoy-mac.aar'
-              targetPath: 'dist/envoy.aar'
-      - job: mac_java_helloworld
-        dependsOn: mac_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - task: DownloadPipelineArtifact@0
-            displayName: 'Download envoy.aar distributable'
-            inputs:
-              artifactName: 'envoy-mac.aar'
-              targetPath: dist
-          - template: ci/templates/start_android_emulator.yaml
-          - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
-            displayName: 'Start java app'
-          - script: adb logcat -e "successful response!" -m 1
-            displayName: 'Check liveliness'
-      - job: mac_kotlin_helloworld
-        dependsOn: mac_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - task: DownloadPipelineArtifact@0
-            displayName: 'Download envoy.aar distributable'
-            inputs:
-              artifactName: 'envoy-mac.aar'
-              targetPath: dist
-          - template: ci/templates/start_android_emulator.yaml
-          - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
-            displayName: 'Start kotlin app'
-          - script: adb logcat -e "successful response!" -m 1
-            displayName: 'Check liveliness'
-  - stage: ios
-    dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
-    jobs:
-      - job: mac_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: bazel build --config=ios //:ios_dist
-            displayName: 'Build Envoy.framework distributable'
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish Envoy.framework distributable'
-            inputs:
-              artifactName: 'Envoy.framework'
-              targetPath: 'dist/Envoy.framework'
-      - job: mac_objc_helloworld
-        dependsOn: mac_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: mkdir -p dist/Envoy.framework
-            displayName: 'Create directory for distributable'
-          - task: DownloadPipelineArtifact@0
-            displayName: 'Download Envoy.framework distributable'
-            inputs:
-              artifactName: Envoy.framework
-              targetPath: dist/Envoy.framework
-          - script: bazel build --config=ios //examples/objective-c/hello_world:app
-            displayName: 'Build objective-c app'
-          # Now check that the app actually runs on the simulator.
-          # This is a non-ideal way to check for liveliness, but works for now.
-          # First start the iOS simulator.
-          # Interestingly bazel run does not start the simulator in CI.
-          # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
-          - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
-            displayName: 'Start the iOS simulator'
-          # Run the app in the background and redirect logs.
-          - script: bazel run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
-            displayName: 'Run objective-c app'
-          # Wait for the app to start and get some requests/responses.
-          - script: sleep 60
-            displayName: 'Sleep'
-          # Check for the sentinel value that shows the app is alive and well.
-          - script: cat /tmp/envoy.log | grep 'Hello, world!'
-            displayName: 'Check liveliness'
-      - job: mac_swift_helloworld
-        dependsOn: mac_dist
-        timeoutInMinutes: 60
-        pool:
-          vmImage: 'macos-10.14'
-        steps:
-          - checkout: self
-            submodules: true
-          - script: ./ci/mac_ci_setup.sh
-            displayName: 'Install dependencies'
-          - script: mkdir -p dist/Envoy.framework
-            displayName: 'Create directory for distributable'
-          - task: DownloadPipelineArtifact@0
-            displayName: 'Download Envoy.framework distributable'
-            inputs:
-              artifactName: Envoy.framework
-              targetPath: dist/Envoy.framework
-          - script: bazel build --config=ios //examples/swift/hello_world:app
-            displayName: 'Build swift app'
-          # Now check that the app actually runs on the simulator.
-          # This is a non-ideal way to check for liveliness, but works for now.
-          # First start the iOS simulator.
-          # Interestingly bazel run does not start the simulator in CI.
-          # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
-          - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
-            displayName: 'Start the iOS simulator'
-          # Run the app in the background and redirect logs.
-          - script: bazel run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
-            displayName: 'Run swift app'
-          # Wait for the app to start and get some requests/responses.
-          - script: sleep 60
-            displayName: 'Sleep'
-          # Check for the sentinel value that shows the app is alive and well.
-          - script: cat /tmp/envoy.log | grep 'Hello, world!'
-            displayName: 'Check liveliness'
+  # - stage: android
+  #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
+  #   jobs:
+  #     - job: linux_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'Ubuntu 16.04'
+  #       variables:
+  #         android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/linux_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - script: |
+  #             export PATH=/usr/lib/llvm-8/bin:$PATH
+  #             export CC=clang
+  #             export CXX=clang++
+  #           displayName: 'Set up clang toolchain'
+  #         - script: |
+  #             bazel build --fat_apk_cpu=x86 //:android_dist
+  #           displayName: 'Build envoy.aar distributable'
+  #         - task: PublishPipelineArtifact@0
+  #           displayName: 'Publish envoy.aar distributable'
+  #           inputs:
+  #             artifactName: 'envoy-linux.aar'
+  #             targetPath: 'dist/envoy.aar'
+  #     - job: linux_java_helloworld
+  #       dependsOn: linux_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'Ubuntu 16.04'
+  #       variables:
+  #         android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/linux_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - task: DownloadPipelineArtifact@0
+  #           displayName: 'Download envoy.aar distributable'
+  #           inputs:
+  #             artifactName: 'envoy-linux.aar'
+  #             targetPath: dist
+  #         - script: bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+  #           displayName: 'Build java app'
+  #     - job: linux_kotlin_helloworld
+  #       dependsOn: linux_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'Ubuntu 16.04'
+  #       variables:
+  #         android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/linux_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - task: DownloadPipelineArtifact@0
+  #           displayName: 'Download envoy.aar distributable'
+  #           inputs:
+  #             artifactName: 'envoy-linux.aar'
+  #             targetPath: dist
+  #         - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+  #           displayName: 'Build kotlin app'
+  #     - job: mac_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/mac_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - script: bazel build --fat_apk_cpu=x86 //:android_dist
+  #           displayName: 'Build envoy.aar distributable'
+  #         - task: PublishPipelineArtifact@0
+  #           displayName: 'Publish envoy.aar distributable'
+  #           inputs:
+  #             artifactName: 'envoy-mac.aar'
+  #             targetPath: 'dist/envoy.aar'
+  #     - job: mac_java_helloworld
+  #       dependsOn: mac_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/mac_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - task: DownloadPipelineArtifact@0
+  #           displayName: 'Download envoy.aar distributable'
+  #           inputs:
+  #             artifactName: 'envoy-mac.aar'
+  #             targetPath: dist
+  #         - template: ci/templates/start_android_emulator.yaml
+  #         - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+  #           displayName: 'Start java app'
+  #         - script: adb logcat -e "successful response!" -m 1
+  #           displayName: 'Check liveliness'
+  #     - job: mac_kotlin_helloworld
+  #       dependsOn: mac_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/mac_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - task: DownloadPipelineArtifact@0
+  #           displayName: 'Download envoy.aar distributable'
+  #           inputs:
+  #             artifactName: 'envoy-mac.aar'
+  #             targetPath: dist
+  #         - template: ci/templates/start_android_emulator.yaml
+  #         - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
+  #           displayName: 'Start kotlin app'
+  #         - script: adb logcat -e "successful response!" -m 1
+  #           displayName: 'Check liveliness'
+  # - stage: ios
+  #   dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
+  #   jobs:
+  #     - job: mac_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/mac_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - script: bazel build --config=ios //:ios_dist
+  #           displayName: 'Build Envoy.framework distributable'
+  #         - task: PublishPipelineArtifact@0
+  #           displayName: 'Publish Envoy.framework distributable'
+  #           inputs:
+  #             artifactName: 'Envoy.framework'
+  #             targetPath: 'dist/Envoy.framework'
+  #     - job: mac_objc_helloworld
+  #       dependsOn: mac_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/mac_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - script: mkdir -p dist/Envoy.framework
+  #           displayName: 'Create directory for distributable'
+  #         - task: DownloadPipelineArtifact@0
+  #           displayName: 'Download Envoy.framework distributable'
+  #           inputs:
+  #             artifactName: Envoy.framework
+  #             targetPath: dist/Envoy.framework
+  #         - script: bazel build --config=ios //examples/objective-c/hello_world:app
+  #           displayName: 'Build objective-c app'
+  #         # Now check that the app actually runs on the simulator.
+  #         # This is a non-ideal way to check for liveliness, but works for now.
+  #         # First start the iOS simulator.
+  #         # Interestingly bazel run does not start the simulator in CI.
+  #         # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
+  #         - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
+  #           displayName: 'Start the iOS simulator'
+  #         # Run the app in the background and redirect logs.
+  #         - script: bazel run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
+  #           displayName: 'Run objective-c app'
+  #         # Wait for the app to start and get some requests/responses.
+  #         - script: sleep 60
+  #           displayName: 'Sleep'
+  #         # Check for the sentinel value that shows the app is alive and well.
+  #         - script: cat /tmp/envoy.log | grep 'Hello, world!'
+  #           displayName: 'Check liveliness'
+  #     - job: mac_swift_helloworld
+  #       dependsOn: mac_dist
+  #       timeoutInMinutes: 60
+  #       pool:
+  #         vmImage: 'macos-10.14'
+  #       steps:
+  #         - checkout: self
+  #           submodules: true
+  #         - script: ./ci/mac_ci_setup.sh
+  #           displayName: 'Install dependencies'
+  #         - script: mkdir -p dist/Envoy.framework
+  #           displayName: 'Create directory for distributable'
+  #         - task: DownloadPipelineArtifact@0
+  #           displayName: 'Download Envoy.framework distributable'
+  #           inputs:
+  #             artifactName: Envoy.framework
+  #             targetPath: dist/Envoy.framework
+  #         - script: bazel build --config=ios //examples/swift/hello_world:app
+  #           displayName: 'Build swift app'
+  #         # Now check that the app actually runs on the simulator.
+  #         # This is a non-ideal way to check for liveliness, but works for now.
+  #         # First start the iOS simulator.
+  #         # Interestingly bazel run does not start the simulator in CI.
+  #         # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
+  #         - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
+  #           displayName: 'Start the iOS simulator'
+  #         # Run the app in the background and redirect logs.
+  #         - script: bazel run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
+  #           displayName: 'Run swift app'
+  #         # Wait for the app to start and get some requests/responses.
+  #         - script: sleep 60
+  #           displayName: 'Sleep'
+  #         # Check for the sentinel value that shows the app is alive and well.
+  #         - script: cat /tmp/envoy.log | grep 'Hello, world!'
+  #           displayName: 'Check liveliness'
