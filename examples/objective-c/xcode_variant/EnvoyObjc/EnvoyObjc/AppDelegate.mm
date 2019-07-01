@@ -4,6 +4,7 @@
 #import "ViewController.h"
 
 @interface AppDelegate ()
+@property (nonatomic, strong) Envoy *envoy;
 @end
 
 @implementation AppDelegate
@@ -30,7 +31,7 @@
     // as needed. Whatever code in the initialization path that fails is expected to log an error
     // message so the user can diagnose.
     try {
-        run_envoy(configYaml.UTF8String);
+        self.envoy = [[Envoy alloc] initWithConfig:configYaml logLevel:EnvoyLogLevelTrace];
     } catch (NSException *e) {
         NSLog(@"Error starting Envoy: %@", e);
         exit(EXIT_FAILURE);
