@@ -104,6 +104,7 @@ _swift_static_framework = rule(
 
 def swift_static_framework(
         name,
+        module_name = None,
         srcs = [],
         copts = [],
         deps = []):
@@ -117,18 +118,19 @@ def swift_static_framework(
         deps: Any deps the swift_library requires
     """
     srcs = srcs or native.glob(["Sources/**/*.swift"])
+    archive_name = name + "_archive"
+    module_name = module_name or name + "_framework"
     swift_library(
-        name = name,
-        module_name = name,
+        name = archive_name,
+        module_name = module_name,
         srcs = srcs,
         copts = copts,
         deps = deps,
         visibility = ["//visibility:public"],
     )
 
-    framework_name = name + "Framework"
     _swift_static_framework(
-        name = framework_name,
-        framework_name = name,
-        archive = name,
+        name = name,
+        framework_name = module_name,
+        archive = archive_name,
     )

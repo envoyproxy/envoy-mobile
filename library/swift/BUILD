@@ -5,6 +5,7 @@ load("//bazel:swift_static_framework.bzl", "swift_static_framework")
 
 swift_static_framework(
     name = "swift_framework",
+    module_name = "Envoy",
     srcs = ["Envoy.swift"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"]
 )

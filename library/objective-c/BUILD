@@ -6,7 +6,6 @@ objc_library(
         "EnvoyEngine.h",
     ],
     srcs = [
-        "EnvoyEngine.h",
         "EnvoyEngine.mm",
     ],
     copts = ["-std=c++14"],
