@@ -1,6 +1,10 @@
 # Envoy config used by the example applications.
 # More information about Envoy's config can be found at:
 # https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
+watchdog:
+  miss_timeout: 60s
+  megamiss_timeout: 60s
+stats_flush_interval: 60s
 static_resources:
   listeners:
     - address:
@@ -22,6 +26,7 @@ static_resources:
   clusters:
     - name: hello_world_api
       connect_timeout: 30s
+      dns_refresh_rate: 60s
       dns_lookup_family: V4_ONLY
       lb_policy: ROUND_ROBIN
       load_assignment:
