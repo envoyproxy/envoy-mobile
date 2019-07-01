@@ -37,7 +37,7 @@ Experiment steps:
 2. Unplug the phone from any power source
 3. Open up the demo app
 4. Wait for the phone to sleep
-6. Look at the battery drain the battery settings in the phone to see the battery usage and drainage
+5. Look at the battery drain the battery settings in the phone to see the battery usage and drainage
 
 Alternative profiling methods tried:
 
