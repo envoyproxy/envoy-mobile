@@ -73,9 +73,11 @@ Android
 -------
 
 The results of this experiment is surprising since we should expect Envoy to use more battery than the control by a
-large margin. One explanation is that Envoy is running on its own native thread and the Android application is unable
-to associate the Envoy process to the Android application. This theory would be consistent with how we are using Envoy
-today because at the application layer, it is no different between the control application and the Envoy application.
+large margin.
+
+One explanation is that Envoy is running on its own native thread and the Android application is unable
+to associate the Envoy process to the Android application. However, when looking at the treads and CPU usage (via `adb shell top`),
+we are unable to observe another thread taking up CPU other than the running Envoy application.
 
 Open issues regarding battery usage
 -----------------------------------
