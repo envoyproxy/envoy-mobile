@@ -5,7 +5,7 @@ static_framework_import
 
 load("@build_bazel_rules_swift//swift:swift.bzl", "SwiftInfo", "swift_library")
 
-MINIMUM_IOS_VERSION = "11.0"
+MINIMUM_IOS_VERSION = "10.0"
 
 _PLATFORM_TO_SWIFTMODULE = {
     "ios_armv7": "arm",
@@ -107,7 +107,8 @@ def swift_static_framework(
         module_name = None,
         srcs = [],
         copts = [],
-        deps = []):
+        deps = [],
+        visibility = []):
     """Create a static library, and static framework target for a swift module
 
     Args:
@@ -117,7 +118,6 @@ def swift_static_framework(
         copts: Any custom swiftc opts passed through to the swift_library
         deps: Any deps the swift_library requires
     """
-    srcs = srcs or native.glob(["Sources/**/*.swift"])
     archive_name = name + "_archive"
     module_name = module_name or name + "_framework"
     swift_library(
@@ -133,4 +133,5 @@ def swift_static_framework(
         name = name,
         framework_name = module_name,
         archive = archive_name,
+        visibility = visibility,
     )
