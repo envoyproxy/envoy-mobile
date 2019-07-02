@@ -126,10 +126,10 @@ Envoy had a reasonable increase in memory usage of a few megabytes compared to c
 CPU/battery usage, however, was much higher. After some digging, the largest contributor to this usage
 was :issue:`identified as a poller <113#issuecomment-505676324>`_.
 
-Upon further investigation, the `root cause was determined <https://github.com/lyft/envoy-mobile/issues/113#issuecomment-507425528>`_
+Upon further investigation, the :issue:`root cause was determined <113#issuecomment-507425528>`_
 to be that ``poll_dispatch`` was being used by ``libevent`` instead of the much more performant ``kqueue``.
 Forcing ``libevent`` to use ``kqueue`` reduced the CPU usage **from >= 100% down to ~3%**.
-This issue and the subsequent fix are being tracked `here <https://github.com/lyft/envoy-mobile/issues/215>`_.
+This issue and the subsequent fix are being tracked :issue:`here <215>`_.
 
 :issue:`We used Wireshark <113#issuecomment-505673869>`_ to validate that
 network traffic was flowing through Envoy on the phone every ``200ms``, giving us confidence that there was
