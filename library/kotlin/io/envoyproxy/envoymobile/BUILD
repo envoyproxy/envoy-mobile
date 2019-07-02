@@ -1,14 +1,14 @@
 licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 
 envoy_package()
 
 aar_with_jni(
     name = "android_aar",
-    android_library = "//library:android_lib",
+    android_library = "envoy_lib",
     archive_name = "envoy",
     visibility = ["//visibility:public"],
 )
@@ -20,22 +20,13 @@ aar_with_jni(
 #  To get around this, we have to redeclare the sources from envoy_engine_lib here in order to be pulled into the
 #  kotlin jar.
 kt_android_library(
-    name = "android_lib",
+    name = "envoy_lib",
     srcs = [
-        "java/io/envoyproxy/envoymobile/engine/EnvoyEngine.java",
-        "kotlin/io/envoyproxy/envoymobile/Envoy.kt",
+        "Envoy.kt",
+        "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_srcs",
     ],
     custom_package = "io.envoyproxy.envoymobile",
-    manifest = "kotlin/io/envoyproxy/envoymobile/EnvoyManifest.xml",
+    manifest = "EnvoyManifest.xml",
     visibility = ["//visibility:public"],
-    deps = ["envoy_engine_lib"],
-)
-
-android_library(
-    name = "envoy_engine_lib",
-    srcs = ["java/io/envoyproxy/envoymobile/engine/EnvoyEngine.java"],
-    custom_package = "io.envoyproxy.envoymobile.engine",
-    manifest = "java/io/envoyproxy/envoymobile/engine/EnvoyEngineManifest.xml",
-    visibility = ["//visibility:public"],
-    deps = ["//library/common:envoy_jni_interface_lib"],
+    deps = ["//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib"],
 )
