@@ -79,6 +79,9 @@ we are able to see:
 2. DNS resolution does happen every 5 seconds
 3. Stats are flushed every 5 seconds
 
+The DNS resolution and stats flush happening every 5 seconds was a concern but updating the frequency to 1 minute, we
+did not notice a big change.
+
 Open issues regarding battery usage
 -----------------------------------
 
