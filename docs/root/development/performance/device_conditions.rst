@@ -1,4 +1,4 @@
-.. _dev_device_conditions:
+.. _dev_performance_device_conditions:
 
 Analysis of device conditions
 =============================
