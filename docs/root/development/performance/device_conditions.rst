@@ -1,4 +1,4 @@
-.. _device_conditions:
+.. _dev_device_conditions:
 
 Analysis of device conditions
 =============================
@@ -65,6 +65,13 @@ The initial experiment was done purely by looking at the results shown on the UI
 succeed after some time. To be certain that what we observed in the high level experiment were valid, we enabled ``trace``
 level logging within Envoy to ensure Envoy is getting the requests back.
 
+Current status
+~~~~~~~~~~~~~~
+
+As of
+https://github.com/lyft/envoy-mobile/tree/e85e553a2a6a6a552460110f421dda6cac7e5b82
+
+This test was done with Envoy being run as a process and using native APIs to make requests to Envoy.
 
 Open issues regarding device conditions
 ---------------------------------------
