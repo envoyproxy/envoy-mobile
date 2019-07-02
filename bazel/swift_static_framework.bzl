@@ -67,7 +67,7 @@ def _swift_static_framework_impl(ctx):
             outputs = [platform_archive],
             mnemonic = "LibtoolLinkedLibraries",
             progress_message = "Combining libraries for {} on {}".format(module_name, platform),
-            executable = "libtool",
+            executable = ctx.executable._libtool,
             arguments = libtool_args,
         )
 
@@ -116,6 +116,11 @@ _swift_static_framework = rule(
         minimum_os_version = attr.string(default = MINIMUM_IOS_VERSION),
         platform_type = attr.string(
             default = str(apple_common.platform_type.ios),
+        ),
+        _libtool = attr.label(
+            default = "@bazel_tools//tools/objc:libtool",
+            cfg = "host",
+            executable = True,
         ),
         _zipper = attr.label(
             default = "@bazel_tools//tools/zip:zipper",
