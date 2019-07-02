@@ -92,7 +92,7 @@ def _swift_static_framework_impl(ctx):
     ctx.actions.run(
         inputs = input_modules_docs + [fat_file],
         outputs = [output_file],
-        mnemonic = "CreateSwiftFrameworkTar",
+        mnemonic = "CreateFrameworkZip",
         progress_message = "Creating framework zip for {}".format(module_name),
         executable = ctx.executable._zipper,
         arguments = ["c", output_file.path] + zip_args,
