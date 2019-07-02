@@ -40,12 +40,15 @@ def _swift_static_framework_impl(ctx):
         swiftmodule_identifier = _PLATFORM_TO_SWIFTMODULE[platform]
         if not swiftmodule_identifier:
             fail("Unhandled platform '{}'".format(platform))
-        library = archive[CcInfo].linking_context.libraries_to_link[0].pic_static_library
+        #library = archive[CcInfo].linking_context.libraries_to_link[0].pic_static_library
         swift_info = archive[SwiftInfo]
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
 
-        input_archives.append(library)
+        for library in archive[CcInfo].linking_context.libraries_to_link:
+          if library.pic_static_library:
+            input_archives.append(library.pic_static_library)
+
         input_modules_docs += [swiftdoc, swiftmodule]
         zip_args += [
             _zip_swift_arg(module_name, swiftmodule_identifier, swiftdoc),
