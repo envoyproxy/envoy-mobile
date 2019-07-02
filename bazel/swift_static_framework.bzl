@@ -3,6 +3,7 @@ This rules creates a fat static framework that can be included later with
 static_framework_import
 """
 
+load("@build_bazel_apple_support//lib:apple_support.bzl", "apple_support")
 load("@build_bazel_rules_swift//swift:swift.bzl", "SwiftInfo", "swift_library")
 
 MINIMUM_IOS_VERSION = "10.0"
@@ -40,6 +41,7 @@ def _swift_static_framework_impl(ctx):
         swiftmodule_identifier = _PLATFORM_TO_SWIFTMODULE[platform]
         if not swiftmodule_identifier:
             fail("Unhandled platform '{}'".format(platform))
+
         #library = archive[CcInfo].linking_context.libraries_to_link[0].pic_static_library
         swift_info = archive[SwiftInfo]
         swiftdoc = swift_info.direct_swiftdocs[0]
@@ -47,10 +49,10 @@ def _swift_static_framework_impl(ctx):
 
         libraries = archive[CcInfo].linking_context.libraries_to_link
         archives = []
-        for library in libraries:
-          archive = library.pic_static_library or library.static_library
-          if archive:
-            archives.append(archive)
+        for library in libraries.to_list():
+            archive = library.pic_static_library or library.static_library
+            if archive:
+                archives.append(archive)
 
         #archives = [a for a in (x.pic_static_library or x.static_library for x in libraries) if a]
 
@@ -59,10 +61,12 @@ def _swift_static_framework_impl(ctx):
         #    input_archives.append(library.pic_static_library)
 
         platform_archive = ctx.actions.declare_file("{}.{}.a".format(module_name, platform))
+
         #libtool_args = ["--mode=link", "cc", "-static", "-o", platform_archive.path] + \
         #    [x.path for x in archives]
-        libtool_args = ["-no_warning_for_no_symbols", "-static", "-arch_only", platform, "-syslibroot", "__BAZEL_XCODE_SDKROOT__", "-o", platform_archive.path] + [x.path for x in archives]
-        ctx.actions.run(
+        libtool_args = ["-no_warning_for_no_symbols", "-static", "-syslibroot", "__BAZEL_XCODE_SDKROOT__", "-o", platform_archive.path] + [x.path for x in archives]
+        apple_support.run(
+            ctx,
             inputs = archives,
             outputs = [platform_archive],
             mnemonic = "LibtoolLinkedLibraries",
@@ -105,18 +109,8 @@ def _swift_static_framework_impl(ctx):
     ]
 
 _swift_static_framework = rule(
-    implementation = _swift_static_framework_impl,
     attrs = dict(
-        archive = attr.label(
-            mandatory = True,
-            providers = [CcInfo, SwiftInfo],
-            cfg = apple_common.multi_arch_split,
-        ),
-        framework_name = attr.string(mandatory = True),
-        minimum_os_version = attr.string(default = MINIMUM_IOS_VERSION),
-        platform_type = attr.string(
-            default = str(apple_common.platform_type.ios),
-        ),
+        apple_support.action_required_attrs(),
         _libtool = attr.label(
             default = "@bazel_tools//tools/objc:libtool",
             cfg = "host",
@@ -127,11 +121,28 @@ _swift_static_framework = rule(
             cfg = "host",
             executable = True,
         ),
+        archive = attr.label(
+            mandatory = True,
+            providers = [
+                CcInfo,
+                SwiftInfo,
+            ],
+            cfg = apple_common.multi_arch_split,
+        ),
+        framework_name = attr.string(mandatory = True),
+        minimum_os_version = attr.string(default = MINIMUM_IOS_VERSION),
+        platform_type = attr.string(
+            default = str(apple_common.platform_type.ios),
+        ),
     ),
+    fragments = [
+        "apple",
+    ],
     outputs = {
         "fat_file": "%{framework_name}.fat",
         "output_file": "%{framework_name}.zip",
     },
+    implementation = _swift_static_framework_impl,
 )
 
 def swift_static_framework(
@@ -154,16 +165,16 @@ def swift_static_framework(
     module_name = module_name or name + "_framework"
     swift_library(
         name = archive_name,
-        module_name = module_name,
         srcs = srcs,
         copts = copts,
-        deps = deps,
+        module_name = module_name,
         visibility = ["//visibility:public"],
+        deps = deps,
     )
 
     _swift_static_framework(
         name = name,
-        framework_name = module_name,
         archive = archive_name,
+        framework_name = module_name,
         visibility = visibility,
     )
