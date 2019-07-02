@@ -45,9 +45,33 @@ def _swift_static_framework_impl(ctx):
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
 
-        for library in archive[CcInfo].linking_context.libraries_to_link:
-          if library.pic_static_library:
-            input_archives.append(library.pic_static_library)
+        libraries = archive[CcInfo].linking_context.libraries_to_link
+        archives = []
+        for library in libraries:
+          archive = library.pic_static_library or library.static_library
+          if archive:
+            archives.append(archive)
+
+        #archives = [a for a in (x.pic_static_library or x.static_library for x in libraries) if a]
+
+        #for library in archive[CcInfo].linking_context.libraries_to_link:
+        #  if library.pic_static_library:
+        #    input_archives.append(library.pic_static_library)
+
+        platform_archive = ctx.actions.declare_file("{}.{}.a".format(module_name, platform))
+        #libtool_args = ["--mode=link", "cc", "-static", "-o", platform_archive.path] + \
+        #    [x.path for x in archives]
+        libtool_args = ["-no_warning_for_no_symbols", "-static", "-arch_only", platform, "-syslibroot", "__BAZEL_XCODE_SDKROOT__", "-o", platform_archive.path] + [x.path for x in archives]
+        ctx.actions.run(
+            inputs = archives,
+            outputs = [platform_archive],
+            mnemonic = "LibtoolLinkedLibraries",
+            progress_message = "Combining libraries for {} on {}".format(module_name, platform),
+            executable = "libtool",
+            arguments = libtool_args,
+        )
+
+        input_archives.append(platform_archive)
 
         input_modules_docs += [swiftdoc, swiftmodule]
         zip_args += [
@@ -58,8 +82,8 @@ def _swift_static_framework_impl(ctx):
     ctx.actions.run(
         inputs = input_archives,
         outputs = [fat_file],
-        mnemonic = "LipoSwiftLibraries",
-        progress_message = "Combining libraries for {}".format(module_name),
+        mnemonic = "LipoPlatformLibraries",
+        progress_message = "Creating fat library for {}".format(module_name),
         executable = "lipo",
         arguments = ["-create", "-output", fat_file.path] + [x.path for x in input_archives],
     )

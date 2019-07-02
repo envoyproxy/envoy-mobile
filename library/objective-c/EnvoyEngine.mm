@@ -17,6 +17,7 @@
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException"
                                         object:self
                                         userInfo:userInfo];
+    return 1;
   }
 }
 
