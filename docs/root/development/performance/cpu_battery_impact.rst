@@ -5,13 +5,13 @@ Analysis of CPU/battery impact
 
 Modified versions of the "hello world" example apps were used to run these experiments:
 
-- `Android control app <https://github.com/lyft/envoy-mobile/tree/ac/envoy-battery-cpu-branch/examples/kotlin/control>`_
-- `Android Envoy app <https://github.com/lyft/envoy-mobile/tree/ac/envoy-battery-cpu-branch/examples/kotlin/hello_world>`_
-- `iOS control app <https://github.com/lyft/envoy-mobile/tree/ac/envoy-battery-cpu-branch/examples/objective-c/control/control>`_
-- `iOS Envoy app <https://github.com/lyft/envoy-mobile/tree/ac/envoy-battery-cpu-branch/examples/objective-c/xcode_variant/EnvoyObjc/EnvoyObjc>`_
+- `Android control app <https://github.com/lyft/envoy-mobile/tree/8636711/examples/kotlin/control>`_
+- `Android Envoy app <https://github.com/lyft/envoy-mobile/tree/8636711/examples/kotlin/hello_world>`_
+- `iOS control app <https://github.com/lyft/envoy-mobile/tree/f05d43f/examples/objective-c/control/control>`_
+- `iOS Envoy app <https://github.com/lyft/envoy-mobile/tree/f05d43f/examples/objective-c/xcode_variant/EnvoyObjc/EnvoyObjc>`_
 
-- **Control** - Made a request every ``200ms`` to an endpoint without Envoy compiled in the app
-- **Envoy** - Made the same request at the same interval, but routed through an instance of Envoy
+- **Control** - Made a request every ``200ms`` to an endpoint without Envoy compiled in the app.
+- **Envoy** - Made the same request at the same interval, but routed through an instance of Envoy.
 
 All request/response caching was disabled.
 
@@ -20,6 +20,8 @@ Results
 
 iOS
 ---
+
+Valid through SHA `f05d43f <https://github.com/lyft/envoy-mobile/tree/f05d43f>`_.
 
 Envoy:
 
@@ -38,6 +40,8 @@ The root cause has been identified and is being tracked in `issue 215 <https://g
 
 Android
 -------
+
+Valid through SHA `8636711 <https://github.com/lyft/envoy-mobile/tree/8636711>`_.
 
 TODO(buildbreaker): Update battery percentages
 
@@ -147,4 +151,5 @@ but updating the frequency to 1 minute did not result in a significant change.
 Open issues regarding battery usage
 -----------------------------------
 
-- `(215) Excessive iOS CPU usage due to libevent polling <https://github.com/lyft/envoy-mobile/issues/215>`_
+For current issues with CPU/battery, please see issues with the
+`perf/cpu label <https://github.com/lyft/envoy-mobile/labels/perf%2Fcpu>`_.
