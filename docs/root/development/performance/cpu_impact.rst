@@ -63,11 +63,12 @@ iOS
 Android
 -------
 
-The results of this experiment is surprising since we should expect Envoy to use significantly more CPU than the control.
+The results of this experiment is that there is minimal difference between Envoy and Control. By enabling trace logging
+within Envoy, we are able to observe the following:
 
-One explanation is that Envoy is running on its own native thread and the Android application is unable
-to associate the Envoy process to the Android application. However, when looking at the treads and CPU usage (via `adb shell top`),
-we are unable to observe another thread taking up CPU other than the running Envoy application.
+1. Requests to s3 are being logged in Envoy
+2. DNS resolution does happen every 5 seconds
+3. Stats are flushed every 5 seconds
 
 Open issues regarding battery usage
 -----------------------------------

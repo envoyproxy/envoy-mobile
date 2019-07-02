@@ -72,12 +72,12 @@ iOS
 Android
 -------
 
-The results of this experiment is surprising since we should expect Envoy to use more battery than the control by a
-large margin.
+The results of this experiment is that there isn't much of a difference between Envoy and Control. With the :repo:`CPU analysis </docs/root/development/performance/cpu_impact.rst>`,
+we are able to see:
 
-One explanation is that Envoy is running on its own native thread and the Android application is unable
-to associate the Envoy process to the Android application. However, when looking at the treads and CPU usage (via `adb shell top`),
-we are unable to observe another thread taking up CPU other than the running Envoy application.
+1. Requests to s3 are being logged in Envoy
+2. DNS resolution does happen every 5 seconds
+3. Stats are flushed every 5 seconds
 
 Open issues regarding battery usage
 -----------------------------------
