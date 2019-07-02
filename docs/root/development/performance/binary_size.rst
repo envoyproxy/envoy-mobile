@@ -152,7 +152,7 @@ expectations.
 Current status
 ~~~~~~~~~~~~~~
 
-.. TODO: move this section to a 'releases' docs once we cut 0.2
+.. TODO: move this section to a 'releases' docs once we cut 0.2.
 
 As of
 https://github.com/lyft/envoy-mobile/tree/f17caebcfce09ec5dcda905dc8418fea4d382da7
