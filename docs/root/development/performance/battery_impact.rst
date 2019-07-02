@@ -56,10 +56,11 @@ Android
 -------
 
 Through running the applications for 30minutes, the results are:
-Envoy   : 0.17%/min
-Control : 0.18%/min
 
-The results of Envoy and Control are very comparable
+- Envoy   : 0.17%/min
+- Control : 0.18%/min
+
+The results of Envoy and Control are very similar
 
 Analysis
 ~~~~~~~~

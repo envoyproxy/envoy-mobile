@@ -29,7 +29,7 @@ Getting the build:
 
 Experiment steps:
 
-1. Run `adb shell top -H | grep envoy` to get the CPU usage of the application (the `-H` flag displays the running threads)
+1. Run ``adb shell top -H | grep envoy`` to get the CPU usage of the application (the ``-H`` flag displays the running threads)
 2. Wait 10minutes to gather a sample set of data to analyze
 3. Take the average CPU% and MEM%
 
@@ -45,12 +45,14 @@ Android
 -------
 
 Envoy:
-15.67560976	Avg CPU%
-2.696341463 Avg MEM%
+
+- Avg CPU: 15.67560976%
+- Avg MEM: 2.696341463%
 
 Control:
-11.27439024 Avg CPU%
-2.152439024 Avg MEM%
+
+- Avg CPU: 11.27439024%
+- Avg MEM: 2.152439024%
 
 Analysis
 ~~~~~~~~
