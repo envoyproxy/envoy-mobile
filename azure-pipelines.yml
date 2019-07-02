@@ -26,6 +26,16 @@ stages:
             submodules: true
           - script: ./tools/check_format.sh
             displayName: 'Run formatters'
+      - job: precommit_lint
+        timeoutInMinutes: 60
+        pool:
+          vmImage: 'macos-10.14'
+        steps:
+          - checkout: self
+          - script: brew install pre-commit
+            displayName: 'Install pre-commit'
+          - script: pre-commit run --all-files
+            displayName: 'Running pre-commit'
       - job: swift_lint
         timeoutInMinutes: 60
         pool:
@@ -141,8 +151,11 @@ stages:
             inputs:
               artifactName: 'envoy-mac.aar'
               targetPath: dist
-          - script: bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
-            displayName: 'Build java app'
+          - template: ci/templates/start_android_emulator.yaml
+          - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+            displayName: 'Start java app'
+          - script: adb logcat -e "successful response!" -m 1
+            displayName: 'Check liveliness'
       - job: mac_kotlin_helloworld
         dependsOn: mac_dist
         timeoutInMinutes: 60
@@ -158,8 +171,11 @@ stages:
             inputs:
               artifactName: 'envoy-mac.aar'
               targetPath: dist
-          - script: bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
-            displayName: 'Build kotlin app'
+          - template: ci/templates/start_android_emulator.yaml
+          - script: bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
+            displayName: 'Start kotlin app'
+          - script: adb logcat -e "successful response!" -m 1
+            displayName: 'Check liveliness'
   - stage: ios
     dependsOn: [] # this removes the implicit dependency on previous stage and causes this to run in parallel.
     jobs:
@@ -198,6 +214,22 @@ stages:
               targetPath: dist/Envoy.framework
           - script: bazel build --config=ios //examples/objective-c/hello_world:app
             displayName: 'Build objective-c app'
+          # Now check that the app actually runs on the simulator.
+          # This is a non-ideal way to check for liveliness, but works for now.
+          # First start the iOS simulator.
+          # Interestingly bazel run does not start the simulator in CI.
+          # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
+          - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
+            displayName: 'Start the iOS simulator'
+          # Run the app in the background and redirect logs.
+          - script: bazel run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
+            displayName: 'Run objective-c app'
+          # Wait for the app to start and get some requests/responses.
+          - script: sleep 60
+            displayName: 'Sleep'
+          # Check for the sentinel value that shows the app is alive and well.
+          - script: cat /tmp/envoy.log | grep 'Hello, world!'
+            displayName: 'Check liveliness'
       - job: mac_swift_helloworld
         dependsOn: mac_dist
         timeoutInMinutes: 60
@@ -217,3 +249,19 @@ stages:
               targetPath: dist/Envoy.framework
           - script: bazel build --config=ios //examples/swift/hello_world:app
             displayName: 'Build swift app'
+          # Now check that the app actually runs on the simulator.
+          # This is a non-ideal way to check for liveliness, but works for now.
+          # First start the iOS simulator.
+          # Interestingly bazel run does not start the simulator in CI.
+          # https://github.com/lyft/envoy-mobile/issues/201 for further investigation.
+          - script: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
+            displayName: 'Start the iOS simulator'
+          # Run the app in the background and redirect logs.
+          - script: bazel run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
+            displayName: 'Run swift app'
+          # Wait for the app to start and get some requests/responses.
+          - script: sleep 60
+            displayName: 'Sleep'
+          # Check for the sentinel value that shows the app is alive and well.
+          - script: cat /tmp/envoy.log | grep 'Hello, world!'
+            displayName: 'Check liveliness'

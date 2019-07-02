@@ -11,15 +11,17 @@ import android.os.IBinder
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-
 import android.util.Log
+import io.envoyproxy.envoymobile.Envoy
+import io.envoyproxy.envoymobile.shared.Failure
+import io.envoyproxy.envoymobile.shared.Response
+import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
+import io.envoyproxy.envoymobile.shared.Success
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
-
-import io.envoyproxy.envoymobile.Envoy
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt"
@@ -28,7 +30,22 @@ private const val ENVOY_SERVER_HEADER = "server"
 class PersistentService : Service() {
   private val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
 
-  override fun onCreate() {
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+
+    Envoy.load(baseContext)
+
+    // Create Envoy instance with config.
+    envoy = Envoy(baseContext, loadEnvoyConfig(baseContext, R.raw.config))
+
+    recyclerView = findViewById(R.id.recycler_view) as RecyclerView
+    recyclerView.layoutManager = LinearLayoutManager(this)
+
+    val adapter = ResponseRecyclerViewAdapter()
+    recyclerView.adapter = adapter
+    val dividerItemDecoration = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
+    recyclerView.addItemDecoration(dividerItemDecoration)
     thread.start()
     val handler = Handler(thread.looper)
 
@@ -37,7 +54,7 @@ class PersistentService : Service() {
       override fun run() {
         try {
           val response = makeRequest()
-          MainActivity.callback(response)
+          recyclerView.post { adapter.add(response) }
         } catch (e: IOException) {
           Log.d("MainActivity", "exception making request.", e)
         }
@@ -61,32 +78,24 @@ class PersistentService : Service() {
   }
 }
 
-private fun makeRequest(): Response {
-  val url = URL(ENDPOINT)
-  // Open connection to the envoy thread listening locally on port 9001
-  val connection = url.openConnection() as HttpURLConnection
-  val status = connection.responseCode
-  if (status != 200) {
-    throw IOException("non 200 status: $status")
-  }
-
-  val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER]
-  val inputStream = connection.inputStream
-  val body = deserialize(inputStream)
-  inputStream.close()
-  return Response(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
-}
-
-private fun deserialize(inputStream: InputStream): String {
-  return inputStream.bufferedReader().use { reader -> reader.readText() }
-}
-
-class MainActivity : Activity() {
-  private lateinit var recyclerView: RecyclerView
-  private lateinit var envoy: Envoy
-
-  companion object {
-    var callback: (Response) -> Unit = {}
+  private fun makeRequest(): Response {
+    return  try {
+      val url = URL(ENDPOINT)
+      // Open connection to the envoy thread listening locally on port 9001
+      val connection = url.openConnection() as HttpURLConnection
+      val status = connection.responseCode
+      if (status == 200) {
+        val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER]
+        val inputStream = connection.inputStream
+        val body = deserialize(inputStream)
+        inputStream.close()
+        Success(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
+      } else {
+        Failure("failed with status: $status")
+      }
+    } catch (e: IOException) {
+      Failure(e.message ?: "failed with exception")
+    }
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,4 +129,3 @@ class MainActivity : Activity() {
     return inputStream.bufferedReader().use { reader -> reader.readText() }
   }
 }
-
