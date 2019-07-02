@@ -18,7 +18,8 @@ iOS
 Android
 -------
 
-We're currently using HttpURLConnection to communicate and send requests to Envoy. Envoy in it's current state is run as
+We're currently using HttpURLConnection to communicate and send requests to Envoy every 200ms.
+Envoy in it's current state is run as
 a process
 
 Getting the build:
@@ -46,13 +47,13 @@ Android
 
 Envoy:
 
-- Avg CPU: 15.67560976%
-- Avg MEM: 2.696341463%
+- Avg CPU: 33.16075949%
+- Avg MEM: 2.765822785%
 
 Control:
 
-- Avg CPU: 11.27439024%
-- Avg MEM: 2.152439024%
+- Avg CPU: 28.81012658%
+- Avg MEM: 2.169620253%
 
 Analysis
 ~~~~~~~~

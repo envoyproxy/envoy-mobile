@@ -73,7 +73,7 @@ iOS
 Android
 -------
 
-The results of this experiment is that there isn't much of a difference between Envoy and Control. With the :repo:`CPU analysis </docs/root/development/performance/cpu_impact.rst>`,
+The results of this experiment is that there isn't much of a difference between Envoy and Control every 200ms. With the :repo:`CPU analysis </docs/root/development/performance/cpu_impact.rst>`,
 we are able to see:
 
 1. Requests to s3 are being logged in Envoy
