@@ -10,7 +10,10 @@ Modified versions of the "hello world" example apps were used to run these exper
 - `iOS control app <https://github.com/lyft/envoy-mobile/tree/ac/envoy-battery-cpu-branch/examples/objective-c/control/control>`_
 - `iOS Envoy app <https://github.com/lyft/envoy-mobile/tree/ac/envoy-battery-cpu-branch/examples/objective-c/xcode_variant/EnvoyObjc/EnvoyObjc>`_
 
-These apps made network requests every ``200ms`` with all request/response caching disabled.
+- **Control** - Made a request every ``200ms`` to an endpoint without Envoy compiled in the app
+- **Envoy** - Made the same request at the same interval, but routed through an instance of Envoy
+
+All request/response caching was disabled.
 
 Results
 ~~~~~~~
@@ -36,6 +39,8 @@ The root cause has been identified and is being tracked in `issue 215 <https://g
 Android
 -------
 
+TODO(buildbreaker): Update battery percentages
+
 Envoy:
 
 - Avg CPU: 33.16075949%
@@ -60,11 +65,6 @@ The original investigation was completed as part of `this issue <https://github.
 
 For analysis, the `Energy Diagnostics tool from Xcode Instruments <https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/MonitorEnergyWithInstruments.html>`_
 was used.
-
-The analysis utilized two apps:
-
-- **Control** - An app that makes a request every ``200ms`` to an endpoint without Envoy compiled in the app
-- **Envoy** - App that makes the same request at the same interval, but routed through an instance of Envoy
 
 Requests were made using ``URLSession``, with the session's cache set to ``nil`` (disabling caching).
 Envoy listened to the data sent over ``URLSession``, proxying it through.
