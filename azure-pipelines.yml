@@ -57,7 +57,6 @@ stages:
             displayName: 'Run Kotlin lint'
   # Note: the size regression jobs are not ideal.
   # The size analysis described in the docs was ran on arm64 machines.
-  # The binary size represented here is larger than that produced in arm64.
   # However, it seems that azure pipelines will support arm64 machines sometime soon.
   # Whenever that is available this jobs should be moved to that architecture.
   # Issue: https://github.com/lyft/envoy-mobile/issues/216
