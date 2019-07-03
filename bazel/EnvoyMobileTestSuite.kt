@@ -26,9 +26,7 @@ object EnvoyMobileTestSuite {
     val classesInJar = findClassesInJar(File(classLoader.urLs[0].path))
     for (clazz in classesInJar) {
       val name = Class.forName(clazz)
-      if (name != EnvoyMobileTestSuite::class.java) {
-        suite.addTest(JUnit4TestAdapter(name))
-      }
+      suite.addTest(JUnit4TestAdapter(name))
     }
 
     return suite
