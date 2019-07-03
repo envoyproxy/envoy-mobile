@@ -18,7 +18,6 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
 # )
 #
 def envoy_mobile_kt_test(name, srcs, deps = []):
-
     kt_jvm_test(
         name = name,
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
