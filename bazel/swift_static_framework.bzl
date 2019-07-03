@@ -42,7 +42,6 @@ def _swift_static_framework_impl(ctx):
         if not swiftmodule_identifier:
             fail("Unhandled platform '{}'".format(platform))
 
-        #library = archive[CcInfo].linking_context.libraries_to_link[0].pic_static_library
         swift_info = archive[SwiftInfo]
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
@@ -53,17 +52,11 @@ def _swift_static_framework_impl(ctx):
             archive = library.pic_static_library or library.static_library
             if archive:
                 archives.append(archive)
-
-        #archives = [a for a in (x.pic_static_library or x.static_library for x in libraries) if a]
-
-        #for library in archive[CcInfo].linking_context.libraries_to_link:
-        #  if library.pic_static_library:
-        #    input_archives.append(library.pic_static_library)
+            else:
+                fail("All linked dependencies must be static")
 
         platform_archive = ctx.actions.declare_file("{}.{}.a".format(module_name, platform))
 
-        #libtool_args = ["--mode=link", "cc", "-static", "-o", platform_archive.path] + \
-        #    [x.path for x in archives]
         libtool_args = ["-no_warning_for_no_symbols", "-static", "-syslibroot", "__BAZEL_XCODE_SDKROOT__", "-o", platform_archive.path] + [x.path for x in archives]
         apple_support.run(
             ctx,
