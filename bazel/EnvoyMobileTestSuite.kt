@@ -5,7 +5,6 @@ import junit.framework.TestSuite
 import org.junit.runner.RunWith
 import java.io.File
 import java.net.URLClassLoader
-import java.util.*
 import java.util.zip.ZipFile
 
 /**
