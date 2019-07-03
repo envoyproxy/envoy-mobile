@@ -7,27 +7,8 @@ load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolch
 envoy_package()
 
 alias(
-    name = "swift_framework",
-    actual = "//library/swift:swift_framework",
-)
-
-genrule(
-    name = "swift_dist",
-    srcs = ["//:swift_framework"],
-    outs = ["swift_out"],
-    cmd = """
-unzip -o $< -d dist/
-touch $@
-""",
-    stamp = True,
-)
-
-ios_static_framework(
     name = "ios_framework",
-    bundle_name = "Envoy",
-    minimum_os_version = "10.0",
-    visibility = ["//visibility:public"],
-    deps = ["//library/swift:envoy_swift_lib"],
+    actual = "//library/swift:ios_framework",
 )
 
 genrule(

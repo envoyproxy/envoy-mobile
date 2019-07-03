@@ -4,7 +4,7 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//bazel:swift_static_framework.bzl", "swift_static_framework")
 
 swift_static_framework(
-    name = "swift_framework",
+    name = "ios_framework",
     module_name = "Envoy",
     srcs = ["Envoy.swift"],
     objc_includes = ["//library/objective-c:EnvoyEngine.h"],
