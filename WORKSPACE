@@ -91,9 +91,9 @@ load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependenci
 
 swift_rules_dependencies()
 
-android_sdk_repository(name = "androidsdk")
+android_sdk_repository(name = "androidsdk", path= "/Users/achiu/Library/Android/sdk")
 
-android_ndk_repository(name = "androidndk")
+android_ndk_repository(name = "androidndk", path="/Users/achiu/Library/Android/sdk/ndk-bundle")
 
 git_repository(
     name = "rules_jvm_external",
