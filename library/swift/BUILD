@@ -7,16 +7,17 @@ swift_static_framework(
     name = "swift_framework",
     module_name = "Envoy",
     srcs = ["Envoy.swift"],
+    objc_includes = ["//library/objective-c:EnvoyEngine.h"],
     visibility = ["//visibility:public"],
-    deps = ["//library/objective-c:envoy_engine_objc_lib"]
+    deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )
 
 swift_library(
-  name = "envoy_swift_lib",
-  srcs = [
-    "Envoy.swift",
-  ],
-  module_name = "Envoy",
-  visibility = ["//visibility:public"],
-  deps = ["//library/objective-c:envoy_engine_objc_lib"]
+    name = "envoy_swift_lib",
+    srcs = [
+        "Envoy.swift",
+    ],
+    module_name = "Envoy",
+    visibility = ["//visibility:public"],
+    deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )

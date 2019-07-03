@@ -49,7 +49,7 @@ def _swift_static_framework_impl(ctx):
 
         libraries = archive[CcInfo].linking_context.libraries_to_link
         archives = []
-        for library in libraries.to_list():
+        for library in libraries:
             archive = library.pic_static_library or library.static_library
             if archive:
                 archives.append(archive)
@@ -149,8 +149,10 @@ def swift_static_framework(
         name,
         module_name = None,
         srcs = [],
-        copts = [],
         deps = [],
+        objc_includes = [],
+        copts = [],
+        swiftc_inputs = [],
         visibility = []):
     """Create a static library, and static framework target for a swift module
 
@@ -158,15 +160,23 @@ def swift_static_framework(
         name: The name of the module, the framework's name will be this name
             appending Framework so you can depend on this from other modules
         srcs: Custom source paths for the swift files
+        objc_includes: Header files for any objective-c dependencies (required for linking)
         copts: Any custom swiftc opts passed through to the swift_library
+        swiftc_inputs: Any labels that require expansion for copts (would also apply to linkopts)
         deps: Any deps the swift_library requires
     """
     archive_name = name + "_archive"
     module_name = module_name or name + "_framework"
+    if objc_includes:
+        locations = ["$(location {})".format(x) for x in objc_includes]
+        copts = copts + ["-import-objc-header"] + locations
+        swiftc_inputs = swiftc_inputs + objc_includes
+
     swift_library(
         name = archive_name,
         srcs = srcs,
         copts = copts,
+        swiftc_inputs = swiftc_inputs,
         module_name = module_name,
         visibility = ["//visibility:public"],
         deps = deps,

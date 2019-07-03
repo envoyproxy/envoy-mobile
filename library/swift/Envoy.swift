@@ -1,5 +1,5 @@
 import Foundation
-import library_objective_c_envoy_engine_objc_lib
+//import library_objective_c_envoy_engine_objc_lib
 
 public class Envoy {
   private let runner: EnvoyRunner
