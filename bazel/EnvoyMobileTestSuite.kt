@@ -4,6 +4,7 @@ import junit.framework.JUnit4TestAdapter
 import junit.framework.TestSuite
 import org.junit.runner.RunWith
 import java.io.File
+import java.lang.RuntimeException
 import java.net.URLClassLoader
 import java.util.zip.ZipFile
 
@@ -12,23 +13,36 @@ import java.util.zip.ZipFile
  *
  * Translated to Kotlin and slightly modified
  *
+ * Requirements:
+ * 1. This only allows tests to be run if the package is within `io.envoyproxy.envoymobile`
+ * 2. This requires at least one test to be defined in the test target
  */
 @RunWith(org.junit.runners.AllTests::class)
 object EnvoyMobileTestSuite {
   private const val CLASS_SUFFIX = ".class"
+  private const val ENVOY_MOBILE_PACKAGE = "io.envoyproxy.envoymobile"
 
   @JvmStatic
   fun suite(): TestSuite {
     val suite = TestSuite()
     val classLoader = Thread.currentThread().contextClassLoader as URLClassLoader
 
+    val testAdapters = mutableListOf<JUnit4TestAdapter>()
     // The first entry on the classpath contains the srcs from java_test
     val classesInJar = findClassesInJar(File(classLoader.urLs[0].path))
     for (clazz in classesInJar) {
       val name = Class.forName(clazz)
-      suite.addTest(JUnit4TestAdapter(name))
+      val testAdapter = JUnit4TestAdapter(name)
+      testAdapters.add(testAdapter)
     }
 
+    if (testAdapters.isEmpty()) {
+      throw RuntimeException("Unable to find any tests in test target")
+    }
+
+    for (testAdapter in testAdapters) {
+      suite.addTest(testAdapter)
+    }
     return suite
   }
 
@@ -42,7 +56,10 @@ object EnvoyMobileTestSuite {
 
         if (entryName.endsWith(CLASS_SUFFIX)) {
           val classNameEnd = entryName.length - CLASS_SUFFIX.length
-          classNames.add(entryName.substring(0, classNameEnd).replace('/', '.'))
+          val resolvedClass = entryName.substring(0, classNameEnd).replace('/', '.')
+          if (resolvedClass.contains(ENVOY_MOBILE_PACKAGE)) {
+            classNames.add(resolvedClass)
+          }
         }
       }
     }
