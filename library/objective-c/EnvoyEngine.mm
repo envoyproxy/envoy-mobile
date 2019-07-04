@@ -13,10 +13,10 @@
     return run_envoy(config.UTF8String, logLevel.UTF8String);
   } catch (NSException *e) {
     NSLog(@"Envoy exception: %@", e);
-    NSDictionary *userInfo = @{ @"exception": e};
+    NSDictionary *userInfo = @{@"exception" : e};
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException"
-                                        object:self
-                                        userInfo:userInfo];
+                                                      object:self
+                                                    userInfo:userInfo];
     return 1;
   }
 }

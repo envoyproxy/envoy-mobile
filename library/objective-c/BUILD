@@ -10,11 +10,11 @@ filegroup(
 
 objc_library(
     name = "envoy_engine_objc_lib",
-    hdrs = [
-        "EnvoyEngine.h",
-    ],
     srcs = [
         "EnvoyEngine.mm",
+    ],
+    hdrs = [
+        "EnvoyEngine.h",
     ],
     copts = ["-std=c++14"],
     visibility = ["//visibility:public"],
