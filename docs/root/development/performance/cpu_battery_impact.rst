@@ -126,7 +126,7 @@ iOS
 Envoy had a small increase in memory and CPU usage compared to control.
 
 During the :issue:`initial investigation <113#issuecomment-505676324>`, we identified and fixed
-:issue:`issue <215>` with ``libevent`` that was severly degrading CPU (and subsequently battery) performance.
+:issue:`issue <215>` with ``libevent`` that was severely degrading CPU (and subsequently battery) performance.
 
 :issue:`We used Wireshark <113#issuecomment-505673869>` to validate that
 network traffic was flowing through Envoy on the phone every ``200ms``, giving us confidence that there was
