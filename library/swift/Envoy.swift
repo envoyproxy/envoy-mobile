@@ -20,7 +20,7 @@ public class Envoy {
     self.init(config: config, logLevel: "info")
   }
 
-  private class EnvoyRunner : Thread {
+  private class EnvoyRunner: Thread {
     let config: String
     let logLevel: String
 
