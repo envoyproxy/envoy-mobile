@@ -47,7 +47,6 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
     return ENVOY_SUCCESS;
   } catch (const Envoy::MalformedArgvException& e) {
     std::cerr << e.what() << std::endl;
-
     return ENVOY_FAILURE;
   } catch (const Envoy::EnvoyException& e) {
     std::cerr << e.what() << std::endl;
