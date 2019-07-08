@@ -13,7 +13,7 @@ envoy_package()
 aar_import(
     name = "envoy_mobile_android",
     aar = "envoy.aar",
-    visibility = ["//visbility:public"],
+    visibility = ["//visibility:public"],
 )
 
 apple_static_framework_import(
