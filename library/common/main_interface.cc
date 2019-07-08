@@ -14,7 +14,7 @@
 /**
  * External entrypoint for library.
  */
-extern "C" int run_envoy(const char* config, const char* log_level) {
+extern "C" int run_engine(const char* config, const char* log_level) {
   std::unique_ptr<Envoy::MainCommon> main_common;
 
   char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),

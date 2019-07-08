@@ -49,7 +49,7 @@ static NSString *const kLogLevelToString[] = {
 
 - (void)run:(NSDictionary *)args {
   try {
-    run_envoy([args[kConfig] UTF8String], [args[kLogLevel] UTF8String]);
+    run_engine([args[kConfig] UTF8String], [args[kLogLevel] UTF8String]);
   } catch (NSException *e) {
     NSLog(@"Envoy exception: %@", e);
     NSDictionary *userInfo = @{@"exception" : e};
