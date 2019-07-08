@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 
 // NOLINT(namespace-envoy)
 
@@ -105,17 +106,17 @@ envoy_stream_pair open_stream(envoy_headers headers, envoy_data data, envoy_obse
 /**
  * Send headers over an open HTTP stream.
  */
-envoy_status_t send_headers(envoy_stream_t stream, envoy_headers header, boolean end_stream);
+envoy_status_t send_headers(envoy_stream_t stream, envoy_headers header, bool end_stream);
 
 /**
- * Send metadata over an HTTTP stream.
+ * Send metadata over an HTTP stream.
  */
-envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, boolean end_stream);
+envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, bool end_stream);
 
 /**
  * Send trailers over an open HTTP stream.
  */
-envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers, boolean end_stream);
+envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers, bool end_stream);
 
 /**
  * Half-close an HTTP stream (stream will be observable and may return further data, but nothing
