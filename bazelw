@@ -29,7 +29,6 @@ if [[ ! -x "$bazel_executable" ]]; then
     $extra_curl_args \
     --progress-bar \
     --retry 3 \
-    --retry-connrefused \
     --fail \
     --location \
     --output "$bazel_executable" \
