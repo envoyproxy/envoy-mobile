@@ -308,6 +308,8 @@ stages:
         steps:
           - checkout: self
             submodules: true
+          - script: env
+          - script: exit 1
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: mkdir -p dist/Envoy.framework
