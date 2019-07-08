@@ -1,5 +1,7 @@
 #pragma once
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 // NOLINT(namespace-envoy)
 
@@ -24,7 +26,7 @@ typedef int envoy_stream_t;
 /**
  * Result codes returned by all calls made to this interface.
  */
-typedef enum {} envoy_status_t;
+typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 
 /**
  * Error code associated with terminal status of a HTTP stream or request.
