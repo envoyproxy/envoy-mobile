@@ -20,7 +20,7 @@ if [[ ! -x "$bazel_executable" ]]; then
   echo "Installing bazel..." >&2
   mkdir -p "$(dirname "$bazel_executable")"
   extra_curl_args=""
-  if [[ -n "${JOB_IS_RUNNING_ON_CI:-}" ]]; then
+  if [[ -n "${BUILD_BUILDID:-}" ]]; then
     extra_curl_args="--silent"
   fi
 
