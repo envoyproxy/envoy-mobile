@@ -41,18 +41,18 @@ typedef struct {
 } envoy_stream_pair;
 
 typedef struct {
-  char *name;
-  char *value;
+  char* name;
+  char* value;
 } envoy_header;
 
 typedef struct {
   size_t length;
-  envoy_header *headers;
+  envoy_header* headers;
 } envoy_headers;
 
 typedef struct {
   size_t length;
-  uint8_t *bytes;
+  uint8_t* bytes;
 } envoy_data;
 
 const envoy_data envoy_nodata = {0, NULL};
@@ -60,9 +60,8 @@ const envoy_data envoy_nodata = {0, NULL};
 typedef struct {
   envoy_error_code_t error_code;
   size_t length;
-  char *string;
+  char* string;
 } envoy_error;
-
 
 #ifdef __cplusplus
 extern "C" { // function pointers
@@ -83,7 +82,6 @@ typedef struct {
   on_trailers t;
   on_error e;
 } envoy_observer;
-
 
 #ifdef __cplusplus
 extern "C" { // functions
