@@ -7,6 +7,6 @@ class SampleTest {
 
   @Test
   fun sampleTest() {
-    assertThat(true).isFalse()
+    assertThat(true).isTrue()
   }
 }
