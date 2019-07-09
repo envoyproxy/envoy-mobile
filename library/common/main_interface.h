@@ -9,19 +9,19 @@
  * Handle to an Envoy engine instance. Valid only for the lifetime of the engine and not intended
  * for any external interpretation or use.
  */
-typedef int envoy_engine_t;
+typedef uint64_t envoy_engine_t;
 
 /**
  * Handle to an outstanding Envoy HTTP request. Valid only for the duration of the request and not
  * intended for any external interpretation or use.
  */
-typedef int envoy_request_t;
+typedef uint64_t envoy_request_t;
 
 /**
  * Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
  * intended for any external interpretation or use.
  */
-typedef int envoy_stream_t;
+typedef uint64_t envoy_stream_t;
 
 /**
  * Result codes returned by all calls made to this interface.
@@ -32,6 +32,14 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
  * Error code associated with terminal status of a HTTP stream or request.
  */
 typedef enum {} envoy_error_code_t;
+
+/**
+ * Common abstraction for strings.
+ */
+typedef struct {
+  uint64_t length;
+  char* data;
+} envoy_string;
 
 /**
  * Holds data about an HTTP request.
@@ -59,9 +67,9 @@ typedef struct {
  * Holds a single name/value header.
  */
 typedef struct {
-  char* name;
+  envoy_string name;
   // Multiple header values for the same header name are supported via a comma-delimited string.
-  char* value;
+  envoy_string value;
 } envoy_header;
 
 /**
@@ -69,7 +77,7 @@ typedef struct {
  */
 typedef struct {
   // Size of the array.
-  size_t length;
+  uint64_t length;
   // Array of headers.
   envoy_header* headers;
 } envoy_headers;
@@ -78,7 +86,7 @@ typedef struct {
  * Holds raw binary data as an array of bytes.
  */
 typedef struct {
-  size_t length;
+  uint64_t length;
   uint8_t* bytes;
 } envoy_data;
 
@@ -91,8 +99,7 @@ const envoy_data envoy_nodata = {0, NULL};
  */
 typedef struct {
   envoy_error_code_t error_code;
-  size_t length;
-  char* message;
+  envoy_string message;
 } envoy_error;
 
 #ifdef __cplusplus
