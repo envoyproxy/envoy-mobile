@@ -12,12 +12,6 @@
 typedef uint64_t envoy_engine_t;
 
 /**
- * Handle to an outstanding Envoy HTTP request. Valid only for the duration of the request and not
- * intended for any external interpretation or use.
- */
-typedef uint64_t envoy_request_t;
-
-/**
  * Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
  * intended for any external interpretation or use.
  */
@@ -149,16 +143,6 @@ extern "C" { // functions
 #endif
 
 /**
- * Submit a request.
- */
-envoy_request send_request(envoy_headers headers, envoy_data data, envoy_observer observer);
-
-/**
- * Cancel a request.
- */
-envoy_status_t cancel_request(envoy_request_t request);
-
-/**
  * Open an underlying HTTP stream.
  * @param observer, the observer that will run the stream callbacks.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
@@ -170,7 +154,7 @@ envoy_stream start_stream(envoy_observer observer);
  * before send_data.
  * @param stream, the stream to send headers over.
  * @param headers, the headers to send.
- * @param end_stream, supplies wether this is headers only.
+ * @param end_stream, supplies whether this is headers only.
  * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers header, bool end_stream);
@@ -179,7 +163,7 @@ envoy_status_t send_headers(envoy_stream_t stream, envoy_headers header, bool en
  * Send data over an open HTTP stream. This method can be invoked multiple times.
  * @param stream, the stream to send data over.
  * @param data, the data to send.
- * @param end_stream, supplies wether this is the last data in the stream.
+ * @param end_stream, supplies whether this is the last data in the stream.
  * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream);
@@ -188,7 +172,7 @@ envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream
  * Send metadata over an HTTP stream. This method can be invoked multiple times.
  * @param stream, the stream to send metadata over.
  * @param metadata, the metadata to send.
- * @param end_stream, supplies wether this is the last data in the stream.
+ * @param end_stream, supplies whether this is the last data in the stream.
  * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, bool end_stream);
