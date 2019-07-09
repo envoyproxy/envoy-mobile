@@ -23,7 +23,7 @@ typedef uint64_t envoy_stream_t;
 typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 
 /**
- * Error code associated with terminal status of a HTTP stream or request.
+ * Error code associated with terminal status of a HTTP stream.
  */
 typedef enum {} envoy_error_code_t;
 
@@ -34,17 +34,6 @@ typedef struct {
   uint64_t length;
   char* data;
 } envoy_string;
-
-/**
- * Holds data about an HTTP request.
- */
-typedef struct {
-  // Status of the Envoy HTTP request. Note that the request might have failed inline.
-  // Thus the status should be checked before pursuing other operations on the request.
-  envoy_status_t status;
-  // Handle to the Envoy HTTP request.
-  envoy_request_t request;
-} envoy_request;
 
 /**
  * Holds data about an HTTP stream.
