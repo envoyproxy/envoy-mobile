@@ -146,7 +146,7 @@ envoy_stream start_stream(envoy_observer observer);
  * @param end_stream, supplies whether this is headers only.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t send_headers(envoy_stream_t stream, envoy_headers header, bool end_stream);
+envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream);
 
 /**
  * Send data over an open HTTP stream. This method can be invoked multiple times.
@@ -172,7 +172,6 @@ envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, bool
  * @param stream, the stream to send trailers over.
  * @param trailers, the trailers to send.
  * @return envoy_status_t, the resulting status of the operation.
-
  */
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers);
 
