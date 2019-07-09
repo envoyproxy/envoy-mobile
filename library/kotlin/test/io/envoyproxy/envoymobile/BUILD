@@ -11,6 +11,6 @@ envoy_mobile_kt_test(
         "*.kt",
     ]),
     deps = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_blob"
-    ]
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_blob",
+    ],
 )
