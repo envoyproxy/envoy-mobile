@@ -153,37 +153,68 @@ envoy_status_t cancel_request(envoy_request_t request);
 
 /**
  * Open an underlying HTTP stream.
+ * @param observer, the observer that will run the stream callbacks.
+ * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_stream start_stream(envoy_headers headers, envoy_data data, envoy_observer observer);
+envoy_stream start_stream(envoy_observer observer);
 
 /**
- * Send headers over an open HTTP stream.
+ * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
+ * before send_data.
+ * @param stream, the stream to send headers over.
+ * @param headers, the headers to send.
+ * @param end_stream, supplies wether this is headers only.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers header, bool end_stream);
 
 /**
- * Send metadata over an HTTP stream.
+ * Send data over an open HTTP stream. This method can be invoked multiple times.
+ * @param stream, the stream to send data over.
+ * @param data, the data to send.
+ * @param end_stream, supplies wether this is the last data in the stream.
+ * @return envoy_status_t, the resulting status of the operation.
+ */
+envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream);
+
+/**
+ * Send metadata over an HTTP stream. This method can be invoked multiple times.
+ * @param stream, the stream to send metadata over.
+ * @param metadata, the metadata to send.
+ * @param end_stream, supplies wether this is the last data in the stream.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, bool end_stream);
 
 /**
- * Send trailers over an open HTTP stream.
+ * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
+ * Note that this method implicitly ends the stream.
+ * @param stream, the stream to send trailers over.
+ * @param trailers, the trailers to send.
+ * @return envoy_status_t, the resulting status of the operation.
+
  */
-envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers, bool end_stream);
+envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers);
 
 /**
  * Half-close an HTTP stream. The stream will be observable and may return further data
  * via the observer callbacks. However, nothing further may be sent.
+ * @param stream, the stream to close.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t close_stream(envoy_stream_t stream);
 
 /**
  * Detach all observers from a stream and send an interrupt upstream if supported by transport.
+ * @param stream, the stream to evict.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t evict_stream(envoy_stream_t stream);
 
 /**
  * External entrypoint for library.
+ * @param config, the configuration blob to run envoy with.
+ * @param log_level, the logging level to run envoy with.
  */
 envoy_status_t run_engine(const char* config, const char* log_level);
 
