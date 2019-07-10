@@ -91,12 +91,14 @@ extension Request {
   ///
   /// For example:
   ///
-  /// Request *request = [Request withUrl:url method:RequestMethodGet build:^(RequestBuilder *builder) {
+  /// Request *req = [Request withUrl:url method:RequestMethodGet build:^(RequestBuilder *builder) {
   ///   [builder addBody:bodyData];
   ///   [builder addRetryPolicy:retryPolicy];
   /// }];
   @objc
-  public static func with(url: URL, method: RequestMethod, build: (RequestBuilder) -> Void) -> Request {
+  public static func with(url: URL, method: RequestMethod, build: (RequestBuilder) -> Void)
+    -> Request
+  {
     let builder = RequestBuilder(url: url, method: method)
     build(builder)
     return builder.build()
