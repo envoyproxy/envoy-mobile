@@ -1,6 +1,7 @@
 import Foundation
 
-public class Envoy {
+@objcMembers
+public final class Envoy: NSObject {
   private let runner: EnvoyRunner
 
   public var isRunning: Bool {
@@ -20,9 +21,9 @@ public class Envoy {
     self.init(config: config, logLevel: "info")
   }
 
-  private class EnvoyRunner: Thread {
-    let config: String
-    let logLevel: String
+  private final class EnvoyRunner: Thread {
+    private let config: String
+    private let logLevel: String
 
     init(config: String, logLevel: String) {
       self.config = config
