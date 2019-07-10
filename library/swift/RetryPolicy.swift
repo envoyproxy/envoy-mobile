@@ -34,13 +34,13 @@ public final class RetryPolicy: NSObject {
   public let maxRetryCount: UInt
   /// Whitelist of rules used for retrying.
   public let retryOn: [RetryRule]
-  /// Timeout (in seconds) to apply to each retry.
-  public let perRetryTimeoutSeconds: UInt?
+  /// Timeout (in milliseconds) to apply to each retry.
+  public let perRetryTimeoutMS: UInt?
 
   /// Public initializer.
-  public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutSeconds: UInt?) {
+  public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutMS: UInt?) {
     self.maxRetryCount = maxRetryCount
     self.retryOn = retryOn
-    self.perRetryTimeoutSeconds = perRetryTimeoutSeconds
+    self.perRetryTimeoutMS = perRetryTimeoutMS
   }
 }
