@@ -3,15 +3,29 @@ package io.envoyproxy.envoymobile
 import java.net.URL
 
 
+/**
+ * Builder used for constructing instances of `Request` types.
+ *
+ * @param url URL for the request.
+ * @param method Method for the request.
+ */
 class RequestBuilder(
-    val method: RequestMethod,
-    val url: URL
+    val url: URL,
+    val method: RequestMethod
 ) {
-  private var body: ByteArray? = null
-  private var retryPolicy: RetryPolicy? = null
-
+  // Headers to send with the request.
+  // Multiple values for a given name are valid, and will be sent as comma-separated values.
   private val headers: MutableMap<String, MutableList<String>> = mutableMapOf()
+
+  // Trailers to send with the request.
+  // Multiple values for a given name are valid, and will be sent as comma-separated values.
   private val trailers: MutableMap<String, MutableList<String>> = mutableMapOf()
+
+  // Serialized data to send as the body of the request.
+  private var body: ByteArray? = null
+
+  // Retry policy to use for this request.
+  private var retryPolicy: RetryPolicy? = null
 
   fun addBody(body: ByteArray?): RequestBuilder {
     this.body = body

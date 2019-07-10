@@ -12,7 +12,7 @@ class Request internal constructor(
 ) {
 
   fun toBuilder(): RequestBuilder {
-    return RequestBuilder(method, url)
+    return RequestBuilder(url, method)
         .setHeaders(headers)
         .setTrailers(trailers)
         .addBody(body)
