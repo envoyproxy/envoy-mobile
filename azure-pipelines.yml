@@ -169,7 +169,7 @@ stages:
               export CXX=clang++
             displayName: 'Set up clang toolchain'
           - script: |
-              ./bazelw query 'tests(//library/kotlin/...)' | xargs ./bazelw test --test_output=all
+              ./bazelw test --test_output=all 'tests(//library/kotlin/...)'
             displayName: '//library/kotlin tests'
       - job: linux_java_helloworld
         dependsOn: linux_dist
