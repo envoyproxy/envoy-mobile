@@ -28,6 +28,7 @@ public enum RetryRule: Int {
 }
 
 /// Specifies how a request may be retried, containing one or more rules.
+/// https://www.envoyproxy.io/learn/automatic-retries
 @objcMembers
 public final class RetryPolicy: NSObject {
   /// Maximum number of retries that a request may be performed.
