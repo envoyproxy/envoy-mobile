@@ -20,6 +20,7 @@ swift_library(
     name = "envoy_swift_lib",
     srcs = [
         "Envoy.swift",
+        "LogLevel.swift",
     ],
     module_name = "Envoy",
     visibility = ["//visibility:public"],
