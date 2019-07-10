@@ -46,15 +46,4 @@ class RequestTest {
 
     assertThat(request).isEqualTo(request.toBuilder().build())
   }
-
-  @Test
-  fun `removing headers should clear headers in request`() {
-    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
-        .addBody("data".toByteArray())
-        .addHeader("header_a", "value_a1")
-        .removeHeader("header_a")
-        .build()
-
-
-  }
 }
