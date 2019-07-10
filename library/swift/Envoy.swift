@@ -5,11 +5,11 @@ public final class Envoy: NSObject {
   private let runner: EnvoyRunner
 
   public var isRunning: Bool {
-    return runner.isExecuting
+    return self.runner.isExecuting
   }
 
   public var isTerminated: Bool {
-    return runner.isFinished
+    return self.runner.isFinished
   }
 
   public init(config: String, logLevel: LogLevel = .info) {
