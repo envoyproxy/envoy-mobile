@@ -1,6 +1,6 @@
 import Foundation
 
-/// Rules that may be used for retry policies.
+/// Rules that may be used with `RetryPolicy`.
 /// See the `x-envoy-retry-on` Envoy header for documentation.
 @objc
 public enum RetryRule: Int {
@@ -27,6 +27,7 @@ public enum RetryRule: Int {
   }
 }
 
+/// Specifies how a request may be retried, containing one or more rules.
 @objcMembers
 public final class RetryPolicy: NSObject {
   /// Maximum number of retries that a request may be performed.
