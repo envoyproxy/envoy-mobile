@@ -9,7 +9,18 @@ envoy_cc_library(
     srcs = ["main_interface.cc"],
     hdrs = ["main_interface.h"],
     repository = "@envoy",
-    deps = ["@envoy//source/exe:envoy_main_common_lib"],
+    deps = [
+        ":envoy_types_lib",
+        "//library/common/http:async_stream_manager_lib",
+        "//library/common/http:utility_lib",
+        "@envoy//source/exe:envoy_main_common_lib",
+    ],
+)
+
+envoy_cc_library(
+    name = "envoy_types_lib",
+    hdrs = ["types.h"],
+    repository = "@envoy",
 )
 
 cc_library(
