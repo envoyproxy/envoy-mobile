@@ -49,79 +49,79 @@ class RequestBuilder(
   /**
    * Append a value to the header key.
    *
-   * @param header the header key.
+   * @param name the header key.
    * @param value the value associated to the header key.
    * @return this builder.
    */
-  fun addHeader(header: String, value: String): RequestBuilder {
-    if (headers.containsKey(header)) {
-      headers[header]!!.add(value)
+  fun addHeader(name: String, value: String): RequestBuilder {
+    if (headers.containsKey(name)) {
+      headers[name]!!.add(value)
     }
 
-    headers[header] = mutableListOf(value)
+    headers[name] = mutableListOf(value)
     return this
   }
 
   /**
    * Remove the value in the specified header.
    *
-   * @param header the header key to remove.
+   * @param name the header key to remove.
    * @param value the value to be removed.
    * @return this builder.
    */
-  fun removeHeader(header: String, value: String): RequestBuilder {
-    headers.remove(header)
+  fun removeHeader(name: String, value: String): RequestBuilder {
+    headers.remove(name)
     return this
   }
 
   /**
    * Remove all headers with this name.
    *
-   * @param header the header key to remove.
+   * @param name the header key to remove.
    * @return this builder.
    */
-  fun removeHeaders(header: String): RequestBuilder {
-    headers.remove(header)
+  fun removeHeaders(name: String): RequestBuilder {
+    headers.remove(name)
     return this
   }
 
   /**
    * Append a value to the trailer key.
    *
-   * @param trailer the trailer key.
+   * @param name the trailer key.
    * @param value the value associated to the trailer key.
    * @return this builder.
    */
-  fun addTrailer(trailer: String, value: String): RequestBuilder {
+  fun addTrailer(name: String, value: String): RequestBuilder {
     if (trailers.containsKey(value)) {
-      trailers[trailer]!!.add(value)
+      trailers[name]!!.add(value)
     }
 
-    trailers[trailer] = mutableListOf(value)
+    trailers[name] = mutableListOf(value)
     return this
   }
 
   /**
    * Remove the value in the specified trailer.
    *
-   * @param trailer the trailer key to remove.
+   * @param name the trailer key to remove.
    * @param value the value to be removed.
    * @return this builder.
    */
-  fun removeTrailers(trailer: String): RequestBuilder {
-    trailers.remove(trailer)
+  fun removeTrailers(name: String): RequestBuilder {
+    trailers.remove(name)
     return this
   }
 
   /**
    * Remove the value in the specified trailer.
    *
-   * @param trailer the trailer key to remove.
+   * @param name the trailer key to remove.
    * @param value the value to be removed.
    * @return this builder.
    */
-  fun removeTrailer(trailer: String, value: String): RequestBuilder {
-    trailers.remove(trailer)
+  fun removeTrailer(name: String, value: String): RequestBuilder {
+    trailers.remove(name)
     return this
   }
 

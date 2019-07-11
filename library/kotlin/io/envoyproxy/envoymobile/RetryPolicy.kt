@@ -10,7 +10,7 @@ package io.envoyproxy.envoymobile
 data class RetryPolicy(
     val maxRetryCount: Int,
     val retryOn: List<RetryRule>,
-    val perRetryTimeoutMs: Long
+    val perRetryTimeoutMs: Long?
 )
 
 /**
