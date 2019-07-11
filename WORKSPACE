@@ -23,10 +23,11 @@ local_repository(
     path = "envoy_build_config",
 )
 
-http_archive(
+git_repository(
     name = "build_bazel_rules_apple",
-    sha256 = "6efdde60c91724a2be7f89b0c0a64f01138a45e63ba5add2dca2645d981d23a1",
-    url = "https://github.com/bazelbuild/rules_apple/releases/download/0.17.2/rules_apple.0.17.2.tar.gz",
+    commit = "7edb4c18fca1514aa6c26fbdf6271625f6823f33",
+    remote = "https://github.com/bazelbuild/rules_apple.git",
+    shallow_since = "1562886228 -0700",
 )
 
 load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
@@ -52,16 +53,16 @@ go_register_toolchains(go_version = GO_VERSION)
 
 git_repository(
     name = "build_bazel_apple_support",
-    commit = "bdcef226ad626bd8b9a4a377347a2f8c1726f3bb",
+    commit = "371f6863768c2cef0e02790a11bdbdc0a39f09fb",
     remote = "https://github.com/bazelbuild/apple_support.git",
-    shallow_since = "1554146182 -0700",
+    shallow_since = "1560187441 -0700",
 )
 
 git_repository(
     name = "build_bazel_rules_swift",
-    commit = "c935de3d04a8d24feb09a57df3b33a328be5d863",
+    commit = "770b1fe98693631e72a3b9cd5df4e2ae3d9c76ea",
     remote = "https://github.com/bazelbuild/rules_swift.git",
-    shallow_since = "1559570694 -0700",
+    shallow_since = "1561403928 -0700",
 )
 
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
