@@ -3,10 +3,10 @@ import Foundation
 /// Builder used for constructing instances of `Request` types.
 @objcMembers
 public final class RequestBuilder: NSObject {
-  /// URL for the request.
-  public private(set) var url: URL
   /// Method for the request.
   public private(set) var method: RequestMethod
+  /// URL for the request.
+  public private(set) var url: URL
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public private(set) var headers: [String: [String]] = [:]
@@ -22,8 +22,8 @@ public final class RequestBuilder: NSObject {
 
   /// Internal initializer used for converting a request back to a builder.
   init(request: Request) {
-    self.url = request.url
     self.method = request.method
+    self.url = request.url
     self.headers = request.headers
     self.trailers = request.trailers
     self.body = request.body
@@ -31,27 +31,27 @@ public final class RequestBuilder: NSObject {
   }
 
   /// Public initializer.
-  public init(url: URL, method: RequestMethod) {
-    self.url = url
+  public init(method: RequestMethod, url: URL) {
     self.method = method
+    self.url = url
   }
 
   // MARK: - Builder functions
 
   @discardableResult
-  public func addHeader(named name: String, value: String) -> RequestBuilder {
+  public func addHeader(name: String, value: String) -> RequestBuilder {
     self.headers[name, default: []].append(value)
     return self
   }
 
   @discardableResult
-  public func removeHeaders(named name: String) -> RequestBuilder {
+  public func removeHeaders(name: String) -> RequestBuilder {
     self.headers.removeValue(forKey: name)
     return self
   }
 
   @discardableResult
-  public func removeHeader(named name: String, value: String) -> RequestBuilder {
+  public func removeHeader(name: String, value: String) -> RequestBuilder {
     self.headers[name]?.removeAll(where: { $0 == value })
     if self.headers[name]?.isEmpty == true {
       self.headers.removeValue(forKey: name)
@@ -61,13 +61,13 @@ public final class RequestBuilder: NSObject {
   }
 
   @discardableResult
-  public func addTrailer(named name: String, value: String) -> RequestBuilder {
+  public func addTrailer(name: String, value: String) -> RequestBuilder {
     self.trailers[name, default: []].append(value)
     return self
   }
 
   @discardableResult
-  public func removeTrailer(named name: String) -> RequestBuilder {
+  public func removeTrailer(name: String) -> RequestBuilder {
     self.trailers.removeValue(forKey: name)
     return self
   }
@@ -111,15 +111,16 @@ extension Request {
   ///
   /// For example:
   ///
-  /// Request *req = [Request withUrl:url method:RequestMethodGet build:^(RequestBuilder *builder) {
+  /// Request *req = [Request withMethod:RequestMethodGet url:url build:^(RequestBuilder *builder) {
   ///   [builder addBody:bodyData];
-  ///   [builder addRetryPolicy:retryPolicy];
+  ///   [builder addHeaderWithName:@"x-some-header" value:@"foo"];
+  ///   [builder addTrailerWithName:@"x-some-trailer" value:@"foo"];
   /// }];
   @objc
-  public static func with(url: URL, method: RequestMethod, build: (RequestBuilder) -> Void)
+  public static func with(method: RequestMethod, url: URL, build: (RequestBuilder) -> Void)
     -> Request
   {
-    let builder = RequestBuilder(url: url, method: method)
+    let builder = RequestBuilder(method: method, url: url)
     build(builder)
     return builder.build()
   }
