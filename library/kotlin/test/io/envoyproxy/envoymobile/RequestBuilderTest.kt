@@ -7,45 +7,99 @@ import java.net.URL
 class RequestBuilderTest {
 
   @Test
-  fun `adding new headers should append to the list of header keys`() {
+  fun `adding request data should have body present in request`() {
+    val body = "data".toByteArray()
 
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addBody(body)
+        .build()
+    assertThat(request.body).isEqualTo(body)
   }
 
   @Test
-  fun `removing a header key removes the entire header list`() {
+  fun `not adding request data should have null body in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .build()
 
+    assertThat(request.body).isNull()
+  }
+
+  @Test
+  fun `adding retry policy should have policy present in request`() {
+
+    val retryPolicy = RetryPolicy(23, listOf(RetryRule.ALL_5XX, RetryRule.CONNECT_FAILURE), 1234)
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addRetryPolicy(retryPolicy)
+        .build()
+
+    assertThat(request.retryPolicy).isEqualTo(RetryPolicy(23, listOf(RetryRule.ALL_5XX, RetryRule.CONNECT_FAILURE), 1234))
+  }
+
+  @Test
+  fun `not adding retry policy should have null body in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .build()
+
+    assertThat(request.retryPolicy).isNull()
+  }
+
+  @Test
+  fun `adding new headers should append to the list of header keys`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addHeader("header_a", "value_a1")
+        .build()
+
+    assertThat(request.headers["header_a"]).contains("value_a1")
   }
 
   @Test
   fun `adding new trailers should append to the list of trailers keys`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addTrailer("trailer_a", "value_a1")
+        .build()
 
-  }
-
-  @Test
-  fun `removing a trailer key removes the entire trailer list`() {
-
+    assertThat(request.trailers["trailer_a"]).contains("value_a1")
   }
 
   @Test
   fun `removing headers should clear headers in request`() {
     val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
-        .addBody("data".toByteArray())
         .addHeader("header_a", "value_a1")
-        .removeHeader("header_a")
+        .removeHeaders("header_a")
         .build()
 
     assertThat(request.headers).doesNotContainKey("header_a")
   }
 
   @Test
+  fun `removing a specific header value should not be in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addHeader("header_a", "value_a1")
+        .addHeader("header_a", "value_a2")
+        .removeHeader("header_a", "value_a1")
+        .build()
+
+    assertThat(request.headers).doesNotContainKey("value_a1")
+  }
+
+  @Test
   fun `removing trailers should clear trailers in request`() {
     val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
-        .addBody("data".toByteArray())
         .addTrailer("trailer_a", "value_a1")
-        .removeTrailer("trailer_a")
+        .removeTrailers("trailer_a")
         .build()
 
     assertThat(request.trailers).doesNotContainKey("trailer_a")
   }
 
+  @Test
+  fun `removing a specific trailer value should not be in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addTrailer("trailer_a", "value_a1")
+        .addTrailer("trailer_a", "value_a2")
+        .removeTrailer("trailer_a", "value_a1")
+        .build()
+
+    assertThat(request.trailers).doesNotContainKey("value_a1")
+  }
 }

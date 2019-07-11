@@ -11,6 +11,12 @@ class Request internal constructor(
     val retryPolicy: RetryPolicy?
 ) {
 
+  /**
+   * Transforms this Request to the {@link io.envoyproxy.envoymobile.RequestBuilder} for modification using the
+   * current properties
+   *
+   * @return the builder
+   */
   fun toBuilder(): RequestBuilder {
     return RequestBuilder(url, method)
         .setHeaders(headers)

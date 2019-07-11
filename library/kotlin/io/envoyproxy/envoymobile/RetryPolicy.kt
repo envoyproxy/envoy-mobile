@@ -4,12 +4,12 @@ package io.envoyproxy.envoymobile
  * Specifies how a request may be retried, containing one or more rules.
  *
  * @param maxRetryCount Maximum number of retries that a request may be performed.
- * @param retryOnCodes Whitelist of rules used for retrying.
+ * @param retryOn Whitelist of rules used for retrying.
  * @param perRetryTimeoutMs Timeout (in milliseconds) to apply to each retry.
  */
 data class RetryPolicy(
     val maxRetryCount: Int,
-    val retryOnCodes: List<RetryRule>,
+    val retryOn: List<RetryRule>,
     val perRetryTimeoutMs: Long
 )
 

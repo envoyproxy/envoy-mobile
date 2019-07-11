@@ -27,16 +27,32 @@ class RequestBuilder(
   // Retry policy to use for this request.
   private var retryPolicy: RetryPolicy? = null
 
+  /**
+   * Serialized data to send as the body of the request.
+   */
   fun addBody(body: ByteArray?): RequestBuilder {
     this.body = body
     return this
   }
 
+  /**
+   * Add a retry policy to use for this request.
+   *
+   * @param retryPolicy the {@link io.envoyproxy.envoymobile.RetryPolicy} for this request.
+   * @return this builder.
+   */
   fun addRetryPolicy(retryPolicy: RetryPolicy?): RequestBuilder {
     this.retryPolicy = retryPolicy
     return this
   }
 
+  /**
+   * Append a value to the header key.
+   *
+   * @param header the header key.
+   * @param value the value associated to the header key.
+   * @return this builder.
+   */
   fun addHeader(header: String, value: String): RequestBuilder {
     if (headers.containsKey(header)) {
       headers[header]!!.add(value)
@@ -46,11 +62,36 @@ class RequestBuilder(
     return this
   }
 
-  fun removeHeader(header: String): RequestBuilder {
+  /**
+   * Remove the value in the specified header.
+   *
+   * @param header the header key to remove.
+   * @param value the value to be removed.
+   * @return this builder.
+   */
+  fun removeHeader(header: String, value: String): RequestBuilder {
     headers.remove(header)
     return this
   }
 
+  /**
+   * Remove all headers with this name.
+   *
+   * @param header the header key to remove.
+   * @return this builder.
+   */
+  fun removeHeaders(header: String): RequestBuilder {
+    headers.remove(header)
+    return this
+  }
+
+  /**
+   * Append a value to the trailer key.
+   *
+   * @param trailer the trailer key.
+   * @param value the value associated to the trailer key.
+   * @return this builder.
+   */
   fun addTrailer(trailer: String, value: String): RequestBuilder {
     if (trailers.containsKey(value)) {
       trailers[trailer]!!.add(value)
@@ -60,11 +101,35 @@ class RequestBuilder(
     return this
   }
 
-  fun removeTrailer(trailer: String): RequestBuilder {
+  /**
+   * Remove the value in the specified trailer.
+   *
+   * @param trailer the trailer key to remove.
+   * @param value the value to be removed.
+   * @return this builder.
+   */
+  fun removeTrailers(trailer: String): RequestBuilder {
     trailers.remove(trailer)
     return this
   }
 
+  /**
+   * Remove the value in the specified trailer.
+   *
+   * @param trailer the trailer key to remove.
+   * @param value the value to be removed.
+   * @return this builder.
+   */
+  fun removeTrailer(trailer: String, value: String): RequestBuilder {
+    trailers.remove(trailer)
+    return this
+  }
+
+  /**
+   * Creates the {@link io.envoyproxy.envoymobile.Request} object using the data set in the builder
+   *
+   * @return the {@link io.envoyproxy.envoymobile.Request} object
+   */
   fun build(): Request {
     return Request(
         method,

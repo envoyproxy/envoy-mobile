@@ -32,8 +32,11 @@ kt_android_library(
 )
 
 kt_jvm_library(
-    name = "envoy_blob",
-    srcs = glob([
-        "*.kt",
-    ]),
+    name = "envoy_interfaces_lib",
+    srcs =[
+        "Request.kt",
+        "RequestBuilder.kt",
+        "RequestMethod.kt",
+        "RetryPolicy.kt"
+    ],
 )

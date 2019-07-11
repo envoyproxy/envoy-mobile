@@ -6,11 +6,21 @@ load("//bazel:kotlin_test.bzl", "envoy_mobile_kt_test")
 envoy_package()
 
 envoy_mobile_kt_test(
-    name = "request_test",
-    srcs = glob([
-        "*.kt",
-    ]),
+    name = "request_builder_test",
+    srcs = [
+        "RequestBuilderTest.kt",
+    ],
     deps = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_blob",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+    ],
+)
+
+envoy_mobile_kt_test(
+    name = "request_test",
+    srcs = [
+        "RequestTest.kt",
+    ],
+    deps = [
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
 )
