@@ -70,7 +70,9 @@ class RequestBuilder(
    * @return this builder.
    */
   fun removeHeader(name: String, value: String): RequestBuilder {
-    headers.remove(name)
+    if (headers.containsKey(name)) {
+      headers[name]!!.remove(value)
+    }
     return this
   }
 
@@ -121,7 +123,9 @@ class RequestBuilder(
    * @return this builder.
    */
   fun removeTrailer(name: String, value: String): RequestBuilder {
-    trailers.remove(name)
+    if (trailers.containsKey(name)) {
+      trailers[name]!!.remove(value)
+    }
     return this
   }
 

@@ -79,7 +79,18 @@ class RequestBuilderTest {
         .removeHeader("header_a", "value_a1")
         .build()
 
-    assertThat(request.headers).doesNotContainKey("value_a1")
+    assertThat(request.headers["header_a"]).doesNotContain("value_a1")
+  }
+
+  @Test
+  fun `removing a specific header value should keep the other header values in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addHeader("header_a", "value_a1")
+        .addHeader("header_a", "value_a2")
+        .removeHeader("header_a", "value_a1")
+        .build()
+
+    assertThat(request.headers["header_a"]).contains("value_a2")
   }
 
   @Test
@@ -100,6 +111,18 @@ class RequestBuilderTest {
         .removeTrailer("trailer_a", "value_a1")
         .build()
 
-    assertThat(request.trailers).doesNotContainKey("value_a1")
+    assertThat(request.trailers["trailer_a"]).doesNotContain("value_a1")
   }
+
+  @Test
+  fun `removing a specific trailer value should keep the other trailer values in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addTrailer("trailer_a", "value_a1")
+        .addTrailer("trailer_a", "value_a2")
+        .removeTrailer("trailer_a", "value_a1")
+        .build()
+
+    assertThat(request.trailers["trailer_a"]).contains("value_a2")
+  }
+
 }
