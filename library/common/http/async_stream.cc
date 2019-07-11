@@ -1,16 +1,16 @@
 #include "library/common/http/async_stream.h"
 
-namespace EnvoyMobile {
+namespace Envoy {
 namespace Http {
 
-AsyncStream::AsyncStream(envoy_observer) {}
+MobileAsyncStream::MobileAsyncStream(envoy_observer) {}
 
-void AsyncStream::sendHeaders(Envoy::Http::HeaderMap&, bool) {}
-void AsyncStream::sendData(Envoy::Buffer::Instance&, bool) {}
-void AsyncStream::sendMetadata(Envoy::Http::HeaderMap&, bool) {}
-void AsyncStream::sendTrailers(Envoy::Http::HeaderMap&) {}
-void AsyncStream::close() {}
-void AsyncStream::evict() {}
+void MobileAsyncStream::sendHeaders(Envoy::Http::HeaderMap&, bool) {}
+void MobileAsyncStream::sendData(Envoy::Buffer::Instance&, bool) {}
+void MobileAsyncStream::sendMetadata(Envoy::Http::HeaderMap&, bool) {}
+void MobileAsyncStream::sendTrailers(Envoy::Http::HeaderMap&) {}
+void MobileAsyncStream::reset() {}
+void MobileAsyncStream::locally_close() {}
 
 } // namespace Http
-} // namespace EnvoyMobile
+} // namespace Envoy

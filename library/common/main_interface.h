@@ -68,7 +68,7 @@ envoy_status_t locally_close_stream(envoy_stream_t stream);
  * @param stream, the stream to evict.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t interrupt_stream(envoy_stream_t stream);
+envoy_status_t reset_stream(envoy_stream_t stream);
 
 /**
  * External entrypoint for library.
