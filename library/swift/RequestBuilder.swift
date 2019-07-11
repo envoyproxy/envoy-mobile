@@ -39,14 +39,23 @@ public final class RequestBuilder: NSObject {
   // MARK: - Builder functions
 
   @discardableResult
-  public func addHeader(name: String, value: String) -> RequestBuilder {
+  public func addHeader(named name: String, value: String) -> RequestBuilder {
     self.headers[name, default: []].append(value)
     return self
   }
 
   @discardableResult
-  public func removeHeader(name: String) -> RequestBuilder {
+  public func removeHeaders(named name: String) -> RequestBuilder {
     self.headers.removeValue(forKey: name)
+    return self
+  }
+
+  public func removeHeader(named name: String, value: String) -> RequestBuilder {
+    self.headers[name]?.removeAll(where: { $0 == value })
+    if self.headers[name]?.isEmpty == true {
+      self.headers.removeValue(forKey: name)
+    }
+
     return self
   }
 
