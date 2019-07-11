@@ -23,11 +23,10 @@ local_repository(
     path = "envoy_build_config",
 )
 
-git_repository(
+http_archive(
     name = "build_bazel_rules_apple",
-    commit = "ff6a37b24fcbbd525a5bf61692a12c810d0ee3c1",
-    remote = "https://github.com/bazelbuild/rules_apple.git",
-    shallow_since = "1559833568 -0700",
+    sha256 = "6efdde60c91724a2be7f89b0c0a64f01138a45e63ba5add2dca2645d981d23a1",
+    url = "https://github.com/bazelbuild/rules_apple/releases/download/0.17.2/rules_apple.0.17.2.tar.gz",
 )
 
 load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
@@ -94,12 +93,12 @@ maven_install(
     artifacts = [
         # Test artifacts
         "org.assertj:assertj-core:3.9.0",
-        "junit:junit:4.12"
+        "junit:junit:4.12",
     ],
     repositories = [
         "https://repo1.maven.org/maven2",
         "https://jcenter.bintray.com/",
-    ]
+    ],
 )
 
 # Bazel Kotlin 1.3 patch: https://github.com/bazelbuild/rules_kotlin/issues/159
