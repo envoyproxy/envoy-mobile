@@ -36,20 +36,6 @@ public final class RequestBuilder: NSObject {
     self.method = method
   }
 
-  /// Convenience initializer accepting individual URL components.
-  public convenience init?(scheme: String, host: String, path: String, method: RequestMethod) {
-    var components = URLComponents()
-    components.scheme = scheme
-    components.host = host
-    components.path = path
-
-    guard let url = components.url else {
-      return nil
-    }
-
-    self.init(url: url, method: method)
-  }
-
   // MARK: - Builder functions
 
   @discardableResult
