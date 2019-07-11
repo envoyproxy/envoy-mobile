@@ -1,5 +1,10 @@
 #include "library/common/main_interface.h"
 
+#include <unordered_map>
+
+#include "library/common/http/async_stream_manager.h"
+#include "library/common/http/utility.h"
+
 #include "common/upstream/logical_dns_cluster.h"
 
 #include "exe/main_common.h"
@@ -10,6 +15,81 @@
 #include "extensions/transport_sockets/tls/config.h"
 
 // NOLINT(namespace-envoy)
+
+static EnvoyMobile::Http::AsyncStreamManager stream_manager_;
+
+envoy_stream start_stream(envoy_observer observer) {
+  return {ENVOY_SUCCESS, stream_manager_.createStream(observer)};
+}
+
+// Note I did not deal with HeaderMap or Buffer (below) ownership yet. Meaning this functions still
+// retain ownership of those objects. We should probably transfer ownership of them to the AsyncStream.
+
+// Note as well that this functions did not take ownership of the passed in envoy_headers or envoy_data.
+// The caller still has ownership of them.
+envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, bool end_stream) {
+  auto stream = stream_manager_.getStream(stream_id);
+  if (stream) {
+    const auto header_map = EnvoyMobile::Http::Utility::transformHeaders(headers);
+    stream->sendHeaders(*header_map, end_stream);
+    return ENVOY_SUCCESS;
+  } else {
+    return ENVOY_FAILURE;
+  }
+}
+
+envoy_status_t send_data(envoy_stream_t stream_id, envoy_data data, bool end_stream) {
+  auto stream = stream_manager_.getStream(stream_id);
+  if (stream) {
+    const auto buffer = EnvoyMobile::Http::Utility::transformData(data);
+    stream->sendData(*buffer, end_stream);
+    return ENVOY_SUCCESS;
+  } else {
+    return ENVOY_FAILURE;
+  }
+}
+
+envoy_status_t send_metadata(envoy_stream_t stream_id, envoy_headers metadata, bool end_stream) {
+  auto stream = stream_manager_.getStream(stream_id);
+  if (stream) {
+    const auto metadata_map = EnvoyMobile::Http::Utility::transformHeaders(metadata);
+    stream->sendMetadata(*metadata_map, end_stream);
+    return ENVOY_SUCCESS;
+  } else {
+    return ENVOY_FAILURE;
+  }
+}
+
+envoy_status_t send_trailers(envoy_stream_t stream_id, envoy_headers trailers) {
+  auto stream = stream_manager_.getStream(stream_id);
+  if (stream) {
+    const auto trailers_map = EnvoyMobile::Http::Utility::transformHeaders(trailers);
+    stream->sendTrailers(*trailers_map);
+    return ENVOY_SUCCESS;
+  } else {
+    return ENVOY_FAILURE;
+  }
+}
+
+envoy_status_t close_stream(envoy_stream_t stream_id) {
+  auto stream = stream_manager_.getStream(stream_id);
+  if (stream) {
+    stream->close();
+    return ENVOY_SUCCESS;
+  } else {
+    return ENVOY_FAILURE;
+  }
+}
+
+envoy_status_t evict_stream(envoy_stream_t stream_id) {
+  auto stream = stream_manager_.getStream(stream_id);
+  if (stream) {
+    stream->evict();
+    return ENVOY_SUCCESS;
+  } else {
+    return ENVOY_FAILURE;
+  }
+}
 
 /**
  * External entrypoint for library.
