@@ -36,6 +36,14 @@ typedef struct {
 } envoy_string;
 
 /**
+ * Holds raw binary data as an array of bytes.
+ */
+typedef struct {
+  uint64_t length;
+  uint8_t* bytes;
+} envoy_data;
+
+/**
  * Holds data about an HTTP stream.
  */
 typedef struct {
@@ -64,14 +72,6 @@ typedef struct {
   // Array of headers.
   envoy_header* headers;
 } envoy_headers;
-
-/**
- * Holds raw binary data as an array of bytes.
- */
-typedef struct {
-  uint64_t length;
-  uint8_t* bytes;
-} envoy_data;
 
 // Convenience constant to pass to function calls with no data.
 // For example when sending a headers-only request.
@@ -181,14 +181,14 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers);
  * @param stream, the stream to close.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t close_stream(envoy_stream_t stream);
+envoy_status_t locally_close_stream(envoy_stream_t stream);
 
 /**
  * Detach all observers from a stream and send an interrupt upstream if supported by transport.
  * @param stream, the stream to evict.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t evict_stream(envoy_stream_t stream);
+envoy_status_t interrupt_stream(envoy_stream_t stream);
 
 /**
  * External entrypoint for library.
