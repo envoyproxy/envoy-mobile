@@ -92,12 +92,18 @@ envoy_status_t reset_stream(envoy_stream_t stream_id) {
   }
 }
 
+static Envoy::Http::AsyncClient* api_async_client_;
+static std::unique_ptr<Envoy::MainCommon> main_common_;
+
+void setup() {
+  api_async_client_ =
+      &main_common_->server()->clusterManager().httpAsyncClientForCluster("hello_world_api");
+}
+
 /**
  * External entrypoint for library.
  */
 envoy_status_t run_engine(const char* config, const char* log_level) {
-  std::unique_ptr<Envoy::MainCommon> main_common;
-
   char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),
                         strdup("-l"),    strdup(log_level),       nullptr};
 
@@ -123,7 +129,7 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
   // This is a known problem, and will be addressed by:
   // https://github.com/lyft/envoy-mobile/issues/34
   try {
-    main_common = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
+    main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
   } catch (const Envoy::NoServingException& e) {
     return ENVOY_SUCCESS;
   } catch (const Envoy::MalformedArgvException& e) {
@@ -136,5 +142,5 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
 
   // Run the server listener loop outside try/catch blocks, so that unexpected
   // exceptions show up as a core-dumps for easier diagnostics.
-  return main_common->run() ? ENVOY_SUCCESS : ENVOY_FAILURE;
+  return main_common_->run() ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
