@@ -33,10 +33,10 @@ kt_android_library(
 
 kt_jvm_library(
     name = "envoy_interfaces_lib",
-    srcs =[
+    srcs = [
         "Request.kt",
         "RequestBuilder.kt",
         "RequestMethod.kt",
-        "RetryPolicy.kt"
+        "RetryPolicy.kt",
     ],
 )
