@@ -67,7 +67,7 @@ typedef struct {
  * Holds an HTTP header map as an array of envoy_header structs.
  */
 typedef struct {
-  // Size of the array.
+  // Number of header elements in the array.
   uint64_t length;
   // Array of headers.
   envoy_header* headers;
