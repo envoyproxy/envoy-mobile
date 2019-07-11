@@ -64,6 +64,7 @@ public final class RequestBuilder: NSObject {
     return self
   }
 
+  @discardableResult
   public func removeHeader(named name: String, value: String) -> RequestBuilder {
     self.headers[name]?.removeAll(where: { $0 == value })
     if self.headers[name]?.isEmpty == true {
@@ -74,14 +75,24 @@ public final class RequestBuilder: NSObject {
   }
 
   @discardableResult
-  public func addTrailer(name: String, value: String) -> RequestBuilder {
+  public func addTrailer(named name: String, value: String) -> RequestBuilder {
     self.trailers[name, default: []].append(value)
     return self
   }
 
   @discardableResult
-  public func removeTrailer(name: String) -> RequestBuilder {
+  public func removeTrailer(named name: String) -> RequestBuilder {
     self.trailers.removeValue(forKey: name)
+    return self
+  }
+
+  @discardableResult
+  public func removeTrailers(named name: String, value: String) -> RequestBuilder {
+    self.trailers[name]?.removeAll(where: { $0 == value })
+    if self.trailers[name]?.isEmpty == true {
+      self.trailers.removeValue(forKey: name)
+    }
+
     return self
   }
 
