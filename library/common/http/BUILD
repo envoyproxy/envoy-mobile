@@ -12,6 +12,7 @@ envoy_cc_library(
     deps = [
         "//library/common:envoy_types_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
+        "@envoy//include/envoy/http:async_client_interface",
         "@envoy//include/envoy/http:header_map_interface",
     ],
 )
