@@ -5,13 +5,15 @@ Analysis of CPU/battery impact
 
 Modified versions of the "hello world" example apps were used to run these experiments:
 
-- `Android control app <https://github.com/lyft/envoy-mobile/tree/8636711/examples/kotlin/control>`_
-- `Android Envoy app <https://github.com/lyft/envoy-mobile/tree/8636711/examples/kotlin/hello_world>`_
-- `iOS control app <https://github.com/lyft/envoy-mobile/tree/f05d43f/examples/objective-c/control/control>`_
-- `iOS Envoy app <https://github.com/lyft/envoy-mobile/tree/f05d43f/examples/objective-c/xcode_variant/EnvoyObjc/EnvoyObjc>`_
+- :tree:`Android control app <8636711/examples/kotlin/control>`
+- :tree:`Android Envoy app <8636711/examples/kotlin/hello_world>`
+- :tree:`iOS control app <2f27581/examples/objective-c/control/control>`
+- :tree:`iOS Envoy app <2f27581/examples/objective-c/xcode_variant/EnvoyObjc/EnvoyObjc>`
 
-- **Control** - Made a request every ``200ms`` to an endpoint without Envoy compiled in the app.
-- **Envoy** - Made the same request at the same interval, but routed through an instance of Envoy.
+The 2 apps on each platform:
+
+- **Control:** Made a request every ``200ms`` to an endpoint without Envoy compiled in the app.
+- **Envoy:** Made the same request at the same interval, but routed through an instance of Envoy.
 
 All request/response caching was disabled.
 
@@ -21,27 +23,26 @@ Results
 iOS
 ---
 
-Valid through SHA `f05d43f <https://github.com/lyft/envoy-mobile/tree/f05d43f>`_.
+Valid through SHA :tree:`2f27581 <2f27581>`.
 
 Envoy:
 
-- Avg CPU: >= 100%
+- Avg CPU: ~4%
 - Avg memory: 12MB
-- Battery: 12/20 Xcode Instruments score
+- Battery: 1/20 Xcode Instruments score
 
 Control:
 
-- Avg CPU: 12%
+- Avg CPU: ~2%
 - Avg memory: 6MB
 - Battery: 1/20 Xcode Instruments score
 
-**Based on these results, memory usage is similar. However, CPU (and consequently battery) usage is very high.**
-The root cause has been identified and is being tracked in `issue 215 <https://github.com/lyft/envoy-mobile/issues/215>`_.
+**Based on these results, control and Envoy are relatively similar with a slight increase using Envoy.**
 
 Android
 -------
 
-Valid through SHA `8636711 <https://github.com/lyft/envoy-mobile/tree/8636711>`_.
+Valid through SHA :tree:`8636711 <8636711>`.
 
 TODO(buildbreaker): Update battery percentages
 
@@ -65,7 +66,8 @@ Experimentation method
 iOS
 ---
 
-The original investigation was completed as part of `this issue <https://github.com/lyft/envoy-mobile/issues/113>`_.
+The original investigation was completed as part of :issue:`#113 <113>`,
+and a critical performance issue was fixed in :issue:`#215 <215>`.
 
 For analysis, the `Energy Diagnostics tool from Xcode Instruments <https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/MonitorEnergyWithInstruments.html>`_
 was used.
@@ -78,7 +80,7 @@ Both apps were run (one at a time) on a physical device (iPhone 6s iOS 12.2.x) w
 Reproducing the Envoy example app:
 
 1. Build the library using ``bazel build ios_dist --config=ios --config=fat``
-2. Copy ``./dist/Envoy.framework`` to the example's `source directory <ios_envoy_example_app>`__
+2. Copy ``./dist/Envoy.framework`` to the example's :tree:`source directory <2f27581/examples/objective-c/xcode_variant/EnvoyObjc/EnvoyObjc>`
 3. Build/run the example app
 
 Android
@@ -121,17 +123,12 @@ Analysis
 iOS
 ---
 
-Envoy had a reasonable increase in memory usage of a few megabytes compared to control.
+Envoy had a small increase in memory and CPU usage compared to control.
 
-CPU/battery usage, however, was much higher. After some digging, the largest contributor to this usage
-was `identified as a poller <https://github.com/lyft/envoy-mobile/issues/113#issuecomment-505676324>`_.
+During the :issue:`initial investigation <113#issuecomment-505676324>`, we identified and fixed
+:issue:`issue <215>` with ``libevent`` that was severely degrading CPU (and subsequently battery) performance.
 
-Upon further investigation, the `root cause was determined <https://github.com/lyft/envoy-mobile/issues/113#issuecomment-507425528>`_
-to be that ``poll_dispatch`` was being used by ``libevent`` instead of the much more performant ``kqueue``.
-Forcing ``libevent`` to use ``kqueue`` reduced the CPU usage **from >= 100% down to ~3%**.
-This issue and the subsequent fix are being tracked `here <https://github.com/lyft/envoy-mobile/issues/215>`_.
-
-`We used Wireshark <https://github.com/lyft/envoy-mobile/issues/113#issuecomment-505673869>`_ to validate that
+:issue:`We used Wireshark <113#issuecomment-505673869>` to validate that
 network traffic was flowing through Envoy on the phone every ``200ms``, giving us confidence that there was
 no additional caching happening within ``URLSession``.
 
