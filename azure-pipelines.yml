@@ -168,8 +168,7 @@ stages:
               export CC=clang
               export CXX=clang++
             displayName: 'Set up clang toolchain'
-          - script: |
-              ./bazelw test --test_output=all --build_tests_only //library/kotlin/test/...
+          - script: ./bazelw test --test_output=all --build_tests_only //library/kotlin/test/...
             displayName: 'Run Kotlin library tests'
       - job: linux_java_helloworld
         dependsOn: linux_dist
@@ -293,8 +292,7 @@ stages:
             submodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: |
-              ./bazelw test --test_output=all --build_tests_only //library/swift/test/...
+          - script: ./bazelw test --test_output=all --build_tests_only //library/swift/test/...
             displayName: 'Run Swift library tests'
       #- job: mac_objc_helloworld
       #  dependsOn: mac_dist
