@@ -18,9 +18,9 @@ data class RetryPolicy(
  * @see <a href="https://www.envoyproxy.io/docs/envoy/latest/configuration/http_filters/router_filter#x-envoy-retry-on">x-envoy-retry-on</a>
  */
 enum class RetryRule {
-  ALL_5XX,
+  FIVE_XX,
   GATEWAY_ERROR,
   CONNECT_FAILURE,
-  RETRIABLE_4XX,
+  RETRIABLE_FOUR_XX,
   REFUSED_UPSTREAM,
 }

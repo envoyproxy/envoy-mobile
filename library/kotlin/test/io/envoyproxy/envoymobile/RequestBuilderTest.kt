@@ -27,12 +27,12 @@ class RequestBuilderTest {
   @Test
   fun `adding retry policy should have policy present in request`() {
 
-    val retryPolicy = RetryPolicy(23, listOf(RetryRule.ALL_5XX, RetryRule.CONNECT_FAILURE), 1234)
+    val retryPolicy = RetryPolicy(23, listOf(RetryRule.FIVE_XX, RetryRule.CONNECT_FAILURE), 1234)
     val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
         .addRetryPolicy(retryPolicy)
         .build()
 
-    assertThat(request.retryPolicy).isEqualTo(RetryPolicy(23, listOf(RetryRule.ALL_5XX, RetryRule.CONNECT_FAILURE), 1234))
+    assertThat(request.retryPolicy).isEqualTo(RetryPolicy(23, listOf(RetryRule.FIVE_XX, RetryRule.CONNECT_FAILURE), 1234))
   }
 
   @Test

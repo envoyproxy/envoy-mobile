@@ -36,7 +36,7 @@ class RequestTest {
   fun `requests converted to a builder should build to the same request`() {
     val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
         .addBody("data".toByteArray())
-        .addRetryPolicy(RetryPolicy(23, listOf(RetryRule.ALL_5XX, RetryRule.CONNECT_FAILURE), 1234))
+        .addRetryPolicy(RetryPolicy(23, listOf(RetryRule.FIVE_XX, RetryRule.CONNECT_FAILURE), 1234))
         .addHeader("header_a", "value_a1")
         .addHeader("header_a", "value_a2")
         .addHeader("header_b", "value_b1")
