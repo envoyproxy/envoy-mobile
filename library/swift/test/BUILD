@@ -10,4 +10,7 @@ swift_test(
     srcs = [
         "SampleTest.swift",
     ],
+    deps = [
+        "//library/swift/src:ios_framework_archive",
+    ],
 )

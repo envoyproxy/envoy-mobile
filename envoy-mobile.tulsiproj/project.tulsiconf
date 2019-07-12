@@ -1,0 +1,18 @@
+{
+  "configDefaults" : {
+    "optionSet" : {
+      "BazelBuildOptionsDebug" : {
+        "p" : "--config=ios"
+      },
+      "BazelBuildOptionsRelease" : {
+        "p" : "--config=ios --config=fat"
+      }
+    }
+  },
+  "packages" : [
+    "library/swift/test",
+    "library/swift/src"
+  ],
+  "projectName" : "envoy-mobile",
+  "workspaceRoot" : ".."
+}

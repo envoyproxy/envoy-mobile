@@ -1,0 +1,10 @@
+{
+  "optionSet" : {
+    "BazelPath" : {
+      "p" : "/Users/mrebello/Development/envoy-mobile/bazelw"
+    },
+    "WorkspaceRootPath" : {
+      "p" : "/Users/mrebello/Development/envoy-mobile"
+    }
+  }
+}

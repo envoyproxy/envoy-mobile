@@ -8,5 +8,6 @@
 .ijwb
 *.pyc
 tags
+/tmp
 .vscode
-/tmp/
+*.xcodeproj
