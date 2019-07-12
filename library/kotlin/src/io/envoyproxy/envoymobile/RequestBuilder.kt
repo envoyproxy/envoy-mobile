@@ -56,9 +56,9 @@ class RequestBuilder(
   fun addHeader(name: String, value: String): RequestBuilder {
     if (headers.containsKey(name)) {
       headers[name]!!.add(value)
+    } else {
+      headers[name] = mutableListOf(value)
     }
-
-    headers[name] = mutableListOf(value)
     return this
   }
 
@@ -95,11 +95,11 @@ class RequestBuilder(
    * @return this builder.
    */
   fun addTrailer(name: String, value: String): RequestBuilder {
-    if (trailers.containsKey(value)) {
+    if (trailers.containsKey(name)) {
       trailers[name]!!.add(value)
+    } else {
+      trailers[name] = mutableListOf(value)
     }
-
-    trailers[name] = mutableListOf(value)
     return this
   }
 
@@ -147,13 +147,17 @@ class RequestBuilder(
 
   internal fun setHeaders(headers: Map<String, List<String>>): RequestBuilder {
     this.headers.clear()
-    headers.map { entry -> this.headers[entry.key] = entry.value.toMutableList() }
+    for (entry in headers) {
+      this.headers[entry.key] = entry.value.toMutableList()
+    }
     return this
   }
 
   internal fun setTrailers(trailers: Map<String, List<String>>): RequestBuilder {
     this.trailers.clear()
-    trailers.map { entry -> this.trailers[entry.key] = entry.value.toMutableList() }
+    for (entry in trailers) {
+      this.trailers[entry.key] = entry.value.toMutableList()
+    }
     return this
   }
 }

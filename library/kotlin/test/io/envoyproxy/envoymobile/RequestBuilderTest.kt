@@ -94,6 +94,16 @@ class RequestBuilderTest {
   }
 
   @Test
+  fun `adding a specific header value should keep the other header values in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addHeader("header_a", "value_a1")
+        .addHeader("header_a", "value_a2")
+        .build()
+
+    assertThat(request.headers["header_a"]).containsExactly("value_a1", "value_a2")
+  }
+
+  @Test
   fun `removing trailers should clear trailers in request`() {
     val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
         .addTrailer("trailer_a", "value_a1")
@@ -123,6 +133,15 @@ class RequestBuilderTest {
         .build()
 
     assertThat(request.trailers["trailer_a"]).contains("value_a2")
+  }
+
+  @Test
+  fun `adding a specific trailer value should keep the other trailer values in request`() {
+    val request = RequestBuilder(URL("http://0.0.0.0:9001/api.lyft.com/demo.txt"), RequestMethod.GET)
+        .addTrailer("trailer_a", "value_a1")
+        .addTrailer("trailer_a", "value_a2")
+        .build()
+    assertThat(request.trailers["trailer_a"]).containsExactly("value_a1", "value_a2")
   }
 
 }
