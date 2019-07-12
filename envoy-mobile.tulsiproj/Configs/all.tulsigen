@@ -10,7 +10,7 @@
   ],
   "optionSet" : {
     "BazelBuildOptionsDebug" : {
-      "p" : "$(inherited) --config=ios"
+      "p" : "$(inherited)"
     },
     "BazelBuildOptionsRelease" : {
       "p" : "$(inherited)"
