@@ -10,7 +10,7 @@
   ],
   "optionSet" : {
     "BazelBuildOptionsDebug" : {
-      "p" : "$(inherited)"
+      "p" : "$(inherited) --config=ios"
     },
     "BazelBuildOptionsRelease" : {
       "p" : "$(inherited)"
@@ -42,9 +42,6 @@
     "LaunchActionPreActionScript" : {
       "p" : "$(inherited)"
     },
-    "ProjectGenerationBazelStartupOptions" : {
-      "p" : "$(inherited)"
-    },
     "ProjectPrioritizesSwift" : {
       "p" : "YES"
     },
@@ -57,6 +54,8 @@
   },
   "projectName" : "envoy-mobile",
   "sourceFilters" : [
+    "library",
+    "library/objective-c",
     "library/swift",
     "library/swift/src",
     "library/swift/test"
