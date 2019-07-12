@@ -141,6 +141,7 @@ class RequestBuilderTest {
         .addTrailer("trailer_a", "value_a1")
         .addTrailer("trailer_a", "value_a2")
         .build()
+
     assertThat(request.trailers["trailer_a"]).containsExactly("value_a1", "value_a2")
   }
 
