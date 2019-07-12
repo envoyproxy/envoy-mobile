@@ -72,6 +72,9 @@ class RequestBuilder(
   fun removeHeader(name: String, value: String): RequestBuilder {
     if (headers.containsKey(name)) {
       headers[name]!!.remove(value)
+      if (headers[name]!!.isEmpty()) {
+        headers.remove(name)
+      }
     }
     return this
   }
@@ -125,6 +128,10 @@ class RequestBuilder(
   fun removeTrailer(name: String, value: String): RequestBuilder {
     if (trailers.containsKey(name)) {
       trailers[name]!!.remove(value)
+
+      if (trailers[name]!!.isEmpty()) {
+        trailers.remove(name)
+      }
     }
     return this
   }
