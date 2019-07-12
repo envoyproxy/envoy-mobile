@@ -7,7 +7,7 @@ MobileAsyncStreamManager::MobileAsyncStreamManager(AsyncClient& async_client)
     : async_client_(async_client) {}
 
 envoy_stream_t MobileAsyncStreamManager::createStream(envoy_observer observer) {
-  // FIX: need to persist the callbacks
+  // FIXME: need to deal with callback lifetime.
   MobileAsyncStreamCallbacks callbacks = MobileAsyncStreamCallbacks(observer);
   streams_.emplace(current_stream_id_, async_client_.start(callbacks, {}));
   return current_stream_id_++;
