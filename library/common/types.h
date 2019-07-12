@@ -26,7 +26,7 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 /**
  * Error code associated with terminal status of a HTTP stream.
  */
-typedef enum {} envoy_error_code_t;
+typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
 
 /**
  * Common abstraction for strings.
@@ -110,9 +110,9 @@ typedef void (*on_data)(envoy_data data, bool end_stream);
 typedef void (*on_trailers)(envoy_headers headers);
 /**
  * Called when the async HTTP stream has an error.
- * @return envoy_error, the error received/caused by the async HTTP stream.
+ * @param envoy_error, the error received/caused by the async HTTP stream.
  */
-typedef envoy_error (*on_error)();
+typedef void (*on_error)(envoy_error error);
 
 #ifdef __cplusplus
 } // function pointers
