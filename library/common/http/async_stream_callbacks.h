@@ -1,11 +1,11 @@
 #pragma once
 
-#include "library/common/types.h"
-#include "library/common/http/utility.h"
-
 #include "envoy/buffer/buffer.h"
 #include "envoy/http/async_client.h"
 #include "envoy/http/header_map.h"
+
+#include "library/common/http/utility.h"
+#include "library/common/types.h"
 
 namespace Envoy {
 namespace Http {
