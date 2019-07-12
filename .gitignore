@@ -9,5 +9,6 @@
 *.pyc
 tags
 /tmp
+tulsi-workspace
 .vscode
 *.xcodeproj
