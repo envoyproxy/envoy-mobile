@@ -6,12 +6,18 @@
       },
       "BazelBuildOptionsRelease" : {
         "p" : "--config=ios --config=fat"
+      },
+      "IncludeBuildSources" : {
+        "p" : "YES"
+      },
+      "ProjectPrioritizesSwift" : {
+        "p" : "YES"
       }
     }
   },
   "packages" : [
-    "library/swift/test",
-    "library/swift/src"
+    "library/swift/src",
+    "library/swift/test"
   ],
   "projectName" : "envoy-mobile",
   "workspaceRoot" : ".."

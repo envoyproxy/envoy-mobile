@@ -1,6 +1,5 @@
 {
   "additionalFilePaths" : [
-    "library/swift/test/BUILD",
     "library/swift/src/BUILD"
   ],
   "buildTargets" : [
@@ -35,6 +34,9 @@
       "p" : "$(inherited)"
     },
     "LaunchActionPreActionScript" : {
+      "p" : "$(inherited)"
+    },
+    "ProjectGenerationBazelStartupOptions" : {
       "p" : "$(inherited)"
     },
     "TestActionPostActionScript" : {
