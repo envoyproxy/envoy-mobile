@@ -6,11 +6,11 @@
   "buildTargets" : [
     "//library/swift/src:ios_framework_archive",
     "//library/swift/test:sample_test",
-    "//library/swift/test:testlib"
+    "//library/swift/test:sample_test_lib"
   ],
   "optionSet" : {
     "BazelBuildOptionsDebug" : {
-      "p" : "$(inherited) --config=ios"
+      "p" : "$(inherited)"
     },
     "BazelBuildOptionsRelease" : {
       "p" : "$(inherited)"
