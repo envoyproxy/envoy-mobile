@@ -7,7 +7,7 @@ MobileAsyncStreamCallbacks::MobileAsyncStreamCallbacks(envoy_observer observer)
     : observer_(observer) {}
 
 void MobileAsyncStreamCallbacks::onHeaders(HeaderMapPtr&&, bool) {
-  // FIX: figure out why the overloading was busted. Same below.
+  // FIXME: figure out why the overloading was busted. Same below.
   // observer_.h(Utility::transformHeaders(headers), end_stream);
 }
 
