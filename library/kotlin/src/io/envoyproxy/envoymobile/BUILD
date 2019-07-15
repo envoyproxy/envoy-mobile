@@ -36,4 +36,5 @@ kt_jvm_library(
         "RequestMethod.kt",
         "RetryPolicy.kt",
     ],
+    visibility = ["//visibility:public"],
 )
