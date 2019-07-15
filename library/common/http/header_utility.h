@@ -16,16 +16,10 @@ namespace Utility {
  */
 HeaderMapPtr transformHeaders(envoy_headers headers);
 
-envoy_headers transformHeaders(HeaderMapPtr&&) { return {0, nullptr}; }
 
 /**
- * Transform envoy_data to Envoy::Buffer::Instance.
- * @param headers, the envoy_data to transform.
- * @return Envoy::Buffer::InstancePtr, the 1:1 transformation of the envoy_data param.
  */
-Buffer::InstancePtr transformData(envoy_data data);
-
-envoy_data transformData(Buffer::Instance&) { return {0, nullptr}; }
+envoy_headers transformHeaders(HeaderMapPtr&&);
 
 } // namespace Utility
 } // namespace Http
