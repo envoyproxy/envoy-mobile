@@ -1,51 +1,43 @@
 package io.envoyproxy.envoymobile
 
-import java.net.URL
-
-
 /**
- * Builder used for constructing instances of `Request` types.
+ * Builder used for constructing instances of `Response` types.
  *
- * @param url URL for the request.
- * @param method Method for the request.
  */
-class RequestBuilder(
-    val url: URL,
-    val method: RequestMethod
-) {
-  // Headers to send with the request.
+class ResponseBuilder {
+
+  // Headers to send with the response.
   // Multiple values for a given name are valid, and will be sent as comma-separated values.
   private val headers: MutableMap<String, MutableList<String>> = mutableMapOf()
 
-  // Trailers to send with the request.
+  // Trailers to send with the response.
   // Multiple values for a given name are valid, and will be sent as comma-separated values.
   private val trailers: MutableMap<String, MutableList<String>> = mutableMapOf()
 
-  // Serialized data to send as the body of the request.
+  // Serialized data of the response.
   private var body: ByteArray? = null
 
-  // Retry policy to use for this request.
-  private var retryPolicy: RetryPolicy? = null
+  private var status: Int = 200
 
   /**
-   * Serialized data to send as the body of the request.
+   * Add an http status code for the response
    *
-   * @param body the data to send as the body of the request
+   * @param status the http status code
    * @return this builder
    */
-  fun addBody(body: ByteArray?): RequestBuilder {
-    this.body = body
+  fun addStatus(status: Int): ResponseBuilder {
+    this.status = status
     return this
   }
 
   /**
-   * Add a retry policy to use for this request.
+   * Add serialized data of the response.
    *
-   * @param retryPolicy the {@link io.envoyproxy.envoymobile.RetryPolicy} for this request.
-   * @return this builder.
+   * @param body serialized data of the response
+   * @return this builder
    */
-  fun addRetryPolicy(retryPolicy: RetryPolicy?): RequestBuilder {
-    this.retryPolicy = retryPolicy
+  fun addBody(body: ByteArray?): ResponseBuilder {
+    this.body = body
     return this
   }
 
@@ -56,7 +48,7 @@ class RequestBuilder(
    * @param value the value associated to the header key.
    * @return this builder.
    */
-  fun addHeader(name: String, value: String): RequestBuilder {
+  fun addHeader(name: String, value: String): ResponseBuilder {
     if (headers.containsKey(name)) {
       headers[name]!!.add(value)
     } else {
@@ -72,7 +64,7 @@ class RequestBuilder(
    * @param value the value to be removed.
    * @return this builder.
    */
-  fun removeHeader(name: String, value: String): RequestBuilder {
+  fun removeHeader(name: String, value: String): ResponseBuilder {
     if (headers.containsKey(name)) {
       headers[name]!!.remove(value)
       if (headers[name]!!.isEmpty()) {
@@ -88,7 +80,7 @@ class RequestBuilder(
    * @param name the header key to remove.
    * @return this builder.
    */
-  fun removeHeaders(name: String): RequestBuilder {
+  fun removeHeaders(name: String): ResponseBuilder {
     headers.remove(name)
     return this
   }
@@ -100,7 +92,7 @@ class RequestBuilder(
    * @param value the value associated to the trailer key.
    * @return this builder.
    */
-  fun addTrailer(name: String, value: String): RequestBuilder {
+  fun addTrailer(name: String, value: String): ResponseBuilder {
     if (trailers.containsKey(name)) {
       trailers[name]!!.add(value)
     } else {
@@ -116,7 +108,7 @@ class RequestBuilder(
    * @param value the value to be removed.
    * @return this builder.
    */
-  fun removeTrailers(name: String): RequestBuilder {
+  fun removeTrailers(name: String): ResponseBuilder {
     trailers.remove(name)
     return this
   }
@@ -128,7 +120,7 @@ class RequestBuilder(
    * @param value the value to be removed.
    * @return this builder.
    */
-  fun removeTrailer(name: String, value: String): RequestBuilder {
+  fun removeTrailer(name: String, value: String): ResponseBuilder {
     if (trailers.containsKey(name)) {
       trailers[name]!!.remove(value)
 
@@ -140,22 +132,20 @@ class RequestBuilder(
   }
 
   /**
-   * Creates the {@link io.envoyproxy.envoymobile.Request} object using the data set in the builder
+   * Creates the {@link io.envoyproxy.envoymobile.Response} object using the data set in the builder
    *
-   * @return the {@link io.envoyproxy.envoymobile.Request} object
+   * @return the {@link io.envoyproxy.envoymobile.Response} object
    */
-  fun build(): Request {
-    return Request(
-        method,
-        url,
-        headers,
-        trailers,
+  fun build(): Response {
+    return Response(
+        status,
         body,
-        retryPolicy
+        headers,
+        trailers
     )
   }
 
-  internal fun setHeaders(headers: Map<String, List<String>>): RequestBuilder {
+  internal fun setHeaders(headers: Map<String, List<String>>): ResponseBuilder {
     this.headers.clear()
     for (entry in headers) {
       this.headers[entry.key] = entry.value.toMutableList()
@@ -163,7 +153,7 @@ class RequestBuilder(
     return this
   }
 
-  internal fun setTrailers(trailers: Map<String, List<String>>): RequestBuilder {
+  internal fun setTrailers(trailers: Map<String, List<String>>): ResponseBuilder {
     this.trailers.clear()
     for (entry in trailers) {
       this.trailers[entry.key] = entry.value.toMutableList()
