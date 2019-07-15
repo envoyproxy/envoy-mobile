@@ -18,6 +18,14 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
+    name = "envoy_buffer_utility_lib",
+    hdrs = ["buffer_utility.h"],
+    srcs = ["buffer_utility.cc"],
+    repository = "@envoy",
+    deps = [],
+)
+
+envoy_cc_library(
     name = "envoy_types_lib",
     hdrs = ["types.h"],
     repository = "@envoy",
