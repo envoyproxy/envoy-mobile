@@ -19,4 +19,5 @@ kt_android_library(
     deps = [
         "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
     ],
+    visibility = ["//visibility:public"],
 )
