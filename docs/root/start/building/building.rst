@@ -25,7 +25,7 @@ Envoy-Mobile is compiled using Bazel 0.28.0.
 Take a look at our CI set up for :repo:`mac <ci/mac_ci_setup.sh>` and :repo:`linux <ci/linux_ci_setup.sh>`,
 in order to see how to install a specific Bazel version in your environment.
 
-To assist with build consistency across environments, a 'bazelw' script is included in project root, along with several common build configurations included in the project's `.bazelrc`.
+To assist with build consistency across environments, a `bazelw` script is included in project root, along with several common build configurations included in the project's `.bazelrc`.
 
 --------------------
 Android requirements
