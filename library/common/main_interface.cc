@@ -11,6 +11,7 @@
 #include "extensions/transport_sockets/raw_buffer/config.h"
 #include "extensions/transport_sockets/tls/config.h"
 
+#include "library/common/buffer/utility.h"
 #include "library/common/http/async_stream_manager.h"
 #include "library/common/http/header_utility.h"
 
@@ -43,7 +44,7 @@ envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, boo
 envoy_status_t send_data(envoy_stream_t stream_id, envoy_data data, bool end_stream) {
   auto stream = stream_manager_->getStream(stream_id);
   if (stream) {
-    const auto buffer = Envoy::Http::Utility::transformData(data);
+    const auto buffer = Envoy::Buffer::Utility::transformData(data);
     stream->sendData(*buffer, end_stream);
     return ENVOY_SUCCESS;
   } else {
