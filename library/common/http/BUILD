@@ -10,8 +10,8 @@ envoy_cc_library(
     hdrs = ["async_stream_callbacks.h"],
     repository = "@envoy",
     deps = [
-        "//library/common:envoy_types_lib",
-        "//library/common/http:utility_lib",
+        "//library/common/include:c_types_interface",
+        "//library/common/http:header_utility_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//include/envoy/http:async_client_interface",
         "@envoy//include/envoy/http:header_map_interface",
@@ -25,7 +25,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":async_stream_callbacks_lib",
-        "//library/common:envoy_types_lib",
+        "//library/common/include:c_types_interface",
         "@envoy//include/envoy/http:async_client_interface",
     ],
 )
@@ -35,7 +35,7 @@ envoy_cc_library(
     hdrs = ["header_utility.h"],
     repository = "@envoy",
     deps = [
-        "//library/common:envoy_types_lib",
+        "//library/common/include:c_types_interface",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//include/envoy/http:header_map_interface",
     ],

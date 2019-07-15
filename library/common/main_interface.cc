@@ -12,7 +12,7 @@
 #include "extensions/transport_sockets/tls/config.h"
 
 #include "library/common/http/async_stream_manager.h"
-#include "library/common/http/utility.h"
+#include "library/common/http/header_utility.h"
 
 // NOLINT(namespace-envoy)
 

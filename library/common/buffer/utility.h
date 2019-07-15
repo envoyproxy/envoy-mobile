@@ -2,7 +2,7 @@
 
 #include "envoy/buffer/buffer.h"
 
-#include "library/common/types.h"
+#include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Buffer {
@@ -15,7 +15,7 @@ namespace Utility {
  */
 Buffer::InstancePtr transformData(envoy_data data);
 
-envoy_data transformData(Buffer::Instance&) { return {0, nullptr}; }
+envoy_data transformData(Buffer::Instance&);
 
 } // namespace Utility
 } // namespace Buffer

@@ -6,7 +6,7 @@
 #include "envoy/http/async_client.h"
 
 #include "library/common/http/async_stream_callbacks.h"
-#include "library/common/types.h"
+#include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Http {
