@@ -31,8 +31,8 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
-    name = "utility_lib",
-    hdrs = ["utility.h"],
+    name = "header_utility_lib",
+    hdrs = ["header_utility.h"],
     repository = "@envoy",
     deps = [
         "//library/common:envoy_types_lib",
