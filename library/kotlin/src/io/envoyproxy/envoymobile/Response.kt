@@ -6,6 +6,19 @@ class Response internal constructor(
     val trailers: Map<String, List<String>>
 ) {
 
+  /**
+   * Transforms this Response to the {@link io.envoyproxy.envoymobile.ResponseBuilder} for modification using the
+   * current properties
+   *
+   * @return the builder
+   */
+  fun toBuilder(): ResponseBuilder {
+    return ResponseBuilder()
+        .setHeaders(headers)
+        .setTrailers(trailers)
+        .addBody(body)
+  }
+
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false

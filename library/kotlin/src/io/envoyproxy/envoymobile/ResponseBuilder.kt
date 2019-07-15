@@ -130,4 +130,33 @@ class ResponseBuilder {
     }
     return this
   }
+
+  /**
+   * Creates the {@link io.envoyproxy.envoymobile.Response} object using the data set in the builder
+   *
+   * @return the {@link io.envoyproxy.envoymobile.Response} object
+   */
+  fun build(): Response {
+    return Response(
+        body,
+        headers,
+        trailers
+    )
+  }
+
+  internal fun setHeaders(headers: Map<String, List<String>>): ResponseBuilder {
+    this.headers.clear()
+    for (entry in headers) {
+      this.headers[entry.key] = entry.value.toMutableList()
+    }
+    return this
+  }
+
+  internal fun setTrailers(trailers: Map<String, List<String>>): ResponseBuilder {
+    this.trailers.clear()
+    for (entry in trailers) {
+      this.trailers[entry.key] = entry.value.toMutableList()
+    }
+    return this
+  }
 }
