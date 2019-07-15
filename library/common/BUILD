@@ -10,19 +10,12 @@ envoy_cc_library(
     hdrs = ["main_interface.h"],
     repository = "@envoy",
     deps = [
-        ":envoy_types_lib",
+        "//library/common/buffer:utility_lib",
         "//library/common/http:async_stream_manager_lib",
-        "//library/common/http:utility_lib",
+        "//library/common/http:header_utility_lib",
+        "//library/common/include:c_types_interface",
         "@envoy//source/exe:envoy_main_common_lib",
     ],
-)
-
-envoy_cc_library(
-    name = "envoy_buffer_utility_lib",
-    hdrs = ["buffer_utility.h"],
-    srcs = ["buffer_utility.cc"],
-    repository = "@envoy",
-    deps = [],
 )
 
 envoy_cc_library(
