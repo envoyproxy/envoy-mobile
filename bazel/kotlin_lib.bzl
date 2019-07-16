@@ -22,7 +22,7 @@ def envoy_mobile_kt_aar_android_library(name, custom_package, manifest, srcs = [
         deps = deps,
     )
 
-def envoy_mobile_android_library(name,  custom_package, manifest,srcs=[], deps=[]):
+def envoy_mobile_android_library(name, custom_package, manifest, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion.
     native.filegroup(
@@ -40,7 +40,7 @@ def envoy_mobile_android_library(name,  custom_package, manifest,srcs=[], deps=[
         deps = deps,
     )
 
-def envoy_mobile_kt_library(name, srcs=[], deps=[]):
+def envoy_mobile_kt_library(name, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion.
     native.filegroup(
