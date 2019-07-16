@@ -1,4 +1,3 @@
-import Envoy
 import XCTest
 
 final class SampleTest: XCTestCase {
