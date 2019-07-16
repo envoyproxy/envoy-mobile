@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class ResponseTest {
@@ -29,7 +29,7 @@ class ResponseTest {
         .addTrailer("trailer_b", "value_b1")
         .build()
 
-    Assertions.assertThat(response1).isEqualTo(response2)
+    assertThat(response1).isEqualTo(response2)
   }
 
   @Test
@@ -45,6 +45,6 @@ class ResponseTest {
         .addTrailer("trailer_b", "value_b1")
         .build()
 
-    Assertions.assertThat(response).isEqualTo(response.toBuilder().build())
+    assertThat(response).isEqualTo(response.toBuilder().build())
   }
 }
