@@ -5,20 +5,23 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import io.envoyproxy.envoymobile.Envoy
+import io.envoyproxy.envoymobile.*
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.Response
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
 import java.io.IOException
 import java.io.InputStream
-import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt"
@@ -28,6 +31,7 @@ class MainActivity : Activity() {
   private lateinit var recyclerView: RecyclerView
   private val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
   private lateinit var envoy: Envoy
+  private lateinit var client: Client
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -37,6 +41,7 @@ class MainActivity : Activity() {
 
     // Create Envoy instance with config.
     envoy = Envoy(baseContext, loadEnvoyConfig(baseContext, R.raw.config))
+    client = HttpUrlConnectionClient()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView
     recyclerView.layoutManager = LinearLayoutManager(this)
@@ -70,16 +75,23 @@ class MainActivity : Activity() {
   }
 
   private fun makeRequest(): Response {
-    return  try {
+
+    return try {
       val url = URL(ENDPOINT)
-      // Open connection to the envoy thread listening locally on port 9001
-      val connection = url.openConnection() as HttpURLConnection
-      val status = connection.responseCode
+
+      val latch = CountDownLatch(1)
+      var response: io.envoyproxy.envoymobile.Response? = null
+      client.request(RequestBuilder(url, RequestMethod.GET)
+          .build(), UiThreadExecutor()) { envoyResponse ->
+        response = envoyResponse
+        latch.countDown()
+      }
+      latch.await()
+
+      val status = response!!.status
       if (status == 200) {
-        val serverHeaderField = connection.headerFields[ENVOY_SERVER_HEADER]
-        val inputStream = connection.inputStream
-        val body = deserialize(inputStream)
-        inputStream.close()
+        val serverHeaderField = response!!.headers[ENVOY_SERVER_HEADER]
+        val body = response!!.body.toString()
         Success(body, serverHeaderField?.joinToString(separator = ", ") ?: "")
       } else {
         Failure("failed with status: $status")
@@ -96,5 +108,13 @@ class MainActivity : Activity() {
   private fun loadEnvoyConfig(context: Context, configResourceId: Int): String {
     val inputStream = context.getResources().openRawResource(configResourceId)
     return inputStream.bufferedReader().use { reader -> reader.readText() }
+  }
+}
+
+internal class UiThreadExecutor : Executor {
+  private val mHandler = Handler(Looper.getMainLooper())
+
+  override fun execute(command: Runnable) {
+    mHandler.post(command)
   }
 }

@@ -64,6 +64,7 @@ origdir=$$PWD
 cd $$(mktemp -d)
 unzip $$origdir/$(location :{archive_name}_jni_unsigned.apk) "lib/*"
 cp -r lib jni
+zipinfo -1 $$origdir/$(location {android_library}_kt.jar)
 cp $$origdir/$(location {android_library}_kt.jar) classes.jar
 zip -r $$origdir/$(location :{archive_name}.aar) jni/*/*.so classes.jar
 """.format(android_library = android_library, archive_name = archive_name),

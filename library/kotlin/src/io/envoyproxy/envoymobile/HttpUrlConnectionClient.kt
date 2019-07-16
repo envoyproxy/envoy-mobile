@@ -3,12 +3,12 @@ package io.envoyproxy.envoymobile
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 private const val ENVOY_HOST = "http://0.0.0.0:9001/"
 
-class HttpUrlConnectionClient(
-    private val outboundExecutor: Executor
-) : Client {
+class HttpUrlConnectionClient : Client {
+  private val outboundExecutor: Executor = Executors.newFixedThreadPool(10)
 
   override fun request(request: Request, inboundExecutor: Executor, callback: (Response) -> Unit) {
     outboundExecutor.execute {
@@ -30,6 +30,10 @@ class HttpUrlConnectionClient(
           .addBody(urlConnection.responseMessage.toByteArray())
 
       for (headerEntry in urlConnection.headerFields) {
+        if (headerEntry.key == null) {
+          // For some reason we get a null value here
+          continue
+        }
         for (value in headerEntry.value) {
           responseBuilder.addHeader(headerEntry.key, value)
         }
