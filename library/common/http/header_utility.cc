@@ -11,7 +11,7 @@ static inline std::string convertString(envoy_string s) { return std::string(s.d
 HeaderMapPtr transformHeaders(envoy_headers headers) {
   Http::HeaderMapPtr transformed_headers = std::make_unique<HeaderMapImpl>();
   for (uint64_t i = 0; i < headers.length; i++) {
-    // FIXME: advance the pointer
+    // FIXME: advance the pointer.
     transformed_headers->addCopy(LowerCaseString(convertString(headers.headers->name)),
                                  convertString(headers.headers->value));
   }
@@ -22,6 +22,8 @@ envoy_headers transformHeaders(HeaderMapPtr&& header_map) {
   auto headers = new envoy_header[header_map->size()];
   int i = 0;
   // FIXME: need to pass the lambda capture via the context void*.
+  // We need to advance the headers by the length to append to the end.
+  // That way we don't need a local counter we can just pass the envoy_headers struct.
   header_map->iterate(
       [&headers, &i](const HeaderEntry& header, void*) -> HeaderMap::Iterate {
         const absl::string_view header_name = header.key().getStringView();
