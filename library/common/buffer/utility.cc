@@ -11,9 +11,7 @@ namespace Utility {
  * @param headers, the envoy_data to transform.
  * @return Envoy::Buffer::InstancePtr, the 1:1 transformation of the envoy_data param.
  */
-Buffer::InstancePtr transformData(envoy_data) {
-  return nullptr;
-}
+Buffer::InstancePtr transformData(envoy_data) { return nullptr; }
 
 envoy_data transformData(Buffer::Instance&) { return {0, nullptr}; }
 
