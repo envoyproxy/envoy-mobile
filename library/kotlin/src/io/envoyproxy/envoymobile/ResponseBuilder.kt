@@ -6,11 +6,11 @@ package io.envoyproxy.envoymobile
  */
 class ResponseBuilder {
 
-  // Headers to send with the response.
+  // Headers received with the response.
   // Multiple values for a given name are valid, and will be sent as comma-separated values.
   private val headers: MutableMap<String, MutableList<String>> = mutableMapOf()
 
-  // Trailers to send with the response.
+  // Trailers received with the response.
   // Multiple values for a given name are valid, and will be sent as comma-separated values.
   private val trailers: MutableMap<String, MutableList<String>> = mutableMapOf()
 
