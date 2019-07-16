@@ -10,7 +10,6 @@ swift_static_framework(
     name = "ios_framework",
     srcs = [
         "Envoy.swift",
-        "EnvoyResult.swift",
         "LogLevel.swift",
         "NetworkError.swift",
         "Request.swift",
@@ -18,6 +17,7 @@ swift_static_framework(
         "RequestMethod.swift",
         "Response.swift",
         "ResponseBuilder.swift",
+        "Result.swift",
         "RetryPolicy.swift",
     ],
     module_name = "Envoy",
