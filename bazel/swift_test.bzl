@@ -32,4 +32,5 @@ def envoy_mobile_swift_test(name, srcs):
     ios_unit_test(
         name = name,
         deps = [test_lib_name],
+        minimum_os_version = "10.0",
     )
