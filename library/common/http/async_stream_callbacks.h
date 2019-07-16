@@ -4,7 +4,6 @@
 #include "envoy/http/async_client.h"
 #include "envoy/http/header_map.h"
 
-#include "library/common/http/header_utility.h"
 #include "library/common/include/c_types.h"
 
 namespace Envoy {

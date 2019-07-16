@@ -10,6 +10,7 @@ envoy_cc_library(
     hdrs = ["async_stream_callbacks.h"],
     repository = "@envoy",
     deps = [
+        "//library/common/buffer:utility_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/include:c_types_interface",
         "@envoy//include/envoy/buffer:buffer_interface",
