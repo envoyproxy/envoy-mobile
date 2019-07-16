@@ -13,9 +13,9 @@ public final class Request: NSObject {
   /// Trailers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public let trailers: [String: [String]]
-  // Serialized data to send as the body of the request.
+  /// Serialized data to send as the body of the request.
   public let body: Data?
-  // Retry policy to use for this request.
+  /// Retry policy to use for this request.
   public let retryPolicy: RetryPolicy?
 
   /// Converts the request back to a builder so that it can be modified (i.e., by a filter).
