@@ -1,5 +1,8 @@
 #include "library/common/http/async_stream_callbacks.h"
 
+#include "library/common/buffer/utility.h"
+#include "library/common/http/header_utility.h"
+
 namespace Envoy {
 namespace Http {
 
@@ -10,8 +13,8 @@ void MobileAsyncStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stre
   observer_.h(Utility::transformHeaders(std::move(headers)), end_stream);
 }
 
-void MobileAsyncStreamCallbacks::onData(Buffer::Instance&, bool) {
-  // observer_.d(Envoy::Buffer::Utility::transformData(data), end_stream);
+void MobileAsyncStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
+  observer_.d(Envoy::Buffer::Utility::transformData(data), end_stream);
 }
 
 void MobileAsyncStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {

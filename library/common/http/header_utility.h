@@ -18,7 +18,7 @@ HeaderMapPtr transformHeaders(envoy_headers headers);
 
 /**
  */
-envoy_headers transformHeaders(HeaderMapPtr&&);
+envoy_headers transformHeaders(HeaderMapPtr&& headers);
 
 } // namespace Utility
 } // namespace Http

@@ -19,7 +19,9 @@ public:
   AsyncClient::Stream* getStream(envoy_stream_t stream_id) const;
 
 private:
-  std::unordered_map<envoy_stream_t, AsyncClient::Stream*> streams_;
+  std::unordered_map<envoy_stream_t,
+                     std::pair<std::unique_ptr<MobileAsyncStreamCallbacks>, AsyncClient::Stream*>>
+      streams_;
   std::atomic<envoy_stream_t> current_stream_id_;
   AsyncClient& async_client_;
 };
