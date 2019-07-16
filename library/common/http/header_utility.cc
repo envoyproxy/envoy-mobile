@@ -21,6 +21,7 @@ HeaderMapPtr transformHeaders(envoy_headers headers) {
 envoy_headers transformHeaders(HeaderMapPtr&& header_map) {
   auto headers = new envoy_header[header_map->size()];
   int i = 0;
+  // FIXME: need to pass the lambda capture via the context void*.
   header_map->iterate(
       [&headers, &i](const HeaderEntry& header, void*) -> HeaderMap::Iterate {
         const absl::string_view header_name = header.key().getStringView();
