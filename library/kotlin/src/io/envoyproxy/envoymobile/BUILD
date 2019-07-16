@@ -37,7 +37,7 @@ kt_jvm_library(
         "Request.kt",
         "RequestBuilder.kt",
         "RequestMethod.kt",
-        "Response.kt",
+        "Result.kt",
         "ResponseBuilder.kt",
         "RetryPolicy.kt",
     ],
