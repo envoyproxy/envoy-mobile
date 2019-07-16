@@ -4,9 +4,7 @@
     "library/swift/test/BUILD"
   ],
   "buildTargets" : [
-    "//library/swift/src:ios_framework_archive",
-    "//library/swift/test:sample_test",
-    "//library/swift/test:sample_test_lib"
+    "//library/swift/src:ios_framework_archive"
   ],
   "optionSet" : {
     "BazelBuildOptionsDebug" : {
