@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 class Response internal constructor(
+    val status: Int,
     val body: ByteArray?,
     val headers: Map<String, List<String>>,
     val trailers: Map<String, List<String>>
@@ -14,6 +15,7 @@ class Response internal constructor(
    */
   fun toBuilder(): ResponseBuilder {
     return ResponseBuilder()
+        .addStatus(status)
         .setHeaders(headers)
         .setTrailers(trailers)
         .addBody(body)
@@ -25,6 +27,7 @@ class Response internal constructor(
 
     other as Response
 
+    if (status != other.status) return false
     if (body != null) {
       if (other.body == null) return false
       if (!body.contentEquals(other.body)) return false
@@ -36,9 +39,11 @@ class Response internal constructor(
   }
 
   override fun hashCode(): Int {
-    var result = body?.contentHashCode() ?: 0
+    var result = status
+    result = 31 * result + (body?.contentHashCode() ?: 0)
     result = 31 * result + headers.hashCode()
     result = 31 * result + trailers.hashCode()
     return result
   }
+
 }

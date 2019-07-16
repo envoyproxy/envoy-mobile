@@ -138,6 +138,7 @@ class ResponseBuilder {
    */
   fun build(): Response {
     return Response(
+        status,
         body,
         headers,
         trailers
