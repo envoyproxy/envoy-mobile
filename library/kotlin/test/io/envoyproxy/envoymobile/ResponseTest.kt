@@ -8,6 +8,7 @@ class ResponseTest {
   @Test
   fun `response with the same properties should be equal`() {
     val response1 = ResponseBuilder()
+        .addStatus(202)
         .addBody("data".toByteArray())
         .addHeader("header_a", "value_a1")
         .addHeader("header_a", "value_a2")
@@ -18,6 +19,7 @@ class ResponseTest {
         .build()
 
     val response2 = ResponseBuilder()
+        .addStatus(202)
         .addBody("data".toByteArray())
         .addHeader("header_a", "value_a1")
         .addHeader("header_a", "value_a2")
@@ -33,6 +35,7 @@ class ResponseTest {
   @Test
   fun `response converted to a builder should build to the same response`() {
     val response = ResponseBuilder()
+        .addStatus(204)
         .addBody("data".toByteArray())
         .addHeader("header_a", "value_a1")
         .addHeader("header_a", "value_a2")

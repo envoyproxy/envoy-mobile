@@ -6,6 +6,14 @@ import org.junit.Test
 class ResponseBuilderTest {
 
   @Test
+  fun `adding response status should have status present in response`() {
+    val response = ResponseBuilder()
+        .addStatus(202)
+        .build()
+    assertThat(response.status).isEqualTo(202)
+  }
+
+  @Test
   fun `adding response data should have body present in response`() {
     val body = "data".toByteArray()
 
