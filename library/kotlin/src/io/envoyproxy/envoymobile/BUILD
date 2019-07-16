@@ -30,37 +30,35 @@ kt_android_library(
     manifest = "EnvoyManifest.xml",
     visibility = ["//visibility:public"],
     deps = [
+        "envoy_interfaces_lib",
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
-        "envoy_interfaces_lib"
     ],
 )
 
 filegroup(
     name = "envoy_interfaces_lib_srcs",
     srcs = [
-                   "Request.kt",
-                   "RequestBuilder.kt",
-                   "RequestMethod.kt",
-                   "Response.kt",
-                   "ResponseBuilder.kt",
-                   "RetryPolicy.kt",
-
-                   "Client.kt",
-                   'HttpUrlConnectionClient.kt',
-               ],
-)
-
-kt_jvm_library(
-    name = "envoy_interfaces_lib",
-    srcs = [
+        "Client.kt",
+        "HttpUrlConnectionClient.kt",
         "Request.kt",
         "RequestBuilder.kt",
         "RequestMethod.kt",
         "Response.kt",
         "ResponseBuilder.kt",
         "RetryPolicy.kt",
+    ],
+)
 
+kt_jvm_library(
+    name = "envoy_interfaces_lib",
+    srcs = [
         "Client.kt",
-        'HttpUrlConnectionClient.kt',
+        "HttpUrlConnectionClient.kt",
+        "Request.kt",
+        "RequestBuilder.kt",
+        "RequestMethod.kt",
+        "Response.kt",
+        "ResponseBuilder.kt",
+        "RetryPolicy.kt",
     ],
 )
