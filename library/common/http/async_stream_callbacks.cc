@@ -6,22 +6,24 @@
 namespace Envoy {
 namespace Http {
 
-MobileAsyncStreamCallbacks::MobileAsyncStreamCallbacks(envoy_observer observer)
-    : observer_(observer) {}
+MobileAsyncStreamCallbacks::MobileAsyncStreamCallbacks(envoy_stream_t stream, envoy_observer observer)
+    : stream_(stream), observer_(observer) {}
 
 void MobileAsyncStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
-  observer_.h(Utility::transformHeaders(std::move(headers)), end_stream);
+  observer_.h(stream_, Utility::transformHeaders(std::move(headers)), end_stream);
 }
 
 void MobileAsyncStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
-  observer_.d(Envoy::Buffer::Utility::transformData(data), end_stream);
+  observer_.d(stream_, Envoy::Buffer::Utility::transformData(data), end_stream);
 }
 
 void MobileAsyncStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
-  observer_.t(Utility::transformHeaders(std::move(trailers)));
+  observer_.t(stream_, Utility::transformHeaders(std::move(trailers)));
 }
 
-void MobileAsyncStreamCallbacks::onReset() { observer_.e({ENVOY_STREAM_RESET, {0, nullptr}}); }
+void MobileAsyncStreamCallbacks::onReset() {
+  observer_.e(stream_, {ENVOY_STREAM_RESET, {0, nullptr}});
+}
 
 } // namespace Http
 } // namespace Envoy

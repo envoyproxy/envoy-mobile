@@ -94,25 +94,25 @@ extern "C" { // function pointers
  * @param headers, the headers received.
  * @param end_stream, whether the response is headers-only.
  */
-typedef void (*on_headers)(envoy_headers headers, bool end_stream);
+typedef void (*on_headers)(envoy_stream_t stream, envoy_headers headers, bool end_stream);
 /**
  * Called when a data frame gets received on the async HTTP stream.
  * This callback can be invoked multiple times if the data gets streamed.
  * @param data, the data received.
  * @param end_stream, whether the data is the last data frame.
  */
-typedef void (*on_data)(envoy_data data, bool end_stream);
+typedef void (*on_data)(envoy_stream_t stream, envoy_data data, bool end_stream);
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers, the trailers received.
  */
-typedef void (*on_trailers)(envoy_headers headers);
+typedef void (*on_trailers)(envoy_stream_t stream, envoy_headers headers);
 /**
  * Called when the async HTTP stream has an error.
  * @param envoy_error, the error received/caused by the async HTTP stream.
  */
-typedef void (*on_error)(envoy_error error);
+typedef void (*on_error)(envoy_stream_t stream, envoy_error error);
 
 #ifdef __cplusplus
 } // function pointers
