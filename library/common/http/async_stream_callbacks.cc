@@ -10,12 +10,12 @@ void MobileAsyncStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stre
   observer_.h(Utility::transformHeaders(std::move(headers)), end_stream);
 }
 
-void MobileAsyncStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
+void MobileAsyncStreamCallbacks::onData(Buffer::Instance&, bool) {
   // observer_.d(Envoy::Buffer::Utility::transformData(data), end_stream);
 }
 
 void MobileAsyncStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
-  observer_.t(Utility::transformHeaders(std::move(trailers));
+  observer_.t(Utility::transformHeaders(std::move(trailers)));
 }
 
 void MobileAsyncStreamCallbacks::onReset() { observer_.e({ENVOY_STREAM_RESET, {0, nullptr}}); }
