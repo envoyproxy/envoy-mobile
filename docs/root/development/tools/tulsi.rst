@@ -27,4 +27,5 @@ Known issues
 ------------
 
 Code completion for Swift for Tulsi-based project is currently broken.
-It's being tracked in `this Tulsi issue <https://github.com/bazelbuild/tulsi/issues/96>`_
+It's being tracked in
+`Tulsi issue #96 <https://github.com/bazelbuild/tulsi/issues/96>`_.
