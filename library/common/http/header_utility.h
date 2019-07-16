@@ -16,7 +16,6 @@ namespace Utility {
  */
 HeaderMapPtr transformHeaders(envoy_headers headers);
 
-
 /**
  */
 envoy_headers transformHeaders(HeaderMapPtr&&);
