@@ -11,9 +11,11 @@ filegroup(
 objc_library(
     name = "envoy_engine_objc_lib",
     srcs = [
+        "Envoy.mm",
         "EnvoyEngine.mm",
     ],
     hdrs = [
+        "Envoy.h",
         "EnvoyEngine.h",
     ],
     copts = ["-std=c++14"],

@@ -8,8 +8,13 @@ objc_library(
         "*.h",
         "*.mm",
     ]),
+    copts = ["-std=c++14"],
     data = ["config.yaml"],
-    deps = ["//dist:envoy_mobile_ios"],
+    sdk_dylibs = [
+        "resolv.9",
+        "c++",
+    ],
+    deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )
 
 ios_application(
