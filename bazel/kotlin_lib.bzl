@@ -51,5 +51,5 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
         name = name,
         srcs = srcs,
         deps = deps,
-        visibility = visibility
+        visibility = visibility,
     )

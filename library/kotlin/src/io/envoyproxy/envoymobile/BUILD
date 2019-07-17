@@ -17,8 +17,8 @@ envoy_mobile_kt_aar_android_library(
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
-    deps = ["//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib"],
     visibility = ["//visibility:public"],
+    deps = ["//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib"],
 )
 
 envoy_mobile_kt_library(
