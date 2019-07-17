@@ -1,42 +1,61 @@
 #import "AppDelegate.h"
-#include "exe/main_common.h"
+#include "library/objective-c/EnvoyEngine.h"
 
-@interface AppDelegate ()
-
+@interface AppDelegate () <NSURLConnectionDelegate>
 @end
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [NSThread detachNewThreadSelector:@selector(envoyRunner) toTarget:self withObject:nil];
-    NSLog(@"Finished launching!");
-    return YES;
+  [NSThread detachNewThreadSelector:@selector(envoyRunner) toTarget:self withObject:nil];
+  [NSThread detachNewThreadSelector:@selector(envoyHarness) toTarget:self withObject:nil];
+  NSLog(@"Finished launching!");
+  return YES;
 }
 
 - (void)envoyRunner {
-    std::unique_ptr<Envoy::MainCommon> main_common;
+  // Read in and store as string
+  NSString *configFile = [[NSBundle mainBundle] pathForResource:@"config" ofType:@"yaml"];
+  NSString *configYaml = [NSString stringWithContentsOfFile:configFile encoding:NSUTF8StringEncoding error:NULL];
+  NSLog(@"Loading config: %@", configYaml);
 
-    // Initialize the server's main context under a try/catch loop and simply return EXIT_FAILURE
-    // as needed. Whatever code in the initialization path that fails is expected to log an error
-    // message so the user can diagnose.
+  [EnvoyEngine runWithConfig:configYaml];
+}
 
-    const char* argv[] = { "envoy", "--config-yaml", "*" };
-    try {
-      main_common = std::make_unique<Envoy::MainCommon>(3, argv);
-    } catch (const Envoy::NoServingException& e) {
-      exit(EXIT_SUCCESS);
-      return;
-    } catch (const Envoy::MalformedArgvException& e) {
-      std::cerr << e.what() << std::endl;
-      exit(EXIT_FAILURE);
-    } catch (const Envoy::EnvoyException& e) {
-      std::cerr << e.what() << std::endl;
-      exit(EXIT_FAILURE);
-    }
+- (void)envoyHarness {
+  NSString *url = @"http://0.0.0.0:9001/ping";
+  NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
+  sleep(1);
+  while (true) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      NSLog(@"issuing request: %@", url);
+      [[NSURLConnection alloc] initWithRequest:request delegate:self];
+    });
+    sleep(5);
+  }
+}
 
-    // Run the server listener loop outside try/catch blocks, so that unexpected exceptions
-    // show up as a core-dumps for easier diagnostics.
-    main_common->run();
+#pragma mark NSURLConnectionDelegate
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+  NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
+  NSLog(@"status: %ld", httpResponse.statusCode);
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+}
+
+- (NSCachedURLResponse *)connection:(NSURLConnection *)connection
+                  willCacheResponse:(NSCachedURLResponse*)cachedResponse {
+  return nil;
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+  NSLog(@"response complete");
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+  NSLog(@"ut oh");
 }
 
 @end
