@@ -31,6 +31,7 @@
       NSLog(@"issuing request: %@", url);
       [[NSURLConnection alloc] initWithRequest:request delegate:self];
     });
+    [EnvoyEngine makeRequest];
     sleep(5);
   }
 }

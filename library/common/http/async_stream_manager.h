@@ -24,7 +24,7 @@ private:
   std::unordered_map<envoy_stream_t,
                      std::pair<std::unique_ptr<MobileAsyncStreamCallbacks>, AsyncClient::Stream*>>
       streams_;
-  std::atomic<envoy_stream_t> current_stream_id_;
+  std::atomic<envoy_stream_t> current_stream_id_{0};
   AsyncClient& async_client_;
 };
 
