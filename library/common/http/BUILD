@@ -28,6 +28,7 @@ envoy_cc_library(
         ":async_stream_callbacks_lib",
         "//library/common/include:c_types_interface",
         "@envoy//include/envoy/http:async_client_interface",
+        "@envoy//source/common/common:minimal_logger_lib",
     ],
 )
 

@@ -5,13 +5,15 @@
 
 #include "envoy/http/async_client.h"
 
+#include "common/common/logger.h"
+
 #include "library/common/http/async_stream_callbacks.h"
 #include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Http {
 
-class MobileAsyncStreamManager {
+class MobileAsyncStreamManager : public Logger::Loggable<Logger::Id::http> {
 public:
   MobileAsyncStreamManager(AsyncClient&);
 

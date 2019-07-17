@@ -11,4 +11,6 @@
 /// and will not yield.
 + (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
 
++ (void)makeRequest;
+
 @end

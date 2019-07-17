@@ -1,5 +1,6 @@
 #import <UIKit/UIKit.h>
 #import "ViewController.h"
+#import "library/objective-c/EnvoyEngine.h"
 
 #pragma mark - Constants
 
@@ -69,26 +70,8 @@ NSString *_ENDPOINT = @"http://localhost:9001/api.lyft.com/static/demo/hello_wor
 }
 
 - (void)performRequest {
-  // Note that the request is sent to the envoy thread listening locally on port 9001.
-  NSURL *url = [NSURL URLWithString:_ENDPOINT];
-  NSURLRequest *request = [NSURLRequest requestWithURL:url];
-  NSLog(@"Starting request to '%@'", url.path);
-
-  self.requestCount++;
-  int requestID = self.requestCount;
-
-  __weak ViewController *weakSelf = self;
-  NSURLSessionDataTask *task =
-      [self.session dataTaskWithRequest:request
-                      completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                          [weakSelf handleResponse:(NSHTTPURLResponse *)response
-                                              data:data
-                                        identifier:requestID
-                                             error:error];
-                        });
-                      }];
-  [task resume];
+  NSLog(@"Performing a REQUEST");
+  [EnvoyEngine makeRequest];
 }
 
 - (void)handleResponse:(NSHTTPURLResponse *)response
