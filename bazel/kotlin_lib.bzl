@@ -20,7 +20,7 @@ def envoy_mobile_kt_aar_android_library(name, custom_package, manifest, visibili
         deps = deps,
     )
 
-def envoy_mobile_android_library(name, custom_package, visibility = None, manifest, srcs = [], deps = []):
+def envoy_mobile_android_library(name, custom_package, manifest, visibility = None, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion.
     native.filegroup(
