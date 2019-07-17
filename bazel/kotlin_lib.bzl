@@ -6,7 +6,7 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_
 #  This causes the sources to be exported and dropped due to it being a transitive dependency.
 #  To get around this, we have to redeclare the sources from envoy_engine_lib here in order to be pulled into the
 #  kotlin jar.
-def envoy_mobile_kt_aar_android_library(name, custom_package, manifest, srcs = [], deps = []):
+def envoy_mobile_kt_aar_android_library(name, custom_package, manifest, visibility = None, srcs = [], deps = []):
     filegroups = []
     for dep in deps:
         filegroups.append(dep + "_srcs")
@@ -20,13 +20,13 @@ def envoy_mobile_kt_aar_android_library(name, custom_package, manifest, srcs = [
         deps = deps,
     )
 
-def envoy_mobile_android_library(name, custom_package, manifest, srcs = [], deps = []):
+def envoy_mobile_android_library(name, custom_package, visibility = None, manifest, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion.
     native.filegroup(
         name = name + "_srcs",
         srcs = srcs,
-        visibility = ["//visibility:public"],
+        visibility = visibility,
     )
 
     native.android_library(
@@ -34,21 +34,22 @@ def envoy_mobile_android_library(name, custom_package, manifest, srcs = [], deps
         srcs = srcs,
         custom_package = custom_package,
         manifest = manifest,
-        visibility = ["//visibility:public"],
+        visibility = visibility,
         deps = deps,
     )
 
-def envoy_mobile_kt_library(name, srcs = [], deps = []):
+def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion.
     native.filegroup(
         name = name + "_srcs",
         srcs = srcs,
-        visibility = ["//visibility:public"],
+        visibility = visibility,
     )
 
     kt_jvm_library(
         name = name,
         srcs = srcs,
         deps = deps,
+        visibility = visibility
     )

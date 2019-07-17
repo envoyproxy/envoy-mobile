@@ -8,4 +8,5 @@ envoy_mobile_android_library(
     custom_package = "io.envoyproxy.envoymobile.engine",
     manifest = "EnvoyEngineManifest.xml",
     deps = ["//library/common:envoy_jni_interface_lib"],
+    visibility = ["//visibility:public"],
 )
