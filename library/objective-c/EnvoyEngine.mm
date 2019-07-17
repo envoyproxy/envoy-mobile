@@ -28,6 +28,7 @@ static void printHeaders(envoy_headers headers, bool sent) {
 }
 
 + (void)makeRequest {
+  NSLog(@"Inside makeRequest");
   void (^onHeaders)(envoy_headers) = ^(envoy_headers headers) {
     printHeaders(headers, false);
   };
@@ -39,7 +40,9 @@ static void printHeaders(envoy_headers headers, bool sent) {
     nullptr,
   };
 
+  NSLog(@"Calling start_stream");
   envoy_stream stream_pair = start_stream(observer);
+  NSLog(@"Checking start_stream result");
   if (stream_pair.status == ENVOY_SUCCESS) {
     NSLog(@"[STREAM OPEN: %@]", @(stream_pair.stream));
     _callbacks[@(stream_pair.stream)] = onHeaders;

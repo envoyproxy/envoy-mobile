@@ -7,10 +7,13 @@ MobileAsyncStreamManager::MobileAsyncStreamManager(AsyncClient& async_client)
     : async_client_(async_client) {}
 
 envoy_stream_t MobileAsyncStreamManager::createStream(envoy_observer observer) {
+  ENVOY_LOG(info, "Inside createStream");
   std::unique_ptr<MobileAsyncStreamCallbacks> callbacks =
       std::make_unique<MobileAsyncStreamCallbacks>(current_stream_id_, observer);
+  ENVOY_LOG(info, "Emplace pair");
   streams_.emplace(current_stream_id_,
                    std::make_pair(std::move(callbacks), async_client_.start(*callbacks, {})));
+  ENVOY_LOG(info, "return createStream");
   return current_stream_id_++;
 }
 

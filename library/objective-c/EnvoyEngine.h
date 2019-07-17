@@ -78,4 +78,6 @@
  */
 + (EnvoyStatus)resetStream:(EnvoyStream *)stream;
 
++ (void)makeRequest;
+
 @end
