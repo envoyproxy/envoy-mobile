@@ -28,5 +28,4 @@ envoy_mobile_kt_library(
         "RequestMethod.kt",
         "RetryPolicy.kt",
     ],
-    visibility = ["//visibility:public"],
 )
