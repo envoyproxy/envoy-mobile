@@ -1,5 +1,3 @@
-licenses(["notice"])  # Apache 2
-
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_library")
 
 # Android library drops exported dependencies from dependent rules. The kt_android_library
