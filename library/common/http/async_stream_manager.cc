@@ -10,7 +10,7 @@ envoy_stream_t MobileAsyncStreamManager::createStream(envoy_observer observer) {
   std::unique_ptr<MobileAsyncStreamCallbacks> callbacks =
       std::make_unique<MobileAsyncStreamCallbacks>(current_stream_id_, observer);
   streams_.emplace(current_stream_id_,
-                   std::make_pair(callbacks, async_client_.start(*callbacks, {})));
+                   std::make_pair(std::move(callbacks), async_client_.start(*callbacks, {})));
   return current_stream_id_++;
 }
 
