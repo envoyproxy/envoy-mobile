@@ -7,6 +7,7 @@ envoy_cc_library(
     srcs = ["main_interface.cc"],
     hdrs = ["main_interface.h"],
     repository = "@envoy",
+    visibility = ["//visibility:public"],
     deps = ["@envoy//source/exe:envoy_main_common_lib"],
 )
 
@@ -18,5 +19,6 @@ cc_library(
         "-lm",
         "-llog",
     ],
+    visibility = ["//visibility:public"],
     deps = [":envoy_main_interface_lib"],
 )
