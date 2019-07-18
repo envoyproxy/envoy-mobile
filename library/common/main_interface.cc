@@ -19,6 +19,7 @@
 
 static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::MobileAsyncStreamManager> stream_manager_;
+static std::unique_ptr<Envoy::Engine> engine_;
 
 envoy_stream start_stream(envoy_observer observer) {
   return {ENVOY_SUCCESS, stream_manager_->createStream(observer)};
@@ -94,7 +95,7 @@ envoy_status_t reset_stream(envoy_stream_t stream_id) {
   }
 }
 
-void setup() {
+void setup_envoy() {
   Envoy::Http::AsyncClient& api_async_client =
       main_common_->server()->clusterManager().httpAsyncClientForCluster("hello_world_api");
   stream_manager_ = std::make_unique<Envoy::Http::MobileAsyncStreamManager>(api_async_client);

@@ -84,4 +84,8 @@ static void printHeaders(envoy_headers headers, bool sent) {
   }
 }
 
++ (void)setupEnvoy {
+  setup_envoy();
+}
+
 @end

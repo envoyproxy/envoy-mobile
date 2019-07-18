@@ -23,6 +23,8 @@
 }
 
 - (void)envoyHarness {
+  sleep(5);
+  [EnvoyEngine setupEnvoy];
   NSString *url = @"http://0.0.0.0:9001/ping";
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
   sleep(1);

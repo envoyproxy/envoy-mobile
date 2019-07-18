@@ -77,6 +77,8 @@ envoy_status_t reset_stream(envoy_stream_t stream);
  */
 envoy_status_t run_engine(const char* config, const char* log_level);
 
+void setup_envoy();
+
 #ifdef __cplusplus
 } // functions
 #endif

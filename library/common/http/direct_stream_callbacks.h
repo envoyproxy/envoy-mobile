@@ -9,9 +9,10 @@
 namespace Envoy {
 namespace Http {
 
-class MobileAsyncStreamCallbacks : public AsyncClient::StreamCallbacks {
+class DirectStreamCallbacks : public AsyncClient::StreamCallbacks {
 public:
-  MobileAsyncStreamCallbacks(envoy_stream_t stream, envoy_observer observer);
+  DirectStreamCallbacks(envoy_stream_t stream, envoy_observer observer, Dispatcher& http_dispatcher);
+  // AsyncClient::StreamCallbacks
   void onHeaders(HeaderMapPtr&& headers, bool end_stream);
   void onData(Buffer::Instance& data, bool end_stream);
   void onTrailers(HeaderMapPtr&& trailers);
@@ -20,6 +21,7 @@ public:
 private:
   envoy_stream_t stream_;
   envoy_observer observer_;
+  Dispatcher& http_dispatcher_;
 };
 
 } // namespace Http
