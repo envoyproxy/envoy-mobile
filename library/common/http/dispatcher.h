@@ -4,8 +4,10 @@
 #include <unordered_map>
 
 #include "envoy/buffer/buffer.h"
+#include "envoy/event/dispatcher.h"
 #include "envoy/http/async_client.h"
 #include "envoy/http/header_map.h"
+#include "envoy/upstream/cluster_manager.h"
 
 #include "common/common/logger.h"
 
@@ -38,11 +40,9 @@ private:
 
 using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
 
-using DirectStream = std::pair<DirectStreamCallbacksPtr, AsyncClient::Stream*>;
-
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
-  Dispatcher(Event::Dispatcher& event_dispatcher);
+  Dispatcher(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
 
   envoy_stream_t startStream(envoy_observer);
   envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
@@ -56,9 +56,24 @@ public:
   envoy_status_t removeStream(envoy_stream_t stream_id);
 
 private:
+  class DirectStream {
+  public:
+    // FIXME follow up on concerns about the lifetime of the stream pointer.
+    DirectStream(DirectStreamCallbacksPtr callbacks, AsyncClient::Stream* stream);
+
+    DirectStreamCallbacksPtr callbacks_;
+    AsyncClient::Stream* underlying_stream_;
+    HeaderMapPtr headers_;
+    // TODO: because the client may send infinite metadata frames we need some ongoing way to
+    // free metadata ahead of object destruction.
+    // An implementation option would be to have drainable header maps, or done callbacks.
+    std::vector<HeaderMapPtr> metadata_;
+    HeaderMapPtr trailers_;
+  };
+
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
-  AsyncClient::Stream* getStream(envoy_stream_t stream_id) const;
+  DirectStream* getStream(envoy_stream_t stream_id);
 
   std::unordered_map<envoy_stream_t, DirectStream> streams_;
   envoy_stream_t current_stream_id_ = 0;
@@ -66,6 +81,7 @@ private:
   // The event_dispatcher is the only member state that may be accessed from a thread other than
   // the event_dispatcher's own thread.
   Event::Dispatcher& event_dispatcher_;
+  Upstream::ClusterManager& cluster_manager_;
 };
 
 } // namespace Http
