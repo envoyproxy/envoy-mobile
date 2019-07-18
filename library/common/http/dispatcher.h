@@ -3,13 +3,13 @@
 #include <atomic>
 #include <unordered_map>
 
-#include "library/common/include/c_types.h"
-
 #include "envoy/buffer/buffer.h"
 #include "envoy/http/async_client.h"
 #include "envoy/http/header_map.h"
 
 #include "common/common/logger.h"
+
+#include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Http {

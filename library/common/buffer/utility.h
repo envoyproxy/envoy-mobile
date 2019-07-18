@@ -1,8 +1,8 @@
 #pragma once
 
-#include "library/common/include/c_types.h"
-
 #include "envoy/buffer/buffer.h"
+
+#include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Buffer {

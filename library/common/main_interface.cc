@@ -2,10 +2,6 @@
 
 #include <unordered_map>
 
-#include "library/common/buffer/utility.h"
-#include "library/common/http/dispatcher.h"
-#include "library/common/http/header_utility.h"
-
 #include "common/upstream/logical_dns_cluster.h"
 
 #include "exe/main_common.h"
@@ -14,6 +10,10 @@
 #include "extensions/filters/network/http_connection_manager/config.h"
 #include "extensions/transport_sockets/raw_buffer/config.h"
 #include "extensions/transport_sockets/tls/config.h"
+
+#include "library/common/buffer/utility.h"
+#include "library/common/http/dispatcher.h"
+#include "library/common/http/header_utility.h"
 
 // NOLINT(namespace-envoy)
 

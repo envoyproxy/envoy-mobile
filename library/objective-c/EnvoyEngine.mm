@@ -14,9 +14,7 @@ static void platform_on_headers(envoy_stream_t stream, envoy_headers headers, bo
   }
 }
 
-static envoy_string EnvoyString(NSString *s) {
-  return { s.length, strdup(s.UTF8String) };
-}
+static envoy_string EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
 
 static void printHeaders(envoy_headers headers, bool sent) {
   for (int i = 0; i < headers.length; i++) {
@@ -34,10 +32,10 @@ static void printHeaders(envoy_headers headers, bool sent) {
   };
 
   envoy_observer observer = {
-    platform_on_headers,
-    nullptr,
-    nullptr,
-    nullptr,
+      platform_on_headers,
+      nullptr,
+      nullptr,
+      nullptr,
   };
 
   NSLog(@"Calling start_stream");
@@ -51,10 +49,10 @@ static void printHeaders(envoy_headers headers, bool sent) {
   }
 
   envoy_header header_array[] = {
-    { EnvoyString(@":method"), EnvoyString(@"GET") },
-    { EnvoyString(@":scheme"), EnvoyString(@"https") },
-    { EnvoyString(@":authority"), EnvoyString(@"api.lyft.com") },
-    { EnvoyString(@":path"), EnvoyString(@"/ping") },
+      {EnvoyString(@":method"), EnvoyString(@"GET")},
+      {EnvoyString(@":scheme"), EnvoyString(@"https")},
+      {EnvoyString(@":authority"), EnvoyString(@"api.lyft.com")},
+      {EnvoyString(@":path"), EnvoyString(@"/ping")},
   };
 
   envoy_headers request_headers = {4, header_array};
