@@ -35,12 +35,12 @@ interface StreamEmitter {
   /**
    * For ending an associated stream and sending trailers
    *
-   * @param trailers to send with ending a stream. If no trailers are needed, send an empty map
+   * @param trailers to send with ending a stream. If no trailers are needed, empty map will be the default
    * @throws IllegalStateException when the stream is not active
    * @throws EnvoyException when there is an exception ending the stream or sending trailers
    */
   @Throws(EnvoyException::class)
-  fun close(trailers: Map<String, List<String>>)
+  fun close(trailers: Map<String, List<String>> = emptyMap())
 
   /**
    * For cancelling and ending an associated stream
