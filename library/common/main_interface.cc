@@ -23,8 +23,9 @@ static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
 // FIXME
 envoy_stream start_stream(envoy_observer) { return {ENVOY_FAILURE, 0}; }
 
-// FIXME
-envoy_status_t send_headers(envoy_stream_t, envoy_headers, bool) { return ENVOY_FAILURE; }
+envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, bool end_stream) {
+  return http_dispatcher_->sendHeaders(stream_id, headers, end_stream);
+}
 
 // FIXME
 envoy_status_t send_data(envoy_stream_t, envoy_data, bool) { return ENVOY_FAILURE; }
@@ -46,7 +47,10 @@ envoy_status_t send_trailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILU
 envoy_status_t reset_stream(envoy_stream_t) { return ENVOY_FAILURE; }
 
 // FIXME
-void setup_envoy() {}
+void setup_envoy() {
+  http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(
+      main_common_->server()->dispatcher(), main_common_->server()->clusterManager());
+}
 
 /**
  * External entrypoint for library.

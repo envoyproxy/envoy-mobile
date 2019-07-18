@@ -1,9 +1,6 @@
 licenses(["notice"])  # Apache 2
 
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_application")
-load("//bazel:envoy_build_system.bzl", "envoy_package")
-
-envoy_package()
 
 exports_files(["EnvoyEngine.h"])
 

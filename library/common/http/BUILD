@@ -14,8 +14,10 @@ envoy_cc_library(
         "//library/common/http:header_utility_lib",
         "//library/common/include:c_types_interface",
         "@envoy//include/envoy/buffer:buffer_interface",
+        "@envoy//include/envoy/event:dispatcher_interface",
         "@envoy//include/envoy/http:async_client_interface",
         "@envoy//include/envoy/http:header_map_interface",
+        "@envoy//include/envoy/upstream:cluster_manager_interface",
         "@envoy//source/common/common:minimal_logger_lib",
     ],
 )
