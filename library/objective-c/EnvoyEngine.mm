@@ -114,4 +114,8 @@ static void printHeaders(envoy_headers headers, bool sent) {
   return Failure;
 }
 
++ (void)setupEnvoy {
+  setup_envoy();
+}
+
 @end

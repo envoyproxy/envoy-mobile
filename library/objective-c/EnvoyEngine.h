@@ -80,4 +80,6 @@
 
 + (void)makeRequest;
 
++ (void)setupEnvoy;
+
 @end
