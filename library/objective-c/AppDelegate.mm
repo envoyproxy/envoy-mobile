@@ -6,7 +6,8 @@
 
 @implementation AppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+- (BOOL)application:(UIApplication *)application
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [NSThread detachNewThreadSelector:@selector(envoyRunner) toTarget:self withObject:nil];
   [NSThread detachNewThreadSelector:@selector(envoyHarness) toTarget:self withObject:nil];
   NSLog(@"Finished launching!");
@@ -16,7 +17,9 @@
 - (void)envoyRunner {
   // Read in and store as string
   NSString *configFile = [[NSBundle mainBundle] pathForResource:@"config" ofType:@"yaml"];
-  NSString *configYaml = [NSString stringWithContentsOfFile:configFile encoding:NSUTF8StringEncoding error:NULL];
+  NSString *configYaml = [NSString stringWithContentsOfFile:configFile
+                                                   encoding:NSUTF8StringEncoding
+                                                      error:NULL];
   NSLog(@"Loading config: %@", configYaml);
 
   [EnvoyEngine runWithConfig:configYaml];
@@ -41,7 +44,7 @@
 #pragma mark NSURLConnectionDelegate
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-  NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *) response;
+  NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
   NSLog(@"status: %ld", httpResponse.statusCode);
 }
 
@@ -49,7 +52,7 @@
 }
 
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection
-                  willCacheResponse:(NSCachedURLResponse*)cachedResponse {
+                  willCacheResponse:(NSCachedURLResponse *)cachedResponse {
   return nil;
 }
 

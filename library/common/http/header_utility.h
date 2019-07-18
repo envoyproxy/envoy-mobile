@@ -1,9 +1,9 @@
 #pragma once
 
-#include "library/common/include/c_types.h"
-
 #include "envoy/buffer/buffer.h"
 #include "envoy/http/header_map.h"
+
+#include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Http {

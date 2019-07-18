@@ -6,6 +6,9 @@ exports_files([
 ])
 
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_application")
+load("//bazel:envoy_build_system.bzl", "envoy_package")
+
+envoy_package()
 
 exports_files(["EnvoyEngine.h"])
 
@@ -36,11 +39,11 @@ objc_library(
         "main.mm",
     ],
     copts = ["-std=c++14"],
+    data = ["config.yaml"],
     sdk_dylibs = [
         "resolv.9",
         "c++",
     ],
-    data = ["config.yaml"],
     deps = ["envoy_engine_objc_lib"],
 )
 
