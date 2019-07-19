@@ -11,10 +11,11 @@ DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream, envoy_observ
     : stream_(stream), observer_(observer), http_dispatcher_(http_dispatcher) {}
 
 void DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
+  ENVOY_LOG_MISC(info, "__________________CALLBACK TIME __________________");
   if (end_stream) {
     http_dispatcher_.removeStream(stream_);
   }
-  ENVOY_LOG_MISC(info, "__________________CALLBACK TIME __________________");
+  ENVOY_LOG_MISC(info, "__________________Platform CALLBACK TIME __________________");
   observer_.h(stream_, Utility::transformHeaders(std::move(headers)), end_stream);
 }
 
@@ -45,13 +46,17 @@ envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
 
   event_dispatcher_.post([this, observer, new_stream_id]() -> void {
     ENVOY_LOG(info, "Inside posted startStream");
-    std::unique_ptr<DirectStreamCallbacks> callbacks =
+    DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_id, observer, *this);
+
+    DirectStreamPtr direct_stream = std::make_unique<DirectStream>(std::move(callbacks));
 
     ENVOY_LOG(info, "Emplace direct stream");
     AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("lyft_api");
-    streams_.emplace(new_stream_id,
-                     DirectStream(std::move(callbacks), async_client.start(*callbacks, {})));
+
+    direct_stream->underlying_stream_ = async_client.start(*direct_stream->callbacks_, {});
+
+    streams_.emplace(new_stream_id, std::move(direct_stream));
 
     ENVOY_LOG(info, "Started Stream");
   });
@@ -89,14 +94,13 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream_id) {
          "stream interaction must be performed on the event_dispatcher_'s thread.");
   // FIXME: fix names
   auto direct_stream_pair_it = streams_.find(stream_id);
-  return (direct_stream_pair_it != streams_.end()) ? &direct_stream_pair_it->second : nullptr;
+  return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
 }
 
 envoy_status_t Dispatcher::removeStream(envoy_stream_t) { return ENVOY_FAILURE; }
 
-Dispatcher::DirectStream::DirectStream(DirectStreamCallbacksPtr callbacks,
-                                       AsyncClient::Stream* stream)
-    : callbacks_(std::move(callbacks)), underlying_stream_(stream) {}
+Dispatcher::DirectStream::DirectStream(DirectStreamCallbacksPtr callbacks)
+    : callbacks_(std::move(callbacks)) {}
 
 } // namespace Http
 } // namespace Envoy
