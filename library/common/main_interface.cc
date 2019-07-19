@@ -20,8 +20,14 @@
 static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
 
+<<<<<<< HEAD
+envoy_stream start_stream(envoy_observer observer) {
+  return {ENVOY_SUCCESS, http_dispatcher_->startStream(observer)};
+}
+=======
 // FIXME
 envoy_stream start_stream(envoy_observer) { return {ENVOY_FAILURE, 0}; }
+>>>>>>> 7bc8295ec2fbedd6690908344c2bc0bb3b11138d
 
 envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, bool end_stream) {
   return http_dispatcher_->sendHeaders(stream_id, headers, end_stream);
