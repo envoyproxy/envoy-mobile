@@ -18,12 +18,6 @@ envoy_cc_library(
     ],
 )
 
-envoy_cc_library(
-    name = "envoy_types_lib",
-    hdrs = ["types.h"],
-    repository = "@envoy",
-)
-
 cc_library(
     name = "envoy_jni_interface_lib",
     srcs = ["jni_interface.cc"],
