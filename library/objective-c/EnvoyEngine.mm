@@ -48,12 +48,12 @@ static void printHeaders(envoy_headers headers, bool sent) {
     NSLog(@"[STREAM OPEN FAILED]");
   }
 
-  envoy_header header_array[] = {
-      {EnvoyString(@":method"), EnvoyString(@"GET")},
-      {EnvoyString(@":scheme"), EnvoyString(@"https")},
-      {EnvoyString(@":authority"), EnvoyString(@"api.lyft.com")},
-      {EnvoyString(@":path"), EnvoyString(@"/ping")},
-  };
+  envoy_header* header_array = new envoy_header[4];
+
+  header_array [0] = {EnvoyString(@":method"), EnvoyString(@"GET")};
+  header_array [1] = {EnvoyString(@":scheme"), EnvoyString(@"https")};
+  header_array [2] = {EnvoyString(@":authority"), EnvoyString(@"api.lyft.com")};
+  header_array [3] = {EnvoyString(@":path"), EnvoyString(@"/ping")};
 
   envoy_headers request_headers = {4, header_array};
 

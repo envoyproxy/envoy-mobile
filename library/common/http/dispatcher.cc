@@ -14,6 +14,7 @@ void DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   if (end_stream) {
     http_dispatcher_.removeStream(stream_);
   }
+  ENVOY_LOG_MISC(info, "__________________CALLBACK TIME __________________");
   observer_.h(stream_, Utility::transformHeaders(std::move(headers)), end_stream);
 }
 
@@ -64,8 +65,11 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream_id, envoy_headers h
   event_dispatcher_.post([this, stream_id, headers, end_stream]() -> void {
     DirectStream* direct_stream = getStream(stream_id);
     if (direct_stream != nullptr) {
+      ENVOY_LOG(info, "dispatch headers");
       direct_stream->headers_ = Utility::transformHeaders(headers);
+      ENVOY_LOG(info, "transformed headers");
       direct_stream->underlying_stream_->sendHeaders(*direct_stream->headers_, end_stream);
+      ENVOY_LOG(info, "sent headers to underlying stream");
     }
   });
 
@@ -90,7 +94,9 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream_id) {
 
 envoy_status_t Dispatcher::removeStream(envoy_stream_t) { return ENVOY_FAILURE; }
 
-Dispatcher::DirectStream::DirectStream(DirectStreamCallbacksPtr callbacks, AsyncClient::Stream* stream) : callbacks_(std::move(callbacks)), underlying_stream_(stream) {}
+Dispatcher::DirectStream::DirectStream(DirectStreamCallbacksPtr callbacks,
+                                       AsyncClient::Stream* stream)
+    : callbacks_(std::move(callbacks)), underlying_stream_(stream) {}
 
 } // namespace Http
 } // namespace Envoy
