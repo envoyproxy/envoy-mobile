@@ -59,7 +59,7 @@ private:
   class DirectStream {
   public:
     // FIXME follow up on concerns about the lifetime of the stream pointer.
-    DirectStream(DirectStreamCallbacksPtr callbacks, AsyncClient::Stream* stream);
+    DirectStream(DirectStreamCallbacksPtr callbacks);
 
     DirectStreamCallbacksPtr callbacks_;
     AsyncClient::Stream* underlying_stream_;
@@ -71,11 +71,13 @@ private:
     HeaderMapPtr trailers_;
   };
 
+  using DirectStreamPtr = std::unique_ptr<DirectStream>;
+
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
   DirectStream* getStream(envoy_stream_t stream_id);
 
-  std::unordered_map<envoy_stream_t, DirectStream> streams_;
+  std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   envoy_stream_t current_stream_id_ = 0;
 
   // The event_dispatcher is the only member state that may be accessed from a thread other than
