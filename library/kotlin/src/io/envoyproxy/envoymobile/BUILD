@@ -31,10 +31,14 @@ kt_android_library(
 kt_jvm_library(
     name = "envoy_interfaces_lib",
     srcs = [
+        "Client.kt",
+        "EnvoyException.kt",
         "Request.kt",
         "RequestBuilder.kt",
         "RequestMethod.kt",
         "RetryPolicy.kt",
+        "StreamCallback.kt",
+        "StreamEmitter.kt",
     ],
     visibility = ["//visibility:public"],
 )
