@@ -90,5 +90,7 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream_id) {
 
 envoy_status_t Dispatcher::removeStream(envoy_stream_t) { return ENVOY_FAILURE; }
 
+Dispatcher::DirectStream::DirectStream(DirectStreamCallbacksPtr callbacks, AsyncClient::Stream* stream) : callbacks_(std::move(callbacks)), underlying_stream_(stream) {}
+
 } // namespace Http
 } // namespace Envoy
