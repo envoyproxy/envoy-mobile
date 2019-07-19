@@ -5,32 +5,9 @@ import XCTest
 // swiftlint:disable:next force_unwrapping
 private let kURL = URL(string: "http://0.0.0.0:9001/api.lyft.com/demo.txt")!
 private let kBodyData = Data([1, 2, 3, 4])
-
-private let kRetryPolicy1 = RetryPolicy(maxRetryCount: 123,
-                                        retryOn: [.connectFailure, .fiveXX],
-                                        perRetryTimeoutMS: 9000)
-
-private let kRetryPolicy2 = RetryPolicy(maxRetryCount: 123,
-                                        retryOn: [.connectFailure, .fiveXX],
-                                        perRetryTimeoutMS: 9000)
-
-private let kRequestBuilder1 = RequestBuilder(method: .post, url: kURL)
-  .addBody(kBodyData)
-  .addRetryPolicy(kRetryPolicy1)
-  .addHeader(name: "foo", value: "1")
-  .addHeader(name: "foo", value: "2")
-  .addHeader(name: "bar", value: "3")
-  .addTrailer(name: "baz", value: "4")
-  .addTrailer(name: "baz", value: "5")
-
-private let kRequestBuilder2 = RequestBuilder(method: .post, url: kURL)
-  .addBody(kBodyData)
-  .addRetryPolicy(kRetryPolicy2)
-  .addHeader(name: "foo", value: "1")
-  .addHeader(name: "foo", value: "2")
-  .addHeader(name: "bar", value: "3")
-  .addTrailer(name: "baz", value: "4")
-  .addTrailer(name: "baz", value: "5")
+private let kRetryPolicy = RetryPolicy(maxRetryCount: 123,
+                                       retryOn: [.connectFailure, .fiveXX],
+                                       perRetryTimeoutMS: 9000)
 
 final class RequestBuilderTests: XCTestCase {
   // MARK: - Method
@@ -68,9 +45,9 @@ final class RequestBuilderTests: XCTestCase {
 
   func testAddingRetryPolicyHasRetryPolicyInRequest() {
     let request = RequestBuilder(method: .post, url: kURL)
-      .addRetryPolicy(kRetryPolicy1)
+      .addRetryPolicy(kRetryPolicy)
       .build()
-    XCTAssertEqual(kRetryPolicy1, request.retryPolicy)
+    XCTAssertEqual(kRetryPolicy, request.retryPolicy)
   }
 
   func testNotAddingRetryPolicyHasNilRetryPolicyInRequest() {
@@ -176,14 +153,33 @@ final class RequestBuilderTests: XCTestCase {
   // MARK: - Request conversion
 
   func testRequestsAreEqualWhenPropertiesAreEqual() {
-    let request1 = kRequestBuilder1.build()
-    let request2 = kRequestBuilder2.build()
+    let request1 = self.newRequestBuilder().build()
+    let request2 = self.newRequestBuilder().build()
     XCTAssertEqual(request1, request2)
   }
 
   func testPointersAreNotEqualWhenInstancesAreDifferent() {
-    let request1 = kRequestBuilder1.build()
+    let request1 = self.newRequestBuilder().build()
+    let request2 = self.newRequestBuilder().build()
+    XCTAssert(request1 !== request2)
+  }
+
+  func testConvertingToBuilderAndBackMaintainsEquality() {
+    let request1 = self.newRequestBuilder().build()
     let request2 = request1.newBuilder().build()
     XCTAssertEqual(request1, request2)
+  }
+
+  // MARK: - Private
+
+  private func newRequestBuilder() -> RequestBuilder {
+    return RequestBuilder(method: .post, url: kURL)
+      .addBody(kBodyData)
+      .addRetryPolicy(kRetryPolicy)
+      .addHeader(name: "foo", value: "1")
+      .addHeader(name: "foo", value: "2")
+      .addHeader(name: "bar", value: "3")
+      .addTrailer(name: "baz", value: "4")
+      .addTrailer(name: "baz", value: "5")
   }
 }
