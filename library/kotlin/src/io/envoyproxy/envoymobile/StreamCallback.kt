@@ -6,10 +6,10 @@ interface StreamCallback {
   /**
    * Invoked whenever the response headers have been read
    *
-   * @param statusCode the status code of the response
    * @param headers the headers of the response
+   * @param statusCode the status code of the response
    */
-  fun onHeaders(statusCode: Int, headers: Map<String, List<String>>)
+  fun onHeaders(headers: Map<String, List<String>>, statusCode: Int)
 
   /**
    * Invoked whenever the response body is read
