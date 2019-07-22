@@ -42,7 +42,7 @@ interface StreamCallback {
   fun onError(envoyException: EnvoyException)
 
   /**
-   * Called when the stream is cancelled.
+   * Called when the stream is canceled.
    *
    */
   fun onCanceled()
