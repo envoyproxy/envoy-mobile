@@ -28,26 +28,16 @@ envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, boo
   return http_dispatcher_->sendHeaders(stream_id, headers, end_stream);
 }
 
-// FIXME
+// TODO: implement.
 envoy_status_t send_data(envoy_stream_t, envoy_data, bool) { return ENVOY_FAILURE; }
-
-// FIXME
-// envoy_status_t send_metadata(envoy_stream_t, envoy_headers, bool) {
-//   return ENVOY_FAILURE;
-// }
-
-// FIXME
+envoy_status_t send_metadata(envoy_stream_t, envoy_headers, bool) { return ENVOY_FAILURE; }
 envoy_status_t send_trailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
-
-// FIXME
-// envoy_status_t locally_close_stream(envoy_stream_t) {
-// return ENVOY_FAILURE;
-// }
-
-// FIXME
+envoy_status_t locally_close_stream(envoy_stream_t) { return ENVOY_FAILURE; }
 envoy_status_t reset_stream(envoy_stream_t) { return ENVOY_FAILURE; }
 
-// FIXME
+/*
+ * Setup envoy for interaction via the main interface.
+ */
 void setup_envoy() {
   http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(
       main_common_->server()->dispatcher(), main_common_->server()->clusterManager());
