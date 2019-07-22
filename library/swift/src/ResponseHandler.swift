@@ -2,7 +2,7 @@ import Foundation
 
 /// Callback interface for receiving stream events.
 @objc
-public protocol StreamCallback {
+public protocol ResponseHandler {
   /// Called when response headers are received by the stream.
   ///
   /// - parameter headers:    The headers of the response.

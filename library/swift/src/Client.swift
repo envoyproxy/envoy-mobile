@@ -3,10 +3,10 @@
 public protocol Client {
   /// Start a new stream.
   ///
-  /// - parameter request:        The request for opening a stream.
-  /// - parameter streamCallback: Callback for receiving stream events.
+  /// - parameter request: The request for opening a stream.
+  /// - parameter handler: Handler for receiving stream events.
   ///
   /// - returns: Emitter for sending streaming data outward.
-  func startStream(request: Request, streamCallback: StreamCallback)
+  func startStream(request: Request, handler: ResponseHandler)
     -> StreamEmitter
 }
