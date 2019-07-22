@@ -1,10 +1,8 @@
-#include "library/common/http/header_utility.h"
-
 #include "common/http/header_map_impl.h"
 
-#include "library/common/include/c_types.h"
-
 #include "gtest/gtest.h"
+#include "library/common/http/header_utility.h"
+#include "library/common/include/c_types.h"
 
 namespace Envoy {
 namespace Http {
