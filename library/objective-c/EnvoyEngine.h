@@ -11,8 +11,8 @@
 /// and will not yield.
 + (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
 
-+ (void)makeRequest;
-
+/// Performs necessary setup after Envoy has initialized and started running.
+/// TODO: create a post-initialization callback from Envoy to handle this automatically.
 + (void)setupEnvoy;
 
 @end
