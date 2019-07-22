@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 interface StreamCallback {
   /**
-   * Invoked whenever the response headers have been read.
+   * Called when a response headers is received by the stream.
    *
    * @param headers the headers of the response.
    * @param statusCode the status code of the response.
@@ -12,7 +12,7 @@ interface StreamCallback {
   fun onHeaders(headers: Map<String, List<String>>, statusCode: Int)
 
   /**
-   * Invoked whenever the response body is read.
+   * Called when a data frame is received by the stream.
    *
    * @param byteBuffer the byte buffer of the response.
    * @param endStream true if the stream is complete.
@@ -20,7 +20,7 @@ interface StreamCallback {
   fun onData(byteBuffer: ByteBuffer, endStream: Boolean)
 
   /**
-   * Invoked whenever a response metadata has been read.
+   * Called when a response metadata has been received by the stream.
    *
    * @param metadata the metadata of a response.
    * @param endStream true if the stream is complete.
@@ -35,20 +35,20 @@ interface StreamCallback {
   fun onTrailers(trailers: Map<String, List<String>>)
 
   /**
-   * Invoked when there is an internal Envoy exception associated with the stream.
+   * Called when an internal Envoy exception occurs with the stream.
    *
    * @param envoyException the exception associated with the stream.
    */
   fun onError(envoyException: EnvoyException)
 
   /**
-   * Invoked when the stream is cancelled.
+   * Called when the stream is cancelled.
    *
    */
   fun onCanceled()
 
   /**
-   * Invoked when the stream has been completed.
+   * Called when the stream has been completed.
    *
    */
   fun onCompletion()
