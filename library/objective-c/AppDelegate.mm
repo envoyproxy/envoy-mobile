@@ -35,11 +35,11 @@
 - (void)envoyHarness {
   sleep(5);
   [EnvoyEngine setupEnvoy];
-  //NSString *url = @"http://0.0.0.0:9001/ping";
-  //NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
+  // NSString *url = @"http://0.0.0.0:9001/ping";
+  // NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
   sleep(1);
   while (true) {
-    //dispatch_async(dispatch_get_main_queue(), ^{
+    // dispatch_async(dispatch_get_main_queue(), ^{
     //  NSLog(@"issuing request: %@", url);
     //  [[NSURLConnection alloc] initWithRequest:request delegate:self];
     //});

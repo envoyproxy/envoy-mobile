@@ -8,7 +8,7 @@ NSString *_ENDPOINT = @"http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world
 
 #pragma mark - ResponseValue
 
-@interface ResponseValue: NSObject
+@interface ResponseValue : NSObject
 @property (nonatomic, strong) NSString *body;
 @property (nonatomic, strong) NSString *serverHeader;
 @end
@@ -50,7 +50,11 @@ NSString *_ENDPOINT = @"http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world
 
 - (void)startRequests {
   // Note that the first delay will give Envoy time to start up.
-  self.requestTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(performRequest) userInfo:nil repeats:true];
+  self.requestTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                       target:self
+                                                     selector:@selector(performRequest)
+                                                     userInfo:nil
+                                                      repeats:true];
 }
 
 - (void)performRequest {
@@ -60,15 +64,17 @@ NSString *_ENDPOINT = @"http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world
   NSLog(@"Starting request to '%@'", url.path);
 
   __weak ViewController *weakSelf = self;
-  NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-    if (error == nil) {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf handleResponse:(NSHTTPURLResponse *)response data:data];
-      });
-    } else {
-      NSLog(@"Received error: %@", error);
-    }
-  }];
+  NSURLSessionDataTask *task =
+      [session dataTaskWithRequest:request
+                 completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                   if (error == nil) {
+                     dispatch_async(dispatch_get_main_queue(), ^{
+                       [weakSelf handleResponse:(NSHTTPURLResponse *)response data:data];
+                     });
+                   } else {
+                     NSLog(@"Received error: %@", error);
+                   }
+                 }];
   [task resume];
 }
 
@@ -98,15 +104,18 @@ NSString *_ENDPOINT = @"http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world
   return self.responses.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView
+         cellForRowAtIndexPath:(NSIndexPath *)indexPath {
   UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:_CELL_ID];
   if (cell == nil) {
-    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:_CELL_ID];
+    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
+                                  reuseIdentifier:_CELL_ID];
   }
 
   ResponseValue *response = self.responses[indexPath.row];
   cell.textLabel.text = [NSString stringWithFormat:@"Response: %@", response.body];
-  cell.detailTextLabel.text = [NSString stringWithFormat:@"'Server' header: %@", response.serverHeader];
+  cell.detailTextLabel.text =
+      [NSString stringWithFormat:@"'Server' header: %@", response.serverHeader];
   return cell;
 }
 
