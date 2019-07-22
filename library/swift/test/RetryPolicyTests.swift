@@ -10,9 +10,7 @@ final class RetryPolicyTests: XCTestCase {
                              perRetryTimeoutMS: 9001)
     let expectedHeaders = [
       "x-envoy-max-retries": "123",
-      "x-envoy-retry-on": RetryRule.allCases
-        .map { $0.stringValue }
-        .joined(separator: ","),
+      "x-envoy-retry-on": "5xx,gateway-error,connect-failure,retriable-4xx,refused-upstream",
       "x-envoy-upstream-rq-per-try-timeout-ms": "9001",
     ]
 
@@ -25,9 +23,7 @@ final class RetryPolicyTests: XCTestCase {
                              perRetryTimeoutMS: nil)
     let expectedHeaders = [
       "x-envoy-max-retries": "123",
-      "x-envoy-retry-on": RetryRule.allCases
-        .map { $0.stringValue }
-        .joined(separator: ","),
+      "x-envoy-retry-on": "5xx,gateway-error,connect-failure,retriable-4xx,refused-upstream",
     ]
 
     XCTAssertEqual(expectedHeaders, policy.toHeaders())
