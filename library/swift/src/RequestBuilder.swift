@@ -4,13 +4,9 @@ import Foundation
 @objcMembers
 public final class RequestBuilder: NSObject {
   /// Method for the request.
-  public let method: RequestMethod
-  /// The URL scheme for the request (i.e., "https").
-  public let scheme: String
-  /// The URL authority for the request (i.e., "api.foo.com").
-  public let authority: String
-  /// The URL path for the request (i.e., "/foo").
-  public let path: String
+  public private(set) var method: RequestMethod
+  /// URL for the request.
+  public private(set) var url: URL
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public private(set) var headers: [String: [String]] = [:]
@@ -27,9 +23,7 @@ public final class RequestBuilder: NSObject {
   /// Internal initializer used for converting a request back to a builder.
   init(request: Request) {
     self.method = request.method
-    self.scheme = request.scheme
-    self.authority = request.authority
-    self.path = request.path
+    self.url = request.url
     self.headers = request.headers
     self.trailers = request.trailers
     self.body = request.body
@@ -37,10 +31,9 @@ public final class RequestBuilder: NSObject {
   }
 
   /// Public initializer.
-  public init(method: RequestMethod, scheme: String, authority: String, path: String) {
-    self.scheme = scheme
-    self.authority = authority
-    self.path = path
+  public init(method: RequestMethod, url: URL) {
+    self.method = method
+    self.url = url
   }
 
   // MARK: - Builder functions
