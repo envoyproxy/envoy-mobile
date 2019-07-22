@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 interface StreamCallback {
   /**
-   * Called when a response headers is received by the stream.
+   * Called when response headers are received by the stream.
    *
    * @param headers the headers of the response.
    * @param statusCode the status code of the response.
@@ -20,7 +20,7 @@ interface StreamCallback {
   fun onData(byteBuffer: ByteBuffer, endStream: Boolean)
 
   /**
-   * Called when a response metadata has been received by the stream.
+   * Called when response metadata is received by the stream.
    *
    * @param metadata the metadata of a response.
    * @param endStream true if the stream is complete.
@@ -28,7 +28,7 @@ interface StreamCallback {
   fun onMetadata(metadata: Map<String, List<String>>, endStream: Boolean)
 
   /**
-   * Invoked whenever a response trailers have been read.
+   * Called when response trailers are received by the stream.
    *
    * @param trailers the trailers of the response.
    */
