@@ -33,7 +33,7 @@ typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
  */
 typedef struct {
   uint64_t length;
-  char* data;
+  const char* data;
 } envoy_string;
 
 /**
@@ -56,11 +56,11 @@ typedef struct {
 } envoy_stream;
 
 /**
- * Holds a single name/value header.
+ * Holds a single key/value header.
  */
 typedef struct {
-  envoy_string name;
-  // Multiple header values for the same header name are supported via a comma-delimited string.
+  envoy_string key;
+  // Multiple header values for the same header key are supported via a comma-delimited string.
   envoy_string value;
 } envoy_header;
 
