@@ -4,16 +4,8 @@
 #import "library/common/main_interface.h"
 
 @implementation EnvoyEngine
-static NSMutableDictionary *_callbacks = [NSMutableDictionary new];
 
-static void platform_on_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
-  void (^onHeaders)(envoy_headers) = _callbacks[@(stream)];
-  onHeaders(headers);
-  if (end_stream) {
-    NSLog(@"[STREAM END]");
-  }
-}
-
+#pragma mark - utility
 static envoy_string EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
 
 static void printHeaders(envoy_headers headers, bool sent) {
@@ -65,6 +57,7 @@ static void printHeaders(envoy_headers headers, bool sent) {
   }
 }
 
+#pragma mark - class methods
 + (EnvoyStatus)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
