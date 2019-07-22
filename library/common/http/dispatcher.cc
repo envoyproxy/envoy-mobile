@@ -53,7 +53,7 @@ envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
   event_dispatcher_.post([this, observer, new_stream_id]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_id, observer, *this);
-    AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("lyft_api");
+    AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("egress_cluster");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     DirectStreamPtr direct_stream =
