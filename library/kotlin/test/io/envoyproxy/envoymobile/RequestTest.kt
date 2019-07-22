@@ -8,7 +8,7 @@ class RequestTest {
 
   @Test
   fun `requests with the same properties should be equal`() {
-    val request1 = RequestBuilder(RequestMethod.POST, "https", "api.foo.com", "foo")
+    val request1 = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "foo")
         .addBody("data".toByteArray())
         .addHeader("header_a", "value_a1")
         .addHeader("header_a", "value_a2")
@@ -18,7 +18,7 @@ class RequestTest {
         .addTrailer("trailer_b", "value_b1")
         .build()
 
-    val request2 = RequestBuilder(RequestMethod.POST, "https", "api.foo.com", "foo")
+    val request2 = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "foo")
         .addBody("data".toByteArray())
         .addHeader("header_a", "value_a1")
         .addHeader("header_a", "value_a2")
@@ -33,7 +33,7 @@ class RequestTest {
 
   @Test
   fun `requests converted to a builder should build to the same request`() {
-    val request = RequestBuilder(RequestMethod.POST, "https", "api.foo.com", "foo")
+    val request = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "foo")
         .addBody("data".toByteArray())
         .addRetryPolicy(RetryPolicy(23, listOf(RetryRule.FIVE_XX, RetryRule.CONNECT_FAILURE), 1234))
         .addHeader("header_a", "value_a1")
