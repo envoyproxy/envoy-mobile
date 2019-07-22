@@ -6,7 +6,7 @@ package io.envoyproxy.envoymobile
  *
  * @param method Method for the request.
  * @param scheme /// The URL scheme for the request (i.e., "https").
- * @param authority The URL authority for the request (i.e., "api.envoyproxy.io"). # TODO
+ * @param authority The URL authority for the request (i.e., "api.foo.com").
  * @param path The URL path for the request (i.e., "/foo").
  */
 class RequestBuilder(
