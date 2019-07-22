@@ -146,7 +146,9 @@ class RequestBuilder(
   fun build(): Request {
     return Request(
         method,
-        url,
+        scheme,
+        authority,
+        path,
         headers,
         trailers,
         body,
