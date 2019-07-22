@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import "library/objective-c/Envoy.h"
+#import <Envoy/Envoy-Swift.h>
 #import <UIKit/UIKit.h>
 #import "ViewController.h"
 
