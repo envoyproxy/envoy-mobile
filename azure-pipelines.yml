@@ -67,12 +67,20 @@ stages:
         timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
+        variables:
+          CC: clang
+          CXX: clang++
         steps:
           - checkout: self
             submodules: true
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
-          - script: ./bazelw build //test/performance:test_binary_size --config=sizeopt
+          - script: |
+              echo $(CC)
+              echo $(CXX)
+              which clang
+              which clang++
+              ./bazelw build -s //test/performance:test_binary_size --config=sizeopt
             displayName: 'Build test binary'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish current test binary'
@@ -83,6 +91,9 @@ stages:
         timeoutInMinutes: 60
         pool:
           vmImage: 'Ubuntu 16.04'
+        variables:
+          cc: clang
+          cxx: clang++
         steps:
           - checkout: self
             submodules: true
