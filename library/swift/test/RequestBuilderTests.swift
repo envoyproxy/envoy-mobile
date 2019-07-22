@@ -58,15 +58,15 @@ final class RequestBuilderTests: XCTestCase {
 
   // MARK: - Headers
 
-  func testAddingNewHeaderAddsToListOfHeaderKeys() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testAddingNewHeaderAddsToListOfHeaderKeys() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addHeader(name: "foo", value: "bar")
       .build()
     XCTAssertEqual(["bar"], request.headers["foo"])
   }
 
-  func testRemovingSpecificHeaderKeyRemovesAllOfItsValuesFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingSpecificHeaderKeyRemovesAllOfItsValuesFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .removeHeaders(name: "foo")
@@ -74,8 +74,8 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertNil(request.headers["foo"])
   }
 
-  func testRemovingSpecificHeaderKeyDoesNotRemoveOtherKeysFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingSpecificHeaderKeyDoesNotRemoveOtherKeysFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "bar", value: "2")
       .removeHeaders(name: "foo")
@@ -83,8 +83,8 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertEqual(["bar": ["2"]], request.headers)
   }
 
-  func testRemovingSpecificHeaderValueRemovesItFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingSpecificHeaderValueRemovesItFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .addHeader(name: "foo", value: "3")
@@ -93,8 +93,8 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertEqual(["1", "3"], request.headers["foo"])
   }
 
-  func testRemovingAllHeaderValuesRemovesKeyFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingAllHeaderValuesRemovesKeyFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .removeHeader(name: "foo", value: "1")
@@ -105,15 +105,15 @@ final class RequestBuilderTests: XCTestCase {
 
   // MARK: - Trailers
 
-  func testAddingNewTrailerAppendsToListOfTrailerKeys() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testAddingNewTrailerAppendsToListOfTrailerKeys() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addTrailer(name: "foo", value: "bar")
       .build()
     XCTAssertEqual(["bar"], request.trailers["foo"])
   }
 
-  func testRemovingSpecificTrailerKeyRemovesAllOfItsValuesFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingSpecificTrailerKeyRemovesAllOfItsValuesFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addTrailer(name: "foo", value: "1")
       .addTrailer(name: "foo", value: "2")
       .removeTrailers(name: "foo")
@@ -121,8 +121,8 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertNil(request.trailers["foo"])
   }
 
-  func testRemovingSpecificTrailerKeyDoesNotRemoveOtherKeysFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingSpecificTrailerKeyDoesNotRemoveOtherKeysFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addTrailer(name: "foo", value: "1")
       .addTrailer(name: "bar", value: "2")
       .removeTrailers(name: "foo")
@@ -130,8 +130,8 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertEqual(["bar": ["2"]], request.trailers)
   }
 
-  func testRemovingSpecificTrailerValueRemovesItFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingSpecificTrailerValueRemovesItFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addTrailer(name: "foo", value: "1")
       .addTrailer(name: "foo", value: "2")
       .addTrailer(name: "foo", value: "3")
@@ -140,8 +140,8 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertEqual(["1", "3"], request.trailers["foo"])
   }
 
-  func testRemovingAllTrailerValuesRemovesKeyFromRequest() {
-    let request = RequestBuilder(method: .post, url: kURL)
+  func testRemovingAllTrailerValuesRemovesKeyFromRequest() throws {
+    let request = try RequestBuilder(method: .post, url: kURL)
       .addTrailer(name: "foo", value: "1")
       .addTrailer(name: "foo", value: "2")
       .removeTrailer(name: "foo", value: "1")
@@ -152,28 +152,44 @@ final class RequestBuilderTests: XCTestCase {
 
   // MARK: - Request conversion
 
-  func testRequestsAreEqualWhenPropertiesAreEqual() {
-    let request1 = self.newRequestBuilder().build()
-    let request2 = self.newRequestBuilder().build()
+  func testRequestsAreEqualWhenPropertiesAreEqual() throws {
+    let request1 = try self.newRequestBuilder().build()
+    let request2 = try self.newRequestBuilder().build()
     XCTAssertEqual(request1, request2)
   }
 
-  func testPointersAreNotEqualWhenInstancesAreDifferent() {
-    let request1 = self.newRequestBuilder().build()
-    let request2 = self.newRequestBuilder().build()
+  func testPointersAreNotEqualWhenInstancesAreDifferent() throws {
+    let request1 = try self.newRequestBuilder().build()
+    let request2 = try self.newRequestBuilder().build()
     XCTAssert(request1 !== request2)
   }
 
-  func testConvertingToBuilderAndBackMaintainsEquality() {
-    let request1 = self.newRequestBuilder().build()
+  func testConvertingToBuilderAndBackMaintainsEquality() throws {
+    let request1 = try self.newRequestBuilder().build()
     let request2 = request1.newBuilder().build()
     XCTAssertEqual(request1, request2)
   }
 
+  // MARK: - Invalid headers/trailers
+
+  func testThrowsWhenRestrictedHeaderIsAdded() {
+    let builder = RequestBuilder(method: .post, url: kURL)
+    XCTAssertThrowsError(try builder.addHeader(name: ":method", value: "POST")) { error in
+      XCTAssertEqual(.restrictedHeader, error as? RequestBuilderError)
+    }
+  }
+
+  func testThrowsWhenRestrictedTrailerIsAdded() {
+    let builder = RequestBuilder(method: .post, url: kURL)
+    XCTAssertThrowsError(try builder.addTrailer(name: ":method", value: "POST")) { error in
+      XCTAssertEqual(.restrictedHeader, error as? RequestBuilderError)
+    }
+  }
+
   // MARK: - Private
 
-  private func newRequestBuilder() -> RequestBuilder {
-    return RequestBuilder(method: .post, url: kURL)
+  private func newRequestBuilder() throws -> RequestBuilder {
+    return try RequestBuilder(method: .post, url: kURL)
       .addBody(kBodyData)
       .addRetryPolicy(kRetryPolicy)
       .addHeader(name: "foo", value: "1")

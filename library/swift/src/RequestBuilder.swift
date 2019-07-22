@@ -1,5 +1,12 @@
 import Foundation
 
+/// Error type that may be thrown by the request builder.
+@objc
+public enum RequestBuilderError: Int, Swift.Error {
+  /// The header being modified is restricted and may not be set manually.
+  case restrictedHeader
+}
+
 /// Builder used for constructing instances of `Request` types.
 @objcMembers
 public final class RequestBuilder: NSObject {
@@ -39,7 +46,11 @@ public final class RequestBuilder: NSObject {
   // MARK: - Builder functions
 
   @discardableResult
-  public func addHeader(name: String, value: String) -> RequestBuilder {
+  public func addHeader(name: String, value: String) throws -> RequestBuilder {
+    if isRestrictedHeader(name) {
+      throw RequestBuilderError.restrictedHeader
+    }
+
     self.headers[name, default: []].append(value)
     return self
   }
@@ -61,7 +72,11 @@ public final class RequestBuilder: NSObject {
   }
 
   @discardableResult
-  public func addTrailer(name: String, value: String) -> RequestBuilder {
+  public func addTrailer(name: String, value: String) throws -> RequestBuilder {
+    if isRestrictedHeader(name) {
+      throw RequestBuilderError.restrictedHeader
+    }
+
     self.trailers[name, default: []].append(value)
     return self
   }
@@ -124,4 +139,10 @@ extension Request {
     build(builder)
     return builder.build()
   }
+}
+
+// MARK: - Private helpers
+
+private func isRestrictedHeader(_ name: String) -> Bool {
+  return name.hasPrefix(":")
 }
