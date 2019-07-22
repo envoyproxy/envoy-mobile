@@ -1,7 +1,40 @@
-import Envoy
+@testable import Envoy
 import XCTest
 
 final class RetryPolicyTests: XCTestCase {
+  // MARK: - Conversions
+
+  func testConvertingToHeadersWithPerRetryTimeoutIncludesAllHeaders() {
+    let policy = RetryPolicy(maxRetryCount: 123,
+                             retryOn: RetryRule.allCases,
+                             perRetryTimeoutMS: 9001)
+    let expectedHeaders = [
+      "x-envoy-max-retries": "123",
+      "x-envoy-retry-on": RetryRule.allCases
+        .map { $0.stringValue }
+        .joined(separator: ","),
+      "x-envoy-upstream-rq-per-try-timeout-ms": "9001",
+    ]
+
+    XCTAssertEqual(expectedHeaders, policy.toHeaders())
+  }
+
+  func testConvertingToHeadersWithoutRetryTimeoutExcludesPerRetryTimeoutHeader() {
+    let policy = RetryPolicy(maxRetryCount: 123,
+                             retryOn: RetryRule.allCases,
+                             perRetryTimeoutMS: nil)
+    let expectedHeaders = [
+      "x-envoy-max-retries": "123",
+      "x-envoy-retry-on": RetryRule.allCases
+        .map { $0.stringValue }
+        .joined(separator: ","),
+    ]
+
+    XCTAssertEqual(expectedHeaders, policy.toHeaders())
+  }
+
+  // MARK: - Equatability
+
   func testRetryPoliciesAreEqualWhenPropertiesAreEqual() {
     let policy1 = RetryPolicy(maxRetryCount: 123,
                               retryOn: [.connectFailure],
