@@ -5,7 +5,7 @@ package io.envoyproxy.envoymobile
  * Builder used for constructing instances of `Request` types.
  *
  * @param method Method for the request.
- * @param scheme /// The URL scheme for the request (i.e., "https").
+ * @param scheme The URL scheme for the request (i.e., "https").
  * @param authority The URL authority for the request (i.e., "api.foo.com").
  * @param path The URL path for the request (i.e., "/foo").
  */

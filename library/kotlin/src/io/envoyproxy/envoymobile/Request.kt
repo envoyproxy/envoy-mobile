@@ -4,7 +4,7 @@ package io.envoyproxy.envoymobile
  * Represents an Envoy HTTP request. Use `RequestBuilder` to construct new instances.
  *
  * @param method Method for the request.
- * @param scheme /// The URL scheme for the request (i.e., "https").
+ * @param scheme The URL scheme for the request (i.e., "https").
  * @param authority The URL authority for the request (i.e., "api.foo.com").
  * @param path The URL path for the request (i.e., "/foo").
  */
@@ -65,6 +65,4 @@ class Request internal constructor(
     result = 31 * result + (retryPolicy?.hashCode() ?: 0)
     return result
   }
-
-
 }
