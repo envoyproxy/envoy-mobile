@@ -37,7 +37,7 @@ kt_jvm_library(
         "RequestBuilder.kt",
         "RequestMethod.kt",
         "RetryPolicy.kt",
-        "StreamCallback.kt",
+        "ResponseHandler.kt",
         "StreamEmitter.kt",
     ],
     visibility = ["//visibility:public"],

@@ -2,7 +2,7 @@ package io.envoyproxy.envoymobile
 
 import java.nio.ByteBuffer
 
-interface StreamCallback {
+interface ResponseHandler {
   /**
    * Called when response headers are received by the stream.
    *
