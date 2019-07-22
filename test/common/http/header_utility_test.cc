@@ -1,0 +1,93 @@
+#include "library/common/http/header_utility.h"
+
+#include "common/http/header_map_impl.h"
+
+#include "library/common/include/c_types.h"
+
+#include "gtest/gtest.h"
+
+namespace Envoy {
+namespace Http {
+
+envoy_string envoyString(std::string& s) { return {s.size(), s.c_str()}; }
+
+TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
+  envoy_header* header_array = new envoy_header[0];
+  envoy_headers empty_headers = {0, header_array};
+
+  HeaderMapPtr cpp_headers = Utility::transformHeaders(empty_headers);
+
+  ASSERT_TRUE(cpp_headers->empty());
+  delete[] header_array;
+}
+
+TEST(HeaderDataConstructorTest, FromCToCpp) {
+  // Backing strings for all the envoy_strings in the c_headers.
+  std::vector<std::pair<std::string, std::string>> headers = {
+      {":method", "GET"}, {":scheme", "https"}, {":authority", "api.lyft.com"}, {":path", "/ping"}};
+
+  envoy_header* header_array = new envoy_header[headers.size()];
+
+  for (size_t i = 0; i < headers.size(); i++) {
+    header_array[i] = {
+        envoyString(headers[i].first),
+        envoyString(headers[i].second),
+    };
+  }
+
+  envoy_headers c_headers = {headers.size(), header_array};
+
+  HeaderMapPtr cpp_headers = Utility::transformHeaders(c_headers);
+
+  ASSERT_EQ(cpp_headers->size(), c_headers.length);
+
+  for (uint64_t i = 0; i < c_headers.length; i++) {
+    auto expected_key = LowerCaseString(
+        std::string(c_headers.headers[i].key.data, c_headers.headers[i].key.length));
+    auto expected_value =
+        std::string(c_headers.headers[i].value.data, c_headers.headers[i].value.length);
+
+    // Key is present.
+    EXPECT_NE(cpp_headers->get(expected_key), nullptr);
+    // Value for the key is the same.
+    EXPECT_EQ(cpp_headers->get(expected_key)->value().getStringView(), expected_value);
+  }
+}
+
+TEST(HeaderDataConstructorTest, FromCppToCEmpty) {
+  HeaderMapPtr empty_headers = std::make_unique<HeaderMapImpl>();
+  envoy_headers c_headers = Utility::transformHeaders(std::move(empty_headers));
+  ASSERT_EQ(0, c_headers.length);
+  delete[] c_headers.headers;
+}
+
+TEST(HeaderDataConstructorTest, FromCppToC) {
+  HeaderMap* cpp_headers_ptr = new HeaderMapImpl();
+  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":method")), std::string("GET"));
+  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":scheme")), std::string("https"));
+  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":authority")), std::string("api.lyft.com"));
+  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":path")), std::string("/ping"));
+
+  auto cpp_headers_unique_ptr = Http::HeaderMapPtr{new Http::HeaderMapImpl(*cpp_headers_ptr)};
+  envoy_headers c_headers = Utility::transformHeaders(std::move(cpp_headers_unique_ptr));
+
+  ASSERT_EQ(c_headers.length, cpp_headers_ptr->size());
+
+  for (uint64_t i = 0; i < c_headers.length; i++) {
+    auto actual_key = LowerCaseString(
+        std::string(c_headers.headers[i].key.data, c_headers.headers[i].key.length));
+    auto actual_value =
+        std::string(c_headers.headers[i].value.data, c_headers.headers[i].value.length);
+
+    // Key is present.
+    EXPECT_NE(cpp_headers_ptr->get(actual_key), nullptr);
+    // Value for the key is the same.
+    EXPECT_EQ(actual_value, cpp_headers_ptr->get(actual_key)->value().getStringView());
+  }
+
+  delete cpp_headers_ptr;
+  delete c_headers.headers;
+}
+
+} // namespace Http
+} // namespace Envoy
