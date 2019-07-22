@@ -39,3 +39,12 @@ public protocol StreamEmitter {
   /// - throws: `Envoy.Error` when the stream is inactive or data can't be sent.
   func cancel() throws
 }
+
+extension StreamEmitter {
+  /// Convenience function for ending the stream without sending any trailers.
+  ///
+  /// - throws: `Envoy.Error` when the stream is inactive or data can't be sent.
+  public func close() throws {
+    try self.close(trailers: [:])
+  }
+}
