@@ -18,7 +18,7 @@ namespace Http {
 
 /**
  * Manages HTTP streams, and provides an interface to interact with them.
- * The Dispatcher executes stream operations on the provided event_dispatcher's event loop.
+ * The Dispatcher executes all stream operations on the provided Event::Dispatcher's event loop.
  */
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
@@ -39,7 +39,7 @@ private:
    * Note the HTTP stream is full-duplex, even if the local to remote stream has been ended
    * by sendHeaders/sendData with end_stream=true, sendTrailers, or locallyCloseStream
    * DirectStreamCallbacks can continue to receive events until the remote to local stream is
-   * closed, or resetStream is called and vice versa.
+   * closed, or resetStream is called.
    */
   class DirectStreamCallbacks : public AsyncClient::StreamCallbacks,
                                 public Logger::Loggable<Logger::Id::http> {
@@ -62,7 +62,7 @@ private:
   using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
 
   /**
-   * Contains state about an HTTP Stream; both in the outgoing direction via an underlying
+   * Contains state about an HTTP stream; both in the outgoing direction via an underlying
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
   class DirectStream {
