@@ -107,10 +107,17 @@ typedef void (*on_data)(envoy_data data, bool end_stream, void* context);
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
+ * @param metadata, the trailers received.
+ * @param context, contains the necessary state to carry out platform-specific dispatch and execution.
+ */
+typedef void (*on_metadata)(envoy_headers metadata, void* context);
+/**
+ * Called when all trailers get received on the async HTTP stream.
+ * Note that end stream is implied when on_trailers is called.
  * @param trailers, the trailers received.
  * @param context, contains the necessary state to carry out platform-specific dispatch and execution.
  */
-typedef void (*on_trailers)(envoy_headers headers, void* context);
+typedef void (*on_trailers)(envoy_headers trailers, void* context);
 /**
  * Called when the async HTTP stream has an error.
  * @param envoy_error, the error received/caused by the async HTTP stream.
@@ -128,6 +135,7 @@ typedef void (*on_error)(envoy_error error, void* context);
 typedef struct {
   on_headers on_headers_f;
   on_data on_data_f;
+  on_metadata on_metadata_f;
   on_trailers on_trailers_f;
   on_error on_error_f;
   void* context; // Will be passed through to callbacks to provide dispatch and execution state.
