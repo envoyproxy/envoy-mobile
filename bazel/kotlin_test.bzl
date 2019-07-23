@@ -20,7 +20,7 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
 #
 def envoy_mobile_kt_test(name, srcs, deps = []):
     # This is to work around the issue where we have specific implementation functionality which
-    # we want to avoid comsumers to use but we want to unit test
+    # we want to avoid consumers to use but we want to unit test
     dep_srcs = []
     for dep in deps:
         # We'll resolve only the targets in `//library/kotlin/src/io/envoyproxy/envoymobile`
