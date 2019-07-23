@@ -13,16 +13,16 @@ static_resources:
               domains: ["*"]
               routes:
               - match: {prefix: "/"}
-                route: {cluster: lyft_api}
+                route: {cluster: egress_cluster}
           http_filters:
           - name: envoy.router
   clusters:
-  - name: lyft_api
+  - name: egress_cluster
     connect_timeout: 30s
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: lyft_api
+      cluster_name: egress_cluster
       endpoints:
       - lb_endpoints:
         - endpoint:

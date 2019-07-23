@@ -14,14 +14,22 @@ static void platform_on_headers(envoy_stream_t stream, envoy_headers headers, bo
   }
 }
 
+static void platform_on_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
+  void (^onData)(envoy_data) = _callbacks[@(stream)];
+  onData(data);
+  if (end_stream) {
+    NSLog(@"[STREAM END]");
+  }
+}
+
 static envoy_data EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
 
 static void printHeaders(envoy_headers headers, bool sent) {
   for (int i = 0; i < headers.length; i++) {
-    NSString *name = @(headers.headers[i].name.data);
+    NSString *key = @(headers.headers[i].key.data);
     NSString *value = @(headers.headers[i].value.data);
     NSString *action = sent ? @"SENT" : @"RECEIVED";
-    NSLog(@"[%@ HEADER] %@: %@", action, name, value);
+    NSLog(@"[%@ HEADER] %@: %@", action, key, value);
   }
 }
 
@@ -31,9 +39,13 @@ static void printHeaders(envoy_headers headers, bool sent) {
     printHeaders(headers, false);
   };
 
+  void (^onData)(envoy_data) = ^(envoy_data data) {
+    NSLog(@"RECEIVED DATA: %llu", data.length);
+  };
+
   envoy_observer observer = {
       platform_on_headers,
-      nullptr,
+      platform_on_data,
       nullptr,
       nullptr,
   };
@@ -44,6 +56,7 @@ static void printHeaders(envoy_headers headers, bool sent) {
   if (stream_pair.status == ENVOY_SUCCESS) {
     NSLog(@"[STREAM OPEN: %@]", @(stream_pair.stream));
     _callbacks[@(stream_pair.stream)] = onHeaders;
+    _callbacks[@(stream_pair.stream)] = onData;
   } else {
     NSLog(@"[STREAM OPEN FAILED]");
   }
@@ -66,7 +79,7 @@ static void printHeaders(envoy_headers headers, bool sent) {
 }
 
 + (int)runWithConfig:(NSString *)config {
-  return [self runWithConfig:config logLevel:@"info"];
+  return [self runWithConfig:config logLevel:@"debug"];
 }
 
 + (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
