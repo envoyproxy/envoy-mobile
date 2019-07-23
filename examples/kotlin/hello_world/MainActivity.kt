@@ -5,9 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import io.envoyproxy.envoymobile.Envoy
 import io.envoyproxy.envoymobile.shared.Failure
@@ -36,7 +33,9 @@ class MainActivity : Activity() {
     Envoy.load(baseContext)
 
     // Create Envoy instance with config.
-    envoy = Envoy(baseContext, loadEnvoyConfig(baseContext, R.raw.config))
+    envoy = Envoy(
+      baseContext,
+      loadEnvoyConfig(baseContext, R.raw.config))
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView
     recyclerView.layoutManager = LinearLayoutManager(this)
@@ -70,7 +69,7 @@ class MainActivity : Activity() {
   }
 
   private fun makeRequest(): Response {
-    return  try {
+    return try {
       val url = URL(ENDPOINT)
       // Open connection to the envoy thread listening locally on port 9001
       val connection = url.openConnection() as HttpURLConnection
