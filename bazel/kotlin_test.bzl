@@ -18,11 +18,18 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
 # )
 #
 def envoy_mobile_kt_test(name, srcs, deps = []):
+
+    # This is to work around the issue where we have specific implementation functionality which
+    # we want to avoid comsumers to use but we want to unit test
+    dep_srcs = []
+    for dep in deps:
+        dep_srcs.append(dep+"_srcs")
+
     kt_jvm_test(
         name = name,
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
-        srcs = srcs,
-        deps = deps + [
+        srcs = srcs + dep_srcs,
+        deps = [
             "//bazel:envoy_mobile_test_suite",
             "@maven//:org_assertj_assertj_core",
             "@maven//:junit_junit",
