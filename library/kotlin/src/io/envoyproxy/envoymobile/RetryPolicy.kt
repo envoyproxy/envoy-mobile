@@ -8,9 +8,9 @@ package io.envoyproxy.envoymobile
  * @param perRetryTimeoutMs Timeout (in milliseconds) to apply to each retry.
  */
 data class RetryPolicy(
-    val maxRetryCount: Int,
-    val retryOn: List<RetryRule>,
-    val perRetryTimeoutMs: Long?
+  val maxRetryCount: Int,
+  val retryOn: List<RetryRule>,
+  val perRetryTimeoutMs: Long? = null
 )
 
 /**

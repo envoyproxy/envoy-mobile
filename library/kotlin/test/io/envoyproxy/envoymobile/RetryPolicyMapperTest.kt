@@ -36,8 +36,7 @@ class RetryPolicyMapperTest {
             RetryRule.GATEWAY_ERROR,
             RetryRule.CONNECT_FAILURE,
             RetryRule.RETRIABLE_4XX,
-            RetryRule.REFUSED_UPSTREAM),
-        perRetryTimeoutMs = 9001)
+            RetryRule.REFUSED_UPSTREAM))
 
     assertThat(retryPolicy.headers()).doesNotContainKey("x-envoy-upstream-rq-per-try-timeout-ms")
   }
