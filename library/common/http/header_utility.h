@@ -24,7 +24,7 @@ HeaderMapPtr transformHeaders(envoy_headers headers);
  * @param headers, the HeaderMap to transform.
  * @return envoy_headers, the HeaderMap 1:1 transformation of the headers param.
  */
-envoy_headers transformHeaders(HeaderMapPtr&& headers);
+envoy_headers transformHeaders(const HeaderMap& headers);
 
 } // namespace Utility
 } // namespace Http

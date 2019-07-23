@@ -17,13 +17,16 @@ HeaderMapPtr transformHeaders(envoy_headers headers) {
   return transformed_headers;
 }
 
-envoy_headers transformHeaders(HeaderMapPtr&& header_map) {
-  envoy_header* headers = new envoy_header[header_map->size()];
+envoy_headers transformHeaders(const HeaderMap& header_map) {
+  // TODO: provide utility for the caller to free allocated memory
+  // https://github.com/lyft/envoy-mobile/issues/280
+  envoy_header* headers =
+      static_cast<envoy_header*>(malloc(sizeof(envoy_header) * header_map.size()));
   envoy_headers transformed_headers;
   transformed_headers.length = 0;
   transformed_headers.headers = headers;
 
-  header_map->iterate(
+  header_map.iterate(
       [](const HeaderEntry& header, void* context) -> HeaderMap::Iterate {
         envoy_headers* transformed_headers = static_cast<envoy_headers*>(context);
 

@@ -16,7 +16,7 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
   if (end_stream) {
     http_dispatcher_.removeStream(stream_);
   }
-  observer_.h(stream_, Utility::transformHeaders(std::move(headers)), end_stream);
+  observer_.on_headers_f(stream_, Utility::transformHeaders(*headers), end_stream);
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
@@ -24,31 +24,31 @@ void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_
   if (end_stream) {
     http_dispatcher_.removeStream(stream_);
   }
-  observer_.d(stream_, Envoy::Buffer::Utility::transformData(data), end_stream);
+  observer_.on_data_f(stream_, Envoy::Buffer::Utility::transformData(data), end_stream);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "response trailers for stream:\n{}", *trailers);
   http_dispatcher_.removeStream(stream_);
-  observer_.t(stream_, Utility::transformHeaders(std::move(trailers)));
+  observer_.on_trailers_f(stream_, Utility::transformHeaders(*trailers));
 }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
   http_dispatcher_.removeStream(stream_);
-  observer_.e(stream_, {ENVOY_STREAM_RESET, {0, nullptr}});
+  observer_.on_error_f(stream_, {ENVOY_STREAM_RESET, {0, nullptr}});
 }
 
-Dispatcher::DirectStream::DirectStream(AsyncClient::Stream* underlying_stream,
-                                       DirectStreamCallbacksPtr callbacks)
+Dispatcher::DirectStream::DirectStream(AsyncClient::Stream& underlying_stream,
+                                       DirectStreamCallbacksPtr&& callbacks)
     : underlying_stream_(underlying_stream), callbacks_(std::move(callbacks)) {}
 
 Dispatcher::Dispatcher(Event::Dispatcher& event_dispatcher,
                        Upstream::ClusterManager& cluster_manager)
-    : event_dispatcher_(event_dispatcher), cluster_manager_(cluster_manager) {}
+    : current_stream_id_(0), event_dispatcher_(event_dispatcher),
+      cluster_manager_(cluster_manager) {}
 
 envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
-  envoy_stream_t new_stream_id = current_stream_id_++; // FIXME: This needs to be equivalent to
-                                                       // getAnIncrement(); confirm or update.
+  envoy_stream_t new_stream_id = current_stream_id_++;
 
   event_dispatcher_.post([this, observer, new_stream_id]() -> void {
     DirectStreamCallbacksPtr callbacks =
@@ -56,11 +56,13 @@ envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
     AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("egress_cluster");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
+    if (!underlying_stream) {
+      // FIXME
+    }
+
     DirectStreamPtr direct_stream =
-        std::make_unique<DirectStream>(underlying_stream, std::move(callbacks));
-
+        std::make_unique<DirectStream>(*underlying_stream, std::move(callbacks));
     streams_.emplace(new_stream_id, std::move(direct_stream));
-
     ENVOY_LOG(debug, "started stream [{}]", new_stream_id);
   });
 
@@ -75,7 +77,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream_id, envoy_headers h
       direct_stream->headers_ = Utility::transformHeaders(headers);
       ENVOY_LOG(debug, "request headers for stream [{}] (end_stream={}):\n{}", stream_id,
                 end_stream, *direct_stream->headers_);
-      direct_stream->underlying_stream_->sendHeaders(*direct_stream->headers_, end_stream);
+      direct_stream->underlying_stream_.sendHeaders(*direct_stream->headers_, end_stream);
     }
   });
 
@@ -89,7 +91,7 @@ envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers, bool) {
 }
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 envoy_status_t Dispatcher::locallyCloseStream(envoy_stream_t) { return ENVOY_FAILURE; }
-envoy_status_t Dispatcher::resetStream() { return ENVOY_FAILURE; }
+envoy_status_t Dispatcher::resetStream(envoy_stream_t) { return ENVOY_FAILURE; }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream_id) {
   ASSERT(event_dispatcher_.isThreadSafe(),

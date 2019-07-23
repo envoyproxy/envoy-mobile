@@ -122,8 +122,8 @@ typedef void (*on_error)(envoy_stream_t stream, envoy_error error);
  * Interface that can handle HTTP callbacks.
  */
 typedef struct {
-  on_headers h;
-  on_data d;
-  on_trailers t;
-  on_error e;
+  on_headers on_headers_f;
+  on_data on_data_f;
+  on_trailers on_trailers_f;
+  on_error on_error_f;
 } envoy_observer;

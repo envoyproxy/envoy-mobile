@@ -16,6 +16,10 @@
 namespace Envoy {
 namespace Http {
 
+/**
+ * Manages HTTP streams, and provides an interface to interact with them.
+ * The Dispatcher executes stream operations on the provided event_dispatcher's event loop.
+ */
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
   Dispatcher(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
@@ -26,10 +30,17 @@ public:
   envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers, bool end_stream);
   envoy_status_t sendTrailers(envoy_stream_t stream, envoy_headers headers);
   envoy_status_t locallyCloseStream(envoy_stream_t stream);
-  envoy_status_t resetStream();
-  envoy_status_t removeStream(envoy_stream_t stream_id);
+  envoy_status_t resetStream(envoy_stream_t stream);
+  envoy_status_t removeStream(envoy_stream_t stream);
 
 private:
+  /**
+   * Notifies caller of async HTTP stream status.
+   * Note the HTTP stream is full-duplex, even if the local to remote stream has been ended
+   * by sendHeaders/sendData with end_stream=true, sendTrailers, or locallyCloseStream
+   * DirectStreamCallbacks can continue to receive events until the remote to local stream is
+   * closed, or resetStream is called and vice versa.
+   */
   class DirectStreamCallbacks : public AsyncClient::StreamCallbacks,
                                 public Logger::Loggable<Logger::Id::http> {
   public:
@@ -43,20 +54,25 @@ private:
     void onReset();
 
   private:
-    envoy_stream_t stream_;
-    envoy_observer observer_;
+    const envoy_stream_t stream_;
+    const envoy_observer observer_;
     Dispatcher& http_dispatcher_;
   };
 
   using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
 
+  /**
+   * Contains state about an HTTP Stream; both in the outgoing direction via an underlying
+   * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
+   */
   class DirectStream {
   public:
-    // FIXME follow up on concerns about the lifetime of the stream pointer.
-    DirectStream(AsyncClient::Stream* underlying_stream, DirectStreamCallbacksPtr callbacks);
+    DirectStream(AsyncClient::Stream& underlying_stream, DirectStreamCallbacksPtr&& callbacks);
 
-    AsyncClient::Stream* underlying_stream_;
-    DirectStreamCallbacksPtr callbacks_;
+    // Used to issue outgoing HTTP stream operations.
+    AsyncClient::Stream& underlying_stream_;
+    // Used to receive incoming HTTP stream operations.
+    const DirectStreamCallbacksPtr callbacks_;
 
     HeaderMapPtr headers_;
     // TODO: because the client may send infinite metadata frames we need some ongoing way to
@@ -73,7 +89,7 @@ private:
   DirectStream* getStream(envoy_stream_t stream_id);
 
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
-  envoy_stream_t current_stream_id_ = 0;
+  std::atomic<envoy_stream_t> current_stream_id_;
   // The event_dispatcher is the only member state that may be accessed from a thread other than
   // the event_dispatcher's own thread.
   Event::Dispatcher& event_dispatcher_;
