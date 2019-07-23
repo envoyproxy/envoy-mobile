@@ -4,18 +4,17 @@
 #import "library/common/main_interface.h"
 
 @implementation EnvoyEngine
-static NSMutableDictionary *_callbacks = [NSMutableDictionary new];
 
-static void platform_on_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
-  void (^onHeaders)(envoy_headers) = _callbacks[@(stream)];
+static void platform_on_headers(envoy_headers headers, bool end_stream, void* context) {
+  void (^onHeaders)(envoy_headers) = ;
   onHeaders(headers);
   if (end_stream) {
     NSLog(@"[STREAM END]");
   }
 }
 
-static void platform_on_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
-  void (^onData)(envoy_data) = _callbacks[@(stream)];
+static void platform_on_data(envoy_data data, bool end_stream, void* context) {
+  void (^onData)(envoy_data) = ;
   onData(data);
   if (end_stream) {
     NSLog(@"[STREAM END]");
