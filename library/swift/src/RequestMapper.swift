@@ -5,7 +5,7 @@ extension Request {
   /// information on the URL, method, and additional headers.
   ///
   /// - returns: Outbound headers to send with an HTTP request.
-  func makeOutboundHeaders() -> [String: String] {
+  func outboundHeaders() -> [String: String] {
     var headers = self.headers
       .filter { !$0.key.hasPrefix(kRestrictedHeaderPrefix) }
       .mapValues { $0.joined(separator: ",") }
@@ -17,7 +17,7 @@ extension Request {
       ]) { $0[$1.key] = $1.value }
 
     if let retryPolicy = self.retryPolicy {
-      headers = headers.merging(retryPolicy.makeOutboundHeaders()) { _, retryHeader in retryHeader }
+      headers = headers.merging(retryPolicy.outboundHeaders()) { _, retryHeader in retryHeader }
     }
 
     return headers
