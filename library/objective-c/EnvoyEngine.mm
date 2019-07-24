@@ -4,20 +4,20 @@
 
 @implementation EnvoyEngine
 
-+ (int)runWithConfig:(NSString *)config {
++ (EnvoyStatus)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
 
-+ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
++ (EnvoyStatus)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
   try {
-    return run_engine(config.UTF8String, logLevel.UTF8String);
+    return (EnvoyStatus)run_engine(config.UTF8String, logLevel.UTF8String);
   } catch (NSException *e) {
     NSLog(@"Envoy exception: %@", e);
     NSDictionary *userInfo = @{@"exception" : e};
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException"
                                                       object:self
                                                     userInfo:userInfo];
-    return 1;
+    return Failure;
   }
 }
 
