@@ -6,7 +6,7 @@
 @implementation EnvoyEngine
 
 #pragma mark - utility
-static envoy_string EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
+static envoy_data EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
 
 static void printHeaders(envoy_headers headers, bool sent) {
   for (int i = 0; i < headers.length; i++) {
