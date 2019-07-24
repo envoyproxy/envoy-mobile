@@ -53,23 +53,22 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
 }
 
 TEST(HeaderDataConstructorTest, FromCppToCEmpty) {
-  HeaderMapPtr empty_headers = std::make_unique<HeaderMapImpl>();
+  HeaderMapImpl empty_headers;
   envoy_headers c_headers = Utility::transformHeaders(std::move(empty_headers));
   ASSERT_EQ(0, c_headers.length);
   delete[] c_headers.headers;
 }
 
 TEST(HeaderDataConstructorTest, FromCppToC) {
-  HeaderMap* cpp_headers_ptr = new HeaderMapImpl();
-  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":method")), std::string("GET"));
-  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":scheme")), std::string("https"));
-  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":authority")), std::string("api.lyft.com"));
-  cpp_headers_ptr->addCopy(LowerCaseString(std::string(":path")), std::string("/ping"));
+  HeaderMapImpl cpp_headers;
+  cpp_headers.addCopy(LowerCaseString(std::string(":method")), std::string("GET"));
+  cpp_headers.addCopy(LowerCaseString(std::string(":scheme")), std::string("https"));
+  cpp_headers.addCopy(LowerCaseString(std::string(":authority")), std::string("api.lyft.com"));
+  cpp_headers.addCopy(LowerCaseString(std::string(":path")), std::string("/ping"));
 
-  auto cpp_headers_unique_ptr = Http::HeaderMapPtr{new Http::HeaderMapImpl(*cpp_headers_ptr)};
-  envoy_headers c_headers = Utility::transformHeaders(std::move(cpp_headers_unique_ptr));
+  envoy_headers c_headers = Utility::transformHeaders(std::move(cpp_headers));
 
-  ASSERT_EQ(c_headers.length, cpp_headers_ptr->size());
+  ASSERT_EQ(c_headers.length, cpp_headers.size());
 
   for (uint64_t i = 0; i < c_headers.length; i++) {
     auto actual_key = LowerCaseString(
@@ -78,12 +77,11 @@ TEST(HeaderDataConstructorTest, FromCppToC) {
         std::string(c_headers.headers[i].value.data, c_headers.headers[i].value.length);
 
     // Key is present.
-    EXPECT_NE(cpp_headers_ptr->get(actual_key), nullptr);
+    EXPECT_NE(cpp_headers.get(actual_key), nullptr);
     // Value for the key is the same.
-    EXPECT_EQ(actual_value, cpp_headers_ptr->get(actual_key)->value().getStringView());
+    EXPECT_EQ(actual_value, cpp_headers.get(actual_key)->value().getStringView());
   }
 
-  delete cpp_headers_ptr;
   delete c_headers.headers;
 }
 
