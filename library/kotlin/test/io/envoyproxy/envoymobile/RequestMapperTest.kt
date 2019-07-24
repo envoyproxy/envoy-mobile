@@ -208,5 +208,4 @@ class RequestMapperTest {
 
     assertThat(requestHeaders[":method"]).isEqualTo("TRACE")
   }
-
 }
