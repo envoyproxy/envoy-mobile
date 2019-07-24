@@ -57,13 +57,13 @@ envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
-      // FIXME
+      callbacks->onReset();
+    } else {
+      DirectStreamPtr direct_stream =
+          std::make_unique<DirectStream>(*underlying_stream, std::move(callbacks));
+      streams_.emplace(new_stream_id, std::move(direct_stream));
+      ENVOY_LOG(debug, "started stream [{}]", new_stream_id);
     }
-
-    DirectStreamPtr direct_stream =
-        std::make_unique<DirectStream>(*underlying_stream, std::move(callbacks));
-    streams_.emplace(new_stream_id, std::move(direct_stream));
-    ENVOY_LOG(debug, "started stream [{}]", new_stream_id);
   });
 
   return new_stream_id;
@@ -100,7 +100,8 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream_id) {
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
 }
 
-// TODO: implement.
+// TODO: implement. Note: the stream might not be in the map if for example startStream called
+// onReset due to its inability to get an underlying stream.
 envoy_status_t Dispatcher::removeStream(envoy_stream_t) { return ENVOY_FAILURE; }
 
 } // namespace Http
