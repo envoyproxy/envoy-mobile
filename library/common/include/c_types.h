@@ -29,19 +29,11 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
 
 /**
- * Common abstraction for strings.
- */
-typedef struct {
-  uint64_t length;
-  const char* data;
-} envoy_string;
-
-/**
  * Holds raw binary data as an array of bytes.
  */
 typedef struct {
   uint64_t length;
-  uint8_t* bytes;
+  const uint8_t* bytes;
 } envoy_data;
 
 /**
@@ -59,9 +51,9 @@ typedef struct {
  * Holds a single key/value header.
  */
 typedef struct {
-  envoy_string key;
+  envoy_data key;
   // Multiple header values for the same header key are supported via a comma-delimited string.
-  envoy_string value;
+  envoy_data value;
 } envoy_header;
 
 /**
@@ -83,7 +75,7 @@ const envoy_data envoy_nodata = {0, NULL};
  */
 typedef struct {
   envoy_error_code_t error_code;
-  envoy_string message;
+  envoy_data message;
 } envoy_error;
 
 #ifdef __cplusplus

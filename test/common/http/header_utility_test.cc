@@ -7,7 +7,7 @@
 namespace Envoy {
 namespace Http {
 
-envoy_string envoyString(std::string& s) { return {s.size(), s.c_str()}; }
+envoy_data envoyString(std::string& s) { return {s.size(), s.c_str()}; }
 
 TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
   envoy_header* header_array = new envoy_header[0];
@@ -20,7 +20,7 @@ TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
 }
 
 TEST(HeaderDataConstructorTest, FromCToCpp) {
-  // Backing strings for all the envoy_strings in the c_headers.
+  // Backing strings for all the envoy_datas in the c_headers.
   std::vector<std::pair<std::string, std::string>> headers = {
       {":method", "GET"}, {":scheme", "https"}, {":authority", "api.lyft.com"}, {":path", "/ping"}};
 

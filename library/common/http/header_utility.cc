@@ -6,7 +6,7 @@ namespace Envoy {
 namespace Http {
 namespace Utility {
 
-static inline std::string convertString(envoy_string s) { return std::string(s.data, s.length); }
+static inline std::string convertString(envoy_data s) { return std::string(s.data, s.length); }
 
 HeaderMapPtr transformHeaders(envoy_headers headers) {
   Http::HeaderMapPtr transformed_headers = std::make_unique<HeaderMapImpl>();
@@ -33,8 +33,8 @@ envoy_headers transformHeaders(const HeaderMap& header_map) {
         const absl::string_view header_key = header.key().getStringView();
         const absl::string_view header_value = header.value().getStringView();
 
-        envoy_string key = {header_key.size(), strdup(header_key.data())};
-        envoy_string value = {header_value.size(), strdup(header_value.data())};
+        envoy_data key = {header_key.size(), strdup(header_key.data())};
+        envoy_data value = {header_value.size(), strdup(header_value.data())};
 
         transformed_headers->headers[transformed_headers->length] = {key, value};
         transformed_headers->length++;
