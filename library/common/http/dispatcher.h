@@ -24,7 +24,14 @@ class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
   Dispatcher(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
 
-  envoy_stream_t startStream(envoy_observer);
+  /**
+   * Attempts to open a new stream to the remote. Note that this function is asynchronous and
+   * opening a stream may fail. The returned handle is immediately valid for use with this API, but
+   * there is no guarantee it will ever functionally represent an open stream.
+   * @param observer wrapper for callbacks for events on this stream.
+   * @return envoy_stream_t handle to the stream being created.
+   */
+  envoy_stream_t startStream(envoy_observer observer);
   envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
   envoy_status_t sendData(envoy_stream_t stream, envoy_headers headers, bool end_stream);
   envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers, bool end_stream);
@@ -70,6 +77,10 @@ private:
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
   class DirectStream {
+    // TODO: Bookkeeping for this class is insufficient to fully cover all cases necessary to
+    // track the lifecycle of the underlying_stream_. One way or another, we must fix this
+    // to prevent bugs in the future. (Enhanced internal bookkeeping is probably good enough,
+    // but other options include upstream modifications to AsyncClient and friends.
   public:
     DirectStream(AsyncClient::Stream& underlying_stream, DirectStreamCallbacksPtr&& callbacks);
 

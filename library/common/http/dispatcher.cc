@@ -73,6 +73,9 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream_id, envoy_headers h
                                        bool end_stream) {
   event_dispatcher_.post([this, stream_id, headers, end_stream]() -> void {
     DirectStream* direct_stream = getStream(stream_id);
+    // If direct_stream is not found, it means the stream has already closed or been reset
+    // and the appropriate callback has been issued to the caller. There's nothing to do here
+    // except silently swallow this.
     if (direct_stream != nullptr) {
       direct_stream->headers_ = Utility::transformHeaders(headers);
       ENVOY_LOG(debug, "request headers for stream [{}] (end_stream={}):\n{}", stream_id,
