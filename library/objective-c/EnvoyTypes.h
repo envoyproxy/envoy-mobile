@@ -2,28 +2,36 @@
 
 // MARK: - Aliases
 
+/// Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
+/// intended for any external interpretation or use.
 typedef UInt64 EnvoyStreamID;
 
+/// A set of headers that may be passed to/from an Envoy stream.
 typedef NSArray<NSDictionary<NSString *, NSString *> *> EnvoyHeaders;
 
 // MARK: - EnvoyErrorCode
 
+/// Error code associated with terminal status of a HTTP stream.
 typedef NS_ENUM(NSUInteger, EnvoyErrorCode) {
   StreamReset = 0,
 };
 
 // MARK: - EnvoyError
 
+/// Error structure.
 @interface EnvoyError : NSError
 
+/// Message with additional details on the error.
 @property (nonatomic, copy) NSString *message;
 
+/// Error code representing the Envoy error.
 @property (nonatomic, assign) EnvoyErrorCode errorCode;
 
 @end
 
 // MARK: - EnvoyStatus
 
+/// Result codes returned by all calls made to this interface.
 typedef NS_ENUM(NSUInteger, EnvoyStatus) {
   Success = 0,
   Failure = 1,
@@ -31,35 +39,54 @@ typedef NS_ENUM(NSUInteger, EnvoyStatus) {
 
 // MARK: - EnvoyStream
 
+/// Holds data about an HTTP stream.
 typedef struct {
+  /// Status of the Envoy HTTP stream. Note that the stream might have failed inline.
+  /// Thus the status should be checked before pursuing other operations on the stream.
   EnvoyStatus status;
+
+  /// Handle to the Envoy HTTP stream.
   EnvoyStreamID streamID;
 } EnvoyStream;
 
-// MARK: - Callbacks
-
-typedef void (^OnHeadersClosure)(EnvoyHeaders *, BOOL);
-
-typedef void (^OnDataClosure)(NSData *, BOOL);
-
-typedef void (^OnMetadataClosure)(EnvoyHeaders *, BOOL);
-
-typedef void (^OnTrailersClosure)(EnvoyHeaders *, BOOL);
-
-typedef void (^OnErrorClosure)(EnvoyError *);
-
 // MARK: - EnvoyObserver
 
+/// Interface that can handle HTTP callbacks.
 @interface EnvoyObserver : NSObject
 
-@property (nonatomic, strong) OnHeadersClosure onHeaders;
+/**
+ * Called when all headers get received on the async HTTP stream.
+ * @param headers the headers received.
+ * @param endStream whether the response is headers-only.
+ */
+@property (nonatomic, strong) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
-@property (nonatomic, strong) OnDataClosure onData;
+/**
+ * Called when a data frame gets received on the async HTTP stream.
+ * This callback can be invoked multiple times if the data gets streamed.
+ * @param data the data received.
+ * @param endStream whether the data is the last data frame.
+ */
+@property (nonatomic, strong) void (^onData)(NSData *data, BOOL endStream);
 
-@property (nonatomic, strong) OnMetadataClosure onMetadata;
+/**
+ * Called when all metadata gets received on the async HTTP stream.
+ * Note that end stream is implied when on_trailers is called.
+ * @param metadata the metadata received.
+ */
+@property (nonatomic, strong) void (^onMetadata)(EnvoyHeaders *metadata);
 
-@property (nonatomic, strong) OnTrailersClosure onTrailers;
+/**
+ * Called when all trailers get received on the async HTTP stream.
+ * Note that end stream is implied when on_trailers is called.
+ * @param trailers the trailers received.
+ */
+@property (nonatomic, strong) void (^onTrailers)(EnvoyHeaders *trailers);
 
-@property (nonatomic, strong) OnErrorClosure onError;
+/**
+ * Called when the async HTTP stream has an error.
+ * @param error the error received/caused by the async HTTP stream.
+ */
+@property (nonatomic, strong) void (^onError)(EnvoyError *error);
 
 @end
