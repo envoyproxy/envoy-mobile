@@ -21,4 +21,34 @@
   }
 }
 
++ (EnvoyStatus)sendHeaders:(EnvoyHeaders *)headers to:(EnvoyStream *)stream close:(BOOL)close {
+  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  return Failure;
+}
+
++ (EnvoyStatus)sendData:(NSData *)data to:(EnvoyStream *)stream close:(BOOL)close {
+  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  return Failure;
+}
+
++ (EnvoyStatus)sendMetadata:(EnvoyHeaders *)metadata to:(EnvoyStream *)stream close:(BOOL)close {
+  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  return Failure;
+}
+
++ (EnvoyStatus)sendTrailers:(EnvoyHeaders *)trailers to:(EnvoyStream *)stream close:(BOOL)close {
+  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  return Failure;
+}
+
++ (EnvoyStatus)locallyCloseStream:(EnvoyStream *)stream {
+  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  return Failure;
+}
+
++ (EnvoyStatus)resetStream:(EnvoyStream *)stream {
+  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  return Failure;
+}
+
 @end
