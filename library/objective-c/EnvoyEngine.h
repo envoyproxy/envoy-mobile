@@ -1,21 +1,5 @@
 #import <Foundation/Foundation.h>
 
-// MARK: - Aliases
-
-typedef UInt64 EnvoyStreamID;
-
-typedef NSArray<NSDictionary<NSString *, NSString *> *> EnvoyHeaders;
-
-typedef void (^OnHeadersClosure)(EnvoyHeaders *, BOOL);
-
-typedef void (^OnDataClosure)(NSData *, BOOL);
-
-typedef void (^OnMetadataClosure)(EnvoyHeaders *, BOOL);
-
-typedef void (^OnTrailersClosure)(EnvoyHeaders *, BOOL);
-
-typedef void (^OnErrorClosure)(EnvoyError *);
-
 // MARK: - EnvoyErrorCode
 
 typedef NS_ENUM(NSUInteger, EnvoyErrorCode) {
@@ -31,6 +15,22 @@ typedef NS_ENUM(NSUInteger, EnvoyErrorCode) {
 @property (nonatomic, assign) EnvoyErrorCode errorCode;
 
 @end
+
+// MARK: - Aliases
+
+typedef UInt64 EnvoyStreamID;
+
+typedef NSArray<NSDictionary<NSString *, NSString *> *> EnvoyHeaders;
+
+typedef void (^OnHeadersClosure)(EnvoyHeaders *, BOOL);
+
+typedef void (^OnDataClosure)(NSData *, BOOL);
+
+typedef void (^OnMetadataClosure)(EnvoyHeaders *, BOOL);
+
+typedef void (^OnTrailersClosure)(EnvoyHeaders *, BOOL);
+
+typedef void (^OnErrorClosure)(EnvoyError *);
 
 // MARK: - EnvoyStatus
 
