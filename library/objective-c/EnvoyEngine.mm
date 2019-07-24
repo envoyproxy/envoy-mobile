@@ -22,32 +22,32 @@
 }
 
 + (EnvoyStatus)sendHeaders:(EnvoyHeaders *)headers to:(EnvoyStream *)stream close:(BOOL)close {
-  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   return Failure;
 }
 
 + (EnvoyStatus)sendData:(NSData *)data to:(EnvoyStream *)stream close:(BOOL)close {
-  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   return Failure;
 }
 
 + (EnvoyStatus)sendMetadata:(EnvoyHeaders *)metadata to:(EnvoyStream *)stream close:(BOOL)close {
-  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   return Failure;
 }
 
 + (EnvoyStatus)sendTrailers:(EnvoyHeaders *)trailers to:(EnvoyStream *)stream close:(BOOL)close {
-  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   return Failure;
 }
 
 + (EnvoyStatus)locallyCloseStream:(EnvoyStream *)stream {
-  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   return Failure;
 }
 
 + (EnvoyStatus)resetStream:(EnvoyStream *)stream {
-  NSLog(@"%@ is not implemented, returning failure...", NSStringFromSelector(_cmd));
+  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   return Failure;
 }
 
