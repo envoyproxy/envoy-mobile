@@ -32,17 +32,16 @@ public:
    * @return envoy_stream_t handle to the stream being created.
    */
   envoy_stream_t startStream(envoy_observer observer);
-  envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
-  envoy_status_t sendData(envoy_stream_t stream, envoy_headers headers, bool end_stream);
-  envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers, bool end_stream);
-  envoy_status_t sendTrailers(envoy_stream_t stream, envoy_headers headers);
-  envoy_status_t locallyCloseStream(envoy_stream_t stream);
+  envoy_status_t sendHeaders(envoy_stream_t stream_id, envoy_headers headers, bool end_stream);
+  envoy_status_t sendData(envoy_stream_t stream_id, envoy_headers headers, bool end_stream);
+  envoy_status_t sendMetadata(envoy_stream_t stream_id, envoy_headers headers, bool end_stream);
+  envoy_status_t sendTrailers(envoy_stream_t stream_id, envoy_headers headers);
+  envoy_status_t locallyCloseStream(envoy_stream_t stream_id);
   // TODO: when implementing this function we have to make sure to prevent races with already
   // scheduled and potentially scheduled callbacks. In order to do so the platform callbacks need to
   // check for atomic state (boolean most likely) that will be updated here to mark the stream as
   // closed.
-  envoy_status_t resetStream(envoy_stream_t stream);
-  envoy_status_t removeStream(envoy_stream_t stream);
+  envoy_status_t resetStream(envoy_stream_t stream_id);
 
 private:
   /**
@@ -77,13 +76,11 @@ private:
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
   class DirectStream {
-    // TODO: Bookkeeping for this class is insufficient to fully cover all cases necessary to
-    // track the lifecycle of the underlying_stream_. One way or another, we must fix this
-    // to prevent bugs in the future. (Enhanced internal bookkeeping is probably good enough,
-    // but other options include upstream modifications to AsyncClient and friends.
   public:
-    DirectStream(AsyncClient::Stream& underlying_stream, DirectStreamCallbacksPtr&& callbacks);
+    DirectStream(envoy_stream_t stream_id, AsyncClient::Stream& underlying_stream,
+                 DirectStreamCallbacksPtr&& callbacks);
 
+    const envoy_stream_t stream_id_;
     // Used to issue outgoing HTTP stream operations.
     AsyncClient::Stream& underlying_stream_;
     // Used to receive incoming HTTP stream operations.
@@ -95,6 +92,9 @@ private:
     // An implementation option would be to have drainable header maps, or done callbacks.
     std::vector<HeaderMapPtr> metadata_;
     HeaderMapPtr trailers_;
+
+    std::atomic<bool> local_closed_{};
+    std::atomic<bool> remote_closed_{};
   };
 
   using DirectStreamPtr = std::unique_ptr<DirectStream>;
@@ -102,6 +102,10 @@ private:
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
   DirectStream* getStream(envoy_stream_t stream_id);
+  void removeStream(envoy_stream_t stream_id);
+  void cleanup(DirectStream& stream);
+  void closeLocal(envoy_stream_t stream_id, bool end_stream);
+  void closeRemote(envoy_stream_t stream_id, bool end_stream);
 
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   std::atomic<envoy_stream_t> current_stream_id_;
