@@ -81,6 +81,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream_id, envoy_headers h
     // TODO: handle potential race condition with cancellation or failure get a stream in the
     // first place. Additionally it is possible to get a nullptr due to bogus stream_id
     // from the caller.
+    // https://github.com/lyft/envoy-mobile/issues/301
     if (direct_stream != nullptr) {
       direct_stream->headers_ = Utility::transformHeaders(headers);
       ENVOY_LOG(debug, "request headers for stream [{}] (end_stream={}):\n{}", stream_id,
