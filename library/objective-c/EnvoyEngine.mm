@@ -5,6 +5,12 @@
 
 @implementation EnvoyEngine
 
+typedef struct {
+  onHeaders onHeadersCallback;
+  dispatch_queue_t callback_queue;
+} ios_callbacks;
+
+
 static void platform_on_headers(envoy_headers headers, bool end_stream, void* context) {
   void (^onHeaders)(envoy_headers) = ;
   onHeaders(headers);
