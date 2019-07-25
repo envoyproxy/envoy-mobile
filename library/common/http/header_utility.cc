@@ -11,11 +11,6 @@ static inline envoy_data copyEnvoyData(size_t length, const uint8_t* source) {
   memcpy(destination, source, length);
   return {length, destination};
 }
-/*
-static inline void freeEnvoyData(envoy_data data) {
-  free(const_cast<uint8_t*>(data.bytes));
-}
-*/
 
 std::string convertToString(envoy_data s) {
   return std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(s.bytes)), s.length);

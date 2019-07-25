@@ -57,6 +57,8 @@ envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
+      // TODO: this callback might fire before the startStream function returns.
+      // Take this into account when thinking about stream cancellation.
       callbacks->onReset();
     } else {
       DirectStreamPtr direct_stream =
