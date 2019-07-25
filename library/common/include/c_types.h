@@ -99,9 +99,9 @@ typedef void (*on_headers)(envoy_headers headers, bool end_stream, void* context
  */
 typedef void (*on_data)(envoy_data data, bool end_stream, void* context);
 /**
- * Called when all trailers get received on the async HTTP stream.
- * Note that end stream is implied when on_trailers is called.
- * @param metadata, the trailers received.
+ * Called when all metadata get received on the async HTTP stream.
+ * Note that end stream is implied when on_metadata is called.
+ * @param metadata, the metadata received.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  */
