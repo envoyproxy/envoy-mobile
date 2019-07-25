@@ -5,9 +5,6 @@
 
 @implementation EnvoyEngine
 
-#pragma mark - utility
-static envoy_data EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
-
 #pragma mark - class methods
 + (EnvoyStatus)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];

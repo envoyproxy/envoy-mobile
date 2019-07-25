@@ -7,7 +7,9 @@
 namespace Envoy {
 namespace Http {
 
-envoy_data envoyString(std::string& s) { return {s.size(), s.c_str()}; }
+envoy_data envoyString(std::string& s) {
+  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str())};
+}
 
 TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
   envoy_header* header_array = new envoy_header[0];
@@ -40,10 +42,8 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
   ASSERT_EQ(cpp_headers->size(), c_headers.length);
 
   for (uint64_t i = 0; i < c_headers.length; i++) {
-    auto expected_key = LowerCaseString(
-        std::string(c_headers.headers[i].key.data, c_headers.headers[i].key.length));
-    auto expected_value =
-        std::string(c_headers.headers[i].value.data, c_headers.headers[i].value.length);
+    auto expected_key = LowerCaseString(Utility::convertToString(c_headers.headers[i].key));
+    auto expected_value = Utility::convertToString(c_headers.headers[i].value);
 
     // Key is present.
     EXPECT_NE(cpp_headers->get(expected_key), nullptr);
@@ -71,10 +71,8 @@ TEST(HeaderDataConstructorTest, FromCppToC) {
   ASSERT_EQ(c_headers.length, cpp_headers.size());
 
   for (uint64_t i = 0; i < c_headers.length; i++) {
-    auto actual_key = LowerCaseString(
-        std::string(c_headers.headers[i].key.data, c_headers.headers[i].key.length));
-    auto actual_value =
-        std::string(c_headers.headers[i].value.data, c_headers.headers[i].value.length);
+    auto actual_key = LowerCaseString(Utility::convertToString(c_headers.headers[i].key));
+    auto actual_value = Utility::convertToString(c_headers.headers[i].value);
 
     // Key is present.
     EXPECT_NE(cpp_headers.get(actual_key), nullptr);
