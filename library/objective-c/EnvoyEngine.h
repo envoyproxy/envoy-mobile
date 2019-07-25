@@ -78,8 +78,8 @@
  */
 + (EnvoyStatus)resetStream:(EnvoyStream *)stream;
 
-/// Performs necessary setup after Envoy has initialized and started running.
-/// TODO: create a post-initialization callback from Envoy to handle this automatically.
++ (void)makeRequest;
+
 + (void)setupEnvoy;
 
 @end
