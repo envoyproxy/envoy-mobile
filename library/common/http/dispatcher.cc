@@ -78,6 +78,9 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream_id, envoy_headers h
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
     // except silently swallow this.
+    // TODO: handle potential race condition with cancellation or failure get a stream in the
+    // first place. Additionally it is possible to get a nullptr due to bogus stream_id
+    // from the caller.
     if (direct_stream != nullptr) {
       direct_stream->headers_ = Utility::transformHeaders(headers);
       ENVOY_LOG(debug, "request headers for stream [{}] (end_stream={}):\n{}", stream_id,
