@@ -5,6 +5,18 @@ load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_test", "envoy_package")
 envoy_package()
 
 envoy_cc_test(
+    name = "dispatcher_test",
+    srcs = ["dispatcher_test.cc"],
+    repository = "@envoy",
+    deps = [
+        "//library/common/http:dispatcher_lib",
+        "//library/common/include:c_types_interface",
+        "@envoy//test/mocks/event:event_mocks",
+        "@envoy//test/mocks/upstream:upstream_mocks",
+    ],
+)
+
+envoy_cc_test(
     name = "header_utility_test",
     srcs = ["header_utility_test.cc"],
     repository = "@envoy",

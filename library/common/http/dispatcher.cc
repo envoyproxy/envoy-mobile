@@ -88,8 +88,8 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream_id, envoy_headers h
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream_id,
                 end_stream, *direct_stream->headers_);
       direct_stream->underlying_stream_.sendHeaders(*direct_stream->headers_, end_stream);
+      closeLocal(stream_id, end_stream);
     }
-    closeLocal(stream_id, end_stream);
   });
 
   return ENVOY_SUCCESS;
