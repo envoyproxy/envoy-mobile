@@ -33,8 +33,8 @@ typedef NS_ENUM(NSUInteger, EnvoyErrorCode) {
 
 /// Result codes returned by all calls made to this interface.
 typedef NS_ENUM(NSUInteger, EnvoyStatus) {
-  Success = 0,
-  Failure = 1,
+  SUCCESS = 0,
+  FAILURE = 1,
 };
 
 // MARK: - EnvoyStream

@@ -19,45 +19,45 @@
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException"
                                                       object:self
                                                     userInfo:userInfo];
-    return Failure;
+    return FAILURE;
   }
 }
 
 + (EnvoyStream)startStreamWithObserver:(EnvoyObserver *)observer {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
   EnvoyStream stream;
-  stream.status = Failure;
+  stream.status = FAILURE;
   return stream;
 }
 
 + (EnvoyStatus)sendHeaders:(EnvoyHeaders *)headers to:(EnvoyStream *)stream close:(BOOL)close {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+  return FAILURE;
 }
 
 + (EnvoyStatus)sendData:(NSData *)data to:(EnvoyStream *)stream close:(BOOL)close {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+  return FAILURE;
 }
 
 + (EnvoyStatus)sendMetadata:(EnvoyHeaders *)metadata to:(EnvoyStream *)stream close:(BOOL)close {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+  return FAILURE;
 }
 
 + (EnvoyStatus)sendTrailers:(EnvoyHeaders *)trailers to:(EnvoyStream *)stream close:(BOOL)close {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+  return FAILURE;
 }
 
 + (EnvoyStatus)locallyCloseStream:(EnvoyStream *)stream {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+  return FAILURE;
 }
 
 + (EnvoyStatus)resetStream:(EnvoyStream *)stream {
   NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+  return FAILURE;
 }
 
 + (void)setupEnvoy {
