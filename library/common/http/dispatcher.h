@@ -79,6 +79,7 @@ private:
   public:
     DirectStream(envoy_stream_t stream_id, AsyncClient::Stream& underlying_stream,
                  DirectStreamCallbacksPtr&& callbacks);
+    bool complete() { return local_closed_ && remote_closed_; }
 
     const envoy_stream_t stream_id_;
     // Used to issue outgoing HTTP stream operations.
@@ -102,8 +103,7 @@ private:
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
   DirectStream* getStream(envoy_stream_t stream_id);
-  void removeStream(envoy_stream_t stream_id);
-  void cleanup(DirectStream& stream);
+  void cleanup(DirectStream& stream_id);
   void closeLocal(envoy_stream_t stream_id, bool end_stream);
   void closeRemote(envoy_stream_t stream_id, bool end_stream);
 

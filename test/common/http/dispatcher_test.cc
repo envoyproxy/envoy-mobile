@@ -22,13 +22,13 @@ envoy_data envoyString(std::string& s) {
 
 class DispatcherTest : public testing::Test {
 public:
-  DispatcherTest() : http_dispatcher_(event_dispatcher_, cm_) {
-    observer_.on_headers_f = [](envoy_headers, bool, void*) -> void { ASSERT_EQ(1, 0); };
-  }
+  DispatcherTest() : http_dispatcher_(event_dispatcher_, cm_) {}
 
   NiceMock<Upstream::MockClusterManager> cm_;
   NiceMock<Event::MockDispatcher> event_dispatcher_;
   Dispatcher http_dispatcher_;
+  NiceMock<MockStreamEncoder> stream_encoder_;
+  StreamDecoder* response_decoder_{};
 
   envoy_observer observer_;
 };
@@ -47,19 +47,19 @@ TEST_F(DispatcherTest, SendHeaders) {
   }
 
   envoy_headers headers = {header_strings.size(), header_array};
-  NiceMock<MockAsyncClientStream> stream;
+  NiceMock<MockAsyncClientStream> underlying_stream;
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
       .WillOnce(ReturnRef(cm_.async_client_));
-  EXPECT_CALL(cm_.async_client_, start(_, _)).WillOnce(Return(&stream));
+  EXPECT_CALL(cm_.async_client_, start(_, _)).WillOnce(Return(&underlying_stream));
   envoy_stream_t stream_id = http_dispatcher_.startStream(observer_);
 
   Event::PostCb post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
   http_dispatcher_.sendHeaders(stream_id, headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(3).WillRepeatedly(Return(true));
-  EXPECT_CALL(stream, sendHeaders(_, true)).Times(1);
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(underlying_stream, sendHeaders(_, true)).Times(1);
   post_cb();
 }
 
@@ -71,6 +71,46 @@ TEST_F(DispatcherTest, SendHeadersNoStream) {
 
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   // FIXME better proof that sendHeaders was not called.
+  post_cb();
+}
+
+TEST_F(DispatcherTest, LocallyCloseStream) {
+  NiceMock<MockAsyncClientStream> underlying_stream;
+
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _)).WillOnce(Return(&underlying_stream));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer_);
+
+  Event::PostCb post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
+  http_dispatcher_.locallyCloseStream(stream_id);
+
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  post_cb();
+}
+
+TEST_F(DispatcherTest, ResetStream) {
+  NiceMock<MockAsyncClientStream> underlying_stream;
+  envoy_observer observer;
+
+  // FIXME this is not firing. Because reset of the underlying stream is mocked out.
+  observer.on_error_f = [](envoy_error actual_error, void*) -> void {
+    envoy_error expected_error = {ENVOY_STREAM_RESET, {0, nullptr}};
+    ASSERT_EQ(actual_error.error_code, expected_error.error_code);
+    ASSERT_EQ(0, 1);
+  };
+
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _)).WillOnce(Return(&underlying_stream));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer);
+  Event::PostCb post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
+  http_dispatcher_.resetStream(stream_id);
+
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(underlying_stream, reset()).Times(1);
   post_cb();
 }
 

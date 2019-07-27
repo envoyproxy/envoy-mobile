@@ -6,6 +6,12 @@
 namespace Envoy {
 namespace Http {
 
+// FIXME general questions:
+// 1. We say at the interface level in envoy that sendHeaders must only be called once and before
+// sendData. But I can't see where that guarantee is kept?
+// 2. What prevents that sendXXX is not called after `end_stream == true` and the stream is
+// local_closed?
+
 Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
                                                          envoy_observer observer,
                                                          Dispatcher& http_dispatcher)
@@ -104,6 +110,8 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t, envoy_headers) { return 
 
 envoy_status_t Dispatcher::locallyCloseStream(envoy_stream_t stream_id) {
   event_dispatcher_.post([this, stream_id]() -> void {
+    // FIXME underlying stream does not have a locallyClose function. But we need to inform the
+    // underlying stream of local close if it came through here.
     closeLocal(stream_id, true);
     ENVOY_LOG(debug, "[S{}] locally close stream", stream_id);
   });
@@ -112,9 +120,13 @@ envoy_status_t Dispatcher::locallyCloseStream(envoy_stream_t stream_id) {
 
 envoy_status_t Dispatcher::resetStream(envoy_stream_t stream_id) {
   event_dispatcher_.post([this, stream_id]() -> void {
-    closeLocal(stream_id, true);
-    closeRemote(stream_id, true);
-    ENVOY_LOG(debug, "[S{}] local reset stream", stream_id);
+    DirectStream* direct_stream = getStream(stream_id);
+    if (direct_stream) {
+      // Resetting the underlying_stream will fire the onReset callback, and thus closeRemote.
+      direct_stream->underlying_stream_.reset();
+      closeLocal(direct_stream->stream_id_, true);
+      ENVOY_LOG(debug, "[S{}] local reset stream", stream_id);
+    }
   });
   return ENVOY_SUCCESS;
 }
@@ -127,44 +139,42 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream_id) {
 }
 
 void Dispatcher::closeLocal(envoy_stream_t stream_id, bool end_stream) {
-  DirectStream* stream = getStream(stream_id);
+  DirectStream* direct_stream = getStream(stream_id);
   // FIXME: why would there be no stream?
-  if (stream) {
-    stream->local_closed_ = stream->local_closed_ || end_stream;
+  if (direct_stream) {
+    direct_stream->local_closed_ = direct_stream->local_closed_ || end_stream;
     ENVOY_LOG(debug, "[S{}] local close for stream (local_closed={} remote_closed={})", stream_id,
-              stream->local_closed_, stream->remote_closed_);
-    cleanup(*stream);
+              direct_stream->local_closed_, direct_stream->remote_closed_);
+    if (direct_stream->complete()) {
+      cleanup(*direct_stream);
+    }
   }
 }
 
 void Dispatcher::closeRemote(envoy_stream_t stream_id, bool end_stream) {
-  DirectStream* stream = getStream(stream_id);
+  DirectStream* direct_stream = getStream(stream_id);
   // FIXME: why would there be no stream?
-  if (stream) {
-    stream->remote_closed_ = stream->remote_closed_ || end_stream;
+  if (direct_stream) {
+    direct_stream->remote_closed_ = direct_stream->remote_closed_ || end_stream;
     ENVOY_LOG(debug, "[S{}] remote close for stream (local_closed={} remote_closed={})", stream_id,
-              stream->local_closed_, stream->remote_closed_);
-    cleanup(*stream);
+              direct_stream->local_closed_, direct_stream->remote_closed_);
+    if (direct_stream->complete()) {
+      cleanup(*direct_stream);
+    }
   }
 }
 
-void Dispatcher::cleanup(DirectStream& stream) {
+void Dispatcher::cleanup(DirectStream& direct_stream) {
   ASSERT(event_dispatcher_.isThreadSafe(),
          "stream interaction must be performed on the event_dispatcher_'s thread.");
-  ENVOY_LOG(debug, "[S{}] cleanup for stream (local_closed={} remote_closed={})", stream.stream_id_,
-            stream.local_closed_, stream.remote_closed_);
-  if (stream.local_closed_ && stream.remote_closed_) {
-    removeStream(stream.stream_id_);
-  }
-}
+  ENVOY_LOG(debug, "[S{}] cleanup for stream", direct_stream.stream_id_);
+  direct_stream.local_closed_ = direct_stream.remote_closed_ = true;
 
-void Dispatcher::removeStream(envoy_stream_t stream_id) {
-  ASSERT(event_dispatcher_.isThreadSafe(),
-         "stream interaction must be performed on the event_dispatcher_'s thread.");
-  // FIXME do we need to worry about calling this with a stream id that is not present?
-  size_t erased = streams_.erase(stream_id);
+  // FIXME this should probably be deferred so that callbacks are able to fire.
+  // Mmmm actually, is that the case?
+  size_t erased = streams_.erase(direct_stream.stream_id_);
   if (erased > 0) {
-    ENVOY_LOG(debug, "[S{}] remove stream", stream_id);
+    ENVOY_LOG(debug, "[S{}] remove stream", direct_stream.stream_id_);
   }
 }
 
