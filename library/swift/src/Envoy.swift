@@ -23,6 +23,8 @@ public final class Envoy: NSObject {
     self.runner.start()
   }
 
+  // MARK: - RunnerThread
+
   private final class RunnerThread: Thread {
     private let config: String
     private let logLevel: LogLevel
@@ -34,6 +36,47 @@ public final class Envoy: NSObject {
 
     override func main() {
       EnvoyEngine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
+    }
+  }
+}
+
+extension Envoy: Client {
+  public func startStream(request: Request, handler: ResponseHandler) -> StreamEmitter? {
+    let observer = EnvoyObserver(handler: handler)
+    var stream = EnvoyEngine.startStream(with: observer)
+
+    switch stream.status {
+    case .success:
+      return EnvoyStreamEmitter(stream: &stream)
+    case .failure:
+      defer { handler.onError(Error.streamCreationFailed) }
+      return nil
+    }
+  }
+}
+
+private extension EnvoyObserver {
+  convenience init(handler: ResponseHandler) {
+    self.init()
+
+    self.onHeaders = { headers, endStream in
+
+    }
+
+    self.onData = { data, endStream in
+
+    }
+
+    self.onMetadata = { metadata in
+
+    }
+
+    self.onTrailers = { trailers in
+
+    }
+
+    self.onError = { error in
+
     }
   }
 }
