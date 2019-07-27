@@ -7,7 +7,8 @@ public protocol ResponseHandler {
   ///
   /// - parameter headers:    The headers of the response.
   /// - parameter statusCode: The status code of the response.
-  func onHeaders(_ headers: [String: [String]], statusCode: Int)
+  /// - parameter endStream:  True if the stream is complete.
+  func onHeaders(_ headers: [String: [String]], statusCode: Int, endStream: Bool)
 
   /// Called when a data frame is received by the stream.
   ///
@@ -17,9 +18,8 @@ public protocol ResponseHandler {
 
   /// Called when response metadata is received by the stream.
   ///
-  /// - parameter metadata:  The metadata of the response.
-  /// - parameter endStream: True if the stream is complete.
-  func onMetadata(_ metadata: [String: [String]], endStream: Bool)
+  /// - parameter metadata: The metadata of the response.
+  func onMetadata(_ metadata: [String: [String]])
 
   /// Called when response trailers are received by the stream.
   ///
