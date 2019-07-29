@@ -108,16 +108,6 @@ envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers, bool) {
 }
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 
-envoy_status_t Dispatcher::locallyCloseStream(envoy_stream_t stream_id) {
-  event_dispatcher_.post([this, stream_id]() -> void {
-    // FIXME underlying stream does not have a locallyClose function. But we need to inform the
-    // underlying stream of local close if it came through here.
-    closeLocal(stream_id, true);
-    ENVOY_LOG(debug, "[S{}] locally close stream", stream_id);
-  });
-  return ENVOY_SUCCESS;
-}
-
 envoy_status_t Dispatcher::resetStream(envoy_stream_t stream_id) {
   event_dispatcher_.post([this, stream_id]() -> void {
     DirectStream* direct_stream = getStream(stream_id);

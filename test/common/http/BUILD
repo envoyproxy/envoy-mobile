@@ -10,8 +10,13 @@ envoy_cc_test(
     repository = "@envoy",
     deps = [
         "//library/common/http:dispatcher_lib",
+        "//library/common/http:header_utility_lib",
         "//library/common/include:c_types_interface",
+        "@envoy//source/common/http:async_client_lib",
+        "@envoy//source/common/http:context_lib",
+        "@envoy//test/common/http:common_lib",
         "@envoy//test/mocks/event:event_mocks",
+        "@envoy//test/mocks/local_info:local_info_mocks",
         "@envoy//test/mocks/upstream:upstream_mocks",
     ],
 )
