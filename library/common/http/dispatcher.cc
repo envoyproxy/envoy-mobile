@@ -15,26 +15,28 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_id_, end_stream,
             *headers);
   observer_.on_headers_f(Utility::transformHeaders(*headers), end_stream, observer_.context);
-  http_dispatcher_.closeRemote(stream_id_, end_stream);
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_id_,
             data.length(), end_stream);
   observer_.on_data_f(Envoy::Buffer::Utility::transformData(data), end_stream, observer_.context);
-  http_dispatcher_.closeRemote(stream_id_, end_stream);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_id_, *trailers);
   observer_.on_trailers_f(Utility::transformHeaders(*trailers), observer_.context);
-  http_dispatcher_.closeRemote(stream_id_, true);
+}
+
+void Dispatcher::DirectStreamCallbacks::onComplete() {
+  ENVOY_LOG(debug, "[S{}] complete stream", stream_id_);
+  observer_.on_complete_f(observer_.context);
+  http_dispatcher_.cleanup(stream_id_);
 }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_id_);
   observer_.on_error_f({ENVOY_STREAM_RESET, {0, nullptr}}, observer_.context);
-  http_dispatcher_.closeRemote(stream_id_, true);
 }
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_id,
@@ -88,7 +90,6 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
                 *direct_stream->headers_);
       direct_stream->underlying_stream_.sendHeaders(*direct_stream->headers_, end_stream);
-      closeLocal(stream, end_stream);
     }
   });
 
@@ -106,10 +107,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
   event_dispatcher_.post([this, stream]() -> void {
     DirectStream* direct_stream = getStream(stream);
     if (direct_stream) {
-      // Resetting the underlying_stream will fire the onReset callback, and thus closeRemote.
       direct_stream->underlying_stream_.reset();
-      closeLocal(direct_stream->stream_id_, true);
-      ENVOY_LOG(debug, "[S{}] local reset stream", stream);
     }
   });
   return ENVOY_SUCCESS;
@@ -122,42 +120,13 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
 }
 
-void Dispatcher::closeLocal(envoy_stream_t stream, bool end_stream) {
-  DirectStream* direct_stream = getStream(stream);
+void Dispatcher::cleanup(envoy_stream_t stream_id) {
+  DirectStream* direct_stream = getStream(stream_id);
 
   RELEASE_ASSERT(direct_stream,
-                 "closeLocal is a private method that is only called with stream ids that exist");
-
-  direct_stream->local_closed_ |= end_stream;
-  ENVOY_LOG(debug, "[S{}] local close for stream (local_closed={} remote_closed={})", stream,
-            direct_stream->local_closed_, direct_stream->remote_closed_);
-  if (direct_stream->complete()) {
-    cleanup(*direct_stream);
-  }
-}
-
-void Dispatcher::closeRemote(envoy_stream_t stream, bool end_stream) {
-  DirectStream* direct_stream = getStream(stream);
-
-  RELEASE_ASSERT(direct_stream,
-                 "closeRemote is a private method that is only called with stream ids that exist");
-
-  direct_stream->remote_closed_ |= end_stream;
-  ENVOY_LOG(debug, "[S{}] remote close for stream (local_closed={} remote_closed={})", stream,
-            direct_stream->local_closed_, direct_stream->remote_closed_);
-  if (direct_stream->complete()) {
-    cleanup(*direct_stream);
-  }
-}
-
-void Dispatcher::cleanup(DirectStream& direct_stream) {
-  ASSERT(event_dispatcher_.isThreadSafe(),
-         "stream interaction must be performed on the event_dispatcher_'s thread.");
-  ENVOY_LOG(debug, "[S{}] cleanup for stream", direct_stream.stream_id_);
-  direct_stream.local_closed_ = direct_stream.remote_closed_ = true;
+                 "cleanup is a private method that is only called with stream ids that exist");
 
   // TODO: think about thread safety of deleting the DirectStream immediately.
-  envoy_stream_t stream_id = direct_stream.stream_id_;
   size_t erased = streams_.erase(stream_id);
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
   ENVOY_LOG(debug, "[S{}] remove stream", stream_id);

@@ -60,6 +60,7 @@ private:
     void onHeaders(HeaderMapPtr&& headers, bool end_stream);
     void onData(Buffer::Instance& data, bool end_stream);
     void onTrailers(HeaderMapPtr&& trailers);
+    void onComplete();
     void onReset();
 
   private:
@@ -78,7 +79,6 @@ private:
   public:
     DirectStream(envoy_stream_t stream_id, AsyncClient::Stream& underlying_stream,
                  DirectStreamCallbacksPtr&& callbacks);
-    bool complete() { return local_closed_ && remote_closed_; }
 
     const envoy_stream_t stream_id_;
     // Used to issue outgoing HTTP stream operations.
@@ -92,19 +92,14 @@ private:
     // An implementation option would be to have drainable header maps, or done callbacks.
     std::vector<HeaderMapPtr> metadata_;
     HeaderMapPtr trailers_;
-
-    bool local_closed_{};
-    bool remote_closed_{};
   };
 
   using DirectStreamPtr = std::unique_ptr<DirectStream>;
 
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
-  DirectStream* getStream(envoy_stream_t stream);
-  void cleanup(DirectStream& stream);
-  void closeLocal(envoy_stream_t stream, bool end_stream);
-  void closeRemote(envoy_stream_t stream, bool end_stream);
+  DirectStream* getStream(envoy_stream_t stream_id);
+  void cleanup(envoy_stream_t stream_id);
 
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   std::atomic<envoy_stream_t> current_stream_id_;

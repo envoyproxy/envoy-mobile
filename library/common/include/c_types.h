@@ -114,6 +114,7 @@ typedef void (*on_metadata)(envoy_headers metadata, void* context);
  * execution.
  */
 typedef void (*on_trailers)(envoy_headers trailers, void* context);
+typedef void (*on_complete)(void* context);
 /**
  * Called when the async HTTP stream has an error.
  * @param envoy_error, the error received/caused by the async HTTP stream.
@@ -134,6 +135,7 @@ typedef struct {
   on_data on_data_f;
   on_metadata on_metadata_f;
   on_trailers on_trailers_f;
+  on_complete on_complete_f;
   on_error on_error_f;
   void* context; // Will be passed through to callbacks to provide dispatch and execution state.
 } envoy_observer;

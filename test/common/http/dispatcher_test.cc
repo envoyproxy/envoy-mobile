@@ -35,6 +35,12 @@ public:
         .WillByDefault(ReturnRef(envoy::api::v2::core::Locality().default_instance()));
   }
 
+  typedef struct {
+    bool on_headers;
+    bool on_complete;
+    bool on_error;
+  } callbacks_called;
+
   Stats::MockIsolatedStatsStore stats_store_;
   MockAsyncClientCallbacks callbacks_;
   MockAsyncClientStreamCallbacks stream_callbacks_;
@@ -55,14 +61,18 @@ public:
 TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   // Setup observer to handle the response headers.
   envoy_observer observer;
-  bool on_headers_called = false;
-  observer.context = &on_headers_called;
+  callbacks_called cc = {false, false, false};
+  observer.context = &cc;
   observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-    bool* on_headers_called = static_cast<bool*>(context);
-    *on_headers_called = true;
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_headers = true;
+  };
+  observer.on_complete_f = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete = true;
   };
 
   // Grab the response decoder in order to dispatch responses on the stream.
@@ -94,7 +104,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   post_cb();
 
@@ -102,7 +112,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   // turn cause closeRemote. Because closeLocal has already been called, cleanup will happen; hence
   // the second call to isThreadSafe.
   // TODO: find a way to make the fact that the stream is correctly closed more explicit.
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   response_decoder_->decode100ContinueHeaders(
       HeaderMapPtr(new TestHeaderMapImpl{{":status", "100"}}));
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), true);
@@ -115,18 +125,23 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
                      .value());
 
   // Ensure that the on_headers_f on the observer was called.
-  ASSERT_TRUE(on_headers_called);
+  ASSERT_TRUE(cc.on_headers);
+  ASSERT_TRUE(cc.on_complete);
 }
 
 TEST_F(DispatcherTest, ResetStream) {
   envoy_observer observer;
-  bool on_error_called = false;
-  observer.context = &on_error_called;
+  callbacks_called cc = {false, false, false};
+  observer.context = &cc;
   observer.on_error_f = [](envoy_error actual_error, void* context) -> void {
     envoy_error expected_error = {ENVOY_STREAM_RESET, {0, nullptr}};
     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
-    bool* on_error_called = static_cast<bool*>(context);
-    *on_error_called = true;
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_error = true;
+  };
+  observer.on_complete_f = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete = true;
   };
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
@@ -142,25 +157,30 @@ TEST_F(DispatcherTest, ResetStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
   http_dispatcher_.resetStream(stream);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(4).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   post_cb();
 
   // Ensure that the on_error_f on the observer was called.
-  ASSERT_TRUE(on_error_called);
+  ASSERT_TRUE(cc.on_error);
+  ASSERT_FALSE(cc.on_complete);
 }
 
 TEST_F(DispatcherTest, MultipleStreams) {
   // Start stream1.
   // Setup observer to handle the response headers.
   envoy_observer observer;
-  bool on_headers_called = false;
-  observer.context = &on_headers_called;
+  callbacks_called cc = {false, false, false};
+  observer.context = &cc;
   observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-    bool* on_headers_called = static_cast<bool*>(context);
-    *on_headers_called = true;
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_headers = true;
+  };
+  observer.on_complete_f = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete = true;
   };
 
   // Grab the response decoder in order to dispatch responses on the stream.
@@ -192,7 +212,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   post_cb();
 
@@ -201,14 +221,18 @@ TEST_F(DispatcherTest, MultipleStreams) {
   NiceMock<MockStreamEncoder> stream_encoder2;
   StreamDecoder* response_decoder2{};
   envoy_observer observer2;
-  bool on_headers_called2 = false;
-  observer2.context = &on_headers_called2;
+  callbacks_called cc2 = {false, false, false};
+  observer2.context = &cc2;
   observer2.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "503");
     bool* on_headers_called2 = static_cast<bool*>(context);
     *on_headers_called2 = true;
+  };
+  observer2.on_complete_f = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete = true;
   };
 
   // Grab the response decoder in order to dispatch responses on the stream.
@@ -241,32 +265,29 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb2));
   http_dispatcher_.sendHeaders(stream2, c_headers2, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder2, encodeHeaders(_, true));
   post_cb2();
 
   // Finish stream 2.
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   HeaderMapPtr response_headers2(new TestHeaderMapImpl{{":status", "503"}});
   response_decoder2->decodeHeaders(std::move(response_headers2), true);
   // Ensure that the on_headers_f on the observer was called.
-  ASSERT_TRUE(on_headers_called2);
+  ASSERT_TRUE(cc2.on_headers);
+  ASSERT_TRUE(cc2.on_complete);
 
   // Finish stream 1.
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   HeaderMapPtr response_headers(new TestHeaderMapImpl{{":status", "200"}});
   response_decoder_->decodeHeaders(std::move(response_headers), true);
-  ASSERT_TRUE(on_headers_called);
+  ASSERT_TRUE(cc.on_headers);
+  ASSERT_TRUE(cc.on_complete);
 }
 
 TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   envoy_observer observer;
-  typedef struct {
-    bool on_headers;
-    bool on_error;
-  } callbacks_called;
-
-  callbacks_called cc = {false, false};
+  callbacks_called cc = {false, false, false};
   observer.context = &cc;
 
   observer.on_error_f = [](envoy_error actual_error, void* context) -> void {
@@ -281,6 +302,10 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers = true;
+  };
+  observer.on_complete_f = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete = true;
   };
 
   // Grab the response decoder in order to dispatch responses on the stream.
@@ -312,11 +337,10 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
   send_headers_post_cb();
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
   // Ensure that the on_headers_f on the observer was called.
   ASSERT_TRUE(cc.on_headers);
@@ -325,21 +349,17 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_post_cb));
   http_dispatcher_.resetStream(stream);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(4).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   reset_post_cb();
 
   // Ensure that the on_error_f on the observer was called.
   ASSERT_TRUE(cc.on_error);
+  ASSERT_FALSE(cc.on_complete);
 }
 
 TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   envoy_observer observer;
-  typedef struct {
-    bool on_headers;
-    bool on_error;
-  } callbacks_called;
-
-  callbacks_called cc = {false, false};
+  callbacks_called cc = {false, false, false};
   observer.context = &cc;
 
   observer.on_error_f = [](envoy_error actual_error, void* context) -> void {
@@ -354,6 +374,10 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers = true;
+  };
+  observer.on_complete_f = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete = true;
   };
 
   // Grab the response decoder in order to dispatch responses on the stream.
@@ -385,19 +409,18 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
   send_headers_post_cb();
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
   // Ensure that the on_headers_f on the observer was called.
   ASSERT_TRUE(cc.on_headers);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   stream_encoder_.getStream().resetStream(StreamResetReason::RemoteReset);
   // Ensure that the on_error_f on the observer was called.
   ASSERT_TRUE(cc.on_error);
+  ASSERT_FALSE(cc.on_complete);
 }
 
 TEST_F(DispatcherTest, DestroyWithActiveStream) {
@@ -426,7 +449,7 @@ TEST_F(DispatcherTest, DestroyWithActiveStream) {
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
   EXPECT_CALL(stream_callbacks_, onReset());
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 }
 
@@ -457,17 +480,20 @@ TEST_F(DispatcherTest, ResetInOnHeaders) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
   send_headers_post_cb();
 
   TestHeaderMapImpl expected_headers{{":status", "200"}};
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_));
   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_headers), false))
       .WillOnce(Invoke([this, stream](HeaderMap&, bool) { http_dispatcher_.resetStream(stream); }));
   EXPECT_CALL(stream_callbacks_, onData(_, _)).Times(0);
   EXPECT_CALL(stream_callbacks_, onReset());
+  // FIXME I can't seem to reason why onComplete is being called here. Afaict local should not be
+  // closed, and thus onComplete should not happen. Need to think about this in the morning.
+  EXPECT_CALL(stream_callbacks_, onComplete());
 
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
   // TODO: Need to finish the data side (sendData, onData) in order to fully verify that onData was
@@ -499,7 +525,7 @@ TEST_F(DispatcherTest, StreamTimeout) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
   EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
@@ -509,6 +535,7 @@ TEST_F(DispatcherTest, StreamTimeout) {
       {":status", "504"}, {"content-length", "24"}, {"content-type", "text/plain"}};
   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), false));
   EXPECT_CALL(stream_callbacks_, onData(_, true));
+  EXPECT_CALL(stream_callbacks_, onComplete());
   send_headers_post_cb();
   timer_->callback_();
 
@@ -546,7 +573,7 @@ TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
   EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
@@ -555,6 +582,7 @@ TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
   TestHeaderMapImpl expected_timeout{
       {":status", "504"}, {"content-length", "24"}, {"content-type", "text/plain"}};
   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), true));
+  EXPECT_CALL(stream_callbacks_, onComplete());
   send_headers_post_cb();
   timer_->callback_();
 }
@@ -593,9 +621,9 @@ TEST_F(DispatcherTest, DisableTimerWithStream) {
   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
   EXPECT_CALL(stream_callbacks_, onReset());
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   send_headers_post_cb();
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   reset_stream_post_cb();
 }
 
