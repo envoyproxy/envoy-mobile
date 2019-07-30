@@ -23,10 +23,6 @@ using testing::WithArg;
 namespace Envoy {
 namespace Http {
 
-envoy_data envoyString(std::string& s) {
-  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str())};
-}
-
 class DispatcherTest : public testing::Test {
 public:
   DispatcherTest()
@@ -153,119 +149,115 @@ TEST_F(DispatcherTest, ResetStream) {
   ASSERT_TRUE(on_error_called);
 }
 
-// FIXME: startStream post
-// TEST_F(DispatcherTest, MultipleStreams) {
-//   // Start stream1.
-//   // Setup observer to handle the response headers.
-//   envoy_observer observer;
-//   bool on_headers_called = false;
-//   observer.context = &on_headers_called;
-//   observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
-//     ASSERT_TRUE(end_stream);
-//     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
-//     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-//     bool* on_headers_called = static_cast<bool*>(context);
-//     *on_headers_called = true;
-//   };
+TEST_F(DispatcherTest, MultipleStreams) {
+  // Start stream1.
+  // Setup observer to handle the response headers.
+  envoy_observer observer;
+  bool on_headers_called = false;
+  observer.context = &on_headers_called;
+  observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+    ASSERT_TRUE(end_stream);
+    HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
+    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
+    bool* on_headers_called = static_cast<bool*>(context);
+    *on_headers_called = true;
+  };
 
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_);
-//         response_decoder_ = &decoder;
-//         return nullptr;
-//       }));
+  // Grab the response decoder in order to dispatch responses on the stream.
+  EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamDecoder& decoder,
+                           ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable* {
+        callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_);
+        response_decoder_ = &decoder;
+        return nullptr;
+      }));
 
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::transformHeaders(headers);
+  // Build a set of request headers.
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::transformHeaders(headers);
 
-//   // Create a stream.
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
-//       .WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(
-//           WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream*
-//           {
-//             return client_.start(callbacks, AsyncClient::StreamOptions());
-//           })));
-//   envoy_stream_t stream_id = http_dispatcher_.startStream(observer);
+  // Create a stream.
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _))
+      .WillOnce(
+          WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream* {
+            return client_.start(callbacks, AsyncClient::StreamOptions());
+          })));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer);
 
-//   // Send request headers.
-//   Event::PostCb post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
-//   http_dispatcher_.sendHeaders(stream_id, c_headers, true);
+  // Send request headers.
+  Event::PostCb post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
+  http_dispatcher_.sendHeaders(stream_id, c_headers, true);
 
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
-//   post_cb();
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
+  post_cb();
 
-//   // Start stream2.
-//   // Setup observer to handle the response headers.
-//   NiceMock<MockStreamEncoder> stream_encoder2;
-//   StreamDecoder* response_decoder2{};
-//   envoy_observer observer2;
-//   bool on_headers_called2 = false;
-//   observer2.context = &on_headers_called2;
-//   observer2.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
-//     ASSERT_TRUE(end_stream);
-//     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
-//     EXPECT_EQ(response_headers->Status()->value().getStringView(), "503");
-//     bool* on_headers_called2 = static_cast<bool*>(context);
-//     *on_headers_called2 = true;
-//   };
+  // Start stream2.
+  // Setup observer to handle the response headers.
+  NiceMock<MockStreamEncoder> stream_encoder2;
+  StreamDecoder* response_decoder2{};
+  envoy_observer observer2;
+  bool on_headers_called2 = false;
+  observer2.context = &on_headers_called2;
+  observer2.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+    ASSERT_TRUE(end_stream);
+    HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
+    EXPECT_EQ(response_headers->Status()->value().getStringView(), "503");
+    bool* on_headers_called2 = static_cast<bool*>(context);
+    *on_headers_called2 = true;
+  };
 
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder2, cm_.conn_pool_.host_);
-//         response_decoder2 = &decoder;
-//         return nullptr;
-//       }));
+  // Grab the response decoder in order to dispatch responses on the stream.
+  EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamDecoder& decoder,
+                           ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable* {
+        callbacks.onPoolReady(stream_encoder2, cm_.conn_pool_.host_);
+        response_decoder2 = &decoder;
+        return nullptr;
+      }));
 
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers2;
-//   HttpTestUtility::addDefaultHeaders(headers2);
-//   envoy_headers c_headers2 = Utility::transformHeaders(headers2);
+  // Build a set of request headers.
+  TestHeaderMapImpl headers2;
+  HttpTestUtility::addDefaultHeaders(headers2);
+  envoy_headers c_headers2 = Utility::transformHeaders(headers2);
 
-//   // Create a stream.
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
-//       .WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(
-//           WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream*
-//           {
-//             return client_.start(callbacks, AsyncClient::StreamOptions());
-//           })));
-//   envoy_stream_t stream_id2 = http_dispatcher_.startStream(observer2);
+  // Create a stream.
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _))
+      .WillOnce(
+          WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream* {
+            return client_.start(callbacks, AsyncClient::StreamOptions());
+          })));
+  EXPECT_CALL(event_dispatcher_, post(_));
+  envoy_stream_t stream_id2 = http_dispatcher_.startStream(observer2);
 
-//   // Send request headers.
-//   Event::PostCb post_cb2;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb2));
-//   http_dispatcher_.sendHeaders(stream_id2, c_headers2, true);
+  // Send request headers.
+  Event::PostCb post_cb2;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb2));
+  http_dispatcher_.sendHeaders(stream_id2, c_headers2, true);
 
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder2, encodeHeaders(_, true));
-//   post_cb2();
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(stream_encoder2, encodeHeaders(_, true));
+  post_cb2();
 
-//   // Finish stream 2.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   HeaderMapPtr response_headers2(new TestHeaderMapImpl{{":status", "503"}});
-//   response_decoder2->decodeHeaders(std::move(response_headers2), true);
-//   // Ensure that the on_headers_f on the observer was called.
-//   ASSERT_TRUE(on_headers_called2);
+  // Finish stream 2.
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  HeaderMapPtr response_headers2(new TestHeaderMapImpl{{":status", "503"}});
+  response_decoder2->decodeHeaders(std::move(response_headers2), true);
+  // Ensure that the on_headers_f on the observer was called.
+  ASSERT_TRUE(on_headers_called2);
 
-//   // Finish stream 1.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   HeaderMapPtr response_headers(new TestHeaderMapImpl{{":status", "200"}});
-//   response_decoder_->decodeHeaders(std::move(response_headers), true);
-//   ASSERT_TRUE(on_headers_called);
-// }
+  // Finish stream 1.
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  HeaderMapPtr response_headers(new TestHeaderMapImpl{{":status", "200"}});
+  response_decoder_->decodeHeaders(std::move(response_headers), true);
+  ASSERT_TRUE(on_headers_called);
+}
 
 TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   envoy_observer observer;
@@ -438,10 +430,175 @@ TEST_F(DispatcherTest, DestroyWithActiveStream) {
   http_dispatcher_.sendHeaders(stream_id, c_headers, false);
 }
 
+TEST_F(DispatcherTest, ResetInOnHeaders) {
+  // Grab the response decoder in order to dispatch responses on the stream.
+  EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamDecoder& decoder,
+                           ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable* {
+        callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_);
+        response_decoder_ = &decoder;
+        return nullptr;
+      }));
+
+  // Build a set of request headers.
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::transformHeaders(headers);
+
+  // Create a stream.
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _))
+      .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions())));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer_);
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream_id, c_headers, false);
+
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
+  send_headers_post_cb();
+
+  TestHeaderMapImpl expected_headers{{":status", "200"}};
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_));
+  EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_headers), false))
+      .WillOnce(
+          Invoke([this, stream_id](HeaderMap&, bool) { http_dispatcher_.resetStream(stream_id); }));
+  EXPECT_CALL(stream_callbacks_, onData(_, _)).Times(0);
+  EXPECT_CALL(stream_callbacks_, onReset());
+
+  response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
+  // TODO: Need to finish the data side (sendData, onData) in order to fully verify that onData was
+  // never called due to the reset.
+}
+
+TEST_F(DispatcherTest, StreamTimeout) {
+  EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamDecoder&,
+                           ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable* {
+        callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_);
+        return nullptr;
+      }));
+
+  // Build a set of request headers.
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::transformHeaders(headers);
+
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _))
+      .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions().setTimeout(
+                                                            std::chrono::milliseconds(40)))));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer_);
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream_id, c_headers, true);
+
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
+  timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
+  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
+  EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
+
+  TestHeaderMapImpl expected_timeout{
+      {":status", "504"}, {"content-length", "24"}, {"content-type", "text/plain"}};
+  EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), false));
+  EXPECT_CALL(stream_callbacks_, onData(_, true));
+  send_headers_post_cb();
+  timer_->callback_();
+
+  EXPECT_EQ(1UL,
+            cm_.thread_local_cluster_.cluster_.info_->stats_store_.counter("upstream_rq_timeout")
+                .value());
+  EXPECT_EQ(1UL, cm_.conn_pool_.host_->stats().rq_timeout_.value());
+  EXPECT_EQ(
+      1UL,
+      cm_.thread_local_cluster_.cluster_.info_->stats_store_.counter("upstream_rq_504").value());
+}
+
+TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
+  EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamDecoder&,
+                           ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable* {
+        callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_);
+        return nullptr;
+      }));
+
+  // Build a set of request headers.
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers, "HEAD");
+  envoy_headers c_headers = Utility::transformHeaders(headers);
+
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _))
+      .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions().setTimeout(
+                                                            std::chrono::milliseconds(40)))));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer_);
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream_id, c_headers, true);
+
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
+  timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
+  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
+  EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
+
+  TestHeaderMapImpl expected_timeout{
+      {":status", "504"}, {"content-length", "24"}, {"content-type", "text/plain"}};
+  EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), true));
+  send_headers_post_cb();
+  timer_->callback_();
+}
+
+TEST_F(DispatcherTest, DisableTimerWithStream) {
+  EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamDecoder&,
+                           ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable* {
+        callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_);
+        return nullptr;
+      }));
+
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers, "HEAD");
+  envoy_headers c_headers = Utility::transformHeaders(headers);
+
+  EXPECT_CALL(cm_, httpAsyncClientForCluster("egress_cluster"))
+      .WillOnce(ReturnRef(cm_.async_client_));
+  EXPECT_CALL(cm_.async_client_, start(_, _))
+      .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions().setTimeout(
+                                                            std::chrono::milliseconds(40)))));
+  envoy_stream_t stream_id = http_dispatcher_.startStream(observer_);
+
+  // Send request headers and reset stream.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream_id, c_headers, true);
+  Event::PostCb reset_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
+  http_dispatcher_.resetStream(stream_id);
+
+  EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
+  timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
+  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
+  EXPECT_CALL(*timer_, disableTimer());
+  EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
+  EXPECT_CALL(stream_callbacks_, onReset());
+
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  send_headers_post_cb();
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  reset_stream_post_cb();
+}
+
 } // namespace Http
 } // namespace Envoy
-
-// TODO:
-// ResetInOnHeaders
-// Timer tests
-// Reset data race tests
