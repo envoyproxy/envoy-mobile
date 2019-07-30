@@ -1,6 +1,6 @@
 licenses(["notice"])  # Apache 2
 
-load("//bazel:kotlin_lib.bzl",  "envoy_mobile_java_library")
+load("//bazel:kotlin_lib.bzl", "envoy_mobile_java_library")
 
 envoy_mobile_java_library(
     name = "envoy_c_types_lib",
@@ -12,7 +12,7 @@ envoy_mobile_java_library(
         "EnvoyHeaders.java",
         "EnvoyObserver.java",
         "EnvoyStatus.java",
-        "EnvoyStream.java"
+        "EnvoyStream.java",
     ],
     visibility = ["//visibility:public"],
 )

@@ -62,7 +62,6 @@ public class EnvoyEngine implements Engine {
     throw new UnsupportedOperationException("TODO: Implement me");
   }
 
-
   /**
    * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
    * Note that this method implicitly ends the stream.
@@ -76,7 +75,6 @@ public class EnvoyEngine implements Engine {
     // TODO: Implement
     throw new UnsupportedOperationException("TODO: Implement me");
   }
-
 
   /**
    * Half-close an HTTP stream. The stream will be observable and may return further data
@@ -92,7 +90,8 @@ public class EnvoyEngine implements Engine {
   }
 
   /**
-   * Detach all observers from a stream and send an EnvoyStatuserrupt upstream if supported by transport.
+   * Detach all observers from a stream and send an EnvoyStatuserrupt upstream if supported by
+   * transport.
    *
    * @param stream, the stream to evict.
    * @return EnvoyStatus, the resulting status of the operation.

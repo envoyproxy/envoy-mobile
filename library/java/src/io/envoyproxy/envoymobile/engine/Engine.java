@@ -46,7 +46,6 @@ public interface Engine {
    */
   EnvoyStatus sendMetadata(EnvoyStream stream, EnvoyHeaders metadata, boolean endStream);
 
-
   /**
    * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
    * Note that this method implicitly ends the stream.
@@ -56,7 +55,6 @@ public interface Engine {
    * @return EnvoyStatus, the resulting status of the operation.
    */
   EnvoyStatus sendTrailers(EnvoyStream stream, EnvoyHeaders trailers);
-
 
   /**
    * Half-close an HTTP stream. The stream will be observable and may return further data

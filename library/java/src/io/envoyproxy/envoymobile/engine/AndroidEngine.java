@@ -16,7 +16,7 @@ public class AndroidEngine {
   // dependencies are loaded and initialized at most once.
   private AndroidEngine(Context context) {
     System.loadLibrary("envoy_jni");
-    initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+    initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
     engine = new EnvoyEngine();
   }
 

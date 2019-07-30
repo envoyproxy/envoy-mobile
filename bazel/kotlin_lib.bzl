@@ -42,18 +42,17 @@ def envoy_mobile_java_library(name, visibility = None, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion.
     native.filegroup(
-      name = name + "_srcs",
-      srcs = srcs,
-      visibility = visibility,
+        name = name + "_srcs",
+        srcs = srcs,
+        visibility = visibility,
     )
 
     native.java_library(
-      name = name,
-      srcs = srcs,
-      visibility = visibility,
-      deps = deps,
+        name = name,
+        srcs = srcs,
+        visibility = visibility,
+        deps = deps,
     )
-
 
 def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their

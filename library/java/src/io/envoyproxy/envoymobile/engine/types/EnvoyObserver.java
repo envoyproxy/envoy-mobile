@@ -45,5 +45,4 @@ public interface EnvoyObserver {
    *               execution.
    */
   void onError(EnvoyError error);
-
 }

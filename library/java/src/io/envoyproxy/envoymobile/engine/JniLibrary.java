@@ -9,11 +9,13 @@ class JniLibrary {
 
   protected static native EnvoyStream startStream(EnvoyObserver observer);
 
-  protected static native int sendHeaders(EnvoyStream stream, EnvoyHeaders headers, boolean endStream);
+  protected static native int sendHeaders(EnvoyStream stream, EnvoyHeaders headers,
+                                          boolean endStream);
 
   protected static native int sendData(EnvoyStream stream, EnvoyData data, boolean endStream);
 
-  protected static native int sendMetadata(EnvoyStream stream, EnvoyHeaders metadata, boolean endStream);
+  protected static native int sendMetadata(EnvoyStream stream, EnvoyHeaders metadata,
+                                           boolean endStream);
 
   protected static native int sendTrailers(EnvoyStream stream, EnvoyHeaders trailers);
 
