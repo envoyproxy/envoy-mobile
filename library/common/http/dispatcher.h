@@ -32,15 +32,15 @@ public:
    * @return envoy_stream_t handle to the stream being created.
    */
   envoy_stream_t startStream(envoy_observer observer);
-  envoy_status_t sendHeaders(envoy_stream_t stream_id, envoy_headers headers, bool end_stream);
-  envoy_status_t sendData(envoy_stream_t stream_id, envoy_headers headers, bool end_stream);
-  envoy_status_t sendMetadata(envoy_stream_t stream_id, envoy_headers headers, bool end_stream);
-  envoy_status_t sendTrailers(envoy_stream_t stream_id, envoy_headers headers);
+  envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
+  envoy_status_t sendData(envoy_stream_t stream, envoy_headers headers, bool end_stream);
+  envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers, bool end_stream);
+  envoy_status_t sendTrailers(envoy_stream_t stream, envoy_headers headers);
   // TODO: when implementing this function we have to make sure to prevent races with already
   // scheduled and potentially scheduled callbacks. In order to do so the platform callbacks need to
   // check for atomic state (boolean most likely) that will be updated here to mark the stream as
   // closed.
-  envoy_status_t resetStream(envoy_stream_t stream_id);
+  envoy_status_t resetStream(envoy_stream_t stream);
 
 private:
   /**
@@ -53,7 +53,7 @@ private:
   class DirectStreamCallbacks : public AsyncClient::StreamCallbacks,
                                 public Logger::Loggable<Logger::Id::http> {
   public:
-    DirectStreamCallbacks(envoy_stream_t stream, envoy_observer observer,
+    DirectStreamCallbacks(envoy_stream_t stream_id, envoy_observer observer,
                           Dispatcher& http_dispatcher);
 
     // AsyncClient::StreamCallbacks
@@ -63,7 +63,7 @@ private:
     void onReset();
 
   private:
-    const envoy_stream_t stream_;
+    const envoy_stream_t stream_id_;
     const envoy_observer observer_;
     Dispatcher& http_dispatcher_;
   };
@@ -93,18 +93,18 @@ private:
     std::vector<HeaderMapPtr> metadata_;
     HeaderMapPtr trailers_;
 
-    std::atomic<bool> local_closed_{};
-    std::atomic<bool> remote_closed_{};
+    bool local_closed_{};
+    bool remote_closed_{};
   };
 
   using DirectStreamPtr = std::unique_ptr<DirectStream>;
 
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
-  DirectStream* getStream(envoy_stream_t stream_id);
-  void cleanup(DirectStream& stream_id);
-  void closeLocal(envoy_stream_t stream_id, bool end_stream);
-  void closeRemote(envoy_stream_t stream_id, bool end_stream);
+  DirectStream* getStream(envoy_stream_t stream);
+  void cleanup(DirectStream& stream);
+  void closeLocal(envoy_stream_t stream, bool end_stream);
+  void closeRemote(envoy_stream_t stream, bool end_stream);
 
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   std::atomic<envoy_stream_t> current_stream_id_;

@@ -24,8 +24,8 @@ envoy_stream start_stream(envoy_observer observer) {
   return {ENVOY_SUCCESS, http_dispatcher_->startStream(observer)};
 }
 
-envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, bool end_stream) {
-  return http_dispatcher_->sendHeaders(stream_id, headers, end_stream);
+envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
+  return http_dispatcher_->sendHeaders(stream, headers, end_stream);
 }
 
 // TODO: implement.
@@ -33,9 +33,7 @@ envoy_status_t send_data(envoy_stream_t, envoy_data, bool) { return ENVOY_FAILUR
 envoy_status_t send_metadata(envoy_stream_t, envoy_headers, bool) { return ENVOY_FAILURE; }
 envoy_status_t send_trailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 
-envoy_status_t reset_stream(envoy_stream_t stream_id) {
-  return http_dispatcher_->resetStream(stream_id);
-}
+envoy_status_t reset_stream(envoy_stream_t stream) { return http_dispatcher_->resetStream(stream); }
 
 /*
  * Setup envoy for interaction via the main interface.
