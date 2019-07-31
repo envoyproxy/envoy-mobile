@@ -491,9 +491,6 @@ TEST_F(DispatcherTest, ResetInOnHeaders) {
       .WillOnce(Invoke([this, stream](HeaderMap&, bool) { http_dispatcher_.resetStream(stream); }));
   EXPECT_CALL(stream_callbacks_, onData(_, _)).Times(0);
   EXPECT_CALL(stream_callbacks_, onReset());
-  // FIXME I can't seem to reason why onComplete is being called here. Afaict local should not be
-  // closed, and thus onComplete should not happen. Need to think about this in the morning.
-  EXPECT_CALL(stream_callbacks_, onComplete());
 
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
   // TODO: Need to finish the data side (sendData, onData) in order to fully verify that onData was
