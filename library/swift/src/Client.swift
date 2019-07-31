@@ -7,6 +7,6 @@ public protocol Client {
   /// - parameter handler: Handler for receiving stream events.
   ///
   /// - returns: Emitter for sending streaming data outward.
-  func startStream(request: Request, handler: ResponseHandler)
+  func startStream(request: Request, handler: ResponseHandler, handlerQueue: DispatchQueue = DispatchQueue.main)
     -> StreamEmitter
 }

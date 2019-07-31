@@ -7,7 +7,7 @@
 typedef UInt64 EnvoyStreamID;
 
 /// A set of headers that may be passed to/from an Envoy stream.
-typedef NSArray<NSDictionary<NSString *, NSString *> *> EnvoyHeaders;
+typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 // MARK: - EnvoyErrorCode
 
@@ -54,12 +54,13 @@ typedef struct {
 /// Interface that can handle HTTP callbacks.
 @interface EnvoyObserver : NSObject
 
+
 /**
  * Called when all headers get received on the async HTTP stream.
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
  */
-@property (nonatomic, strong) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
+ void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
