@@ -11,18 +11,14 @@ static inline envoy_data copy_envoy_data(size_t length, const uint8_t* source) {
   memcpy(destination, source, length);
   return {length, destination, nullptr, nullptr};
 }
-/*
-static inline void free_envoy_data(envoy_data data) {
-  free(const_cast<uint8_t*>(data.bytes));
-}
-*/
+
 static inline std::string convertString(envoy_data s) {
   return std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(s.bytes)), s.length);
 }
 
 HeaderMapPtr transformHeaders(envoy_headers headers) {
   Http::HeaderMapPtr transformed_headers = std::make_unique<HeaderMapImpl>();
-  for (uint64_t i = 0; i < headers.length; i++) {
+  for (int i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(LowerCaseString(convertString(headers.headers[i].key)),
                                  convertString(headers.headers[i].value));
   }
