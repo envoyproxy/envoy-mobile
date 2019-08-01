@@ -35,7 +35,7 @@ void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
   http_dispatcher_.removeStream(stream_);
-  observer_.on_error({ENVOY_STREAM_RESET, {0, nullptr}}, observer_.context);
+  observer_.on_error({ENVOY_STREAM_RESET, envoy_nodata}, observer_.context);
 }
 
 Dispatcher::DirectStream::DirectStream(AsyncClient::Stream& underlying_stream,
