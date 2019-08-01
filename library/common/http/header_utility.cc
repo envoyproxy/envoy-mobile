@@ -9,7 +9,7 @@ namespace Utility {
 static inline envoy_data copy_envoy_data(size_t length, const uint8_t* source) {
   uint8_t* destination = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * length));
   memcpy(destination, source, length);
-  return {length, destination};
+  return {length, destination, nullptr, nullptr};
 }
 /*
 static inline void free_envoy_data(envoy_data data) {

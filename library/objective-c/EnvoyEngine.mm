@@ -17,7 +17,7 @@ static void ios_on_headers(envoy_headers headers, bool end_stream, void* context
 }
 
 static void ios_on_data(envoy_data data, bool end_stream, void* context) {
-EnvoyObserver *observer = (EnvoyObserver *)context;
+  EnvoyObserver *observer = (EnvoyObserver *)context;
   dispatch_async(context.dispatchQueue, ^{
     if (atomic_load(canceled)) {
       return;
@@ -57,20 +57,67 @@ static void ios_on_complete(void *context) {
   });
 }
 
-static void ios_on_error(envoy_error error, void *context) {
-  // TODO: implement me
+static void ios_on_cancel(void *context) {
+  EnvoyObserver *observer = (EnvoyObserver *)context;
+  // TODO: release stream
+  dispatch_async(context.dispatchQueue, ^{
+    // This call is atomically gated at the call-site and will only happen once.
+    observer.on_cancel();
+  }
 }
 
-static envoy_data EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8String)}; }
+static void ios_on_error(envoy_error error, void *context) {
+  EnvoyObserver *observer = (EnvoyObserver *)context;
+  dispatch_async(context.dispatchQueue, ^{
+    // TODO: release stream
+    if (atomic_load(canceled)) {
+      return;
+    }
+    observer.on_error(to_platform_error(error));
+  });
+}
+
+static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
+  int count = 0;
+  for (id header_list in headers) {
+    count += header_list.count;
+  }
+  envoy_header *header_array = (envoy_header *)malloc(sizeof(envoy_header) * count);
+  int j = 0;
+  for (id header_key, id header_list in headers) {
+    for (id header in header_list) {
+      header_array[j++] = { toManagedNativeString(header
+    }
+  }
+}
+
+
+
+static envoy_data toUnmanagedNativeData(NSData *data) {
+}
+
+static envoy_data toManagedNativeString(NSString *s) {
+  int length = s.length;
+  char *native_string = (char *)malloc(sizeof(char) * length);
+  memcpy(s.UTF8String, native_string, length)
+  return {length, native_string, ios_free_native_data, native_string};
+}
+
+static void ios_free_native_data(void *context) {
+  free(context);
+}
+
+static void ios_release_native_data(void *context) {
+}
 
 @implementation EnvoyEngine
 
 #pragma mark - class methods
-+ (EnvoyStatus)runWithConfig:(NSString *)config {
++ (envoy_engine_t)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"debug"];
 }
 
-+ (EnvoyStatus)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
++ (envoy_engine_t)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
   try {
     return (EnvoyStatus)run_engine(config.UTF8String, logLevel.UTF8String);
   } catch (NSException *e) {
@@ -142,29 +189,29 @@ static envoy_data EnvoyString(NSString *s) { return {s.length, strdup(s.UTF8Stri
   free(self.nativeObserver);
 }
 
-- (EnvoyStatus)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
-  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+- (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
+  send_headers(self.nativeStream, toNativeHeaders(headers), end_steam:close);
 }
 
-- (EnvoyStatus)sendData:(NSData *)data close:(BOOL)close {
-  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+- (void)sendData:(NSData *)data close:(BOOL)close {
+  send_data(self.nativeStream, toNativeData(data), end_stream:close);
 }
 
-- (EnvoyStatus)sendMetadata:(EnvoyHeaders *)metadata {
-  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+- (void)sendMetadata:(EnvoyHeaders *)metadata {
+  send_metadata(self.nativeStream, toNativeHeaders(metadata));
 }
 
-- (EnvoyStatus)sendTrailers:(EnvoyHeaders *)trailers {
-  NSLog(@"%@ not implemented, returning failure", NSStringFromSelector((SEL) __func__));
-  return Failure;
+- (void)sendTrailers:(EnvoyHeaders *)trailers {
+  send_trailers(self.nativeStream, toNativeHeaders(trailers));
 }
 
 - (EnvoyStatus)cancel {
+  // Step 1: atomically and synchronously prevent the execution of further callbacks other than on_cancel.
   if (!atomic_exchange(self.nativeObserver.canceled, YES)) {
-    ios_on_error({0, nullptr, 0}, self.nativeObserver.observer); // TODO: "canceled"
+    // Step 2: directly fire the cancel callback.
+    ios_on_cancel(self.nativeObserver.observer);
+    // Step 3: propagate the reset into native code.
+    reset_stream(self.nativeStream);
     return Success;
   } else {
     return Failure;

@@ -29,11 +29,21 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
 
 /**
+ * Callback indicating Envoy has drained the associated buffer.
+ */
+#ifdef __cplusplus
+extern "C"
+#endif
+typedef (*on_drain)(void* context);
+
+/**
  * Holds raw binary data as an array of bytes.
  */
 typedef struct {
   uint64_t length;
   const uint8_t* bytes;
+  release release_f;
+  void *context;
 } envoy_data;
 
 /**
@@ -64,7 +74,20 @@ typedef struct {
   uint64_t length;
   // Array of headers.
   envoy_header* headers;
+  // Callback indicating may be released/free'd.
 } envoy_headers;
+
+/**
+ * Helper function to free/release memory associated with underlying headers.
+ */
+void release_envoy_headers(envoy_headers headers) {
+  for (int i = 0; i < headers.length; i++) {
+    envoy_header header = headers.headers[i];
+    header.key.release(header.key.context);
+    header.value.release(header.value.context);
+  }
+  free(headers.headers);
+}
 
 // Convenience constant to pass to function calls with no data.
 // For example when sending a headers-only request.
@@ -135,5 +158,6 @@ typedef struct {
   on_metadata on_metadata_f;
   on_trailers on_trailers_f;
   on_error on_error_f;
+  atomic_bool *canceled;
   void* context; // Will be passed through to callbacks to provide dispatch and execution state.
 } envoy_observer;

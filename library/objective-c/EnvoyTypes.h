@@ -3,7 +3,7 @@
 // MARK: - Aliases
 
 /// Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
-/// intended for any external interpretation or use.
+/// intended for any exter/nal interpretation or use.
 typedef UInt64 EnvoyStreamID;
 
 /// A set of headers that may be passed to/from an Envoy stream.
@@ -33,8 +33,8 @@ typedef NS_ENUM(NSUInteger, EnvoyErrorCode) {
 
 /// Result codes returned by all calls made to this interface.
 typedef NS_ENUM(NSUInteger, EnvoyStatus) {
-  Success = 0,
-  Failure = 1,
+  EnvoySuccess = 0,
+  EnvoyFailure = 1,
 };
 
 // MARK: - EnvoyStream
@@ -52,15 +52,20 @@ typedef struct {
 // MARK: - EnvoyObserver
 
 /// Interface that can handle HTTP callbacks.
+// FIXME: can we just bridge the swift object here and/or just expose this to swift as the ResponseHandler?
 @interface EnvoyObserver : NSObject
 
+/**
+ * Dispatch queue provided to handle callbacks.
+ */
+@property (nonatomic, assign) dispatch_queue_t dispatchQueue;
 
 /**
  * Called when all headers get received on the async HTTP stream.
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
  */
- void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, strong) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
