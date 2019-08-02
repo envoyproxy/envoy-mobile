@@ -65,7 +65,7 @@ Setting the ``URLSessionConfiguration``'s ``httpMaximumConnectionsPerHost`` to `
 of them failing after the ``timeoutIntervalForRequest`` specified on the ``URLSessionConfiguration``.
 This is the same behavior seen with libraries like gRPC which use BSD sockets.
 
-Additionally, putting the phone in airplane mode results in all requests failing immediately
+Putting the phone in airplane mode resulted in all requests failing immediately
 (instead of waiting for the specified timeout) because iOS was aware that it had no connectivity.
 
 Android
@@ -112,14 +112,14 @@ The experiment above indicates that when a working connection changes to inactiv
 forcing the phone to switch to cellular), the sockets aren't notified of the change.
 This is a commonly understood issue with BSD sockets on iOS, and is why Apple strongly advises against using them.
 
-Switching networks then executing a request through URLSession would result in the request timing out.
+Switching networks then executing a request through URLSession resulted in the request timing out.
 Executing another network request resulted in the following,
 which could make it seem like Envoy was working properly at first glance (even though it wasn't):
 
 - iOS realized that the connection was dead and terminated its socket connection with Envoy, then re-established it
 - When the connection with Envoy was terminated, Envoy in turn terminated its socket connection with the outside Internet
 - When iOS reconnected to Envoy, Envoy also reconnected and selected the first available connection (cellular in this case)
-- Future requests succeeded because they're sent over the new/valid connection
+- Future requests succeeded because they were sent over the new/valid connection
 
 Essentially, URLSession forced Envoy to reconnect/switch to a valid connection when a request failed due to
 the fact that it was disconnecting from Envoy and reconnecting to it.
