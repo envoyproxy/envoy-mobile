@@ -6,20 +6,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef struct {
-  // FIXME atomic
-  bool *canceled;
-  EnvoyObserver *observer;
-} ios_context;
 
 @interface EnvoyHttpStream : NSObject
-// FIXME properties? why here?
-@property (nonatomic, strong) EnvoyHttpStream *strongSelf;
-@property (nonatomic, strong) EnvoyObserver *platformObserver;
-@property (nonatomic, assign) envoy_observer *nativeObserver;
-@property (nonatomic, assign) ios_context *context;
-@property (nonatomic, assign) envoy_stream_t nativeStream;
-
 /**
  Open an underlying HTTP stream.
 
@@ -76,7 +64,7 @@ typedef struct {
  @param config The configuration file with which to start Envoy.
  @return A status indicating if the action was successful.
  */
-+ (envoy_engine_t)runWithConfig:(NSString *)config;
++ (EnvoyStatus)runWithConfig:(NSString *)config;
 
 /**
  Run the Envoy engine with the provided config and log level.
@@ -85,7 +73,7 @@ typedef struct {
  @param logLevel The log level to use when starting Envoy.
  @return A status indicating if the action was successful.
  */
-+ (envoy_engine_t)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
++ (EnvoyStatus)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
 
 /// Performs necessary setup after Envoy has initialized and started running.
 /// TODO: create a post-initialization callback from Envoy to handle this automatically.

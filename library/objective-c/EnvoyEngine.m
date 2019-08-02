@@ -4,9 +4,14 @@
 #import "library/common/include/c_types.h"
 #import "library/common/main_interface.h"
 
-#include <atomic>
+#include <stdatomic.h>
 
 #pragma mark - utility functions to move elsewhere
+typedef struct {
+  atomic_bool *canceled;
+  EnvoyObserver *observer;
+} ios_context;
+
 // static envoy_data toUnmanagedNativeData(NSData *data) {
 //   // TODO: implement me
 //   return envoy_nodata;
@@ -21,10 +26,11 @@ static void ios_free_native_data(void *context) {
 // }
 
 static envoy_data toManagedNativeString(NSString *s) {
-  int length = (int)s.length;
-uint8_t* native_string = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * length));
-  memcpy(native_string, const_cast<char *>(s.UTF8String), length);
-  return {static_cast<size_t>(length), native_string, ios_free_native_data, native_string};
+  size_t length = s.length;
+  uint8_t *native_string = (uint8_t *)malloc(sizeof(uint8_t) * length);
+  memcpy(native_string, s.UTF8String, length);
+  envoy_data ret = { length, native_string, ios_free_native_data, native_string };
+  return ret;
 }
 
 static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
@@ -33,23 +39,25 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
     length += [headerList count];
   }
   envoy_header *header_array = (envoy_header *)malloc(sizeof(envoy_header) * length);
-  int j = 0;
+  int header_index = 0;
   for (id headerKey in headers) {
     NSArray *headerList = headers[headerKey];
     for (id headerValue in headerList) {
-      header_array[j++] = {
+      envoy_header new_header = {
         toManagedNativeString(headerKey),
         toManagedNativeString(headerValue)
       };
+      header_array[header_index++] = new_header;
     }
   }
-  return { length, header_array };
+  // ASSERT(header_index == length);
+  envoy_headers ret = { length, header_array };
+  return ret;
 }
 
 static NSData * to_ios_data(envoy_data data) {
   // TODO: investigate buffer ownership
   // Possibly extend/subclass NSData to call envoy_data.release on dealloc and have release drain the underlying Envoy buffer instance
-  // FIXME: do we need to autorlease here?
   return [NSData dataWithBytesNoCopy:(void *)data.bytes length:data.length];
 }
 
@@ -78,7 +86,7 @@ static void ios_on_headers(envoy_headers headers, bool end_stream, void* context
   ios_context *c = (ios_context *)context;
   EnvoyObserver *observer = c->observer;
   dispatch_async(observer.dispatchQueue, ^{
-    if (*c->canceled) {
+    if (atomic_load(c->canceled)) {
       return;
     }
     observer.onHeaders(to_ios_headers(headers), end_stream);
@@ -89,7 +97,7 @@ static void ios_on_data(envoy_data data, bool end_stream, void* context) {
   ios_context *c = (ios_context *)context;
   EnvoyObserver *observer = c->observer;
   dispatch_async(observer.dispatchQueue, ^{
-    if (*c->canceled) {
+    if (atomic_load(c->canceled)) {
       return;
     }
     // TODO: retain data
@@ -101,7 +109,7 @@ static void ios_on_metadata(envoy_headers metadata, void* context) {
   ios_context *c = (ios_context *)context;
   EnvoyObserver *observer = c->observer;
   dispatch_async(observer.dispatchQueue, ^{
-    if (*c->canceled) {
+    if (atomic_load(c->canceled)) {
       return;
     }
     observer.onMetadata(to_ios_headers(metadata));
@@ -112,7 +120,7 @@ static void ios_on_trailers(envoy_headers trailers, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyObserver *observer = c->observer;
   dispatch_async(observer.dispatchQueue, ^{
-    if (*c->canceled) {
+    if (atomic_load(c->canceled)) {
       return;
     }
     observer.onTrailers(to_ios_headers(trailers));
@@ -124,7 +132,7 @@ static void ios_on_complete(void *context) {
   EnvoyObserver *observer = c->observer;
   dispatch_async(observer.dispatchQueue, ^{
     // TODO: release stream
-    if (*c->canceled) {
+    if (atomic_load(c->canceled)) {
       return;
     }
   });
@@ -145,7 +153,7 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyObserver *observer = c->observer;
   dispatch_async(observer.dispatchQueue, ^{
     // TODO: release stream
-    if (*c->canceled) {
+    if (atomic_load(c->canceled)) {
       return;
     }
     // FIXME transform error and pass up
@@ -153,22 +161,24 @@ static void ios_on_error(envoy_error error, void *context) {
   });
 }
 
+
+
 @implementation EnvoyEngine
 
 #pragma mark - class methods
-+ (envoy_engine_t)runWithConfig:(NSString *)config {
++ (EnvoyStatus)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
 
-+ (envoy_engine_t)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
-  try {
++ (EnvoyStatus)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
+  // Envoy exceptions will only be caught here when compiled for 64-bit arches.
+  // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
+  @try {
     return (EnvoyStatus)run_engine(config.UTF8String, logLevel.UTF8String);
-  } catch (NSException *e) {
-    NSLog(@"Envoy exception: %@", e);
-    NSDictionary *userInfo = @{@"exception" : e};
+  } @catch (...) {
+    NSLog(@"Envoy exception caught.");
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException"
-                                                      object:self
-                                                    userInfo:userInfo];
+                                                      object:self];
     return EnvoyStatusFailure;
   }
 }
@@ -186,7 +196,12 @@ static void ios_on_error(envoy_error error, void *context) {
 
 @end
 
-@implementation EnvoyHttpStream
+@implementation EnvoyHttpStream {
+  EnvoyHttpStream *_strongSelf;
+  EnvoyObserver *_platformObserver;
+  envoy_observer *_nativeObserver;
+  envoy_stream_t _nativeStream;
+}
 
 - (instancetype)initWithObserver:(EnvoyObserver *)observer {
   self = [super init];
@@ -195,15 +210,13 @@ static void ios_on_error(envoy_error error, void *context) {
   }
 
   // Retain platform observer
-  self.platformObserver = observer;
+  _platformObserver = observer;
 
   // Create callback context
   ios_context *context = (ios_context *)malloc(sizeof(ios_context));
   context->observer = observer;
-  context->canceled = (bool *)(malloc(sizeof(bool)));
-  // FIXME atomic
-  *context->canceled = false;
-  self.context = context;
+  context->canceled = (atomic_bool *)(malloc(sizeof(atomic_bool)));
+  atomic_store(context->canceled, NO);
 
   // Create native observer
   envoy_observer *native_obs = (envoy_observer *)malloc(sizeof(envoy_observer));
@@ -217,51 +230,52 @@ static void ios_on_error(envoy_error error, void *context) {
     context
   };
   memcpy(native_obs, &native_init, sizeof(envoy_observer));
-  self.nativeObserver = native_obs;
+  _nativeObserver = native_obs;
 
-  // FIXME pass by value?
   envoy_stream result = start_stream(*native_obs);
   if (result.status != ENVOY_SUCCESS) {
     return nil;
   }
 
-  self.nativeStream = result.stream;
-  self.strongSelf = self;
+  _nativeStream = result.stream;
+  _strongSelf = self;
   return self;
 }
 
 - (void)dealloc {
-  ios_context *context = self.context;
+  envoy_observer *native_obs = _nativeObserver;
+  _nativeObserver = nil;
+  ios_context *context = native_obs->context;
   free(context->canceled);
   free(context);
-  free(self.nativeObserver);
+  free(native_obs);
 }
 
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
-  send_headers(self.nativeStream, toNativeHeaders(headers), close);
+  send_headers(_nativeStream, toNativeHeaders(headers), close);
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {
   // TODO: implement
-  //send_data(self.nativeStream, toNativeData(data), close);
+  //send_data(_nativeStream, toNativeData(data), close);
 }
 
 - (void)sendMetadata:(EnvoyHeaders *)metadata {
-  send_metadata(self.nativeStream, toNativeHeaders(metadata));
+  send_metadata(_nativeStream, toNativeHeaders(metadata));
 }
 
 - (void)sendTrailers:(EnvoyHeaders *)trailers {
-  send_trailers(self.nativeStream, toNativeHeaders(trailers));
+  send_trailers(_nativeStream, toNativeHeaders(trailers));
 }
 
 - (EnvoyStatus)cancel {
+  ios_context *context = _nativeObserver->context;
   // Step 1: atomically and synchronously prevent the execution of further callbacks other than on_cancel.
-  // FIXME atomic.
-  if (!(*self.context->canceled)) {
+  if (!atomic_exchange(context->canceled, YES)) {
     // Step 2: directly fire the cancel callback.
-    ios_on_cancel(self.nativeObserver->context);
+    ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
-    reset_stream(self.nativeStream);
+    reset_stream(_nativeStream);
     return EnvoyStatusSuccess;
   } else {
     return EnvoyStatusFailure;
