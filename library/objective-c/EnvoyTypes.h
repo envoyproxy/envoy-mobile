@@ -34,9 +34,9 @@ typedef NS_ENUM(NSUInteger, EnvoyEngineErrorCode) {
 // MARK: - EnvoyStatus
 
 /// Result codes returned by all calls made to this interface.
-typedef NS_CLOSED_ENUM(NSUInteger, EnvoyStatus) {
-  EnvoyStatusSuccess = 0,
-  EnvoyStatusFailure = 1,
+typedef NS_CLOSED_ENUM(NSUInteger, EnvoyStatus){
+    EnvoyStatusSuccess = 0,
+    EnvoyStatusFailure = 1,
 };
 
 // MARK: - EnvoyStream
@@ -54,7 +54,8 @@ typedef struct {
 // MARK: - EnvoyObserver
 
 /// Interface that can handle HTTP callbacks.
-// FIXME: can we just bridge the swift object here and/or just expose this to swift as the ResponseHandler?
+// FIXME: can we just bridge the swift object here and/or just expose this to swift as the
+// ResponseHandler?
 @interface EnvoyObserver : NSObject
 
 /**
@@ -96,6 +97,9 @@ typedef struct {
  * @param error the error received/caused by the async HTTP stream.
  */
 @property (nonatomic, strong) void (^onError)(EnvoyEngineError *error);
+
+// FIXME
+@property (nonatomic, strong) void (^onCancel)();
 
 @end
 

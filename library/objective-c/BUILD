@@ -8,12 +8,12 @@ exports_files([
 objc_library(
     name = "envoy_engine_objc_lib",
     srcs = [
-        "EnvoyEngine.m",
+        "EnvoyEngine.mm",
     ],
     hdrs = [
         "EnvoyEngine.h",
     ],
-    #copts = ["-std=c++14"],
+    copts = ["-std=c++14"],
     visibility = ["//visibility:public"],
     deps = ["//library/common:envoy_main_interface_lib"],
 )

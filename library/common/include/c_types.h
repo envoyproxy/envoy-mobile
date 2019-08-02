@@ -1,9 +1,9 @@
 #pragma once
 
-#include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // NOLINT(namespace-envoy)
 
@@ -40,7 +40,7 @@ typedef void (*envoy_release_f)(void* context);
 /**
  * No-op callback.
  */
-static void envoy_noop_release(void *) {};
+void envoy_noop_release(void* context) { (void)context; };
 
 #ifdef __cplusplus
 } // release function
@@ -53,7 +53,7 @@ typedef struct {
   size_t length;
   const uint8_t* bytes;
   envoy_release_f release;
-  void *context;
+  void* context;
 } envoy_data;
 
 /**
@@ -100,7 +100,7 @@ void release_envoy_headers(envoy_headers headers) {
 
 // Convenience constant to pass to function calls with no data.
 // For example when sending a headers-only request.
-const envoy_data envoy_nodata = {0, NULL, envoy_noop_release, NULL };
+const envoy_data envoy_nodata = {0, NULL, envoy_noop_release, NULL};
 
 /**
  * Error struct.
@@ -154,6 +154,9 @@ typedef void (*envoy_on_trailers_f)(envoy_headers trailers, void* context);
  */
 typedef void (*envoy_on_error_f)(envoy_error error, void* context);
 
+// FIXME comments
+typedef void (*envoy_on_complete_f)(void* context);
+
 #ifdef __cplusplus
 } // function pointers
 #endif
@@ -166,7 +169,7 @@ typedef struct {
   envoy_on_data_f on_data;
   envoy_on_metadata_f on_metadata;
   envoy_on_trailers_f on_trailers;
+  envoy_on_complete_f on_complete;
   envoy_on_error_f on_error;
-  atomic_bool *canceled;
   void* context; // Will be passed through to callbacks to provide dispatch and execution state.
 } envoy_observer;

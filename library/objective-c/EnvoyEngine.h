@@ -2,16 +2,30 @@
 
 #import <Foundation/Foundation.h>
 
+#include "library/common/include/c_types.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface EnvoyHttpStream
+typedef struct {
+  // FIXME atomic
+  bool *canceled;
+  EnvoyObserver *observer;
+} ios_context;
+
+@interface EnvoyHttpStream : NSObject
+// FIXME properties? why here?
+@property (nonatomic, strong) EnvoyHttpStream *strongSelf;
+@property (nonatomic, strong) EnvoyObserver *platformObserver;
+@property (nonatomic, assign) envoy_observer *nativeObserver;
+@property (nonatomic, assign) ios_context *context;
+@property (nonatomic, assign) envoy_stream_t nativeStream;
 
 /**
  Open an underlying HTTP stream.
 
  @param observer the observer that will run the stream callbacks.
  */
-- (EnvoyStream)startStreamWithObserver:(EnvoyObserver *)observer;
+- (instancetype)initWithObserver:(EnvoyObserver *)observer;
 
 /**
  Send headers over the provided stream.
@@ -33,20 +47,19 @@ NS_ASSUME_NONNULL_BEGIN
  Send metadata over the provided stream.
 
  @param metadata Metadata to send over the stream.
- @param close True if the stream should be closed after sending.
  */
-- (void)sendMetadata:(EnvoyHeaders *)metadata close:(BOOL)close;
+- (void)sendMetadata:(EnvoyHeaders *)metadata;
 
 /**
  Send trailers over the provided stream.
 
  @param trailers Trailers to send over the stream.
- @param close True if the stream should be closed after sending.
  */
-- (void)sendTrailers:(EnvoyHeaders *)trailers close:(BOOL)close;
+- (void)sendTrailers:(EnvoyHeaders *)trailers;
 
 /**
- Cancel the stream. This functions as an interrupt, and aborts further callbacks and handling of the stream.
+ Cancel the stream. This functions as an interrupt, and aborts further callbacks and handling of the
+ stream.
  @return Success, unless the stream has already been canceled.
  */
 - (EnvoyStatus)cancel;
@@ -54,7 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// Wrapper layer for calling into Envoy's C/++ API.
-@interface EnvoyEngine : NSObject <EnvoyEngineStreamInterface>
+/// FIXME why is the super class needed here but not above?
+@interface EnvoyEngine : NSObject
 
 /**
  Run the Envoy engine with the provided config and log level.
