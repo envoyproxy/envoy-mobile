@@ -38,18 +38,31 @@ iOS
 
 The original investigation was completed as part of :issue:`this issue <128#issuecomment-516260951>`.
 
-We built the Envoy Mobile library using the following flags to allow us to build to
-a device with debugging symbols:
+**Configuration:**
+
+1. Build the app using the following flags to allow us to build to a device with debugging symbols:
 
 ``bazel build ios_dist --config=ios --ios_multi_cpus=arm64 --copt=-ggdb3``
 
-In the active scheme of the app's ``Environment Variables``, set ``CFNETWORK_DIAGNOSTICS=3``
-to enable more verbose ``CFNetwork`` logs. Additionally, set Envoy's logs to ``trace``.
+2. Add the outputted ``Envoy.framework`` to the example app
 
-Within the app, we performed the following:
+3. In the active scheme of the app's Xcode ``Environment Variables``, set ``CFNETWORK_DIAGNOSTICS=3`` to enable more verbose ``CFNetwork`` logs
 
-- Made single requests to a simple Python server from which we could see when the client connected, disconnected, and made requests
-- Routed these requests through Envoy **using the socket implementation of Envoy Mobile via URLSession** (not calling directly into the Envoy Mobile library)
+4. Set Envoy's logs to ``trace``
+
+**Experiment:**
+
+Make single requests to a
+`simple Python server <https://github.com/Reflejo/TestNetworking/blob/master/TestNetworking/client.c>`_
+that shows when the client connects, disconnects, and makes requests. These request should be routed
+through Envoy **using the socket implementation of Envoy Mobile via URLSession**
+(not calling directly into the Envoy Mobile library).
+
+- Send a request on WiFi, then switch to cellular (disabling WiFi) and make more requests
+- Set ``URLSessionConfiguration``'s ``httpMaximumConnectionsPerHost`` to ``1`` and try this again
+- Switch the phone to airplane mode and try making requests
+
+**Findings:**
 
 Whenever we switched from WiFi to cellular (or vice versa), the next request would consistently fail
 with ``-1001 kCFURLErrorTimedOut``. At the same time, we'd see the connection terminate on the server,
