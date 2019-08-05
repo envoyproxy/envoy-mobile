@@ -19,7 +19,10 @@ swift_static_framework(
         "StreamEmitter.swift",
     ],
     module_name = "Envoy",
-    objc_includes = ["//library/objective-c:EnvoyEngine.h"],
+    objc_includes = [
+      "//library/objective-c:EnvoyEngine.h",
+      "//library/objective-c:EnvoyEngineImpl.h",
+    ],
     visibility = ["//visibility:public"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )
