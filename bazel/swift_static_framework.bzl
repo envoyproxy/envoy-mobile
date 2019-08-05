@@ -163,7 +163,7 @@ def swift_static_framework(
     if objc_includes:
         locations = ["$(location {})".format(x) for x in objc_includes]
         for location in locations:
-          copts = copts + ["-import-objc-header", location]
+            copts = copts + ["-import-objc-header", location]
         swiftc_inputs = swiftc_inputs + objc_includes
 
     swift_library(

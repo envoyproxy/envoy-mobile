@@ -16,8 +16,7 @@
     return (EnvoyStatus)run_engine(config.UTF8String, logLevel.UTF8String);
   } @catch (...) {
     NSLog(@"Envoy exception caught.");
-    [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException"
-                                                      object:self];
+    [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException" object:self];
     return EnvoyStatusFailure;
   }
 }
