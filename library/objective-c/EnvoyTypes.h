@@ -5,7 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 // MARK: - Aliases
 
 /// Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
-/// intended for any exter/nal interpretation or use.
+/// intended for any external interpretation or use.
 typedef UInt64 EnvoyStreamID;
 
 /// A set of headers that may be passed to/from an Envoy stream.

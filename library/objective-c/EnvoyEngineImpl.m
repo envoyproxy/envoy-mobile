@@ -1,8 +1,8 @@
-#import "library/objective-c/EnvoyEngine.h"
+#import "library/objective-c/EnvoyEngineImpl.h"
 
 #import "library/common/main_interface.h"
 
-@implementation EnvoyEngine
+@implementation EnvoyEngineImpl
 
 #pragma mark - class methods
 + (EnvoyStatus)runWithConfig:(NSString *)config {

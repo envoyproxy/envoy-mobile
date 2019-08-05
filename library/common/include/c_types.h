@@ -29,12 +29,12 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
  */
 typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
 
-/**
- * Callback indicating Envoy has drained the associated buffer.
- */
 #ifdef __cplusplus
 extern "C" { // release function
 #endif
+/**
+ * Callback indicating Envoy has drained the associated buffer.
+ */
 typedef void (*envoy_release_f)(void* context);
 
 /**
@@ -76,12 +76,15 @@ typedef struct {
   envoy_data value;
 } envoy_header;
 
+// Consistent type for dealing with encodable/processable header counts.
+typedef int envoy_header_size_t;
+
 /**
  * Holds an HTTP header map as an array of envoy_header structs.
  */
 typedef struct {
   // Number of header elements in the array.
-  int length;
+  envoy_header_size_t length;
   // Array of headers.
   envoy_header* headers;
 } envoy_headers;
@@ -90,7 +93,7 @@ typedef struct {
  * Helper function to free/release memory associated with underlying headers.
  */
 void release_envoy_headers(envoy_headers headers) {
-  for (int i = 0; i < headers.length; i++) {
+  for (envoy_header_size_t i = 0; i < headers.length; i++) {
     envoy_header header = headers.headers[i];
     header.key.release(header.key.context);
     header.value.release(header.value.context);

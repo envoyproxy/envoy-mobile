@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Send headers over the provided stream.
 
- @param metadata Headers to send over the stream.
+ @param headers Headers to send over the stream.
  @param close True if the stream should be closed after sending.
  */
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close;
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Send data over the provided stream.
 
- @param metadata Data to send over the stream.
+ @param data Data to send over the stream.
  @param close True if the stream should be closed after sending.
  */
 - (void)sendData:(NSData *)data close:(BOOL)close;

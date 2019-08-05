@@ -33,12 +33,12 @@ static envoy_data toManagedNativeString(NSString *s) {
 }
 
 static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
-  int length = 0;
+  envoy_header_size_t length = 0;
   for (id headerList in headers) {
     length += [headerList count];
   }
   envoy_header *header_array = (envoy_header *)malloc(sizeof(envoy_header) * length);
-  int header_index = 0;
+  envoy_header_size_t header_index = 0;
   for (id headerKey in headers) {
     NSArray *headerList = headers[headerKey];
     for (id headerValue in headerList) {
@@ -62,7 +62,7 @@ static NSData * to_ios_data(envoy_data data) {
 
 static EnvoyHeaders * to_ios_headers(envoy_headers headers) {
   NSMutableDictionary *headerDict = [NSMutableDictionary new];
-  for (uint_fast32_t i = 0; i < headers.length; i++) {
+  for (envoy_header_size_t i = 0; i < headers.length; i++) {
     envoy_header header = headers.headers[i];
     NSString *headerKey = [[NSString alloc] initWithBytes:header.key.bytes
                                                    length:header.key.length

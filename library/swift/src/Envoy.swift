@@ -1,7 +1,7 @@
 import Foundation
 
 @objcMembers
-public final class Envoy: NSObject {
+public final class Envoy<Engine: EnvoyEngine>: NSObject {
   private let runner: RunnerThread
 
   /// Indicates whether this Envoy instance is currently active and running.
@@ -33,7 +33,7 @@ public final class Envoy: NSObject {
     }
 
     override func main() {
-      EnvoyEngine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
+      Engine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
     }
   }
 }

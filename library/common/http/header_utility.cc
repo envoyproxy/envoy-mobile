@@ -18,7 +18,7 @@ static inline std::string convertString(envoy_data s) {
 
 HeaderMapPtr transformHeaders(envoy_headers headers) {
   Http::HeaderMapPtr transformed_headers = std::make_unique<HeaderMapImpl>();
-  for (int i = 0; i < headers.length; i++) {
+  for (envoy_header_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(LowerCaseString(convertString(headers.headers[i].key)),
                                  convertString(headers.headers[i].value));
   }
