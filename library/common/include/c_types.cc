@@ -1,5 +1,7 @@
 #include "library/common/include/c_types.h"
 
+// NOLINT(namespace-envoy)
+
 void envoy_noop_release(void* context) { (void)context; }
 
 void release_envoy_headers(envoy_headers headers) {
