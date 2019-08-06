@@ -40,7 +40,7 @@ typedef void (*envoy_release_f)(void* context);
 /**
  * No-op callback.
  */
-void envoy_noop_release(void* context) { (void)context; };
+void envoy_noop_release(void* context);
 
 #ifdef __cplusplus
 } // release function
@@ -76,7 +76,9 @@ typedef struct {
   envoy_data value;
 } envoy_header;
 
-// Consistent type for dealing with encodable/processable header counts.
+/**
+ * Consistent type for dealing with encodable/processable header counts.
+ */
 typedef int envoy_header_size_t;
 
 /**
@@ -92,18 +94,11 @@ typedef struct {
 /**
  * Helper function to free/release memory associated with underlying headers.
  */
-void release_envoy_headers(envoy_headers headers) {
-  for (envoy_header_size_t i = 0; i < headers.length; i++) {
-    envoy_header header = headers.headers[i];
-    header.key.release(header.key.context);
-    header.value.release(header.value.context);
-  }
-  free(headers.headers);
-}
+void release_envoy_headers(envoy_headers headers);
 
 // Convenience constant to pass to function calls with no data.
 // For example when sending a headers-only request.
-const envoy_data envoy_nodata = {0, NULL, envoy_noop_release, NULL};
+extern const envoy_data envoy_nodata;
 
 /**
  * Error struct.
