@@ -8,7 +8,7 @@ namespace Envoy {
 namespace Http {
 
 envoy_data envoyString(std::string& s) {
-  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str())};
+  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str()), envoy_noop_release, nullptr};
 }
 
 TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
@@ -35,7 +35,7 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
     };
   }
 
-  envoy_headers c_headers = {headers.size(), header_array};
+  envoy_headers c_headers = {static_cast<envoy_header_size_t>(headers.size()), header_array};
 
   HeaderMapPtr cpp_headers = Utility::transformHeaders(c_headers);
 
