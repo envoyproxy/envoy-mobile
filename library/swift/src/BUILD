@@ -20,10 +20,7 @@ swift_static_framework(
     ],
     module_name = "Envoy",
     objc_includes = [
-        "//library/objective-c:EnvoyEngine.h",
-        "//library/objective-c:EnvoyEngineImpl.h",
-        "//library/objective-c:EnvoyHttpStream.h",
-        "//library/objective-c:EnvoyTypes.h",
+        "//library/objective-c:Envoy-Bridging-Header.h",
     ],
     visibility = ["//visibility:public"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"],

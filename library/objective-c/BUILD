@@ -1,6 +1,7 @@
 licenses(["notice"])  # Apache 2
 
 exports_files([
+    "Envoy-Bridging-Header.h",
     "EnvoyEngine.h",
     "EnvoyEngineImpl.h",
     "EnvoyHttpStream.h",
@@ -13,11 +14,13 @@ objc_library(
     # twice due to the way they're pulled into our swift framework rule. We should fix this to
     # maintain a valid objc target.
     srcs = [
+        "EnvoyEngineImpl.m",
+        "EnvoyHttpStream.m",
+    ],
+    hdrs = [
         "EnvoyEngine.h",
         "EnvoyEngineImpl.h",
-        "EnvoyEngineImpl.m",
         "EnvoyHttpStream.h",
-        "EnvoyHttpStream.m",
         "EnvoyTypes.h",
     ],
     visibility = ["//visibility:public"],

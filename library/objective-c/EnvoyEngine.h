@@ -1,4 +1,4 @@
-#import "EnvoyTypes.h"
+#import "library/objective-c/EnvoyTypes.h"
 
 #import <Foundation/Foundation.h>
 
