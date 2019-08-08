@@ -11,7 +11,7 @@ build \
   --spawn_strategy=standalone \
   --verbose_failures \
   --workspace_status_command=envoy/bazel/get_workspace_status \
-  --xcode_version=10.3 \
+  --xcode_version=10.3.0 \
   --incompatible_bzl_disallow_load_after_statement=false
 
 # Manual Stamping is necessary in order to get versioning information in the ios
