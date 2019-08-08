@@ -7,11 +7,6 @@ final class Atomic<T> {
   private var storage: T
 
   /// <#function description#>
-  var value: T {
-    return self.queue.sync { self.storage }
-  }
-
-  /// <#function description#>
   ///
   /// - parameter value: <#value description#>
   init(_ value: T) {
@@ -21,7 +16,14 @@ final class Atomic<T> {
   /// <#function description#>
   ///
   /// - parameter closure: <#closure description#>
-  func perform(_ closure: @escaping (inout T) -> Void) {
+  func async(_ closure: @escaping (inout T) -> Void) {
     self.queue.async(flags: .barrier) { closure(&self.storage) }
+  }
+
+  /// <#function description#>
+  ///
+  /// - parameter closure: <#closure description#>
+  func sync(_ closure: (inout T) -> Void) {
+    return self.queue.sync { closure(&self.storage) }
   }
 }

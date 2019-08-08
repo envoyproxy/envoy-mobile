@@ -3,6 +3,7 @@ import Foundation
 
 @objcMembers
 public final class Envoy: NSObject {
+  private let streamEngine: EnvoyEngineStreamInterface.Type
   private let runner: RunnerThread
 
   /// Indicates whether this Envoy instance is currently active and running.
@@ -15,11 +16,16 @@ public final class Envoy: NSObject {
     return self.runner.isFinished
   }
 
-  /// Initialize a new Envoy instance.
+  /// Initialize a new Envoy instance using a specific engine for streaming.
   ///
-  /// - parameter config:   Configuration file that is recognizable by Envoy (YAML).
-  /// - parameter logLevel: Log level to use for this instance.
-  public init(config: String, logLevel: LogLevel = .info) {
+  /// - parameter config:       Configuration file that is recognizable by Envoy (YAML).
+  /// - parameter logLevel:     Log level to use for this instance.
+  /// - parameter engineStream: Stream interface that will be used to execute streaming requests.
+  ///                           Useful for mocking/testing.
+  init(config: String, logLevel: LogLevel = .info,
+       streamEngine: EnvoyEngineStreamInterface.Type = EnvoyEngine.self)
+  {
+    self.streamEngine = streamEngine
     self.runner = RunnerThread(config: config, logLevel: logLevel)
     self.runner.start()
   }
@@ -36,6 +42,7 @@ public final class Envoy: NSObject {
     }
 
     override func main() {
+      // TODO: Use self.streamEngine here (or rename)
       EnvoyEngine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
     }
   }
@@ -44,7 +51,7 @@ public final class Envoy: NSObject {
 extension Envoy: Client {
   public func startStream(request: Request, handler: ResponseHandler) -> StreamEmitter? {
     let observer = EnvoyObserver(handler: handler)
-    var stream = EnvoyEngine.startStream(with: observer)
+    var stream = self.streamEngine.startStream(with: observer)
 
     switch stream.status {
     case .success:
@@ -86,10 +93,6 @@ private extension EnvoyObserver {
     }
 
     self.onData = { data, endStream in
-      guard let data = data else {
-        return
-      }
-
       handler.onData(data, endStream: endStream)
     }
 
@@ -102,10 +105,6 @@ private extension EnvoyObserver {
     }
 
     self.onError = { error in
-      guard let error = error else {
-        return
-      }
-
       handler.onError(EnvoyError(errorCode: Int(clamping: error.errorCode.rawValue),
                                  message: error.message, cause: error))
     }

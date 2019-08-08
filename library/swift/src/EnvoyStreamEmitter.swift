@@ -12,7 +12,9 @@ final class EnvoyStreamEmitter {
 
 extension EnvoyStreamEmitter: StreamEmitter {
   func isActive() -> Bool {
-    return !self.isClosed.value
+    var isActive = false
+    self.isClosed.sync { isActive = $0 }
+    return isActive
   }
 
   func sendData(_ data: Data) throws -> StreamEmitter {
@@ -26,7 +28,7 @@ extension EnvoyStreamEmitter: StreamEmitter {
   }
 
   func sendMetadata(_ metadata: [String: [String]]) throws -> StreamEmitter {
-//    let metadata = zip(metadata.keys, metadata.values)
+    let metadata = metadata.mapValues { $0.joined(separator: ",") }
     switch EnvoyEngine.sendMetadata(metadata, to: self.stream, close: false) {
     case .success:
       return self
@@ -36,6 +38,7 @@ extension EnvoyStreamEmitter: StreamEmitter {
   }
 
   func close(trailers: [String: [String]]) throws {
+    fatalError()
     switch EnvoyEngine.sendTrailers(trailers, to: self.stream, close: true) {
     case .success:
       break
