@@ -9,7 +9,7 @@
 @implementation EnvoyObserver
 @end
 
-@implementation EnvoyEngineImpl
+@implementation EnvoyEngine
 
 #pragma mark - class methods
 + (int)runWithConfig:(NSString *)config {

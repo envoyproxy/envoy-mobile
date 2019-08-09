@@ -104,7 +104,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 @end
 
 /// Wrapper layer for calling into Envoy's C/++ API.
-@protocol EnvoyEngine
+@interface EnvoyEngine : NSObject
 
 /**
  Run the Envoy engine with the provided config and log level.
@@ -122,11 +122,6 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  @return A status indicating if the action was successful.
  */
 + (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
-
-@end
-
-/// Wrapper layer for calling into Envoy's C/++ API.
-@interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
 /// Performs necessary setup after Envoy has initialized and started running.
 /// TODO: create a post-initialization callback from Envoy to handle this automatically.
