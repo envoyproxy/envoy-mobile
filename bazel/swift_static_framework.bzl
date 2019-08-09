@@ -162,8 +162,7 @@ def swift_static_framework(
     module_name = module_name or name + "_framework"
     if objc_includes:
         locations = ["$(location {})".format(x) for x in objc_includes]
-        for location in locations:
-            copts = copts + ["-import-objc-header", location]
+        copts = copts + ["-import-objc-header"] + locations
         swiftc_inputs = swiftc_inputs + objc_includes
 
     swift_library(
