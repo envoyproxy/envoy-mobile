@@ -4,52 +4,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Aliases
 
-/// Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
-/// intended for any external interpretation or use.
-//typedef UInt64 EnvoyStreamID;
-
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
-
-// MARK: - EnvoyEngineErrorCode
-
-/// Error code associated with terminal status of a HTTP stream.
-//typedef NS_ENUM(NSUInteger, EnvoyEngineErrorCode) {
-//  EnvoyEngineErrorCodeStreamReset = 0,
-//};
-
-// MARK: - EnvoyEngineError
-
-/// Error structure.
-//@interface EnvoyEngineError : NSError
-
-/// Message with additional details on the error.
-//@property (nonatomic, copy) NSString *message;
-
-/// Error code representing the Envoy error.
-//@property (nonatomic, assign) EnvoyEngineErrorCode errorCode;
-
-//@end
-
-// MARK: - EnvoyStatus
-
-/// Result codes returned by all calls made to this interface.
-//typedef NS_CLOSED_ENUM(NSUInteger, EnvoyStatus){
-//    EnvoyStatusSuccess = 0,
-//    EnvoyStatusFailure = 1,
-//};
-
-// MARK: - EnvoyStream
-
-/// Holds data about an HTTP stream.
-//typedef struct {
-  /// Status of the Envoy HTTP stream. Note that the stream might have failed inline.
-  /// Thus the status should be checked before pursuing other operations on the stream.
-//  int status;
-
-  /// Handle to the Envoy HTTP stream.
-//  uint64_t streamID;
-//} EnvoyStream;
 
 // MARK: - EnvoyObserver
 

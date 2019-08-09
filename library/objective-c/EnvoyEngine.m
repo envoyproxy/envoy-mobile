@@ -1,10 +1,9 @@
 #import "library/objective-c/EnvoyEngine.h"
+
 #import "library/common/main_interface.h"
 #import "library/common/include/c_types.h"
-#import <stdatomic.h>
 
-//@implementation EnvoyEngineError
-//@end
+#import <stdatomic.h>
 
 @implementation EnvoyObserver
 @end
