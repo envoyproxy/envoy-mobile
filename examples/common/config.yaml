@@ -46,10 +46,10 @@ static_resources:
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: V4_ONLY
-    tls_context:
-      common_tls_context:
-        validation_context:
-          trusted_ca: {filename: /etc/ssl/certs/ca-certificates.crt}
+    # tls_context:
+    #   common_tls_context:
+    #     validation_context:
+    #       trusted_ca: {filename: /etc/ssl/certs/ca-certificates.crt}
 stats_flush_interval: 60s
 watchdog:
   megamiss_timeout: 60s
