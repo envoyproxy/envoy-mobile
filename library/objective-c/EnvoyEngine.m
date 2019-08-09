@@ -33,7 +33,6 @@
 
 @end
 
-
 #pragma mark - utility functions to move elsewhere
 typedef struct {
   atomic_bool *canceled;
