@@ -3,8 +3,7 @@
 # https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
 static_resources:
   listeners:
-  - name: listener_0
-    address:
+  - address:
       socket_address:
         protocol: TCP
         address: 0.0.0.0
@@ -46,6 +45,8 @@ static_resources:
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: V4_ONLY
+    # TODO: TLS support
+    #
     # tls_context:
     #   common_tls_context:
     #     validation_context:
