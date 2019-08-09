@@ -12,7 +12,11 @@ build \
   --verbose_failures \
   --workspace_status_command=envoy/bazel/get_workspace_status \
   --xcode_version=10.3.0 \
-  --incompatible_bzl_disallow_load_after_statement=false
+  --incompatible_bzl_disallow_load_after_statement=false \
+  --host_javabase=@local_jdk//:jdk \
+  --javabase=@local_jdk//:jdk \
+  --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8 \
+  --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 
 # Manual Stamping is necessary in order to get versioning information in the ios
 # static framework.
