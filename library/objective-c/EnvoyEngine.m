@@ -3,8 +3,8 @@
 #import "library/common/include/c_types.h"
 #import <stdatomic.h>
 
-@implementation EnvoyEngineError
-@end
+//@implementation EnvoyEngineError
+//@end
 
 @implementation EnvoyObserver
 @end
@@ -12,19 +12,19 @@
 @implementation EnvoyEngineImpl
 
 #pragma mark - class methods
-+ (EnvoyStatus)runWithConfig:(NSString *)config {
++ (int)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
 
-+ (EnvoyStatus)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
++ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    return (EnvoyStatus)run_engine(config.UTF8String, logLevel.UTF8String);
+    return (int)run_engine(config.UTF8String, logLevel.UTF8String);
   } @catch (...) {
     NSLog(@"Envoy exception caught.");
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException" object:self];
-    return EnvoyStatusFailure;
+    return 1;
   }
 }
 
@@ -183,7 +183,7 @@ static void ios_on_error(envoy_error error, void *context) {
       return;
     }
     // FIXME transform error and pass up
-    observer.onError([EnvoyEngineError alloc]);
+    observer.onError();
   });
 }
 
@@ -252,7 +252,7 @@ static void ios_on_error(envoy_error error, void *context) {
   send_trailers(_nativeStream, toNativeHeaders(trailers));
 }
 
-- (EnvoyStatus)cancel {
+- (int)cancel {
   ios_context *context = _nativeObserver->context;
   // Step 1: atomically and synchronously prevent the execution of further callbacks other than
   // on_cancel.
@@ -261,9 +261,9 @@ static void ios_on_error(envoy_error error, void *context) {
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
     reset_stream(_nativeStream);
-    return EnvoyStatusSuccess;
+    return 0;
   } else {
-    return EnvoyStatusFailure;
+    return 1;
   }
 }
 

@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
 /// intended for any external interpretation or use.
-typedef UInt64 EnvoyStreamID;
+//typedef UInt64 EnvoyStreamID;
 
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
@@ -14,42 +14,42 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 // MARK: - EnvoyEngineErrorCode
 
 /// Error code associated with terminal status of a HTTP stream.
-typedef NS_ENUM(NSUInteger, EnvoyEngineErrorCode) {
-  EnvoyEngineErrorCodeStreamReset = 0,
-};
+//typedef NS_ENUM(NSUInteger, EnvoyEngineErrorCode) {
+//  EnvoyEngineErrorCodeStreamReset = 0,
+//};
 
 // MARK: - EnvoyEngineError
 
 /// Error structure.
-@interface EnvoyEngineError : NSError
+//@interface EnvoyEngineError : NSError
 
 /// Message with additional details on the error.
-@property (nonatomic, copy) NSString *message;
+//@property (nonatomic, copy) NSString *message;
 
 /// Error code representing the Envoy error.
-@property (nonatomic, assign) EnvoyEngineErrorCode errorCode;
+//@property (nonatomic, assign) EnvoyEngineErrorCode errorCode;
 
-@end
+//@end
 
 // MARK: - EnvoyStatus
 
 /// Result codes returned by all calls made to this interface.
-typedef NS_CLOSED_ENUM(NSUInteger, EnvoyStatus){
-    EnvoyStatusSuccess = 0,
-    EnvoyStatusFailure = 1,
-};
+//typedef NS_CLOSED_ENUM(NSUInteger, EnvoyStatus){
+//    EnvoyStatusSuccess = 0,
+//    EnvoyStatusFailure = 1,
+//};
 
 // MARK: - EnvoyStream
 
 /// Holds data about an HTTP stream.
-typedef struct {
+//typedef struct {
   /// Status of the Envoy HTTP stream. Note that the stream might have failed inline.
   /// Thus the status should be checked before pursuing other operations on the stream.
-  EnvoyStatus status;
+//  int status;
 
   /// Handle to the Envoy HTTP stream.
-  EnvoyStreamID streamID;
-} EnvoyStream;
+//  uint64_t streamID;
+//} EnvoyStream;
 
 // MARK: - EnvoyObserver
 
@@ -96,7 +96,7 @@ typedef struct {
  * Called when the async HTTP stream has an error.
  * @param error the error received/caused by the async HTTP stream.
  */
-@property (nonatomic, strong) void (^onError)(EnvoyEngineError *error);
+@property (nonatomic, strong) void (^onError)();
 
 // FIXME
 @property (nonatomic, strong) void (^onCancel)();
@@ -112,7 +112,7 @@ typedef struct {
  @param config The configuration file with which to start Envoy.
  @return A status indicating if the action was successful.
  */
-+ (EnvoyStatus)runWithConfig:(NSString *)config;
++ (int)runWithConfig:(NSString *)config;
 
 /**
  Run the Envoy engine with the provided config and log level.
@@ -121,7 +121,7 @@ typedef struct {
  @param logLevel The log level to use when starting Envoy.
  @return A status indicating if the action was successful.
  */
-+ (EnvoyStatus)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
++ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
 
 @end
 
@@ -177,7 +177,7 @@ typedef struct {
  stream.
  @return Success, unless the stream has already been canceled.
  */
-- (EnvoyStatus)cancel;
+- (int)cancel;
 
 @end
 
