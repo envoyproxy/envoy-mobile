@@ -13,7 +13,7 @@ static_resources:
       - name: envoy.http_connection_manager
         typed_config:
           "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
-          stat_prefix: ingress_http
+          stat_prefix: client
           http_protocol_options:
             allow_absolute_url: true
           route_config:
