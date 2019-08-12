@@ -19,19 +19,19 @@ static_resources:
           route_config:
             name: local_route
             virtual_hosts:
-            - name: local_service
+            - name: all
               domains: ["*"]
               routes:
               - match:
                   prefix: "/"
                 route:
-                  cluster: dynamic_forward_proxy_cluster
+                  cluster: default_egress
           http_filters:
           - name: envoy.filters.http.dynamic_forward_proxy
             config:
               dns_cache_config:
                 name: dynamic_forward_proxy_cache_config
-                dns_lookup_family: V4_ONLY
+                dns_lookup_family: AUTO
           - name: envoy.router
   clusters:
   - name: dynamic_forward_proxy_cluster
@@ -44,7 +44,7 @@ static_resources:
         "@type": type.googleapis.com/envoy.config.cluster.dynamic_forward_proxy.v2alpha.ClusterConfig
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
-          dns_lookup_family: V4_ONLY
+          dns_lookup_family: AUTO
     # TODO: Enable TLS as part of https://github.com/lyft/envoy-mobile/issues/322
     #
     # tls_context:
