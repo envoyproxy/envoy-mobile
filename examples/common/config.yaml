@@ -45,7 +45,8 @@ static_resources:
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: AUTO
-    # TODO: Enable TLS as part of https://github.com/lyft/envoy-mobile/issues/322
+    # WARNING!
+    # TODO: Enable TLS in https://github.com/lyft/envoy-mobile/issues/322
     #
     # tls_context:
     #   common_tls_context:
