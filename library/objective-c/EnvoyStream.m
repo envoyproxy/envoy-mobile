@@ -1,39 +1,12 @@
-#import "library/objective-c/EnvoyEngine.h"
-
-#import "library/common/main_interface.h"
 #import "library/common/include/c_types.h"
+#import "library/common/main_interface.h"
+
+#import "library/objective-c/EnvoyStream.h"
 
 #import <stdatomic.h>
 
-@implementation EnvoyObserver
-@end
+#pragma mark - Utility functions to move elsewhere
 
-@implementation EnvoyEngineImpl
-
-#pragma mark - class methods
-+ (int)runWithConfig:(NSString *)config {
-  return [self runWithConfig:config logLevel:@"info"];
-}
-
-+ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
-  // Envoy exceptions will only be caught here when compiled for 64-bit arches.
-  // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
-  @try {
-    return (int)run_engine(config.UTF8String, logLevel.UTF8String);
-  } @catch (...) {
-    NSLog(@"Envoy exception caught.");
-    [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException" object:self];
-    return 1;
-  }
-}
-
-+ (void)setupEnvoy {
-  setup_envoy();
-}
-
-@end
-
-#pragma mark - utility functions to move elsewhere
 typedef struct {
   atomic_bool *canceled;
   EnvoyObserver *observer;
@@ -185,8 +158,10 @@ static void ios_on_error(envoy_error error, void *context) {
   });
 }
 
-@implementation EnvoyHttpStream {
-  EnvoyHttpStream *_strongSelf;
+#pragma mark - EnvoyStream
+
+@implementation EnvoyStream {
+  EnvoyStream *_strongSelf;
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
   envoy_stream_t _nativeStream;

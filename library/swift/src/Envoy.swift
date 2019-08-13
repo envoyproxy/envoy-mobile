@@ -18,22 +18,25 @@ public final class Envoy: NSObject {
   ///
   /// - parameter config:   Configuration file that is recognizable by Envoy (YAML).
   /// - parameter logLevel: Log level to use for this instance.
-  public init(config: String, logLevel: LogLevel = .info) {
-    self.runner = RunnerThread(config: config, logLevel: logLevel)
+  /// - parameter engine:   Instance of an Envoy engine to use for requests.
+  public init(config: String, logLevel: LogLevel = .info, engine: EnvoyEngine = EnvoyEngineImpl()) {
+    self.runner = RunnerThread(config: config, logLevel: logLevel, engine: engine)
     self.runner.start()
   }
 
   private final class RunnerThread: Thread {
     private let config: String
     private let logLevel: LogLevel
+    private let engine: EnvoyEngine
 
-    init(config: String, logLevel: LogLevel) {
+    init(config: String, logLevel: LogLevel, engine: EnvoyEngine) {
       self.config = config
       self.logLevel = logLevel
+      self.engine = engine
     }
 
     override func main() {
-      EnvoyEngineImpl.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
+      self.engine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
     }
   }
 }
