@@ -24,4 +24,6 @@ class JniLibrary {
   protected static native int resetStream(EnvoyStream stream);
 
   protected static native int runEngine(String config, String logLevel);
+
+  public static native int cancel(EnvoyStream stream);
 }

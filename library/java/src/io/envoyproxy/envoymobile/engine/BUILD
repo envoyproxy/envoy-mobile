@@ -20,8 +20,9 @@ envoy_mobile_android_library(
 envoy_mobile_java_library(
     name = "envoy_base_engine_lib",
     srcs = [
-        "Engine.java",
         "EnvoyEngine.java",
+        "EnvoyEngineImpl.java",
+        "EnvoyHTTPStream.java",
         "JniLibrary.java",
     ],
     visibility = ["//visibility:public"],

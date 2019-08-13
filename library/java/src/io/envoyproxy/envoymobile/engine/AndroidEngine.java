@@ -10,14 +10,14 @@ public class AndroidEngine {
   // Volatile to ensure double-checked locking works correctly.
   private static volatile AndroidEngine loader = null;
 
-  private final Engine engine;
+  private final EnvoyEngine envoyEngine;
 
   // Private helper class used by the load method to ensure the native library and its
   // dependencies are loaded and initialized at most once.
   private AndroidEngine(Context context) {
     System.loadLibrary("envoy_jni");
     initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
-    engine = new EnvoyEngine();
+    envoyEngine = new EnvoyEngineImpl();
   }
 
   // Load and initialize Envoy and its dependencies, but only once.
@@ -36,7 +36,8 @@ public class AndroidEngine {
   }
 
   public static EnvoyStatus run(String config, String logLevel) {
-    return loader.engine.runEngine(config, logLevel);
+    // TODO: Resolve the static loader instance
+    return loader.envoyEngine.runEngine(config, logLevel);
   }
 
   private static native int initialize(ConnectivityManager connectivityManager);
