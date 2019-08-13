@@ -1,21 +1,36 @@
 #import "library/objective-c/EnvoyEngine.h"
 
 #import "library/common/main_interface.h"
-#import "library/common/include/c_types.h"
 
 #import <stdatomic.h>
 
 @implementation EnvoyObserver
 @end
 
-@implementation EnvoyEngineImpl
+@implementation EnvoyEngineImpl {
+  envoy_engine_t _engineHandle;
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (!self) {
+    return nil;
+  }
+  // TODO: _engineHandle = init_engine();
+  _engineHandle = 0;
+  return self;
+}
+
+- (EnvoyHttpStream *)openHttpStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyHttpStream alloc] initWithEngine:_engineHandle observer:observer];
+}
 
 #pragma mark - class methods
-+ (int)runWithConfig:(NSString *)config {
+- (int)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
 
-+ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
+- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
@@ -27,7 +42,8 @@
   }
 }
 
-+ (void)setupEnvoy {
+- (void)setup {
+  // TODO: setup_envoy(_engineHandle);
   setup_envoy();
 }
 
@@ -190,13 +206,15 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
   envoy_stream_t _nativeStream;
+  envoy_engine_t _engineHandle;
 }
 
-- (instancetype)initWithObserver:(EnvoyObserver *)observer {
+- (instancetype)initWithEngine:(envoy_engine_t)engine observer:(EnvoyObserver *)observer {
   self = [super init];
   if (!self) {
     return nil;
   }
+  _engineHandle = engine;
 
   // Retain platform observer
   _platformObserver = observer;

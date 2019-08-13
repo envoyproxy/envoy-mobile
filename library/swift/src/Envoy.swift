@@ -2,6 +2,7 @@ import Foundation
 
 @objcMembers
 public final class Envoy: NSObject {
+  private let engine: EnvoyEngine
   private let runner: RunnerThread
 
   /// Indicates whether this Envoy instance is currently active and running.
@@ -18,22 +19,25 @@ public final class Envoy: NSObject {
   ///
   /// - parameter config:   Configuration file that is recognizable by Envoy (YAML).
   /// - parameter logLevel: Log level to use for this instance.
-  public init(config: String, logLevel: LogLevel = .info) {
-    self.runner = RunnerThread(config: config, logLevel: logLevel)
+  public init(config: String, logLevel: LogLevel = .info, engine: EnvoyEngine = EnvoyEngineImpl()) {
+    self.engine = engine
+    self.runner = RunnerThread(config: config, logLevel: logLevel, engine: engine)
     self.runner.start()
   }
 
   private final class RunnerThread: Thread {
+    private let engine: EnvoyEngine
     private let config: String
     private let logLevel: LogLevel
 
-    init(config: String, logLevel: LogLevel) {
+    init(config: String, logLevel: LogLevel, engine: EnvoyEngine) {
+      self.engine = engine
       self.config = config
       self.logLevel = logLevel
     }
 
     override func main() {
-      EnvoyEngineImpl.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
+      self.engine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
     }
   }
 }
