@@ -189,15 +189,16 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyHttpStream *_strongSelf;
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
-  envoy_stream_t _nativeStream;
+  envoy_stream_t _streamHandle;
 }
 
-- (instancetype)initWithObserver:(EnvoyObserver *)observer {
+- (instancetype)initWithHandle:(uint64_t)handle observer:(EnvoyObserver *)observer {
   self = [super init];
   if (!self) {
     return nil;
   }
 
+  _streamHandle = handle;
   // Retain platform observer
   _platformObserver = observer;
 
@@ -219,7 +220,7 @@ static void ios_on_error(envoy_error error, void *context) {
     return nil;
   }
 
-  _nativeStream = result.stream;
+  //_streamHandle = result.stream;
   _strongSelf = self;
   return self;
 }
@@ -234,20 +235,20 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
-  send_headers(_nativeStream, toNativeHeaders(headers), close);
+  send_headers(_streamHandle, toNativeHeaders(headers), close);
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {
   // TODO: implement
-  // send_data(_nativeStream, toNativeData(data), close);
+  // send_data(_streamHandle, toNativeData(data), close);
 }
 
 - (void)sendMetadata:(EnvoyHeaders *)metadata {
-  send_metadata(_nativeStream, toNativeHeaders(metadata));
+  send_metadata(_streamHandle, toNativeHeaders(metadata));
 }
 
 - (void)sendTrailers:(EnvoyHeaders *)trailers {
-  send_trailers(_nativeStream, toNativeHeaders(trailers));
+  send_trailers(_streamHandle, toNativeHeaders(trailers));
 }
 
 - (int)cancel {
@@ -258,7 +259,7 @@ static void ios_on_error(envoy_error error, void *context) {
     // Step 2: directly fire the cancel callback.
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
-    reset_stream(_nativeStream);
+    reset_stream(_streamHandle);
     return 0;
   } else {
     return 1;
