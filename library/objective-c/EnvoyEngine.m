@@ -41,6 +41,10 @@
   setup_envoy();
 }
 
+- (EnvoyHttpStream *)openHttpStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyHttpStream alloc] initWithHandle:0 observer:observer];
+}
+
 @end
 
 #pragma mark - utility functions to move elsewhere

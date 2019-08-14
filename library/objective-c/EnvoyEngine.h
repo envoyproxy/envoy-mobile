@@ -59,37 +59,6 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 @end
 
-/// Wrapper layer for calling into Envoy's C/++ API.
-@protocol EnvoyEngine
-
-/**
- Run the Envoy engine with the provided config and log level.
-
- @param config The configuration file with which to start Envoy.
- @return A status indicating if the action was successful.
- */
-- (int)runWithConfig:(NSString *)config;
-
-/**
- Run the Envoy engine with the provided config and log level.
-
- @param config The configuration file with which to start Envoy.
- @param logLevel The log level to use when starting Envoy.
- @return A status indicating if the action was successful.
- */
-- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
-
-/// Performs necessary setup after Envoy has initialized and started running.
-/// TODO: create a post-initialization callback from Envoy to handle this automatically.
-- (void)setup;
-
-@end
-
-// Concrete implementation of the `EnvoyEngine` protocol.
-@interface EnvoyEngineImpl : NSObject <EnvoyEngine>
-
-@end
-
 @interface EnvoyHttpStream : NSObject
 /**
  Open an underlying HTTP stream.
@@ -134,6 +103,44 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  @return Success, unless the stream has already been canceled.
  */
 - (int)cancel;
+
+@end
+
+/// Wrapper layer for calling into Envoy's C/++ API.
+@protocol EnvoyEngine
+
+/**
+ Run the Envoy engine with the provided config and log level.
+
+ @param config The configuration file with which to start Envoy.
+ @return A status indicating if the action was successful.
+ */
+- (int)runWithConfig:(NSString *)config;
+
+/**
+ Run the Envoy engine with the provided config and log level.
+
+ @param config The configuration file with which to start Envoy.
+ @param logLevel The log level to use when starting Envoy.
+ @return A status indicating if the action was successful.
+ */
+- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
+
+/// Performs necessary setup after Envoy has initialized and started running.
+/// TODO: create a post-initialization callback from Envoy to handle this automatically.
+- (void)setup;
+
+/**
+ Opens a new HTTP stream attached to this engine.
+
+ @param observer Handler for stream events.
+ */
+- (EnvoyHttpStream *)openHttpStreamWithObserver:(EnvoyObserver *)observer;
+
+@end
+
+// Concrete implementation of the `EnvoyEngine` protocol.
+@interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
 @end
 
