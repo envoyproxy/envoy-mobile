@@ -2,7 +2,6 @@ package io.envoyproxy.envoymobile.engine;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
-import io.envoyproxy.envoymobile.engine.types.EnvoyStatus;
 
 public class AndroidEngine {
 
@@ -16,7 +15,7 @@ public class AndroidEngine {
   // dependencies are loaded and initialized at most once.
   private AndroidEngine(Context context) {
     System.loadLibrary("envoy_jni");
-    initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
+    initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
     envoyEngine = new EnvoyEngineImpl();
   }
 
@@ -35,9 +34,9 @@ public class AndroidEngine {
     }
   }
 
-  public static EnvoyStatus run(String config, String logLevel) {
+  public static int run(String config, String logLevel) {
     // TODO: Resolve the static loader instance
-    return loader.envoyEngine.runEngine(config, logLevel);
+    return loader.envoyEngine.runWithConfig(config, logLevel);
   }
 
   private static native int initialize(ConnectivityManager connectivityManager);
