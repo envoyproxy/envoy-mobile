@@ -2,15 +2,14 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyData;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHeaders;
-import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStream;
 
 public class EnvoyHTTPStream {
 
   private final EnvoyStream stream;
 
-  EnvoyHTTPStream(EnvoyObserver envoyObserver) {
-    this.stream = JniLibrary.startStream(envoyObserver);
+  EnvoyHTTPStream(EnvoyStream stream) {
+    this.stream = stream;
   }
 
   /**
