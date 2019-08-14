@@ -67,7 +67,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
  @param observer the observer that will run the stream callbacks.
  */
-- (instancetype)initWithEngine:(envoy_engine_t)engine observer:(EnvoyObserver *)observer;
+- (instancetype)initWithHandle:(envoy_stream_t)streamHandle observer:(EnvoyObserver *)observer;
 
 /**
  Send headers over the provided stream.
