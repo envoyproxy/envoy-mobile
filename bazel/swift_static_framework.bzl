@@ -142,6 +142,7 @@ def swift_static_framework(
         name,
         module_name = None,
         srcs = [],
+        resources = [],
         deps = [],
         objc_includes = [],
         copts = [],
@@ -153,6 +154,7 @@ def swift_static_framework(
         name: The name of the module, the framework's name will be this name
             appending Framework so you can depend on this from other modules
         srcs: Custom source paths for the swift files
+        resources: Any additional resource bundles to include with this framework
         objc_includes: Header files for any objective-c dependencies (required for linking)
         copts: Any custom swiftc opts passed through to the swift_library
         swiftc_inputs: Any labels that require expansion for copts (would also apply to linkopts)
@@ -168,6 +170,7 @@ def swift_static_framework(
     swift_library(
         name = archive_name,
         srcs = srcs,
+        data = resources,
         copts = copts,
         swiftc_inputs = swiftc_inputs,
         module_name = module_name,
