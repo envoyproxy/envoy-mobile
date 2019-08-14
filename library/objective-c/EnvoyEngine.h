@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-#import "library/common/include/c_types.h"
+#import "library/common/include/c_typedefs.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
