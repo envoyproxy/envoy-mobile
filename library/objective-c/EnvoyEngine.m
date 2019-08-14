@@ -8,14 +8,24 @@
 @implementation EnvoyObserver
 @end
 
-@implementation EnvoyEngineImpl
+@implementation EnvoyEngineImpl {
+  envoy_engine_t _engineHandle;
+}
 
-#pragma mark - class methods
-+ (int)runWithConfig:(NSString *)config {
+- (instancetype)init {
+  self = [super init];
+  if (!self) {
+    return nil;
+  }
+  _engineHandle = 0;
+  return self;
+}
+
+- (int)runWithConfig:(NSString *)config {
   return [self runWithConfig:config logLevel:@"info"];
 }
 
-+ (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
+- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
@@ -27,7 +37,7 @@
   }
 }
 
-+ (void)setupEnvoy {
+- (void)setup {
   setup_envoy();
 }
 
