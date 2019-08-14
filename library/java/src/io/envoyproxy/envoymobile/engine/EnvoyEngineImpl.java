@@ -1,7 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
-import io.envoyproxy.envoymobile.engine.types.EnvoyStream;
 
 public class EnvoyEngineImpl implements EnvoyEngine {
   /**
@@ -11,9 +10,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return A stream that may be used for sending data.
    */
   @Override
-  public EnvoyHTTPStream startStream(EnvoyObserver observer) {
-    EnvoyStream stream = JniLibrary.startStream(observer);
-    return new EnvoyHTTPStream(stream);
+  public EnvoyStream startStream(EnvoyObserver observer) {
+    long streamHandle = JniLibrary.startStream(observer);
+    return new EnvoyStream(streamHandle);
   }
 
   /**

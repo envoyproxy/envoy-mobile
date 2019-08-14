@@ -22,7 +22,7 @@ envoy_mobile_java_library(
     srcs = [
         "EnvoyEngine.java",
         "EnvoyEngineImpl.java",
-        "EnvoyHTTPStream.java",
+        "EnvoyStream.java",
         "JniLibrary.java",
     ],
     visibility = ["//visibility:public"],
