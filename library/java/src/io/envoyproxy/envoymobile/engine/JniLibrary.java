@@ -5,14 +5,23 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHeaders;
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 class JniLibrary {
+  /**
+   * Initialize an underlying HTTP stream.
+   *
+   * @param engine, handle to the engine that will manage this stream.
+   * @return long, handle to the underlying stream.
+   */
+  protected static native long initStream(long engine);
 
   /**
-   * Open an underlying HTTP stream.
+   * Open an underlying HTTP stream. Note: Streams must be started before other other interaction can
+   * can occur.
    *
+   * @param stream,   handle to the stream to be started.
    * @param observer, the observer that will run the stream callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure status.
    */
-  protected static native long startStream(EnvoyObserver observer);
+  protected static native int startStream(long stream, EnvoyObserver observer);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
@@ -63,6 +72,13 @@ class JniLibrary {
   protected static native int resetStream(long stream);
 
   // Native entry point
+
+  /**
+   * Initialize an engine for handling network streams.
+   *
+   * @return envoy_engine_t, handle to the underlying engine.
+   */
+  protected static native long initEngine();
 
   /**
    * External entry point for library.

@@ -3,6 +3,13 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 public class EnvoyEngineImpl implements EnvoyEngine {
+
+  private final long engineHandle;
+
+  public EnvoyEngineImpl() {
+    this.engineHandle = JniLibrary.initEngine();
+  }
+
   /**
    * Creates a new stream with the provided observer.
    *
@@ -11,8 +18,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    */
   @Override
   public EnvoyStream startStream(EnvoyObserver observer) {
-    long streamHandle = JniLibrary.startStream(observer);
-    return new EnvoyStream(streamHandle);
+    long streamHandle = JniLibrary.initStream(engineHandle);
+    return new EnvoyStream(streamHandle, observer);
   }
 
   /**

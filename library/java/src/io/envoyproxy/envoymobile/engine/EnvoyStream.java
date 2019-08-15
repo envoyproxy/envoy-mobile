@@ -2,12 +2,16 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyData;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHeaders;
+import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 public class EnvoyStream {
 
   private final long streamHandle;
 
-  EnvoyStream(long streamHandle) { this.streamHandle = streamHandle; }
+  EnvoyStream(long streamHandle, EnvoyObserver observer) {
+    this.streamHandle = streamHandle;
+    JniLibrary.startStream(streamHandle, observer);
+  }
 
   /**
    * Send headers over an open HTTP streamHandle. This method can be invoked once and needs to be
@@ -55,5 +59,7 @@ public class EnvoyStream {
    *
    * @return Success, unless the streamHandle has already been canceled.
    */
-  public int cancel() { return JniLibrary.cancel(streamHandle); }
+  public int resetStream() {
+    return JniLibrary.resetStream(streamHandle);
+  }
 }
