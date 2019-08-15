@@ -1,7 +1,6 @@
 licenses(["notice"])  # Apache 2
 
 load("//bazel:swift_static_framework.bzl", "swift_static_framework")
-load("@build_bazel_rules_apple//apple/internal/resource_rules:apple_resource_bundle.bzl", "apple_resource_bundle")
 
 swift_static_framework(
     name = "ios_framework",
@@ -24,7 +23,7 @@ swift_static_framework(
     objc_includes = [
         "//library/objective-c:EnvoyEngine.h",
     ],
-    resources = ["config.yaml"],
+    data = ["config.yaml"],
     visibility = ["//visibility:public"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )
