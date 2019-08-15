@@ -45,6 +45,7 @@ envoy_status_t send_trailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILU
 envoy_status_t reset_stream(envoy_stream_t stream) { return http_dispatcher_->resetStream(stream); }
 
 envoy_engine_t init_engine() {
+  // TODO(goaway): return new handle once multiple engine support is in place.
   return 1;
 }
 

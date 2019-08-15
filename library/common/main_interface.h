@@ -20,6 +20,7 @@ envoy_stream_t init_stream(envoy_engine_t);
 
 /**
  * Open an underlying HTTP stream.
+ * @param stream, handle to the stream to be started.
  * @param observer, the observer that will run the stream callbacks.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
