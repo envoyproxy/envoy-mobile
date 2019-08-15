@@ -9,53 +9,53 @@ namespace Http {
 Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
                                                          envoy_observer observer,
                                                          Dispatcher& http_dispatcher)
-    : stream_id_(stream), observer_(observer), http_dispatcher_(http_dispatcher) {}
+    : stream_handle_(stream), observer_(observer), http_dispatcher_(http_dispatcher) {}
 
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
-  ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_id_, end_stream,
-            *headers);
+  ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
+            end_stream, *headers);
   observer_.on_headers(Utility::transformHeaders(*headers), end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
-  ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_id_,
+  ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
   observer_.on_data(Envoy::Buffer::Utility::transformData(data), end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
-  ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_id_, *trailers);
+  ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, *trailers);
   observer_.on_trailers(Utility::transformHeaders(*trailers), observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onComplete() {
-  ENVOY_LOG(debug, "[S{}] complete stream", stream_id_);
+  ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
   observer_.on_complete(observer_.context);
-  http_dispatcher_.cleanup(stream_id_);
+  http_dispatcher_.cleanup(stream_handle_);
 }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
-  ENVOY_LOG(debug, "[S{}] remote reset stream", stream_id_);
+  ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
   observer_.on_error({ENVOY_STREAM_RESET, envoy_nodata}, observer_.context);
 }
 
-Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_id,
+Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle,
                                        AsyncClient::Stream& underlying_stream,
                                        DirectStreamCallbacksPtr&& callbacks)
-    : stream_id_(stream_id), underlying_stream_(underlying_stream),
+    : stream_handle_(stream_handle), underlying_stream_(underlying_stream),
       callbacks_(std::move(callbacks)) {}
 
 Dispatcher::Dispatcher(Event::Dispatcher& event_dispatcher,
                        Upstream::ClusterManager& cluster_manager)
-    : current_stream_id_(0), event_dispatcher_(event_dispatcher),
+    : current_stream_handle_(0), event_dispatcher_(event_dispatcher),
       cluster_manager_(cluster_manager) {}
 
 envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
-  envoy_stream_t new_stream_id = current_stream_id_++;
+  envoy_stream_t new_stream_handle = current_stream_handle_++;
 
-  event_dispatcher_.post([this, observer, new_stream_id]() -> void {
+  event_dispatcher_.post([this, observer, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
-        std::make_unique<DirectStreamCallbacks>(new_stream_id, observer, *this);
+        std::make_unique<DirectStreamCallbacks>(new_stream_handle, observer, *this);
     AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("egress_cluster");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
@@ -64,14 +64,14 @@ envoy_stream_t Dispatcher::startStream(envoy_observer observer) {
       // Take this into account when thinking about stream cancellation.
       callbacks->onReset();
     } else {
-      DirectStreamPtr direct_stream =
-          std::make_unique<DirectStream>(new_stream_id, *underlying_stream, std::move(callbacks));
-      streams_.emplace(new_stream_id, std::move(direct_stream));
-      ENVOY_LOG(debug, "[S{}] start stream", new_stream_id);
+      DirectStreamPtr direct_stream = std::make_unique<DirectStream>(
+          new_stream_handle, *underlying_stream, std::move(callbacks));
+      streams_.emplace(new_stream_handle, std::move(direct_stream));
+      ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
     }
   });
 
-  return new_stream_id;
+  return new_stream_handle;
 }
 
 envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers headers,
@@ -120,16 +120,16 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
 }
 
-void Dispatcher::cleanup(envoy_stream_t stream_id) {
-  DirectStream* direct_stream = getStream(stream_id);
+void Dispatcher::cleanup(envoy_stream_t stream_handle) {
+  DirectStream* direct_stream = getStream(stream_handle);
 
   RELEASE_ASSERT(direct_stream,
                  "cleanup is a private method that is only called with stream ids that exist");
 
   // TODO: think about thread safety of deleting the DirectStream immediately.
-  size_t erased = streams_.erase(stream_id);
+  size_t erased = streams_.erase(stream_handle);
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
-  ENVOY_LOG(debug, "[S{}] remove stream", stream_id);
+  ENVOY_LOG(debug, "[S{}] remove stream", stream_handle);
 }
 
 } // namespace Http

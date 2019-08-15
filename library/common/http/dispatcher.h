@@ -53,7 +53,7 @@ private:
   class DirectStreamCallbacks : public AsyncClient::StreamCallbacks,
                                 public Logger::Loggable<Logger::Id::http> {
   public:
-    DirectStreamCallbacks(envoy_stream_t stream_id, envoy_observer observer,
+    DirectStreamCallbacks(envoy_stream_t stream_handle, envoy_observer observer,
                           Dispatcher& http_dispatcher);
 
     // AsyncClient::StreamCallbacks
@@ -64,7 +64,7 @@ private:
     void onReset() override;
 
   private:
-    const envoy_stream_t stream_id_;
+    const envoy_stream_t stream_handle_;
     const envoy_observer observer_;
     Dispatcher& http_dispatcher_;
   };
@@ -77,10 +77,10 @@ private:
    */
   class DirectStream {
   public:
-    DirectStream(envoy_stream_t stream_id, AsyncClient::Stream& underlying_stream,
+    DirectStream(envoy_stream_t stream_handle, AsyncClient::Stream& underlying_stream,
                  DirectStreamCallbacksPtr&& callbacks);
 
-    const envoy_stream_t stream_id_;
+    const envoy_stream_t stream_handle_;
     // Used to issue outgoing HTTP stream operations.
     AsyncClient::Stream& underlying_stream_;
     // Used to receive incoming HTTP stream operations.
@@ -98,11 +98,11 @@ private:
 
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
-  DirectStream* getStream(envoy_stream_t stream_id);
-  void cleanup(envoy_stream_t stream_id);
+  DirectStream* getStream(envoy_stream_t stream_handle);
+  void cleanup(envoy_stream_t stream_handle);
 
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
-  std::atomic<envoy_stream_t> current_stream_id_;
+  std::atomic<envoy_stream_t> current_stream_handle_;
   // The event_dispatcher is the only member state that may be accessed from a thread other than
   // the event_dispatcher's own thread.
   Event::Dispatcher& event_dispatcher_;
