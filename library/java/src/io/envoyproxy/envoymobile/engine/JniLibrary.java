@@ -25,7 +25,6 @@ class JniLibrary {
    */
   protected static native int sendHeaders(long stream, EnvoyHeaders headers, boolean endStream);
 
-
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple times.
    *
@@ -36,7 +35,6 @@ class JniLibrary {
    */
   protected static native int sendData(long stream, EnvoyData data, boolean endStream);
 
-
   /**
    * Send metadata over an HTTP stream. This method can be invoked multiple times.
    *
@@ -45,7 +43,6 @@ class JniLibrary {
    * @return int, the resulting status of the operation.
    */
   protected static native int sendMetadata(long stream, EnvoyHeaders metadata);
-
 
   /**
    * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
@@ -58,7 +55,6 @@ class JniLibrary {
   protected static native int sendTrailers(long stream, EnvoyHeaders trailers);
 
   protected static native int locallyCloseStream(long stream);
-
 
   /**
    * Half-close an HTTP stream. The stream will be observable and may return further data
@@ -87,5 +83,4 @@ class JniLibrary {
    * @return int, the resulting status of the operation.
    */
   protected static native int runEngine(String config, String logLevel);
-
 }
