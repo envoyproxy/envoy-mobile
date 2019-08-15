@@ -44,6 +44,7 @@ envoy_status_t reset_stream(envoy_stream_t stream) { return http_dispatcher_->re
 
 envoy_engine_t init_engine() {
   // TODO(goaway): return new handle once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
   return 1;
 }
 
