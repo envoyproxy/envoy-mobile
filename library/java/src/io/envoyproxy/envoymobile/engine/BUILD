@@ -5,7 +5,7 @@ load("//bazel:kotlin_lib.bzl", "envoy_mobile_android_library", "envoy_mobile_jav
 envoy_mobile_android_library(
     name = "envoy_engine_lib",
     srcs = [
-        "AndroidEngine.java",
+        "AndroidEngineImpl.java",
     ],
     custom_package = "io.envoyproxy.envoymobile.engine",
     manifest = "AndroidEngineManifest.xml",

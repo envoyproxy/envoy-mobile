@@ -3,17 +3,17 @@ package io.envoyproxy.envoymobile.engine;
 import android.content.Context;
 import android.net.ConnectivityManager;
 
-public class AndroidEngine {
+public class AndroidEngineImpl {
 
   // Internal reference to helper object used to load and initialize the native library.
   // Volatile to ensure double-checked locking works correctly.
-  private static volatile AndroidEngine loader = null;
+  private static volatile AndroidEngineImpl loader = null;
 
   private final EnvoyEngine envoyEngine;
 
   // Private helper class used by the load method to ensure the native library and its
   // dependencies are loaded and initialized at most once.
-  private AndroidEngine(Context context) {
+  private AndroidEngineImpl(Context context) {
     System.loadLibrary("envoy_jni");
     initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
     envoyEngine = new EnvoyEngineImpl();
@@ -25,12 +25,12 @@ public class AndroidEngine {
       return;
     }
 
-    synchronized (AndroidEngine.class) {
+    synchronized (AndroidEngineImpl.class) {
       if (loader != null) {
         return;
       }
 
-      loader = new AndroidEngine(context);
+      loader = new AndroidEngineImpl(context);
     }
   }
 

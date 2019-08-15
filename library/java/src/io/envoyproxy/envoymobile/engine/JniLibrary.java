@@ -54,24 +54,13 @@ class JniLibrary {
    */
   protected static native int sendTrailers(long stream, EnvoyHeaders trailers);
 
-  protected static native int locallyCloseStream(long stream);
-
-  /**
-   * Half-close an HTTP stream. The stream will be observable and may return further data
-   * via the observer callbacks. However, nothing further may be sent.
-   *
-   * @param stream, the stream to close.
-   * @return int, the resulting status of the operation.
-   */
-  protected static native int resetStream(long stream);
-
   /**
    * Detach all observers from a stream and send an interrupt upstream if supported by transport.
    *
    * @param stream, the stream to evict.
    * @return int, the resulting status of the operation.
    */
-  protected static native int cancel(long stream);
+  protected static native int resetStream(long stream);
 
   // Native entry point
 
