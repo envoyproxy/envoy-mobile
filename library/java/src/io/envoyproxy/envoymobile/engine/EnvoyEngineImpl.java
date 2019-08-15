@@ -6,9 +6,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
 
   private final long engineHandle;
 
-  public EnvoyEngineImpl() {
-    this.engineHandle = JniLibrary.initEngine();
-  }
+  public EnvoyEngineImpl() { this.engineHandle = JniLibrary.initEngine(); }
 
   /**
    * Creates a new stream with the provided observer.

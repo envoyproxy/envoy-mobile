@@ -14,8 +14,8 @@ class JniLibrary {
   protected static native long initStream(long engine);
 
   /**
-   * Open an underlying HTTP stream. Note: Streams must be started before other other interaction can
-   * can occur.
+   * Open an underlying HTTP stream. Note: Streams must be started before other other interaction
+   * can can occur.
    *
    * @param stream,   handle to the stream to be started.
    * @param observer, the observer that will run the stream callbacks.
