@@ -6,21 +6,86 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 class JniLibrary {
 
-  protected static native int runEngine(String config, String logLevel);
-
+  /**
+   * Open an underlying HTTP stream.
+   *
+   * @param observer, the observer that will run the stream callbacks.
+   * @return envoy_stream, with a stream handle and a success status, or a failure status.
+   */
   protected static native long startStream(EnvoyObserver observer);
 
+  /**
+   * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
+   * before send_data.
+   *
+   * @param stream,    the stream to send headers over.
+   * @param headers,   the headers to send.
+   * @param endStream, supplies whether this is headers only.
+   * @return int, the resulting status of the operation.
+   */
   protected static native int sendHeaders(long stream, EnvoyHeaders headers, boolean endStream);
 
+
+  /**
+   * Send data over an open HTTP stream. This method can be invoked multiple times.
+   *
+   * @param stream,    the stream to send data over.
+   * @param data,      the data to send.
+   * @param endStream, supplies whether this is the last data in the stream.
+   * @return int, the resulting status of the operation.
+   */
   protected static native int sendData(long stream, EnvoyData data, boolean endStream);
 
+
+  /**
+   * Send metadata over an HTTP stream. This method can be invoked multiple times.
+   *
+   * @param stream,   the stream to send metadata over.
+   * @param metadata, the metadata to send.
+   * @return int, the resulting status of the operation.
+   */
   protected static native int sendMetadata(long stream, EnvoyHeaders metadata);
 
+
+  /**
+   * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
+   * Note that this method implicitly ends the stream.
+   *
+   * @param stream,   the stream to send trailers over.
+   * @param trailers, the trailers to send.
+   * @return int, the resulting status of the operation.
+   */
   protected static native int sendTrailers(long stream, EnvoyHeaders trailers);
 
   protected static native int locallyCloseStream(long stream);
 
+
+  /**
+   * Half-close an HTTP stream. The stream will be observable and may return further data
+   * via the observer callbacks. However, nothing further may be sent.
+   *
+   * @param stream, the stream to close.
+   * @return int, the resulting status of the operation.
+   */
   protected static native int resetStream(long stream);
 
+  /**
+   * Detach all observers from a stream and send an interrupt upstream if supported by transport.
+   *
+   * @param stream, the stream to evict.
+   * @return int, the resulting status of the operation.
+   */
   protected static native int cancel(long stream);
+
+  // Native entry point
+
+  /**
+   * External entry point for library.
+   *
+   * @param config,   the configuration blob to run envoy with.
+   * @param logLevel, the logging level to run envoy with.
+   * @return int, the resulting status of the operation.
+   */
+  protected static native int runEngine(String config, String logLevel);
+
 }
