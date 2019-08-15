@@ -3,15 +3,14 @@ import UIKit
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
-  private var envoy: Envoy!
+  private let envoy = Envoy()
+
   var window: UIWindow?
 
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
   {
-    self.envoy = Envoy(config: Configuration())
-
     let window = UIWindow(frame: UIScreen.main.bounds)
     window.rootViewController = ViewController()
     window.makeKeyAndVisible()
