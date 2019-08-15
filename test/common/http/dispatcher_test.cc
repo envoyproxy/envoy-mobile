@@ -63,14 +63,14 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   envoy_observer observer;
   callbacks_called cc = {false, false, false};
   observer.context = &cc;
-  observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+  observer.on_headers = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers = true;
   };
-  observer.on_complete_f = [](void* context) -> void {
+  observer.on_complete = [](void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete = true;
   };
@@ -124,7 +124,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
                      .counter("internal.upstream_rq_200")
                      .value());
 
-  // Ensure that the on_headers_f on the observer was called.
+  // Ensure that the on_headers on the observer was called.
   ASSERT_TRUE(cc.on_headers);
   ASSERT_TRUE(cc.on_complete);
 }
@@ -133,13 +133,13 @@ TEST_F(DispatcherTest, ResetStream) {
   envoy_observer observer;
   callbacks_called cc = {false, false, false};
   observer.context = &cc;
-  observer.on_error_f = [](envoy_error actual_error, void* context) -> void {
-    envoy_error expected_error = {ENVOY_STREAM_RESET, {0, nullptr}};
+  observer.on_error = [](envoy_error actual_error, void* context) -> void {
+    envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error = true;
   };
-  observer.on_complete_f = [](void* context) -> void {
+  observer.on_complete = [](void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete = true;
   };
@@ -160,7 +160,7 @@ TEST_F(DispatcherTest, ResetStream) {
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   post_cb();
 
-  // Ensure that the on_error_f on the observer was called.
+  // Ensure that the on_error on the observer was called.
   ASSERT_TRUE(cc.on_error);
   ASSERT_FALSE(cc.on_complete);
 }
@@ -171,14 +171,14 @@ TEST_F(DispatcherTest, MultipleStreams) {
   envoy_observer observer;
   callbacks_called cc = {false, false, false};
   observer.context = &cc;
-  observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+  observer.on_headers = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers = true;
   };
-  observer.on_complete_f = [](void* context) -> void {
+  observer.on_complete = [](void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete = true;
   };
@@ -223,14 +223,14 @@ TEST_F(DispatcherTest, MultipleStreams) {
   envoy_observer observer2;
   callbacks_called cc2 = {false, false, false};
   observer2.context = &cc2;
-  observer2.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+  observer2.on_headers = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "503");
     bool* on_headers_called2 = static_cast<bool*>(context);
     *on_headers_called2 = true;
   };
-  observer2.on_complete_f = [](void* context) -> void {
+  observer2.on_complete = [](void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete = true;
   };
@@ -273,7 +273,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   HeaderMapPtr response_headers2(new TestHeaderMapImpl{{":status", "503"}});
   response_decoder2->decodeHeaders(std::move(response_headers2), true);
-  // Ensure that the on_headers_f on the observer was called.
+  // Ensure that the on_headers on the observer was called.
   ASSERT_TRUE(cc2.on_headers);
   ASSERT_TRUE(cc2.on_complete);
 
@@ -290,20 +290,20 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   callbacks_called cc = {false, false, false};
   observer.context = &cc;
 
-  observer.on_error_f = [](envoy_error actual_error, void* context) -> void {
-    envoy_error expected_error = {ENVOY_STREAM_RESET, {0, nullptr}};
+  observer.on_error = [](envoy_error actual_error, void* context) -> void {
+    envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error = true;
   };
-  observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+  observer.on_headers = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_FALSE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers = true;
   };
-  observer.on_complete_f = [](void* context) -> void {
+  observer.on_complete = [](void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete = true;
   };
@@ -342,7 +342,7 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   send_headers_post_cb();
 
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
-  // Ensure that the on_headers_f on the observer was called.
+  // Ensure that the on_headers on the observer was called.
   ASSERT_TRUE(cc.on_headers);
 
   Event::PostCb reset_post_cb;
@@ -352,7 +352,7 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   reset_post_cb();
 
-  // Ensure that the on_error_f on the observer was called.
+  // Ensure that the on_error on the observer was called.
   ASSERT_TRUE(cc.on_error);
   ASSERT_FALSE(cc.on_complete);
 }
@@ -362,20 +362,20 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   callbacks_called cc = {false, false, false};
   observer.context = &cc;
 
-  observer.on_error_f = [](envoy_error actual_error, void* context) -> void {
-    envoy_error expected_error = {ENVOY_STREAM_RESET, {0, nullptr}};
+  observer.on_error = [](envoy_error actual_error, void* context) -> void {
+    envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error = true;
   };
-  observer.on_headers_f = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+  observer.on_headers = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
     ASSERT_FALSE(end_stream);
     HeaderMapPtr response_headers = Utility::transformHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers = true;
   };
-  observer.on_complete_f = [](void* context) -> void {
+  observer.on_complete = [](void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete = true;
   };
@@ -414,11 +414,11 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   send_headers_post_cb();
 
   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}), false);
-  // Ensure that the on_headers_f on the observer was called.
+  // Ensure that the on_headers on the observer was called.
   ASSERT_TRUE(cc.on_headers);
 
   stream_encoder_.getStream().resetStream(StreamResetReason::RemoteReset);
-  // Ensure that the on_error_f on the observer was called.
+  // Ensure that the on_error on the observer was called.
   ASSERT_TRUE(cc.on_error);
   ASSERT_FALSE(cc.on_complete);
 }
