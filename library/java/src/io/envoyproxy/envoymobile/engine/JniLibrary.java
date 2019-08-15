@@ -6,6 +6,8 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 class JniLibrary {
 
+  protected static native int runEngine(String config, String logLevel);
+
   protected static native long startStream(EnvoyObserver observer);
 
   protected static native int sendHeaders(long stream, EnvoyHeaders headers, boolean endStream);
@@ -19,8 +21,6 @@ class JniLibrary {
   protected static native int locallyCloseStream(long stream);
 
   protected static native int resetStream(long stream);
-
-  protected static native int runEngine(String config, String logLevel);
 
   protected static native int cancel(long stream);
 }
