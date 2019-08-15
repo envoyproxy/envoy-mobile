@@ -14,29 +14,29 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_id_, end_stream,
             *headers);
-  observer_.on_headers_f(Utility::transformHeaders(*headers), end_stream, observer_.context);
+  observer_.on_headers(Utility::transformHeaders(*headers), end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_id_,
             data.length(), end_stream);
-  observer_.on_data_f(Envoy::Buffer::Utility::transformData(data), end_stream, observer_.context);
+  observer_.on_data(Envoy::Buffer::Utility::transformData(data), end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_id_, *trailers);
-  observer_.on_trailers_f(Utility::transformHeaders(*trailers), observer_.context);
+  observer_.on_trailers(Utility::transformHeaders(*trailers), observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onComplete() {
   ENVOY_LOG(debug, "[S{}] complete stream", stream_id_);
-  observer_.on_complete_f(observer_.context);
+  observer_.on_complete(observer_.context);
   http_dispatcher_.cleanup(stream_id_);
 }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_id_);
-  observer_.on_error_f({ENVOY_STREAM_RESET, {0, nullptr}}, observer_.context);
+  observer_.on_error({ENVOY_STREAM_RESET, envoy_nodata}, observer_.context);
 }
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_id,
