@@ -31,7 +31,7 @@ public:
    * @param observer wrapper for callbacks for events on this stream.
    * @return envoy_stream_t handle to the stream being created.
    */
-  envoy_stream_t startStream(envoy_stream_t stream, envoy_observer observer);
+  envoy_status_t startStream(envoy_stream_t stream, envoy_observer observer);
   envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
   envoy_status_t sendData(envoy_stream_t stream, envoy_headers headers, bool end_stream);
   envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers, bool end_stream);

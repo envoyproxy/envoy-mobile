@@ -49,7 +49,7 @@ Dispatcher::Dispatcher(Event::Dispatcher& event_dispatcher,
                        Upstream::ClusterManager& cluster_manager)
     : event_dispatcher_(event_dispatcher), cluster_manager_(cluster_manager) {}
 
-envoy_stream_t Dispatcher::startStream(envoy_stream_t new_stream_handle, envoy_observer observer) {
+envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle, envoy_observer observer) {
   event_dispatcher_.post([this, observer, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, observer, *this);
@@ -68,7 +68,7 @@ envoy_stream_t Dispatcher::startStream(envoy_stream_t new_stream_handle, envoy_o
     }
   });
 
-  return new_stream_handle;
+  return ENVOY_SUCCESS;
 }
 
 envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers headers,
