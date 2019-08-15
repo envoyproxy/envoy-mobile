@@ -24,9 +24,7 @@ static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
 static std::atomic<envoy_stream_t> current_stream_id_{0};
 
-envoy_stream_t init_stream(envoy_engine_t) {
-  return current_stream_id_++;
-}
+envoy_stream_t init_stream(envoy_engine_t) { return current_stream_id_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_observer observer) {
   http_dispatcher_->startStream(stream, observer);
