@@ -1,11 +1,49 @@
 #import "library/common/include/c_types.h"
 #import "library/common/main_interface.h"
 
-#import "library/objective-c/EnvoyStream.h"
-
 #import <stdatomic.h>
 
-#pragma mark - Utility functions to move elsewhere
+@implementation EnvoyObserver
+@end
+
+@implementation EnvoyEngineImpl {
+  envoy_engine_t _engineHandle;
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (!self) {
+    return nil;
+  }
+  _engineHandle = 0;
+  return self;
+}
+
+- (int)runWithConfig:(NSString *)config {
+  return [self runWithConfig:config logLevel:@"info"];
+}
+
+- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel {
+  // Envoy exceptions will only be caught here when compiled for 64-bit arches.
+  // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
+  @try {
+    return (int)run_engine(config.UTF8String, logLevel.UTF8String);
+  } @catch (...) {
+    NSLog(@"Envoy exception caught.");
+    [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyException" object:self];
+    return 1;
+  }
+}
+
+- (void)setup {
+  setup_envoy();
+}
+
+- (EnvoyHttpStream *)openHttpStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyHttpStream alloc] initWithHandle:0 observer:observer];
+}
+
+@end
 
 typedef struct {
   atomic_bool *canceled;
@@ -164,15 +202,16 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyStream *_strongSelf;
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
-  envoy_stream_t _nativeStream;
+  envoy_stream_t _streamHandle;
 }
 
-- (instancetype)initWithObserver:(EnvoyObserver *)observer {
+- (instancetype)initWithHandle:(uint64_t)handle observer:(EnvoyObserver *)observer {
   self = [super init];
   if (!self) {
     return nil;
   }
 
+  _streamHandle = handle;
   // Retain platform observer
   _platformObserver = observer;
 
@@ -194,7 +233,7 @@ static void ios_on_error(envoy_error error, void *context) {
     return nil;
   }
 
-  _nativeStream = result.stream;
+  //_streamHandle = result.stream;
   _strongSelf = self;
   return self;
 }
@@ -209,20 +248,20 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
-  send_headers(_nativeStream, toNativeHeaders(headers), close);
+  send_headers(_streamHandle, toNativeHeaders(headers), close);
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {
   // TODO: implement
-  // send_data(_nativeStream, toNativeData(data), close);
+  // send_data(_streamHandle, toNativeData(data), close);
 }
 
 - (void)sendMetadata:(EnvoyHeaders *)metadata {
-  send_metadata(_nativeStream, toNativeHeaders(metadata));
+  send_metadata(_streamHandle, toNativeHeaders(metadata));
 }
 
 - (void)sendTrailers:(EnvoyHeaders *)trailers {
-  send_trailers(_nativeStream, toNativeHeaders(trailers));
+  send_trailers(_streamHandle, toNativeHeaders(trailers));
 }
 
 - (int)cancel {
@@ -233,7 +272,7 @@ static void ios_on_error(envoy_error error, void *context) {
     // Step 2: directly fire the cancel callback.
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
-    reset_stream(_nativeStream);
+    reset_stream(_streamHandle);
     return 0;
   } else {
     return 1;
