@@ -183,7 +183,7 @@ def swift_static_framework(
         copts = copts + ["-import-objc-header"] + locations
         swiftc_inputs = swiftc_inputs + objc_includes
 
-    resource_name = archive_name + "_resources"   
+    resource_name = module_name + "Resources"   
     apple_resource_bundle(
         name = resource_name,
         resources = data,
