@@ -16,6 +16,9 @@
 #include "library/common/buffer/utility.h"
 #include "library/common/http/dispatcher.h"
 #include "library/common/http/header_utility.h"
+#include "library/common/include/config_template.h"
+
+char* config_template() { return strdup(config_template_str); }
 
 // NOLINT(namespace-envoy)
 

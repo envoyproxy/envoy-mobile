@@ -139,6 +139,18 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 @end
 
+/// Namespace for Envoy configurations.
+@interface EnvoyConfiguration : NSObject
+
+/**
+ Provides a default configuration template that may be used for starting Envoy.
+
+ @return A template that may be used as a starting point for constructing configurations.
+ */
++ (NSString *)templateString;
+
+@end
+
 // Concrete implementation of the `EnvoyEngine` protocol.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 

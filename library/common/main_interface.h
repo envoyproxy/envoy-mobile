@@ -12,6 +12,12 @@ extern "C" { // functions
 #endif
 
 /**
+ * Provides a default configuration template that may be used for starting Envoy.
+ * @return A template that may be used as a starting point for constructing configurations.
+ */
+char* config_template();
+
+/**
  * Open an underlying HTTP stream.
  * @param observer, the observer that will run the stream callbacks.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.

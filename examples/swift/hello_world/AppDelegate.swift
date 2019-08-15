@@ -10,11 +10,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool
   {
-    do {
-      NSLog("Loaded \(try Configuration().build())")
-    } catch {
-      NSLog("Failed \(error)")
-    }
     self.envoy = Envoy(config: Configuration())
 
     let window = UIWindow(frame: UIScreen.main.bounds)

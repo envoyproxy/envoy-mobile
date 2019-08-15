@@ -23,7 +23,6 @@ swift_static_framework(
     objc_includes = [
         "//library/objective-c:EnvoyEngine.h",
     ],
-    data = ["config.yaml"],
     visibility = ["//visibility:public"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )

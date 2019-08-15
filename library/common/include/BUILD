@@ -6,7 +6,13 @@ envoy_package()
 
 envoy_cc_library(
     name = "c_types_interface",
-    srcs = ["c_types.cc"],
-    hdrs = ["c_types.h"],
+    srcs = [
+        "c_types.cc",
+        "config_template.cc",
+    ],
+    hdrs = [
+        "c_types.h",
+        "config_template.h",
+    ],
     repository = "@envoy",
 )

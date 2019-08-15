@@ -20,8 +20,13 @@ public final class Envoy: NSObject {
   /// - parameter config:   Configuration to use for starting Envoy.
   /// - parameter logLevel: Log level to use for this instance.
   public init(config: Configuration, logLevel: LogLevel = .info) {
-    self.runner = RunnerThread(config: try! config.build(), logLevel: logLevel)
-    //self.engine = engine
+    do {
+      self.runner = RunnerThread(config: try config.build(), engine: self.engine, logLevel: logLevel)
+    } catch let error {
+      NSLog("Failed to load configuration: \(error)")
+      self.runner = RunnerThread(config: "", engine: self.engine, logLevel: logLevel)
+    }
+    
     self.runner.start()
   }
 

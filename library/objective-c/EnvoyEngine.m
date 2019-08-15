@@ -47,6 +47,14 @@
 
 @end
 
+@implementation EnvoyConfiguration
+
++ (NSString *)templateString {
+    return [[NSString alloc] initWithUTF8String:config_template()];
+}
+
+@end
+
 #pragma mark - utility functions to move elsewhere
 typedef struct {
   atomic_bool *canceled;

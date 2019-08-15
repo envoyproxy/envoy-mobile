@@ -1,6 +1,6 @@
-# Envoy config used by the example applications.
-# More information about Envoy's config can be found at:
-# https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
+// NOLINT(namespace-envoy)
+
+const char* config_template_str = R"(
 static_resources:
   listeners:
   - address:
@@ -56,3 +56,4 @@ stats_flush_interval: {{ stats_flush_interval }}
 watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
+)";

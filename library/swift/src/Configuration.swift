@@ -56,14 +56,7 @@ public final class Configuration: NSObject {
     ///
     /// - returns: A file that may be used for starting an instance of Envoy.
     public func build() throws -> String {
-        // let bundle = Bundle(for: type(of: self))
-        let bundle = Bundle(identifier: "EnvoyResources")!
-        guard let configFile = bundle.path(forResource: "config", ofType: "yaml") else {
-            NSLog("**Unable to load config.yaml")
-            throw ConfigurationError.missingDefaultConfigFile
-        }
-
-        var template = try String(contentsOfFile: configFile, encoding: .utf8)
+        var template = EnvoyConfiguration.templateString()
         let templateKeysToValues: [String: String] = [
             "address": self.address,
             "port_value": self.port,
