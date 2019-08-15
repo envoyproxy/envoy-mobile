@@ -5,6 +5,7 @@ static_framework_import
 
 load("@build_bazel_apple_support//lib:apple_support.bzl", "apple_support")
 load("@build_bazel_rules_swift//swift:swift.bzl", "SwiftInfo", "swift_library")
+load("@build_bazel_rules_apple//apple/internal/resource_rules:apple_resource_bundle.bzl", "apple_resource_bundle")
 
 MINIMUM_IOS_VERSION = "10.0"
 
@@ -32,6 +33,11 @@ def _zip_swift_arg(module_name, swift_identifier, input_file):
 def _swift_static_framework_impl(ctx):
     module_name = ctx.attr.framework_name
     fat_file = ctx.outputs.fat_file
+    resources = ctx.attr.resources
+    print("\n\n\n\n\n~~~~")
+    print(dir(resources[0]))
+    print(resources[0].files)
+    print("~~~~\n\n\n\n\n")
 
     input_archives = []
     input_modules_docs = []
@@ -76,6 +82,8 @@ def _swift_static_framework_impl(ctx):
             _zip_swift_arg(module_name, swiftmodule_identifier, swiftmodule),
         ]
 
+        zip_args += [_zip_swift_arg(module_name, "Resources/config", x) for x in resources[0].files]
+
     ctx.actions.run(
         inputs = input_archives,
         outputs = [fat_file],
@@ -87,7 +95,7 @@ def _swift_static_framework_impl(ctx):
 
     output_file = ctx.outputs.output_file
     ctx.actions.run(
-        inputs = input_modules_docs + [fat_file],
+        inputs = input_modules_docs + [fat_file] + [x for x in resources[0].files],
         outputs = [output_file],
         mnemonic = "CreateFrameworkZip",
         progress_message = "Creating framework zip for {}".format(module_name),
@@ -127,6 +135,10 @@ _swift_static_framework = rule(
         platform_type = attr.string(
             default = str(apple_common.platform_type.ios),
         ),
+        resources = attr.label_list(
+            default = [],
+            allow_files = True,
+        )
     ),
     fragments = [
         "apple",
@@ -142,6 +154,7 @@ def swift_static_framework(
         name,
         module_name = None,
         srcs = [],
+        resources = [],
         deps = [],
         objc_includes = [],
         copts = [],
@@ -153,6 +166,7 @@ def swift_static_framework(
         name: The name of the module, the framework's name will be this name
             appending Framework so you can depend on this from other modules
         srcs: Custom source paths for the swift files
+        resources: Any additional resource bundles to include with this framework
         objc_includes: Header files for any objective-c dependencies (required for linking)
         copts: Any custom swiftc opts passed through to the swift_library
         swiftc_inputs: Any labels that require expansion for copts (would also apply to linkopts)
@@ -165,9 +179,16 @@ def swift_static_framework(
         copts = copts + ["-import-objc-header"] + locations
         swiftc_inputs = swiftc_inputs + objc_includes
 
+    resource_name = archive_name + "_resources"   
+    apple_resource_bundle(
+        name = resource_name,
+        resources = resources,
+    )
+
     swift_library(
         name = archive_name,
         srcs = srcs,
+        data = [":" + resource_name], # TODO
         copts = copts,
         swiftc_inputs = swiftc_inputs,
         module_name = module_name,
@@ -180,4 +201,5 @@ def swift_static_framework(
         archive = archive_name,
         framework_name = module_name,
         visibility = visibility,
+        resources = resources,
     )
