@@ -10,12 +10,6 @@ public enum ConfigurationError: Int, Swift.Error {
 /// Builder used for creating configurations for new Envoy instances.
 @objcMembers
 public final class Configuration: NSObject {
-    /// The address at which Envoy should listen for requests.
-    public private(set) var address: String = "0.0.0.0"
-
-    /// The port at which Envoy should listen for requests.
-    public private(set) var port: String = "9001"
-
     /// Timeout to apply to connections.
     public private(set) var connectTimeoutSeconds: UInt = 30
 
@@ -24,16 +18,6 @@ public final class Configuration: NSObject {
 
     /// Interval at which stats should be flushed.
     public private(set) var statsFlushSeconds: UInt = 60
-
-    public func withAddress(_ address: String) -> Configuration {
-        self.address = address
-        return self
-    }
-
-    public func withPort(_ port: String) -> Configuration {
-        self.port = port
-        return self
-    }
 
     public func withConnectTimeoutSeconds(_ connectTimeoutSeconds: UInt) -> Configuration {
         self.connectTimeoutSeconds = connectTimeoutSeconds
@@ -58,8 +42,6 @@ public final class Configuration: NSObject {
     public func build() throws -> String {
         var template = EnvoyConfiguration.templateString()
         let templateKeysToValues: [String: String] = [
-            "address": self.address,
-            "port_value": self.port,
             "connect_timeout": "\(self.connectTimeoutSeconds)s",
             "dns_refresh_rate": "\(self.dnsRefreshSeconds)s",
             "stats_flush_interval": "\(self.statsFlushSeconds)s",

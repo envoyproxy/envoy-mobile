@@ -4,7 +4,7 @@ const char* config_template_str = R"(
 static_resources:
   listeners:
   - address:
-      socket_address: {address: {{ address }}, port_value: {{ port_value }}, protocol: TCP}
+      socket_address: {address: 0.0.0.0, port_value: 9001, protocol: TCP}
     filter_chains:
     - filters:
       - name: envoy.http_connection_manager
@@ -22,8 +22,8 @@ static_resources:
   - address:
       socket_address:
         protocol: TCP
-        address: {{ address }}
-        port_value: {{ port_value }}
+        address: 0.0.0.0
+        port_value: 9001
     filter_chains:
     - filters:
       - name: envoy.http_connection_manager
