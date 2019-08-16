@@ -32,6 +32,8 @@ envoy_headers copy_envoy_headers(envoy_headers src) {
 envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes) {
   uint8_t* dst_bytes = (uint8_t*)malloc(sizeof(uint8_t) * length);
   memcpy(dst_bytes, src_bytes, length);
+  // Note: since this function is copying the bytes over to freshly allocated memory, free is an
+  // appropriate release function and dst_bytes is an appropriate context.
   envoy_data dst = {length, dst_bytes, free, dst_bytes};
   return dst;
 }
