@@ -10,8 +10,8 @@ public enum EnvoyBuilderError: Int, Swift.Error {
 /// Builder used for creating new instances of Envoy.
 @objcMembers
 public final class EnvoyBuilder: NSObject {
+  private let engineType: EnvoyEngine.Type
   private var logLevel: LogLevel = .info
-  private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var configYAML: String?
 
   private var connectTimeoutSeconds: UInt = 30
@@ -20,39 +20,43 @@ public final class EnvoyBuilder: NSObject {
 
   // MARK: - Public
 
+  public override init() {
+    self.engineType = EnvoyEngineImpl.self
+    super.init()
+  }
+
   /// Add a log level to use with Envoy.
   public func addLogLevel(_ logLevel: LogLevel) -> EnvoyBuilder {
     self.logLevel = logLevel
     return self
   }
 
-  /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
-  /// A new instance of this engine will be created when `build()` is called.
-  public func addEngineType(_ engineType: EnvoyEngine.Type) -> EnvoyBuilder {
-    self.engineType = engineType
-    return self
-  }
+  // MARK: - YAML configuration options
 
   /// Add a YAML file to use as a configuration.
   /// Setting this will supersede any other configuration settings in the builder.
+  @discardableResult
   public func addConfigYAML(_ configYAML: String?) -> EnvoyBuilder {
     self.configYAML = configYAML
     return self
   }
 
   /// Add a timeout for new network connections to hosts in the cluster.
+  @discardableResult
   public func addConnectTimeoutSeconds(_ connectTimeoutSeconds: UInt) -> EnvoyBuilder {
     self.connectTimeoutSeconds = connectTimeoutSeconds
     return self
   }
 
   /// Add a rate at which to refresh DNS.
+  @discardableResult
   public func addDNSRefreshSeconds(_ dnsRefreshSeconds: UInt) -> EnvoyBuilder {
     self.dnsRefreshSeconds = dnsRefreshSeconds
     return self
   }
 
   /// Add an interval at which to flush Envoy stats.
+  @discardableResult
   public func addStatsFlushSeconds(_ statsFlushSeconds: UInt) -> EnvoyBuilder {
     self.statsFlushSeconds = statsFlushSeconds
     return self
@@ -67,10 +71,19 @@ public final class EnvoyBuilder: NSObject {
     return Envoy(configYAML: configYAML, logLevel: self.logLevel, engine: engine)
   }
 
-  // MARK: - Private
+  // MARK: - Internal
 
-  private func resolvedYAML() throws -> String {
-    var template = EnvoyConfiguration.templateString()
+  init(engineType: EnvoyEngine.Type) {
+    self.engineType = engineType
+  }
+
+  /// Processes the YAML template provided, replacing keys with values from the configuration.
+  ///
+  /// - parameter template: The template YAML file to use.
+  ///
+  /// - returns: A resolved YAML file with all template keys replaced.
+  func resolvedYAML(_ template: String = EnvoyConfiguration.templateString()) throws -> String {
+    var template = template
     let templateKeysToValues: [String: String] = [
       "connect_timeout": "\(self.connectTimeoutSeconds)s",
       "dns_refresh_rate": "\(self.dnsRefreshSeconds)s",
