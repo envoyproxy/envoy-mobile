@@ -80,10 +80,28 @@ typedef struct {
   envoy_header* headers;
 } envoy_headers;
 
+#ifdef __cplusplus
+extern "C" { // utility functions
+#endif
+
 /**
  * Helper function to free/release memory associated with underlying headers.
  */
 void release_envoy_headers(envoy_headers headers);
+
+/**
+ * Helper function to copy envoy_headers.
+ */
+envoy_headers copy_envoy_headers(envoy_headers src);
+
+/**
+ * Helper function to copy envoy_data
+ */
+envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes);
+
+#ifdef __cplusplus
+} // utility functions
+#endif
 
 // Convenience constant to pass to function calls with no data.
 // For example when sending a headers-only request.

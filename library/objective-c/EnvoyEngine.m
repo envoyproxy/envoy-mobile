@@ -116,6 +116,9 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
     }
     [headerValueList addObject:headerValue];
   }
+  if (headers.length > 0) {
+    release_envoy_headers(headers);
+  }
   return headerDict;
 }
 
