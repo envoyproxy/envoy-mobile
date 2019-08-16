@@ -1,9 +1,9 @@
 import Foundation
 
+/// Error that may be thrown by the configuration type.
 @objc
-enum ConfigurationError: Int, Swift.Error {
-    case missingDefaultConfigFile
-    case invalidTemplateKey
+public enum ConfigurationError: Int, Swift.Error {
+    /// Not all keys within the provided template were resolved.
     case unresolvedTemplateKey
 }
 
@@ -66,11 +66,9 @@ public final class Configuration: NSObject {
         ]
 
         for (templateKey, value) in templateKeysToValues {
-            guard let range = template.range(of: "{{ \(templateKey) }}") else {
-                throw ConfigurationError.invalidTemplateKey
+            while let range = template.range(of: "{{ \(templateKey) }}") {
+                template = template.replacingCharacters(in: range, with: value)
             }
-
-            template = template.replacingCharacters(in: range, with: value)
         }
 
         if template.contains("{{") {
