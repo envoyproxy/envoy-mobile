@@ -1,11 +1,14 @@
 #include "library/common/main_interface.h"
 
+#include <atomic>
 #include <unordered_map>
 
 #include "common/upstream/logical_dns_cluster.h"
 
 #include "exe/main_common.h"
 
+#include "extensions/clusters/dynamic_forward_proxy/cluster.h"
+#include "extensions/filters/http/dynamic_forward_proxy/config.h"
 #include "extensions/filters/http/router/config.h"
 #include "extensions/filters/network/http_connection_manager/config.h"
 #include "extensions/transport_sockets/raw_buffer/config.h"
@@ -19,21 +22,31 @@
 
 static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
+static std::atomic<envoy_stream_t> current_stream_handle_{0};
 
-envoy_stream start_stream(envoy_observer observer) {
-  return {ENVOY_SUCCESS, http_dispatcher_->startStream(observer)};
+envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
+
+envoy_status_t start_stream(envoy_stream_t stream, envoy_observer observer) {
+  http_dispatcher_->startStream(stream, observer);
+  return ENVOY_SUCCESS;
 }
 
-envoy_status_t send_headers(envoy_stream_t stream_id, envoy_headers headers, bool end_stream) {
-  return http_dispatcher_->sendHeaders(stream_id, headers, end_stream);
+envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
+  return http_dispatcher_->sendHeaders(stream, headers, end_stream);
 }
 
 // TODO: implement.
 envoy_status_t send_data(envoy_stream_t, envoy_data, bool) { return ENVOY_FAILURE; }
-envoy_status_t send_metadata(envoy_stream_t, envoy_headers, bool) { return ENVOY_FAILURE; }
+envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 envoy_status_t send_trailers(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
-envoy_status_t locally_close_stream(envoy_stream_t) { return ENVOY_FAILURE; }
-envoy_status_t reset_stream(envoy_stream_t) { return ENVOY_FAILURE; }
+
+envoy_status_t reset_stream(envoy_stream_t stream) { return http_dispatcher_->resetStream(stream); }
+
+envoy_engine_t init_engine() {
+  // TODO(goaway): return new handle once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  return 1;
+}
 
 /*
  * Setup envoy for interaction via the main interface.
@@ -57,6 +70,9 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
   // The following calls ensure that registration happens before the entities are needed.
   // Note that as more registrations are needed, explicit initialization calls will need to be added
   // here.
+  Envoy::Extensions::Clusters::DynamicForwardProxy::forceRegisterClusterFactory();
+  Envoy::Extensions::HttpFilters::DynamicForwardProxy::
+      forceRegisterDynamicForwardProxyFilterFactory();
   Envoy::Extensions::HttpFilters::RouterFilter::forceRegisterRouterFilterConfig();
   Envoy::Extensions::NetworkFilters::HttpConnectionManager::
       forceRegisterHttpConnectionManagerFilterConfigFactory();

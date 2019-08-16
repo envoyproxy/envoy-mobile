@@ -1,6 +1,6 @@
-# Envoy config used by the example applications.
-# More information about Envoy's config can be found at:
-# https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
+// NOLINT(namespace-envoy)
+
+const char* config_template = R"(
 static_resources:
   listeners:
   - address:
@@ -51,9 +51,9 @@ static_resources:
           - name: envoy.router
   clusters:
   - name: base
-    connect_timeout: 30s
+    connect_timeout: {{ connect_timeout }}
+    dns_refresh_rate: {{ dns_refresh_rate }}
     dns_lookup_family: V4_ONLY
-    dns_refresh_rate: 60s
     lb_policy: ROUND_ROBIN
     load_assignment:
       cluster_name: base
@@ -66,8 +66,8 @@ static_resources:
       sni: example.com
     type: LOGICAL_DNS
   - name: default_egress
-    connect_timeout: 30s
-    dns_refresh_rate: 60s
+    connect_timeout: {{ connect_timeout }}
+    dns_refresh_rate: {{ dns_refresh_rate }}
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
       name: envoy.clusters.dynamic_forward_proxy
@@ -83,7 +83,8 @@ static_resources:
     #   common_tls_context:
     #     validation_context:
     #       trusted_ca: {filename: /etc/ssl/certs/ca-certificates.crt}
-stats_flush_interval: 60s
+stats_flush_interval: {{ stats_flush_interval }}
 watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
+)";

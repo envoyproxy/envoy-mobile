@@ -16,34 +16,31 @@ public final class Envoy: NSObject {
     return self.runner.isFinished
   }
 
-  /// Initialize a new Envoy instance using a specific engine for streaming.
+  /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter config:       Configuration file that is recognizable by Envoy (YAML).
-  /// - parameter logLevel:     Log level to use for this instance.
-  /// - parameter engineStream: Stream interface that will be used to execute streaming requests.
-  ///                           Useful for mocking/testing.
-  init(config: String, logLevel: LogLevel = .info,
-       streamEngine: EnvoyEngineStreamInterface.Type = EnvoyEngine.self)
-  {
-    self.streamEngine = streamEngine
-    self.runner = RunnerThread(config: config, logLevel: logLevel)
+  /// - parameter configYAML: Configuration YAML to use for starting Envoy.
+  /// - parameter logLevel:   Log level to use for this instance.
+  /// - parameter engine:     The underlying engine to use for starting Envoy.
+  init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+    self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
     self.runner.start()
   }
 
-  // MARK: - RunnerThread
+  // MARK: - Private
 
   private final class RunnerThread: Thread {
-    private let config: String
+    private let engine: EnvoyEngine
+    private let configYAML: String
     private let logLevel: LogLevel
 
-    init(config: String, logLevel: LogLevel) {
-      self.config = config
+    init(configYAML: String, logLevel: LogLevel, engine: EnvoyEngine) {
+      self.configYAML = configYAML
       self.logLevel = logLevel
+      self.engine = engine
     }
 
     override func main() {
-      // TODO: Use self.streamEngine here (or rename)
-      EnvoyEngine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
+      self.engine.run(withConfig: self.configYAML, logLevel: self.logLevel.stringValue)
     }
   }
 }

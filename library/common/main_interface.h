@@ -12,11 +12,27 @@ extern "C" { // functions
 #endif
 
 /**
- * Open an underlying HTTP stream.
+ * Template configuration compiled with the Envoy Mobile library.
+ * More information about Envoy's config can be found at:
+ * https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
+ */
+extern const char* config_template;
+
+/**
+ * Initialize an underlying HTTP stream.
+ * @param engine, handle to the engine that will manage this stream.
+ * @return envoy_stream_t, handle to the underlying stream.
+ */
+envoy_stream_t init_stream(envoy_engine_t);
+
+/**
+ * Open an underlying HTTP stream. Note: Streams must be started before other other interaction can
+ * can occur.
+ * @param stream, handle to the stream to be started.
  * @param observer, the observer that will run the stream callbacks.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_stream start_stream(envoy_observer observer);
+envoy_status_t start_stream(envoy_stream_t, envoy_observer observer);
 
 /**
  * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
@@ -41,10 +57,9 @@ envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream
  * Send metadata over an HTTP stream. This method can be invoked multiple times.
  * @param stream, the stream to send metadata over.
  * @param metadata, the metadata to send.
- * @param end_stream, supplies whether this is the last data in the stream.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, bool end_stream);
+envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata);
 
 /**
  * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
@@ -56,14 +71,6 @@ envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata, bool
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers);
 
 /**
- * Half-close an HTTP stream. The stream will be observable and may return further data
- * via the observer callbacks. However, nothing further may be sent.
- * @param stream, the stream to close.
- * @return envoy_status_t, the resulting status of the operation.
- */
-envoy_status_t locally_close_stream(envoy_stream_t stream);
-
-/**
  * Detach all observers from a stream and send an interrupt upstream if supported by transport.
  * @param stream, the stream to evict.
  * @return envoy_status_t, the resulting status of the operation.
@@ -71,9 +78,16 @@ envoy_status_t locally_close_stream(envoy_stream_t stream);
 envoy_status_t reset_stream(envoy_stream_t stream);
 
 /**
- * External entrypoint for library.
+ * Initialize an engine for handling network streams.
+ * @return envoy_engine_t, handle to the underlying engine.
+ */
+envoy_engine_t init_engine();
+
+/**
+ * External entry point for library.
  * @param config, the configuration blob to run envoy with.
  * @param log_level, the logging level to run envoy with.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t run_engine(const char* config, const char* log_level);
 
