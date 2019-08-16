@@ -15,7 +15,7 @@ public class AndroidEngineImpl implements EnvoyEngine {
   // Private helper class used by the load method to ensure the native library and its
   // dependencies are loaded and initialized at most once.
   public AndroidEngineImpl(Context context) {
-    initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+    initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
     envoyEngine = new EnvoyEngineImpl();
   }
 
