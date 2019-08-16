@@ -20,7 +20,6 @@ public final class Envoy: NSObject {
   /// - parameter config:   Configuration file that is recognizable by Envoy (YAML).
   /// - parameter logLevel: Log level to use for this instance.
   public init(config: String, logLevel: LogLevel = .info) {
-    //self.engine = engine
     self.runner = RunnerThread(config: config, engine: self.engine, logLevel: logLevel)
     self.runner.start()
   }
@@ -29,12 +28,11 @@ public final class Envoy: NSObject {
     private let engine: EnvoyEngine
     private let config: String
     private let logLevel: LogLevel
-    private let engine: EnvoyEngine
 
     init(config: String, engine: EnvoyEngine, logLevel: LogLevel) {
+      self.engine = engine
       self.config = config
       self.logLevel = logLevel
-      self.engine = engine
     }
 
     override func main() {
