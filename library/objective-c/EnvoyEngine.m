@@ -282,9 +282,9 @@ static void ios_on_error(envoy_error error, void *context) {
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
     reset_stream(_streamHandle);
-    return ENVOY_SUCCESS;
+    return 0;
   } else {
-    return ENVOY_FAILURE;
+    return 1;
   }
 }
 
