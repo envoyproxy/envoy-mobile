@@ -7,13 +7,13 @@
 namespace Envoy {
 namespace Http {
 
-void envoy_test_realease(void* context) {
+void envoy_test_release(void* context) {
   uint32_t* counter = static_cast<uint32_t*>(context);
   *counter = *counter + 1;
 }
 
 envoy_data envoyTestString(std::string& s, uint32_t* sentinel) {
-  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str()), envoy_test_realease, sentinel};
+  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str()), envoy_test_release, sentinel};
 }
 
 TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
