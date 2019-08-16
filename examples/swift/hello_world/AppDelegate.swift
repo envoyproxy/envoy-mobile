@@ -3,7 +3,7 @@ import UIKit
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
-  private let envoy = Envoy()
+  private let envoy = try! Envoy()
 
   var window: UIWindow?
 
