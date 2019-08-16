@@ -16,6 +16,7 @@ HeaderMapPtr toCppHeaders(envoy_headers headers) {
     transformed_headers->addCopy(LowerCaseString(convertToString(headers.headers[i].key)),
                                  convertToString(headers.headers[i].value));
   }
+  // The C envoy_headers struct can be released now because the headers have been copied.
   if (headers.length > 0) {
     release_envoy_headers(headers);
   }
