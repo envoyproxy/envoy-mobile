@@ -11,7 +11,7 @@ public enum EnvoyBuilderError: Int, Swift.Error {
 @objcMembers
 public final class EnvoyBuilder: NSObject {
   private var logLevel: LogLevel = .info
-  private var engine: EnvoyEngine?
+  private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var configYAML: String?
 
   private var connectTimeoutSeconds: UInt = 30
@@ -27,14 +27,15 @@ public final class EnvoyBuilder: NSObject {
   }
 
   /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
-  public func addEngine(_ engine: EnvoyEngine) -> EnvoyBuilder {
-    self.engine = engine
+  /// A new instance of this engine will be created when `build()` is called.
+  public func addEngineType(_ engineType: EnvoyEngine.Type) -> EnvoyBuilder {
+    self.engineType = engineType
     return self
   }
 
   /// Add a YAML file to use as a configuration.
-  /// Note that this will supersede any other configuration settings applied in this builder.
-  public func addconfigYAML(_ configYAML: String?) -> EnvoyBuilder {
+  /// Setting this will supersede any other configuration settings in the builder.
+  public func addConfigYAML(_ configYAML: String?) -> EnvoyBuilder {
     self.configYAML = configYAML
     return self
   }
@@ -61,7 +62,7 @@ public final class EnvoyBuilder: NSObject {
   ///
   /// - returns: A new instance of Envoy.
   public func build() throws -> Envoy {
-    let engine = self.engine ?? EnvoyEngineImpl()
+    let engine = self.engineType.init()
     let configYAML = try self.configYAML ?? self.resolvedYAML()
     return Envoy(configYAML: configYAML, logLevel: self.logLevel, engine: engine)
   }
