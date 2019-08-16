@@ -104,7 +104,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  Cancel the stream. This functions as an interrupt, and aborts further callbacks and handling of the
  stream.
 
- @return 1 (success), unless the stream has already been canceled.
+ @return Success unless the stream has already been canceled.
  */
 - (int)cancel;
 
@@ -141,7 +141,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
  @param observer Handler for observing stream events.
  */
-- (EnvoyHttpStream *)openHTTPStreamWithObserver:(EnvoyObserver *)observer;
+- (EnvoyStream *)startStreamWithObserver:(EnvoyObserver *)observer;
 
 @end
 

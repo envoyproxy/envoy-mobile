@@ -45,8 +45,8 @@
   setup_envoy();
 }
 
-- (EnvoyStream *)openHTTPStreamWithObserver:(EnvoyObserver *)observer {
-  return [[EnvoyHttpStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
+- (EnvoyStream *)startStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
 }
 
 @end
@@ -282,9 +282,9 @@ static void ios_on_error(envoy_error error, void *context) {
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
     reset_stream(_streamHandle);
-    return 0;
+    return ENVOY_SUCCESS;
   } else {
-    return 1;
+    return ENVOY_FAILURE;
   }
 }
 
