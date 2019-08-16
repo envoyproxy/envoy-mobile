@@ -15,7 +15,7 @@ extern "C" { // functions
  * Provides a default configuration template that may be used for starting Envoy.
  * @return A template that may be used as a starting point for constructing configurations.
  */
-char* config_template();
+const char* config_template();
 
 /**
  * Open an underlying HTTP stream.
