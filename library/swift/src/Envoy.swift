@@ -20,15 +20,15 @@ public final class Envoy: NSObject {
   /// - parameter config:   Configuration to use for starting Envoy.
   /// - parameter logLevel: Log level to use for this instance.
   public convenience init(config: Configuration = Configuration(), logLevel: LogLevel = .info) throws {
-    self.init(configFile: try config.build(), logLevel: logLevel)
+    self.init(configYAML: try config.build(), logLevel: logLevel)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter configFile: Configuration file to use for starting Envoy.
+  /// - parameter configYAML: Configuration YAML to use for starting Envoy.
   /// - parameter logLevel:   Log level to use for this instance.
-  public init(configFile: String, logLevel: LogLevel = .info) {
-    self.runner = RunnerThread(config: configFile, engine: self.engine, logLevel: logLevel)
+  public init(configYAML: String, logLevel: LogLevel = .info) {
+    self.runner = RunnerThread(config: configYAML, engine: self.engine, logLevel: logLevel)
     self.runner.start()
   }
 
