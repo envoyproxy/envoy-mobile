@@ -1,39 +1,67 @@
-uimport <Foundation/Foundation.h>
-
-#import "library/objective-c/EnvoyObserver.h"
-#import "library/objective-c/EnvoyStream.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Wrapper layer for calling into Envoy's C/++ API.
-@protocol EnvoyEngine
+// MARK: - Aliases
+
+/// A set of headers that may be passed to/from an Envoy stream.
+typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
+
+// MARK: - EnvoyObserver
+
+/// Interface that can handle HTTP callbacks.
+@interface EnvoyObserver : NSObject
 
 /**
- Run the Envoy engine with the provided config and log level.
-
- @param config The configuration file with which to start Envoy.
- @return A status indicating if the action was successful.
+ * Dispatch queue provided to handle callbacks.
  */
-- (int)runWithConfig:(NSString *)config;
+@property (nonatomic, assign) dispatch_queue_t dispatchQueue;
 
 /**
- Run the Envoy engine with the provided config and log level.
-
- @param config The configuration file with which to start Envoy.
- @param logLevel The log level to use when starting Envoy.
- @return A status indicating if the action was successful.
+ * Called when all headers get received on the async HTTP stream.
+ * @param headers the headers received.
+ * @param endStream whether the response is headers-only.
  */
-- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
-
-/// Performs necessary setup after Envoy has initialized and started running.
-/// TODO: create a post-initialization callback from Envoy to handle this automatically.
-- (void)setupEnvoy;
+@property (nonatomic, strong) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
 /**
- Creates a new stream with the provided observer.
+ * Called when a data frame gets received on the async HTTP stream.
+ * This callback can be invoked multiple times if the data gets streamed.
+ * @param data the data received.
+ * @param endStream whether the data is the last data frame.
+ */
+@property (nonatomic, strong) void (^onData)(NSData *data, BOOL endStream);
 
- @param observer The observer for receiving callbacks from the stream.
- @return A stream that may be used for sending data.
+/**
+ * Called when all metadata gets received on the async HTTP stream.
+ * Note that end stream is implied when on_trailers is called.
+ * @param metadata the metadata received.
+ */
+@property (nonatomic, strong) void (^onMetadata)(EnvoyHeaders *metadata);
+
+/**
+ * Called when all trailers get received on the async HTTP stream.
+ * Note that end stream is implied when on_trailers is called.
+ * @param trailers the trailers received.
+ */
+@property (nonatomic, strong) void (^onTrailers)(EnvoyHeaders *trailers);
+
+/**
+ * Called when the async HTTP stream has an error.
+ * @param error the error received/caused by the async HTTP stream.
+ */
+@property (nonatomic, strong) void (^onError)();
+
+// FIXME
+@property (nonatomic, strong) void (^onCancel)();
+
+@end
+
+@interface EnvoyHttpStream : NSObject
+/**
+ Open an underlying HTTP stream.
+
+ @param observer the observer that will run the stream callbacks.
  */
 - (instancetype)initWithHandle:(uint64_t)handle observer:(EnvoyObserver *)observer;
 
@@ -71,9 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
  Cancel the stream. This functions as an interrupt, and aborts further callbacks and handling of the
  stream.
  @return Success, unless the stream has already been canceled.
->>>>>>> master
  */
-- (EnvoyStream *)startStreamWithObserver:(EnvoyObserver *)observer;
+- (int)cancel;
 
 @end
 
