@@ -13,19 +13,19 @@ mock_template:
 private final class MockEnvoyEngine: NSObject, EnvoyEngine {
   static var onRun: ((_ config: String, _ logLevel: String?) -> Void)?
 
-  func runWithConfig(_ config: String) -> Int {
+  func run(withConfig config: String) -> Int32 {
     MockEnvoyEngine.onRun?(config, nil)
     return 0
   }
 
-  func runWithConfig(_ config: String, logLevel: String) -> Int {
+  func run(withConfig config: String, logLevel: String) -> Int32 {
     MockEnvoyEngine.onRun?(config, logLevel)
     return 0
   }
 
   func setup() {}
 
-  func startStreamWithObserver(_ observer: EnvoyObserver) -> EnvoyHTTPStream {
+  func startStream(with observer: EnvoyObserver) -> EnvoyHTTPStream {
     fatalError()
   }
 }
@@ -86,25 +86,10 @@ final class EnvoyBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("stats_flush_interval: 200s"))
   }
 
-  func testThrowsWhenUnresolvedValueInTemplate() throws {
+  func testThrowsWhenUnresolvedValueInTemplate() {
     let builder = EnvoyBuilder(engineType: MockEnvoyEngine.self)
     XCTAssertThrowsError(try builder.resolvedYAML("{{ missing }}")) { error in
       XCTAssertEqual(.unresolvedTemplateKey, error as? EnvoyBuilderError)
     }
-  }
-
-  func testUsesValuesSetInBuilderClosure() throws {
-    let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRun = { yaml, logLevel in
-      XCTAssertTrue(yaml.contains("stats_flush_interval: 200s"))
-      XCTAssertEqual("trace", logLevel)
-      expectation.fulfill()
-    }
-
-    _ = try Envoy.with { builder in
-      builder.addStatsFlushSeconds(200)
-    }
-
-    self.waitForExpectations(timeout: 0.01)
   }
 }
