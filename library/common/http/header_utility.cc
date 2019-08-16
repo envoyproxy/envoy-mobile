@@ -24,8 +24,6 @@ HeaderMapPtr toInternalHeaders(envoy_headers headers) {
 }
 
 envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
-  // TODO: provide utility for the caller to free allocated memory
-  // https://github.com/lyft/envoy-mobile/issues/280
   envoy_header* headers =
       static_cast<envoy_header*>(malloc(sizeof(envoy_header) * header_map.size()));
   envoy_headers transformed_headers;
