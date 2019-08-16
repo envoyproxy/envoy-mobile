@@ -19,8 +19,8 @@ public final class Envoy: NSObject {
   ///
   /// - parameter config:   Configuration to use for starting Envoy.
   /// - parameter logLevel: Log level to use for this instance.
-  public convenience init(config: Configuration = Configuration(), logLevel: LogLevel = .info) {
-    self.init(configFile: try! config.build(), logLevel: logLevel)
+  public convenience init(config: Configuration = Configuration(), logLevel: LogLevel = .info) throws {
+    self.init(configFile: try config.build(), logLevel: logLevel)
   }
 
   /// Initialize a new Envoy instance using a string configuration.

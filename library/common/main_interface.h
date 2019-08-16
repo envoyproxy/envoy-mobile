@@ -19,7 +19,6 @@ extern "C" { // functions
 extern const char* config_template;
 
 /**
- * Open an underlying HTTP stream.
  * Initialize an underlying HTTP stream.
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.
