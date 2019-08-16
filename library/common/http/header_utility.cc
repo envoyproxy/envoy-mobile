@@ -10,7 +10,7 @@ std::string convertToString(envoy_data s) {
   return std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(s.bytes)), s.length);
 }
 
-HeaderMapPtr toCppHeaders(envoy_headers headers) {
+HeaderMapPtr toInternalHeaders(envoy_headers headers) {
   Http::HeaderMapPtr transformed_headers = std::make_unique<HeaderMapImpl>();
   for (envoy_header_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(LowerCaseString(convertToString(headers.headers[i].key)),
@@ -23,7 +23,7 @@ HeaderMapPtr toCppHeaders(envoy_headers headers) {
   return transformed_headers;
 }
 
-envoy_headers toCHeaders(const HeaderMap& header_map) {
+envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
   // TODO: provide utility for the caller to free allocated memory
   // https://github.com/lyft/envoy-mobile/issues/280
   envoy_header* headers =
