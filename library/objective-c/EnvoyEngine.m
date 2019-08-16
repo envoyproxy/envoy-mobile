@@ -5,8 +5,12 @@
 
 #import <stdatomic.h>
 
+#pragma mark - EnvoyObserver
+
 @implementation EnvoyObserver
 @end
+
+#pragma mark - EnvoyEngineImpl
 
 @implementation EnvoyEngineImpl {
   envoy_engine_t _engineHandle;
@@ -41,11 +45,13 @@
   setup_envoy();
 }
 
-- (EnvoyHttpStream *)openHttpStreamWithObserver:(EnvoyObserver *)observer {
-  return [[EnvoyHttpStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
+- (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyHTTPStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
 }
 
 @end
+
+#pragma mark - EnvoyConfiguration
 
 @implementation EnvoyConfiguration
 
@@ -55,7 +61,8 @@
 
 @end
 
-#pragma mark - utility functions to move elsewhere
+#pragma mark - Utilities to move elsewhere
+
 typedef struct {
   atomic_bool *canceled;
   EnvoyObserver *observer;
@@ -127,7 +134,8 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
   return headerDict;
 }
 
-#pragma mark - c callbacks
+#pragma mark - C callbacks
+
 static void ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyObserver *observer = c->observer;
@@ -207,8 +215,10 @@ static void ios_on_error(envoy_error error, void *context) {
   });
 }
 
-@implementation EnvoyHttpStream {
-  EnvoyHttpStream *_strongSelf;
+#pragma mark - EnvoyHTTPStream
+
+@implementation EnvoyHTTPStream {
+  EnvoyHTTPStream *_strongSelf;
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
   envoy_stream_t _streamHandle;
