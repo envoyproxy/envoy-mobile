@@ -2,8 +2,9 @@ package io.envoyproxy.envoymobile.engine;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
-public class AndroidEngineImpl {
+public class AndroidEngineImpl implements EnvoyEngine {
 
   // Internal reference to helper object used to load and initialize the native library.
   // Volatile to ensure double-checked locking works correctly.
@@ -13,9 +14,8 @@ public class AndroidEngineImpl {
 
   // Private helper class used by the load method to ensure the native library and its
   // dependencies are loaded and initialized at most once.
-  private AndroidEngineImpl(Context context) {
-    System.loadLibrary("envoy_jni");
-    initialize((ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
+  public AndroidEngineImpl(Context context) {
+    initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
     envoyEngine = new EnvoyEngineImpl();
   }
 
@@ -34,12 +34,26 @@ public class AndroidEngineImpl {
     }
   }
 
-  public static int run(String config, String logLevel) {
-    // TODO: Resolve the static loader instance
-    return loader.envoyEngine.runWithConfig(config, logLevel);
+  @Override
+  public EnvoyStream startStream(EnvoyObserver observer) {
+    return envoyEngine.startStream(observer);
   }
 
-  private static native int initialize(ConnectivityManager connectivityManager);
+  @Override
+  public int runWithConfig(String config) {
+    return envoyEngine.runWithConfig(config);
+  }
 
-  private static native boolean isAresInitialized();
+  @Override
+  public int runWithConfig(String config, String logLevel) {
+    return envoyEngine.runWithConfig(config, logLevel);
+  }
+
+  /**
+   * Native binding to register the ConnectivityManager to C-Ares
+   *
+   * @param connectivityManager Android's ConnectivityManager
+   * @return int for successful initialization
+   */
+  private static native int initialize(ConnectivityManager connectivityManager);
 }
