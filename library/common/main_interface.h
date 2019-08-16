@@ -12,10 +12,11 @@ extern "C" { // functions
 #endif
 
 /**
- * Provides a default configuration template that may be used for starting Envoy.
- * @return A template that may be used as a starting point for constructing configurations.
+ * Template configuration compiled with the Envoy Mobile library.
+ * More information about Envoy's config can be found at:
+ * https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
  */
-const char* config_template();
+extern const char* config_template;
 
 /**
  * Open an underlying HTTP stream.

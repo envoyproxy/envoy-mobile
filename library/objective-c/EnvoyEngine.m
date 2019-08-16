@@ -50,7 +50,7 @@
 @implementation EnvoyConfiguration
 
 + (NSString *)templateString {
-    return [[NSString alloc] initWithUTF8String:config_template()];
+    return [[NSString alloc] initWithUTF8String:config_template];
 }
 
 @end

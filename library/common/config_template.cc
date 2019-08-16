@@ -1,6 +1,6 @@
 // NOLINT(namespace-envoy)
 
-const char* config_template_str = R"(
+const char* config_template = R"(
 static_resources:
   listeners:
   - address:
