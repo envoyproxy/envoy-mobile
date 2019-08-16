@@ -49,3 +49,11 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_isAresInitialized(JNIEnv
 ) {
   return ares_library_android_initialized() == ARES_SUCCESS;
 }
+
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_EnvoyConfiguration_templateString(JNIEnv* env,
+                                                                          jclass // class
+) {
+  return config_template;
+}
