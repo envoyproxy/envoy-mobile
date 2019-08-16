@@ -20,9 +20,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
   return JNI_VERSION_1_6;
 }
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env,
-jclass // class
+extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
+    JNIEnv* env,
+    jclass // class
 ) {
   return init_engine();
 }
