@@ -25,8 +25,9 @@ private final class MockEnvoyEngine: NSObject, EnvoyEngine {
 
   func setup() {}
 
+  @available(*, unavailable, message: "Mock only")
   func startStream(with observer: EnvoyObserver) -> EnvoyHTTPStream {
-    fatalError()
+    fatalError("Mock only")
   }
 }
 
