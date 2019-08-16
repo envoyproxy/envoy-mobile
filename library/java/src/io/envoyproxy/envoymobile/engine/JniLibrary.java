@@ -5,6 +5,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHeaders;
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 class JniLibrary {
+
   /**
    * Initialize an underlying HTTP stream.
    *

@@ -4,10 +4,14 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 public class EnvoyEngineImpl implements EnvoyEngine {
 
+  // Internal reference to helper object used to load and initialize the native library.
+  // Volatile to ensure double-checked locking works correctly.
+  private static volatile JavaLoader loader = null;
+
   private final long engineHandle;
 
   public EnvoyEngineImpl() {
-    System.loadLibrary("envoy_jni");
+    load();
     this.engineHandle = JniLibrary.initEngine();
   }
 
@@ -48,6 +52,28 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere
       return 1;
+    }
+  }
+
+  // Load and initialize Envoy and its dependencies, but only once.
+  protected static void load() {
+    if (loader != null) {
+      return;
+    }
+
+    synchronized (JavaLoader.class) {
+      if (loader != null) {
+        return;
+      }
+
+      loader = new JavaLoader();
+    }
+  }
+
+  private static class JavaLoader {
+
+    private JavaLoader() {
+      System.loadLibrary("envoy_jni");
     }
   }
 }
