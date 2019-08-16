@@ -58,9 +58,9 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 @end
 
-#pragma mark - EnvoyStream
+#pragma mark - EnvoyHTTPStream
 
-@interface EnvoyStream : NSObject
+@interface EnvoyHTTPStream : NSObject
 
 /**
  Open an underlying HTTP stream.
@@ -141,7 +141,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
  @param observer Handler for observing stream events.
  */
-- (EnvoyStream *)startStreamWithObserver:(EnvoyObserver *)observer;
+- (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer;
 
 @end
 

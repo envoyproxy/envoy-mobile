@@ -45,8 +45,8 @@
   setup_envoy();
 }
 
-- (EnvoyStream *)startStreamWithObserver:(EnvoyObserver *)observer {
-  return [[EnvoyStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
+- (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyHTTPStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
 }
 
 @end
@@ -205,10 +205,10 @@ static void ios_on_error(envoy_error error, void *context) {
   });
 }
 
-#pragma mark - EnvoyStream
+#pragma mark - EnvoyHTTPStream
 
-@implementation EnvoyStream {
-  EnvoyStream *_strongSelf;
+@implementation EnvoyHTTPStream {
+  EnvoyHTTPStream *_strongSelf;
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
   envoy_stream_t _streamHandle;
