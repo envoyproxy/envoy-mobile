@@ -5,8 +5,12 @@
 
 #import <stdatomic.h>
 
+#pragma mark - EnvoyObserver
+
 @implementation EnvoyObserver
 @end
+
+#pragma mark - EnvoyEngineImpl
 
 @implementation EnvoyEngineImpl {
   envoy_engine_t _engineHandle;
@@ -41,13 +45,24 @@
   setup_envoy();
 }
 
-- (EnvoyHttpStream *)openHttpStreamWithObserver:(EnvoyObserver *)observer {
-  return [[EnvoyHttpStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
+- (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer {
+  return [[EnvoyHTTPStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
 }
 
 @end
 
-#pragma mark - utility functions to move elsewhere
+#pragma mark - EnvoyConfiguration
+
+@implementation EnvoyConfiguration
+
++ (NSString *)templateString {
+  return [[NSString alloc] initWithUTF8String:config_template];
+}
+
+@end
+
+#pragma mark - Utilities to move elsewhere
+
 typedef struct {
   atomic_bool *canceled;
   EnvoyObserver *observer;
@@ -119,7 +134,8 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
   return headerDict;
 }
 
-#pragma mark - c callbacks
+#pragma mark - C callbacks
+
 static void ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyObserver *observer = c->observer;
@@ -199,8 +215,10 @@ static void ios_on_error(envoy_error error, void *context) {
   });
 }
 
-@implementation EnvoyHttpStream {
-  EnvoyHttpStream *_strongSelf;
+#pragma mark - EnvoyHTTPStream
+
+@implementation EnvoyHTTPStream {
+  EnvoyHTTPStream *_strongSelf;
   EnvoyObserver *_platformObserver;
   envoy_observer *_nativeObserver;
   envoy_stream_t _streamHandle;
@@ -224,8 +242,8 @@ static void ios_on_error(envoy_error error, void *context) {
 
   // Create native observer
   envoy_observer *native_obs = (envoy_observer *)malloc(sizeof(envoy_observer));
-  envoy_observer native_init = {ios_on_headers,  ios_on_data,  ios_on_trailers, ios_on_metadata,
-                                ios_on_complete, ios_on_error, context};
+  envoy_observer native_init = {ios_on_headers, ios_on_data,     ios_on_trailers, ios_on_metadata,
+                                ios_on_error,   ios_on_complete, context};
   memcpy(native_obs, &native_init, sizeof(envoy_observer));
   _nativeObserver = native_obs;
 

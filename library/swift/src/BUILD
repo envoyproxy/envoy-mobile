@@ -7,6 +7,7 @@ swift_static_framework(
     srcs = [
         "Client.swift",
         "Envoy.swift",
+        "EnvoyBuilder.swift",
         "Error.swift",
         "LogLevel.swift",
         "Request.swift",
