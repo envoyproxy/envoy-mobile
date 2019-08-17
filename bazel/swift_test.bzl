@@ -1,6 +1,5 @@
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_unit_test")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-load("//bazel:swift_test_runner.bzl", "envoy_ios_test_runner")
 
 MINIMUM_IOS_VERSION = "10.0"
 
@@ -36,5 +35,5 @@ def envoy_mobile_swift_test(name, srcs):
         name = name,
         deps = [test_lib_name],
         minimum_os_version = MINIMUM_IOS_VERSION,
-        runner = "envoy_ios_test_runner",
+        runner = ":envoy_ios_test_runner",
     )
