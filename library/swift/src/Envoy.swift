@@ -3,7 +3,6 @@ import Foundation
 
 @objcMembers
 public final class Envoy: NSObject {
-  private let streamEngine: EnvoyEngineStreamInterface.Type
   private let runner: RunnerThread
 
   /// Indicates whether this Envoy instance is currently active and running.

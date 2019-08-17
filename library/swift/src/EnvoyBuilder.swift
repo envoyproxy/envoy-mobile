@@ -10,7 +10,7 @@ public enum EnvoyBuilderError: Int, Swift.Error {
 /// Builder used for creating new instances of Envoy.
 @objcMembers
 public final class EnvoyBuilder: NSObject {
-  private let engineType: EnvoyEngine.Type
+  private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var logLevel: LogLevel = .info
   private var configYAML: String?
 
@@ -19,11 +19,6 @@ public final class EnvoyBuilder: NSObject {
   private var statsFlushSeconds: UInt = 60
 
   // MARK: - Public
-
-  public override init() {
-    self.engineType = EnvoyEngineImpl.self
-    super.init()
-  }
 
   /// Add a log level to use with Envoy.
   public func addLogLevel(_ logLevel: LogLevel) -> EnvoyBuilder {
@@ -73,8 +68,19 @@ public final class EnvoyBuilder: NSObject {
 
   // MARK: - Internal
 
+<<<<<<< HEAD
   init(engineType: EnvoyEngine.Type) {
     self.engineType = engineType
+=======
+  /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
+  /// A new instance of this engine will be created when `build()` is called.
+  /// Used for testing, as initializing with `EnvoyEngine.Type` results in a
+  /// segfault: https://github.com/lyft/envoy-mobile/issues/334
+  @discardableResult
+  func addEngineType(_ engineType: EnvoyEngine.Type) -> EnvoyBuilder {
+    self.engineType = engineType
+    return self
+>>>>>>> origin/master
   }
 
   /// Processes the YAML template provided, replacing keys with values from the configuration.
