@@ -23,7 +23,6 @@ TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
   HeaderMapPtr cpp_headers = Utility::toInternalHeaders(empty_headers);
 
   ASSERT_TRUE(cpp_headers->empty());
-  delete[] header_array;
 }
 
 TEST(HeaderDataConstructorTest, FromCToCpp) {
