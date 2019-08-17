@@ -4,6 +4,9 @@ load(
     "@build_bazel_rules_apple//apple/testing/default_runner:ios_test_runner.bzl",
     "ios_test_runner",
 )
+load("//bazel:envoy_build_system.bzl", "envoy_package")
+
+envoy_package()
 
 # Fix for specifying device/OS:
 # https://github.com/bazelbuild/rules_apple/pull/549
