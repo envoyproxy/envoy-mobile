@@ -5,11 +5,12 @@ load(
     "ios_test_runner",
 )
 
+# Fix for specifying device/OS:
+# https://github.com/bazelbuild/rules_apple/pull/549
 ios_test_runner(
     name = "envoy_ios_test_runner",
-    device_type = "iPhone Xs",
-    os_version = "12.4",
-    visibility = ["//visibility:public"],
+    device_type = "iPhone X",
+    os_version = "12.1",
 )
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
