@@ -25,9 +25,8 @@ private final class MockEnvoyEngine: NSObject, EnvoyEngine {
 
   func setup() {}
 
-  @available(*, unavailable, message: "Mock only")
   func startStream(with observer: EnvoyObserver) -> EnvoyHTTPStream {
-    fatalError("Mock only")
+    return EnvoyHTTPStream()
   }
 }
 
@@ -44,7 +43,8 @@ final class EnvoyBuilderTests: XCTestCase {
       expectation.fulfill()
     }
 
-    _ = try EnvoyBuilder(engineType: MockEnvoyEngine.self)
+    _ = try EnvoyBuilder()
+      .addEngineType(MockEnvoyEngine.self)
       .addConfigYAML("foobar")
       .build()
     self.waitForExpectations(timeout: 0.01)
@@ -57,14 +57,16 @@ final class EnvoyBuilderTests: XCTestCase {
       expectation.fulfill()
     }
 
-    _ = try EnvoyBuilder(engineType: MockEnvoyEngine.self)
+    _ = try EnvoyBuilder()
+      .addEngineType(MockEnvoyEngine.self)
       .addLogLevel(.trace)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
 
   func testResolvesYAMLWithConnectTimeout() throws {
-    let resolvedYAML = try EnvoyBuilder(engineType: MockEnvoyEngine.self)
+    let resolvedYAML = try EnvoyBuilder()
+      .addEngineType(MockEnvoyEngine.self)
       .addConnectTimeoutSeconds(200)
       .resolvedYAML(kMockTemplate)
 
@@ -72,7 +74,8 @@ final class EnvoyBuilderTests: XCTestCase {
   }
 
   func testResolvesYAMLWithDNSRefreshSeconds() throws {
-    let resolvedYAML = try EnvoyBuilder(engineType: MockEnvoyEngine.self)
+    let resolvedYAML = try EnvoyBuilder()
+      .addEngineType(MockEnvoyEngine.self)
       .addDNSRefreshSeconds(200)
       .resolvedYAML(kMockTemplate)
 
@@ -80,7 +83,8 @@ final class EnvoyBuilderTests: XCTestCase {
   }
 
   func testResolvesYAMLWithStatsFlushSeconds() throws {
-    let resolvedYAML = try EnvoyBuilder(engineType: MockEnvoyEngine.self)
+    let resolvedYAML = try EnvoyBuilder()
+      .addEngineType(MockEnvoyEngine.self)
       .addStatsFlushSeconds(200)
       .resolvedYAML(kMockTemplate)
 
@@ -88,7 +92,7 @@ final class EnvoyBuilderTests: XCTestCase {
   }
 
   func testThrowsWhenUnresolvedValueInTemplate() {
-    let builder = EnvoyBuilder(engineType: MockEnvoyEngine.self)
+    let builder = EnvoyBuilder().addEngineType(MockEnvoyEngine.self)
     XCTAssertThrowsError(try builder.resolvedYAML("{{ missing }}")) { error in
       XCTAssertEqual(.unresolvedTemplateKey, error as? EnvoyBuilderError)
     }
