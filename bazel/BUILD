@@ -18,7 +18,7 @@ load(
     "ios_test_runner",
 )
 
-# Fix for specifying device/OS:
+# Fix for specifying device/OS until this is released:
 # https://github.com/bazelbuild/rules_apple/pull/549
 ios_test_runner(
     name = "envoy_ios_test_runner",
