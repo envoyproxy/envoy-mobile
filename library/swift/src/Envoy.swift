@@ -46,64 +46,9 @@ public final class Envoy: NSObject {
 }
 
 extension Envoy: Client {
-  public func startStream(request: Request, handler: ResponseHandler) -> StreamEmitter? {
-    let observer = EnvoyObserver(handler: handler)
-    var stream = self.streamEngine.startStream(with: observer)
-
-    switch stream.status {
-    case .success:
-      return EnvoyStreamEmitter(stream: &stream)
-    case .failure:
-      defer { handler.onError(EnvoyError.streamCreationFailed) }
-      return nil
-    }
-  }
-}
-
-extension ResponseHandler {
-  func transformHeaders(_ headers: [[String: String]]?) -> [String: [String]] {
-    guard let headers = headers else {
-      return [:]
-    }
-
-    return headers.reduce(into: [String: [String]]()) { result, next in
-      next.forEach { result[$0.key, default: []].append($0.value) }
-    }
-  }
-
-  func statusCode(fromHeaders headers: [String: [String]]) -> Int? {
-    return headers[":status"]?
-      .compactMap(Int.init)
-      .first
-  }
-}
-
-private extension EnvoyObserver {
-  convenience init(handler: ResponseHandler) {
-    self.init()
-
-    self.onHeaders = { headers, endStream in
-      let headers = handler.transformHeaders(headers)
-      handler.onHeaders(headers,
-                        statusCode: handler.statusCode(fromHeaders: headers) ?? 0,
-                        endStream: endStream)
-    }
-
-    self.onData = { data, endStream in
-      handler.onData(data, endStream: endStream)
-    }
-
-    self.onMetadata = { metadata in
-      handler.onMetadata(handler.transformHeaders(metadata))
-    }
-
-    self.onTrailers = { trailers in
-      handler.onTrailers(handler.transformHeaders(trailers))
-    }
-
-    self.onError = { error in
-      handler.onError(EnvoyError(errorCode: Int(clamping: error.errorCode.rawValue),
-                                 message: error.message, cause: error))
-    }
+  public func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter {
+    let httpStream = self.engine.startStream(with: handler.observer)
+    httpStream.sendHeaders(request.headers)
+    return EnvoyStreamEmitter(stream: httpStream)
   }
 }

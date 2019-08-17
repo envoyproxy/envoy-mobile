@@ -1,42 +1,110 @@
+import Envoy
 import Foundation
 
+// // Example
+// let observer = ResponseHandler()
+//   .onHeaders { (headers, statusCode, endStream) in
+//     print("Headers: \(headers)")
+//   }
+//   .onCanceled {
+//     print("Canceled")
+//   }
+
 /// Callback interface for receiving stream events.
-@objc
-public protocol ResponseHandler {
+@objcMembers
+final class ResponseHandler: NSObject {
+  /// Underlying observer which will be passed to the Envoy Engine.
+  let underlyingObserver = EnvoyObserver()
+
   /// Dispatch queue upon which callbacks will be called.
-  var dispatchQueue: DispatchQueue { get }
+  public let dispatchQueue: DispatchQueue
 
-  /// Called when response headers are received by the stream.
+  public init(queue: DispatchQueue = .main) {
+    self.dispatchQueue = queue
+  }
+
+  /// Specify a callback for when response headers are received by the stream.
   ///
-  /// - parameter headers:    The headers of the response.
-  /// - parameter statusCode: The status code of the response.
-  /// - parameter endStream:  True if the stream is complete.
-  func onHeaders(_ headers: [String: [String]], statusCode: Int, endStream: Bool)
+  /// - parameter closure: Closure which will receive the headers, status code,
+  ///                      and flag indicating if the stream is headers-only.
+  @discardableResult
+  public func onHeaders(_ closure:
+    @escaping (_ headers: [String: [String]], _ statusCode: Int, _ endStream: Bool) -> Void)
+    -> ResponseHandler
+  {
+    self.underlyingObserver.onHeaders = { headers, endStream in
+      closure(headers, ResponseHandler.statusCode(fromHeaders: headers) ?? 0, endStream)
+    }
 
-  /// Called when a data frame is received by the stream.
+    return self
+  }
+
+  /// Specify a callback for when a data frame is received by the stream.
   ///
-  /// - parameter data:      Bytes in the response.
-  /// - parameter endStream: True if the stream is complete.
-  func onData(_ data: Data, endStream: Bool)
+  /// - parameter closure: Closure which will receive the data,
+  ///                      and flag indicating if the stream is headers-only.
+  @discardableResult
+  public func onData(_ closure:
+    @escaping (_ data: Data, _ endStream: Bool) -> Void)
+    -> ResponseHandler
+  {
+    self.underlyingObserver.onData = closure
+    return self
+  }
 
-  /// Called when response metadata is received by the stream.
+  /// Specify a callback for when a data frame is received by the stream.
   ///
-  /// - parameter metadata: The metadata of the response.
-  func onMetadata(_ metadata: [String: [String]])
+  /// - parameter closure: Closure which will receive the trailers.
+  @discardableResult
+  public func onTrailers(_ closure:
+    @escaping (_ trailers: [String: [String]]) -> Void)
+    -> ResponseHandler
+  {
+    self.underlyingObserver.onTrailers = closure
+    return self
+  }
 
-  /// Called when response trailers are received by the stream.
+  /// Specify a callback for when an internal Envoy exception occurs with the stream.
   ///
-  /// - parameter trailers: The trailers of the response.
-  func onTrailers(_ trailers: [String: [String]])
+  /// - parameter closure: Closure which will be called when an error occurs.
+  @discardableResult
+  public func onError(_ closure:
+    @escaping () -> Void)
+    -> ResponseHandler
+  {
+    self.underlyingObserver.onError = closure
+    return self
+  }
 
-  /// Called when an internal Envoy exception occurs with the stream.
+  /// Specify a callback for when an internal Envoy exception occurs with the stream.
   ///
-  /// - parameter error: The error that occurred with the stream.
-  func onError(_ error: Error)
+  /// - parameter closure: Closure which will be called when the stream is canceled.
+  @discardableResult
+  public func onCanceled(_ closure:
+    @escaping () -> Void)
+    -> ResponseHandler
+  {
+    self.underlyingObserver.onCancel = closure
+    return self
+  }
 
-  /// Called when the stream is canceled.
-  func onCanceled()
+  /// Specify a callback for when an internal Envoy exception occurs with the stream.
+  ///
+  /// - parameter closure: Closure which will be called when the stream has been completed.
+  @discardableResult
+  public func onCompletion(_ closure:
+    @escaping () -> Void)
+    -> ResponseHandler
+  {
+    // TODO: onCompletion not available - do we need to call this manually?
+    return self
+  }
 
-  /// Called when the stream has been completed.
-  func onCompletion()
+  // MARK: - Helpers
+
+  func statusCode(fromHeaders headers: [String: [String]]) -> Int? {
+    return headers[":status"]?
+      .compactMap(Int.init)
+      .first
+  }
 }

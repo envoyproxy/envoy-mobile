@@ -1,58 +1,31 @@
 import Envoy
 import Foundation
 
+@objcMembers
 final class EnvoyStreamEmitter {
-  private let stream: UnsafeMutablePointer<EnvoyStream>
-  private lazy var isClosed = Atomic(false)
+  private let stream: EnvoyHTTPStream
 
-  init(stream: UnsafeMutablePointer<EnvoyStream>) {
+  init(stream: EnvoyHTTPStream) {
     self.stream = stream
   }
 }
 
 extension EnvoyStreamEmitter: StreamEmitter {
-  func isActive() -> Bool {
-    var isActive = false
-    self.isClosed.sync { isActive = $0 }
-    return isActive
+  func sendData(_ data: Data) -> StreamEmitter {
+    self.stream.sendData(data)
+    return self
   }
 
-  func sendData(_ data: Data) throws -> StreamEmitter {
-    // TODO: wrap EnvoyEngine in a protocol
-    switch EnvoyEngine.send(data, to: self.stream, close: false) {
-    case .success:
-      return self
-    case .failure:
-      throw EnvoyError.streamSendFailed
-    }
+  func sendMetadata(_ metadata: [String: [String]]) -> StreamEmitter {
+    self.stream.sendMetadata(metadata)
+    return self
   }
 
-  func sendMetadata(_ metadata: [String: [String]]) throws -> StreamEmitter {
-    let metadata = metadata.mapValues { $0.joined(separator: ",") }
-    switch EnvoyEngine.sendMetadata(metadata, to: self.stream, close: false) {
-    case .success:
-      return self
-    case .failure:
-      throw EnvoyError.streamSendFailed
-    }
+  func close(trailers: [String: [String]]) {
+    self.stream.sendTrailers(trailers)
   }
 
-  func close(trailers: [String: [String]]) throws {
-    fatalError()
-    switch EnvoyEngine.sendTrailers(trailers, to: self.stream, close: true) {
-    case .success:
-      break
-    case .failure:
-      throw EnvoyError.closeStreamFailed
-    }
-  }
-
-  func cancel() throws {
-    switch EnvoyEngine.locallyClose(self.stream) {
-    case .success:
-      break
-    case .failure:
-      throw EnvoyError.closeStreamFailed
-    }
+  func cancel() {
+    _ = self.stream.cancel()
   }
 }
