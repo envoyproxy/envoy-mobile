@@ -9,6 +9,7 @@ ios_test_runner(
     name = "envoy_ios_test_runner",
     device_type = "iPhone Xs",
     os_version = "12.4",
+    visibility = ["//visibility:public"],
 )
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
