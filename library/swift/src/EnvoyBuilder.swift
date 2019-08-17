@@ -68,10 +68,6 @@ public final class EnvoyBuilder: NSObject {
 
   // MARK: - Internal
 
-<<<<<<< HEAD
-  init(engineType: EnvoyEngine.Type) {
-    self.engineType = engineType
-=======
   /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
   /// A new instance of this engine will be created when `build()` is called.
   /// Used for testing, as initializing with `EnvoyEngine.Type` results in a
@@ -80,7 +76,6 @@ public final class EnvoyBuilder: NSObject {
   func addEngineType(_ engineType: EnvoyEngine.Type) -> EnvoyBuilder {
     self.engineType = engineType
     return self
->>>>>>> origin/master
   }
 
   /// Processes the YAML template provided, replacing keys with values from the configuration.

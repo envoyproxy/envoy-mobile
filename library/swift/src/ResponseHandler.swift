@@ -1,4 +1,3 @@
-import Envoy
 import Foundation
 
 // // Example
@@ -102,7 +101,7 @@ final class ResponseHandler: NSObject {
 
   // MARK: - Helpers
 
-  func statusCode(fromHeaders headers: [String: [String]]) -> Int? {
+  static func statusCode(fromHeaders headers: [String: [String]]) -> Int? {
     return headers[":status"]?
       .compactMap(Int.init)
       .first
