@@ -11,7 +11,7 @@ import Foundation
 
 /// Callback interface for receiving stream events.
 @objcMembers
-final class ResponseHandler: NSObject {
+public final class ResponseHandler: NSObject {
   /// Underlying observer which will be passed to the Envoy Engine.
   let underlyingObserver = EnvoyObserver()
 

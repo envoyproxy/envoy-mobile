@@ -2,6 +2,7 @@ import Foundation
 
 @objcMembers
 public final class Envoy: NSObject {
+  private let engine: EnvoyEngine
   private let runner: RunnerThread
 
   /// Indicates whether this Envoy instance is currently active and running.
@@ -20,6 +21,7 @@ public final class Envoy: NSObject {
   /// - parameter logLevel:   Log level to use for this instance.
   /// - parameter engine:     The underlying engine to use for starting Envoy.
   init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+    self.engine = engine
     self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
     self.runner.start()
   }
@@ -45,8 +47,8 @@ public final class Envoy: NSObject {
 
 extension Envoy: Client {
   public func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter {
-    let httpStream = self.engine.startStream(with: handler.observer)
-    httpStream.sendHeaders(request.headers)
+    let httpStream = self.engine.startStream(with: handler.underlyingObserver)
+    httpStream.sendHeaders(request.headers, close: false)
     return EnvoyStreamEmitter(stream: httpStream)
   }
 }

@@ -11,7 +11,7 @@ final class EnvoyStreamEmitter {
 
 extension EnvoyStreamEmitter: StreamEmitter {
   func sendData(_ data: Data) -> StreamEmitter {
-    self.stream.sendData(data)
+    self.stream.sendData(data, close: false)
     return self
   }
 
