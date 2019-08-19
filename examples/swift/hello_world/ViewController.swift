@@ -3,16 +3,24 @@ import UIKit
 
 private let kCellID = "cell-id"
 private let kRequestAuthority = "s3.amazonaws.com"
-private let kRequestPath = "api.lyft.com/static/demo/hello_world.txt"
+private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
 
 final class ViewController: UITableViewController {
-  private let envoy = try! EnvoyBuilder().build()
+  private var envoy: Envoy?
   private var requestCount = 0
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    do {
+      self.envoy = try EnvoyBuilder()
+        .addLogLevel(.trace)
+        .build()
+    } catch let error {
+      NSLog("Starting Envoy failed: \(error)")
+    }
+
     self.startRequests()
   }
 
@@ -36,42 +44,24 @@ final class ViewController: UITableViewController {
     NSLog("Starting request to '\(kRequestPath)'")
     let request = RequestBuilder(method: .get, scheme: "http", authority: kRequestAuthority,
                                  path: kRequestPath).build()
+    var status = -1
     let handler = ResponseHandler()
-      .onHeaders { headers, statusCode, _ in
-        NSLog("Response:\nStatus: \(statusCode)\n\(headers)")
+      .onHeaders { [weak self] headers, statusCode, _ in
+        status = statusCode
+        NSLog("Response headers (\(requestID)):\nStatus: \(statusCode)\n\(headers)")
+        self?.add(result: .success(Response(id: requestID, body: "",
+                                            serverHeader: headers["Server"]?.first ?? "")))
       }
+      .onData { data, _ in
+        NSLog("Response data (\(requestID)): \(data.count) bytes")
+      }
+      .onError { [weak self] in
+        NSLog("Error (\(requestID)) - request failed")
+        self?.add(result: .failure(RequestError(id: requestID, message: "failed, status: \(status)")))
+    }
 
-    let stream = self.envoy.startStream(with: request, handler: handler)
+    let stream = self.envoy?.startStream(with: request, handler: handler)
     _ = stream // Not sending additional data up the stream
-  }
-
-  private func handle(response: URLResponse?, with data: Data?, error: Error?, id: Int) {
-    if let error = error {
-      return self.add(result: .failure(RequestError(id: id, message: "\(error)")))
-    }
-
-    guard let response = response as? HTTPURLResponse, let data = data else {
-      return self.add(result: .failure(RequestError(id: id, message: "missing response data")))
-    }
-
-    guard response.statusCode == 200 else {
-      let error = RequestError(id: id, message: "failed with status \(response.statusCode)")
-      return self.add(result: .failure(error))
-    }
-
-    guard let body = String(data: data, encoding: .utf8) else {
-      return self.add(result: .failure(RequestError(id: id, message: "failed to deserialize body")))
-    }
-
-    let untypedHeaders = response.allHeaderFields
-    let headers = Dictionary(uniqueKeysWithValues: untypedHeaders.map
-    { header -> (String, String) in
-      return (header.key as? String ?? String(describing: header.key), "\(header.value)")
-    })
-
-    // Deserialize the response, which will include a `Server` header set by Envoy.
-    NSLog("Response:\n\(data.count) bytes\n\(body)\n\(headers)")
-    self.add(result: .success(Response(id: id, body: body, serverHeader: headers["Server"] ?? "")))
   }
 
   private func add(result: Result<Response, RequestError>) {
