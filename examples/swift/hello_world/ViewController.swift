@@ -6,14 +6,15 @@ private let kRequestAuthority = "s3.amazonaws.com"
 private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
 
 final class ViewController: UITableViewController {
-  private var envoy: Envoy?
   private var requestCount = 0
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
+  private var envoy: Envoy?
 
   override func viewDidLoad() {
     super.viewDidLoad()
     do {
+      NSLog("Starting Envoy...")
       self.envoy = try EnvoyBuilder()
         .addLogLevel(.trace)
         .build()
@@ -21,6 +22,7 @@ final class ViewController: UITableViewController {
       NSLog("Starting Envoy failed: \(error)")
     }
 
+    NSLog("Started Envoy, beginning requests...")
     self.startRequests()
   }
 
@@ -32,23 +34,28 @@ final class ViewController: UITableViewController {
 
   private func startRequests() {
     // Note that the first delay will give Envoy time to start up.
-    self.timer = .scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+    self.timer = .scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
       self?.performRequest()
     }
   }
 
   private func performRequest() {
-    self.requestCount += 1
-    let requestID = self.requestCount
+    guard let envoy = self.envoy else {
+      NSLog("Failed to start request - Envoy is not running")
+      return
+    }
 
+    self.requestCount += 1
     NSLog("Starting request to '\(kRequestPath)'")
+
+    let requestID = self.requestCount
     let request = RequestBuilder(method: .get, scheme: "http", authority: kRequestAuthority,
                                  path: kRequestPath).build()
     var status = -1
     let handler = ResponseHandler()
       .onHeaders { [weak self] headers, statusCode, _ in
         status = statusCode
-        NSLog("Response headers (\(requestID)):\nStatus: \(statusCode)\n\(headers)")
+        NSLog("Response status (\(requestID)): \(status)\n\(headers)")
         self?.add(result: .success(Response(id: requestID, body: "",
                                             serverHeader: headers["Server"]?.first ?? "")))
       }
@@ -56,12 +63,12 @@ final class ViewController: UITableViewController {
         NSLog("Response data (\(requestID)): \(data.count) bytes")
       }
       .onError { [weak self] in
-        NSLog("Error (\(requestID)) - request failed")
-        self?.add(result: .failure(RequestError(id: requestID, message: "failed, status: \(status)")))
-    }
+        NSLog("Error (\(requestID)): Request failed")
+        self?.add(result: .failure(RequestError(id: requestID,
+                                                message: "failed, status: \(status)")))
+      }
 
-    let stream = self.envoy?.startStream(with: request, handler: handler)
-    _ = stream // Not sending additional data up the stream
+    _ = envoy.startStream(with: request, handler: handler)
   }
 
   private func add(result: Result<Response, RequestError>) {

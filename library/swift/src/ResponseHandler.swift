@@ -1,14 +1,5 @@
 import Foundation
 
-// // Example
-// let observer = ResponseHandler()
-//   .onHeaders { (headers, statusCode, endStream) in
-//     print("Headers: \(headers)")
-//   }
-//   .onCanceled {
-//     print("Canceled")
-//   }
-
 /// Callback interface for receiving stream events.
 @objcMembers
 public final class ResponseHandler: NSObject {

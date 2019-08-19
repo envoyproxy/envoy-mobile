@@ -24,6 +24,7 @@ public final class Envoy: NSObject {
     self.engine = engine
     self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
     self.runner.start()
+    engine.setup()
   }
 
   // MARK: - Private
@@ -40,7 +41,6 @@ public final class Envoy: NSObject {
     }
 
     override func main() {
-      self.engine.setup()
       self.engine.run(withConfig: self.configYAML, logLevel: self.logLevel.stringValue)
     }
   }
