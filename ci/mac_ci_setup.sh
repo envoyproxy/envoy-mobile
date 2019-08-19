@@ -27,5 +27,5 @@ do
 done
 
 # /Applications/Xcode.app/Contents/Developer
-xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
+sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
 
