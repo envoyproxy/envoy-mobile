@@ -14,8 +14,6 @@ public final class RequestBuilder: NSObject {
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public private(set) var headers: [String: [String]] = [:]
-  // Serialized data to send as the body of the request.
-  public private(set) var body: Data?
   // Retry policy to use for this request.
   public private(set) var retryPolicy: RetryPolicy?
 
@@ -28,7 +26,6 @@ public final class RequestBuilder: NSObject {
     self.authority = request.authority
     self.path = request.path
     self.headers = request.headers
-    self.body = request.body
     self.retryPolicy = request.retryPolicy
   }
 
@@ -65,12 +62,6 @@ public final class RequestBuilder: NSObject {
   }
 
   @discardableResult
-  public func addBody(_ body: Data?) -> RequestBuilder {
-    self.body = body
-    return self
-  }
-
-  @discardableResult
   public func addRetryPolicy(_ retryPolicy: RetryPolicy) -> RequestBuilder {
     self.retryPolicy = retryPolicy
     return self
@@ -82,7 +73,6 @@ public final class RequestBuilder: NSObject {
                    authority: self.authority,
                    path: self.path,
                    headers: self.headers,
-                   body: self.body,
                    retryPolicy: self.retryPolicy)
   }
 }
@@ -95,7 +85,6 @@ extension Request {
   /// For example:
   ///
   /// Request *req = [Request withMethod:RequestMethodGet (...) build:^(RequestBuilder *builder) {
-  ///   [builder addBody:bodyData];
   ///   [builder addHeaderWithName:@"x-some-header" value:@"foo"];
   /// }];
   @objc
