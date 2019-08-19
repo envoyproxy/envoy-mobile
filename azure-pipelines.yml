@@ -49,8 +49,12 @@ stages:
             submodules: true
           - script: xcode-select -p
             displayName: 'Print Xcode path'
+            inputs:
+              xcodeVersion: 10.3
           - script: xcrun simctl list
             displayName: 'Print simulator list'
+            inputs:
+              xcodeVersion: 10.3
       - job: swift_lint
         timeoutInMinutes: 60
         pool:
@@ -300,6 +304,8 @@ stages:
             displayName: 'Install dependencies'
           - script: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
             displayName: 'Run Swift library tests'
+            inputs:
+              xcodeVersion: 10.3
       #- job: mac_objc_helloworld
       #  dependsOn: mac_dist
       #  timeoutInMinutes: 60
