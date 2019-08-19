@@ -29,4 +29,4 @@ done
 sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
 sudo xcodebuild -runFirstLaunch
 
-xcversion simulators --install='iOS 12.4'
+xcversion simulators --install='iOS 12.2'
