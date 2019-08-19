@@ -52,7 +52,7 @@ extension Envoy: Client {
     let httpStream = self.engine.startStream(with: handler.underlyingObserver)
     httpStream.sendHeaders(request.headers, close: false)
     if let body = request.body {
-      stream.send(body, close: false)
+      httpStream.send(body, close: false)
     }
 
     return EnvoyStreamEmitter(stream: httpStream)
