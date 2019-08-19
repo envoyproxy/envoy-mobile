@@ -26,6 +26,5 @@ do
     is_installed "${DEP}" || install "${DEP}"
 done
 
-# /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -runFirstLaunch
 sudo xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
-
