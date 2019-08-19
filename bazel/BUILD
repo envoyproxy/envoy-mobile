@@ -26,6 +26,6 @@ load(
 ios_test_runner(
     name = "envoy_ios_test_runner",
     device_type = "iPhone X",
-    os_version = "12.2",
+    os_version = "12.4",
     visibility = ["//visibility:public"],
 )
