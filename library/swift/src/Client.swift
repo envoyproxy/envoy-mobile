@@ -8,8 +8,7 @@ public protocol Client {
   /// - parameter request: The request for opening a stream.
   /// - parameter handler: Handler for receiving stream events.
   ///
-  /// - returns: Emitter for sending streaming data outward,
-  ///            or nil if the stream couldn't be started.
+  /// - returns: Emitter for sending streaming data outward.
   func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter
 
   /// Convenience function for sending a unary request.
