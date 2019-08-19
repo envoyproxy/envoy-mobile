@@ -114,58 +114,6 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertNil(request.headers["foo"])
   }
 
-  // MARK: - Trailers
-
-  func testAddingNewTrailerAppendsToListOfTrailerKeys() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .addTrailer(name: "foo", value: "bar")
-      .build()
-    XCTAssertEqual(["bar"], request.trailers["foo"])
-  }
-
-  func testRemovingSpecificTrailerKeyRemovesAllOfItsValuesFromRequest() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .addTrailer(name: "foo", value: "1")
-      .addTrailer(name: "foo", value: "2")
-      .removeTrailers(name: "foo")
-      .build()
-    XCTAssertNil(request.trailers["foo"])
-  }
-
-  func testRemovingSpecificTrailerKeyDoesNotRemoveOtherKeysFromRequest() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .addTrailer(name: "foo", value: "1")
-      .addTrailer(name: "bar", value: "2")
-      .removeTrailers(name: "foo")
-      .build()
-    XCTAssertEqual(["bar": ["2"]], request.trailers)
-  }
-
-  func testRemovingSpecificTrailerValueRemovesItFromRequest() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .addTrailer(name: "foo", value: "1")
-      .addTrailer(name: "foo", value: "2")
-      .addTrailer(name: "foo", value: "3")
-      .removeTrailer(name: "foo", value: "2")
-      .build()
-    XCTAssertEqual(["1", "3"], request.trailers["foo"])
-  }
-
-  func testRemovingAllTrailerValuesRemovesKeyFromRequest() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .addTrailer(name: "foo", value: "1")
-      .addTrailer(name: "foo", value: "2")
-      .removeTrailer(name: "foo", value: "1")
-      .removeTrailer(name: "foo", value: "2")
-      .build()
-    XCTAssertNil(request.trailers["foo"])
-  }
-
   // MARK: - Request conversion
 
   func testRequestsAreEqualWhenPropertiesAreEqual() {

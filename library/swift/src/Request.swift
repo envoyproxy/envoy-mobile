@@ -14,9 +14,6 @@ public final class Request: NSObject {
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public let headers: [String: [String]]
-  /// Trailers to send with the request.
-  /// Multiple values for a given name are valid, and will be sent as comma-separated values.
-  public let trailers: [String: [String]]
   // Serialized data to send as the body of the request.
   public let body: Data?
   // Retry policy to use for this request.
@@ -35,7 +32,6 @@ public final class Request: NSObject {
        authority: String,
        path: String,
        headers: [String: [String]] = [:],
-       trailers: [String: [String]] = [:],
        body: Data?,
        retryPolicy: RetryPolicy?)
   {
@@ -44,7 +40,6 @@ public final class Request: NSObject {
     self.authority = authority
     self.path = path
     self.headers = headers
-    self.trailers = trailers
     self.body = body
     self.retryPolicy = retryPolicy
   }
@@ -63,7 +58,6 @@ extension Request {
       && self.authority == other.authority
       && self.path == other.path
       && self.headers == other.headers
-      && self.trailers == other.trailers
       && self.body == other.body
       && self.retryPolicy == other.retryPolicy
   }
