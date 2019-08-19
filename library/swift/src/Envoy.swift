@@ -1,5 +1,6 @@
 import Foundation
 
+/// Envoy's implementation of `Client`, built using `EnvoyBuilder`.
 @objcMembers
 public final class Envoy: NSObject {
   private let engine: EnvoyEngine
@@ -50,6 +51,10 @@ extension Envoy: Client {
   public func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter {
     let httpStream = self.engine.startStream(with: handler.underlyingObserver)
     httpStream.sendHeaders(request.headers, close: false)
+    if let body = request.body {
+      stream.send(body, close: false)
+    }
+
     return EnvoyStreamEmitter(stream: httpStream)
   }
 }

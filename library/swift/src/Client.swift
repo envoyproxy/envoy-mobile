@@ -10,6 +10,5 @@ public protocol Client {
   ///
   /// - returns: Emitter for sending streaming data outward,
   ///            or nil if the stream couldn't be started.
-  func startStream(with request: Request, handler: ResponseHandler)
-    -> StreamEmitter
+  func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter
 }

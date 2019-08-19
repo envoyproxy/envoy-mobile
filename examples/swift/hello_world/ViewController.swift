@@ -55,6 +55,8 @@ final class ViewController: UITableViewController {
       .onHeaders { [weak self] headers, statusCode, _ in
         status = statusCode
         NSLog("Response status (\(requestID)): \(status)\n\(headers)")
+
+        // Deserialize the response, which will include a `Server` header set by Envoy.
         self?.add(result: .success(Response(id: requestID, body: "",
                                             serverHeader: headers["Server"]?.first ?? "")))
       }
