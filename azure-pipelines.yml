@@ -40,6 +40,17 @@ stages:
             displayName: 'Install pre-commit'
           - script: pre-commit run --all-files
             displayName: 'Running pre-commit'
+      - job: log_stuff
+        timeoutInMinutes: 60
+        pool:
+          vmImage: 'macos-10.14'
+        steps:
+          - checkout: self
+            submodules: true
+          - script: xcode-select -p
+            displayName: 'Print Xcode path'
+          - script: xcrun simctl list
+            displayName: 'Print simulator list'
       - job: swift_lint
         timeoutInMinutes: 60
         pool:
