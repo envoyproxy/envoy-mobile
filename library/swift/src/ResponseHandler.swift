@@ -70,7 +70,7 @@ public final class ResponseHandler: NSObject {
   ///
   /// - parameter closure: Closure which will be called when the stream is canceled.
   @discardableResult
-  public func onCanceled(_ closure:
+  public func onCancel(_ closure:
     @escaping () -> Void)
     -> ResponseHandler
   {

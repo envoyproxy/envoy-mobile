@@ -16,7 +16,6 @@ final class ViewController: UITableViewController {
     do {
       NSLog("Starting Envoy...")
       self.envoy = try EnvoyBuilder()
-        .addLogLevel(.trace)
         .build()
     } catch let error {
       NSLog("Starting Envoy failed: \(error)")
@@ -34,7 +33,7 @@ final class ViewController: UITableViewController {
 
   private func startRequests() {
     // Note that the first delay will give Envoy time to start up.
-    self.timer = .scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+    self.timer = .scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
       self?.performRequest()
     }
   }

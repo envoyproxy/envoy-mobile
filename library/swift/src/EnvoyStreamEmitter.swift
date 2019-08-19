@@ -1,5 +1,6 @@
 import Foundation
 
+/// Default implementation of the `StreamEmitter` interface.
 @objcMembers
 final class EnvoyStreamEmitter {
   private let stream: EnvoyHTTPStream
