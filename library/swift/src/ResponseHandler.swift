@@ -23,7 +23,7 @@ public final class ResponseHandler: NSObject {
     -> ResponseHandler
   {
     self.underlyingObserver.onHeaders = { headers, endStream in
-      closure(headers, ResponseHandler.statusCode(fromHeaders: headers) ?? 0, endStream)
+      closure(headers, ResponseHandler.statusCode(fromHeaders: headers), endStream)
     }
 
     return self
@@ -92,9 +92,14 @@ public final class ResponseHandler: NSObject {
 
   // MARK: - Helpers
 
-  static func statusCode(fromHeaders headers: [String: [String]]) -> Int? {
+  /// Parses out the status code from the provided HTTP2 headers.
+  ///
+  /// - parameter headers: The headers from which to obtain the status.
+  ///
+  /// - returns: The HTTP status code from the headers, or 0 if none is set.
+  static func statusCode(fromHeaders headers: [String: [String]]) -> Int {
     return headers[":status"]?
       .compactMap(Int.init)
-      .first
+      .first ?? 0
   }
 }
