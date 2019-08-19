@@ -50,12 +50,18 @@ public final class Envoy: NSObject {
 extension Envoy: Client {
   public func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter {
     let httpStream = self.engine.startStream(with: handler.underlyingObserver)
-    NSLog("Sending request with headers: \(request.outboundHeaders())")
     httpStream.sendHeaders(request.outboundHeaders(), close: false)
-    if let body = request.body {
-      httpStream.send(body, close: false)
-    }
-
     return EnvoyStreamEmitter(stream: httpStream)
+  }
+
+  public func sendUnary(_ request: Request, body: Data?,
+                        trailers: [String: [String]], handler: ResponseHandler)
+  {
+    let emitter = self.startStream(with: request, handler: handler)
+    if let body = body {
+      emitter.sendData(body)
+    }
+    
+    emitter.close(trailers: trailers)
   }
 }
