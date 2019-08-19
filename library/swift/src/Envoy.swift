@@ -40,6 +40,7 @@ public final class Envoy: NSObject {
     }
 
     override func main() {
+      self.engine.setup()
       self.engine.run(withConfig: self.configYAML, logLevel: self.logLevel.stringValue)
     }
   }
