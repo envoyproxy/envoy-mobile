@@ -1,16 +1,12 @@
+import Envoy
 import UIKit
 
 private let kCellID = "cell-id"
-// swiftlint:disable:next force_unwrapping
-private let kURL = URL(string: "http://localhost:9001/api.lyft.com/static/demo/hello_world.txt")!
+private let kRequestAuthority = "s3.amazonaws.com"
+private let kRequestPath = "api.lyft.com/static/demo/hello_world.txt"
 
 final class ViewController: UITableViewController {
-  private let session: URLSession = {
-    let configuration = URLSessionConfiguration.default
-    configuration.urlCache = nil
-    configuration.timeoutIntervalForRequest = 10
-    return URLSession(configuration: configuration)
-  }()
+  private let envoy = try! EnvoyBuilder().build()
   private var requestCount = 0
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
@@ -36,16 +32,17 @@ final class ViewController: UITableViewController {
   private func performRequest() {
     self.requestCount += 1
     let requestID = self.requestCount
-    var request = URLRequest(url: kURL)
-    request.addValue("s3.amazonaws.com", forHTTPHeaderField: "host")
 
-    // Note that the request is sent to the envoy thread listening locally on port 9001.
-    NSLog("Starting request to '\(kURL.path)'")
-    self.session.dataTask(with: request) { [weak self] data, response, error in
-      DispatchQueue.main.async {
-        self?.handle(response: response, with: data, error: error, id: requestID)
+    NSLog("Starting request to '\(kRequestPath)'")
+    let request = RequestBuilder(method: .get, scheme: "http", authority: kRequestAuthority,
+                                 path: kRequestPath).build()
+    let handler = ResponseHandler()
+      .onHeaders { headers, statusCode, _ in
+        NSLog("Response:\nStatus: \(statusCode)\n\(headers)")
       }
-    }.resume()
+
+    let stream = self.envoy.startStream(with: request, handler: handler)
+    _ = stream // Not sending additional data up the stream
   }
 
   private func handle(response: URLResponse?, with data: Data?, error: Error?, id: Int) {
