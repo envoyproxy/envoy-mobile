@@ -25,3 +25,7 @@ for DEP in ${DEPS}
 do
     is_installed "${DEP}" || install "${DEP}"
 done
+
+# /Applications/Xcode.app/Contents/Developer
+xcode-select --switch /Applications/Xcode_10.3.app/Contents/Developer
+
