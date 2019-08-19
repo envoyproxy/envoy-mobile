@@ -11,4 +11,22 @@ public protocol Client {
   /// - returns: Emitter for sending streaming data outward,
   ///            or nil if the stream couldn't be started.
   func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter
+
+  /// Convenience function for sending a unary request.
+  ///
+  /// - parameter request:  The request to send.
+  /// - parameter body:     Serialized data to send as the body of the request.
+  /// - parameter trailers: Trailers to send with the request.
+  func sendUnary(_ request: Request, body: Data?,
+                 trailers: [String: [String]], handler: ResponseHandler)
+}
+
+extension Client {
+  /// Convenience function for sending a unary request without trailers.
+  ///
+  /// - parameter request:  The request to send.
+  /// - parameter body:     Serialized data to send as the body of the request.
+  public func sendUnary(_ request: Request, body: Data?, handler: ResponseHandler) {
+    self.sendUnary(request, body: body, trailers: [:], handler: handler)
+  }
 }

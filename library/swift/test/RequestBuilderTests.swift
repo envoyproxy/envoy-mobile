@@ -2,7 +2,6 @@ import Envoy
 import Foundation
 import XCTest
 
-private let kBodyData = Data([1, 2, 3, 4])
 private let kRetryPolicy = RetryPolicy(maxRetryCount: 123,
                                        retryOn: [.connectFailure, .status5xx],
                                        perRetryTimeoutMS: 9000)
@@ -26,23 +25,6 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertEqual("https", request.scheme)
     XCTAssertEqual("api.foo.com", request.authority)
     XCTAssertEqual("/foo", request.path)
-  }
-
-  // MARK: - Body data
-
-  func testAddingRequestDataHasBodyPresentInRequest() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .addBody(kBodyData)
-      .build()
-    XCTAssertEqual(kBodyData, request.body)
-  }
-
-  func testNotAddingRequestDataHasNilBodyInRequest() {
-    let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
-      .build()
-    XCTAssertNil(request.body)
   }
 
   // MARK: - Retry policy
@@ -138,12 +120,9 @@ final class RequestBuilderTests: XCTestCase {
 
   private func newRequestBuilder() -> RequestBuilder {
     return RequestBuilder(method: .post, scheme: "https", authority: "api.foo.com", path: "/foo")
-      .addBody(kBodyData)
       .addRetryPolicy(kRetryPolicy)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .addHeader(name: "bar", value: "3")
-      .addTrailer(name: "baz", value: "4")
-      .addTrailer(name: "baz", value: "5")
   }
 }
