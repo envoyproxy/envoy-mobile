@@ -7,7 +7,7 @@ jobs:
     name: unit_tests
     runs-on: macos-latest
     steps:
-      - checkout: self
+      - checkout: true
         submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
