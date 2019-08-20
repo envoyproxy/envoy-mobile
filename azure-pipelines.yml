@@ -27,7 +27,7 @@ stages:
           buildifier_bin: /usr/local/bin/buildifier
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./tools/check_format.sh
             displayName: 'Run formatters'
       - job: precommit_lint
@@ -47,7 +47,7 @@ stages:
         container: swiftlint-container
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: swiftlint lint --strict
             displayName: 'Run SwiftLint'
       - job: kotlin_lint
@@ -73,7 +73,7 @@ stages:
           vmImage: 'Ubuntu 16.04'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
           - script: |
@@ -90,7 +90,7 @@ stages:
           vmImage: 'Ubuntu 16.04'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: git checkout master && git pull origin master
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
@@ -141,7 +141,7 @@ stages:
           android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
           - script: |
@@ -160,7 +160,7 @@ stages:
           android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
           - script: ./bazelw test --test_output=all --build_tests_only //library/kotlin/test/...
@@ -174,7 +174,7 @@ stages:
           android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
           - task: DownloadPipelineArtifact@0
@@ -193,7 +193,7 @@ stages:
           android_ndk_home: /usr/local/lib/android/sdk/ndk-bundle
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/linux_ci_setup.sh
             displayName: 'Install dependencies'
           - task: DownloadPipelineArtifact@0
@@ -209,7 +209,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: ./bazelw build --fat_apk_cpu=x86 //:android_dist
@@ -226,7 +226,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - task: DownloadPipelineArtifact@0
@@ -246,7 +246,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - task: DownloadPipelineArtifact@0
@@ -268,7 +268,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: ./bazelw build --config=ios //:ios_dist
@@ -284,7 +284,7 @@ stages:
       #    vmImage: 'macos-10.14'
       #  steps:
       #    - checkout: self
-      #      submodules: true
+      #      with:\n\t\t\t\t\tsubmodules: true
       #    - script: ./ci/mac_ci_setup.sh
       #      displayName: 'Install dependencies'
       #    - script: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
@@ -296,7 +296,7 @@ stages:
       #    vmImage: 'macos-10.14'
       #  steps:
       #    - checkout: self
-      #      submodules: true
+      #      with:\n\t\t\t\t\tsubmodules: true
       #    - script: ./ci/mac_ci_setup.sh
       #      displayName: 'Install dependencies'
       #    - script: mkdir -p dist/Envoy.framework
@@ -331,7 +331,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: mkdir -p dist/Envoy.framework
@@ -372,7 +372,7 @@ stages:
           vmImage: 'macos-10.14'
         steps:
           - checkout: self
-            submodules: true
+            with:\n\t\t\t\t\tsubmodules: true
           - script: ./ci/mac_ci_setup.sh
             displayName: 'Install dependencies'
           - script: ./bazelw test //test/common/...

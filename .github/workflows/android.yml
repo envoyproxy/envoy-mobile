@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - name: 'Build envoy.aar distributable'
@@ -31,7 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - run: ./bazelw test --test_output=all --build_tests_only //library/kotlin/test/...
@@ -41,7 +43,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:\n\t\t\t\t\tsubmodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - name: 'Build envoy.aar distributable'

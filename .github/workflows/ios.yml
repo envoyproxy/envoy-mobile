@@ -10,7 +10,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Build Envoy.framework distributable'
@@ -34,7 +35,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - run: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...

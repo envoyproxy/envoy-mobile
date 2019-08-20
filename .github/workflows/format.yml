@@ -10,7 +10,8 @@ jobs:
       image: envoyproxy/envoy-build:cfc514546bc0284536893cca5fa43d7128edcd35
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Run formatters'
         run: |
           export BUILDIFIER_BIN=/usr/local/bin/buildifier
@@ -40,6 +41,7 @@ jobs:
       image: openjdk:8-jdk
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Run Kotlin lint'
         run: ./ci/kotlin_lint.sh

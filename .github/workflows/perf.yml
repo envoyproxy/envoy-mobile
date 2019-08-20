@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - name: 'Build test binary'
@@ -18,7 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-        submodules: true
+        with:
+          submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - name: 'Build test binary'
