@@ -61,7 +61,7 @@
 
 typedef struct {
   EnvoyObserver *observer;
-    atomic_bool *canceled;
+  atomic_bool *canceled;
 } ios_context;
 
 // static envoy_data toUnmanagedNativeData(NSData *data) {
@@ -241,7 +241,7 @@ static void ios_on_error(envoy_error error, void *context) {
 
   // Create native observer
   envoy_observer native_obs = {ios_on_headers, ios_on_data,     ios_on_trailers, ios_on_metadata,
-                                ios_on_error,   ios_on_complete, context};
+                               ios_on_error,   ios_on_complete, context};
   _nativeObserver = native_obs;
 
   envoy_status_t result = start_stream(_streamHandle, native_obs);
