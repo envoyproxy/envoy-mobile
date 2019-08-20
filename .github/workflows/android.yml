@@ -43,7 +43,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
-        with:\n\t\t\t\t\tsubmodules: true
+        with:
+          submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - name: 'Build envoy.aar distributable'
