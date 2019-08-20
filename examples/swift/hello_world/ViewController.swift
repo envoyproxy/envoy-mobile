@@ -1,28 +1,22 @@
-import Envoy
 import UIKit
 
 private let kCellID = "cell-id"
-private let kRequestAuthority = "s3.amazonaws.com"
-private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
-private let kRequestScheme = "http"
+// swiftlint:disable:next force_unwrapping
+private let kURL = URL(string: "http://localhost:9001/api.lyft.com/static/demo/hello_world.txt")!
 
 final class ViewController: UITableViewController {
+  private let session: URLSession = {
+    let configuration = URLSessionConfiguration.default
+    configuration.urlCache = nil
+    configuration.timeoutIntervalForRequest = 10
+    return URLSession(configuration: configuration)
+  }()
   private var requestCount = 0
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
-  private var envoy: Envoy?
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    do {
-      NSLog("Starting Envoy...")
-      self.envoy = try EnvoyBuilder()
-        .build()
-    } catch let error {
-      NSLog("Starting Envoy failed: \(error)")
-    }
-
-    NSLog("Started Envoy, beginning requests...")
     self.startRequests()
   }
 
@@ -40,38 +34,47 @@ final class ViewController: UITableViewController {
   }
 
   private func performRequest() {
-    guard let envoy = self.envoy else {
-      NSLog("Failed to start request - Envoy is not running")
-      return
+    self.requestCount += 1
+    let requestID = self.requestCount
+    var request = URLRequest(url: kURL)
+    request.addValue("s3.amazonaws.com", forHTTPHeaderField: "host")
+
+    // Note that the request is sent to the envoy thread listening locally on port 9001.
+    NSLog("Starting request to '\(kURL.path)'")
+    self.session.dataTask(with: request) { [weak self] data, response, error in
+      DispatchQueue.main.async {
+        self?.handle(response: response, with: data, error: error, id: requestID)
+      }
+    }.resume()
+  }
+
+  private func handle(response: URLResponse?, with data: Data?, error: Error?, id: Int) {
+    if let error = error {
+      return self.add(result: .failure(RequestError(id: id, message: "\(error)")))
     }
 
-    self.requestCount += 1
-    NSLog("Starting request to '\(kRequestPath)'")
+    guard let response = response as? HTTPURLResponse, let data = data else {
+      return self.add(result: .failure(RequestError(id: id, message: "missing response data")))
+    }
 
-    let requestID = self.requestCount
-    let request = RequestBuilder(method: .get, scheme: kRequestScheme,
-                                 authority: kRequestAuthority,
-                                 path: kRequestPath).build()
-    var status = -1
-    let handler = ResponseHandler()
-      .onHeaders { [weak self] headers, statusCode, _ in
-        status = statusCode
-        NSLog("Response status (\(requestID)): \(status)\n\(headers)")
+    guard response.statusCode == 200 else {
+      let error = RequestError(id: id, message: "failed with status \(response.statusCode)")
+      return self.add(result: .failure(error))
+    }
 
-        // Deserialize the response, which will include a `Server` header set by Envoy.
-        self?.add(result: .success(Response(id: requestID, body: "",
-                                            serverHeader: headers["Server"]?.first ?? "")))
-      }
-      .onData { data, _ in
-        NSLog("Response data (\(requestID)): \(data.count) bytes")
-      }
-      .onError { [weak self] in
-        NSLog("Error (\(requestID)): Request failed")
-        self?.add(result: .failure(RequestError(id: requestID,
-                                                message: "failed, status: \(status)")))
-      }
+    guard let body = String(data: data, encoding: .utf8) else {
+      return self.add(result: .failure(RequestError(id: id, message: "failed to deserialize body")))
+    }
 
-    envoy.sendUnary(request, handler: handler)
+    let untypedHeaders = response.allHeaderFields
+    let headers = Dictionary(uniqueKeysWithValues: untypedHeaders.map
+    { header -> (String, String) in
+      return (header.key as? String ?? String(describing: header.key), "\(header.value)")
+    })
+
+    // Deserialize the response, which will include a `Server` header set by Envoy.
+    NSLog("Response:\n\(data.count) bytes\n\(body)\n\(headers)")
+    self.add(result: .success(Response(id: id, body: body, serverHeader: headers["Server"] ?? "")))
   }
 
   private func add(result: Result<Response, RequestError>) {
