@@ -52,11 +52,9 @@ final class ViewController: UITableViewController {
     let request = RequestBuilder(method: .get, scheme: kRequestScheme,
                                  authority: kRequestAuthority,
                                  path: kRequestPath).build()
-    var status = -1
     let handler = ResponseHandler()
       .onHeaders { [weak self] headers, statusCode, _ in
-        status = statusCode
-        NSLog("Response status (\(requestID)): \(status)\n\(headers)")
+        NSLog("Response status (\(requestID)): \(statusCode)\n\(headers)")
 
         // Deserialize the response, which will include a `Server` header set by Envoy.
         self?.add(result: .success(Response(id: requestID, body: "",
@@ -68,7 +66,7 @@ final class ViewController: UITableViewController {
       .onError { [weak self] in
         NSLog("Error (\(requestID)): Request failed")
         self?.add(result: .failure(RequestError(id: requestID,
-                                                message: "failed, status: \(status)")))
+                                                message: "failed within Envoy library")))
       }
 
     envoy.sendUnary(request, handler: handler)
