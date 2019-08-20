@@ -55,10 +55,8 @@ final class ViewController: UITableViewController {
     let handler = ResponseHandler()
       .onHeaders { [weak self] headers, statusCode, _ in
         NSLog("Response status (\(requestID)): \(statusCode)\n\(headers)")
-
-        // Deserialize the response, which will include a `Server` header set by Envoy.
-        self?.add(result: .success(Response(id: requestID, body: "",
-                                            serverHeader: headers["Server"]?.first ?? "")))
+        self?.add(result: .success(Response(id: requestID, body: "Status: \(statusCode)",
+                                            serverHeader: headers["server"]?.first ?? "")))
       }
       .onData { data, _ in
         NSLog("Response data (\(requestID)): \(data.count) bytes")
@@ -97,7 +95,7 @@ final class ViewController: UITableViewController {
     switch result {
     case .success(let response):
       cell.textLabel?.text = "[\(response.id)] \(response.body)"
-      cell.detailTextLabel?.text = "'Server' header: \(response.serverHeader)"
+      cell.detailTextLabel?.text = "'server' header: \(response.serverHeader)"
 
       cell.textLabel?.textColor = .black
       cell.detailTextLabel?.textColor = .black
