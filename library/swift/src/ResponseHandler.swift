@@ -70,7 +70,7 @@ public final class ResponseHandler: NSObject {
     return self
   }
 
-  /// Specify a callback for when an internal Envoy exception occurs with the stream.
+  /// Specify a callback for when the stream is canceled.
   /// If the closure is called, the stream is complete.
   ///
   /// - parameter closure: Closure which will be called when the stream is canceled.
