@@ -7,7 +7,6 @@ envoy_package()
 envoy_cc_library(
     name = "envoy_main_interface_lib",
     srcs = [
-        "config_template.cc",
         "main_interface.cc",
     ],
     hdrs = ["main_interface.h"],
@@ -23,7 +22,10 @@ envoy_cc_library(
 
 cc_library(
     name = "envoy_jni_interface_lib",
-    srcs = ["jni_interface.cc"],
+    srcs = [
+        "jni_interface.cc",
+        "config_template.cc",
+    ],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",

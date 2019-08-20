@@ -54,5 +54,6 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
                                                                 jclass // class
 ) {
-  return config_template;
+  jstring result = env->NewStringUTF(config_template);
+  return result;
 }
