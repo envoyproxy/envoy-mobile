@@ -11,7 +11,7 @@ public enum EnvoyBuilderError: Int, Swift.Error {
 @objcMembers
 public final class EnvoyBuilder: NSObject {
   private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
-  private var logLevel: LogLevel = .info
+  private var logLevel: LogLevel = .debug
   private var configYAML: String?
 
   private var connectTimeoutSeconds: UInt = 30

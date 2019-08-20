@@ -93,6 +93,8 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
   // https://github.com/lyft/envoy-mobile/issues/34
   try {
     main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
+    // FIXME: this should be able to run independently
+    setup_envoy();
   } catch (const Envoy::NoServingException& e) {
     return ENVOY_SUCCESS;
   } catch (const Envoy::MalformedArgvException& e) {

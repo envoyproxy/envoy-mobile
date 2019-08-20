@@ -21,7 +21,7 @@ public final class Envoy: NSObject {
   /// - parameter configYAML: Configuration YAML to use for starting Envoy.
   /// - parameter logLevel:   Log level to use for this instance.
   /// - parameter engine:     The underlying engine to use for starting Envoy.
-  init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+  init(configYAML: String, logLevel: LogLevel = .debug, engine: EnvoyEngine) {
     self.engine = engine
     self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
     self.runner.start()
@@ -49,6 +49,7 @@ public final class Envoy: NSObject {
 extension Envoy: Client {
   public func startStream(with request: Request, handler: ResponseHandler) -> StreamEmitter {
     let httpStream = self.engine.startStream(with: handler.underlyingObserver)
+    NSLog("Sending request with headers: \(request.outboundHeaders())")
     httpStream.sendHeaders(request.outboundHeaders(), close: false)
     return EnvoyStreamEmitter(stream: httpStream)
   }

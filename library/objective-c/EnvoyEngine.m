@@ -64,8 +64,8 @@
 #pragma mark - Utilities to move elsewhere
 
 typedef struct {
-  atomic_bool *canceled;
   EnvoyObserver *observer;
+    atomic_bool *canceled;
 } ios_context;
 
 // static envoy_data toUnmanagedNativeData(NSData *data) {
@@ -89,8 +89,8 @@ static envoy_data toManagedNativeString(NSString *s) {
 
 static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   envoy_header_size_t length = 0;
-  for (id headerList in headers) {
-    length += [headerList count];
+  for (id headerKey in headers) {
+    length += [headers[headerKey] count];
   }
   envoy_header *header_array = (envoy_header *)malloc(sizeof(envoy_header) * length);
   envoy_header_size_t header_index = 0;
@@ -139,8 +139,11 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
 #pragma mark - C callbacks
 
 static void ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
+  NSLog(@"Do we get here?");
   ios_context *c = (ios_context *)context;
+  NSLog(@"Get the platform observer");
   EnvoyObserver *observer = c->observer;
+  NSLog(@"Dispatch on the platform");
   dispatch_async(observer.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
       return;
@@ -237,19 +240,27 @@ static void ios_on_error(envoy_error error, void *context) {
   _platformObserver = observer;
 
   // Create callback context
-  ios_context *context = (ios_context *)malloc(sizeof(ios_context));
-  context->observer = observer;
-  context->canceled = (atomic_bool *)(malloc(sizeof(atomic_bool)));
+  ios_context *context = malloc(sizeof(ios_context));
+  if (context == NULL) {
+    NSLog(@"Is my ptr null?");
+  }
+  NSLog(@"Now we dont get past this?");
+  // context->observer = NULL;
+  NSLog(@"Now we dont get past this?2");
+  context->canceled = malloc(sizeof(atomic_bool));
+  NSLog(@"Now we dont get past this?3");
   atomic_store(context->canceled, NO);
+  NSLog(@"Now we dont get past this?4");
 
   // Create native observer
+  // FIXME we are leaking this memory
   envoy_observer *native_obs = (envoy_observer *)malloc(sizeof(envoy_observer));
   envoy_observer native_init = {ios_on_headers, ios_on_data,     ios_on_trailers, ios_on_metadata,
                                 ios_on_error,   ios_on_complete, context};
   memcpy(native_obs, &native_init, sizeof(envoy_observer));
   _nativeObserver = native_obs;
 
-  envoy_status_t result = start_stream(_streamHandle, *native_obs);
+  envoy_status_t result = start_stream(_streamHandle, native_init);
   if (result != ENVOY_SUCCESS) {
     return nil;
   }
