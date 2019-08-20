@@ -49,6 +49,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
+        with:
+          submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - uses: actions/download-artifact@v1
@@ -68,6 +70,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
+        with:
+          submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - uses: actions/download-artifact@v1
