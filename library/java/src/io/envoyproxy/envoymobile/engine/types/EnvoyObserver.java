@@ -45,4 +45,9 @@ public interface EnvoyObserver {
    *               execution.
    */
   void onError(EnvoyError error);
+
+  /**
+   * Called when the async HTTP stream is canceled.
+   */
+  void onCancel();
 }
