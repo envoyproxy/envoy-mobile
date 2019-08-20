@@ -46,11 +46,11 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: sizecurrent
-          path: dist/
+          path: dist/sizecurrent
       - uses: actions/download-artifact@v1
         with:
           name: sizemaster
-          path: dist/
+          path: dist/sizemaster
       - name: 'Strip and Zip binary'
         run: |
           ls -lh dist/
