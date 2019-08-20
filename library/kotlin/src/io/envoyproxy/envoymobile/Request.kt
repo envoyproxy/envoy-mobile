@@ -14,8 +14,6 @@ class Request internal constructor(
     val authority: String,
     val path: String,
     val headers: Map<String, List<String>>,
-    val trailers: Map<String, List<String>>,
-    val body: ByteArray?,
     val retryPolicy: RetryPolicy?
 ) {
 
@@ -28,8 +26,6 @@ class Request internal constructor(
   fun toBuilder(): RequestBuilder {
     return RequestBuilder(method, scheme, authority, path)
         .setHeaders(headers)
-        .setTrailers(trailers)
-        .addBody(body)
         .addRetryPolicy(retryPolicy)
   }
 
@@ -44,11 +40,6 @@ class Request internal constructor(
     if (authority != other.authority) return false
     if (path != other.path) return false
     if (headers != other.headers) return false
-    if (trailers != other.trailers) return false
-    if (body != null) {
-      if (other.body == null) return false
-      if (!body.contentEquals(other.body)) return false
-    } else if (other.body != null) return false
     if (retryPolicy != other.retryPolicy) return false
 
     return true
@@ -60,9 +51,8 @@ class Request internal constructor(
     result = 31 * result + authority.hashCode()
     result = 31 * result + path.hashCode()
     result = 31 * result + headers.hashCode()
-    result = 31 * result + trailers.hashCode()
-    result = 31 * result + (body?.contentHashCode() ?: 0)
     result = 31 * result + (retryPolicy?.hashCode() ?: 0)
     return result
   }
+
 }
