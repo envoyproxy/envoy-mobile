@@ -13,7 +13,7 @@ public protocol Client {
 }
 
 extension Client {
-  /// Convenience function for sending and completing a non-streaming request.
+  /// Convenience function for sending a complete (non-streamed) request.
   ///
   /// - parameter request:  The request to send.
   /// - parameter data:     Serialized data to send as the body of the request.
