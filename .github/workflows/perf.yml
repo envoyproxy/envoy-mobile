@@ -52,11 +52,11 @@ jobs:
           name: sizemaster
           path: dist/master
       - run: tree dist/
-      - script: |
+      - name: 'Strip and Zip binary'
+        run: |
           strip -s -o dist/master.stripped dist/master
           strip -s -o dist/current.stripped dist/current
           zip -9 dist/master.zip dist/master.stripped
           zip -9 dist/current.zip dist/current.stripped
-        displayName: 'Strip and Zip binary'
-      - script: ./ci/test_size_regression.sh dist/master.zip dist/current.zip
-        displayName: 'Test size regression'
+      - name: 'Test size regression'
+        script: ./ci/test_size_regression.sh dist/master.zip dist/current.zip
