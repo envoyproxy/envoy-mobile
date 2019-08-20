@@ -59,4 +59,4 @@ jobs:
           zip -9 dist/master.zip dist/master.stripped
           zip -9 dist/current.zip dist/current.stripped
       - name: 'Test size regression'
-        script: ./ci/test_size_regression.sh dist/master.zip dist/current.zip
+        run: ./ci/test_size_regression.sh dist/master.zip dist/current.zip
