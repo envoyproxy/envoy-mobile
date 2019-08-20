@@ -3,7 +3,7 @@ name: android
 on: [push]
 
 jobs:
-  androiddistlinux:
+  androidlinuxdist:
     name: android_linux_dist
     runs-on: ubuntu-latest
     steps:
@@ -27,6 +27,59 @@ jobs:
         run: |
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
           ./bazelw build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+  androidmacdist:
+    name: android_mac_dist
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - name: 'Build envoy.aar distributable'
+        run: ./bazelw build --fat_apk_cpu=x86 //:android_dist
+      - uses: actions/upload-artifact@v1
+        with:
+          name: envoy.aar
+          path: dist/envoy.aar
+  androidmacjava:
+    name: android_mac_java_helloworld
+    needs: androidmacdist
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - uses: actions/download-artifact@v1
+        with:
+          name: envoy.aar
+          path: dist/envoy.aar
+      - run: ls -lh dist/
+      - name: start simulator
+        run: ./ci/start_simulator.sh
+      - run: ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+        name: 'Start java app'
+      - run: 'adb logcat -e "successful response!" -m 1'
+        name: 'Check liveliness'
+  androidmackotlin:
+    name: android_mac_kotlin_helloworld
+    needs: androidmacdist
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - uses: actions/download-artifact@v1
+        with:
+          name: envoy.aar
+          path: dist/envoy.aar
+      - run: ls -lh dist/
+      - name: start simulator
+        run: ./ci/start_simulator.sh
+      - run: ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy
+        name: 'Start kotlin app'
+      - run: 'adb logcat -e "successful response!" -m 1'
+        name: 'Check liveliness'
   kotlintests:
     name: kotlin_tests
     runs-on: ubuntu-latest
@@ -38,20 +91,3 @@ jobs:
         run: ./ci/linux_ci_setup.sh
       - run: ./bazelw test --test_output=all --build_tests_only //library/kotlin/test/...
         name: 'Run Kotlin library tests'
-  macandroid:
-    name: android_mac_test
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - run: ./ci/mac_ci_setup.sh
-        name: 'Install dependencies'
-      - name: 'Build envoy.aar distributable'
-        run: ./bazelw build --fat_apk_cpu=x86 //:android_dist
-      - name: start simulator
-        run: ./ci/start_simulator.sh
-      - run: ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
-        name: 'Start java app'
-      - run: 'adb logcat -e "successful response!" -m 1'
-        name: 'Check liveliness'
