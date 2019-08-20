@@ -41,10 +41,6 @@
   }
 }
 
-- (void)setup {
-  setup_envoy();
-}
-
 - (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer {
   return [[EnvoyHTTPStream alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
 }
@@ -139,11 +135,9 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
 #pragma mark - C callbacks
 
 static void ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
-  NSLog(@"Do we get here?");
   ios_context *c = (ios_context *)context;
-  NSLog(@"Get the platform observer");
   EnvoyObserver *observer = c->observer;
-  NSLog(@"Dispatch on the platform");
+  // TODO: protection against null pointers.
   dispatch_async(observer.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
       return;
@@ -225,7 +219,7 @@ static void ios_on_error(envoy_error error, void *context) {
 @implementation EnvoyHTTPStream {
   EnvoyHTTPStream *_strongSelf;
   EnvoyObserver *_platformObserver;
-  envoy_observer *_nativeObserver;
+  envoy_observer _nativeObserver;
   envoy_stream_t _streamHandle;
 }
 
@@ -241,26 +235,16 @@ static void ios_on_error(envoy_error error, void *context) {
 
   // Create callback context
   ios_context *context = malloc(sizeof(ios_context));
-  if (context == NULL) {
-    NSLog(@"Is my ptr null?");
-  }
-  NSLog(@"Now we dont get past this?");
-  // context->observer = NULL;
-  NSLog(@"Now we dont get past this?2");
+  context->observer = observer;
   context->canceled = malloc(sizeof(atomic_bool));
-  NSLog(@"Now we dont get past this?3");
   atomic_store(context->canceled, NO);
-  NSLog(@"Now we dont get past this?4");
 
   // Create native observer
-  // FIXME we are leaking this memory
-  envoy_observer *native_obs = (envoy_observer *)malloc(sizeof(envoy_observer));
-  envoy_observer native_init = {ios_on_headers, ios_on_data,     ios_on_trailers, ios_on_metadata,
+  envoy_observer native_obs = {ios_on_headers, ios_on_data,     ios_on_trailers, ios_on_metadata,
                                 ios_on_error,   ios_on_complete, context};
-  memcpy(native_obs, &native_init, sizeof(envoy_observer));
   _nativeObserver = native_obs;
 
-  envoy_status_t result = start_stream(_streamHandle, native_init);
+  envoy_status_t result = start_stream(_streamHandle, native_obs);
   if (result != ENVOY_SUCCESS) {
     return nil;
   }
@@ -271,12 +255,10 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (void)dealloc {
-  envoy_observer *native_obs = _nativeObserver;
-  _nativeObserver = nil;
-  ios_context *context = native_obs->context;
+  envoy_observer native_obs = _nativeObserver;
+  ios_context *context = native_obs.context;
   free(context->canceled);
   free(context);
-  free(native_obs);
 }
 
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
@@ -297,7 +279,7 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (int)cancel {
-  ios_context *context = _nativeObserver->context;
+  ios_context *context = _nativeObserver.context;
   // Step 1: atomically and synchronously prevent the execution of further callbacks other than
   // on_cancel.
   if (!atomic_exchange(context->canceled, YES)) {

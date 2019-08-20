@@ -14,11 +14,8 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
-  ENVOY_LOG(debug, "transforming headers");
   envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
-  ENVOY_LOG(debug, "calling on the observer");
   observer_.on_headers(bridge_headers, end_stream, observer_.context);
-  ENVOY_LOG(debug, "finished calling on the observer");
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
