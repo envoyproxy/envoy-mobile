@@ -1,0 +1,27 @@
+name: perf
+
+on: [push]
+
+jobs:
+  sizecurrent:
+    name: size_current
+    runs-on: ubuntu-latest
+    actions:
+      - checkout: true
+        submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/linux_ci_setup.sh
+      - name: 'Build test binary'
+        run: ./bazelw build //test/performance:test_binary_size --config=sizeopt
+  sizemaster:
+    name: size_master
+    runs-on: ubuntu-latest
+    actions:
+      - checkout: true
+        submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/linux_ci_setup.sh
+      - name: 'Build test binary'
+        run: |
+          git checkout master && git pull origin master && git submodule update
+          ./bazelw build //test/performance:test_binary_size --config=sizeopt
