@@ -45,7 +45,7 @@ jobs:
           path: dist/envoy.aar
   macjava:
     name: mac_java_helloworld
-    needs: androidmacdist
+    needs: macdist
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
@@ -64,7 +64,7 @@ jobs:
         name: 'Check liveliness'
   mackotlin:
     name: mac_kotlin_helloworld
-    needs: androidmacdist
+    needs: macdist
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
