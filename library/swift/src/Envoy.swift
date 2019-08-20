@@ -1,6 +1,6 @@
 import Foundation
 
-/// Envoy's implementation of `Client`, built using `EnvoyBuilder`.
+/// Envoy's implementation of `Client`, buildable using `EnvoyBuilder`.
 @objcMembers
 public final class Envoy: NSObject {
   private let engine: EnvoyEngine
@@ -25,7 +25,6 @@ public final class Envoy: NSObject {
     self.engine = engine
     self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
     self.runner.start()
-    engine.setup()
   }
 
   // MARK: - Private

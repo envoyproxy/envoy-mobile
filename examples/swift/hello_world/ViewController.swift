@@ -4,6 +4,7 @@ import UIKit
 private let kCellID = "cell-id"
 private let kRequestAuthority = "s3.amazonaws.com"
 private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
+private let kRequestScheme = "http"
 
 final class ViewController: UITableViewController {
   private var requestCount = 0
@@ -48,7 +49,8 @@ final class ViewController: UITableViewController {
     NSLog("Starting request to '\(kRequestPath)'")
 
     let requestID = self.requestCount
-    let request = RequestBuilder(method: .get, scheme: "http", authority: kRequestAuthority,
+    let request = RequestBuilder(method: .get, scheme: kRequestScheme,
+                                 authority: kRequestAuthority,
                                  path: kRequestPath).build()
     var status = -1
     let handler = ResponseHandler()
@@ -69,7 +71,7 @@ final class ViewController: UITableViewController {
                                                 message: "failed, status: \(status)")))
       }
 
-    _ = envoy.startStream(with: request, handler: handler)
+    envoy.sendUnary(request, handler: handler)
   }
 
   private func add(result: Result<Response, RequestError>) {
