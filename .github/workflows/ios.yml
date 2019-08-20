@@ -9,7 +9,7 @@ jobs:
     name: ios_mac_dist
     runs-on: macos-latest
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
@@ -33,7 +33,7 @@ jobs:
     name: swift_tests
     runs-on: macos-latest
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'

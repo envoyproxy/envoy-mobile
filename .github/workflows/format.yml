@@ -9,7 +9,7 @@ jobs:
     container:
       image: envoyproxy/envoy-build:cfc514546bc0284536893cca5fa43d7128edcd35
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Run formatters'
         run: |
@@ -19,7 +19,7 @@ jobs:
     name: precommit
     runs-on: macos-latest
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
       - name: 'Install precommit'
         run: brew install pre-commit
       - name: 'Run precommit'
@@ -30,7 +30,7 @@ jobs:
     container:
       image: norionomura/swiftlint:0.33.0_swift-5.0
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
       - name: 'Run SwiftLint'
         run: swiftlint lint --strict
   kotlinlint:
@@ -39,7 +39,7 @@ jobs:
     container:
       image: openjdk:8-jdk
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Run Kotlin lint'
         run: ./ci/kotlin_lint.sh

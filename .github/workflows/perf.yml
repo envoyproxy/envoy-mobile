@@ -6,8 +6,8 @@ jobs:
   sizecurrent:
     name: size_current
     runs-on: ubuntu-latest
-    actions:
-      - checkout: true
+    steps:
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
@@ -16,8 +16,8 @@ jobs:
   sizemaster:
     name: size_master
     runs-on: ubuntu-latest
-    actions:
-      - checkout: true
+    steps:
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh

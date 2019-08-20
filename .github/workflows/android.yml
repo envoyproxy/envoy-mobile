@@ -7,7 +7,7 @@ jobs:
     name: android_linux_dist
     runs-on: ubuntu-latest
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
@@ -30,7 +30,7 @@ jobs:
     name: kotlin_tests
     runs-on: ubuntu-latest
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
@@ -40,7 +40,7 @@ jobs:
     name: android_mac_test
     runs-on: macos-latest
     steps:
-      - checkout: true
+      - uses: actions/checkout@v1
         submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
