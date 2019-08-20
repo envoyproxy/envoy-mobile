@@ -7,11 +7,11 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 
 class ConfigurationException : Exception("Unresolved Template Key")
 
-open class EnvoyBuilder internal constructor(
-    envoyConfiguration: EnvoyConfiguration
+class EnvoyBuilder internal constructor(
+    private val envoyConfiguration: EnvoyConfiguration
 ) {
   private var logLevel = LogLevel.INFO
-  private var template: String
+  private var configYAML: String
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
 
   private var connectTimeoutSeconds = 30
@@ -21,7 +21,7 @@ open class EnvoyBuilder internal constructor(
   constructor() : this(EnvoyConfigurationImpl())
 
   init {
-    template = envoyConfiguration.templateString()
+    configYAML = envoyConfiguration.templateString()
   }
 
   /**
@@ -39,8 +39,8 @@ open class EnvoyBuilder internal constructor(
    *
    * @param configYAML the YAML file to use as a configuration.
    */
-  fun addConfigYAML(configYAML: String): EnvoyBuilder {
-    this.template = configYAML
+  fun addConfigYAML(configYAML: String?): EnvoyBuilder {
+    this.configYAML = configYAML ?: envoyConfiguration.templateString()
     return this
   }
 
@@ -49,7 +49,7 @@ open class EnvoyBuilder internal constructor(
    *
    * @param connectTimeoutSeconds timeout for new network connections to hosts in the cluster.
    */
-  fun withConnectTimeoutSeconds(connectTimeoutSeconds: Int): EnvoyBuilder {
+  fun addConnectTimeoutSeconds(connectTimeoutSeconds: Int): EnvoyBuilder {
     this.connectTimeoutSeconds = connectTimeoutSeconds
     return this
   }
@@ -59,7 +59,7 @@ open class EnvoyBuilder internal constructor(
    *
    * @param dnsRefreshSeconds rate in seconds to refresh DNS.
    */
-  fun withDNSRefreshSeconds(dnsRefreshSeconds: Int): EnvoyBuilder {
+  fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): EnvoyBuilder {
     this.dnsRefreshSeconds = dnsRefreshSeconds
     return this
   }
@@ -69,7 +69,7 @@ open class EnvoyBuilder internal constructor(
    *
    * @param statsFlushSeconds interval at which to flush Envoy stats.
    */
-  fun withStatsFlushSeconds(statsFlushSeconds: Int): EnvoyBuilder {
+  fun addStatsFlushSeconds(statsFlushSeconds: Int): EnvoyBuilder {
     this.statsFlushSeconds = statsFlushSeconds
     return this
   }
@@ -101,10 +101,10 @@ open class EnvoyBuilder internal constructor(
    * @throws ConfigurationException when the yaml configuration replacement is incomplete
    */
   private fun resolvedYAML(): String {
-    val resolvedTemplate = template
-        .replace("connect_timeout", connectTimeoutSeconds.toString())
-        .replace("dns_refresh_rate", dnsRefreshSeconds.toString())
-        .replace("stats_flush_interval", statsFlushSeconds.toString())
+    val resolvedTemplate = configYAML
+        .replace("{{ connect_timeout }}", "${connectTimeoutSeconds}s")
+        .replace("{{ dns_refresh_rate }}", "${dnsRefreshSeconds}s")
+        .replace("{{ stats_flush_interval }}", "${statsFlushSeconds}s")
 
     if (resolvedTemplate.contains("{{")) {
       throw ConfigurationException()
