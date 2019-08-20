@@ -3,8 +3,8 @@ name: android
 on: [push]
 
 jobs:
-  androidlinuxdist:
-    name: android_linux_dist
+  linuxdist:
+    name: linux_dist
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -19,6 +19,7 @@ jobs:
           export CXX=clang++
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
           ./bazelw build --fat_apk_cpu=x86 //:android_dist
+    # TODO: parallelize these two jobs
       - name: 'Build Java app'
         run: |
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
@@ -27,8 +28,8 @@ jobs:
         run: |
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
           ./bazelw build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
-  androidmacdist:
-    name: android_mac_dist
+  macdist:
+    name: mac_dist
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
@@ -42,8 +43,8 @@ jobs:
         with:
           name: envoy.aar
           path: dist/envoy.aar
-  androidmacjava:
-    name: android_mac_java_helloworld
+  macjava:
+    name: mac_java_helloworld
     needs: androidmacdist
     runs-on: macos-latest
     steps:
@@ -61,8 +62,8 @@ jobs:
         name: 'Start java app'
       - run: 'adb logcat -e "successful response!" -m 1'
         name: 'Check liveliness'
-  androidmackotlin:
-    name: android_mac_kotlin_helloworld
+  mackotlin:
+    name: mac_kotlin_helloworld
     needs: androidmacdist
     runs-on: macos-latest
     steps:
