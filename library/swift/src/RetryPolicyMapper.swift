@@ -7,7 +7,7 @@ extension RetryPolicy {
       "x-envoy-max-retries": ["\(self.maxRetryCount)"],
       "x-envoy-retry-on": self.retryOn
         .lazy
-        .map { $0.stringValue }
+        .map { $0.stringValue },
     ]
 
     if let perRetryTimeoutMS = self.perRetryTimeoutMS {

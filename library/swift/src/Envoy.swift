@@ -60,7 +60,7 @@ extension Envoy: Client {
     if let body = body {
       emitter.sendData(body)
     }
-    
+
     emitter.close(trailers: trailers)
   }
 }

@@ -44,8 +44,8 @@ public final class ResponseHandler: NSObject {
     return self
   }
 
-  /// Specify a callback for when a data frame is received by the stream.
-  /// If the closure is called, the stream can be assumed to be complete.
+  /// Specify a callback for when trailers are received by the stream.
+  /// If the closure is called, the stream is complete.
   ///
   /// - parameter closure: Closure which will receive the trailers.
   @discardableResult
@@ -58,7 +58,7 @@ public final class ResponseHandler: NSObject {
   }
 
   /// Specify a callback for when an internal Envoy exception occurs with the stream.
-  /// If the closure is called, the stream can be assumed to be complete.
+  /// If the closure is called, the stream is complete.
   ///
   /// - parameter closure: Closure which will be called when an error occurs.
   @discardableResult
@@ -71,7 +71,7 @@ public final class ResponseHandler: NSObject {
   }
 
   /// Specify a callback for when an internal Envoy exception occurs with the stream.
-  /// If the closure is called, the stream can be assumed to be complete.
+  /// If the closure is called, the stream is complete.
   ///
   /// - parameter closure: Closure which will be called when the stream is canceled.
   @discardableResult
