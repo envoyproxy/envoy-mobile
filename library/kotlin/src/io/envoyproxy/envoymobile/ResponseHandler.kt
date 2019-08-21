@@ -1,8 +1,5 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyData
-import io.envoyproxy.envoymobile.engine.types.EnvoyError
-import io.envoyproxy.envoymobile.engine.types.EnvoyHeaders
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver
 import java.nio.ByteBuffer
 
@@ -17,44 +14,39 @@ class ResponseHandler {
   ) : EnvoyObserver {
 
 
-    override fun onHeaders(headers: EnvoyHeaders?, endStream: Boolean) {
-      // TODO: Parse out the headers and string
-      // responseHandler.onHeadersClosure
+    override fun onHeaders(headers: Map<String, List<String>>?, endStream: Boolean) {
+      val statusCode = headers!![":status"]?.first()?.toInt() ?: 0 // TODO
+      responseHandler.onHeadersClosure(headers, statusCode)
     }
 
-    override fun onData(data: EnvoyData?, endStream: Boolean) {
-      // TODO: Map out the data
-      // responseHandler.onDataClosure
-
+    override fun onData(byteBuffer: ByteBuffer?, endStream: Boolean) {
+      responseHandler.onDataClosure(byteBuffer, endStream)
     }
 
-    override fun onMetadata(metadata: EnvoyHeaders?) {
-      // TODO: Parse out the metadata
-      // responseHandler.onMetadataClosure
+    override fun onMetadata(metadata: Map<String, List<String>>?) {
+      responseHandler.onMetadataClosure(metadata!!)
     }
 
-    override fun onTrailers(trailers: EnvoyHeaders?) {
-      // TODO: Parse out the trailer
-      // responseHandler.onTrailersClosure
+    override fun onTrailers(trailers: Map<String, List<String>>?) {
+      responseHandler.onTrailersClosure(trailers!!)
     }
 
-    override fun onError(error: EnvoyError?) {
-      // TODO: Parse out the error
-      // responseHandler.onErrorClosure
+    override fun onError() {
+      responseHandler.onErrorClosure()
     }
 
     override fun onCancel() {
-      TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+      responseHandler.onCancelClosure()
     }
   }
 
   internal val underlyingObserver = EnvoyObserverAdapter(this)
 
   private var onHeadersClosure: (headers: Map<String, List<String>>, statusCode: Int) -> Unit = { _, _ -> Unit }
-  private var onDataClosure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit = { _, _ -> Unit }
+  private var onDataClosure: (byteBuffer: ByteBuffer?, endStream: Boolean) -> Unit = { _, _ -> Unit }
   private var onMetadataClosure: (metadata: Map<String, List<String>>) -> Unit = { Unit }
   private var onTrailersClosure: (trailers: Map<String, List<String>>) -> Unit = { Unit }
-  private var onErrorClosure: (error: EnvoyException) -> Unit = { Unit }
+  private var onErrorClosure: () -> Unit = { Unit }
   private var onCancelClosure: () -> Unit = { Unit }
 
   /**
@@ -79,7 +71,7 @@ class ResponseHandler {
    *                 and flag indicating if the stream is complete.
    * @return ResponseHandler, this ResponseHandler.
    */
-  fun onData(closure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit): ResponseHandler {
+  fun onData(closure: (byteBuffer: ByteBuffer?, endStream: Boolean) -> Unit): ResponseHandler {
     this.onDataClosure = closure
     return this
   }
@@ -115,7 +107,7 @@ class ResponseHandler {
    * @param closure: Closure which will be called when an error occurs.
    * @return ResponseHandler, this ResponseHandler.
    */
-  fun onError(closure: (error: EnvoyException) -> Unit): ResponseHandler {
+  fun onError(closure: () -> Unit): ResponseHandler {
     this.onErrorClosure = closure
     return this
   }
