@@ -38,6 +38,86 @@ class EnvoyTest {
   }
 
   @Test
+  fun `sending data on stream stream forwards data to the underlying stream`() {
+    `when`(engine.startStream(any())).thenReturn(stream)
+    val envoy = Envoy(engine, "")
+
+    val emitter = envoy.startStream(
+        RequestBuilder(
+            method = RequestMethod.POST,
+            scheme = "https",
+            authority = "api.foo.com",
+            path = "foo")
+            .build(),
+        ResponseHandler())
+
+    val data = ByteBuffer.allocate(0)
+
+    emitter.sendData(data)
+
+    verify(stream).sendData(data, false)
+  }
+
+  @Test
+  fun `sending metadata on stream forwards metadata to the underlying stream`() {
+    `when`(engine.startStream(any())).thenReturn(stream)
+    val envoy = Envoy(engine, "")
+
+    val metadata = mapOf("key_1" to listOf("value_a"))
+    val emitter = envoy.startStream(
+        RequestBuilder(
+            method = RequestMethod.POST,
+            scheme = "https",
+            authority = "api.foo.com",
+            path = "foo")
+            .build(),
+        ResponseHandler())
+
+    emitter.sendMetadata(metadata)
+
+    verify(stream).sendMetadata(metadata)
+  }
+
+  @Test
+  fun `closing stream sends empty trailers to the underlying stream`() {
+    `when`(engine.startStream(any())).thenReturn(stream)
+    val envoy = Envoy(engine, "")
+
+    val emitter = envoy.startStream(
+        RequestBuilder(
+            method = RequestMethod.POST,
+            scheme = "https",
+            authority = "api.foo.com",
+            path = "foo")
+            .build(),
+        ResponseHandler())
+
+    emitter.close()
+
+    verify(stream).sendTrailers(emptyMap())
+  }
+
+  @Test
+  fun `closing stream with trailers sends trailers to the underlying stream `() {
+    `when`(engine.startStream(any())).thenReturn(stream)
+    val envoy = Envoy(engine, "")
+
+    val trailers = mapOf("key_1" to listOf("value_a"))
+    val emitter = envoy.startStream(
+        RequestBuilder(
+            method = RequestMethod.POST,
+            scheme = "https",
+            authority = "api.foo.com",
+            path = "foo")
+            .build(),
+        ResponseHandler())
+
+    emitter.close(trailers)
+
+    verify(stream).sendTrailers(trailers)
+  }
+
+  @Test
   fun `sending request on envoy sends headers`() {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
@@ -121,7 +201,7 @@ class EnvoyTest {
     val envoy = Envoy(engine, "")
 
     val trailers = mapOf("key_1" to listOf("value_a"))
-    val stream = envoy.send(
+    val emitter = envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -132,7 +212,7 @@ class EnvoyTest {
         trailers,
         ResponseHandler())
 
-    stream.cancel()
+    emitter.cancel()
 
     verify(stream).cancel()
   }
