@@ -10,12 +10,11 @@ import java.nio.ByteBuffer
 class ResponseHandler {
 
   class EnvoyObserverAdapter(
-      private val responseHandler: ResponseHandler
+      internal val responseHandler: ResponseHandler
   ) : EnvoyObserver {
 
-
     override fun onHeaders(headers: Map<String, List<String>>?, endStream: Boolean) {
-      val statusCode = headers!![":status"]?.first()?.toInt() ?: 0 // TODO
+      val statusCode = headers!![":status"]?.first()?.toIntOrNull() ?: 0
       responseHandler.onHeadersClosure(headers, statusCode)
     }
 
