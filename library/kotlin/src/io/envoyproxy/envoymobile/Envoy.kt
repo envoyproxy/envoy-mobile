@@ -19,11 +19,13 @@ enum class LogLevel(internal val level: String) {
 /**
  * Wrapper class that allows for easy calling of Envoy's JNI interface in native Java.
  */
-class Envoy @JvmOverloads constructor(
+class Envoy constructor(
     private val engine: EnvoyEngine,
     internal val config: String,
     internal val logLevel: LogLevel = LogLevel.INFO
 ) : Client {
+
+  constructor(engine: EnvoyEngine, config: String) : this(engine, config, LogLevel.INFO)
 
   // Dedicated thread for running this instance of Envoy.
   private val runner: Thread = Thread(Runnable {
