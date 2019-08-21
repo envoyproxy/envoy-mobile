@@ -1,23 +1,11 @@
 package io.envoyproxy.envoymobile
 
+import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
 import java.nio.ByteBuffer
 
-/**
- * Interface for a stream that may be canceled.
- */
-interface CancellableStream {
-  /**
-   * Cancel and end the associated stream.
-   * @throws EnvoyException when there is an exception canceling the stream or sending trailers.
-   */
-  @Throws(EnvoyException::class)
-  fun cancel()
-}
-
-/**
- * Interface allowing for sending/emitting data on an Envoy stream.
- */
-interface StreamEmitter : CancellableStream {
+class EnvoyStreameEmitter(
+    private val stream: EnvoyHTTPStream
+) : StreamEmitter {
 
   /**
    * For sending data to an associated stream.
@@ -27,8 +15,10 @@ interface StreamEmitter : CancellableStream {
    * @throws EnvoyException when there is an exception sending data.
    * @return this stream emitter.
    */
-  @Throws(EnvoyException::class)
-  fun sendData(byteBuffer: ByteBuffer): StreamEmitter
+  override fun sendData(byteBuffer: ByteBuffer): StreamEmitter {
+    stream.sendData(byteBuffer, false)
+    return this
+  }
 
   /**
    * For sending a map of metadata to an associated stream.
@@ -38,8 +28,10 @@ interface StreamEmitter : CancellableStream {
    * @throws EnvoyException when there is an exception sending metadata.
    * @return this stream emitter.
    */
-  @Throws(EnvoyException::class)
-  fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter
+  override fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter {
+    stream.sendMetadata(metadata)
+    return this
+  }
 
   /**
    * For ending an associated stream and sending trailers.
@@ -48,6 +40,17 @@ interface StreamEmitter : CancellableStream {
    * @throws IllegalStateException when the stream is not active.
    * @throws EnvoyException when there is an exception ending the stream or sending trailers.
    */
-  @Throws(EnvoyException::class)
-  fun close(trailers: Map<String, List<String>> = emptyMap())
+  override fun close(trailers: Map<String, List<String>>) {
+    stream.sendTrailers(trailers)
+  }
+
+  /**
+   * For cancelling and ending an associated stream.
+   *
+   * @throws EnvoyException when there is an exception cancelling the stream.
+   */
+  override fun cancel() {
+    stream.cancel()
+  }
+
 }

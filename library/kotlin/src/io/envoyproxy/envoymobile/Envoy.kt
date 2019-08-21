@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
+import java.nio.ByteBuffer
 
 /**
  * Available logging levels for an Envoy instance. Note some levels may be compiled out.
@@ -19,10 +20,10 @@ enum class LogLevel(internal val level: String) {
  * Wrapper class that allows for easy calling of Envoy's JNI interface in native Java.
  */
 class Envoy @JvmOverloads constructor(
-    engine: EnvoyEngine,
+    private val engine: EnvoyEngine,
     internal val config: String,
     internal val logLevel: LogLevel = LogLevel.INFO
-) {
+) : Client {
 
   // Dedicated thread for running this instance of Envoy.
   private val runner: Thread = Thread(Runnable {
@@ -52,5 +53,27 @@ class Envoy @JvmOverloads constructor(
    */
   fun isTerminated(): Boolean {
     return runner.state == Thread.State.TERMINATED
+  }
+
+  override fun startStream(request: Request, responseHandler: ResponseHandler): StreamEmitter {
+    val stream = engine.startStream(responseHandler.underlyingObserver)
+    stream.sendHeaders(request.headers, false)
+    return EnvoyStreameEmitter(stream)
+  }
+
+  override fun sendUnary(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler): CancellableStream {
+    val stream = engine.startStream(responseHandler.underlyingObserver)
+    stream.sendHeaders(request.headers, false)
+    stream.sendData(body, false)
+    stream.sendTrailers(trailers)
+    return EnvoyStreameEmitter(stream)
+  }
+
+  override fun sendUnary(request: Request, body: ByteBuffer?, responseHandler: ResponseHandler): CancellableStream {
+    val stream = engine.startStream(responseHandler.underlyingObserver)
+    stream.sendHeaders(request.headers, false)
+    stream.sendData(body, false)
+    stream.sendTrailers(mapOf())
+    return EnvoyStreameEmitter(stream)
   }
 }

@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import java.nio.ByteBuffer
+
 interface Client {
   /**
    * For starting a stream.
@@ -18,8 +20,10 @@ interface Client {
    * @param body Serialized data to send as the body of the request.
    * @param trailers Trailers to send with the request.
    * @param responseHandler the callback for receiving stream events.
+   * @return CancellableStream, a cancelable request.
    */
-  fun sendUnary(request: Request, body: ByteArray?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler)
+  fun sendUnary(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>,
+                responseHandler: ResponseHandler): CancellableStream
 
   /**
    * Convenience function for sending a unary request.
@@ -27,6 +31,8 @@ interface Client {
    * @param request The request to send.
    * @param body Serialized data to send as the body of the request.
    * @param responseHandler the callback for receiving stream events.
+   * @return CancellableStream, a cancelable request.
    */
-  fun sendUnary(request: Request, body: ByteArray?, responseHandler: ResponseHandler)
+  fun sendUnary(request: Request, body: ByteBuffer?,
+                responseHandler: ResponseHandler): CancellableStream
 }
