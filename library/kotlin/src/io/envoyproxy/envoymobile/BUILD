@@ -13,13 +13,14 @@ aar_with_jni(
 envoy_mobile_kt_aar_android_library(
     name = "envoy_lib",
     srcs = [
-        "Envoy.kt",
+        "AndroidEnvoyBuilder.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
     visibility = ["//visibility:public"],
     deps = [
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
     ],

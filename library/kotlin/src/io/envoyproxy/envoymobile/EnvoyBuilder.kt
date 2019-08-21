@@ -7,18 +7,25 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 
 class ConfigurationException : Exception("Unresolved Template Key")
 
-class EnvoyBuilder internal constructor(
-    private val envoyConfiguration: EnvoyConfiguration
+open class EnvoyBuilder internal constructor(
+    private val envoyConfiguration: EnvoyConfiguration,
+    private var engineType: () -> EnvoyEngine
 ) {
   private var logLevel = LogLevel.INFO
   private var configYAML: String
-  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
 
   private var connectTimeoutSeconds = 30
   private var dnsRefreshSeconds = 60
   private var statsFlushSeconds = 60
 
-  constructor() : this(EnvoyConfigurationImpl())
+  constructor() : this(EnvoyConfigurationImpl(), { EnvoyEngineImpl() })
+
+  /**
+   * Initialize with a specific implementation of `EnvoyEngine` to use for starting Envoy.
+   *
+   * A new instance of this engine will be created when `build()` is called.
+   */
+  internal constructor(engineType: () -> EnvoyEngine) : this(EnvoyConfigurationImpl(), engineType)
 
   init {
     configYAML = envoyConfiguration.templateString()
@@ -82,17 +89,6 @@ class EnvoyBuilder internal constructor(
   fun build(): Envoy {
     return Envoy(engineType(), resolvedYAML(), logLevel)
   }
-
-  /**
-   * Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
-   *
-   * A new instance of this engine will be created when `build()` is called.
-   */
-  internal fun addEngineType(engineType: () -> EnvoyEngine): EnvoyBuilder {
-    this.engineType = engineType
-    return this
-  }
-
 
   /** Processes the YAML template provided, replacing keys with values from the configuration.
    *
