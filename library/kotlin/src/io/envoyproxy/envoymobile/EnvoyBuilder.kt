@@ -9,7 +9,7 @@ class ConfigurationException : Exception("Unresolved Template Key")
 
 open class EnvoyBuilder internal constructor(
     private val envoyConfiguration: EnvoyConfiguration,
-    private var engineType: () -> EnvoyEngine
+    private val engineType: () -> EnvoyEngine
 ) {
   private var logLevel = LogLevel.INFO
   private var configYAML: String
