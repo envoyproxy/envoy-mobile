@@ -89,6 +89,7 @@ static void pass_headers(envoy_headers headers, jobject j_observer) {
     env->CallVoidMethod(j_observer, jmid_passHeader, key, value, i != headers.length - 1);
   }
   env->PopLocalFrame(nullptr);
+  release_envoy_headers(headers);
 }
 
 static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context) {
