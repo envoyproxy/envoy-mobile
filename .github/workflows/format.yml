@@ -18,7 +18,7 @@ jobs:
           ./tools/check_format.sh
   precommit:
     name: precommit
-    runs-on: macos-10.14
+    runs-on: macOS-10.14
     steps:
       - uses: actions/checkout@v1
       - name: 'Install precommit'
