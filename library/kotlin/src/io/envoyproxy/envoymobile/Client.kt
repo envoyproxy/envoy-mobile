@@ -22,7 +22,7 @@ interface Client {
    * @param responseHandler the callback for receiving stream events.
    * @return CancellableStream, a cancelable request.
    */
-  fun sendUnary(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>,
+  fun send(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>,
                 responseHandler: ResponseHandler): CancellableStream
 
   /**
@@ -33,6 +33,6 @@ interface Client {
    * @param responseHandler the callback for receiving stream events.
    * @return CancellableStream, a cancelable request.
    */
-  fun sendUnary(request: Request, body: ByteBuffer?,
+  fun send(request: Request, body: ByteBuffer?,
                 responseHandler: ResponseHandler): CancellableStream
 }

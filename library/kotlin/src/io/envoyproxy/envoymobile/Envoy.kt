@@ -61,7 +61,7 @@ class Envoy @JvmOverloads constructor(
     return EnvoyStreamEmitter(stream)
   }
 
-  override fun sendUnary(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler): CancellableStream {
+  override fun send(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler): CancellableStream {
     val stream = engine.startStream(responseHandler.underlyingObserver)
     stream.sendHeaders(request.headers, false)
     stream.sendData(body, false)
@@ -69,11 +69,7 @@ class Envoy @JvmOverloads constructor(
     return EnvoyStreamEmitter(stream)
   }
 
-  override fun sendUnary(request: Request, body: ByteBuffer?, responseHandler: ResponseHandler): CancellableStream {
-    val stream = engine.startStream(responseHandler.underlyingObserver)
-    stream.sendHeaders(request.headers, false)
-    stream.sendData(body, false)
-    stream.sendTrailers(mapOf())
-    return EnvoyStreamEmitter(stream)
+  override fun send(request: Request, body: ByteBuffer?, responseHandler: ResponseHandler): CancellableStream {
+    return send(request, body, emptyMap(), responseHandler)
   }
 }
