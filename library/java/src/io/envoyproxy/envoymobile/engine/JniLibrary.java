@@ -32,9 +32,7 @@ class JniLibrary {
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
 
-    private JavaLoader() {
-      System.loadLibrary(ENVOY_JNI);
-    }
+    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
   }
 
   /**
@@ -64,7 +62,8 @@ class JniLibrary {
    * @param endStream, supplies whether this is headers only.
    * @return int, the resulting status of the operation.
    */
-  protected static native int sendHeaders(long stream, Map<String, List<String>> headers, boolean endStream);
+  protected static native int sendHeaders(long stream, Map<String, List<String>> headers,
+                                          boolean endStream);
 
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple times.
