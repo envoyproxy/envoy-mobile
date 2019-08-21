@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 /**
  * Interface for a stream that may be canceled.
  */
-interface CancellableStream {
+interface CancelableStream {
   /**
    * Cancel and end the associated stream.
    * @throws EnvoyException when there is an exception canceling the stream or sending trailers.
@@ -17,7 +17,7 @@ interface CancellableStream {
 /**
  * Interface allowing for sending/emitting data on an Envoy stream.
  */
-interface StreamEmitter : CancellableStream {
+interface StreamEmitter : CancelableStream {
 
   /**
    * For sending data to an associated stream.

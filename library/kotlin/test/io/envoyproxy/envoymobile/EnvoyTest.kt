@@ -24,7 +24,7 @@ class EnvoyTest {
     val envoy = Envoy(engine, "")
 
     val headers = mapOf("key_1" to listOf("value_a"))
-    envoy.startStream(
+    envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -42,7 +42,7 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val emitter = envoy.startStream(
+    val emitter = envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -64,7 +64,7 @@ class EnvoyTest {
     val envoy = Envoy(engine, "")
 
     val metadata = mapOf("key_1" to listOf("value_a"))
-    val emitter = envoy.startStream(
+    val emitter = envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -83,7 +83,7 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val emitter = envoy.startStream(
+    val emitter = envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -103,7 +103,7 @@ class EnvoyTest {
     val envoy = Envoy(engine, "")
 
     val trailers = mapOf("key_1" to listOf("value_a"))
-    val emitter = envoy.startStream(
+    val emitter = envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",

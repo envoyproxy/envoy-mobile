@@ -55,21 +55,21 @@ class Envoy @JvmOverloads constructor(
     return runner.state == Thread.State.TERMINATED
   }
 
-  override fun startStream(request: Request, responseHandler: ResponseHandler): StreamEmitter {
+  override fun send(request: Request, responseHandler: ResponseHandler): StreamEmitter {
     val stream = engine.startStream(responseHandler.underlyingObserver)
     stream.sendHeaders(request.headers, false)
     return EnvoyStreamEmitter(stream)
   }
 
-  override fun send(request: Request, body: ByteBuffer?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler): CancellableStream {
+  override fun send(request: Request, data: ByteBuffer?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler): CancelableStream {
     val stream = engine.startStream(responseHandler.underlyingObserver)
     stream.sendHeaders(request.headers, false)
-    stream.sendData(body, false)
+    stream.sendData(data, false)
     stream.sendTrailers(trailers)
     return EnvoyStreamEmitter(stream)
   }
 
-  override fun send(request: Request, body: ByteBuffer?, responseHandler: ResponseHandler): CancellableStream {
+  override fun send(request: Request, body: ByteBuffer?, responseHandler: ResponseHandler): CancelableStream {
     return send(request, body, emptyMap(), responseHandler)
   }
 }
