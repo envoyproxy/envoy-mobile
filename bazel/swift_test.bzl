@@ -1,6 +1,8 @@
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_unit_test")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
+MINIMUM_IOS_VERSION = "10.0"
+
 # Macro providing a way to easily/consistently define Swift unit test targets.
 #
 # - Prevents consumers from having to define both swift_library and ios_unit_test targets
@@ -32,5 +34,6 @@ def envoy_mobile_swift_test(name, srcs):
     ios_unit_test(
         name = name,
         deps = [test_lib_name],
-        minimum_os_version = "10.0",
+        minimum_os_version = MINIMUM_IOS_VERSION,
+        runner = "//bazel:envoy_ios_test_runner",
     )

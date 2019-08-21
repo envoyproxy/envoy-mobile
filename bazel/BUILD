@@ -15,3 +15,17 @@ kt_jvm_library(
         "@maven//:junit_junit",
     ],
 )
+
+load(
+    "@build_bazel_rules_apple//apple/testing/default_runner:ios_test_runner.bzl",
+    "ios_test_runner",
+)
+
+# Fix for specifying device/OS until this is released:
+# https://github.com/bazelbuild/rules_apple/pull/549
+ios_test_runner(
+    name = "envoy_ios_test_runner",
+    device_type = "iPhone X",
+    os_version = "12.4",
+    visibility = ["//visibility:public"],
+)

@@ -34,7 +34,13 @@ jobs:
       #   name: 'Check liveliness'
   swifttests:
     name: swift_tests
+    needs: macdist
     runs-on: macOS-10.14
     steps:
       - uses: actions/checkout@v1
-    # TODO(rebello95): to fill out.
+        with:
+          submodules: true
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - run: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
+        name: 'Run Swift library tests'
