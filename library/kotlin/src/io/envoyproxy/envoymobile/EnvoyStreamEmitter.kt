@@ -3,7 +3,7 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
 import java.nio.ByteBuffer
 
-class EnvoyStreameEmitter(
+class EnvoyStreamEmitter(
     private val stream: EnvoyHTTPStream
 ) : StreamEmitter {
 
@@ -13,7 +13,7 @@ class EnvoyStreameEmitter(
    * @param byteBuffer the byte buffer data to send to the stream.
    * @throws IllegalStateException when the stream is not active
    * @throws EnvoyException when there is an exception sending data.
-   * @return this stream emitter.
+   * @return StreamEmitter, this stream emitter.
    */
   override fun sendData(byteBuffer: ByteBuffer): StreamEmitter {
     stream.sendData(byteBuffer, false)
@@ -26,7 +26,7 @@ class EnvoyStreameEmitter(
    * @param metadata the metadata to send over the stream.
    * @throws IllegalStateException when the stream is not active.
    * @throws EnvoyException when there is an exception sending metadata.
-   * @return this stream emitter.
+   * @return StreamEmitter, this stream emitter.
    */
   override fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter {
     stream.sendMetadata(metadata)
@@ -52,5 +52,4 @@ class EnvoyStreameEmitter(
   override fun cancel() {
     stream.cancel()
   }
-
 }

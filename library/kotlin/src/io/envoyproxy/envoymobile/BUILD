@@ -32,6 +32,7 @@ envoy_mobile_kt_library(
         "Envoy.kt",
         "EnvoyBuilder.kt",
         "EnvoyException.kt",
+        "EnvoyStreamEmitter.kt",
         "Request.kt",
         "RequestBuilder.kt",
         "RequestMapper.kt",
