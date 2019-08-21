@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class EnvoyHTTPStream {
    * @param data,      the data to send.
    * @param endStream, supplies whether this is the last data in the streamHandle.
    */
-  public void sendData(byte[] data, boolean endStream) {
+  public void sendData(ByteBuffer data, boolean endStream) {
     JniLibrary.sendData(streamHandle, data, endStream);
   }
 
@@ -60,5 +61,7 @@ public class EnvoyHTTPStream {
    *
    * @return Success, unless the streamHandle has already been canceled.
    */
-  public int resetStream() { return JniLibrary.resetStream(streamHandle); }
+  public int resetStream() {
+    return JniLibrary.resetStream(streamHandle);
+  }
 }

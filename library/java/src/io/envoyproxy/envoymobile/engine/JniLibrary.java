@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +74,7 @@ class JniLibrary {
    * @param endStream, supplies whether this is the last data in the stream.
    * @return int, the resulting status of the operation.
    */
-  protected static native int sendData(long stream, byte[] data, boolean endStream);
+  protected static native int sendData(long stream, ByteBuffer data, boolean endStream);
 
   /**
    * Send metadata over an HTTP stream. This method can be invoked multiple times.
