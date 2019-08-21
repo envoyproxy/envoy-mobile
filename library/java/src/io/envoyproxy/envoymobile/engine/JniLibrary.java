@@ -49,10 +49,10 @@ class JniLibrary {
    * can can occur.
    *
    * @param stream,   handle to the stream to be started.
-   * @param observer, the observer that will run the stream callbacks.
+   * @param context,  context that contains dispatch logic to fire observer callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure status.
    */
-  protected static native int startStream(long stream, EnvoyObserver observer);
+  protected static native int startStream(long stream, JniObserverContext context);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
