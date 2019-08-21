@@ -114,4 +114,26 @@ class EnvoyTest {
 
     verify(stream).sendTrailers(trailers)
   }
+
+  @Test
+  fun `cancelling stream cancels the underlying stream`() {
+    `when`(engine.startStream(any())).thenReturn(stream)
+    val envoy = Envoy(engine, "")
+
+    val trailers = mapOf("key_1" to listOf("value_a"))
+    val stream = envoy.send(
+        RequestBuilder(
+            method = RequestMethod.POST,
+            scheme = "https",
+            authority = "api.foo.com",
+            path = "foo")
+            .build(),
+        ByteBuffer.allocate(0),
+        trailers,
+        ResponseHandler())
+
+    stream.cancel()
+
+    verify(stream).cancel()
+  }
 }
