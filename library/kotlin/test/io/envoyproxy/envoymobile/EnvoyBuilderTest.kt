@@ -28,7 +28,8 @@ class EnvoyBuilderTest {
   @Test
   fun `adding custom config builder uses custom config for running Envoy`() {
     `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration, { engine })
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
 
     builder.addConfigYAML("mock_template:")
     val envoy = builder.build()
@@ -38,7 +39,8 @@ class EnvoyBuilderTest {
   @Test
   fun `adding log level builder uses log level for running Envoy`() {
     `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration, { engine })
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
 
     builder.addLogLevel(LogLevel.DEBUG)
     val envoy = builder.build()
@@ -48,7 +50,8 @@ class EnvoyBuilderTest {
   @Test
   fun `specifying connection timeout overrides default`() {
     `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration, { engine })
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
 
     builder.addConnectTimeoutSeconds(1234)
     val envoy = builder.build()
@@ -58,7 +61,8 @@ class EnvoyBuilderTest {
   @Test
   fun `specifying DNS refresh overrides default`() {
     `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration, { engine })
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
 
     builder.addDNSRefreshSeconds(1234)
     val envoy = builder.build()
@@ -68,7 +72,8 @@ class EnvoyBuilderTest {
   @Test
   fun `specifying stats flush overrides default`() {
     `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration, { engine })
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
 
     builder.addStatsFlushSeconds(1234)
     builder.build()
@@ -80,7 +85,8 @@ class EnvoyBuilderTest {
   @Test(expected = ConfigurationException::class)
   fun `specifying configs with invalid templates will throw on build`() {
     `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration, { engine })
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
 
     builder.addConfigYAML("{{ missing }}")
     builder.build()

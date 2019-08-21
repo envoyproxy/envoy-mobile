@@ -5,4 +5,9 @@ import io.envoyproxy.envoymobile.engine.AndroidEngineImpl
 
 class AndroidEnvoyBuilder(
     context: Context
-) : EnvoyBuilder({ AndroidEngineImpl(context) })
+) : EnvoyBuilder() {
+  
+  init {
+    addEngineType { AndroidEngineImpl(context) }
+  }
+}
