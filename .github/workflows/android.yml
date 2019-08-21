@@ -5,7 +5,7 @@ on: [push]
 jobs:
   linuxdist:
     name: linux_dist
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
         with:
@@ -87,7 +87,7 @@ jobs:
         name: 'Check liveliness'
   kotlintests:
     name: kotlin_tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
         with:
