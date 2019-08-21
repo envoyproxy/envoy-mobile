@@ -25,7 +25,7 @@ load(
 # https://github.com/bazelbuild/rules_apple/pull/549
 ios_test_runner(
     name = "envoy_ios_test_runner",
-    device_type = "iPhone X",
+    device_type = "iPhone 8",
     os_version = "12.2",
     visibility = ["//visibility:public"],
 )
