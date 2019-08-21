@@ -20,9 +20,9 @@ envoy_mobile_kt_aar_android_library(
     visibility = ["//visibility:public"],
     deps = [
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
 )
 
