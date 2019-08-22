@@ -110,22 +110,4 @@ public class MainActivity extends Activity {
     bufferedReader.close();
     return stringBuilder.toString();
   }
-
-  private String loadEnvoyConfig(Context context, int configResourceId) throws RuntimeException {
-    InputStream inputStream = context.getResources().openRawResource(configResourceId);
-    InputStreamReader inputReader = new InputStreamReader(inputStream);
-    BufferedReader bufReader = new BufferedReader(inputReader);
-    StringBuilder text = new StringBuilder();
-
-    try {
-      String line;
-      while ((line = bufReader.readLine()) != null) {
-        text.append(line);
-        text.append('\n');
-      }
-    } catch (IOException e) {
-      return null;
-    }
-    return text.toString();
-  }
 }
