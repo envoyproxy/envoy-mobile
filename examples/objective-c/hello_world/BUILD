@@ -12,6 +12,8 @@ objc_library(
     deps = ["//dist:envoy_mobile_ios"],
 )
 
+# This is forces linking of necessary Swift dependencies.
+# https://github.com/bazelbuild/rules_apple/issues/557
 swift_library(
     name = "empty_swift_lib",
     srcs = ["Empty.swift"],

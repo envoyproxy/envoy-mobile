@@ -72,7 +72,7 @@ NSString *_ENDPOINT = @"http://localhost:9001/api.lyft.com/static/demo/hello_wor
   // Note that the request is sent to the envoy thread listening locally on port 9001.
   NSURL *url = [NSURL URLWithString:_ENDPOINT];
   NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
- [request addValue:@"s3.amazonaws.com" forHTTPHeaderField:@"host"];
+  [request addValue:@"s3.amazonaws.com" forHTTPHeaderField:@"host"];
   NSLog(@"Starting request to '%@'", url.path);
 
   self.requestCount++;
