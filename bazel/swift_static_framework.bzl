@@ -43,6 +43,13 @@ def _swift_static_framework_impl(ctx):
             fail("Unhandled platform '{}'".format(platform))
 
         swift_info = archive[SwiftInfo]
+
+        # We can potentially simplify this if this change lands upstream:
+        # https://github.com/bazelbuild/rules_swift/issues/291
+        objc_headers = archive[apple_common.Objc].header.to_list()
+        print("** Swift info: {}".format(archive[apple_common.Objc].header.to_list()))
+        #        print("** Swift info: {}".format(dir(archive[CcInfo].compilation_context.)))
+
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
 
