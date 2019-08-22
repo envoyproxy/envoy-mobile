@@ -52,10 +52,14 @@ def _swift_static_framework_impl(ctx):
 
         # We can potentially simplify this if this change lands upstream:
         # https://github.com/bazelbuild/rules_swift/issues/291
-        objc_headers = archive[apple_common.Objc].header.to_list()
-        objc_header = objc_headers[-1]
-        if objc_header:
-            zip_args.append(_zip_header_arg(module_name, objc_header))
+        objc_headers = []
+        for header in archive[apple_common.Objc].header.to_list():
+            if header.path.endswith("-Swift.h"):
+                objc_headers.append(header)
+        if len(objc_headers) == 1:
+            zip_args.append(_zip_header_arg(module_name, objc_headers[0]))
+        else:
+            fail("Expected exactly 1 '-Swift.h' header, got {}".format(len(objc_headers)))
 
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
