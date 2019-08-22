@@ -105,12 +105,6 @@ static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context
 }
 
 static envoy_headers to_native_headers(jobjectArray headers) {
-  // FIXME: Right now we're using an array of jstrings, which we can access as a
-  // char array of modified UTF-8 bytes. This is technically incorrect and could
-  // lead to problems down the road (though it's unlikely we'll encounter any issues in the near
-  // term). Fix by converting the strings to true UTF-8 byte arrays in java, and memcpying the array
-  // critical here.
-
   // Note that headers is a flattened array of key/value pairs.
   // Therefore, the length of the native header array is n envoy_data or n/2 envoy_header.
   envoy_header_size_t length = env->GetArrayLength(headers);
@@ -127,15 +121,15 @@ static envoy_headers to_native_headers(jobjectArray headers) {
     envoy_data header_key = {key_length, native_key, free, native_key};
 
     // Copy native byte array for header value
-    jbyteArray j_name = (jbyteArray)env->GetObjectArrayElement(headers, i + 1);
-    size_t name_length = env->GetArrayLength(j_name);
-    uint8_t* native_name = (uint8_t*)malloc(name_length);
-    void* critical_name = env->GetPrimitiveArrayCritical(j_name, 0);
-    memcpy(native_name, critical_name, name_length);
-    env->ReleasePrimitiveArrayCritical(j_name, critical_name, 0);
-    envoy_data header_name = {name_length, native_name, free, native_name};
+    jbyteArray j_value = (jbyteArray)env->GetObjectArrayElement(headers, i + 1);
+    size_t value_length = env->GetArrayLength(j_value);
+    uint8_t* native_value = (uint8_t*)malloc(value_length);
+    void* critical_value = env->GetPrimitiveArrayCritical(j_value, 0);
+    memcpy(native_value, critical_value, value_length);
+    env->ReleasePrimitiveArrayCritical(j_value, critical_value, 0);
+    envoy_data header_value = {value_length, native_value, free, native_value};
 
-    header_array[i] = {header_key, header_name};
+    header_array[i / 2] = {header_key, header_value};
   }
 
   envoy_headers native_headers = {length / 2, header_array};
