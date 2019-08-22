@@ -67,8 +67,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
 // EnvoyHttpStream
 
 static void pass_headers(envoy_headers headers, jobject j_context) {
-  jclass jcls_JniObserverContext = env->GetObjectClass(j_context);
-  jmethodID jmid_passHeader = env->GetMethodID(jcls_JniObserverContext, "passHeader", "([B[BZ)V");
+  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jmethodID jmid_passHeader = env->GetMethodID(jcls_JvmObserverContext, "passHeader", "([B[BZ)V");
   env->PushLocalFrame(headers.length * 2);
   for (envoy_header_size_t i = 0; i < headers.length; i++) {
     // Note this is just an initial implementation, and we will pass a more optimized structure in
@@ -98,10 +98,48 @@ static void pass_headers(envoy_headers headers, jobject j_context) {
 
 static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context) {
   jobject j_context = static_cast<jobject>(context);
-  jclass jcls_JniObserverContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onHeaders = env->GetMethodID(jcls_JniObserverContext, "onHeaders", "(JZ)V");
+  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onHeaders = env->GetMethodID(jcls_JvmObserverContext, "onHeaders", "(JZ)V");
   env->CallVoidMethod(j_context, jmid_onHeaders, headers.length);
   pass_headers(headers, j_context);
+}
+
+static envoy_headers to_native_headers(jobjectArray headers) {
+  // FIXME: Right now we're using an array of jstrings, which we can access as a
+  // char array of modified UTF-8 bytes. This is technically incorrect and could
+  // lead to problems down the road (though it's unlikely we'll encounter any issues in the near
+  // term). Fix by converting the strings to true UTF-8 byte arrays in java, and memcpying the array
+  // critical here.
+
+  // Note that headers is a flattened array of key/value pairs.
+  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_header.
+  envoy_header_size_t length = env->GetArrayLength(headers);
+  envoy_header* header_array = (envoy_header*)malloc(sizeof(envoy_header) * length / 2);
+
+  for (envoy_header_size_t i = 0; i < length; i += 2) {
+    // Copy native byte array for header key
+    jbyteArray j_key = (jbyteArray)env->GetObjectArrayElement(headers, i);
+    size_t key_length = env->GetArrayLength(j_key);
+    uint8_t* native_key = (uint8_t*)malloc(key_length);
+    void* critical_key = env->GetPrimitiveArrayCritical(j_key, 0);
+    memcpy(native_key, critical_key, key_length);
+    env->ReleasePrimitiveArrayCritical(j_key, critical_key, 0);
+    envoy_data header_key = {key_length, native_key, free, native_key};
+
+    // Copy native byte array for header value
+    jbyteArray j_name = (jbyteArray)env->GetObjectArrayElement(headers, i + 1);
+    size_t name_length = env->GetArrayLength(j_name);
+    uint8_t* native_name = (uint8_t*)malloc(name_length);
+    void* critical_name = env->GetPrimitiveArrayCritical(j_name, 0);
+    memcpy(native_name, critical_name, name_length);
+    env->ReleasePrimitiveArrayCritical(j_name, critical_name, 0);
+    envoy_data header_name = {name_length, native_name, free, native_name};
+
+    header_array[i] = {header_key, header_name};
+  }
+
+  envoy_headers native_headers = {length / 2, header_array};
+  return native_headers;
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envomobile_engine_JniLibrary_initStream(
@@ -115,7 +153,14 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envomobile_engine_JniLibrar
     JNIEnv* env, jlong stream_handle, jobject j_context,
     jclass // class
 ) {
-  envoy_observer native_obs = {jvm_on_headers, nullptr, nullptr,   nullptr,
+  envoy_observer native_obs = {jvm_on_headers, nullptr, nullptr,  nullptr,
                                nullptr,        nullptr, j_context};
   return start_stream(static_cast<envoy_stream_t>(stream_handle), native_obs);
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envomobile_engine_JniLibrary_sendHeaders(
+    JNIEnv* env, jlong stream_handle, jobjectArray headers, jboolean end_stream,
+    jclass // class
+) {
+  return send_headers(static_cast<envoy_stream_t>(stream_handle), to_native_headers(headers), end_stream);
 }
