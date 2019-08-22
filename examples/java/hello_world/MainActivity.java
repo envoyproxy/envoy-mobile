@@ -9,6 +9,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import io.envoyproxy.envoymobile.AndroidEnvoyBuilder;
 import io.envoyproxy.envoymobile.Envoy;
 import io.envoyproxy.envoymobile.engine.AndroidEngineImpl;
 import io.envoyproxy.envoymobile.engine.EnvoyEngine;
@@ -44,21 +45,9 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    Context context = getBaseContext();
+    this.envoy = new AndroidEnvoyBuilder(getBaseContext()).build();
 
-    // Create envoy instance with config.
-    String config;
-    try {
-      config = loadEnvoyConfig(getBaseContext(), R.raw.config);
-    } catch (RuntimeException e) {
-      Log.d("MainActivity", "exception getting config.", e);
-      throw new RuntimeException("Can't get config to run envoy.");
-    }
-
-    EnvoyEngine envoyEngine = new AndroidEngineImpl(context);
-    envoy = new Envoy(envoyEngine, config);
-
-    recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
+    recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     final ResponseRecyclerViewAdapter adapter = new ResponseRecyclerViewAdapter();
@@ -74,7 +63,7 @@ public class MainActivity extends Activity {
       @Override
       public void run() {
         final Response response = makeRequest();
-        recyclerView.post((Runnable)() -> adapter.add(response));
+        recyclerView.post((Runnable) () -> adapter.add(response));
 
         // Make a call again
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1));
@@ -91,7 +80,7 @@ public class MainActivity extends Activity {
     try {
       URL url = new URL(ENDPOINT);
       // Open connection to the envoy thread listening locally on port 9001.
-      HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
       connection.setRequestProperty("host", "s3.amazonaws.com");
       int status = connection.getResponseCode();
       if (status == 200) {
@@ -101,7 +90,7 @@ public class MainActivity extends Activity {
         inputStream.close();
         Log.d("Response", "successful response!");
         return new Success(body,
-                           serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
+            serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
       } else {
         return new Failure("failed with status " + status);
       }
