@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
 
     this.envoy = new AndroidEnvoyBuilder(getBaseContext()).build();
 
-    recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+    recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     final ResponseRecyclerViewAdapter adapter = new ResponseRecyclerViewAdapter();
@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
       @Override
       public void run() {
         final Response response = makeRequest();
-        recyclerView.post((Runnable) () -> adapter.add(response));
+        recyclerView.post((Runnable)() -> adapter.add(response));
 
         // Make a call again
         handler.postDelayed(this, TimeUnit.SECONDS.toMillis(1));
@@ -80,7 +80,7 @@ public class MainActivity extends Activity {
     try {
       URL url = new URL(ENDPOINT);
       // Open connection to the envoy thread listening locally on port 9001.
-      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      HttpURLConnection connection = (HttpURLConnection)url.openConnection();
       connection.setRequestProperty("host", "s3.amazonaws.com");
       int status = connection.getResponseCode();
       if (status == 200) {
@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
         inputStream.close();
         Log.d("Response", "successful response!");
         return new Success(body,
-            serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
+                           serverHeaderField != null ? String.join(", ", serverHeaderField) : "");
       } else {
         return new Failure("failed with status " + status);
       }
