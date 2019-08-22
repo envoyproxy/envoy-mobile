@@ -40,7 +40,14 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - run: ./ci/mac_ci_setup.sh
-        name: 'Install dependencies'
-      - run: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
-        name: 'Run Swift library tests'
+      - name: 'Install dependencies'
+        run: ./ci/mac_ci_setup.sh
+      - uses: actions/download-artifact@v1
+        with:
+          name: Envoy.framework
+          path: dist/
+      - run: ls -lh dist/
+      - name: 'Start the iOS simulator'
+        run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
+      - name: 'Run Swift library tests'
+        run: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
