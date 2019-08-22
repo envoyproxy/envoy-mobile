@@ -48,6 +48,6 @@ jobs:
           path: dist/
       - run: ls -lh dist/
       - name: 'Start the iOS simulator'
-        run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.2"
+        run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-8, 12.2"
       - name: 'Run Swift library tests'
         run: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
