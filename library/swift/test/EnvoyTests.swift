@@ -16,7 +16,7 @@ private final class MockEnvoyEngine: EnvoyEngine {
   }
 }
 
-final class ClientTests: XCTestCase {
+final class EnvoyTests: XCTestCase {
   override func tearDown() {
     super.tearDown()
     MockEnvoyHTTPStream.onHeaders = nil
