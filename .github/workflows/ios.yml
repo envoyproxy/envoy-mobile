@@ -85,7 +85,5 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - run: xcode-select -p
       - run: xcrun simctl list
-      - name: 'Kill simulators'
-        run: killall Simulator
       - name: 'Run Swift library tests'
         run: ./bazelw test --test_output=all --xcode_version=10.2.1 --build_tests_only //library/swift/test/...
