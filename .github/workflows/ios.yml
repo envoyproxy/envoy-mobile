@@ -75,7 +75,6 @@ jobs:
       # TODO: re-enable liveliness test (same as swift).
   swifttests:
     name: swift_tests
-    needs: macdist
     runs-on: macOS-10.14
     timeout-minutes: 45
     steps:
@@ -84,13 +83,5 @@ jobs:
           submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
-      - uses: actions/download-artifact@v1
-        with:
-          name: Envoy.framework.zip
-          path: dist/
-      - run: unzip dist/Envoy.framework.zip
-      - run: ls -lh dist/
-      - name: 'Start the iOS simulator'
-        run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-8, 12.2"
       - name: 'Run Swift library tests'
-        run: ./bazelw test --test_output=all --build_tests_only --config=ios //library/swift/test/...
+        run: ./bazelw test --test_output=all --build_tests_only //library/swift/test/...
