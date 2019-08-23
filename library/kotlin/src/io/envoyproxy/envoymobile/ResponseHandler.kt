@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 /**
  * Callback interface for receiving stream events.
  */
-class ResponseHandler(val executor: Executor) {
+class ResponseHandler() {
 
   class EnvoyObserverAdapter(
       internal val responseHandler: ResponseHandler
