@@ -35,4 +35,5 @@ def envoy_mobile_swift_test(name, srcs):
         name = name,
         deps = [test_lib_name],
         minimum_os_version = MINIMUM_IOS_VERSION,
+        runner = "//bazel:envoy_ios_test_runner",
     )
