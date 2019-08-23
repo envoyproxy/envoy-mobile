@@ -73,10 +73,18 @@ jobs:
       - name: 'Build objective-c app'
         run: ./bazelw build --config=ios //examples/objective-c/hello_world:app
       # TODO: re-enable liveliness test (same as swift).
-  swifttests:
-    name: swift_tests
-    runs-on: macOS-10.14
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v1
-    # TODO(rebello95): to fill out.
+  # TODO: Fix and re-enable swift unit tests:
+  # https://github.com/lyft/envoy-mobile/issues/383
+  #
+  # swifttests:
+  #   name: swift_tests
+  #   runs-on: macOS-10.14
+  #   timeout-minutes: 45
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #       with:
+  #         submodules: true
+  #     - name: 'Install dependencies'
+  #       run: ./ci/mac_ci_setup.sh
+  #     - name: 'Run swift library tests'
+  #       run: ./bazelw test --test_output=all --config=ios --build_tests_only //library/swift/test/...
