@@ -33,6 +33,7 @@ jobs:
         with:
           name: Envoy.framework
           path: dist/
+      - run: ls -lh dist/
       - name: 'Build swift app'
         run: ./bazelw build --config=ios //examples/swift/hello_world:app
       # TODO: re-enable liveliness test.
@@ -62,6 +63,7 @@ jobs:
         with:
           name: Envoy.framework
           path: dist/
+      - run: ls -lh dist/
       - name: 'Build objective-c app'
         run: ./bazelw build --config=ios //examples/objective-c/hello_world:app
       # TODO: re-enable liveliness test (same as swift).
