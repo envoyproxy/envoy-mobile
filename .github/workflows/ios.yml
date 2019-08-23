@@ -87,12 +87,5 @@ jobs:
       # CI machines are unable to start tests on 10.3.0, likely due to the fact
       # that multiple versions of Xcode are installed:
       # '(domain=com.apple.CoreSimulator.SimError, code=165): Invalid device state'
-      - name: 'Run Swift library tests'
-        run: |
-          ./bazelw test
-          --xcode_version=10.2.1
-          --ios_simulator_version=12.2
-          --test_output=all
-          --config=ios
-          --build_tests_only
-          //library/swift/test/...
+      - name: 'Run swift library tests'
+        run: ./bazelw test --xcode_version=10.2.1 --ios_simulator_version=12.2 --test_output=all --config=ios --build_tests_only //library/swift/test/...
