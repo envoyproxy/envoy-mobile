@@ -53,8 +53,7 @@ class ResponseHandler() {
    * If `endStream` is `true`, the stream is complete.
    *
    * @param closure: Closure which will receive the headers, status code,
-   *                 and flag indicating if the stream is headers-only.
-   * @param statusCode the status code of the response.
+   *                 and flag indicating if the stream is complete.
    * @return ResponseHandler, this ResponseHandler.
    */
   fun onHeaders(closure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit): ResponseHandler {
