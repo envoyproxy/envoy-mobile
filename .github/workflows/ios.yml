@@ -86,8 +86,9 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - uses: actions/download-artifact@v1
         with:
-          name: Envoy.framework
+          name: Envoy.framework.zip
           path: dist/
+      - run: unzip dist/Envoy.framework.zip
       - run: ls -lh dist/
       - name: 'Start the iOS simulator'
         run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-8, 12.2"
