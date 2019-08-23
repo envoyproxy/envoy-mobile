@@ -1,43 +1,30 @@
-import Envoy
+@testable import Envoy
 import Foundation
 import XCTest
 
-private final class MockStreamEmitter: StreamEmitter {
-  var onData: ((Data?) -> Void)?
-  var onTrailers: (([String: [String]]) -> Void)?
-
-  func sendData(_ data: Data) -> StreamEmitter {
-    self.onData?(data)
-    return self
+private final class MockEnvoyEngine: EnvoyEngine {
+  func run(withConfig config: String) -> Int32 {
+    return 0
   }
 
-  func sendMetadata(_ metadata: [String: [String]]) -> StreamEmitter {
-    return self
+  func run(withConfig config: String, logLevel: String) -> Int32 {
+    return 0
   }
 
-  func close(trailers: [String: [String]]) {
-    self.onTrailers?(trailers)
-  }
-
-  func cancel() {}
-}
-
-private final class MockClient: Client {
-  var onRequest: ((Request) -> Void)?
-  var onData: ((Data?) -> Void)?
-  var onTrailers: (([String: [String]]) -> Void)?
-
-  func send(_ request: Request, handler: ResponseHandler) -> StreamEmitter {
-    self.onRequest?(request)
-    let emitter = MockStreamEmitter()
-    emitter.onData = self.onData
-    emitter.onTrailers = self.onTrailers
-    return emitter
+  func startStream(with observer: EnvoyObserver) -> EnvoyHTTPStream {
+    return MockEnvoyHTTPStream(handle: 0, observer: observer)
   }
 }
 
 final class ClientTests: XCTestCase {
-  func testNonStreamingExtensionSendsRequestDetailsThroughStream() {
+  override func tearDown() {
+    super.tearDown()
+    MockEnvoyHTTPStream.onHeaders = nil
+    MockEnvoyHTTPStream.onData = nil
+    MockEnvoyHTTPStream.onTrailers = nil
+  }
+
+  func testNonStreamingExtensionSendsRequestDetailsThroughStream() throws {
     let requestExpectation = self.expectation(description: "Sends request")
     let dataExpectation = self.expectation(description: "Sends data")
     let closeExpectation = self.expectation(description: "Calls close")
@@ -48,24 +35,28 @@ final class ClientTests: XCTestCase {
     let expectedData = Data([1, 2, 3])
     let expectedTrailers = ["foo": ["bar", "baz"]]
 
-    let mockClient = MockClient()
-    mockClient.onRequest = { request in
-      XCTAssertEqual(expectedRequest, request)
+    MockEnvoyHTTPStream.onHeaders = { headers, closeStream in
+      XCTAssertEqual(expectedRequest.outboundHeaders(), headers)
+      XCTAssertFalse(closeStream)
       requestExpectation.fulfill()
     }
 
-    mockClient.onData = { data in
+    MockEnvoyHTTPStream.onData = { data, closeStream in
       XCTAssertEqual(expectedData, data)
+      XCTAssertFalse(closeStream)
       dataExpectation.fulfill()
     }
 
-    mockClient.onTrailers = { trailers in
+    MockEnvoyHTTPStream.onTrailers = { trailers in
       XCTAssertEqual(expectedTrailers, trailers)
       closeExpectation.fulfill()
     }
 
-    mockClient.send(expectedRequest, data: expectedData, trailers: expectedTrailers,
-                    handler: ResponseHandler())
+    let envoy = try EnvoyBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .build()
+    envoy.send(expectedRequest, data: expectedData, trailers: expectedTrailers,
+               handler: ResponseHandler())
     self.wait(for: [requestExpectation, dataExpectation, closeExpectation],
               timeout: 0.1, enforceOrder: true)
   }
