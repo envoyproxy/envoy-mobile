@@ -85,7 +85,7 @@ NSString *_REQUEST_SCHEME = @"http";
   }];
 
   [handler onData:^(NSData *data, BOOL endStream) {
-    NSLog(@"Response data (%i): \(%ld) bytes", requestID, data.length);
+    NSLog(@"Response data (%i): %ld bytes", requestID, data.length);
   }];
 
   [handler onError:^{
