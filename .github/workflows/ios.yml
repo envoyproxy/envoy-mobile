@@ -83,7 +83,15 @@ jobs:
           submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
-      - run: xcode-select -p
-      - run: xcrun simctl list
+      # TODO: Remove xcode_version override here and prefer .bazelrc.
+      # CI machines are unable to start tests on 10.3.0, likely due to the fact
+      # that multiple versions of Xcode are installed:
+      # '(domain=com.apple.CoreSimulator.SimError, code=165): Invalid device state'
       - name: 'Run Swift library tests'
-        run: ./bazelw test --test_output=all --xcode_version=10.2.1 --build_tests_only //library/swift/test/...
+        run: |
+          ./bazelw test
+          --xcode_version=10.2.1
+          --test_output=all
+          --config=ios
+          --build_tests_only
+          //library/swift/test/...
