@@ -7,7 +7,8 @@ public class EnvoyConfiguration {
   public final int dnsRefreshSeconds;
   public final int statsFlushSeconds;
 
-  public EnvoyConfiguration(String configYAML, int connectTimeoutSeconds, int dnsRefreshSeconds, int statsFlushSeconds) {
+  public EnvoyConfiguration(String configYAML, int connectTimeoutSeconds, int dnsRefreshSeconds,
+                            int statsFlushSeconds) {
     this.configYAML = configYAML;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -21,10 +22,10 @@ public class EnvoyConfiguration {
     } else {
       resolvedYAML = configYAML;
     }
-    String resolvedConfiguration = resolvedYAML
-        .replace("{{ connect_timeout }}", String.valueOf(connectTimeoutSeconds))
-        .replace("{{ dns_refresh_rate }}", String.valueOf(dnsRefreshSeconds))
-        .replace("{{ stats_flush_interval }}", String.valueOf(statsFlushSeconds));
+    String resolvedConfiguration =
+        resolvedYAML.replace("{{ connect_timeout }}", String.valueOf(connectTimeoutSeconds))
+            .replace("{{ dns_refresh_rate }}", String.valueOf(dnsRefreshSeconds))
+            .replace("{{ stats_flush_interval }}", String.valueOf(statsFlushSeconds));
     if (resolvedConfiguration.contains("{{")) {
       throw new ConfigurationException();
     }
@@ -32,8 +33,6 @@ public class EnvoyConfiguration {
   }
 
   static class ConfigurationException extends RuntimeException {
-    ConfigurationException() {
-      super("Unresolved Template Key");
-    }
+    ConfigurationException() { super("Unresolved Template Key"); }
   }
 }
