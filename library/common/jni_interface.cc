@@ -156,5 +156,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envomobile_engine_JniLibrar
     JNIEnv* env, jlong stream_handle, jobjectArray headers, jboolean end_stream,
     jclass // class
 ) {
-  return send_headers(static_cast<envoy_stream_t>(stream_handle), to_native_headers(headers), end_stream);
+  return send_headers(static_cast<envoy_stream_t>(stream_handle), to_native_headers(headers),
+                      end_stream);
 }
