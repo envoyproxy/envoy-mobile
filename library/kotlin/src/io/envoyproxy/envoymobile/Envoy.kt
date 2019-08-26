@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile
 
+import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import java.nio.ByteBuffer
 
@@ -21,15 +22,15 @@ enum class LogLevel(internal val level: String) {
  */
 class Envoy constructor(
     private val engine: EnvoyEngine,
-    internal val config: String,
+    internal val envoyConfiguration: EnvoyConfiguration,
     internal val logLevel: LogLevel = LogLevel.INFO
 ) : Client {
 
-  constructor(engine: EnvoyEngine, config: String) : this(engine, config, LogLevel.INFO)
+  constructor(engine: EnvoyEngine, envoyConfiguration: EnvoyConfiguration) : this(engine, envoyConfiguration, LogLevel.INFO)
 
   // Dedicated thread for running this instance of Envoy.
   private val runner: Thread = Thread(ThreadGroup("Envoy"), Runnable {
-    engine.runWithConfig(config.trim(), logLevel.level)
+    engine.runWithConfig(envoyConfiguration, logLevel.level)
   })
 
   /**
