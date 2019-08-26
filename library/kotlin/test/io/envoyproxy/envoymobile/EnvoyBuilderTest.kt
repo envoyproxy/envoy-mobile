@@ -1,12 +1,10 @@
 package io.envoyproxy.envoymobile.io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.ConfigurationException
 import io.envoyproxy.envoymobile.EnvoyBuilder
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 
 private const val TEST_CONFIG = """
