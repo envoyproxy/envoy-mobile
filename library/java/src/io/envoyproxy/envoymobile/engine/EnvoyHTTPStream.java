@@ -28,7 +28,7 @@ public class EnvoyHTTPStream {
    */
   public void sendHeaders(Map<String, List<String>> headers, boolean endStream) {
     // Create array with some room for potential headers that have more than one value.
-    ArrayList<byte[]> convertedHeaders = new ArrayList<byte[]>(2 * headers.size());
+    final List<byte[]> convertedHeaders = new ArrayList<byte[]>(2 * headers.size());
     for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
       for (String value : entry.getValue()) {
         convertedHeaders.add(entry.getKey().getBytes(StandardCharsets.UTF_8));
