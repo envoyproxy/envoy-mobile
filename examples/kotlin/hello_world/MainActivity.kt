@@ -79,7 +79,6 @@ class MainActivity : Activity() {
   private fun makeRequest(): Unit {
     val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME,
                                  REQUEST_AUTHORITY, REQUEST_PATH).build()
-    // FIXME: it's not a terribly great idea to implement the Executor this way, and we should consider prohibiting this with a thread check in the future
     val handler = ResponseHandler(object : Executor {
       override fun execute(r : Runnable) {
         r.run()
@@ -88,7 +87,7 @@ class MainActivity : Activity() {
     .onHeaders({ headers, status, _ ->
       if (status == 200) {
         val serverHeaderField = headers[ENVOY_SERVER_HEADER]?.first() ?: ""
-        val body = "" // FIXME: fake data
+        val body = "" // fake data
         recyclerView.post { viewAdapter.add(Success(body, serverHeaderField)) }
       } else {
         recyclerView.post { viewAdapter.add(Failure("failed with status: $status")) }
