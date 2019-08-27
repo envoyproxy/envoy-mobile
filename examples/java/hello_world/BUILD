@@ -7,16 +7,15 @@ android_binary(
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
     manifest = "AndroidManifest.xml",
     deps = [
-        "hello_envoy_java_lib"
+        "hello_envoy_java_lib",
     ],
 )
-
 
 kt_android_library(
     name = "hello_envoy_java_lib",
     srcs = [
-        "MainActivity.java",
         "EmptyFile.kt",
+        "MainActivity.java",
     ],
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
     manifest = "AndroidManifest.xml",

@@ -28,7 +28,6 @@ public class MainActivity extends Activity {
   private static final String REQUEST_PATH = "/api.lyft.com/static/demo/hello_world.txt";
   private static final String REQUEST_SCHEME = "http";
 
-
   private Envoy envoy;
   private RecyclerView recyclerView;
 
@@ -70,28 +69,27 @@ public class MainActivity extends Activity {
   }
 
   private void makeRequest() {
-    Request request = new RequestBuilder(
-        RequestMethod.GET,
-        REQUEST_SCHEME,
-        REQUEST_AUTHORITY,
-        REQUEST_PATH)
-        .build();
+    Request request =
+        new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
+            .build();
 
-    ResponseHandler handler = new ResponseHandler(Runnable::run)
-        .onHeaders((headers, status, endStream) -> {
-          if (status == 200) {
-            String serverHeaderField = headers.get(ENVOY_SERVER_HEADER).get(0);
-            String body = "";
-            recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
-          } else {
-            recyclerView.post(() -> viewAdapter.add(new Failure("failed with status " + status)));
-          }
-          return Unit.INSTANCE;
-        })
-        .onError(() -> {
-          recyclerView.post(() -> viewAdapter.add(new Failure("failed with error ")));
-          return Unit.INSTANCE;
-        });
+    ResponseHandler handler =
+        new ResponseHandler(Runnable::run)
+            .onHeaders((headers, status, endStream) -> {
+              if (status == 200) {
+                String serverHeaderField = headers.get(ENVOY_SERVER_HEADER).get(0);
+                String body = "";
+                recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
+              } else {
+                recyclerView.post(
+                    () -> viewAdapter.add(new Failure("failed with status " + status)));
+              }
+              return Unit.INSTANCE;
+            })
+            .onError(() -> {
+              recyclerView.post(() -> viewAdapter.add(new Failure("failed with error ")));
+              return Unit.INSTANCE;
+            });
 
     envoy.send(request, null, Collections.emptyMap(), handler);
   }
