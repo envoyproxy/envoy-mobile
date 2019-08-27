@@ -26,13 +26,30 @@ class JvmObserverContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
+  private Runnable runnable = null;
+
   public JvmObserverContext(EnvoyObserver observer) { this.observer = observer; }
 
+  /**
+   * Initializes state for accumulating header pairs via passHeaders, ultimately to be dispatched
+   * via the callback.
+   *
+   * @param length,    the total number of headers included in this header block.
+   * @param endStream, whether this header block is the final remote frame.
+   */
   public void onHeaders(long length, boolean endStream) {
     startAccumulation(FrameType.HEADERS, length, endStream);
   }
 
-  public void passHeader(byte[] key, byte[] value, boolean endFrame) {
+  /**
+   * Allows pairs of strings to be passed across the JVM, reducing overall calls (at the expense of
+   * some complexity).
+   *
+   * @param key,        the name of the HTTP header.
+   * @param value,      the value of the HTTP header.
+   * @param endHeaders, indicates this is the last header pair for this header block.
+   */
+  public void passHeader(byte[] key, byte[] value, boolean endHeaders) {
     String headerKey;
     String headerValue;
 
@@ -51,7 +68,7 @@ class JvmObserverContext {
     values.add(headerValue);
     accumulatedHeaderLength++;
 
-    if (!endFrame) {
+    if (!endHeaders) {
       return;
     }
 
@@ -62,7 +79,7 @@ class JvmObserverContext {
     final FrameType frameType = pendingFrameType;
     final boolean endStream = pendingEndStream;
 
-    observer.getExecutor().execute(new Runnable() {
+    runnable = new Runnable() {
       public void run() {
         if (canceled.get()) {
           return;
@@ -83,7 +100,9 @@ class JvmObserverContext {
           assert false : "missing header frame type";
         }
       }
-    });
+    };
+
+    observer.getExecutor().execute(runnable);
 
     resetHeaderAccumulation();
   }
