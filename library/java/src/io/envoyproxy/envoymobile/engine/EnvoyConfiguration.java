@@ -23,9 +23,10 @@ public class EnvoyConfiguration {
       resolvedYAML = configYAML;
     }
     String resolvedConfiguration =
-        resolvedYAML.replace("{{ connect_timeout }}", String.valueOf(connectTimeoutSeconds))
-            .replace("{{ dns_refresh_rate }}", String.valueOf(dnsRefreshSeconds))
-            .replace("{{ stats_flush_interval }}", String.valueOf(statsFlushSeconds));
+        resolvedYAML
+            .replace("{{ connect_timeout }}", String.format("%ss", connectTimeoutSeconds))
+            .replace("{{ dns_refresh_rate }}", String.format("%ss", dnsRefreshSeconds))
+            .replace("{{ stats_flush_interval }}", String.format("%ss", statsFlushSeconds));
     if (resolvedConfiguration.contains("{{")) {
       throw new ConfigurationException();
     }
