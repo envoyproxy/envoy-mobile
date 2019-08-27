@@ -26,8 +26,6 @@ class JvmObserverContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
-  private Runnable runnable = null;
-
   public JvmObserverContext(EnvoyObserver observer) { this.observer = observer; }
 
   /**
@@ -79,7 +77,7 @@ class JvmObserverContext {
     final FrameType frameType = pendingFrameType;
     final boolean endStream = pendingEndStream;
 
-    runnable = new Runnable() {
+    Runnable runnable = new Runnable() {
       public void run() {
         if (canceled.get()) {
           return;

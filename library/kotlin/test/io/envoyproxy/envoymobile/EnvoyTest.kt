@@ -24,7 +24,7 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val headers = mapOf(
+    val expectedHeaders = mapOf(
       "key_1" to listOf("value_a"),
       ":method" to listOf("POST"),
       ":scheme" to listOf("https"),
@@ -37,11 +37,11 @@ class EnvoyTest {
             scheme = "https",
             authority = "api.foo.com",
             path = "foo")
-            .setHeaders(headers)
+            .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
         ResponseHandler(Executor {}))
 
-    verify(stream).sendHeaders(headers, false)
+    verify(stream).sendHeaders(expectedHeaders, false)
   }
 
   @Test
@@ -129,7 +129,7 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val headers = mapOf(
+    val expectedHeaders = mapOf(
       "key_1" to listOf("value_a"),
       ":method" to listOf("POST"),
       ":scheme" to listOf("https"),
@@ -142,12 +142,12 @@ class EnvoyTest {
             scheme = "https",
             authority = "api.foo.com",
             path = "foo")
-            .setHeaders(headers)
+            .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
         ByteBuffer.allocate(0),
         ResponseHandler(Executor {}))
 
-    verify(stream).sendHeaders(headers, false)
+    verify(stream).sendHeaders(expectedHeaders, false)
   }
 
   @Test

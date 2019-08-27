@@ -27,9 +27,7 @@ import java.util.concurrent.Executor;
 
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
-private const val ENDPOINT = "http://0.0.0.0:9001/api.lyft.com/static/demo/hello_world.txt"
 private const val ENVOY_SERVER_HEADER = "server"
-
 private const val REQUEST_AUTHORITY = "s3.amazonaws.com"
 private const val REQUEST_PATH = "/api.lyft.com/static/demo/hello_world.txt"
 private const val REQUEST_SCHEME = "http"
@@ -94,7 +92,7 @@ class MainActivity : Activity() {
       }
     })
 
-    envoy.send(request, null, emptyMap<String, List<String>>(), handler)
+    envoy.send(request, null, emptyMap(), handler)
   }
 
   private fun deserialize(inputStream: InputStream): String {
