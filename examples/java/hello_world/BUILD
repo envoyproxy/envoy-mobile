@@ -1,9 +1,22 @@
 licenses(["notice"])  # Apache 2
 
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
+
 android_binary(
     name = "hello_envoy",
+    custom_package = "io.envoyproxy.envoymobile.helloenvoy",
+    manifest = "AndroidManifest.xml",
+    deps = [
+        "hello_envoy_java_lib"
+    ],
+)
+
+
+kt_android_library(
+    name = "hello_envoy_java_lib",
     srcs = [
         "MainActivity.java",
+        "EmptyFile.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
     manifest = "AndroidManifest.xml",
