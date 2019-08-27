@@ -22,7 +22,7 @@ enum class LogLevel(internal val level: String) {
 class Envoy constructor(
     private val engine: EnvoyEngine,
     internal val config: String,
-    internal val logLevel: LogLevel = LogLevel.DEBUG
+    internal val logLevel: LogLevel = LogLevel.INFO
 ) : Client {
 
   constructor(engine: EnvoyEngine, config: String) : this(engine, config, LogLevel.INFO)
