@@ -24,7 +24,13 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val headers = mapOf("key_1" to listOf("value_a"))
+    val headers = mapOf(
+      "key_1" to listOf("value_a"),
+      ":method" to listOf("POST"),
+      ":scheme" to listOf("https"),
+      ":authority" to listOf("api.foo.com"),
+      ":path" to listOf("foo")
+      )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
@@ -123,7 +129,13 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val headers = mapOf("key_1" to listOf("value_a"))
+    val headers = mapOf(
+      "key_1" to listOf("value_a"),
+      ":method" to listOf("POST"),
+      ":scheme" to listOf("https"),
+      ":authority" to listOf("api.foo.com"),
+      ":path" to listOf("foo")
+    )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
