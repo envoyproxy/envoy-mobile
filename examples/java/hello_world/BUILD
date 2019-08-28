@@ -16,7 +16,7 @@ android_binary(
 kt_android_library(
     name = "hello_envoy_java_lib",
     srcs = [
-        "EmptyFile.kt", # Needed for the kotlin rule
+        "EmptyFile.kt",  # Needed for the kotlin rule
         "MainActivity.java",
     ],
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
