@@ -12,7 +12,7 @@ android_binary(
 )
 
 # We'll use the kotlin rule here to avoid having an explicit dependency on
-# kotlin runtime. The
+# kotlin runtime.
 kt_android_library(
     name = "hello_envoy_java_lib",
     srcs = [
