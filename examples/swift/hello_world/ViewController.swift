@@ -2,8 +2,8 @@ import Envoy
 import UIKit
 
 private let kCellID = "cell-id"
-private let kRequestAuthority = "example.com"
-private let kRequestPath = "/echo"
+private let kRequestAuthority = "s3.amazonaws.com"
+private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
 private let kRequestScheme = "http"
 
 final class ViewController: UITableViewController {
@@ -16,7 +16,7 @@ final class ViewController: UITableViewController {
     super.viewDidLoad()
     do {
       NSLog("Starting Envoy...")
-      self.envoy = try EnvoyBuilder().addLogLevel(.debug)
+      self.envoy = try EnvoyBuilder()
         .build()
     } catch let error {
       NSLog("Starting Envoy failed: \(error)")
@@ -49,7 +49,7 @@ final class ViewController: UITableViewController {
     NSLog("Starting request to '\(kRequestPath)'")
 
     let requestID = self.requestCount
-    let request = RequestBuilder(method: .post, scheme: kRequestScheme,
+    let request = RequestBuilder(method: .get, scheme: kRequestScheme,
                                  authority: kRequestAuthority,
                                  path: kRequestPath).build()
     let handler = ResponseHandler()
@@ -59,8 +59,7 @@ final class ViewController: UITableViewController {
                                             serverHeader: headers["server"]?.first ?? "")))
       }
       .onData { data, _ in
-        let body = String(data: data, encoding: .utf8)
-        NSLog("Response data (\(requestID)): \(data.count) bytes\n\(body)")
+        NSLog("Response data (\(requestID)): \(data.count) bytes")
       }
       .onError { [weak self] in
         NSLog("Error (\(requestID)): Request failed")
@@ -68,7 +67,7 @@ final class ViewController: UITableViewController {
                                                 message: "failed within Envoy library")))
       }
 
-    envoy.send(request, data: "Are you listening?".data(using: .utf8), handler: handler)
+    envoy.send(request, data: nil, handler: handler)
   }
 
   private func add(result: Result<Response, RequestError>) {
