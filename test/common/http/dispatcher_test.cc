@@ -525,7 +525,7 @@ TEST_F(DispatcherTest, StreamTimeout) {
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
-  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
+  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40), _));
   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
 
   TestHeaderMapImpl expected_timeout{
@@ -573,7 +573,7 @@ TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
-  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
+  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40), _));
   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
 
   TestHeaderMapImpl expected_timeout{
@@ -613,7 +613,7 @@ TEST_F(DispatcherTest, DisableTimerWithStream) {
 
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
-  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40)));
+  EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40), _));
   EXPECT_CALL(*timer_, disableTimer());
   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
   EXPECT_CALL(stream_callbacks_, onReset());
