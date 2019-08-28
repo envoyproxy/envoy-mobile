@@ -11,10 +11,12 @@ android_binary(
     ],
 )
 
+# We'll use the kotlin rule here to avoid having an explicit dependency on
+# kotlin runtime. The
 kt_android_library(
     name = "hello_envoy_java_lib",
     srcs = [
-        "EmptyFile.kt",
+        "EmptyFile.kt", # Needed for the kotlin rule
         "MainActivity.java",
     ],
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
