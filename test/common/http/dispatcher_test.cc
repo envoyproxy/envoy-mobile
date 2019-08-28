@@ -534,7 +534,7 @@ TEST_F(DispatcherTest, StreamTimeout) {
   EXPECT_CALL(stream_callbacks_, onData(_, true));
   EXPECT_CALL(stream_callbacks_, onComplete());
   send_headers_post_cb();
-  timer_->callback_();
+  timer_->invokeCallback();
 
   EXPECT_EQ(1UL,
             cm_.thread_local_cluster_.cluster_.info_->stats_store_.counter("upstream_rq_timeout")
@@ -581,7 +581,7 @@ TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), true));
   EXPECT_CALL(stream_callbacks_, onComplete());
   send_headers_post_cb();
-  timer_->callback_();
+  timer_->invokeCallback();
 }
 
 TEST_F(DispatcherTest, DisableTimerWithStream) {
