@@ -20,7 +20,9 @@ envoy_cc_library(
     hdrs = ["utility.h"],
     repository = "@envoy",
     deps = [
+        ":bridge_fragment_lib",
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
+        "@envoy//source/common/buffer:buffer_lib",
     ],
 )

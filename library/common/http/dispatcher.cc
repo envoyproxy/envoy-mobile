@@ -24,16 +24,7 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  // FIXME: delete buffer utility if we decide to not move the buffer management there.
-  envoy_data bridge_data;
-  bridge_data.length = data.length();
-  bridge_data.bytes = static_cast<uint8_t *>(malloc(sizeof(uint8_t) * bridge_data.length));
-  data.copyOut(0, bridge_data.length, const_cast<uint8_t*>(bridge_data.bytes));
-  data.drain(bridge_data.length);
-  bridge_data.release = free;
-  bridge_data.context = const_cast<uint8_t*>(bridge_data.bytes);
-
-  observer_.on_data(bridge_data, end_stream, observer_.context);
+  observer_.on_data(Buffer::Utility::toBridgeData(data), end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
@@ -106,7 +97,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) { 
+envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   event_dispatcher_.post([this, stream, data, end_stream]() -> void {
     DirectStream* direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
@@ -117,18 +108,13 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
     if (direct_stream != nullptr) {
-      // FIXME: delete buffer utility if we decide to not move the buffer management there.
-      // This fragment only needs to live until done is called.
-      // Therefore, it is sufficient to allocate on the heap, and delete in the done method.
-      // TODO: this method leaks the implementation of Buffer::BridgeFragment and could be improved to avoid new.
-      Buffer::BridgeFragment *fragment = new Buffer::BridgeFragment(data);
-      // Verify it is safe for the buffer_wrapper to be on the stack.
-      // Based on our read of the envoy code, this is the case. 
-      Buffer::OwnedImpl buffer_wrapper;
-      buffer_wrapper.addBufferFragment(*fragment);
+      // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime of
+      // the InstancePtr to outlive this function call.
+      Buffer::InstancePtr buf = Buffer::Utility::toInternalData(data);
 
-      ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream, data.length, end_stream);
-      direct_stream->underlying_stream_.sendData(buffer_wrapper, end_stream);
+      ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
+                data.length, end_stream);
+      direct_stream->underlying_stream_.sendData(*buf, end_stream);
     }
   });
 
