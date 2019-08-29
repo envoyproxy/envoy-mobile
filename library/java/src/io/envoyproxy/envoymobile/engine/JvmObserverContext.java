@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,6 +104,27 @@ class JvmObserverContext {
     observer.getExecutor().execute(runnable);
 
     resetHeaderAccumulation();
+  }
+
+  /**
+   * Allows pairs of strings to be passed across the JVM, reducing overall calls (at the expense of
+   * some complexity).
+   *
+   * @param data,      chunk of body data from the HTTP response.
+   * @param endStream, indicates this is the last remote frame of the stream.
+   */
+  public void onData(byte[] data, boolean endStream) {
+    observer.getExecutor().execute(new Runnable() {
+      public void run() {
+        if (canceled.get()) {
+          return;
+        }
+        // TODO: if we're going to pass across the JNI as a byte[] we should update the rest of nthese interfaces rather than copying again.
+        ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
+        dataBuffer.put(data);
+        observer.onData(dataBuffer, endStream);
+      }
+    });
   }
 
   private void startAccumulation(FrameType type, long length, boolean endStream) {

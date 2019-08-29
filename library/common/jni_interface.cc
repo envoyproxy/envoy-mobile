@@ -130,6 +130,26 @@ static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context
 
 static void jvm_on_data(envoy_data data, bool end_stream, void* context) {
   __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_data");
+  JNIEnv* env = nullptr;
+  int get_env_res = static_jvm->GetEnv((void**)&env, JNI_VERSION);
+  if (get_env_res == JNI_EDETACHED) {
+    __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "equals JNI_EDETACHED");
+  }
+  jobject j_context = static_cast<jobject>(context);
+
+  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onData = env->GetMethodID(jcls_JvmObserverContext, "onData", "([BZ)V");
+
+  jbyteArray j_data = env->NewByteArray(data.length);
+  // FIXME: check if copied via isCopy
+  void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr); // FIXME: check for NULL
+  memcpy(critical_data, data.bytes, data.length);
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
+  env->CallVoidMethod(j_context, jmid_onData, j_data, end_stream ? JNI_TRUE : JNI_FALSE);
+  env->DeleteLocalRef(j_data);
+  env->DeleteLocalRef(jcls_JvmObserverContext);
 }
 
 static void jvm_on_metadata(envoy_headers metadata, void* context) {
