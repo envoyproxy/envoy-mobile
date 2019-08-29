@@ -118,9 +118,7 @@ class JvmObserverContext {
         if (canceled.get()) {
           return;
         }
-        // TODO: if we're going to pass across the JNI as a byte[] we should update the rest of these interfaces rather than copying again.
-        ByteBuffer dataBuffer = ByteBuffer.allocateDirect(data.length);
-        dataBuffer.put(data);
+        ByteBuffer dataBuffer = ByteBuffer.wrap(data);
         observer.onData(dataBuffer, endStream);
       }
     });
