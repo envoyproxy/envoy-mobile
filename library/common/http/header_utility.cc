@@ -55,7 +55,8 @@ absl::optional<envoy_headers> toBridgeHeaders(const HeaderMap& header_map) {
       &transformed_headers);
 
   if (transformed_headers.length < static_cast<envoy_header_size_t>(header_map.size())) {
-    // The headers failed to fully form
+    // The headers failed to fully form. Therefore, release the transformed headers that got
+    // allocated.
     release_envoy_headers(transformed_headers);
     return absl::nullopt;
   }
