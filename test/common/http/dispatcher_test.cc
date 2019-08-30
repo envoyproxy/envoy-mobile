@@ -92,7 +92,9 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -169,11 +171,15 @@ TEST_F(DispatcherTest, BasicStream) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Build body data
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
+  absl::optional<envoy_data> maybe_c_data = Buffer::Utility::toBridgeData(request_data);
+  ASSERT_TRUE(maybe_c_data.has_value());
+  envoy_data c_data = maybe_c_data.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -291,7 +297,9 @@ TEST_F(DispatcherTest, MultipleStreams) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -342,7 +350,9 @@ TEST_F(DispatcherTest, MultipleStreams) {
   // Build a set of request headers.
   TestHeaderMapImpl headers2;
   HttpTestUtility::addDefaultHeaders(headers2);
-  envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
+  absl::optional<envoy_headers> maybe_c_headers2 = Utility::toBridgeHeaders(headers2);
+  ASSERT_TRUE(maybe_c_headers2.has_value());
+  envoy_headers c_headers2 = maybe_c_headers2.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -415,7 +425,9 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -487,7 +499,9 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -531,7 +545,9 @@ TEST_F(DispatcherTest, DestroyWithActiveStream) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -561,7 +577,9 @@ TEST_F(DispatcherTest, ResetInOnHeaders) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -601,7 +619,9 @@ TEST_F(DispatcherTest, StreamTimeout) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
   EXPECT_CALL(cm_.async_client_, start(_, _))
@@ -649,7 +669,9 @@ TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers, "HEAD");
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
   EXPECT_CALL(cm_.async_client_, start(_, _))
@@ -687,7 +709,9 @@ TEST_F(DispatcherTest, DisableTimerWithStream) {
 
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers, "HEAD");
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
   EXPECT_CALL(cm_.async_client_, start(_, _))
@@ -751,15 +775,21 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   // Build a set of request headers.
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(headers);
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   // Build first body data
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
+  absl::optional<envoy_data> maybe_c_data = Buffer::Utility::toBridgeData(request_data);
+  ASSERT_TRUE(maybe_c_data.has_value());
+  envoy_data c_data = maybe_c_data.value();
 
   // Build second body data
   Buffer::OwnedImpl request_data2 = Buffer::OwnedImpl("request body2");
-  envoy_data c_data2 = Buffer::Utility::toBridgeData(request_data2);
+  absl::optional<envoy_data> maybe_c_data2 = Buffer::Utility::toBridgeData(request_data2);
+  ASSERT_TRUE(maybe_c_data2.has_value());
+  envoy_data c_data2 = maybe_c_data2.value();
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));

@@ -18,6 +18,7 @@ envoy_cc_library(
     name = "utility_lib",
     srcs = ["utility.cc"],
     hdrs = ["utility.h"],
+    external_deps = ["abseil_optional"],
     repository = "@envoy",
     deps = [
         ":bridge_fragment_lib",

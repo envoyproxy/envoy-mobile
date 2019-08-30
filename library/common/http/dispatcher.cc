@@ -17,19 +17,27 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
-  envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
-  observer_.on_headers(bridge_headers, end_stream, observer_.context);
+  absl::optional<envoy_headers> maybe_bridge_headers = Utility::toBridgeHeaders(*headers);
+  if (maybe_bridge_headers.has_value()) {
+    observer_.on_headers(maybe_bridge_headers.value(), end_stream, observer_.context);
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  observer_.on_data(Buffer::Utility::toBridgeData(data), end_stream, observer_.context);
+  absl::optional<envoy_data> maybe_bridge_data = Buffer::Utility::toBridgeData(data);
+  if (maybe_bridge_data.has_value()) {
+    observer_.on_data(maybe_bridge_data.value(), end_stream, observer_.context);
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, *trailers);
-  observer_.on_trailers(Utility::toBridgeHeaders(*trailers), observer_.context);
+  absl::optional<envoy_headers> maybe_bridge_trailers = Utility::toBridgeHeaders(*trailers);
+  if (maybe_bridge_trailers.has_value()) {
+    observer_.on_trailers(maybe_bridge_trailers.value(), observer_.context);
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onComplete() {

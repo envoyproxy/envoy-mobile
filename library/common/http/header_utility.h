@@ -5,6 +5,8 @@
 
 #include "library/common/types/c_types.h"
 
+#include "absl/types/optional.h"
+
 namespace Envoy {
 namespace Http {
 namespace Utility {
@@ -31,7 +33,7 @@ HeaderMapPtr toInternalHeaders(envoy_headers headers);
  * @param headers, the HeaderMap to transform.
  * @return envoy_headers, the HeaderMap 1:1 transformation of the headers param.
  */
-envoy_headers toBridgeHeaders(const HeaderMap& headers);
+absl::optional<envoy_headers> toBridgeHeaders(const HeaderMap& headers);
 
 } // namespace Utility
 } // namespace Http

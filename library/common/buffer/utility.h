@@ -4,6 +4,8 @@
 
 #include "library/common/types/c_types.h"
 
+#include "absl/types/optional.h"
+
 namespace Envoy {
 namespace Buffer {
 namespace Utility {
@@ -20,7 +22,7 @@ Buffer::InstancePtr toInternalData(envoy_data data);
  * @param data, the Buffer::Instance to transform.
  * @return envoy_data, the 1:1 transformation of the Buffer::Instance param.
  */
-envoy_data toBridgeData(Buffer::Instance&);
+absl::optional<envoy_data> toBridgeData(Buffer::Instance&);
 
 } // namespace Utility
 } // namespace Buffer

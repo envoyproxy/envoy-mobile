@@ -21,7 +21,7 @@ HeaderMapPtr toInternalHeaders(envoy_headers headers) {
   return transformed_headers;
 }
 
-envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
+absl::optional<envoy_headers> toBridgeHeaders(const HeaderMap& header_map) {
   envoy_header* headers =
       static_cast<envoy_header*>(malloc(sizeof(envoy_header) * header_map.size()));
   envoy_headers transformed_headers;
@@ -37,8 +37,15 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
 
         envoy_data key =
             copy_envoy_data(header_key.size(), reinterpret_cast<const uint8_t*>(header_key.data()));
+        if (key.length == -1 && key.bytes == nullptr) {
+          return HeaderMap::Iterate::Break;
+        }
         envoy_data value = copy_envoy_data(header_value.size(),
                                            reinterpret_cast<const uint8_t*>(header_value.data()));
+        if (value.length == -1 && value.bytes == nullptr) {
+          key.release(key.context);
+          return HeaderMap::Iterate::Break;
+        }
 
         transformed_headers->headers[transformed_headers->length] = {key, value};
         transformed_headers->length++;
@@ -46,6 +53,12 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
         return HeaderMap::Iterate::Continue;
       },
       &transformed_headers);
+
+  if (transformed_headers.length < static_cast<envoy_header_size_t>(header_map.size())) {
+    // The headers failed to fully form
+    release_envoy_headers(transformed_headers);
+    return absl::nullopt;
+  }
   return transformed_headers;
 }
 

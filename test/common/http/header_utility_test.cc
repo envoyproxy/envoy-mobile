@@ -13,7 +13,8 @@ void envoy_test_release(void* context) {
 }
 
 envoy_data envoyTestString(std::string& s, uint32_t* sentinel) {
-  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str()), envoy_test_release, sentinel};
+  return {static_cast<int>(s.size()), reinterpret_cast<const uint8_t*>(s.c_str()),
+          envoy_test_release, sentinel};
 }
 
 TEST(HeaderDataConstructorTest, FromCToCppEmpty) {
@@ -45,6 +46,8 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
   // This copy is used for assertions given that envoy_headers are released when toInternalHeaders
   // is called.
   envoy_headers c_headers_copy = copy_envoy_headers(c_headers);
+  ASSERT_NE(c_headers_copy.length, -1);
+  ASSERT_NE(c_headers_copy.headers, nullptr);
 
   HeaderMapPtr cpp_headers = Utility::toInternalHeaders(c_headers);
 
@@ -66,7 +69,11 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
 
 TEST(HeaderDataConstructorTest, FromCppToCEmpty) {
   HeaderMapImpl empty_headers;
-  envoy_headers c_headers = Utility::toBridgeHeaders(std::move(empty_headers));
+  absl::optional<envoy_headers> maybe_c_headers =
+      Utility::toBridgeHeaders(std::move(empty_headers));
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
+
   ASSERT_EQ(0, c_headers.length);
   delete[] c_headers.headers;
 }
@@ -78,7 +85,9 @@ TEST(HeaderDataConstructorTest, FromCppToC) {
   cpp_headers.addCopy(LowerCaseString(std::string(":authority")), std::string("api.lyft.com"));
   cpp_headers.addCopy(LowerCaseString(std::string(":path")), std::string("/ping"));
 
-  envoy_headers c_headers = Utility::toBridgeHeaders(std::move(cpp_headers));
+  absl::optional<envoy_headers> maybe_c_headers = Utility::toBridgeHeaders(std::move(cpp_headers));
+  ASSERT_TRUE(maybe_c_headers.has_value());
+  envoy_headers c_headers = maybe_c_headers.value();
 
   ASSERT_EQ(c_headers.length, static_cast<envoy_header_size_t>(cpp_headers.size()));
 

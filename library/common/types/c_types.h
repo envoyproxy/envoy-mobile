@@ -50,7 +50,7 @@ void envoy_noop_release(void* context);
  * Holds raw binary data as an array of bytes.
  */
 typedef struct {
-  size_t length;
+  int length;
   const uint8_t* bytes;
   envoy_release_f release;
   void* context;
@@ -112,6 +112,12 @@ envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes);
 // Convenience constant to pass to function calls with no data.
 // For example when sending a headers-only request.
 extern const envoy_data envoy_nodata;
+
+// Convenience constant to return when data allocation fails.
+extern const envoy_data envoy_nulldata;
+
+// Convenience constant to return when data allocation fails.
+extern const envoy_headers envoy_nullheaders;
 
 /**
  * Error struct.

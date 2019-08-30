@@ -17,10 +17,13 @@ Buffer::InstancePtr toInternalData(envoy_data data) {
   return buf;
 }
 
-envoy_data toBridgeData(Buffer::Instance& data) {
+absl::optional<envoy_data> toBridgeData(Buffer::Instance& data) {
   envoy_data bridge_data;
   bridge_data.length = data.length();
   bridge_data.bytes = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * bridge_data.length));
+  if (bridge_data.bytes == nullptr) {
+    return absl::nullopt;
+  }
   data.copyOut(0, bridge_data.length, const_cast<uint8_t*>(bridge_data.bytes));
   data.drain(bridge_data.length);
   bridge_data.release = free;

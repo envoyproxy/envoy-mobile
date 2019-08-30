@@ -13,7 +13,8 @@ void envoy_test_release(void* context) {
 }
 
 envoy_data toTestEnvoyData(std::string& s, uint32_t* sentinel) {
-  return {s.size(), reinterpret_cast<const uint8_t*>(s.c_str()), envoy_test_release, sentinel};
+  return {static_cast<int>(s.size()), reinterpret_cast<const uint8_t*>(s.c_str()),
+          envoy_test_release, sentinel};
 }
 
 TEST(BridgeFragmentTest, Basic) {
