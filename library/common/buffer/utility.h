@@ -2,9 +2,8 @@
 
 #include "envoy/buffer/buffer.h"
 
-#include "library/common/types/c_types.h"
-
 #include "absl/types/optional.h"
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Buffer {
