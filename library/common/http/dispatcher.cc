@@ -122,7 +122,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
 }
 
 // TODO: implement.
-envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers, bool) {
+envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) {
   return ENVOY_FAILURE;
 }
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
