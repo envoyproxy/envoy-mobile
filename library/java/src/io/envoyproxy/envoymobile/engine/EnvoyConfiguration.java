@@ -39,7 +39,7 @@ public class EnvoyConfiguration {
    * - connectTimeoutSeconds
    * - dnsRefreshSeconds
    * - statsFlushSeconds
-   * This default configuration is provided by the native layer
+   * This default configuration is provided by the native layer.
    *
    * @param defaultConfigurationYAML the default template configuration.
    * @return String, the resolved template.
