@@ -17,7 +17,7 @@ class EnvoyConfigurationTest {
   fun `resolving with default configuraiton resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(123, 234, 345)
 
-    val resolvedTemplate = envoyConfiguration.resolve(TEST_CONFIG)
+    val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG)
     assertThat(resolvedTemplate).contains("connect_timeout: 123s")
     assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
     assertThat(resolvedTemplate).contains("stats_flush_interval: 345s")
@@ -28,6 +28,6 @@ class EnvoyConfigurationTest {
   fun `resolve templates with invalid templates will throw on build`() {
     val envoyConfiguration = EnvoyConfiguration(123, 234, 345)
 
-    envoyConfiguration.resolve("{{ }}")
+    envoyConfiguration.resolveTemplate("{{ }}")
   }
 }

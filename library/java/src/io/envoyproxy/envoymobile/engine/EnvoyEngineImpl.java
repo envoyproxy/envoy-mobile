@@ -46,8 +46,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     try {
 
       String resolvedConfig = envoyConfiguration.configYAML == null
-              ? envoyConfiguration.resolve(JniLibrary.templateString())
-              : envoyConfiguration.configYAML;
+                                  ? envoyConfiguration.resolveTemplate(JniLibrary.templateString())
+                                  : envoyConfiguration.configYAML;
       return JniLibrary.runEngine(resolvedConfig, logLevel);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere
