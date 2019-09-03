@@ -43,4 +43,38 @@ class EnvoyBuilderTest {
     assertThat(envoy.logLevel).isEqualTo(LogLevel.DEBUG)
   }
 
+  @Test
+  fun `specifying connection timeout overrides default`() {
+    `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
+
+    builder.addConnectTimeoutSeconds(1234)
+    val envoy = builder.build()
+    assertThat(envoy.envoyConfiguration.connectTimeoutSeconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying DNS refresh overrides default`() {
+    `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
+
+    builder.addDNSRefreshSeconds(1234)
+    val envoy = builder.build()
+    assertThat(envoy.envoyConfiguration.dnsRefreshSeconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying stats flush overrides default`() {
+    `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
+    builder = EnvoyBuilder(envoyConfiguration)
+    builder.addEngineType { engine }
+
+    builder.addStatsFlushSeconds(1234)
+    builder.build()
+    val envoy = builder.build()
+    assertThat(envoy.envoyConfiguration.statsFlushSeconds).isEqualTo(1234)
+
+  }
 }
