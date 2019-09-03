@@ -14,7 +14,7 @@ mock_template:
 class EnvoyConfigurationTest {
 
   @Test
-  fun `resolving with default configuraiton resolves with values`() {
+  fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(123, 234, 345)
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG)
