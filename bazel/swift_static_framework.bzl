@@ -69,8 +69,12 @@ def _swift_static_framework_impl(ctx):
 
         libraries = archive[CcInfo].linking_context.libraries_to_link
         archives = []
+        avoid_labels = [target.label for target in ctx.attr.avoid_deps]
         for library in libraries.to_list():
             archive = library.pic_static_library or library.static_library
+            if archive.owner in avoid_labels:
+                continue
+
             if archive:
                 archives.append(archive)
             else:
@@ -145,6 +149,7 @@ _swift_static_framework = rule(
         ),
         framework_name = attr.string(mandatory = True),
         minimum_os_version = attr.string(default = MINIMUM_IOS_VERSION),
+        avoid_deps = attr.label_list(mandatory = True),
         platform_type = attr.string(
             default = str(apple_common.platform_type.ios),
         ),
@@ -167,6 +172,7 @@ def swift_static_framework(
         objc_includes = [],
         copts = [],
         swiftc_inputs = [],
+        avoid_deps = [],
         visibility = []):
     """Create a static library, and static framework target for a swift module
 
@@ -177,6 +183,7 @@ def swift_static_framework(
         objc_includes: Header files for any objective-c dependencies (required for linking)
         copts: Any custom swiftc opts passed through to the swift_library
         swiftc_inputs: Any labels that require expansion for copts (would also apply to linkopts)
+        avoid_deps: Any label dependencies to not include in the final static binary
         deps: Any deps the swift_library requires
     """
     archive_name = name + "_archive"
@@ -200,5 +207,6 @@ def swift_static_framework(
         name = name,
         archive = archive_name,
         framework_name = module_name,
+        avoid_deps = avoid_deps,
         visibility = visibility,
     )

@@ -26,4 +26,8 @@ swift_static_framework(
     ],
     visibility = ["//visibility:public"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"],
+    avoid_deps = [
+        "@boringssl//:crypto",
+        "@boringssl//:ssl",
+    ],
 )
