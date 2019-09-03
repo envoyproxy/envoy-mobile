@@ -1,8 +1,10 @@
 import Foundation
 
+/// Envoy's implementation of `Client`, buildable using `EnvoyBuilder`.
 @objcMembers
 public final class Envoy: NSObject {
-  private let runner: EnvoyRunner
+  private let engine: EnvoyEngine
+  private let runner: RunnerThread
 
   /// Indicates whether this Envoy instance is currently active and running.
   public var isRunning: Bool {
@@ -14,26 +16,54 @@ public final class Envoy: NSObject {
     return self.runner.isFinished
   }
 
-  /// Initialize a new Envoy instance.
+  /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter config:   Configuration file that is recognizable by Envoy (YAML).
-  /// - parameter logLevel: Log level to use for this instance.
-  public init(config: String, logLevel: LogLevel = .info) {
-    self.runner = EnvoyRunner(config: config, logLevel: logLevel)
+  /// - parameter configYAML: Configuration YAML to use for starting Envoy.
+  /// - parameter logLevel:   Log level to use for this instance.
+  /// - parameter engine:     The underlying engine to use for starting Envoy.
+  init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+    self.engine = engine
+    self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
     self.runner.start()
   }
 
-  private final class EnvoyRunner: Thread {
-    private let config: String
+  // MARK: - Private
+
+  private final class RunnerThread: Thread {
+    private let engine: EnvoyEngine
+    private let configYAML: String
     private let logLevel: LogLevel
 
-    init(config: String, logLevel: LogLevel) {
-      self.config = config
+    init(configYAML: String, logLevel: LogLevel, engine: EnvoyEngine) {
+      self.configYAML = configYAML
       self.logLevel = logLevel
+      self.engine = engine
     }
 
     override func main() {
-      EnvoyEngine.run(withConfig: self.config, logLevel: self.logLevel.stringValue)
+      self.engine.run(withConfig: self.configYAML, logLevel: self.logLevel.stringValue)
     }
+  }
+}
+
+extension Envoy: Client {
+  public func send(_ request: Request, handler: ResponseHandler) -> StreamEmitter {
+    let httpStream = self.engine.startStream(with: handler.underlyingObserver)
+    httpStream.sendHeaders(request.outboundHeaders(), close: false)
+    return EnvoyStreamEmitter(stream: httpStream)
+  }
+
+  @discardableResult
+  public func send(_ request: Request, data: Data?,
+                   trailers: [String: [String]] = [:], handler: ResponseHandler)
+    -> CancelableStream
+  {
+    let emitter = self.send(request, handler: handler)
+    if let data = data {
+      emitter.sendData(data)
+    }
+
+    emitter.close(trailers: trailers)
+    return emitter
   }
 }

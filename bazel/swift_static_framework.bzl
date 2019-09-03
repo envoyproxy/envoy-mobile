@@ -21,6 +21,12 @@ def _zip_binary_arg(module_name, input_file):
         file_path = input_file.path,
     )
 
+def _zip_header_arg(module_name, input_file):
+    return "{module_name}.framework/Headers/{module_name}-Swift.h={file_path}".format(
+        module_name = module_name,
+        file_path = input_file.path,
+    )
+
 def _zip_swift_arg(module_name, swift_identifier, input_file):
     return "{module_name}.framework/Modules/{module_name}.swiftmodule/{swift_identifier}.{ext}={file_path}".format(
         module_name = module_name,
@@ -43,6 +49,21 @@ def _swift_static_framework_impl(ctx):
             fail("Unhandled platform '{}'".format(platform))
 
         swift_info = archive[SwiftInfo]
+
+        # We can potentially simplify this if this change lands upstream:
+        # https://github.com/bazelbuild/rules_swift/issues/291
+        objc_headers = [
+            header
+            for header in archive[apple_common.Objc].header.to_list()
+            if header.path.endswith("-Swift.h")
+        ]
+
+        if len(objc_headers) == 1:
+            zip_args.append(_zip_header_arg(module_name, objc_headers[0]))
+        else:
+            header_names = [header.basename for header in objc_headers]
+            fail("Expected exactly 1 '-Swift.h' header, got {}".format(", ".join(header_names)))
+
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
 

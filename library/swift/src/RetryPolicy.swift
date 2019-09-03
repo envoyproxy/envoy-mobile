@@ -3,23 +3,23 @@ import Foundation
 /// Rules that may be used with `RetryPolicy`.
 /// See the `x-envoy-retry-on` Envoy header for documentation.
 @objc
-public enum RetryRule: Int {
-  case fiveXX
+public enum RetryRule: Int, CaseIterable {
+  case status5xx
   case gatewayError
   case connectFailure
-  case retriableFourXX
+  case retriable4xx
   case refusedUpstream
 
   /// String representation of this rule.
   var stringValue: String {
     switch self {
-    case .fiveXX:
+    case .status5xx:
       return "5xx"
     case .gatewayError:
       return "gateway-error"
     case .connectFailure:
       return "connect-failure"
-    case .retriableFourXX:
+    case .retriable4xx:
       return "retriable-4xx"
     case .refusedUpstream:
       return "refused-upstream"
@@ -39,9 +39,23 @@ public final class RetryPolicy: NSObject {
   public let perRetryTimeoutMS: UInt?
 
   /// Public initializer.
-  public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutMS: UInt?) {
+  public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutMS: UInt? = nil) {
     self.maxRetryCount = maxRetryCount
     self.retryOn = retryOn
     self.perRetryTimeoutMS = perRetryTimeoutMS
+  }
+}
+
+// MARK: - Equatable overrides
+
+extension RetryPolicy {
+  public override func isEqual(_ object: Any?) -> Bool {
+    guard let other = object as? RetryPolicy else {
+      return false
+    }
+
+    return self.maxRetryCount == other.maxRetryCount
+      && self.retryOn == other.retryOn
+      && self.perRetryTimeoutMS == other.perRetryTimeoutMS
   }
 }

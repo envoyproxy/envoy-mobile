@@ -1,13 +1,52 @@
 licenses(["notice"])  # Apache 2
 
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("//bazel:swift_test.bzl", "envoy_mobile_swift_test")
 
-envoy_package()
+envoy_mobile_swift_test(
+    name = "client_tests",
+    srcs = [
+        "ClientTests.swift",
+    ],
+)
 
 envoy_mobile_swift_test(
-    name = "sample_test",
+    name = "envoy_builder_tests",
     srcs = [
-        "SampleTest.swift",
+        "EnvoyBuilderTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "request_builder_tests",
+    srcs = [
+        "RequestBuilderTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "request_mapper_tests",
+    srcs = [
+        "RequestMapperTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "response_handler_tests",
+    srcs = [
+        "ResponseHandlerTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "retry_policy_tests",
+    srcs = [
+        "RetryPolicyTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "retry_policy_mapper_tests",
+    srcs = [
+        "RetryPolicyMapperTests.swift",
     ],
 )

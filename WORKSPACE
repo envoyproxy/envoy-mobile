@@ -38,20 +38,25 @@ git_repository(
     shallow_since = "1562886228 -0700",
 )
 
+load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
+
+envoy_api_binding()
+
 load("@envoy//bazel:api_repositories.bzl", "envoy_api_dependencies")
 
 envoy_api_dependencies()
 
-load("@envoy//bazel:repositories.bzl", "GO_VERSION", "envoy_dependencies")
-load("@envoy//bazel:cc_configure.bzl", "cc_configure")
+load("@envoy//bazel:repositories.bzl", "envoy_dependencies")
 
 envoy_dependencies()
+
+load("@envoy//bazel:dependency_imports.bzl", "GO_VERSION", "envoy_dependency_imports")
+
+envoy_dependency_imports()
 
 load("@rules_foreign_cc//:workspace_definitions.bzl", "rules_foreign_cc_dependencies")
 
 rules_foreign_cc_dependencies()
-
-cc_configure()
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 
@@ -103,6 +108,8 @@ maven_install(
         # Test artifacts
         "org.assertj:assertj-core:3.9.0",
         "junit:junit:4.12",
+        "org.mockito:mockito-inline:2.28.2",
+        "org.mockito:mockito-core:2.28.2",
     ],
     repositories = [
         "https://repo1.maven.org/maven2",
@@ -110,17 +117,11 @@ maven_install(
     ],
 )
 
-# Bazel Kotlin 1.3 patch: https://github.com/bazelbuild/rules_kotlin/issues/159
-# bazelbuild/rules_kotlin currently doesn't work with Kotlin 1.3
-# TODO: https://github.com/lyft/envoy-mobile/issues/68
-#
-# keith/rules_kotlin is licensed under the Apache License 2.0
-# https://github.com/keith/rules_kotlin/blob/master/LICENSE
 git_repository(
     name = "io_bazel_rules_kotlin",
-    commit = "af3dea0853f2821e7ece6e028fad57bcd6ce2831",  # from branch ks/bazel-fixups
-    remote = "https://github.com/keith/rules_kotlin.git",
-    shallow_since = "1556831609 -0700",
+    commit = "200802f0525af6e3ff4d50985c4f105e0685b883",  # tag legacy-modded-0_26_1-02
+    remote = "https://github.com/cgruber/rules_kotlin",
+    shallow_since = "1561081499 -0700",
 )
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")

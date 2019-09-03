@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
-import android.content.Context
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
+import java.nio.ByteBuffer
 
 /**
  * Available logging levels for an Envoy instance. Note some levels may be compiled out.
@@ -19,14 +19,18 @@ enum class LogLevel(internal val level: String) {
 /**
  * Wrapper class that allows for easy calling of Envoy's JNI interface in native Java.
  */
-class Envoy @JvmOverloads constructor(
-    context: Context,
-    config: String,
-    logLevel: LogLevel = LogLevel.INFO
-) {
+class Envoy constructor(
+    private val engine: EnvoyEngine,
+    internal val config: String,
+    internal val logLevel: LogLevel = LogLevel.INFO
+) : Client {
+
+  constructor(engine: EnvoyEngine, config: String) : this(engine, config, LogLevel.INFO)
 
   // Dedicated thread for running this instance of Envoy.
-  private val runner: Thread
+  private val runner: Thread = Thread(ThreadGroup("Envoy"), Runnable {
+    engine.runWithConfig(config.trim(), logLevel.level)
+  })
 
   /**
    * Create a new Envoy instance. The Envoy runner Thread is started as part of instance
@@ -35,13 +39,6 @@ class Envoy @JvmOverloads constructor(
    * the first instance is created.
    */
   init {
-    // Lazily initialize Envoy and its dependencies, if necessary.
-    load(context)
-
-    runner = Thread(Runnable {
-      EnvoyEngine.run(config.trim(), logLevel.level)
-    })
-
     runner.start()
   }
 
@@ -60,10 +57,22 @@ class Envoy @JvmOverloads constructor(
     return runner.state == Thread.State.TERMINATED
   }
 
-  companion object {
-    @JvmStatic
-    fun load(context: Context) {
-      EnvoyEngine.load(context)
+  override fun send(request: Request, responseHandler: ResponseHandler): StreamEmitter {
+    val stream = engine.startStream(responseHandler.underlyingObserver)
+    stream.sendHeaders(request.outboundHeaders(), false)
+    return EnvoyStreamEmitter(stream)
+  }
+
+  override fun send(request: Request, data: ByteBuffer?, trailers: Map<String, List<String>>, responseHandler: ResponseHandler): CancelableStream {
+    val stream = send(request, responseHandler)
+    if (data != null) {
+      stream.sendData(data)
     }
+    stream.close(trailers)
+    return stream
+  }
+
+  override fun send(request: Request, body: ByteBuffer?, responseHandler: ResponseHandler): CancelableStream {
+    return send(request, body, emptyMap(), responseHandler)
   }
 }

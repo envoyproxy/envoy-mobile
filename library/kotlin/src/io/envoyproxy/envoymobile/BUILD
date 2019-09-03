@@ -1,7 +1,7 @@
 licenses(["notice"])  # Apache 2
 
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_library")
+load("//bazel:kotlin_lib.bzl", "envoy_mobile_kt_aar_android_library", "envoy_mobile_kt_library")
 
 aar_with_jni(
     name = "android_aar",
@@ -10,31 +10,41 @@ aar_with_jni(
     visibility = ["//visibility:public"],
 )
 
-# Android library drops exported dependencies from dependent rules. The kt_android_library
-#  internally is just a macro which wraps two rules into one:
-#  https://github.com/bazelbuild/rules_kotlin/blob/326661e7e705d14e754abc2765837aa61bddf205/kotlin/internal/jvm/android.bzl#L28.
-#  This causes the sources to be exported and dropped due to it being a transitive dependency.
-#  To get around this, we have to redeclare the sources from envoy_engine_lib here in order to be pulled into the
-#  kotlin jar.
-kt_android_library(
+envoy_mobile_kt_aar_android_library(
     name = "envoy_lib",
     srcs = [
-        "Envoy.kt",
-        "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_srcs",
+        "AndroidEnvoyBuilder.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
     visibility = ["//visibility:public"],
-    deps = ["//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib"],
+    deps = [
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
+        "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+    ],
 )
 
-kt_jvm_library(
+envoy_mobile_kt_library(
     name = "envoy_interfaces_lib",
     srcs = [
+        "Client.kt",
+        "Envoy.kt",
+        "EnvoyBuilder.kt",
+        "EnvoyException.kt",
+        "EnvoyStreamEmitter.kt",
         "Request.kt",
         "RequestBuilder.kt",
+        "RequestMapper.kt",
         "RequestMethod.kt",
+        "ResponseHandler.kt",
         "RetryPolicy.kt",
+        "RetryPolicyMapper.kt",
+        "StreamEmitter.kt",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
+    ],
 )
