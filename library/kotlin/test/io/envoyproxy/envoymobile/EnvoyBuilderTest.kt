@@ -45,8 +45,7 @@ class EnvoyBuilderTest {
 
   @Test
   fun `specifying connection timeout overrides default`() {
-    `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration)
+    builder = EnvoyBuilder()
     builder.addEngineType { engine }
 
     builder.addConnectTimeoutSeconds(1234)
@@ -56,8 +55,7 @@ class EnvoyBuilderTest {
 
   @Test
   fun `specifying DNS refresh overrides default`() {
-    `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration)
+    builder = EnvoyBuilder()
     builder.addEngineType { engine }
 
     builder.addDNSRefreshSeconds(1234)
@@ -67,8 +65,7 @@ class EnvoyBuilderTest {
 
   @Test
   fun `specifying stats flush overrides default`() {
-    `when`(envoyConfiguration.templateString()).thenReturn(TEST_CONFIG)
-    builder = EnvoyBuilder(envoyConfiguration)
+    builder = EnvoyBuilder()
     builder.addEngineType { engine }
 
     builder.addStatsFlushSeconds(1234)
