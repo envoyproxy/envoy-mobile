@@ -183,6 +183,7 @@ static void jvm_on_error(envoy_error error, void* context) {
 
   env->CallVoidMethod(j_context, jmid_onError, j_error_message, error.error_code);
 
+  error.message.release(error.message.context);
   // No further callbacks happen on this context. Delete the reference held by native code.
   env->DeleteGlobalRef(j_context);
 }

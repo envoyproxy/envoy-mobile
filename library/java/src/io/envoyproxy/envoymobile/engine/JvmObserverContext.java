@@ -13,7 +13,10 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
 
 class JvmObserverContext {
   private enum FrameType {
-    NONE, HEADERS, METADATA, TRAILERS,
+    NONE,
+    HEADERS,
+    METADATA,
+    TRAILERS,
   }
 
   private final AtomicBoolean canceled = new AtomicBoolean(false);
@@ -26,9 +29,7 @@ class JvmObserverContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
-  public JvmObserverContext(EnvoyObserver observer) {
-    this.observer = observer;
-  }
+  public JvmObserverContext(EnvoyObserver observer) { this.observer = observer; }
 
   /**
    * Initializes state for accumulating header pairs via passHeaders, ultimately
@@ -153,7 +154,7 @@ class JvmObserverContext {
     assert expectedHeaderLength == 0;
     assert accumulatedHeaderLength == 0;
 
-    headerAccumulator = new HashMap((int) length);
+    headerAccumulator = new HashMap((int)length);
     pendingFrameType = type;
     expectedHeaderLength = length;
     pendingEndStream = endStream;
