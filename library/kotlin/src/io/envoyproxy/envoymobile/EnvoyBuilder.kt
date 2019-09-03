@@ -71,12 +71,12 @@ open class EnvoyBuilder internal constructor(
    * @return A new instance of Envoy.
    */
   fun build(): Envoy {
-    val config = if (configYAML == null) {
-      EnvoyConfiguration(connectTimeoutSeconds, dnsRefreshSeconds, statsFlushSeconds)
+    val configurationYAML = configYAML
+    if (configurationYAML == null) {
+      return Envoy(engineType(), EnvoyConfiguration(connectTimeoutSeconds, dnsRefreshSeconds, statsFlushSeconds), logLevel)
     } else {
-      EnvoyConfiguration(configYAML)
+      return Envoy(engineType(), configurationYAML, logLevel)
     }
-    return Envoy(engineType(), config, logLevel)
   }
 
   /**

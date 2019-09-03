@@ -26,32 +26,28 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   /**
    * Run the Envoy engine with the provided envoyConfiguration and log level.
    *
-   * @param envoyConfiguration The configuration file with which to start Envoy.
+   * @param configurationYAML The configuration yaml with which to start Envoy.
    * @return A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration) {
-    return runWithConfig(envoyConfiguration, "info");
+  public int runWithConfig(String configurationYAML, String logLevel) {
+    try {
+      return JniLibrary.runEngine(configurationYAML, logLevel);
+    } catch (Throwable throwable) {
+      // TODO: Need to have a way to log the exception somewhere
+      return 1;
+    }
   }
 
   /**
    * Run the Envoy engine with the provided envoyConfiguration and log level.
    *
-   * @param envoyConfiguration   The configuration file with which to start Envoy.
+   * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param logLevel The log level to use when starting Envoy.
    * @return int A status indicating if the action was successful.
    */
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
-    try {
-
-      String resolvedConfig = envoyConfiguration.configYAML == null
-                                  ? envoyConfiguration.resolveTemplate(JniLibrary.templateString())
-                                  : envoyConfiguration.configYAML;
-      return JniLibrary.runEngine(resolvedConfig, logLevel);
-    } catch (Throwable throwable) {
-      // TODO: Need to have a way to log the exception somewhere
-      return 1;
-    }
+    return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString()), logLevel);
   }
 }

@@ -29,7 +29,7 @@ class EnvoyBuilderTest {
 
     builder.addConfigYAML("mock_template:")
     val envoy = builder.build()
-    assertThat(envoy.envoyConfiguration.configYAML).isEqualTo("mock_template:")
+    assertThat(envoy.configurationYAML).isEqualTo("mock_template:")
   }
 
   @Test
@@ -50,7 +50,7 @@ class EnvoyBuilderTest {
 
     builder.addConnectTimeoutSeconds(1234)
     val envoy = builder.build()
-    assertThat(envoy.envoyConfiguration.connectTimeoutSeconds).isEqualTo(1234)
+    assertThat(envoy.envoyConfiguration!!.connectTimeoutSeconds).isEqualTo(1234)
   }
 
   @Test
@@ -60,7 +60,7 @@ class EnvoyBuilderTest {
 
     builder.addDNSRefreshSeconds(1234)
     val envoy = builder.build()
-    assertThat(envoy.envoyConfiguration.dnsRefreshSeconds).isEqualTo(1234)
+    assertThat(envoy.envoyConfiguration!!.dnsRefreshSeconds).isEqualTo(1234)
   }
 
   @Test
@@ -71,7 +71,7 @@ class EnvoyBuilderTest {
     builder.addStatsFlushSeconds(1234)
     builder.build()
     val envoy = builder.build()
-    assertThat(envoy.envoyConfiguration.statsFlushSeconds).isEqualTo(1234)
+    assertThat(envoy.envoyConfiguration!!.statsFlushSeconds).isEqualTo(1234)
 
   }
 }
