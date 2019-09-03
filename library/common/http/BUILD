@@ -28,7 +28,6 @@ envoy_cc_library(
     name = "header_utility_lib",
     srcs = ["header_utility.cc"],
     hdrs = ["header_utility.h"],
-    external_deps = ["abseil_optional"],
     repository = "@envoy",
     deps = [
         "//library/common/types:c_types_lib",

@@ -2,7 +2,6 @@
 
 #include "envoy/buffer/buffer.h"
 
-#include "absl/types/optional.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -18,10 +17,13 @@ Buffer::InstancePtr toInternalData(envoy_data data);
 
 /**
  * Transform from Buffer::Instance to envoy_data.
+ * Note: this function allocates data on the heap, which can fail.
+ * In case of failure the returned envoy_data will have non-zero length but nullptr bytes.
+ * It is up to the caller to verify this failure scenario.
  * @param data, the Buffer::Instance to transform.
  * @return envoy_data, the 1:1 transformation of the Buffer::Instance param.
  */
-absl::optional<envoy_data> toBridgeData(Buffer::Instance&);
+envoy_data toBridgeData(Buffer::Instance&);
 
 } // namespace Utility
 } // namespace Buffer

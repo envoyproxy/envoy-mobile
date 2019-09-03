@@ -27,7 +27,7 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 /**
  * Error code associated with terminal status of a HTTP stream.
  */
-typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
+typedef enum { ENVOY_STREAM_RESET, ENVOY_MALLOC_FAILURE } envoy_error_code_t;
 
 #ifdef __cplusplus
 extern "C" { // release function
@@ -92,6 +92,9 @@ void release_envoy_headers(envoy_headers headers);
 
 /**
  * Helper function to copy envoy_headers.
+ * Note: this function allocates data on the heap, which can fail.
+ * In case of failure the returned envoy_headers will have non-zero length but NULL headers.
+ * It is up to the caller to verify this failure scenario.
  * @param src, the envoy_headers to copy from.
  * @param envoy_headers, copied headers.
  */
@@ -99,6 +102,9 @@ envoy_headers copy_envoy_headers(envoy_headers src);
 
 /**
  * Helper function to copy envoy_data.
+ * Note: this function allocates data on the heap, which can fail.
+ * In case of failure the returned envoy_data will have non-zero length but NULL bytes.
+ * It is up to the caller to verify this failure scenario.
  * @param length, the length of the data to copy.
  * @param src_bytes, the byte array to copy from.
  * @return envoy_data, the envoy_data copied from the src.

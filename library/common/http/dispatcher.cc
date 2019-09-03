@@ -17,26 +17,32 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
-  absl::optional<envoy_headers> maybe_bridge_headers = Utility::toBridgeHeaders(*headers);
-  if (maybe_bridge_headers.has_value()) {
-    observer_.on_headers(maybe_bridge_headers.value(), end_stream, observer_.context);
+  envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+  if (bridge_headers.length > 0 && bridge_headers.headers == nullptr) {
+    observer_.on_error({ENVOY_MALLOC_FAILURE, envoy_nodata}, observer_.context);
+  } else {
+    observer_.on_headers(bridge_headers, end_stream, observer_.context);
   }
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  absl::optional<envoy_data> maybe_bridge_data = Buffer::Utility::toBridgeData(data);
-  if (maybe_bridge_data.has_value()) {
-    observer_.on_data(maybe_bridge_data.value(), end_stream, observer_.context);
+  envoy_data bridge_data = Buffer::Utility::toBridgeData(data);
+  if (bridge_data.length > 0 && bridge_data.bytes == nullptr) {
+    observer_.on_error({ENVOY_MALLOC_FAILURE, envoy_nodata}, observer_.context);
+  } else {
+    observer_.on_data(bridge_data, end_stream, observer_.context);
   }
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, *trailers);
-  absl::optional<envoy_headers> maybe_bridge_trailers = Utility::toBridgeHeaders(*trailers);
-  if (maybe_bridge_trailers.has_value()) {
-    observer_.on_trailers(maybe_bridge_trailers.value(), observer_.context);
+  envoy_headers bridge_trailers = Utility::toBridgeHeaders(*trailers);
+  if (bridge_trailers.length > 0 && bridge_trailers.headers == nullptr) {
+    observer_.on_error({ENVOY_MALLOC_FAILURE, envoy_nodata}, observer_.context);
+  } else {
+    observer_.on_trailers(bridge_trailers, observer_.context);
   }
 }
 

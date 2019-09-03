@@ -16,23 +16,22 @@ void release_envoy_headers(envoy_headers headers) {
 envoy_headers copy_envoy_headers(envoy_headers src) {
   envoy_header* dst_header_array = (envoy_header*)malloc(sizeof(envoy_header) * src.length);
   if (dst_header_array == NULL) {
-    return envoy_nullheaders;
+    return (envoy_headers){src.length, NULL};
   }
   for (envoy_header_size_t i = 0; i < src.length; i++) {
     envoy_data key = copy_envoy_data(src.headers[i].key.length, src.headers[i].key.bytes);
-    if (key.length == -1 && key.bytes == NULL) {
+    if (key.length > 0 && key.bytes == NULL) {
       envoy_headers partial_headers = {i - 1, dst_header_array};
       release_envoy_headers(partial_headers);
-      return envoy_nullheaders;
+      return (envoy_headers){src.length, NULL};
     }
     envoy_data value = copy_envoy_data(src.headers[i].value.length, src.headers[i].value.bytes);
-    if (value.length == -1 && value.bytes == NULL) {
+    if (value.length > 0 && value.bytes == NULL) {
       key.release(key.context);
       envoy_headers partial_headers = {i - 1, dst_header_array};
       release_envoy_headers(partial_headers);
-      return envoy_nullheaders;
+      return (envoy_headers){src.length, NULL};
     }
-
     envoy_header new_header = {key, value};
     dst_header_array[i] = new_header;
   }
@@ -43,7 +42,7 @@ envoy_headers copy_envoy_headers(envoy_headers src) {
 envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes) {
   uint8_t* dst_bytes = (uint8_t*)malloc(sizeof(uint8_t) * length);
   if (dst_bytes == NULL) {
-    return envoy_nulldata;
+    return (envoy_data){length, NULL, envoy_noop_release, NULL};
   }
   memcpy(dst_bytes, src_bytes, length);
   // Note: since this function is copying the bytes over to freshly allocated memory, free is an
