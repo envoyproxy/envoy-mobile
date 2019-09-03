@@ -20,14 +20,14 @@ swift_static_framework(
         "RetryPolicyMapper.swift",
         "StreamEmitter.swift",
     ],
+    avoid_deps = [
+        "@boringssl//:crypto",
+        "@boringssl//:ssl",
+    ],
     module_name = "Envoy",
     objc_includes = [
         "//library/objective-c:EnvoyEngine.h",
     ],
     visibility = ["//visibility:public"],
     deps = ["//library/objective-c:envoy_engine_objc_lib"],
-    avoid_deps = [
-        "@boringssl//:crypto",
-        "@boringssl//:ssl",
-    ],
 )
