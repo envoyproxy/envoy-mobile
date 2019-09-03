@@ -38,7 +38,7 @@ public:
    * before send_data.
    * @param stream, the stream to send headers over.
    * @param headers, the headers to send.
-   * @param end_stream, supplies whether this is headers only.
+   * @param end_stream, indicates whether to close the stream locally after sending this frame.
    * @return envoy_status_t, the resulting status of the operation.
    */
   envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
@@ -47,7 +47,7 @@ public:
    * Send data over an open HTTP stream. This method can be invoked multiple times.
    * @param stream, the stream to send data over.
    * @param data, the data to send.
-   * @param end_stream, supplies whether this is the last data in the stream.
+   * @param end_stream, indicates whether to close the stream locally after sending this frame.
    * @return envoy_status_t, the resulting status of the operation.
    */
   envoy_status_t sendData(envoy_stream_t stream, envoy_data data, bool end_stream);
@@ -58,11 +58,11 @@ public:
    * @param metadata, the metadata to send.
    * @return envoy_status_t, the resulting status of the operation.
    */
-  envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers);
+  envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers metadata);
 
   /**
    * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
-   * Note that this method implicitly ends the stream.
+   * Note that this method implicitly closes the stream locally.
    * @param stream, the stream to send trailers over.
    * @param trailers, the trailers to send.
    * @return envoy_status_t, the resulting status of the operation.
@@ -70,7 +70,8 @@ public:
   envoy_status_t sendTrailers(envoy_stream_t stream, envoy_headers trailers);
 
   /**
-   * Reset an open HTTP stream.
+   * Reset an open HTTP stream. This operation closes the stream locally, and remote.
+   * No further operations are valid on the stream.
    * @param stream, the stream to reset.
    * @return envoy_status_t, the resulting status of the operation.
    */
