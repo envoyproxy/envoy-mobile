@@ -21,7 +21,7 @@ envoy_data toBridgeData(Buffer::Instance& data) {
   envoy_data bridge_data;
   bridge_data.length = data.length();
   bridge_data.bytes = static_cast<uint8_t*>(malloc(sizeof(uint8_t) * bridge_data.length));
-  if (bridge_data.bytes == nullptr) {
+  if (bridge_data.length > 0 && bridge_data.bytes == nullptr) {
     data.drain(bridge_data.length);
     return {bridge_data.length, nullptr, envoy_noop_release, nullptr};
   }

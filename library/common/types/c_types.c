@@ -15,7 +15,7 @@ void release_envoy_headers(envoy_headers headers) {
 
 envoy_headers copy_envoy_headers(envoy_headers src) {
   envoy_header* dst_header_array = (envoy_header*)malloc(sizeof(envoy_header) * src.length);
-  if (dst_header_array == NULL) {
+  if (src.length > 0 && dst_header_array == NULL) {
     return (envoy_headers){src.length, NULL};
   }
   for (envoy_header_size_t i = 0; i < src.length; i++) {
@@ -41,7 +41,7 @@ envoy_headers copy_envoy_headers(envoy_headers src) {
 
 envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes) {
   uint8_t* dst_bytes = (uint8_t*)malloc(sizeof(uint8_t) * length);
-  if (dst_bytes == NULL) {
+  if (length > 0 && dst_bytes == NULL) {
     return (envoy_data){length, NULL, envoy_noop_release, NULL};
   }
   memcpy(dst_bytes, src_bytes, length);
@@ -52,5 +52,3 @@ envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes) {
 }
 
 const envoy_data envoy_nodata = {0, NULL, envoy_noop_release, NULL};
-const envoy_data envoy_nulldata = {-1, NULL, envoy_noop_release, NULL};
-const envoy_headers envoy_nullheaders = {-1, NULL};

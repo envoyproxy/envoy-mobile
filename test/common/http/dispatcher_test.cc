@@ -224,7 +224,7 @@ TEST_F(DispatcherTest, BasicStream) {
   ASSERT_EQ(cc.on_headers_calls, 1);
   ASSERT_EQ(cc.on_data_calls, 1);
   ASSERT_EQ(cc.on_complete_calls, 1);
-} // namespace Http
+}
 
 TEST_F(DispatcherTest, ResetStream) {
   envoy_stream_t stream = 1;
