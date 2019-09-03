@@ -1,13 +1,15 @@
 import Envoy
 import Foundation
 
-final class MockEnvoyHTTPStream: NSObject, EnvoyHTTPStream {
+final class MockEnvoyHTTPStream {
   static var onHeaders: (([String: [String]], Bool) -> Void)?
   static var onData: ((Data, Bool) -> Void)?
   static var onTrailers: (([String: [String]]) -> Void)?
 
   init(handle: UInt64, observer: EnvoyObserver) {}
+}
 
+extension MockEnvoyHTTPStream: EnvoyHTTPStream {
   func sendHeaders(_ headers: [String: [String]], close: Bool) {
     MockEnvoyHTTPStream.onHeaders?(headers, close)
   }

@@ -32,7 +32,7 @@
   }
 }
 
-- (NSObject<EnvoyHTTPStream> *)startStreamWithObserver:(EnvoyObserver *)observer {
+- (id<EnvoyHTTPStream>)startStreamWithObserver:(EnvoyObserver *)observer {
   return [[EnvoyHTTPStreamImpl alloc] initWithHandle:init_stream(_engineHandle) observer:observer];
 }
 
