@@ -2,23 +2,26 @@ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyObserver
 import java.nio.ByteBuffer
+import java.util.concurrent.Executor;
 
 
 /**
  * Callback interface for receiving stream events.
  */
-class ResponseHandler() {
+class ResponseHandler(val executor: Executor) {
 
   class EnvoyObserverAdapter(
-      internal val responseHandler: ResponseHandler
+      private val responseHandler: ResponseHandler
   ) : EnvoyObserver {
 
-    override fun onHeaders(headers: Map<String, List<String>>?, endStream: Boolean) {
+    override fun getExecutor(): Executor = responseHandler.executor
+
+    override fun onHeaders(headers: Map<String, List<String>>, endStream: Boolean) {
       val statusCode = headers!![":status"]?.first()?.toIntOrNull() ?: 0
       responseHandler.onHeadersClosure(headers, statusCode, endStream)
     }
 
-    override fun onData(byteBuffer: ByteBuffer?, endStream: Boolean) {
+    override fun onData(byteBuffer: ByteBuffer, endStream: Boolean) {
       responseHandler.onDataClosure(byteBuffer, endStream)
     }
 
@@ -42,7 +45,7 @@ class ResponseHandler() {
   internal val underlyingObserver = EnvoyObserverAdapter(this)
 
   private var onHeadersClosure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit = { _, _, _ -> Unit }
-  private var onDataClosure: (byteBuffer: ByteBuffer?, endStream: Boolean) -> Unit = { _, _ -> Unit }
+  private var onDataClosure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit = { _, _ -> Unit }
   private var onMetadataClosure: (metadata: Map<String, List<String>>) -> Unit = { Unit }
   private var onTrailersClosure: (trailers: Map<String, List<String>>) -> Unit = { Unit }
   private var onErrorClosure: () -> Unit = { Unit }
@@ -69,7 +72,7 @@ class ResponseHandler() {
    *                 and flag indicating if the stream is complete.
    * @return ResponseHandler, this ResponseHandler.
    */
-  fun onData(closure: (byteBuffer: ByteBuffer?, endStream: Boolean) -> Unit): ResponseHandler {
+  fun onData(closure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit): ResponseHandler {
     this.onDataClosure = closure
     return this
   }

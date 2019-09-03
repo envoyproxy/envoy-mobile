@@ -12,6 +12,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import java.nio.ByteBuffer
+import java.util.concurrent.Executor;
 
 class EnvoyTest {
 
@@ -23,18 +24,24 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val headers = mapOf("key_1" to listOf("value_a"))
+    val expectedHeaders = mapOf(
+      "key_1" to listOf("value_a"),
+      ":method" to listOf("POST"),
+      ":scheme" to listOf("https"),
+      ":authority" to listOf("api.foo.com"),
+      ":path" to listOf("foo")
+      )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
             path = "foo")
-            .setHeaders(headers)
+            .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
-    verify(stream).sendHeaders(headers, false)
+    verify(stream).sendHeaders(expectedHeaders, false)
   }
 
   @Test
@@ -49,7 +56,7 @@ class EnvoyTest {
             authority = "api.foo.com",
             path = "foo")
             .build(),
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     val data = ByteBuffer.allocate(0)
 
@@ -71,7 +78,7 @@ class EnvoyTest {
             authority = "api.foo.com",
             path = "foo")
             .build(),
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     emitter.sendMetadata(metadata)
 
@@ -90,7 +97,7 @@ class EnvoyTest {
             authority = "api.foo.com",
             path = "foo")
             .build(),
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     emitter.close()
 
@@ -110,7 +117,7 @@ class EnvoyTest {
             authority = "api.foo.com",
             path = "foo")
             .build(),
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     emitter.close(trailers)
 
@@ -122,19 +129,25 @@ class EnvoyTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, "")
 
-    val headers = mapOf("key_1" to listOf("value_a"))
+    val expectedHeaders = mapOf(
+      "key_1" to listOf("value_a"),
+      ":method" to listOf("POST"),
+      ":scheme" to listOf("https"),
+      ":authority" to listOf("api.foo.com"),
+      ":path" to listOf("foo")
+    )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
             path = "foo")
-            .setHeaders(headers)
+            .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
         ByteBuffer.allocate(0),
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
-    verify(stream).sendHeaders(headers, false)
+    verify(stream).sendHeaders(expectedHeaders, false)
   }
 
   @Test
@@ -151,7 +164,7 @@ class EnvoyTest {
             path = "foo")
             .build(),
         body,
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     verify(stream).sendData(body, false)
   }
@@ -170,7 +183,7 @@ class EnvoyTest {
             path = "foo")
             .build(),
         body,
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     verify(stream).sendTrailers(emptyMap())
   }
@@ -190,7 +203,7 @@ class EnvoyTest {
             .build(),
         ByteBuffer.allocate(0),
         trailers,
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     verify(stream).sendTrailers(trailers)
   }
@@ -210,7 +223,7 @@ class EnvoyTest {
             .build(),
         ByteBuffer.allocate(0),
         trailers,
-        ResponseHandler())
+        ResponseHandler(Executor {}))
 
     emitter.cancel()
 
