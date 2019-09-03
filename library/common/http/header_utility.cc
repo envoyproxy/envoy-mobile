@@ -22,7 +22,7 @@ HeaderMapPtr toInternalHeaders(envoy_headers headers) {
 }
 
 envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
-  envoy_header_size_t final_header_length = static_cast<envoy_header_size_t>(header_map.size());
+  envoy_header_size_t final_header_length = header_map.size();
   envoy_header* headers =
       static_cast<envoy_header*>(malloc(sizeof(envoy_header) * header_map.size()));
   if (headers == nullptr) {
@@ -59,7 +59,7 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
       },
       &transformed_headers);
 
-  if (transformed_headers.length < static_cast<envoy_header_size_t>(header_map.size())) {
+  if (transformed_headers.length < final_header_length) {
     // The headers failed to fully form. Therefore, release the transformed headers that got
     // allocated.
     return {final_header_length, nullptr};

@@ -18,8 +18,7 @@ TEST(DataConstructorTest, FromCToCppEmpty) {
 
 TEST(DataConstructorTest, FromCToCpp) {
   std::string s = "test string";
-  envoy_data c_data = {static_cast<int>(s.size()), reinterpret_cast<const uint8_t*>(s.c_str()),
-                       free, nullptr};
+  envoy_data c_data = {s.size(), reinterpret_cast<const uint8_t*>(s.c_str()), free, nullptr};
 
   InstancePtr cpp_data = Utility::toInternalData(c_data);
 
