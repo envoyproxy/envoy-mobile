@@ -62,10 +62,10 @@ final class ViewController: UITableViewController {
         NSLog("Response data (\(requestID)): \(data.count) bytes")
       }
       .onError { [weak self] error in
-        NSLog("Error (\(requestID)): Request failed")
+        let message = "failed within Envoy library: \(error.message)"
+        NSLog("Error (\(requestID)): \(message)")
         self?.add(result: .failure(RequestError(id: requestID,
-                                                message: "failed within Envoy library: "
-                                                         + error.message)))
+                                                message: message)))
       }
 
     envoy.send(request, data: nil, handler: handler)
