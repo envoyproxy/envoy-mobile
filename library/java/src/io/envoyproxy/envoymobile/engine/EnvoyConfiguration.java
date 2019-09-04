@@ -2,22 +2,9 @@ package io.envoyproxy.envoymobile.engine;
 
 public class EnvoyConfiguration {
 
-  public final String configYAML;
   public final Integer connectTimeoutSeconds;
   public final Integer dnsRefreshSeconds;
   public final Integer statsFlushSeconds;
-
-  /**
-   * Create an EnvoyConfiguration with a user provided configuration YAML.
-   *
-   * @param configYAML configuration to be used for starting Envoy.
-   */
-  public EnvoyConfiguration(String configYAML) {
-    this.configYAML = configYAML;
-    this.connectTimeoutSeconds = null;
-    this.dnsRefreshSeconds = null;
-    this.statsFlushSeconds = null;
-  }
 
   /**
    * Create an EnvoyConfiguration with a user provided configuration values.
@@ -28,7 +15,6 @@ public class EnvoyConfiguration {
    */
   public EnvoyConfiguration(int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int statsFlushSeconds) {
-    this.configYAML = null;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.statsFlushSeconds = statsFlushSeconds;
