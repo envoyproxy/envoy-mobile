@@ -100,7 +100,7 @@ class JniLibrary {
   protected static native int sendTrailers(long stream, byte[][] trailers);
 
   /**
-   * Detach all callbackss from a stream and send an interrupt upstream if
+   * Detach all callbacks from a stream and send an interrupt upstream if
    * supported by transport.
    *
    * @param stream, the stream to evict.

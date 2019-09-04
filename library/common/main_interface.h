@@ -71,7 +71,7 @@ envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata);
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers);
 
 /**
- * Detach all callbackss from a stream and send an interrupt upstream if supported by transport.
+ * Detach all callbacks from a stream and send an interrupt upstream if supported by transport.
  * @param stream, the stream to evict.
  * @return envoy_status_t, the resulting status of the operation.
  */
