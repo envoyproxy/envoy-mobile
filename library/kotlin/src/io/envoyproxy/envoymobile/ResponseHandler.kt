@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyObserver
 import io.envoyproxy.envoymobile.engine.types.EnvoyError
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor;
 
@@ -11,9 +11,9 @@ import java.util.concurrent.Executor;
  */
 class ResponseHandler(val executor: Executor) {
 
-  class EnvoyObserverAdapter(
+  class EnvoyHTTPCallbacksAdapter(
       private val responseHandler: ResponseHandler
-  ) : EnvoyObserver {
+  ) : EnvoyHTTPCallbacks {
 
     override fun getExecutor(): Executor = responseHandler.executor
 
@@ -43,7 +43,7 @@ class ResponseHandler(val executor: Executor) {
     }
   }
 
-  internal val underlyingObserver = EnvoyObserverAdapter(this)
+  internal val underlyingCallbacks = EnvoyHTTPCallbacksAdapter(this)
 
   private var onHeadersClosure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit = { _, _, _ -> Unit }
   private var onDataClosure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit = { _, _ -> Unit }
