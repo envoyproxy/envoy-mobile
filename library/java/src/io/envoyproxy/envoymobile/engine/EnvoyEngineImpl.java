@@ -24,7 +24,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   /**
-   * Run the Envoy engine with the provided envoyConfiguration and log level.
+   * Run the Envoy engine with the provided yaml string and log level.
    *
    * @param configurationYAML The configuration yaml with which to start Envoy.
    * @return A status indicating if the action was successful.

@@ -21,19 +21,16 @@ public class EnvoyConfiguration {
   }
 
   /**
-   * Resolves the provided default configuration with the field values:
-   * - connectTimeoutSeconds
-   * - dnsRefreshSeconds
-   * - statsFlushSeconds
+   * Resolves the provided configuration template using properties on this configuration.
    * This default configuration is provided by the native layer.
    *
-   * @param defaultConfigurationYAML the default template configuration.
+   * @param templateYAML the default template configuration.
    * @return String, the resolved template.
    * @throws ConfigurationException, when the template provided is not fully resolved.
    */
-  String resolveTemplate(String defaultConfigurationYAML) {
+  String resolveTemplate(String templateYAML) {
     String resolvedConfiguration =
-        defaultConfigurationYAML
+        templateYAML
             .replace("{{ connect_timeout }}", String.format("%ss", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate }}", String.format("%ss", dnsRefreshSeconds))
             .replace("{{ stats_flush_interval }}", String.format("%ss", statsFlushSeconds));
