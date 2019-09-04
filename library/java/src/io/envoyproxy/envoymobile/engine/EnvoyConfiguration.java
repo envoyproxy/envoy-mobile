@@ -30,8 +30,7 @@ public class EnvoyConfiguration {
    */
   String resolveTemplate(String templateYAML) {
     String resolvedConfiguration =
-        templateYAML
-            .replace("{{ connect_timeout }}", String.format("%ss", connectTimeoutSeconds))
+        templateYAML.replace("{{ connect_timeout }}", String.format("%ss", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate }}", String.format("%ss", dnsRefreshSeconds))
             .replace("{{ stats_flush_interval }}", String.format("%ss", statsFlushSeconds));
 
