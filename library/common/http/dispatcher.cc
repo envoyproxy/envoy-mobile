@@ -10,37 +10,39 @@ namespace Envoy {
 namespace Http {
 
 Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
-                                                         envoy_http_callbacks callbacks,
+                                                         envoy_http_callbacks bridge_callbacks,
                                                          Dispatcher& http_dispatcher)
-    : stream_handle_(stream), callbacks_(callbacks), http_dispatcher_(http_dispatcher) {}
+    : stream_handle_(stream), bridge_callbacks_(bridge_callbacks),
+      http_dispatcher_(http_dispatcher) {}
 
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
   envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
-  callbacks_.on_headers(bridge_headers, end_stream, callbacks_.context);
+  bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream, callbacks_.context);
+  bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
+                            bridge_callbacks_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, *trailers);
-  callbacks_.on_trailers(Utility::toBridgeHeaders(*trailers), callbacks_.context);
+  bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(*trailers), bridge_callbacks_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onComplete() {
   ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
-  callbacks_.on_complete(callbacks_.context);
+  bridge_callbacks_.on_complete(bridge_callbacks_.context);
   http_dispatcher_.cleanup(stream_handle_);
 }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
-  callbacks_.on_error({ENVOY_STREAM_RESET, envoy_nodata}, callbacks_.context);
+  bridge_callbacks_.on_error({ENVOY_STREAM_RESET, envoy_nodata}, bridge_callbacks_.context);
 }
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle,
@@ -54,10 +56,10 @@ Dispatcher::Dispatcher(Event::Dispatcher& event_dispatcher,
     : event_dispatcher_(event_dispatcher), cluster_manager_(cluster_manager) {}
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
-                                       envoy_http_callbacks callbacks) {
-  event_dispatcher_.post([this, callbacks, new_stream_handle]() -> void {
+                                       envoy_http_callbacks bridge_callbacks) {
+  event_dispatcher_.post([this, bridge_callbacks, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
-        std::make_unique<DirectStreamCallbacks>(new_stream_handle, callbacks, *this);
+        std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
     AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("base");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
