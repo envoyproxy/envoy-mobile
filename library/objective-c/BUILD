@@ -12,6 +12,7 @@ objc_library(
     srcs = [
         "EnvoyConfiguration.m",
         "EnvoyEngineImpl.m",
+        "EnvoyError.m",
         "EnvoyHTTPStreamImpl.m",
         "EnvoyObserver.m",
     ],
