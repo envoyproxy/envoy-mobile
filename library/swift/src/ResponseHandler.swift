@@ -63,7 +63,7 @@ public final class ResponseHandler: NSObject {
   /// - parameter closure: Closure which will be called when an error occurs.
   @discardableResult
   public func onError(_ closure:
-    @escaping () -> Void)
+    @escaping (_ error: EnvoyError) -> Void)
     -> ResponseHandler
   {
     self.underlyingObserver.onError = closure

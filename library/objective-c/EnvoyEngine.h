@@ -7,6 +7,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
+#pragma mark - EnvoyError
+
+@interface EnvoyError : NSObject
+
+- (instancetype)initWithErrorCode:(uint64_t)errorCode message:(NSString *)message;
+
+@end
+
 #pragma mark - EnvoyObserver
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -49,7 +57,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 /**
  * Called when the async HTTP stream has an error.
  */
-@property (nonatomic, strong) void (^onError)();
+@property (nonatomic, strong) void (^onError)(EnvoyError *error);
 
 /**
  * Called when the async HTTP stream is canceled.

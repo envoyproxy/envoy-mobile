@@ -8,7 +8,6 @@ swift_static_framework(
         "Client.swift",
         "Envoy.swift",
         "EnvoyBuilder.swift",
-        "EnvoyError.swift",
         "EnvoyStreamEmitter.swift",
         "LogLevel.swift",
         "Request.swift",

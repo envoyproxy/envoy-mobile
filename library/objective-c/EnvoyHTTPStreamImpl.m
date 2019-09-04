@@ -152,8 +152,12 @@ static void ios_on_error(envoy_error error, void *context) {
     if (atomic_load(c->canceled)) {
       return;
     }
-    // FIXME transform error and pass up
-    observer.onError();
+    NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
+                                                      length:error.message.length
+                                                    encoding:NSUTF8StringEncoding];
+    EnvoyError *platformError = [[EnvoyError alloc] initWithErrorCode:error.error_code
+                                                              message:errorMessage];
+    observer.onError(platformError);
   });
 }
 
