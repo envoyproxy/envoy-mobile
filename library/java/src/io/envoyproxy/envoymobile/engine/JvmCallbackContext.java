@@ -134,14 +134,14 @@ class JvmCallbackContext {
    */
   public void onError(byte[] message, int errorCode) {
 
-    observer.getExecutor().execute(new Runnable() {
+    callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         if (canceled.get()) {
           return;
         }
         String errorMessage = new String(message);
         EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
-        observer.onError(error);
+        callbacks.onError(error);
       }
     });
   }
