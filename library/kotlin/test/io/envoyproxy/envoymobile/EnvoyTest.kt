@@ -13,13 +13,13 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import java.nio.ByteBuffer
-import java.util.concurrent.Executor;
+import java.util.concurrent.Executor
 
 class EnvoyTest {
 
   private val engine = mock(EnvoyEngine::class.java)
   private val stream = mock(EnvoyHTTPStream::class.java)
-  private val config = EnvoyConfiguration("")
+  private val config = EnvoyConfiguration(0,0,0)
 
   @Test
   fun `starting a stream on envoy sends headers`() {
