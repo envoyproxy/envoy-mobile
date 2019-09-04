@@ -14,7 +14,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   /**
    * Creates a new stream with the provided callbacks.
    *
-   * @param callbacks The callbacks for receiving callbacks from the stream.
+   * @param callbacks The callbacks for the stream.
    * @return A stream that may be used for sending data.
    */
   @Override

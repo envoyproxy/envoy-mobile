@@ -66,7 +66,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  Open an underlying HTTP stream.
 
  @param handle Underlying handle of the HTTP stream owned by an Envoy engine.
- @param callbacks The callbacks that will run the stream callbacks.
+ @param callbacks The callbacks for the stream.
  */
 - (instancetype)initWithHandle:(uint64_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
 
