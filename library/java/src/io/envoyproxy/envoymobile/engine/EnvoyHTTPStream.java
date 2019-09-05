@@ -36,6 +36,8 @@ public class EnvoyHTTPStream {
    *
    * @param data,      the data to send.
    * @param endStream, supplies whether this is the last data in the streamHandle.
+   * @throws UnsupportedOperationException - if the provided buffer is neither a direct ByteBuffer
+   *     nor backed by an on-heap byte array.
    */
   public void sendData(ByteBuffer data, boolean endStream) {
     if (data.isDirect()) {

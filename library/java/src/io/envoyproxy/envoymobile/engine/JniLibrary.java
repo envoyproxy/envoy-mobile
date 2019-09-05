@@ -85,7 +85,7 @@ class JniLibrary {
    * times.
    *
    * @param stream,    the stream to send data over.
-   * @param data,      the data to send.
+   * @param data,      the data to send; must be a <b>direct</b> ByteBuffer.
    * @param endStream, supplies whether this is the last data in the stream.
    * @return int, the resulting status of the operation.
    */
