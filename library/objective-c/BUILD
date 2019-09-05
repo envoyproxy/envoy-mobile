@@ -12,8 +12,8 @@ objc_library(
     srcs = [
         "EnvoyConfiguration.m",
         "EnvoyEngineImpl.m",
-        "EnvoyHTTPStream.m",
-        "EnvoyObserver.m",
+        "EnvoyHTTPCallbacks.m",
+        "EnvoyHTTPStreamImpl.m",
     ],
     hdrs = [
         "EnvoyEngine.h",

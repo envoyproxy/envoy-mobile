@@ -7,10 +7,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
-#pragma mark - EnvoyObserver
+#pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
-@interface EnvoyObserver : NSObject
+@interface EnvoyHTTPCallbacks : NSObject
 
 /**
  * Dispatch queue provided to handle callbacks.
@@ -49,7 +49,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 /**
  * Called when the async HTTP stream has an error.
  */
-@property (nonatomic, strong) void (^onError)();
+@property (nonatomic, strong) void (^onError)(uint64_t errorCode, NSString *message);
 
 /**
  * Called when the async HTTP stream is canceled.
@@ -60,15 +60,15 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 #pragma mark - EnvoyHTTPStream
 
-@interface EnvoyHTTPStream : NSObject
+@protocol EnvoyHTTPStream
 
 /**
  Open an underlying HTTP stream.
 
  @param handle Underlying handle of the HTTP stream owned by an Envoy engine.
- @param observer The observer that will run the stream callbacks.
+ @param callbacks The callbacks for the stream.
  */
-- (instancetype)initWithHandle:(uint64_t)handle observer:(EnvoyObserver *)observer;
+- (instancetype)initWithHandle:(uint64_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
 
 /**
  Send headers over the provided stream.
@@ -110,6 +110,13 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 @end
 
+#pragma mark - EnvoyHTTPStreamImpl
+
+// Concrete implementation of the `EnvoyHTTPStream` protocol.
+@interface EnvoyHTTPStreamImpl : NSObject <EnvoyHTTPStream>
+
+@end
+
 #pragma mark - EnvoyEngine
 
 /// Wrapper layer for calling into Envoy's C/++ API.
@@ -140,9 +147,9 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 /**
  Opens a new HTTP stream attached to this engine.
 
- @param observer Handler for observing stream events.
+ @param callbacks Handler for observing stream events.
  */
-- (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer;
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks;
 
 @end
 
