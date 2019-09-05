@@ -85,6 +85,13 @@ extern "C" { // utility functions
 #endif
 
 /**
+ * malloc wrapper that asserts that the returned pointer is valid. Otherwise, the program exits.
+ * @param size, the size of memory to be allocated in bytes.
+ * @return void*, pointer to the allocated memory.
+ */
+void* safe_malloc(size_t size);
+
+/**
  * Helper function to free/release memory associated with underlying headers.
  * @param headers, envoy_headers to release.
  */
@@ -188,10 +195,3 @@ typedef struct {
   envoy_on_complete_f on_complete;
   void* context; // Will be passed through to callbacks to provide dispatch and execution state.
 } envoy_http_callbacks;
-
-/**
- * malloc wrapper that asserts that the returned pointer is valid. Otherwise, the program exits.
- * @param size, the size of memory to be allocated in bytes.
- * @return void*, pointer to the allocated memory.
- */
-void* safe_malloc(size_t size);
