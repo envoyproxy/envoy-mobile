@@ -45,7 +45,6 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
   // This copy is used for assertions given that envoy_headers are released when toInternalHeaders
   // is called.
   envoy_headers c_headers_copy = copy_envoy_headers(c_headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   HeaderMapPtr cpp_headers = Utility::toInternalHeaders(c_headers);
 
@@ -68,7 +67,6 @@ TEST(HeaderDataConstructorTest, FromCToCpp) {
 TEST(HeaderDataConstructorTest, FromCppToCEmpty) {
   HeaderMapImpl empty_headers;
   envoy_headers c_headers = Utility::toBridgeHeaders(std::move(empty_headers));
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
   ASSERT_EQ(0, c_headers.length);
   delete[] c_headers.headers;
 }
@@ -81,7 +79,6 @@ TEST(HeaderDataConstructorTest, FromCppToC) {
   cpp_headers.addCopy(LowerCaseString(std::string(":path")), std::string("/ping"));
 
   envoy_headers c_headers = Utility::toBridgeHeaders(std::move(cpp_headers));
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   ASSERT_EQ(c_headers.length, static_cast<envoy_header_size_t>(cpp_headers.size()));
 

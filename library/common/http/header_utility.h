@@ -28,9 +28,6 @@ HeaderMapPtr toInternalHeaders(envoy_headers headers);
  * Transform envoy_headers to HeaderMap.
  * This function copies the content.
  * Caller owns the allocated bytes for the return value, and needs to free after use.
- * Note: this function allocates data on the heap, which can fail.
- * In case of failure the returned envoy_headers will have non-zero length but nullptr headers.
- * It is up to the caller to verify this failure scenario.
  * @param headers, the HeaderMap to transform.
  * @return envoy_headers, the HeaderMap 1:1 transformation of the headers param.
  */

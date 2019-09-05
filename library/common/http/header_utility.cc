@@ -22,13 +22,8 @@ HeaderMapPtr toInternalHeaders(envoy_headers headers) {
 }
 
 envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
-  envoy_header_size_t final_headers_length = header_map.size();
   envoy_header* headers =
       static_cast<envoy_header*>(malloc(sizeof(envoy_header) * header_map.size()));
-  if (final_headers_length > 0 && headers == nullptr) {
-    // malloc failure is communicated to the caller via a non-zero length and a nullptr headers.
-    return {final_headers_length, nullptr};
-  }
   envoy_headers transformed_headers;
   transformed_headers.length = 0;
   transformed_headers.headers = headers;
@@ -42,15 +37,8 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
 
         envoy_data key =
             copy_envoy_data(header_key.size(), reinterpret_cast<const uint8_t*>(header_key.data()));
-        if (key.length > 0 && key.bytes == nullptr) {
-          return HeaderMap::Iterate::Break;
-        }
         envoy_data value = copy_envoy_data(header_value.size(),
                                            reinterpret_cast<const uint8_t*>(header_value.data()));
-        if (value.length > 0 && value.bytes == nullptr) {
-          key.release(key.context);
-          return HeaderMap::Iterate::Break;
-        }
 
         transformed_headers->headers[transformed_headers->length] = {key, value};
         transformed_headers->length++;
@@ -58,14 +46,9 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
         return HeaderMap::Iterate::Continue;
       },
       &transformed_headers);
-
-  if (transformed_headers.length < final_headers_length) {
-    // The headers failed to fully form. Therefore, release the transformed headers that got
-    // allocated.
-    return {final_headers_length, nullptr};
-  }
   return transformed_headers;
 }
+
 } // namespace Utility
 } // namespace Http
 } // namespace Envoy

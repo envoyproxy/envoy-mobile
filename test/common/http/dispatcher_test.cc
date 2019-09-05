@@ -93,7 +93,6 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -171,12 +170,10 @@ TEST_F(DispatcherTest, BasicStream) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Build body data
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
   envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
-  ASSERT_FALSE(c_data.length > 0 && c_data.bytes == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -295,7 +292,6 @@ TEST_F(DispatcherTest, MultipleStreams) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -347,7 +343,6 @@ TEST_F(DispatcherTest, MultipleStreams) {
   TestHeaderMapImpl headers2;
   HttpTestUtility::addDefaultHeaders(headers2);
   envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
-  ASSERT_FALSE(c_headers2.length > 0 && c_headers2.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -421,7 +416,6 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -494,7 +488,6 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -539,7 +532,6 @@ TEST_F(DispatcherTest, DestroyWithActiveStream) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -570,7 +562,6 @@ TEST_F(DispatcherTest, ResetInOnHeaders) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
@@ -611,7 +602,6 @@ TEST_F(DispatcherTest, StreamTimeout) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
   EXPECT_CALL(cm_.async_client_, start(_, _))
@@ -660,7 +650,6 @@ TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers, "HEAD");
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
   EXPECT_CALL(cm_.async_client_, start(_, _))
@@ -699,7 +688,6 @@ TEST_F(DispatcherTest, DisableTimerWithStream) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers, "HEAD");
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
   EXPECT_CALL(cm_.async_client_, start(_, _))
@@ -764,17 +752,14 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   TestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-  ASSERT_FALSE(c_headers.length > 0 && c_headers.headers == nullptr);
 
   // Build first body data
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
   envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
-  ASSERT_FALSE(c_data.length > 0 && c_data.bytes == nullptr);
 
   // Build second body data
   Buffer::OwnedImpl request_data2 = Buffer::OwnedImpl("request body2");
   envoy_data c_data2 = Buffer::Utility::toBridgeData(request_data2);
-  ASSERT_FALSE(c_data2.length > 0 && c_data2.bytes == nullptr);
 
   // Create a stream.
   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));

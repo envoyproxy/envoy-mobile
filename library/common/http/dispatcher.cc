@@ -18,32 +18,18 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
   envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
-  if (bridge_headers.length > 0 && bridge_headers.headers == nullptr) {
-    observer_.on_error({ENVOY_MALLOC_FAILURE, envoy_nodata}, observer_.context);
-  } else {
-    observer_.on_headers(bridge_headers, end_stream, observer_.context);
-  }
+  observer_.on_headers(bridge_headers, end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  envoy_data bridge_data = Buffer::Utility::toBridgeData(data);
-  if (bridge_data.length > 0 && bridge_data.bytes == nullptr) {
-    observer_.on_error({ENVOY_MALLOC_FAILURE, envoy_nodata}, observer_.context);
-  } else {
-    observer_.on_data(bridge_data, end_stream, observer_.context);
-  }
+  observer_.on_data(Buffer::Utility::toBridgeData(data), end_stream, observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, *trailers);
-  envoy_headers bridge_trailers = Utility::toBridgeHeaders(*trailers);
-  if (bridge_trailers.length > 0 && bridge_trailers.headers == nullptr) {
-    observer_.on_error({ENVOY_MALLOC_FAILURE, envoy_nodata}, observer_.context);
-  } else {
-    observer_.on_trailers(bridge_trailers, observer_.context);
-  }
+  observer_.on_trailers(Utility::toBridgeHeaders(*trailers), observer_.context);
 }
 
 void Dispatcher::DirectStreamCallbacks::onComplete() {
