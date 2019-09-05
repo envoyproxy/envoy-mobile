@@ -7,7 +7,9 @@
 
 void* safe_malloc(size_t size) {
   void* ptr = malloc(size);
-  RELEASE_ASSERT(ptr != nullptr, "malloc failure");
+  if (size > 0) {
+    RELEASE_ASSERT(ptr != nullptr, "malloc failure");
+  }
   return ptr;
 }
 
