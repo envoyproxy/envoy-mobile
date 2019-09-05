@@ -38,7 +38,13 @@ public class EnvoyHTTPStream {
    * @param endStream, supplies whether this is the last data in the streamHandle.
    */
   public void sendData(ByteBuffer data, boolean endStream) {
-    JniLibrary.sendData(streamHandle, data, endStream);
+    if (data.isDirect()) {
+      JniLibrary.sendData(streamHandle, data, endStream);
+    } else if (data.hasArray()) {
+      JniLibrary.sendData(streamHandle, data.array(), endStream);
+    } else {
+      throw new UnsupportedOperationException("Unsupported ByteBuffer implementation.");
+    }
   }
 
   /**
