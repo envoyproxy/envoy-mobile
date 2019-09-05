@@ -17,7 +17,7 @@ class JvmCallbackContext {
     TRAILERS,
   }
 
-  private final AtomicBoolean canceled = new AtomicBoolean(false);
+  public final AtomicBoolean canceled = new AtomicBoolean(false);
   private final EnvoyHTTPCallbacks callbacks;
 
   // State-tracking for header accumulation
@@ -30,8 +30,8 @@ class JvmCallbackContext {
   public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) { this.callbacks = callbacks; }
 
   /**
-   * Initializes state for accumulating header pairs via passHeaders, ultimately to be dispatched
-   * via the callback.
+   * Initializes state for accumulating header pairs via passHeaders, ultimately
+   * to be dispatched via the callback.
    *
    * @param length,    the total number of headers included in this header block.
    * @param endStream, whether this header block is the final remote frame.
@@ -41,12 +41,13 @@ class JvmCallbackContext {
   }
 
   /**
-   * Allows pairs of strings to be passed across the JVM, reducing overall calls (at the expense of
-   * some complexity).
+   * Allows pairs of strings to be passed across the JVM, reducing overall calls
+   * (at the expense of some complexity).
    *
    * @param key,        the name of the HTTP header.
    * @param value,      the value of the HTTP header.
-   * @param endHeaders, indicates this is the last header pair for this header block.
+   * @param endHeaders, indicates this is the last header pair for this header
+   *                    block.
    */
   public void passHeader(byte[] key, byte[] value, boolean endHeaders) {
     String headerKey;
@@ -120,6 +121,18 @@ class JvmCallbackContext {
         }
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);
         callbacks.onData(dataBuffer, endStream);
+      }
+    });
+  }
+
+  /**
+   * Dispatches cancellation notice up to the platform
+   */
+  public void onCancel() {
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        // This call is atomically gated at the call-site and will only happen once.
+        callbacks.onCancel();
       }
     });
   }

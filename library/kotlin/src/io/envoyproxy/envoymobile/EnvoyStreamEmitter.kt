@@ -50,6 +50,7 @@ class EnvoyStreamEmitter(
    * @throws EnvoyException when there is an exception cancelling the stream.
    */
   override fun cancel() {
+    // TODO: surface result of operation.
     stream.cancel()
   }
 }
