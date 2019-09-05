@@ -265,10 +265,10 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return result;
 }
 
-// Note: JLjava_nio_ByteBuffer_3Z is the mangled signature of the java method.
+// Note: JLjava_nio_ByteBuffer_2Z is the mangled signature of the java method.
 // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
 extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer_3Z(
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer_2Z(
     JNIEnv* env, jclass, jlong stream_handle, jobject data, jboolean end_stream) {
 
   // TODO: check for null pointer in envoy_data.bytes - we could copy or raise an exception
