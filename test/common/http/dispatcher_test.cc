@@ -253,7 +253,7 @@ TEST_F(DispatcherTest, ResetStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
   http_dispatcher_.resetStream(stream);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
   post_cb();
 
   // Ensure that the on_error on the bridge_callbacks was called.
@@ -448,7 +448,7 @@ TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_post_cb));
   http_dispatcher_.resetStream(stream);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
   reset_post_cb();
 
   // Ensure that the on_error on the bridge_callbacks was called.
@@ -509,7 +509,7 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
   send_headers_post_cb();
 
