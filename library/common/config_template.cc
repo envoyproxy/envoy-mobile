@@ -54,6 +54,7 @@ static_resources:
     connect_timeout: {{ connect_timeout }}
     dns_refresh_rate: {{ dns_refresh_rate }}
     dns_lookup_family: V4_ONLY
+    http2_protocol_options: {}
     lb_policy: ROUND_ROBIN
     load_assignment:
       cluster_name: base
@@ -68,6 +69,7 @@ static_resources:
   - name: default_egress
     connect_timeout: {{ connect_timeout }}
     dns_refresh_rate: {{ dns_refresh_rate }}
+    http2_protocol_options: {}
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
       name: envoy.clusters.dynamic_forward_proxy
