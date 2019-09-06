@@ -899,7 +899,8 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
                      .counter("internal.upstream_rq_200")
                      .value());
 
-  // resetStream after onComplete has fired is a no-op, as the stream is cleaned from the dispatcher.
+  // resetStream after onComplete has fired is a no-op, as the stream is cleaned from the
+  // dispatcher.
   Event::PostCb reset_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_post_cb));
   http_dispatcher_.resetStream(stream);
