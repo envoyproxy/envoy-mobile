@@ -22,10 +22,10 @@ def _zip_binary_arg(module_name, input_file):
     )
 
 def _zip_header_arg(module_name, input_path, output_name):
-    return "{module_name}.framework/Headers/{header_name}={file_path}".format(
+    return "{module_name}.framework/Headers/{output_name}={input_path}".format(
         module_name = module_name,
-        header_name = output_name,
-        file_path = input_path,
+        output_name = output_name,
+        input_path = input_path,
     )
 
 def _zip_swift_arg(module_name, swift_identifier, input_file):
