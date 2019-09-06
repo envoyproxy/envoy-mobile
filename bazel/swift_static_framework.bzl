@@ -21,10 +21,11 @@ def _zip_binary_arg(module_name, input_file):
         file_path = input_file.path,
     )
 
-def _zip_header_arg(module_name, input_file):
-    return "{module_name}.framework/Headers/{module_name}-Swift.h={file_path}".format(
+def _zip_header_arg(module_name, input_path, output_name):
+    return "{module_name}.framework/Headers/{header_name}={file_path}".format(
         module_name = module_name,
-        file_path = input_file.path,
+        header_name = output_name,
+        file_path = input_path,
     )
 
 def _zip_swift_arg(module_name, swift_identifier, input_file):
@@ -34,6 +35,13 @@ def _zip_swift_arg(module_name, swift_identifier, input_file):
         ext = input_file.extension,
         file_path = input_file.path,
     )
+
+def _create_umbrella_header(objc_headers, module_name, ctx):
+    imports = ['#import "{}"\n'.format(x.basename) for x in objc_headers]
+    content = "\n".join(imports)
+    file = ctx.actions.declare_file("{}-Swift.h".format(module_name))
+    ctx.actions.write(file, content)
+    return file
 
 def _swift_static_framework_impl(ctx):
     module_name = ctx.attr.framework_name
@@ -58,11 +66,11 @@ def _swift_static_framework_impl(ctx):
             if header.path.endswith("-Swift.h")
         ]
 
-        if len(objc_headers) == 1:
-            zip_args.append(_zip_header_arg(module_name, objc_headers[0]))
-        else:
-            header_names = [header.basename for header in objc_headers]
-            fail("Expected exactly 1 '-Swift.h' header, got {}".format(", ".join(header_names)))
+        if objc_headers:
+            umbrella_header = _create_umbrella_header(objc_headers, module_name, ctx)
+            zip_args.append(_zip_header_arg(module_name, umbrella_header.path, umbrella_header.basename))
+            for header in objc_headers:
+                zip_args.append(_zip_header_arg(module_name, header.path, header.basename))
 
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]

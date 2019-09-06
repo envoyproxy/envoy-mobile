@@ -1,4 +1,4 @@
-import Envoy
+import EnvoyInterfaces
 import Foundation
 
 /// <#function description#>

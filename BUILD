@@ -1,13 +1,11 @@
 licenses(["notice"])  # Apache 2
 
-load("@build_bazel_rules_apple//apple:ios.bzl", "ios_application", "ios_framework", "ios_static_framework")
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
 
 genrule(
     name = "ios_dist",
     srcs = [
         "//library/swift/src:ios_framework",
-        "//library/swift/src/grpc:ios_grpc_framework",
     ],
     outs = ["ios_out"],
     cmd = """
