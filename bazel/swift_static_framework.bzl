@@ -37,7 +37,7 @@ def _zip_swift_arg(module_name, swift_identifier, input_file):
     )
 
 def _create_umbrella_header(objc_headers, module_name, ctx):
-    imports = ['#import "{}"\n'.format(x.basename) for x in objc_headers]
+    imports = ['#import "{}"'.format(x.basename) for x in objc_headers]
     content = "\n".join(imports)
     file = ctx.actions.declare_file("{}-Swift.h".format(module_name))
     ctx.actions.write(file, content)
@@ -66,11 +66,10 @@ def _swift_static_framework_impl(ctx):
             if header.path.endswith("-Swift.h")
         ]
 
-        if objc_headers:
-            umbrella_header = _create_umbrella_header(objc_headers, module_name, ctx)
-            zip_args.append(_zip_header_arg(module_name, umbrella_header.path, umbrella_header.basename))
-            for header in objc_headers:
-                zip_args.append(_zip_header_arg(module_name, header.path, header.basename))
+        umbrella_header = _create_umbrella_header(objc_headers, module_name, ctx)
+        zip_args.append(_zip_header_arg(module_name, umbrella_header.path, umbrella_header.basename))
+        for header in objc_headers:
+            zip_args.append(_zip_header_arg(module_name, header.path, header.basename))
 
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
@@ -116,7 +115,7 @@ def _swift_static_framework_impl(ctx):
 
     output_file = ctx.outputs.output_file
     ctx.actions.run(
-        inputs = input_modules_docs + [fat_file],
+        inputs = input_modules_docs + [fat_file, umbrella_header],
         outputs = [output_file],
         mnemonic = "CreateFrameworkZip",
         progress_message = "Creating framework zip for {}".format(module_name),
