@@ -71,7 +71,7 @@ public class EnvoyHTTPStream {
   public int cancel() {
     // Step 1: atomically and synchronously prevent the execution of further
     // callbacks other than onCancel.
-    if (!callbacksContext.canceled.getAndSet(true)) {
+    if (!callbacksContext.getAndSet(true)) {
       // Step 2: directly fire the cancel callback.
       callbacksContext.onCancel();
       // Step 3: propagate the reset into native code.

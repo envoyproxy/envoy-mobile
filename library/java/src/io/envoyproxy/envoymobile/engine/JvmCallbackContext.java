@@ -17,7 +17,7 @@ class JvmCallbackContext {
     TRAILERS,
   }
 
-  public final AtomicBoolean canceled = new AtomicBoolean(false);
+  private final AtomicBoolean canceled = new AtomicBoolean(false);
   private final EnvoyHTTPCallbacks callbacks;
 
   // State-tracking for header accumulation
@@ -135,6 +135,16 @@ class JvmCallbackContext {
         callbacks.onCancel();
       }
     });
+  }
+
+  /**
+   * Performs a get and set operation on the context's cancellation synchronization mechanism.
+   *
+   * @param set, the boolean to set.
+   * @return boolean, the previous state of the synchronization mechanism.
+   */
+  public boolean getAndSet(boolean set) {
+    return canceled.getAndSet(set);
   }
 
   private void startAccumulation(FrameType type, long length, boolean endStream) {
