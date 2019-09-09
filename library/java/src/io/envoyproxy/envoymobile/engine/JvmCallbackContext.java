@@ -143,9 +143,7 @@ class JvmCallbackContext {
    * @param set, the boolean to set.
    * @return boolean, the previous state of the synchronization mechanism.
    */
-  public boolean getAndSet(boolean set) {
-    return canceled.getAndSet(set);
-  }
+  public boolean getAndSet(boolean set) { return canceled.getAndSet(set); }
 
   private void startAccumulation(FrameType type, long length, boolean endStream) {
     assert headerAccumulator == null;
