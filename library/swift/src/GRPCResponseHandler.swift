@@ -4,7 +4,7 @@ import Foundation
 @objcMembers
 public final class GRPCResponseHandler: NSObject {
   /// Represents the state of a response stream's body data.
-  enum State {
+  private enum State {
     /// Awaiting a gRPC compression flag.
     case expectingCompressionFlag
     /// Awaiting the length specification of the next message.
@@ -108,8 +108,8 @@ public final class GRPCResponseHandler: NSObject {
   /// - parameter buffer:    The buffer of data from which to determine state and messages.
   /// - parameter state:     The current state of the buffering.
   /// - parameter onMessage: Closure to call when a new message is available.
-  static func processBuffer(_ buffer: inout Data, state: inout State,
-                            onMessage: (_ message: Data, _ isProcessing: Bool) -> Void)
+  private static func processBuffer(_ buffer: inout Data, state: inout State,
+                                    onMessage: (_ message: Data, _ isProcessing: Bool) -> Void)
   {
     if buffer.isEmpty {
       return
