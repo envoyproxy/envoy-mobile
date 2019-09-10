@@ -1,4 +1,3 @@
-import Envoy
 import Foundation
 
 /// Emitter that allows for sending additional data over gRPC.

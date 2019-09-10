@@ -1,4 +1,3 @@
-import Envoy
 import Foundation
 
 /// Builder used for creating new gRPC `Request` instances.

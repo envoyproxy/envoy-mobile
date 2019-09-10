@@ -1,4 +1,3 @@
-import Envoy
 import Foundation
 
 /// Client that supports sending and receiving gRPC traffic.

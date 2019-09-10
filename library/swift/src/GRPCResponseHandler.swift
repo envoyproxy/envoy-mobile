@@ -1,4 +1,3 @@
-import Envoy
 import Foundation
 
 /// Handler for responses sent over gRPC.
@@ -142,6 +141,11 @@ public final class GRPCResponseHandler: NSObject {
 
     case .expectingMessage(let length):
       let length = Int(length)
+      if buffer.count < length {
+        return
+      }
+
+      // swiftlint:disable:next force_unwrapping
       let message = buffer.withUnsafeBytes { Data(bytes: $0.baseAddress!, count: length) }
       buffer.removeFirst(length)
       onMessage(message, !buffer.isEmpty)
@@ -149,21 +153,5 @@ public final class GRPCResponseHandler: NSObject {
     }
 
     self.processBuffer(&buffer, state: &state, onMessage: onMessage)
-  }
-}
-
-private extension Data {
-  func nextInteger<T: FixedWidthInteger>() -> T? {
-    let size = MemoryLayout<T>.size
-    guard self.count >= size else {
-      return nil
-    }
-
-    var value: T = 0
-    _ = Swift.withUnsafeMutableBytes(of: &value) { valuePointer in
-      self.copyBytes(to: valuePointer, count: size)
-    }
-
-    return value.bigEndian
   }
 }
