@@ -2,11 +2,14 @@ licenses(["notice"])  # Apache 2
 
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
 
+alias(
+    name = "ios_framework",
+    actual = "//library/swift/src:ios_framework",
+)
+
 genrule(
     name = "ios_dist",
-    srcs = [
-        "//library/swift/src:ios_framework",
-    ],
+    srcs = ["//:ios_framework"],
     outs = ["ios_out"],
     cmd = """
 unzip -o $< -d dist/

@@ -21,11 +21,10 @@ def _zip_binary_arg(module_name, input_file):
         file_path = input_file.path,
     )
 
-def _zip_header_arg(module_name, input_path, output_name):
-    return "{module_name}.framework/Headers/{output_name}={input_path}".format(
+def _zip_header_arg(module_name, input_file):
+    return "{module_name}.framework/Headers/{module_name}-Swift.h={file_path}".format(
         module_name = module_name,
-        output_name = output_name,
-        input_path = input_path,
+        file_path = input_file.path,
     )
 
 def _zip_swift_arg(module_name, swift_identifier, input_file):
@@ -35,13 +34,6 @@ def _zip_swift_arg(module_name, swift_identifier, input_file):
         ext = input_file.extension,
         file_path = input_file.path,
     )
-
-def _create_umbrella_header(objc_headers, module_name, ctx):
-    imports = ['#import "{}"'.format(x.basename) for x in objc_headers]
-    content = "\n".join(imports)
-    file = ctx.actions.declare_file("{}-Swift.h".format(module_name))
-    ctx.actions.write(file, content)
-    return file
 
 def _swift_static_framework_impl(ctx):
     module_name = ctx.attr.framework_name
@@ -66,10 +58,11 @@ def _swift_static_framework_impl(ctx):
             if header.path.endswith("-Swift.h")
         ]
 
-        umbrella_header = _create_umbrella_header(objc_headers, module_name, ctx)
-        zip_args.append(_zip_header_arg(module_name, umbrella_header.path, umbrella_header.basename))
-        for header in objc_headers:
-            zip_args.append(_zip_header_arg(module_name, header.path, header.basename))
+        if len(objc_headers) == 1:
+            zip_args.append(_zip_header_arg(module_name, objc_headers[0]))
+        else:
+            header_names = [header.basename for header in objc_headers]
+            fail("Expected exactly 1 '-Swift.h' header, got {}".format(", ".join(header_names)))
 
         swiftdoc = swift_info.direct_swiftdocs[0]
         swiftmodule = swift_info.direct_swiftmodules[0]
@@ -115,7 +108,7 @@ def _swift_static_framework_impl(ctx):
 
     output_file = ctx.outputs.output_file
     ctx.actions.run(
-        inputs = input_modules_docs + [fat_file, umbrella_header],
+        inputs = input_modules_docs + [fat_file],
         outputs = [output_file],
         mnemonic = "CreateFrameworkZip",
         progress_message = "Creating framework zip for {}".format(module_name),
