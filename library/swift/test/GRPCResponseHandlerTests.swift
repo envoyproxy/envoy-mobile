@@ -8,7 +8,7 @@ private let kMessage2 = Data([6, 7, 8, 9, 0, 1])
 final class GRPCResponseHandlerTests: XCTestCase {
   func testHeadersCallbackPassesTrailersAndGRPCStatus() {
     let expectation = self.expectation(description: "Closure is called")
-    let expectedHeaders: [String : [String]] = ["grpc-status": ["1"], "other": ["foo", "bar"]]
+    let expectedHeaders: [String: [String]] = ["grpc-status": ["1"], "other": ["foo", "bar"]]
     let handler = GRPCResponseHandler()
       .onHeaders { headers, grpcStatus, endStream in
         XCTAssertEqual(expectedHeaders, headers)
@@ -23,7 +23,7 @@ final class GRPCResponseHandlerTests: XCTestCase {
 
   func testTrailersCallbackPassesTrailers() {
     let expectation = self.expectation(description: "Closure is called")
-    let expectedTrailers: [String : [String]] = ["foo": ["bar"], "baz": ["1", "2"]]
+    let expectedTrailers: [String: [String]] = ["foo": ["bar"], "baz": ["1", "2"]]
     let handler = GRPCResponseHandler()
       .onTrailers { trailers in
         XCTAssertEqual(expectedTrailers, trailers)
