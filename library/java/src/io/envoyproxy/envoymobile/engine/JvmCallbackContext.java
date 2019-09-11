@@ -138,12 +138,17 @@ class JvmCallbackContext {
   }
 
   /**
-   * Performs a get and set operation on the context's cancellation synchronization mechanism.
+   * Cancel the callback context atomically so that no further callbacks occur other than onCancel.
    *
-   * @param set, the boolean to set.
-   * @return boolean, the previous state of the synchronization mechanism.
+   * @return boolean, whether the callback context was canceled or not.
    */
-  public boolean getAndSet(boolean set) { return canceled.getAndSet(set); }
+  public boolean cancel() {
+    boolean canceled = !this.canceled.getAndSet(true);
+    if (canceled) {
+      onCancel();
+    }
+    return canceled;
+  }
 
   private void startAccumulation(FrameType type, long length, boolean endStream) {
     assert headerAccumulator == null;

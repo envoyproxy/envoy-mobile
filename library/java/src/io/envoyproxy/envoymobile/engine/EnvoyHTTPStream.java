@@ -69,12 +69,8 @@ public class EnvoyHTTPStream {
    * @return int, success unless the stream has already been canceled.
    */
   public int cancel() {
-    // Step 1: atomically and synchronously prevent the execution of further
-    // callbacks other than onCancel.
-    if (!callbacksContext.getAndSet(true)) {
-      // Step 2: directly fire the cancel callback.
-      callbacksContext.onCancel();
-      // Step 3: propagate the reset into native code.
+    if (callbacksContext.cancel()) {
+      // propagate the reset into native code.
       JniLibrary.resetStream(streamHandle);
       return 0;
     } else {
