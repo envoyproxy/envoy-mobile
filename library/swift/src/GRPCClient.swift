@@ -5,16 +5,12 @@ import Foundation
 public final class GRPCClient: NSObject {
   private let client: Client
 
-  // MARK: - Internal
-
   /// Create a new client instance.
   ///
   /// - parameter client: The client (i.e., Envoy instance) to use for gRPC streams.
-  init(with client: Client) {
+  public init(with client: Client) {
     self.client = client
   }
-
-  // MARK: - Public
 
   /// Send a gRPC request with the provided handler.
   ///
