@@ -8,7 +8,7 @@ public final class GRPCClient: NSObject {
   /// Create a new gRPC client instance.
   ///
   /// - parameter httpClient: The HTTP client to use for gRPC streams.
-  public init(with httpClient: HTTPClient) {
+  public init(httpClient: HTTPClient) {
     self.httpClient = httpClient
   }
 
