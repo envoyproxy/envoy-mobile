@@ -121,7 +121,7 @@ public final class GRPCResponseHandler: NSObject {
         return
       }
 
-      buffer.removeFirst()
+      buffer.removeSubrange(0..<MemoryLayout<UInt8>.size)
       state = .expectingMessageLength
 
     case .expectingMessageLength:
@@ -129,7 +129,7 @@ public final class GRPCResponseHandler: NSObject {
         return
       }
 
-      buffer.removeFirst(MemoryLayout<UInt32>.size)
+      buffer.removeSubrange(0..<MemoryLayout<UInt32>.size)
       state = .expectingMessage(length: messageLength)
 
     case .expectingMessage(let length):
@@ -141,8 +141,8 @@ public final class GRPCResponseHandler: NSObject {
       if length > 0 {
         // swiftlint:disable:next force_unwrapping
         let message = buffer.withUnsafeBytes { Data(bytes: $0.baseAddress!, count: length) }
-        buffer.removeFirst(length)
         onMessage(message)
+        buffer.removeSubrange(0..<length)
       } else {
         onMessage(Data())
       }
