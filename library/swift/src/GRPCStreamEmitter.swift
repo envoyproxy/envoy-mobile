@@ -25,7 +25,7 @@ public final class GRPCStreamEmitter: NSObject {
     // Compressed-Flag = 0 / 1, encoded as 1 byte unsigned integer
     // Message-Length = length of Message, encoded as 4 byte unsigned integer (big endian)
     // Message = binary representation of protobuf message
-    var prefixData = Data(capacity: 5 + messageData.count)
+    var prefixData = Data(capacity: 5)
 
     // Compression flag (1 byte) - 0, not compressed
     prefixData.append(0)
