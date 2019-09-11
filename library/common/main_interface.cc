@@ -93,10 +93,11 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
     main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
     // init_engine must have been called prior to calling run_engine or the creation of the envoy
     // runner thread.
-    stageone_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(Envoy::Server::ServerLifecycleNotifier::Stage::AnotherStageInAServersLife, []() -> void {
-      http_dispatcher_->ready(main_common_->server()->dispatcher(),
-                            main_common_->server()->clusterManager());
-    });
+    stageone_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
+        Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, []() -> void {
+          http_dispatcher_->ready(main_common_->server()->dispatcher(),
+                                  main_common_->server()->clusterManager());
+        });
   } catch (const Envoy::NoServingException& e) {
     return ENVOY_SUCCESS;
   } catch (const Envoy::MalformedArgvException& e) {
