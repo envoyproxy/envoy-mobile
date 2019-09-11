@@ -6,7 +6,7 @@ private let kMessage1 = Data([1, 2, 3, 4, 5])
 private let kMessage2 = Data([6, 7, 8, 9, 0, 1])
 
 final class GRPCResponseHandlerTests: XCTestCase {
-  func testHeadersCallbackPassesTrailersAndGRPCStatus() {
+  func testHeadersCallbackPassesHeadersAndGRPCStatus() {
     let expectation = self.expectation(description: "Closure is called")
     let expectedHeaders: [String: [String]] = ["grpc-status": ["1"], "other": ["foo", "bar"]]
     let handler = GRPCResponseHandler()

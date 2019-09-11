@@ -26,7 +26,7 @@ public final class GRPCResponseHandler: NSObject {
   /// Specify a callback for when response headers are received by the stream.
   /// If `endStream` is `true`, the stream is complete.
   ///
-  /// - parameter closure: Closure which will receive the headers, gRPC code,
+  /// - parameter closure: Closure which will receive the headers, gRPC status,
   ///                      and flag indicating if the stream is headers-only.
   @discardableResult
   public func onHeaders(_ closure:
