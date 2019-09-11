@@ -26,7 +26,6 @@ extension EnvoyStreamEmitter: StreamEmitter {
   }
 
   func cancel() {
-    // TODO: surface result of operation.
     _ = self.stream.cancel()
   }
 }
