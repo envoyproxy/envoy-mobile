@@ -18,6 +18,7 @@ envoy_cc_library(
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/exe:envoy_main_common_lib",
+        "@envoy//include/envoy/server:lifecycle_notifier_interface",
     ],
 )
 

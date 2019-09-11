@@ -10,6 +10,7 @@
 #include "envoy/upstream/cluster_manager.h"
 
 #include "common/common/logger.h"
+#include "common/common/thread.h"
 
 #include "library/common/types/c_types.h"
 
@@ -22,7 +23,9 @@ namespace Http {
  */
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
-  Dispatcher(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
+  Dispatcher();
+
+  void ready(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -131,16 +134,23 @@ private:
 
   using DirectStreamPtr = std::unique_ptr<DirectStream>;
 
+  /**
+   * Post a functor to the dispatcher. This is safe cross thread.
+   * @param callback, the functor to post.
+   */
+  void post(Event::PostCb callback);
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
   DirectStream* getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
 
+  // The initialization lock and queue, and the event_dispatcher are the only member state that may
+  // be accessed from a thread other than the event_dispatcher's own thread.
+  Thread::MutexBasicLockable initialization_lock_;
+  std::list<Event::PostCb> initialization_queue_ GUARDED_BY(initialization_lock_);
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
-  // The event_dispatcher is the only member state that may be accessed from a thread other than
-  // the event_dispatcher's own thread.
-  Event::Dispatcher& event_dispatcher_;
-  Upstream::ClusterManager& cluster_manager_;
+  std::atomic<Event::Dispatcher*> event_dispatcher_;
+  std::atomic<Upstream::ClusterManager*> cluster_manager_;
 };
 
 } // namespace Http

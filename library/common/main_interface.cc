@@ -3,6 +3,8 @@
 #include <atomic>
 #include <unordered_map>
 
+#include "envoy/server/lifecycle_notifier.h"
+
 #include "common/upstream/logical_dns_cluster.h"
 
 #include "exe/main_common.h"
@@ -22,6 +24,7 @@
 
 static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
+static Envoy::Server::ServerLifecycleNotifier::HandlePtr stageone_callback_handler_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
@@ -49,21 +52,10 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
 envoy_status_t reset_stream(envoy_stream_t stream) { return http_dispatcher_->resetStream(stream); }
 
 envoy_engine_t init_engine() {
+  http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>();
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   return 1;
-}
-
-/*
- * Setup envoy for interaction via the main interface.
- * As it stands this function __must__ be executed after calling `run_engine`.
- * run_engine assigns a static unique pointer used by this function.
- * TODO: this will change when the engine is no longer static:
- * https://github.com/lyft/envoy-mobile/issues/332
- */
-void setup_envoy() {
-  http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(
-      main_common_->server()->dispatcher(), main_common_->server()->clusterManager());
 }
 
 /**
@@ -99,9 +91,12 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
   // https://github.com/lyft/envoy-mobile/issues/34
   try {
     main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
-    // TODO: this call should be done in a post init callback.
-    // related issue: https://github.com/lyft/envoy-mobile/issues/285.
-    setup_envoy();
+    // init_engine must have been called prior to calling run_engine or the creation of the envoy
+    // runner thread.
+    stageone_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(Envoy::Server::ServerLifecycleNotifier::Stage::AnotherStageInAServersLife, []() -> void {
+      http_dispatcher_->ready(main_common_->server()->dispatcher(),
+                            main_common_->server()->clusterManager());
+    });
   } catch (const Envoy::NoServingException& e) {
     return ENVOY_SUCCESS;
   } catch (const Envoy::MalformedArgvException& e) {

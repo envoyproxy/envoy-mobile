@@ -4,6 +4,7 @@
 
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/buffer/utility.h"
+#include "common/common/lock_guard.h"
 #include "library/common/http/header_utility.h"
 
 namespace Envoy {
@@ -51,16 +52,60 @@ Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle,
     : stream_handle_(stream_handle), underlying_stream_(underlying_stream),
       callbacks_(std::move(callbacks)) {}
 
-Dispatcher::Dispatcher(Event::Dispatcher& event_dispatcher,
-                       Upstream::ClusterManager& cluster_manager)
-    : event_dispatcher_(event_dispatcher), cluster_manager_(cluster_manager) {}
+Dispatcher::Dispatcher() {
+  event_dispatcher_.store(nullptr);
+  cluster_manager_.store(nullptr);
+}
+
+void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
+                       Upstream::ClusterManager& cluster_manager) {
+  {
+    Thread::LockGuard lock(initialization_lock_);
+
+    for (const Event::PostCb& cb : initialization_queue_) {
+      event_dispatcher.post(cb);
+    }
+
+    // The HTTP dispatcher's post function relies on this atomic pointer to signal transition
+    // between the initialization phase -- where functors are posted to the initialization_queue_ --
+    // and ready state -- where functors are directly posted to the event_dispatcher_. Therefore,
+    // this pointer needs to be set at the end of this critical section, **after** the
+    // initialization_queue_ has been drained into the event_dispatcher_ to maintain ordering
+    // guarantees in the event_dispatcher_'s queue.
+    event_dispatcher_.store(&event_dispatcher);
+    cluster_manager_.store(&cluster_manager);
+  }
+}
+
+void Dispatcher::post(Event::PostCb callback) {
+  // If the event_dispatcher is present, dispatch the functor directly to it.
+  auto event_dispatcher = event_dispatcher_.load();
+  if (event_dispatcher != nullptr) {
+    event_dispatcher->post(callback);
+    return;
+  }
+
+  {
+    Thread::LockGuard lock(initialization_lock_);
+    // Check that the event_dispatcher_ was not set during lock acquisition.
+    auto event_dispatcher = event_dispatcher_.load();
+    // If the event_dispatcher_ was set, then post the functor directly to it.
+    if (event_dispatcher != nullptr) {
+      event_dispatcher->post(callback);
+      return;
+    }
+    // Otherwise, push the functor to the initialization_queue_ which will be drained once the
+    // event_dispatcher_ is ready.
+    initialization_queue_.push_back(callback);
+  }
+}
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks) {
-  event_dispatcher_.post([this, bridge_callbacks, new_stream_handle]() -> void {
+  post([this, bridge_callbacks, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
-    AsyncClient& async_client = cluster_manager_.httpAsyncClientForCluster("base");
+    AsyncClient& async_client = cluster_manager_.load()->httpAsyncClientForCluster("base");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
@@ -80,7 +125,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
 
 envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers headers,
                                        bool end_stream) {
-  event_dispatcher_.post([this, stream, headers, end_stream]() -> void {
+  post([this, stream, headers, end_stream]() -> void {
     DirectStream* direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
@@ -101,7 +146,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
 }
 
 envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
-  event_dispatcher_.post([this, stream, data, end_stream]() -> void {
+  post([this, stream, data, end_stream]() -> void {
     DirectStream* direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
@@ -128,7 +173,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
 envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
-  event_dispatcher_.post([this, stream, trailers]() -> void {
+  post([this, stream, trailers]() -> void {
     DirectStream* direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
@@ -148,7 +193,7 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
 }
 
 envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
-  event_dispatcher_.post([this, stream]() -> void {
+  post([this, stream]() -> void {
     DirectStream* direct_stream = getStream(stream);
     if (direct_stream) {
       direct_stream->underlying_stream_.reset();
@@ -158,7 +203,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
 }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
-  ASSERT(event_dispatcher_.isThreadSafe(),
+  ASSERT(event_dispatcher_.load()->isThreadSafe(),
          "stream interaction must be performed on the event_dispatcher_'s thread.");
   auto direct_stream_pair_it = streams_.find(stream);
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
