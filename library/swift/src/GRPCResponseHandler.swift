@@ -111,10 +111,6 @@ public final class GRPCResponseHandler: NSObject {
   private static func processBuffer(_ buffer: inout Data, state: inout State,
                                     onMessage: (_ message: Data, _ isProcessing: Bool) -> Void)
   {
-    if buffer.isEmpty {
-      return
-    }
-
     switch state {
     case .expectingCompressionFlag:
       guard let compressionFlag: UInt8 = buffer.nextInteger() else {
@@ -145,10 +141,15 @@ public final class GRPCResponseHandler: NSObject {
         return
       }
 
-      // swiftlint:disable:next force_unwrapping
-      let message = buffer.withUnsafeBytes { Data(bytes: $0.baseAddress!, count: length) }
-      buffer.removeFirst(length)
-      onMessage(message, !buffer.isEmpty)
+      if length > 0 {
+        // swiftlint:disable:next force_unwrapping
+        let message = buffer.withUnsafeBytes { Data(bytes: $0.baseAddress!, count: length) }
+        buffer.removeFirst(length)
+        onMessage(message, !buffer.isEmpty)
+      } else {
+        onMessage(Data(), false)
+      }
+
       state = .expectingCompressionFlag
     }
 

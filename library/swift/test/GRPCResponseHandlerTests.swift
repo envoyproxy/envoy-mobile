@@ -88,6 +88,24 @@ final class GRPCResponseHandlerTests: XCTestCase {
     XCTAssertTrue(expectedMessages.isEmpty)
   }
 
+  func testMessageCallbackCanBeCalledWithZeroLengthMessage() {
+    let expectation = self.expectation(description: "Closure is called")
+    let firstMessage = Data([
+      0x0, // Compression flag
+      0x0, 0x0, 0x0, 0x0, // Length bytes
+    ])
+
+    let handler = GRPCResponseHandler()
+      .onMessage { message, endStream in
+        XCTAssertTrue(message.isEmpty)
+        XCTAssertTrue(endStream)
+        expectation.fulfill()
+      }
+
+    handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, true)
+    self.waitForExpectations(timeout: 0.1)
+  }
+
   // MARK: - gRPC status parsing
 
   func testParsingGRPCStatusFromHeadersReturnsFirstStatus() {
