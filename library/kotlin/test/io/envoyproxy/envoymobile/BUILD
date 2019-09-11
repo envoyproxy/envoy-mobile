@@ -43,7 +43,7 @@ envoy_mobile_kt_test(
 )
 
 envoy_mobile_kt_test(
-    name = "envoy_builder_test",
+    name = "envoy_client_builder_test",
     srcs = [
         "EnvoyClientBuilderTest.kt",
     ],
