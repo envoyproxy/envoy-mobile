@@ -7,14 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyError;
+import io.envoyproxy.envoymobile.engine.types.EnvoyErrorCode;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 class JvmCallbackContext {
   private enum FrameType {
-    NONE,
-    HEADERS,
-    METADATA,
-    TRAILERS,
+    NONE, HEADERS, METADATA, TRAILERS,
   }
 
   private final AtomicBoolean canceled = new AtomicBoolean(false);
@@ -27,7 +26,9 @@ class JvmCallbackContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
-  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) { this.callbacks = callbacks; }
+  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) {
+    this.callbacks = callbacks;
+  }
 
   /**
    * Initializes state for accumulating header pairs via passHeaders, ultimately
@@ -126,6 +127,25 @@ class JvmCallbackContext {
   }
 
   /**
+   * Dispatches error received from the JNI layer up to the platform.
+   *
+   * @param message,   the error message.
+   * @param errorCode, the envoy_error_code_t.
+   */
+  public void onError(byte[] message, int errorCode) {
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        if (canceled.get()) {
+          return;
+        }
+        String errorMessage = new String(message);
+        EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
+        callbacks.onError(error);
+      }
+    });
+  }
+
+  /**
    * Dispatches cancellation notice up to the platform
    */
   public void onCancel() {
@@ -138,7 +158,8 @@ class JvmCallbackContext {
   }
 
   /**
-   * Cancel the callback context atomically so that no further callbacks occur other than onCancel.
+   * Cancel the callback context atomically so that no further callbacks occur
+   * other than onCancel.
    *
    * @return boolean, whether the callback context was canceled or not.
    */
@@ -157,7 +178,7 @@ class JvmCallbackContext {
     assert expectedHeaderLength == 0;
     assert accumulatedHeaderLength == 0;
 
-    headerAccumulator = new HashMap((int)length);
+    headerAccumulator = new HashMap((int) length);
     pendingFrameType = type;
     expectedHeaderLength = length;
     pendingEndStream = endStream;

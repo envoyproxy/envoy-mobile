@@ -10,13 +10,13 @@ final class ViewController: UITableViewController {
   private var requestCount = 0
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
-  private var envoy: Envoy?
+  private var envoy: EnvoyClient?
 
   override func viewDidLoad() {
     super.viewDidLoad()
     do {
       NSLog("Starting Envoy...")
-      self.envoy = try EnvoyBuilder()
+      self.envoy = try EnvoyClientBuilder()
         .build()
     } catch let error {
       NSLog("Starting Envoy failed: \(error)")
@@ -61,13 +61,14 @@ final class ViewController: UITableViewController {
       .onData { data, _ in
         NSLog("Response data (\(requestID)): \(data.count) bytes")
       }
-      .onError { [weak self] in
-        NSLog("Error (\(requestID)): Request failed")
+      .onError { [weak self] error in
+        let message = "failed within Envoy library: \(error.message)"
+        NSLog("Error (\(requestID)): \(message)")
         self?.add(result: .failure(RequestError(id: requestID,
-                                                message: "failed within Envoy library")))
+                                                message: message)))
       }
 
-    envoy.send(request, data: nil, handler: handler)
+    envoy.send(request, body: nil, handler: handler)
   }
 
   private func add(result: Result<Response, RequestError>) {

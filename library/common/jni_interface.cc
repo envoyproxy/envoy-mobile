@@ -166,9 +166,25 @@ static void jvm_on_trailers(envoy_headers trailers, void* context) {
 
 static void jvm_on_error(envoy_error error, void* context) {
   __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_error");
-  JNIEnv* env = nullptr;
-  static_jvm->GetEnv((void**)&env, JNI_VERSION);
+  JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
+
+  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onError = env->GetMethodID(jcls_JvmObserverContext, "onError", "([BI)V");
+
+  jbyteArray j_error_message = env->NewByteArray(error.message.length);
+  // FIXME: check if copied via isCopy
+  void* critical_error_message =
+      env->GetPrimitiveArrayCritical(j_error_message, nullptr); // FIXME: check for NULL
+  memcpy(critical_error_message, error.message.bytes, error.message.length);
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  env->ReleasePrimitiveArrayCritical(j_error_message, critical_error_message, 0);
+
+  env->CallVoidMethod(j_context, jmid_onError, j_error_message, error.error_code);
+
+  error.message.release(error.message.context);
+  // No further callbacks happen on this context. Delete the reference held by native code.
   env->DeleteGlobalRef(j_context);
 }
 
@@ -186,7 +202,7 @@ static void jni_delete_global_ref(void* context) {
   env->DeleteGlobalRef(ref);
 }
 
-static envoy_data to_native_data(JNIEnv* env, jobject data) {
+static envoy_data buffer_to_native_data(JNIEnv* env, jobject data) {
   jobject j_data = env->NewGlobalRef(data);
   envoy_data native_data;
   native_data.bytes = static_cast<uint8_t*>(env->GetDirectBufferAddress(j_data));
@@ -197,17 +213,26 @@ static envoy_data to_native_data(JNIEnv* env, jobject data) {
   return native_data;
 }
 
+static envoy_data array_to_native_data(JNIEnv* env, jbyteArray data) {
+  size_t data_length = env->GetArrayLength(data);
+  uint8_t* native_bytes = (uint8_t*)malloc(data_length);
+  void* critical_data = env->GetPrimitiveArrayCritical(data, 0);
+  memcpy(native_bytes, critical_data, data_length);
+  env->ReleasePrimitiveArrayCritical(data, critical_data, 0);
+  return {data_length, native_bytes, free, native_bytes};
+}
+
 static envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
   // Note that headers is a flattened array of key/value pairs.
   // Therefore, the length of the native header array is n envoy_data or n/2 envoy_header.
   envoy_header_size_t length = env->GetArrayLength(headers);
-  envoy_header* header_array = (envoy_header*)malloc(sizeof(envoy_header) * length / 2);
+  envoy_header* header_array = (envoy_header*)safe_malloc(sizeof(envoy_header) * length / 2);
 
   for (envoy_header_size_t i = 0; i < length; i += 2) {
     // Copy native byte array for header key
     jbyteArray j_key = (jbyteArray)env->GetObjectArrayElement(headers, i);
     size_t key_length = env->GetArrayLength(j_key);
-    uint8_t* native_key = (uint8_t*)malloc(key_length);
+    uint8_t* native_key = (uint8_t*)safe_malloc(key_length);
     void* critical_key = env->GetPrimitiveArrayCritical(j_key, 0);
     memcpy(native_key, critical_key, key_length);
     env->ReleasePrimitiveArrayCritical(j_key, critical_key, 0);
@@ -216,7 +241,7 @@ static envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
     // Copy native byte array for header value
     jbyteArray j_value = (jbyteArray)env->GetObjectArrayElement(headers, i + 1);
     size_t value_length = env->GetArrayLength(j_value);
-    uint8_t* native_value = (uint8_t*)malloc(value_length);
+    uint8_t* native_value = (uint8_t*)safe_malloc(value_length);
     void* critical_value = env->GetPrimitiveArrayCritical(j_value, 0);
     memcpy(native_value, critical_value, value_length);
     env->ReleasePrimitiveArrayCritical(j_value, critical_value, 0);
@@ -256,11 +281,24 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return result;
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData(
+// Note: JLjava_nio_ByteBuffer_2Z is the mangled signature of the java method.
+// https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer_2Z(
     JNIEnv* env, jclass, jlong stream_handle, jobject data, jboolean end_stream) {
 
   // TODO: check for null pointer in envoy_data.bytes - we could copy or raise an exception
-  return send_data(static_cast<envoy_stream_t>(stream_handle), to_native_data(env, data),
+  return send_data(static_cast<envoy_stream_t>(stream_handle), buffer_to_native_data(env, data),
+                   end_stream);
+}
+
+// Note: J_3BZ is the mangled signature of the java method.
+// https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BZ(
+    JNIEnv* env, jclass, jlong stream_handle, jbyteArray data, jboolean end_stream) {
+
+  // TODO: check for null pointer in envoy_data.bytes - we could copy or raise an exception
+  return send_data(static_cast<envoy_stream_t>(stream_handle), array_to_native_data(env, data),
                    end_stream);
 }
 

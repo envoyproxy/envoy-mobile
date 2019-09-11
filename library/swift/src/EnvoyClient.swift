@@ -1,8 +1,8 @@
 import Foundation
 
-/// Envoy's implementation of `Client`, buildable using `EnvoyBuilder`.
+/// Envoy's implementation of `HTTPClient`, buildable using `EnvoyClientBuilder`.
 @objcMembers
-public final class Envoy: NSObject {
+public final class EnvoyClient: NSObject {
   private let engine: EnvoyEngine
   private let runner: RunnerThread
 
@@ -16,14 +16,25 @@ public final class Envoy: NSObject {
     return self.runner.isFinished
   }
 
+  /// Initialize a new Envoy instance using a typed configuration.
+  ///
+  /// - parameter config:   Configuration to use for starting Envoy.
+  /// - parameter logLevel: Log level to use for this instance.
+  /// - parameter engine:   The underlying engine to use for starting Envoy.
+  init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+    self.engine = engine
+    self.runner = RunnerThread(config: .typed(config), logLevel: logLevel, engine: engine)
+    self.runner.start()
+  }
+
   /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter configYAML: Configuration YAML to use for starting Envoy.
+  /// - parameter configYAML: Configuration yaml to use for starting Envoy.
   /// - parameter logLevel:   Log level to use for this instance.
   /// - parameter engine:     The underlying engine to use for starting Envoy.
   init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
     self.engine = engine
-    self.runner = RunnerThread(configYAML: configYAML, logLevel: logLevel, engine: engine)
+    self.runner = RunnerThread(config: .yaml(configYAML), logLevel: logLevel, engine: engine)
     self.runner.start()
   }
 
@@ -31,22 +42,32 @@ public final class Envoy: NSObject {
 
   private final class RunnerThread: Thread {
     private let engine: EnvoyEngine
-    private let configYAML: String
+    private let config: ConfigurationType
     private let logLevel: LogLevel
 
-    init(configYAML: String, logLevel: LogLevel, engine: EnvoyEngine) {
-      self.configYAML = configYAML
+    enum ConfigurationType {
+      case yaml(String)
+      case typed(EnvoyConfiguration)
+    }
+
+    init(config: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine) {
+      self.config = config
       self.logLevel = logLevel
       self.engine = engine
     }
 
     override func main() {
-      self.engine.run(withConfig: self.configYAML, logLevel: self.logLevel.stringValue)
+      switch self.config {
+      case .yaml(let configYAML):
+        self.engine.run(withConfigYAML: configYAML, logLevel: self.logLevel.stringValue)
+      case .typed(let config):
+        self.engine.run(withConfig: config, logLevel: self.logLevel.stringValue)
+      }
     }
   }
 }
 
-extension Envoy: Client {
+extension EnvoyClient: HTTPClient {
   public func send(_ request: Request, handler: ResponseHandler) -> StreamEmitter {
     let httpStream = self.engine.startStream(with: handler.underlyingCallbacks)
     httpStream.sendHeaders(request.outboundHeaders(), close: false)
@@ -54,13 +75,13 @@ extension Envoy: Client {
   }
 
   @discardableResult
-  public func send(_ request: Request, data: Data?,
+  public func send(_ request: Request, body: Data?,
                    trailers: [String: [String]] = [:], handler: ResponseHandler)
     -> CancelableStream
   {
     let emitter = self.send(request, handler: handler)
-    if let data = data {
-      emitter.sendData(data)
+    if let body = body {
+      emitter.sendData(body)
     }
 
     emitter.close(trailers: trailers)

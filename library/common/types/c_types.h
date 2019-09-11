@@ -27,7 +27,7 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 /**
  * Error code associated with terminal status of a HTTP stream.
  */
-typedef enum { ENVOY_STREAM_RESET } envoy_error_code_t;
+typedef enum { ENVOY_UNDEFINED_ERROR, ENVOY_STREAM_RESET } envoy_error_code_t;
 
 #ifdef __cplusplus
 extern "C" { // release function
@@ -83,6 +83,13 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" { // utility functions
 #endif
+
+/**
+ * malloc wrapper that asserts that the returned pointer is valid. Otherwise, the program exits.
+ * @param size, the size of memory to be allocated in bytes.
+ * @return void*, pointer to the allocated memory.
+ */
+void* safe_malloc(size_t size);
 
 /**
  * Helper function to free/release memory associated with underlying headers.
