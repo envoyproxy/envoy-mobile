@@ -42,13 +42,12 @@ final class GRPCResponseHandlerTests: XCTestCase {
     ] + kMessage1)
 
     let handler = GRPCResponseHandler()
-      .onMessage { message, endStream in
+      .onMessage { message in
         XCTAssertEqual(kMessage1, message)
-        XCTAssertTrue(endStream)
         expectation.fulfill()
       }
 
-    handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, true)
+    handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, false)
     self.waitForExpectations(timeout: 0.1)
   }
 
@@ -74,16 +73,15 @@ final class GRPCResponseHandlerTests: XCTestCase {
 
     var expectedMessages = [kMessage1, kMessage2]
     let handler = GRPCResponseHandler()
-      .onMessage { message, endStream in
+      .onMessage { message in
         XCTAssertEqual(expectedMessages.removeFirst(), message)
-        XCTAssertEqual(expectedMessages.isEmpty, endStream)
         expectation.fulfill()
       }
 
     handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, false)
     handler.underlyingHandler.underlyingCallbacks.onData(secondMessagePart1, false)
     handler.underlyingHandler.underlyingCallbacks.onData(secondMessagePart2, false)
-    handler.underlyingHandler.underlyingCallbacks.onData(secondMessagePart3, true)
+    handler.underlyingHandler.underlyingCallbacks.onData(secondMessagePart3, false)
     self.waitForExpectations(timeout: 0.1)
     XCTAssertTrue(expectedMessages.isEmpty)
   }
@@ -96,13 +94,12 @@ final class GRPCResponseHandlerTests: XCTestCase {
     ])
 
     let handler = GRPCResponseHandler()
-      .onMessage { message, endStream in
+      .onMessage { message in
         XCTAssertTrue(message.isEmpty)
-        XCTAssertTrue(endStream)
         expectation.fulfill()
       }
 
-    handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, true)
+    handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, false)
     self.waitForExpectations(timeout: 0.1)
   }
 
@@ -121,14 +118,13 @@ final class GRPCResponseHandlerTests: XCTestCase {
 
     var expectedMessages = [Data(), kMessage2]
     let handler = GRPCResponseHandler()
-      .onMessage { message, endStream in
+      .onMessage { message in
         XCTAssertEqual(expectedMessages.removeFirst(), message)
-        XCTAssertEqual(expectedMessages.isEmpty, endStream)
         expectation.fulfill()
       }
 
     handler.underlyingHandler.underlyingCallbacks.onData(firstMessage, false)
-    handler.underlyingHandler.underlyingCallbacks.onData(secondMessage, true)
+    handler.underlyingHandler.underlyingCallbacks.onData(secondMessage, false)
     self.waitForExpectations(timeout: 0.1)
     XCTAssertTrue(expectedMessages.isEmpty)
   }

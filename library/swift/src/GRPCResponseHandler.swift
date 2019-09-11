@@ -43,20 +43,18 @@ public final class GRPCResponseHandler: NSObject {
 
   /// Specify a callback for when a new message has been received by the stream.
   ///
-  /// - parameter closure: Closure which will receive messages on the stream,
-  ///                      and flag indicating if the stream is complete.
+  /// - parameter closure: Closure which will receive messages on the stream.
   @discardableResult
   public func onMessage(_ closure:
-    @escaping (_ message: Data, _ endStream: Bool) -> Void)
+    @escaping (_ message: Data) -> Void)
     -> GRPCResponseHandler
   {
     var buffer = Data()
     var state = State.expectingCompressionFlag
-    self.underlyingHandler.onData { chunk, endStream in
+    self.underlyingHandler.onData { chunk, _ in
+      // gRPC always sends trailers, so the stream will not complete here.
       buffer.append(chunk)
-      GRPCResponseHandler.processBuffer(&buffer, state: &state) { message, isProcessing in
-        closure(message, endStream && !isProcessing)
-      }
+      GRPCResponseHandler.processBuffer(&buffer, state: &state, onMessage: closure)
     }
 
     return self
@@ -102,18 +100,17 @@ public final class GRPCResponseHandler: NSObject {
   }
 
   /// Recursively processes a buffer of data, buffering it into messages based on state.
-  /// When a message has been fully buffered, `onMessage` will be called with the message
-  /// and a flag indicating if the buffer is still being processed.
+  /// When a message has been fully buffered, `onMessage` will be called with the message.
   ///
   /// - parameter buffer:    The buffer of data from which to determine state and messages.
   /// - parameter state:     The current state of the buffering.
   /// - parameter onMessage: Closure to call when a new message is available.
   private static func processBuffer(_ buffer: inout Data, state: inout State,
-                                    onMessage: (_ message: Data, _ isProcessing: Bool) -> Void)
+                                    onMessage: (_ message: Data) -> Void)
   {
     switch state {
     case .expectingCompressionFlag:
-      guard let compressionFlag: UInt8 = buffer.nextInteger() else {
+      guard let compressionFlag: UInt8 = buffer.integer(atIndex: 0) else {
         return
       }
 
@@ -128,7 +125,7 @@ public final class GRPCResponseHandler: NSObject {
       state = .expectingMessageLength
 
     case .expectingMessageLength:
-      guard let messageLength: UInt32 = buffer.nextInteger() else {
+      guard let messageLength: UInt32 = buffer.integer(atIndex: 0) else {
         return
       }
 
@@ -145,9 +142,9 @@ public final class GRPCResponseHandler: NSObject {
         // swiftlint:disable:next force_unwrapping
         let message = buffer.withUnsafeBytes { Data(bytes: $0.baseAddress!, count: length) }
         buffer.removeFirst(length)
-        onMessage(message, !buffer.isEmpty)
+        onMessage(message)
       } else {
-        onMessage(Data(), false)
+        onMessage(Data())
       }
 
       state = .expectingCompressionFlag

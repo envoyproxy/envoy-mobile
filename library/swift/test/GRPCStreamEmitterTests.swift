@@ -27,7 +27,7 @@ private final class MockEmitter: StreamEmitter {
 final class GRPCStreamEmitterTests: XCTestCase {
   func testDataSizeIsFiveBytesGreaterThanMessageSize() {
     var sentData = Data()
-    let mockEmitter = MockEmitter(onSendData: { sentData = $0 })
+    let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
     XCTAssertEqual(5 + kMessageData.count, sentData.count)
@@ -35,24 +35,24 @@ final class GRPCStreamEmitterTests: XCTestCase {
 
   func testPrefixesSentDataWithZeroCompressionFlag() {
     var sentData = Data()
-    let mockEmitter = MockEmitter(onSendData: { sentData = $0 })
+    let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
-    XCTAssertEqual(UInt8(0), sentData.nextInteger())
+    XCTAssertEqual(UInt8(0), sentData.integer(atIndex: 0))
   }
 
   func testPrefixesSentDataWithLengthOfMessage() {
     var sentData = Data()
-    let mockEmitter = MockEmitter(onSendData: { sentData = $0 })
+    let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
-    sentData.removeFirst() // Remove compression flag
-    XCTAssertEqual(UInt32(kMessageData.count).bigEndian, sentData.nextInteger())
+    XCTAssertEqual(UInt32(kMessageData.count).bigEndian,
+                   sentData.integer(atIndex: 1)) // After compression flag
   }
 
   func testAppendsMessageDataAtTheEndOfSentData() {
     var sentData = Data()
-    let mockEmitter = MockEmitter(onSendData: { sentData = $0 })
+    let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
     sentData.removeFirst(5) // Remove compression and length prefix

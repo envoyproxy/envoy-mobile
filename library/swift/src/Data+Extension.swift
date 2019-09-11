@@ -1,18 +1,20 @@
 import Foundation
 
 extension Data {
-  /// Returns the next integer in the data, using the size of `T`. Nil if the data is too small.
+  /// Gets the integer at the provided index using the size of `T`. Nil if the data is too small.
+  ///
+  /// - parameter index: The index at which to get the integer value.
   ///
   /// - returns: The next integer in the data, or nil.
-  func nextInteger<T: FixedWidthInteger>() -> T? {
+  func integer<T: FixedWidthInteger>(atIndex index: Int) -> T? {
     let size = MemoryLayout<T>.size
-    guard self.count >= size else {
+    guard self.count >= index + size else {
       return nil
     }
 
     var value: T = 0
     _ = Swift.withUnsafeMutableBytes(of: &value) { valuePointer in
-      self.copyBytes(to: valuePointer, count: size)
+      self.copyBytes(to: valuePointer, from: index ..< index + size)
     }
 
     return value
