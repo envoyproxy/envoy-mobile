@@ -3,12 +3,12 @@ import Foundation
 /// Client that supports sending and receiving gRPC traffic.
 @objcMembers
 public final class GRPCClient: NSObject {
-  private let client: Client
+  private let client: HTTPClient
 
   /// Create a new client instance.
   ///
-  /// - parameter client: The client (i.e., Envoy instance) to use for gRPC streams.
-  public init(with client: Client) {
+  /// - parameter client: The HTTP client to use for gRPC streams.
+  public init(with client: HTTPClient) {
     self.client = client
   }
 
