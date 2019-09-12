@@ -2,7 +2,6 @@ import Foundation
 
 extension Data {
   /// Gets the integer at the provided index using the size of `T`.
-  /// Returned value includes the native endianness applied to it.
   /// Returns nil if the data is too small.
   ///
   /// - parameter index: The index at which to get the integer value.
@@ -19,20 +18,6 @@ extension Data {
       self.copyBytes(to: valuePointer, from: index ..< index + size)
     }
 
-    return value.withPlatformEndianness()
-  }
-}
-
-extension FixedWidthInteger {
-  /// Applies the native endianness of the current platform to the integer.
-  ///
-  /// - returns: The value, with big or little endianness applied.
-  func withPlatformEndianness() -> Self {
-    return self.deviceIsBigEndian() ? self.bigEndian : self.littleEndian
-  }
-
-  private func deviceIsBigEndian() -> Bool {
-      let number: UInt32 = 0x12345678
-      return number == number.bigEndian
+    return value
   }
 }

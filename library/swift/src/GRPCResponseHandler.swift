@@ -129,7 +129,7 @@ public final class GRPCResponseHandler: NSObject {
         return
       }
 
-      state = .expectingMessage(messageLength: messageLength)
+      state = .expectingMessage(messageLength: CFSwapInt32BigToHost(messageLength))
 
     case .expectingMessage(let messageLength):
       let prefixedLength = kGRPCPrefixLength + Int(messageLength)

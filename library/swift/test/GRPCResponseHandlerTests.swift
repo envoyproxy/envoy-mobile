@@ -38,7 +38,7 @@ final class GRPCResponseHandlerTests: XCTestCase {
     let expectation = self.expectation(description: "Closure is called")
     let firstMessage = Data([
       0x0, // Compression flag
-      0x5, 0x0, 0x0, 0x0, // Length bytes
+      0x0, 0x0, 0x0, 0x5, // Length bytes
     ] + kMessage1)
 
     let handler = GRPCResponseHandler()
@@ -57,16 +57,16 @@ final class GRPCResponseHandlerTests: XCTestCase {
 
     let firstMessage = Data([
       0x0, // Compression flag
-      0x5, 0x0, 0x0, 0x0, // Length bytes
+      0x0, 0x0, 0x0, 0x5, // Length bytes
     ] + kMessage1)
 
     let secondMessagePart1 = Data([
       0x0, // Compression flag
-      0x6, 0x0, 0x0, // 3/4 length bytes
+      0x0, 0x0, 0x0, // 3/4 length bytes
     ])
 
     let secondMessagePart2 = Data([
-      0x0, // Last length byte
+      0x6, // Last length byte
     ] + kMessage2[0..<2])
 
     let secondMessagePart3 = Data(kMessage2[2..<6])
@@ -113,7 +113,7 @@ final class GRPCResponseHandlerTests: XCTestCase {
 
     let secondMessage = Data([
       0x0, // Compression flag
-      0x6, 0x0, 0x0, 0x0, // Length bytes
+      0x0, 0x0, 0x0, 0x6, // Length bytes
     ] + kMessage2)
 
     var expectedMessages = [Data(), kMessage2]

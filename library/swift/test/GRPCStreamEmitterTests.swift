@@ -49,8 +49,7 @@ final class GRPCStreamEmitterTests: XCTestCase {
 
     let expectedMessageLength = UInt32(kMessageData.count).bigEndian
     let messageLength: UInt32? = sentData.integer(atIndex: 1)
-    XCTAssertEqual(expectedMessageLength.withPlatformEndianness(),
-                   messageLength?.withPlatformEndianness())
+    XCTAssertEqual(expectedMessageLength, messageLength)
   }
 
   func testAppendsMessageDataAtTheEndOfSentData() {
