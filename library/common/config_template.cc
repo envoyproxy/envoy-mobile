@@ -63,6 +63,13 @@ static_resources:
                 address:
                   socket_address: {address: {{ domain }}, port_value: 443}
     tls_context:
+      common_tls_context: &trusted
+        validation_context:
+          trusted_ca:
+            inline_string: |
+)"
+#include "certificates.inc"
+R"(
       sni: {{ domain }}
     type: LOGICAL_DNS
   - name: default_egress
@@ -76,13 +83,8 @@ static_resources:
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: AUTO
-    # WARNING!
-    # TODO: Enable TLS in https://github.com/lyft/envoy-mobile/issues/322
-    #
-    # tls_context:
-    #   common_tls_context:
-    #     validation_context:
-    #       trusted_ca: {filename: /etc/ssl/certs/ca-certificates.crt}
+    tls_context:
+      common_tls_context: *trusted
 stats_flush_interval: {{ stats_flush_interval }}
 watchdog:
   megamiss_timeout: 60s
