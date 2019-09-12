@@ -1,5 +1,8 @@
 import Foundation
 
+/// gRPC prefix length: 1 byte for compression and 4 bytes for message length.
+let kGRPCPrefixLength: Int = 5
+
 /// Emitter that allows for sending additional data over gRPC.
 @objcMembers
 public final class GRPCStreamEmitter: NSObject {
@@ -25,7 +28,7 @@ public final class GRPCStreamEmitter: NSObject {
     // Compressed-Flag = 0 / 1, encoded as 1 byte unsigned integer
     // Message-Length = length of Message, encoded as 4 byte unsigned integer (big endian)
     // Message = binary representation of protobuf message
-    var prefixData = Data(capacity: 5)
+    var prefixData = Data(capacity: kGRPCPrefixLength)
 
     // Compression flag (1 byte) - 0, not compressed
     prefixData.append(0)

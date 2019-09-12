@@ -46,8 +46,7 @@ final class GRPCStreamEmitterTests: XCTestCase {
     let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
-    sentData.removeSubrange(0..<1) // Remove compression flag
-    let messageSize: UInt32? = sentData.integer(atIndex: 0)
+    let messageSize: UInt32? = sentData.integer(atIndex: 1)
     XCTAssertEqual(UInt32(kMessageData.count).bigEndian, messageSize)
   }
 

@@ -10,7 +10,7 @@ public final class GRPCResponseHandler: NSObject {
     /// Awaiting the length specification of the next message.
     case expectingMessageLength
     /// Awaiting a message with the specified length.
-    case expectingMessage(length: UInt32)
+    case expectingMessage(messageLength: UInt32)
   }
 
   /// Underlying response handler which should be called with response data.
@@ -121,32 +121,28 @@ public final class GRPCResponseHandler: NSObject {
         return
       }
 
-      buffer.removeSubrange(0..<MemoryLayout<UInt8>.size)
       state = .expectingMessageLength
 
     case .expectingMessageLength:
-      guard let messageLength: UInt32 = buffer.integer(atIndex: 0) else {
+      guard let messageLength: UInt32 = buffer.integer(atIndex: 1) else {
         return
       }
 
-      buffer.removeSubrange(0..<MemoryLayout<UInt32>.size)
-      state = .expectingMessage(length: messageLength)
+      state = .expectingMessage(messageLength: messageLength)
 
-    case .expectingMessage(let length):
-      let length = Int(length)
-      if buffer.count < length {
+    case .expectingMessage(let messageLength):
+      let prefixedLength = kGRPCPrefixLength + Int(messageLength)
+      if buffer.count < prefixedLength {
         return
       }
 
-      if length > 0 {
-        // swiftlint:disable:next force_unwrapping
-        let message = buffer.withUnsafeBytes { Data(bytes: $0.baseAddress!, count: length) }
-        onMessage(message)
-        buffer.removeSubrange(0..<length)
+      if messageLength > 0 {
+        onMessage(buffer.subdata(in: kGRPCPrefixLength..<prefixedLength))
       } else {
         onMessage(Data())
       }
 
+      buffer.removeSubrange(0..<prefixedLength)
       state = .expectingCompressionFlag
     }
 
