@@ -52,8 +52,9 @@ public final class GRPCResponseHandler: NSObject {
     var buffer = Data()
     var state = State.expectingCompressionFlag
     self.underlyingHandler.onData { chunk, _ in
-      // gRPC always sends trailers, so the stream will not complete here.
+      // Appending might result in extra copying that can be optimized in the future.
       buffer.append(chunk)
+      // gRPC always sends trailers, so the stream will not complete here.
       GRPCResponseHandler.processBuffer(&buffer, state: &state, onMessage: closure)
     }
 
