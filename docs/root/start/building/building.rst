@@ -87,3 +87,8 @@ example of how this artifact may be used.
 For a demo of a working app using this artifact, see the :ref:`hello_world` example.
 
 .. _releases: https://github.com/lyft/envoy-mobile/releases
+
+If you use Cocoapods, you can add the following to your Podfile to use the latest version of the prebuilt framework.
+
+``pod 'EnvoyClient'``
+
