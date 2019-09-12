@@ -35,7 +35,6 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(String templateYAML) {
-    // TODO(@buildbreaker): Implement actual domain template resolution
     String resolvedConfiguration =
         templateYAML.replace("{{ domain }}", domain)
             .replace("{{ connect_timeout }}", String.format("%ss", connectTimeoutSeconds))

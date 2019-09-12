@@ -8,7 +8,13 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import io.envoyproxy.envoymobile.*
+import io.envoyproxy.envoymobile.AndroidEnvoyClientBuilder
+import io.envoyproxy.envoymobile.Domain
+import io.envoyproxy.envoymobile.Envoy
+import io.envoyproxy.envoymobile.RequestBuilder
+import io.envoyproxy.envoymobile.RequestMethod
+import io.envoyproxy.envoymobile.ResponseHandler
+
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success

@@ -20,7 +20,11 @@ import io.envoyproxy.envoymobile.shared.Success;
 import kotlin.Unit;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
@@ -73,17 +77,23 @@ public class MainActivity extends Activity {
     Request request =
         new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
             .build();
-
+    Map<String, List<String>> responseHeaders = new HashMap<>();
+    AtomicInteger responseStatus = new AtomicInteger();
     ResponseHandler handler =
         new ResponseHandler(Runnable::run)
             .onHeaders((headers, status, endStream) -> {
-              if (status == 200) {
-                String serverHeaderField = headers.get(ENVOY_SERVER_HEADER).get(0);
-                String body = "";
+              responseHeaders.putAll(headers);
+              responseStatus.set(status);
+              return Unit.INSTANCE;
+            })
+            .onData((buffer, endStream) -> {
+              if (responseStatus.get() == 200 && buffer.hasArray()) {
+                String serverHeaderField = responseHeaders.get(ENVOY_SERVER_HEADER).get(0);
+                String body = new String(buffer.array());
                 recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
               } else {
                 recyclerView.post(
-                    () -> viewAdapter.add(new Failure("failed with status " + status)));
+                    () -> viewAdapter.add(new Failure("failed with status " + responseStatus.get())));
               }
               return Unit.INSTANCE;
             })
