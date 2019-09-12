@@ -19,8 +19,10 @@ import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
 import java.io.IOException
+import java.util.HashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
@@ -72,23 +74,30 @@ class MainActivity : Activity() {
   }
 
   private fun makeRequest() {
-    val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME,
-        REQUEST_AUTHORITY, REQUEST_PATH).build()
-
-    val handler = ResponseHandler(Executor { r -> r.run() })
-        .onHeaders { headers, status, _ ->
-          if (status == 200) {
-            val serverHeaderField = headers[ENVOY_SERVER_HEADER]?.first() ?: ""
-            val body = "" // fake data
+    val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
+        .build()
+    val responseHeaders = HashMap<String, List<String>>()
+    val responseStatus = AtomicInteger()
+    val handler = ResponseHandler(Executor { it.run() })
+        .onHeaders { headers, status, endStream ->
+          responseHeaders.putAll(headers)
+          responseStatus.set(status)
+          Unit
+        }
+        .onData { buffer, endStream ->
+          if (responseStatus.get() == 200 && buffer.hasArray()) {
+            val serverHeaderField = responseHeaders[ENVOY_SERVER_HEADER]!![0]
+            val body = String(buffer.array())
             recyclerView.post { viewAdapter.add(Success(body, serverHeaderField)) }
           } else {
-            recyclerView.post { viewAdapter.add(Failure("failed with status: $status")) }
+            recyclerView.post { viewAdapter.add(Failure("failed with status " + responseStatus.get())) }
           }
+          Unit
         }
-        .onError {
-          recyclerView.post { viewAdapter.add(Failure("failed with error ")) }
+        .onError { error ->
+          recyclerView.post { viewAdapter.add(Failure("failed with error " + error.message)) }
+          Unit
         }
 
     envoy.send(request, null, emptyMap(), handler)
-  }
 }
