@@ -92,8 +92,9 @@ public class MainActivity extends Activity {
                 String body = new String(buffer.array());
                 recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
               } else {
-                recyclerView.post(
-                    () -> viewAdapter.add(new Failure("failed with status " + responseStatus.get())));
+                recyclerView.post(()
+                                      -> viewAdapter.add(new Failure("failed with status " +
+                                                                     responseStatus.get())));
               }
               return Unit.INSTANCE;
             })
