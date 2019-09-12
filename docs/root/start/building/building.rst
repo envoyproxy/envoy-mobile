@@ -88,7 +88,11 @@ For a demo of a working app using this artifact, see the :ref:`hello_world` exam
 
 .. _releases: https://github.com/lyft/envoy-mobile/releases
 
-If you use Cocoapods, you can add the following to your Podfile to use the latest version of the prebuilt framework.
+---------
+CocoaPods
+---------
 
-``pod 'EnvoyClient'``
+If you use CocoaPods, you can add the following to your Podfile to use the latest version of the prebuilt framework.
+
+``pod 'EnvoyMobile'``
 
