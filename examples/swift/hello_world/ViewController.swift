@@ -4,7 +4,7 @@ import UIKit
 private let kCellID = "cell-id"
 private let kRequestAuthority = "s3.amazonaws.com"
 private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
-private let kRequestScheme = "http"
+private let kRequestScheme = "https"
 
 final class ViewController: UITableViewController {
   private var requestCount = 0
