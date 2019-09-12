@@ -41,13 +41,16 @@ final class GRPCStreamEmitterTests: XCTestCase {
     XCTAssertEqual(UInt8(0), sentData.integer(atIndex: 0))
   }
 
-  func testPrefixesSentDataWithLengthOfMessage() {
+  func testPrefixesSentDataWithBigEndianLengthOfMessage() {
     var sentData = Data()
     let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
-    let messageSize: UInt32? = sentData.integer(atIndex: 1)
-    XCTAssertEqual(UInt32(kMessageData.count).bigEndian, messageSize)
+
+    let expectedMessageLength = UInt32(kMessageData.count).bigEndian
+    let messageLength: UInt32? = sentData.integer(atIndex: 1)
+    XCTAssertEqual(expectedMessageLength.withPlatformEndianness(),
+                   messageLength?.withPlatformEndianness())
   }
 
   func testAppendsMessageDataAtTheEndOfSentData() {
@@ -55,7 +58,6 @@ final class GRPCStreamEmitterTests: XCTestCase {
     let mockEmitter = MockEmitter(onSendData: { sentData.append(contentsOf: $0) })
     let grpcEmitter = GRPCStreamEmitter(emitter: mockEmitter)
     grpcEmitter.sendMessage(kMessageData)
-    sentData.removeSubrange(0..<5) // Remove compression and length prefix
-    XCTAssertEqual(kMessageData, sentData)
+    XCTAssertEqual(kMessageData, sentData.subdata(in: 5..<sentData.count))
   }
 }
