@@ -63,13 +63,15 @@ static_resources:
                 address:
                   socket_address: {address: {{ domain }}, port_value: 443}
     tls_context:
-      common_tls_context: &trusted
+      common_tls_context:
         validation_context:
-          trusted_ca:
+          trusted_ca: &trusted_ca
             inline_string: |
 )"
 #include "certificates.inc"
 R"(
+          verify_subject_alt_name:
+            - {{ domain }}
       sni: {{ domain }}
     type: LOGICAL_DNS
   - name: default_egress
@@ -84,7 +86,9 @@ R"(
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: AUTO
     tls_context:
-      common_tls_context: *trusted
+      common_tls_context:
+        validation_context:
+          trusted_ca: *trusted_ca
 stats_flush_interval: {{ stats_flush_interval }}
 watchdog:
   megamiss_timeout: 60s
