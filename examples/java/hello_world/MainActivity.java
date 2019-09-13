@@ -7,6 +7,7 @@ import android.os.HandlerThread;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import io.envoyproxy.envoymobile.AndroidEnvoyClientBuilder;
 import io.envoyproxy.envoymobile.Envoy;
 import io.envoyproxy.envoymobile.Request;
@@ -79,6 +80,7 @@ public class MainActivity extends Activity {
               if (status == 200) {
                 String serverHeaderField = headers.get(ENVOY_SERVER_HEADER).get(0);
                 String body = "";
+                Log.d("MainActivity", "successful response!");
                 recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
               } else {
                 recyclerView.post(

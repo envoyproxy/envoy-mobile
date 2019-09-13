@@ -78,6 +78,7 @@ class MainActivity : Activity() {
           if (status == 200) {
             val serverHeaderField = headers[ENVOY_SERVER_HEADER]?.first() ?: ""
             val body = "" // fake data
+            Log.d("MainActivity", "successful response!")
             recyclerView.post { viewAdapter.add(Success(body, serverHeaderField)) }
           } else {
             recyclerView.post { viewAdapter.add(Failure("failed with status: $status")) }
