@@ -15,7 +15,6 @@ class ResponseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         { success ->
           responseTextView.text = responseTextView.resources.getString(R.string.title_string, success.title)
           headerTextView.text = headerTextView.resources.getString(R.string.header_string, success.header)
-          Log.d("ResponseViewHolder", "successful response!")
         },
         { failure ->
           responseTextView.text = responseTextView.resources.getString(R.string.title_string, failure.message)
