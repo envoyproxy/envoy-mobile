@@ -54,6 +54,10 @@ envoy_engine_t init_engine() {
   return 1;
 }
 
+envoy_status_t set_preferred_network(envoy_network_t) {
+  return ENVOY_SUCCESS;
+}
+
 /*
  * Setup envoy for interaction via the main interface.
  * As it stands this function __must__ be executed after calling `run_engine`.

@@ -29,6 +29,11 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
  */
 typedef enum { ENVOY_UNDEFINED_ERROR, ENVOY_STREAM_RESET } envoy_error_code_t;
 
+/**
+ * Networks by interface.
+ */
+typedef enum { ENVOY_WLAN, ENVOY_WWAN } envoy_network_t;
+
 #ifdef __cplusplus
 extern "C" { // release function
 #endif
