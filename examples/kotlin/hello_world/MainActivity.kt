@@ -79,12 +79,12 @@ class MainActivity : Activity() {
     val responseHeaders = HashMap<String, List<String>>()
     val responseStatus = AtomicInteger()
     val handler = ResponseHandler(Executor { it.run() })
-        .onHeaders { headers, status, endStream ->
+        .onHeaders { headers, status, _ ->
           responseHeaders.putAll(headers)
           responseStatus.set(status)
           Unit
         }
-        .onData { buffer, endStream ->
+        .onData { buffer, _ ->
           if (responseStatus.get() == 200 && buffer.hasArray()) {
             val serverHeaderField = responseHeaders[ENVOY_SERVER_HEADER]!![0]
             val body = String(buffer.array())
@@ -100,4 +100,6 @@ class MainActivity : Activity() {
         }
 
     envoy.send(request, null, emptyMap(), handler)
+  }
 }
+
