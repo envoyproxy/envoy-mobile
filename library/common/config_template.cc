@@ -28,6 +28,46 @@ R"(
             - {{ domain }}
       sni: {{ domain }}
     type: LOGICAL_DNS
+  - name: base_wlan
+    connect_timeout: {{ connect_timeout }}
+    dns_refresh_rate: {{ dns_refresh_rate }}
+    dns_lookup_family: V4_ONLY
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: base
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address: {address: {{ domain }}, port_value: 443}
+    tls_context:
+      common_tls_context:
+        validation_context:
+          trusted_ca: *trusted_ca
+          verify_subject_alt_name:
+            - {{ domain }}
+      sni: {{ domain }}
+    type: LOGICAL_DNS
+  - name: base_wwan
+    connect_timeout: {{ connect_timeout }}
+    dns_refresh_rate: {{ dns_refresh_rate }}
+    dns_lookup_family: V4_ONLY
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: base
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address: {address: {{ domain }}, port_value: 443}
+    tls_context:
+      common_tls_context:
+        validation_context:
+          trusted_ca: *trusted_ca
+          verify_subject_alt_name:
+            - {{ domain }}
+      sni: {{ domain }}
+    type: LOGICAL_DNS
 stats_flush_interval: {{ stats_flush_interval_seconds }}s
 watchdog:
   megamiss_timeout: 60s
