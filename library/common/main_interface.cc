@@ -60,8 +60,8 @@ envoy_engine_t init_engine() {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
- current_preferred_network_.set(network);
- return ENVOY_SUCCESS;
+  current_preferred_network_.set(network);
+  return ENVOY_SUCCESS;
 }
 
 /*

@@ -33,7 +33,8 @@ public:
    * @param bridge_callbacks, wrapper for callbacks for events on this stream.
    * @return envoy_stream_t handle to the stream being created.
    */
-  envoy_status_t startStream(envoy_stream_t stream, envoy_network_t preferred_network, envoy_http_callbacks bridge_callbacks);
+  envoy_status_t startStream(envoy_stream_t stream, envoy_network_t preferred_network,
+                             envoy_http_callbacks bridge_callbacks);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
