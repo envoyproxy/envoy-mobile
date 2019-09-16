@@ -52,42 +52,33 @@ Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle,
     : stream_handle_(stream_handle), underlying_stream_(underlying_stream),
       callbacks_(std::move(callbacks)) {}
 
-Dispatcher::Dispatcher() {
-  event_dispatcher_.store(nullptr);
-  cluster_manager_.store(nullptr);
-}
-
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
                        Upstream::ClusterManager& cluster_manager) {
-  {
-    Thread::LockGuard lock(dispatch__lock_);
+  Thread::LockGuard lock(dispatch_lock_);
 
-    // Drain the init_queue_ into the event_dispatcher_.
-    for (const Event::PostCb& cb : init_queue_) {
-      event_dispatcher.post(cb);
-    }
-
-    // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
-    // we rely on atomics instead of locks).
-    event_dispatcher_ = &event_dispatcher;
-    cluster_manager_ = &cluster_manager;
+  // Drain the init_queue_ into the event_dispatcher_.
+  for (const Event::PostCb& cb : init_queue_) {
+    event_dispatcher.post(cb);
   }
+
+  // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
+  // we rely on atomics instead of locks).
+  event_dispatcher_ = &event_dispatcher;
+  cluster_manager_ = &cluster_manager;
 }
 
 void Dispatcher::post(Event::PostCb callback) {
-  {
-    Thread::LockGuard lock(dispatch_lock_);
+  Thread::LockGuard lock(dispatch_lock_);
 
-    // If the event_dispatcher_ is set, then post the functor directly to it.
-    if (event_dispatcher_ != nullptr) {
-      event_dispatcher_->post(callback);
-      return;
-    }
-
-    // Otherwise, push the functor to the init_queue_ which will be drained once the
-    // event_dispatcher_ is ready.
-    initialization_queue_.push_back(callback);
+  // If the event_dispatcher_ is set, then post the functor directly to it.
+  if (event_dispatcher_ != nullptr) {
+    event_dispatcher_->post(callback);
+    return;
   }
+
+  // Otherwise, push the functor to the init_queue_ which will be drained once the
+  // event_dispatcher_ is ready.
+  init_queue_.push_back(callback);
 }
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
