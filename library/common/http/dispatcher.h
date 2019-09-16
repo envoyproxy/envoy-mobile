@@ -1,6 +1,5 @@
 #pragma once
 
-#include <atomic>
 #include <unordered_map>
 
 #include "envoy/buffer/buffer.h"
@@ -144,13 +143,13 @@ private:
   DirectStream* getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
 
-  // The initialization lock and queue, and the event_dispatcher are the only member state that may
+  // The dispatch_lock_ and init_queue_, and event_dispatcher_ are the only member state that may
   // be accessed from a thread other than the event_dispatcher's own thread.
-  Thread::MutexBasicLockable initialization_lock_;
-  std::list<Event::PostCb> initialization_queue_ GUARDED_BY(initialization_lock_);
+  Thread::MutexBasicLockable dispatch_lock_;
+  std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
+  Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_);
+  Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_);
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
-  std::atomic<Event::Dispatcher*> event_dispatcher_;
-  std::atomic<Upstream::ClusterManager*> cluster_manager_;
 };
 
 } // namespace Http

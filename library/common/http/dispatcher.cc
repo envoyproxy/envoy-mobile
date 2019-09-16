@@ -60,41 +60,31 @@ Dispatcher::Dispatcher() {
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
                        Upstream::ClusterManager& cluster_manager) {
   {
-    Thread::LockGuard lock(initialization_lock_);
+    Thread::LockGuard lock(dispatch__lock_);
 
-    for (const Event::PostCb& cb : initialization_queue_) {
+    // Drain the init_queue_ into the event_dispatcher_.
+    for (const Event::PostCb& cb : init_queue_) {
       event_dispatcher.post(cb);
     }
 
-    // The HTTP dispatcher's post function relies on this atomic pointer to signal transition
-    // between the initialization phase -- where functors are posted to the initialization_queue_ --
-    // and ready state -- where functors are directly posted to the event_dispatcher_. Therefore,
-    // this pointer needs to be set at the end of this critical section, **after** the
-    // initialization_queue_ has been drained into the event_dispatcher_ to maintain ordering
-    // guarantees in the event_dispatcher_'s queue.
-    event_dispatcher_.store(&event_dispatcher);
-    cluster_manager_.store(&cluster_manager);
+    // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
+    // we rely on atomics instead of locks).
+    event_dispatcher_ = &event_dispatcher;
+    cluster_manager_ = &cluster_manager;
   }
 }
 
 void Dispatcher::post(Event::PostCb callback) {
-  // If the event_dispatcher is present, dispatch the functor directly to it.
-  auto event_dispatcher = event_dispatcher_.load();
-  if (event_dispatcher != nullptr) {
-    event_dispatcher->post(callback);
-    return;
-  }
-
   {
-    Thread::LockGuard lock(initialization_lock_);
-    // Check that the event_dispatcher_ was not set during lock acquisition.
-    auto event_dispatcher = event_dispatcher_.load();
-    // If the event_dispatcher_ was set, then post the functor directly to it.
-    if (event_dispatcher != nullptr) {
-      event_dispatcher->post(callback);
+    Thread::LockGuard lock(dispatch_lock_);
+
+    // If the event_dispatcher_ is set, then post the functor directly to it.
+    if (event_dispatcher_ != nullptr) {
+      event_dispatcher_->post(callback);
       return;
     }
-    // Otherwise, push the functor to the initialization_queue_ which will be drained once the
+
+    // Otherwise, push the functor to the init_queue_ which will be drained once the
     // event_dispatcher_ is ready.
     initialization_queue_.push_back(callback);
   }
@@ -105,7 +95,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
   post([this, bridge_callbacks, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
-    AsyncClient& async_client = cluster_manager_.load()->httpAsyncClientForCluster("base");
+    AsyncClient& async_client = cluster_manager_->httpAsyncClientForCluster("base");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
@@ -203,7 +193,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
 }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
-  ASSERT(event_dispatcher_.load()->isThreadSafe(),
+  ASSERT(event_dispatcher_->isThreadSafe(),
          "stream interaction must be performed on the event_dispatcher_'s thread.");
   auto direct_stream_pair_it = streams_.find(stream);
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
