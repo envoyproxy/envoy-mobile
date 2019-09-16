@@ -102,4 +102,3 @@ class MainActivity : Activity() {
     envoy.send(request, null, emptyMap(), handler)
   }
 }
-
