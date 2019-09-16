@@ -28,10 +28,12 @@ public:
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
    * opening a stream may fail. The returned handle is immediately valid for use with this API, but
    * there is no guarantee it will ever functionally represent an open stream.
-   * @param bridge_callbacks wrapper for callbacks for events on this stream.
+   * @param stream, the stream to start.
+   * @param preferred_network, the current favored network/interface.
+   * @param bridge_callbacks, wrapper for callbacks for events on this stream.
    * @return envoy_stream_t handle to the stream being created.
    */
-  envoy_status_t startStream(envoy_stream_t stream, envoy_http_callbacks bridge_callbacks);
+  envoy_status_t startStream(envoy_stream_t stream, envoy_network_t preferred_network, envoy_http_callbacks bridge_callbacks);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and needs to be called

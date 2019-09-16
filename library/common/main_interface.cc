@@ -26,11 +26,12 @@ static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
 static Envoy::Server::ServerLifecycleNotifier::HandlePtr stageone_callback_handler_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
+static std::atomic<envoy_network_t> current_preferred_network_{ENVOY_NET_GENERIC};
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
-  http_dispatcher_->startStream(stream, callbacks);
+  http_dispatcher_->startStream(stream, current_preferred_network_.load(), callbacks);
   return ENVOY_SUCCESS;
 }
 
@@ -58,7 +59,10 @@ envoy_engine_t init_engine() {
   return 1;
 }
 
-envoy_status_t set_preferred_network(envoy_network_t) { return ENVOY_SUCCESS; }
+envoy_status_t set_preferred_network(envoy_network_t network) {
+ current_preferred_network_.set(network);
+ return ENVOY_SUCCESS;
+}
 
 /*
  * Setup envoy for interaction via the main interface.

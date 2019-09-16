@@ -91,14 +91,28 @@ void Dispatcher::post(Event::PostCb callback) {
 }
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
+                                       envoy_network_t preferred_network,
                                        envoy_http_callbacks bridge_callbacks) {
   post([this, bridge_callbacks, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
-    // The dispatch_lock_ does not need to guard the cluster_manager_ pointer here because this
-    // functor is only executed once the init_queue_ has been flushed to Envoy's event dispatcher.
-    AsyncClient& async_client =
-        TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
+
+    // Select the cluster based on the current preferred network. This helps to ensure that we
+    // use connections opened on the current favored interface.
+    AsyncClient& async_client;
+    switch (network) {
+    case ENVOY_NET_WLAN:
+      // FIXME: we should switch the cluster_manager_ back to an atomic to prevent potential thread caching issues here.
+      async_client = TS_UNCHECKED_READ(cluster_manager_).httpAsyncClientForCluster("base_wlan");
+      break;
+    case ENVOY_NET_WWAN:
+      async_client = TS_UNCHECKED_READ(cluster_manager_).httpAsyncClientForCluster("base_wwan");
+      break:
+    case ENVOY_NET_GENERIC:
+    default:
+      async_client = TS_UNCHECKED_READ(cluster_manager_).httpAsyncClientForCluster("base");
+    }
+
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
