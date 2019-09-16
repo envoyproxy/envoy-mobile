@@ -1,10 +1,10 @@
 #include "library/common/http/dispatcher.h"
 
 #include "common/buffer/buffer_impl.h"
+#include "common/common/lock_guard.h"
 
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/buffer/utility.h"
-#include "common/common/lock_guard.h"
 #include "library/common/http/header_utility.h"
 
 namespace Envoy {

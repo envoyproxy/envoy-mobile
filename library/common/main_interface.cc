@@ -91,8 +91,16 @@ envoy_status_t run_engine(const char* config, const char* log_level) {
   // https://github.com/lyft/envoy-mobile/issues/34
   try {
     main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
-    // init_engine must have been called prior to calling run_engine or the creation of the envoy
-    // runner thread.
+
+    // Note: init_engine must have been called prior to calling run_engine or the creation of the
+    // envoy runner thread.
+
+    // Note: We're waiting longer than we might otherwise to drain to the main thread's dispatcher.
+    // This is because we're not simply waiting for its availability and for it to have started, but
+    // also because we're waiting for clusters to have done their first attempt at DNS resolution.
+    // When we improve synchronous failure handling and/or move to dynamic forwarding, we only need
+    // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
+    // as we did previously).
     stageone_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, []() -> void {
           http_dispatcher_->ready(main_common_->server()->dispatcher(),
