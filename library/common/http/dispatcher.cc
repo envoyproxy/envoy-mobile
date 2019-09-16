@@ -97,22 +97,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
 
-    // Select the cluster based on the current preferred network. This helps to ensure that we
-    // use connections opened on the current favored interface.
-    AsyncClient& async_client;
-    switch (network) {
-    case ENVOY_NET_WLAN:
-      // FIXME: we should switch the cluster_manager_ back to an atomic to prevent potential thread caching issues here.
-      async_client = TS_UNCHECKED_READ(cluster_manager_).httpAsyncClientForCluster("base_wlan");
-      break;
-    case ENVOY_NET_WWAN:
-      async_client = TS_UNCHECKED_READ(cluster_manager_).httpAsyncClientForCluster("base_wwan");
-      break:
-    case ENVOY_NET_GENERIC:
-    default:
-      async_client = TS_UNCHECKED_READ(cluster_manager_).httpAsyncClientForCluster("base");
-    }
-
+    AsyncClient& async_client = getClient(preferred_network);
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
@@ -207,6 +192,22 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
     }
   });
   return ENVOY_SUCCESS;
+}
+
+// Select the client based on the current preferred network. This helps to ensure that
+// the engine uses connections opened on the current favored interface.
+AsyncClient& Dispatcher::getClient(envoy_network_t preferred_network) {
+  ASSERT(event_dispatcher_.isThreadSafe(),
+         "cluster interaction must be performed on the event_dispatcher_'s thread.");
+  switch (preferred_network) {
+  case ENVOY_NET_WLAN:
+    return cluster_manager_.httpAsyncClientForCluster("base_wlan");
+  case ENVOY_NET_WWAN:
+    return cluster_manager_.httpAsyncClientForCluster("base_wwan");
+  case ENVOY_NET_GENERIC:
+  default:
+    return cluster_manager_.httpAsyncClientForCluster("base");
+  }
 }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {

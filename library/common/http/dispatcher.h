@@ -141,6 +141,7 @@ private:
   void post(Event::PostCb callback);
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
+  AsyncClient& getClient(envoy_network_t preferred_network);
   DirectStream* getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
 
