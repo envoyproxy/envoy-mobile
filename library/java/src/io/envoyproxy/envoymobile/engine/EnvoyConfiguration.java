@@ -18,7 +18,8 @@ public class EnvoyConfiguration {
    * @param dnsRefreshSeconds     rate in seconds to refresh DNS.
    * @param statsFlushSeconds     interval at which to flush Envoy stats.
    */
-  public EnvoyConfiguration(String domain, int connectTimeoutSeconds, int dnsRefreshSeconds, int statsFlushSeconds) {
+  public EnvoyConfiguration(String domain, int connectTimeoutSeconds, int dnsRefreshSeconds,
+                            int statsFlushSeconds) {
     this.domain = domain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -50,6 +51,4 @@ public class EnvoyConfiguration {
   static class ConfigurationException extends RuntimeException {
     ConfigurationException() { super("Unresolved Template Key"); }
   }
-      
-    
 }

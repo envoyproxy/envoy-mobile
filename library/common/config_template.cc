@@ -1,7 +1,5 @@
 /**
  * Templated default configuration
- *
- * Note: Parts of this configuration are required for the direct API to function.
  */
 const char* config_template = R"(
 static_resources:
