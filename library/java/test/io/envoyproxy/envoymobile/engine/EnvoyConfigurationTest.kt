@@ -5,9 +5,9 @@ import org.junit.Test
 private const val TEST_CONFIG = """
 mock_template:
 - name: mock
-  connect_timeout: {{ connect_timeout }}
-  dns_refresh_rate: {{ dns_refresh_rate }}
-  stats_flush_interval: {{ stats_flush_interval }}
+  connect_timeout: {{ connect_timeout_seconds }}
+  dns_refresh_rate: {{ dns_refresh_rate_seconds }}
+  stats_flush_interval: {{ stats_flush_interval_seconds }}
 """
 
 

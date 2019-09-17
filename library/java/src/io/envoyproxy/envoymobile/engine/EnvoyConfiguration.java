@@ -14,8 +14,7 @@ public class EnvoyConfiguration {
    * @param dnsRefreshSeconds     rate in seconds to refresh DNS.
    * @param statsFlushSeconds     interval at which to flush Envoy stats.
    */
-  public EnvoyConfiguration(int connectTimeoutSeconds, int dnsRefreshSeconds,
-                            int statsFlushSeconds) {
+  public EnvoyConfiguration(int connectTimeoutSeconds, int dnsRefreshSeconds, int statsFlushSeconds) {
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.statsFlushSeconds = statsFlushSeconds;
@@ -32,11 +31,10 @@ public class EnvoyConfiguration {
    */
   String resolveTemplate(String templateYAML) {
     // TODO(@buildbreaker): Implement actual domain template resolution
-    String resolvedConfiguration =
-        templateYAML.replace("{{ domain }}", "s3.amazonaws.com")
-            .replace("{{ connect_timeout }}", String.format("%ss", connectTimeoutSeconds))
-            .replace("{{ dns_refresh_rate }}", String.format("%ss", dnsRefreshSeconds))
-            .replace("{{ stats_flush_interval }}", String.format("%ss", statsFlushSeconds));
+    String resolvedConfiguration = templateYAML.replace("{{ domain }}", "s3.amazonaws.com")
+        .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
+        .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
+        .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds));
 
     if (resolvedConfiguration.contains("{{")) {
       throw new ConfigurationException();
@@ -45,6 +43,8 @@ public class EnvoyConfiguration {
   }
 
   static class ConfigurationException extends RuntimeException {
-    ConfigurationException() { super("Unresolved Template Key"); }
+    ConfigurationException() {
+      super("Unresolved Template Key");
+    }
   }
 }
