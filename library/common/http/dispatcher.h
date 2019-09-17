@@ -22,8 +22,6 @@ namespace Http {
  */
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
-  Dispatcher() {}
-
   void ready(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
 
   /**

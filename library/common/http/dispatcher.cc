@@ -95,7 +95,10 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
   post([this, bridge_callbacks, new_stream_handle]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
-    AsyncClient& async_client = cluster_manager_->httpAsyncClientForCluster("base");
+    // The dispatch_lock_ does not need to guard the cluster_manager_ pointer here because this
+    // functor is only executed once the init_queue_ has been flushed to Envoy's event dispatcher.
+    AsyncClient& async_client =
+        TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
     AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
 
     if (!underlying_stream) {
@@ -193,7 +196,9 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
 }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
-  ASSERT(event_dispatcher_->isThreadSafe(),
+  // The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
+  // function should only be called from the context of Envoy's event dispatcher.
+  ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
          "stream interaction must be performed on the event_dispatcher_'s thread.");
   auto direct_stream_pair_it = streams_.find(stream);
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
