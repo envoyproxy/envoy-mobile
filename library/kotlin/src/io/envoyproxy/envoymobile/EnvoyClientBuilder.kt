@@ -4,11 +4,17 @@ import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 
+sealed class BaseConfiguration(
+    val value: String
+)
 
-open class EnvoyBuilder internal constructor(
+class Domain(domain: String) : BaseConfiguration(domain)
+class Yaml(yaml: String) : BaseConfiguration(yaml)
+
+open class EnvoyClientBuilder internal constructor(
+    private val configuration: BaseConfiguration
 ) {
   private var logLevel = LogLevel.INFO
-  private var configYAML: String? = null
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
 
   private var connectTimeoutSeconds = 30
@@ -19,19 +25,8 @@ open class EnvoyBuilder internal constructor(
    * Add a log level to use with Envoy.
    * @param logLevel the log level to use with Envoy.
    */
-  fun addLogLevel(logLevel: LogLevel): EnvoyBuilder {
+  fun addLogLevel(logLevel: LogLevel): EnvoyClientBuilder {
     this.logLevel = logLevel
-    return this
-  }
-
-  /**
-   * Add contents of a yaml file to use as a configuration.
-   * Setting this will supersede any other configuration settings in the builder.
-   *
-   * @param configYAML the contents of a yaml file to use as a configuration.
-   */
-  fun addConfigYAML(configYAML: String?): EnvoyBuilder {
-    this.configYAML = configYAML
     return this
   }
 
@@ -40,7 +35,7 @@ open class EnvoyBuilder internal constructor(
    *
    * @param connectTimeoutSeconds timeout for new network connections to hosts in the cluster.
    */
-  fun addConnectTimeoutSeconds(connectTimeoutSeconds: Int): EnvoyBuilder {
+  fun addConnectTimeoutSeconds(connectTimeoutSeconds: Int): EnvoyClientBuilder {
     this.connectTimeoutSeconds = connectTimeoutSeconds
     return this
   }
@@ -50,7 +45,7 @@ open class EnvoyBuilder internal constructor(
    *
    * @param dnsRefreshSeconds rate in seconds to refresh DNS.
    */
-  fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): EnvoyBuilder {
+  fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): EnvoyClientBuilder {
     this.dnsRefreshSeconds = dnsRefreshSeconds
     return this
   }
@@ -60,7 +55,7 @@ open class EnvoyBuilder internal constructor(
    *
    * @param statsFlushSeconds interval at which to flush Envoy stats.
    */
-  fun addStatsFlushSeconds(statsFlushSeconds: Int): EnvoyBuilder {
+  fun addStatsFlushSeconds(statsFlushSeconds: Int): EnvoyClientBuilder {
     this.statsFlushSeconds = statsFlushSeconds
     return this
   }
@@ -71,11 +66,13 @@ open class EnvoyBuilder internal constructor(
    * @return A new instance of Envoy.
    */
   fun build(): Envoy {
-    val configurationYAML = configYAML
-    if (configurationYAML == null) {
-      return Envoy(engineType(), EnvoyConfiguration(connectTimeoutSeconds, dnsRefreshSeconds, statsFlushSeconds), logLevel)
-    } else {
-      return Envoy(engineType(), configurationYAML, logLevel)
+    return when (configuration) {
+      is Yaml -> {
+        return Envoy(engineType(), configuration.value, logLevel)
+      }
+      is Domain -> {
+        Envoy(engineType(), EnvoyConfiguration(configuration.value, connectTimeoutSeconds, dnsRefreshSeconds, statsFlushSeconds), logLevel)
+      }
     }
   }
 
@@ -84,7 +81,7 @@ open class EnvoyBuilder internal constructor(
    *
    * A new instance of this engine will be created when `build()` is called.
    */
-  internal fun addEngineType(engineType: () -> EnvoyEngine): EnvoyBuilder {
+  internal fun addEngineType(engineType: () -> EnvoyEngine): EnvoyClientBuilder {
     this.engineType = engineType
     return this
   }

@@ -3,18 +3,39 @@ licenses(["notice"])  # Apache 2
 load("//bazel:swift_test.bzl", "envoy_mobile_swift_test")
 
 envoy_mobile_swift_test(
-    name = "envoy_tests",
+    name = "envoy_client_tests",
     srcs = [
-        "EnvoyTests.swift",
+        "EnvoyClientTests.swift",
         "MockEnvoyHTTPStream.swift",
     ],
 )
 
 envoy_mobile_swift_test(
-    name = "envoy_builder_tests",
+    name = "envoy_client_builder_tests",
     srcs = [
-        "EnvoyBuilderTests.swift",
+        "EnvoyClientBuilderTests.swift",
         "MockEnvoyHTTPStream.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "grpc_request_builder_tests",
+    srcs = [
+        "GRPCRequestBuilderTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "grpc_response_handler_tests",
+    srcs = [
+        "GRPCResponseHandlerTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "grpc_stream_emitter_tests",
+    srcs = [
+        "GRPCStreamEmitterTests.swift",
     ],
 )
 

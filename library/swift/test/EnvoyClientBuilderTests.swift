@@ -5,9 +5,10 @@ import XCTest
 private let kMockTemplate = """
 mock_template:
 - name: mock
-  connect_timeout: {{ connect_timeout }}
-  dns_refresh_rate: {{ dns_refresh_rate }}
-  stats_flush_interval: {{ stats_flush_interval }}
+  domain: {{ domain }}
+  connect_timeout: {{ connect_timeout_seconds }}
+  dns_refresh_rate: {{ dns_refresh_rate_seconds }}
+  stats_flush_interval: {{ stats_flush_interval_seconds }}
 """
 
 private final class MockEnvoyEngine: NSObject, EnvoyEngine {
@@ -29,23 +30,22 @@ private final class MockEnvoyEngine: NSObject, EnvoyEngine {
   }
 }
 
-final class EnvoyBuilderTests: XCTestCase {
+final class EnvoyClientBuilderTests: XCTestCase {
   override func tearDown() {
     super.tearDown()
     MockEnvoyEngine.onRunWithConfig = nil
     MockEnvoyEngine.onRunWithYAML = nil
   }
 
-  func testAddingCustomConfigYAMLUsesSpecifiedYAMLWhenRunningEnvoy() throws {
+  func testCustomConfigYAMLUsesSpecifiedYAMLWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithYAML = { yaml, _ in
       XCTAssertEqual("foobar", yaml)
       expectation.fulfill()
     }
 
-    _ = try EnvoyBuilder()
+    _ = try EnvoyClientBuilder(yaml: "foobar")
       .addEngineType(MockEnvoyEngine.self)
-      .addConfigYAML("foobar")
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -57,7 +57,7 @@ final class EnvoyBuilderTests: XCTestCase {
       expectation.fulfill()
     }
 
-    _ = try EnvoyBuilder()
+    _ = try EnvoyClientBuilder(domain: "api.foo.com")
       .addEngineType(MockEnvoyEngine.self)
       .addLogLevel(.trace)
       .build()
@@ -65,7 +65,8 @@ final class EnvoyBuilderTests: XCTestCase {
   }
 
   func testResolvesYAMLWithIndividuallySetValues() throws {
-    let config = EnvoyConfiguration(connectTimeoutSeconds: 200,
+    let config = EnvoyConfiguration(domain: "api.foo.com",
+                                    connectTimeoutSeconds: 200,
                                     dnsRefreshSeconds: 300,
                                     statsFlushSeconds: 400)
     guard let resolvedYAML = config.resolveTemplate(kMockTemplate) else {
@@ -73,13 +74,15 @@ final class EnvoyBuilderTests: XCTestCase {
       return
     }
 
+    XCTAssertTrue(resolvedYAML.contains("domain: api.foo.com"))
     XCTAssertTrue(resolvedYAML.contains("connect_timeout: 200s"))
     XCTAssertTrue(resolvedYAML.contains("dns_refresh_rate: 300s"))
     XCTAssertTrue(resolvedYAML.contains("stats_flush_interval: 400s"))
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
-    let config = EnvoyConfiguration(connectTimeoutSeconds: 200,
+    let config = EnvoyConfiguration(domain: "api.foo.com",
+                                    connectTimeoutSeconds: 200,
                                     dnsRefreshSeconds: 300,
                                     statsFlushSeconds: 400)
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))

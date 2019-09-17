@@ -4,14 +4,16 @@
 
 @implementation EnvoyConfiguration
 
-- (instancetype)initWithConnectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                            dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-                            statsFlushSeconds:(UInt32)statsFlushSeconds {
+- (instancetype)initWithDomain:(NSString *)domain
+         connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+             dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+             statsFlushSeconds:(UInt32)statsFlushSeconds {
   self = [super init];
   if (!self) {
     return nil;
   }
 
+  self.domain = domain;
   self.connectTimeoutSeconds = connectTimeoutSeconds;
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.statsFlushSeconds = statsFlushSeconds;
@@ -20,10 +22,15 @@
 
 - (nullable NSString *)resolveTemplate:(NSString *)templateYAML {
   NSDictionary<NSString *, NSString *> *templateKeysToValues = @{
-    @"connect_timeout" : [NSString stringWithFormat:@"%is", self.connectTimeoutSeconds],
-    @"dns_refresh_rate" : [NSString stringWithFormat:@"%is", self.dnsRefreshSeconds],
-    @"stats_flush_interval" : [NSString stringWithFormat:@"%is", self.statsFlushSeconds]
+    @"domain" : self.domain,
+    @"connect_timeout_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],
+    @"dns_refresh_rate_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.dnsRefreshSeconds],
+    @"stats_flush_interval_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds]
   };
+
   for (NSString *templateKey in templateKeysToValues) {
     NSString *keyToReplace = [NSString stringWithFormat:@"{{ %@ }}", templateKey];
     templateYAML =
@@ -32,6 +39,7 @@
   }
 
   if ([templateYAML rangeOfString:@"{{"].length != 0) {
+    NSLog(@"Error: Could not resolve all configuration template keys");
     return nil;
   }
 
