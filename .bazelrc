@@ -33,6 +33,6 @@ build:fat --ios_multi_cpus=i386,x86_64,armv7,arm64 --fat_apk_cpu=x86,x86_64,arme
 # https://github.com/lyft/envoy-mobile/pull/155#issuecomment-507461500
 # https://stackoverflow.com/a/38177538/1145804
 build:release \
-  --config=sizeopt \
-  --config=fat \
-  --host_force_python=PY3
+  --linkopt=-s \
+  --copt=-O2 \
+  --config=fat
