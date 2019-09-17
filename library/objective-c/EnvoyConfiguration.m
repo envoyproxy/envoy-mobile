@@ -25,7 +25,8 @@
     @"domain" : self.domain,
     @"connect_timeout_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],
-    @"dns_refresh_rate_seconds" : [NSString stringWithFormat:@"%lu", (unsigned long)self.dnsRefreshSeconds],
+    @"dns_refresh_rate_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.dnsRefreshSeconds],
     @"stats_flush_interval_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds]
   };
