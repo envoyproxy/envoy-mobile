@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import io.envoyproxy.envoymobile.AndroidEnvoyClientBuilder;
+import io.envoyproxy.envoymobile.Domain;
 import io.envoyproxy.envoymobile.Envoy;
 import io.envoyproxy.envoymobile.Request;
 import io.envoyproxy.envoymobile.RequestBuilder;
@@ -20,7 +21,11 @@ import io.envoyproxy.envoymobile.shared.Success;
 import kotlin.Unit;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
@@ -40,7 +45,7 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    envoy = new AndroidEnvoyClientBuilder(getBaseContext()).build();
+    envoy = new AndroidEnvoyClientBuilder(getBaseContext(), new Domain(REQUEST_AUTHORITY)).build();
 
     recyclerView = findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -73,18 +78,25 @@ public class MainActivity extends Activity {
     Request request =
         new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
             .build();
-
+    Map<String, List<String>> responseHeaders = new HashMap<>();
+    AtomicInteger responseStatus = new AtomicInteger();
     ResponseHandler handler =
         new ResponseHandler(Runnable::run)
             .onHeaders((headers, status, endStream) -> {
-              if (status == 200) {
-                String serverHeaderField = headers.get(ENVOY_SERVER_HEADER).get(0);
-                String body = "";
-                Log.d("MainActivity", "successful response!");
+              responseHeaders.putAll(headers);
+              responseStatus.set(status);
+              Log.d("MainActivity", "successful response!");
+              return Unit.INSTANCE;
+            })
+            .onData((buffer, endStream) -> {
+              if (responseStatus.get() == 200 && buffer.hasArray()) {
+                String serverHeaderField = responseHeaders.get(ENVOY_SERVER_HEADER).get(0);
+                String body = new String(buffer.array());
                 recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
               } else {
-                recyclerView.post(
-                    () -> viewAdapter.add(new Failure("failed with status " + status)));
+                recyclerView.post(()
+                                      -> viewAdapter.add(new Failure("failed with status " +
+                                                                     responseStatus.get())));
               }
               return Unit.INSTANCE;
             })
