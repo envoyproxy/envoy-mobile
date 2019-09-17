@@ -92,3 +92,11 @@ When building the artifact for release (usage outside of development), be sure t
 in addition to ``--config=ios``.
 
 .. _releases: https://github.com/lyft/envoy-mobile/releases
+
+---------
+CocoaPods
+---------
+
+If you use CocoaPods, you can add the following to your Podfile to use the latest version of the prebuilt framework.
+
+``pod 'EnvoyMobile'``
