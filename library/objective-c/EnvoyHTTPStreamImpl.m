@@ -8,26 +8,22 @@
 #pragma mark - Utility types and functions
 
 typedef struct {
-  EnvoyObserver *observer;
+  EnvoyHTTPCallbacks *callbacks;
   atomic_bool *canceled;
 } ios_context;
 
-// static envoy_data toUnmanagedNativeData(NSData *data) {
-//   // TODO: implement me
-//   return envoy_nodata;
-// }
-
-static void ios_free_native_data(void *context) { free(context); }
-
-// static void ios_release_native_data(void *context) {
-//   // TODO: implement me
-// }
+static envoy_data toNativeData(NSData *data) {
+  uint8_t *native_bytes = (uint8_t *)safe_malloc(sizeof(uint8_t) * data.length);
+  memcpy(native_bytes, data.bytes, data.length);
+  envoy_data ret = {data.length, native_bytes, free, native_bytes};
+  return ret;
+}
 
 static envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
-  uint8_t *native_string = (uint8_t *)malloc(sizeof(uint8_t) * length);
+  uint8_t *native_string = (uint8_t *)safe_malloc(sizeof(uint8_t) * length);
   memcpy(native_string, s.UTF8String, length);
-  envoy_data ret = {length, native_string, ios_free_native_data, native_string};
+  envoy_data ret = {length, native_string, free, native_string};
   return ret;
 }
 
@@ -36,7 +32,7 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   for (id headerKey in headers) {
     length += [headers[headerKey] count];
   }
-  envoy_header *header_array = (envoy_header *)malloc(sizeof(envoy_header) * length);
+  envoy_header *header_array = (envoy_header *)safe_malloc(sizeof(envoy_header) * length);
   envoy_header_size_t header_index = 0;
   for (id headerKey in headers) {
     NSArray *headerList = headers[headerKey];
@@ -52,10 +48,10 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
 }
 
 static NSData *to_ios_data(envoy_data data) {
-  // TODO: investigate buffer ownership
-  // Possibly extend/subclass NSData to call envoy_data.release on dealloc and have release drain
-  // the underlying Envoy buffer instance
-  return [NSData dataWithBytes:(void *)data.bytes length:data.length];
+  // TODO: we are copying from envoy_data to NSData.
+  NSData *platformData = [NSData dataWithBytes:(void *)data.bytes length:data.length];
+  data.release(data.context);
+  return platformData;
 }
 
 static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
@@ -84,54 +80,52 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
 
 static void ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
-  // TODO: protection against null pointers.
-  dispatch_async(observer.dispatchQueue, ^{
-    if (atomic_load(c->canceled)) {
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
+    if (atomic_load(c->canceled) || !callbacks.onHeaders) {
       return;
     }
-    observer.onHeaders(to_ios_headers(headers), end_stream);
+    callbacks.onHeaders(to_ios_headers(headers), end_stream);
   });
 }
 
 static void ios_on_data(envoy_data data, bool end_stream, void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
-  dispatch_async(observer.dispatchQueue, ^{
-    if (atomic_load(c->canceled)) {
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
+    if (atomic_load(c->canceled) || !callbacks.onData) {
       return;
     }
-    // TODO: retain data
-    observer.onData(to_ios_data(data), end_stream);
+    callbacks.onData(to_ios_data(data), end_stream);
   });
 }
 
 static void ios_on_metadata(envoy_headers metadata, void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
-  dispatch_async(observer.dispatchQueue, ^{
-    if (atomic_load(c->canceled)) {
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
+    if (atomic_load(c->canceled) || !callbacks.onMetadata) {
       return;
     }
-    observer.onMetadata(to_ios_headers(metadata));
+    callbacks.onMetadata(to_ios_headers(metadata));
   });
 }
 
 static void ios_on_trailers(envoy_headers trailers, void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
-  dispatch_async(observer.dispatchQueue, ^{
-    if (atomic_load(c->canceled)) {
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
+    if (atomic_load(c->canceled) || !callbacks.onTrailers) {
       return;
     }
-    observer.onTrailers(to_ios_headers(trailers));
+    callbacks.onTrailers(to_ios_headers(trailers));
   });
 }
 
 static void ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
-  dispatch_async(observer.dispatchQueue, ^{
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
     // TODO: release stream
     if (atomic_load(c->canceled)) {
       return;
@@ -141,69 +135,80 @@ static void ios_on_complete(void *context) {
 
 static void ios_on_cancel(void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
   // TODO: release stream
-  dispatch_async(observer.dispatchQueue, ^{
+  dispatch_async(callbacks.dispatchQueue, ^{
     // This call is atomically gated at the call-site and will only happen once.
-    observer.onCancel();
+    if (!callbacks.onCancel) {
+      return;
+    }
+    callbacks.onCancel();
   });
 }
 
 static void ios_on_error(envoy_error error, void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyObserver *observer = c->observer;
-  dispatch_async(observer.dispatchQueue, ^{
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
     // TODO: release stream
-    if (atomic_load(c->canceled)) {
+    if (atomic_load(c->canceled) || !callbacks.onError) {
       return;
     }
-    // FIXME transform error and pass up
-    observer.onError();
+    NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
+                                                      length:error.message.length
+                                                    encoding:NSUTF8StringEncoding];
+    error.message.release(error.message.context);
+    callbacks.onError(error.error_code, errorMessage);
   });
 }
 
-#pragma mark - EnvoyHTTPStream
+#pragma mark - EnvoyHTTPStreamImpl
 
-@implementation EnvoyHTTPStream {
-  EnvoyHTTPStream *_strongSelf;
-  EnvoyObserver *_platformObserver;
-  envoy_observer _nativeObserver;
+@implementation EnvoyHTTPStreamImpl {
+  EnvoyHTTPStreamImpl *_strongSelf;
+  EnvoyHTTPCallbacks *_platformCallbacks;
+  envoy_http_callbacks _nativeCallbacks;
   envoy_stream_t _streamHandle;
 }
 
-- (instancetype)initWithHandle:(uint64_t)handle observer:(EnvoyObserver *)observer {
+- (instancetype)initWithHandle:(uint64_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks {
   self = [super init];
   if (!self) {
     return nil;
   }
 
   _streamHandle = handle;
-  // Retain platform observer
-  _platformObserver = observer;
+  // Retain platform callbacks
+  _platformCallbacks = callbacks;
 
   // Create callback context
-  ios_context *context = malloc(sizeof(ios_context));
-  context->observer = observer;
-  context->canceled = malloc(sizeof(atomic_bool));
+  ios_context *context = safe_malloc(sizeof(ios_context));
+  context->callbacks = callbacks;
+  context->canceled = safe_malloc(sizeof(atomic_bool));
   atomic_store(context->canceled, NO);
 
-  // Create native observer
-  envoy_observer native_obs = {ios_on_headers, ios_on_data,     ios_on_trailers, ios_on_metadata,
-                               ios_on_error,   ios_on_complete, context};
-  _nativeObserver = native_obs;
+  // Create native callbacks
+  envoy_http_callbacks native_callbacks = {ios_on_headers,  ios_on_data,  ios_on_trailers,
+                                           ios_on_metadata, ios_on_error, ios_on_complete,
+                                           context};
+  _nativeCallbacks = native_callbacks;
 
-  envoy_status_t result = start_stream(_streamHandle, native_obs);
+  // We need create the native-held strong ref on this stream before we call start_stream because
+  // start_stream could result in a reset that would release the native ref.
+  // TODO: To be truly safe we probably need stronger guarantees of operation ordering on this ref
+  _strongSelf = self;
+  envoy_status_t result = start_stream(_streamHandle, native_callbacks);
   if (result != ENVOY_SUCCESS) {
+    _strongSelf = nil;
     return nil;
   }
 
-  _strongSelf = self;
   return self;
 }
 
 - (void)dealloc {
-  envoy_observer native_obs = _nativeObserver;
-  ios_context *context = native_obs.context;
+  envoy_http_callbacks native_callbacks = _nativeCallbacks;
+  ios_context *context = native_callbacks.context;
   free(context->canceled);
   free(context);
 }
@@ -213,8 +218,7 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {
-  // TODO: implement
-  // send_data(_streamHandle, toNativeData(data), close);
+  send_data(_streamHandle, toNativeData(data), close);
 }
 
 - (void)sendMetadata:(EnvoyHeaders *)metadata {
@@ -226,7 +230,7 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (int)cancel {
-  ios_context *context = _nativeObserver.context;
+  ios_context *context = _nativeCallbacks.context;
   // Step 1: atomically and synchronously prevent the execution of further callbacks other than
   // on_cancel.
   if (!atomic_exchange(context->canceled, YES)) {

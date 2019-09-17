@@ -26,8 +26,8 @@ static std::atomic<envoy_stream_t> current_stream_handle_{0};
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
-envoy_status_t start_stream(envoy_stream_t stream, envoy_observer observer) {
-  http_dispatcher_->startStream(stream, observer);
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
+  http_dispatcher_->startStream(stream, callbacks);
   return ENVOY_SUCCESS;
 }
 
@@ -35,8 +35,11 @@ envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool e
   return http_dispatcher_->sendHeaders(stream, headers, end_stream);
 }
 
+envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
+  return http_dispatcher_->sendData(stream, data, end_stream);
+}
+
 // TODO: implement.
-envoy_status_t send_data(envoy_stream_t, envoy_data, bool) { return ENVOY_FAILURE; }
 envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {

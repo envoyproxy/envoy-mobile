@@ -1,14 +1,17 @@
 package io.envoyproxy.envoymobile.engine;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
+import io.envoyproxy.envoymobile.engine.types.EnvoyError;
+import io.envoyproxy.envoymobile.engine.types.EnvoyErrorCode;
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
-class JvmObserverContext {
+class JvmCallbackContext {
   private enum FrameType {
     NONE,
     HEADERS,
@@ -17,7 +20,7 @@ class JvmObserverContext {
   }
 
   private final AtomicBoolean canceled = new AtomicBoolean(false);
-  private final EnvoyObserver observer;
+  private final EnvoyHTTPCallbacks callbacks;
 
   // State-tracking for header accumulation
   private Map<String, List<String>> headerAccumulator = null;
@@ -26,11 +29,11 @@ class JvmObserverContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
-  public JvmObserverContext(EnvoyObserver observer) { this.observer = observer; }
+  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) { this.callbacks = callbacks; }
 
   /**
-   * Initializes state for accumulating header pairs via passHeaders, ultimately to be dispatched
-   * via the callback.
+   * Initializes state for accumulating header pairs via passHeaders, ultimately
+   * to be dispatched via the callback.
    *
    * @param length,    the total number of headers included in this header block.
    * @param endStream, whether this header block is the final remote frame.
@@ -40,12 +43,13 @@ class JvmObserverContext {
   }
 
   /**
-   * Allows pairs of strings to be passed across the JVM, reducing overall calls (at the expense of
-   * some complexity).
+   * Allows pairs of strings to be passed across the JVM, reducing overall calls
+   * (at the expense of some complexity).
    *
    * @param key,        the name of the HTTP header.
    * @param value,      the value of the HTTP header.
-   * @param endHeaders, indicates this is the last header pair for this header block.
+   * @param endHeaders, indicates this is the last header pair for this header
+   *                    block.
    */
   public void passHeader(byte[] key, byte[] value, boolean endHeaders) {
     String headerKey;
@@ -85,13 +89,13 @@ class JvmObserverContext {
 
         switch (frameType) {
         case HEADERS:
-          observer.onHeaders(headers, endStream);
+          callbacks.onHeaders(headers, endStream);
           break;
         case METADATA:
-          observer.onMetadata(headers);
+          callbacks.onMetadata(headers);
           break;
         case TRAILERS:
-          observer.onTrailers(headers);
+          callbacks.onTrailers(headers);
           break;
         case NONE:
         default:
@@ -100,9 +104,47 @@ class JvmObserverContext {
       }
     };
 
-    observer.getExecutor().execute(runnable);
+    callbacks.getExecutor().execute(runnable);
 
     resetHeaderAccumulation();
+  }
+
+  /**
+   * Dispatches data received from the JNI layer up to the platform.
+   *
+   * @param data,      chunk of body data from the HTTP response.
+   * @param endStream, indicates this is the last remote frame of the stream.
+   */
+  public void onData(byte[] data, boolean endStream) {
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        if (canceled.get()) {
+          return;
+        }
+        ByteBuffer dataBuffer = ByteBuffer.wrap(data);
+        callbacks.onData(dataBuffer, endStream);
+      }
+    });
+  }
+
+  /**
+   * Dispatches error received from the JNI layer up to the platform.
+   *
+   * @param message,   the error message.
+   * @param errorCode, the envoy_error_code_t.
+   */
+  public void onError(byte[] message, int errorCode) {
+
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        if (canceled.get()) {
+          return;
+        }
+        String errorMessage = new String(message);
+        EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
+        callbacks.onError(error);
+      }
+    });
   }
 
   private void startAccumulation(FrameType type, long length, boolean endStream) {

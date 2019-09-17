@@ -28,18 +28,53 @@ public:
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
    * opening a stream may fail. The returned handle is immediately valid for use with this API, but
    * there is no guarantee it will ever functionally represent an open stream.
-   * @param observer wrapper for callbacks for events on this stream.
+   * @param bridge_callbacks wrapper for callbacks for events on this stream.
    * @return envoy_stream_t handle to the stream being created.
    */
-  envoy_status_t startStream(envoy_stream_t stream, envoy_observer observer);
+  envoy_status_t startStream(envoy_stream_t stream, envoy_http_callbacks bridge_callbacks);
+
+  /**
+   * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
+   * before send_data.
+   * @param stream, the stream to send headers over.
+   * @param headers, the headers to send.
+   * @param end_stream, indicates whether to close the stream locally after sending this frame.
+   * @return envoy_status_t, the resulting status of the operation.
+   */
   envoy_status_t sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
-  envoy_status_t sendData(envoy_stream_t stream, envoy_headers headers, bool end_stream);
-  envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers headers, bool end_stream);
-  envoy_status_t sendTrailers(envoy_stream_t stream, envoy_headers headers);
-  // TODO: when implementing this function we have to make sure to prevent races with already
-  // scheduled and potentially scheduled callbacks. In order to do so the platform callbacks need to
-  // check for atomic state (boolean most likely) that will be updated here to mark the stream as
-  // closed.
+
+  /**
+   * Send data over an open HTTP stream. This method can be invoked multiple times.
+   * @param stream, the stream to send data over.
+   * @param data, the data to send.
+   * @param end_stream, indicates whether to close the stream locally after sending this frame.
+   * @return envoy_status_t, the resulting status of the operation.
+   */
+  envoy_status_t sendData(envoy_stream_t stream, envoy_data data, bool end_stream);
+
+  /**
+   * Send metadata over an HTTP stream. This method can be invoked multiple times.
+   * @param stream, the stream to send metadata over.
+   * @param metadata, the metadata to send.
+   * @return envoy_status_t, the resulting status of the operation.
+   */
+  envoy_status_t sendMetadata(envoy_stream_t stream, envoy_headers metadata);
+
+  /**
+   * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
+   * Note that this method implicitly closes the stream locally.
+   * @param stream, the stream to send trailers over.
+   * @param trailers, the trailers to send.
+   * @return envoy_status_t, the resulting status of the operation.
+   */
+  envoy_status_t sendTrailers(envoy_stream_t stream, envoy_headers trailers);
+
+  /**
+   * Reset an open HTTP stream. This operation closes the stream locally, and remote.
+   * No further operations are valid on the stream.
+   * @param stream, the stream to reset.
+   * @return envoy_status_t, the resulting status of the operation.
+   */
   envoy_status_t resetStream(envoy_stream_t stream);
 
 private:
@@ -53,7 +88,7 @@ private:
   class DirectStreamCallbacks : public AsyncClient::StreamCallbacks,
                                 public Logger::Loggable<Logger::Id::http> {
   public:
-    DirectStreamCallbacks(envoy_stream_t stream_handle, envoy_observer observer,
+    DirectStreamCallbacks(envoy_stream_t stream_handle, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
 
     // AsyncClient::StreamCallbacks
@@ -65,7 +100,7 @@ private:
 
   private:
     const envoy_stream_t stream_handle_;
-    const envoy_observer observer_;
+    const envoy_http_callbacks bridge_callbacks_;
     Dispatcher& http_dispatcher_;
   };
 

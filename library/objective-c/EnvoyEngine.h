@@ -7,10 +7,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
-#pragma mark - EnvoyObserver
+#pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
-@interface EnvoyObserver : NSObject
+@interface EnvoyHTTPCallbacks : NSObject
 
 /**
  * Dispatch queue provided to handle callbacks.
@@ -49,7 +49,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 /**
  * Called when the async HTTP stream has an error.
  */
-@property (nonatomic, strong) void (^onError)();
+@property (nonatomic, strong) void (^onError)(uint64_t errorCode, NSString *message);
 
 /**
  * Called when the async HTTP stream is canceled.
@@ -60,15 +60,15 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 #pragma mark - EnvoyHTTPStream
 
-@interface EnvoyHTTPStream : NSObject
+@protocol EnvoyHTTPStream
 
 /**
  Open an underlying HTTP stream.
 
  @param handle Underlying handle of the HTTP stream owned by an Envoy engine.
- @param observer The observer that will run the stream callbacks.
+ @param callbacks The callbacks for the stream.
  */
-- (instancetype)initWithHandle:(uint64_t)handle observer:(EnvoyObserver *)observer;
+- (instancetype)initWithHandle:(uint64_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
 
 /**
  Send headers over the provided stream.
@@ -110,6 +110,41 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 @end
 
+#pragma mark - EnvoyHTTPStreamImpl
+
+// Concrete implementation of the `EnvoyHTTPStream` protocol.
+@interface EnvoyHTTPStreamImpl : NSObject <EnvoyHTTPStream>
+
+@end
+
+#pragma mark - EnvoyConfiguration
+
+/// Typed configuration that may be used for starting Envoy.
+@interface EnvoyConfiguration : NSObject
+
+@property (nonatomic, strong) NSString *domain;
+@property (nonatomic, assign) UInt32 connectTimeoutSeconds;
+@property (nonatomic, assign) UInt32 dnsRefreshSeconds;
+@property (nonatomic, assign) UInt32 statsFlushSeconds;
+
+/**
+ Create a new instance of the configuration.
+ */
+- (instancetype)initWithDomain:(NSString *)domain
+         connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+             dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+             statsFlushSeconds:(UInt32)statsFlushSeconds;
+
+/**
+ Resolves the provided configuration template using properties on this configuration.
+
+ @param templateYAML The template configuration to resolve.
+ @return The resolved template. Nil if the template fails to fully resolve.
+ */
+- (nullable NSString *)resolveTemplate:(NSString *)templateYAML;
+
+@end
+
 #pragma mark - EnvoyEngine
 
 /// Wrapper layer for calling into Envoy's C/++ API.
@@ -121,42 +156,29 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 - (instancetype)init;
 
 /**
- Run the Envoy engine with the provided config and log level.
+ Run the Envoy engine with the provided configuration and log level.
 
- @param config The configuration file with which to start Envoy.
- @return A status indicating if the action was successful.
- */
-- (int)runWithConfig:(NSString *)config;
-
-/**
- Run the Envoy engine with the provided config and log level.
-
- @param config The configuration file with which to start Envoy.
+ @param configuration The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfig:(NSString *)config logLevel:(NSString *)logLevel;
+- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel;
+
+/**
+ Run the Envoy engine with the provided yaml string and log level.
+
+ @param configYAML The configuration yaml with which to start Envoy.
+ @param logLevel The log level to use when starting Envoy.
+ @return A status indicating if the action was successful.
+ */
+- (int)runWithConfigYAML:(NSString *)configYAML logLevel:(NSString *)logLevel;
 
 /**
  Opens a new HTTP stream attached to this engine.
 
- @param observer Handler for observing stream events.
+ @param callbacks Handler for observing stream events.
  */
-- (EnvoyHTTPStream *)startStreamWithObserver:(EnvoyObserver *)observer;
-
-@end
-
-#pragma mark - EnvoyConfiguration
-
-/// Namespace for Envoy configurations.
-@interface EnvoyConfiguration : NSObject
-
-/**
- Provides a default configuration template that may be used for starting Envoy.
-
- @return A template that may be used as a starting point for constructing configurations.
- */
-+ (NSString *)templateString;
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks;
 
 @end
 

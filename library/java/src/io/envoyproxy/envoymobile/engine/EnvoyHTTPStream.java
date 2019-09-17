@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyObserver;
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
@@ -11,12 +11,12 @@ import java.util.Map;
 public class EnvoyHTTPStream {
 
   private final long streamHandle;
-  private final JvmObserverContext observerContext;
+  private final JvmCallbackContext callbacksContext;
 
-  EnvoyHTTPStream(long streamHandle, EnvoyObserver observer) {
+  EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks) {
     this.streamHandle = streamHandle;
-    observerContext = new JvmObserverContext(observer);
-    JniLibrary.startStream(streamHandle, observerContext);
+    callbacksContext = new JvmCallbackContext(callbacks);
+    JniLibrary.startStream(streamHandle, callbacksContext);
   }
 
   /**
@@ -36,9 +36,17 @@ public class EnvoyHTTPStream {
    *
    * @param data,      the data to send.
    * @param endStream, supplies whether this is the last data in the streamHandle.
+   * @throws UnsupportedOperationException - if the provided buffer is neither a direct ByteBuffer
+   *     nor backed by an on-heap byte array.
    */
   public void sendData(ByteBuffer data, boolean endStream) {
-    JniLibrary.sendData(streamHandle, data, endStream);
+    if (data.isDirect()) {
+      JniLibrary.sendData(streamHandle, data, endStream);
+    } else if (data.hasArray()) {
+      JniLibrary.sendData(streamHandle, data.array(), endStream);
+    } else {
+      throw new UnsupportedOperationException("Unsupported ByteBuffer implementation.");
+    }
   }
 
   /**

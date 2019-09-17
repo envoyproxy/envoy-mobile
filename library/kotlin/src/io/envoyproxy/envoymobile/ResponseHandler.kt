@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyObserver
+import io.envoyproxy.envoymobile.engine.types.EnvoyError
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor;
 
@@ -10,31 +11,31 @@ import java.util.concurrent.Executor;
  */
 class ResponseHandler(val executor: Executor) {
 
-  class EnvoyObserverAdapter(
-      internal val responseHandler: ResponseHandler
-  ) : EnvoyObserver {
+  class EnvoyHTTPCallbacksAdapter(
+      private val responseHandler: ResponseHandler
+  ) : EnvoyHTTPCallbacks {
 
-    override fun getExecutor() : Executor = responseHandler.executor
+    override fun getExecutor(): Executor = responseHandler.executor
 
-    override fun onHeaders(headers: Map<String, List<String>>?, endStream: Boolean) {
-      val statusCode = headers!![":status"]?.first()?.toIntOrNull() ?: 0
+    override fun onHeaders(headers: Map<String, List<String>>, endStream: Boolean) {
+      val statusCode = headers[":status"]?.first()?.toIntOrNull() ?: 0
       responseHandler.onHeadersClosure(headers, statusCode, endStream)
     }
 
-    override fun onData(byteBuffer: ByteBuffer?, endStream: Boolean) {
+    override fun onData(byteBuffer: ByteBuffer, endStream: Boolean) {
       responseHandler.onDataClosure(byteBuffer, endStream)
     }
 
-    override fun onMetadata(metadata: Map<String, List<String>>?) {
-      responseHandler.onMetadataClosure(metadata!!)
+    override fun onMetadata(metadata: Map<String, List<String>>) {
+      responseHandler.onMetadataClosure(metadata)
     }
 
-    override fun onTrailers(trailers: Map<String, List<String>>?) {
-      responseHandler.onTrailersClosure(trailers!!)
+    override fun onTrailers(trailers: Map<String, List<String>>) {
+      responseHandler.onTrailersClosure(trailers)
     }
 
-    override fun onError() {
-      responseHandler.onErrorClosure()
+    override fun onError(error: EnvoyError) {
+      responseHandler.onErrorClosure(error)
     }
 
     override fun onCancel() {
@@ -42,13 +43,13 @@ class ResponseHandler(val executor: Executor) {
     }
   }
 
-  internal val underlyingObserver = EnvoyObserverAdapter(this)
+  internal val underlyingCallbacks = EnvoyHTTPCallbacksAdapter(this)
 
   private var onHeadersClosure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit = { _, _, _ -> Unit }
-  private var onDataClosure: (byteBuffer: ByteBuffer?, endStream: Boolean) -> Unit = { _, _ -> Unit }
+  private var onDataClosure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit = { _, _ -> Unit }
   private var onMetadataClosure: (metadata: Map<String, List<String>>) -> Unit = { Unit }
   private var onTrailersClosure: (trailers: Map<String, List<String>>) -> Unit = { Unit }
-  private var onErrorClosure: () -> Unit = { Unit }
+  private var onErrorClosure: (error: EnvoyError) -> Unit = { Unit }
   private var onCancelClosure: () -> Unit = { Unit }
 
   /**
@@ -72,7 +73,7 @@ class ResponseHandler(val executor: Executor) {
    *                 and flag indicating if the stream is complete.
    * @return ResponseHandler, this ResponseHandler.
    */
-  fun onData(closure: (byteBuffer: ByteBuffer?, endStream: Boolean) -> Unit): ResponseHandler {
+  fun onData(closure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit): ResponseHandler {
     this.onDataClosure = closure
     return this
   }
@@ -108,7 +109,7 @@ class ResponseHandler(val executor: Executor) {
    * @param closure: Closure which will be called when an error occurs.
    * @return ResponseHandler, this ResponseHandler.
    */
-  fun onError(closure: () -> Unit): ResponseHandler {
+  fun onError(closure: (error: EnvoyError) -> Unit): ResponseHandler {
     this.onErrorClosure = closure
     return this
   }

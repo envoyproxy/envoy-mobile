@@ -1,6 +1,5 @@
 licenses(["notice"])  # Apache 2
 
-load("@build_bazel_rules_apple//apple:ios.bzl", "ios_application", "ios_framework", "ios_static_framework")
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
 
 alias(
@@ -38,5 +37,5 @@ touch $@
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
-    jvm_target = "1.6",
+    jvm_target = "1.8",
 )
