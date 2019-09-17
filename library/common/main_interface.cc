@@ -31,7 +31,7 @@ static std::atomic<envoy_network_t> current_preferred_network_{ENVOY_NET_GENERIC
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
-  http_dispatcher_->startStream(stream, current_preferred_network_.load(), callbacks);
+  http_dispatcher_->startStream(stream, callbacks);
   return ENVOY_SUCCESS;
 }
 
@@ -60,7 +60,7 @@ envoy_engine_t init_engine() {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
-  current_preferred_network_.set(network);
+  current_preferred_network_.store(network);
   return ENVOY_SUCCESS;
 }
 
@@ -73,7 +73,8 @@ envoy_status_t set_preferred_network(envoy_network_t network) {
  */
 void setup_envoy() {
   http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(
-      main_common_->server()->dispatcher(), main_common_->server()->clusterManager());
+      main_common_->server()->dispatcher(), main_common_->server()->clusterManager(),
+      current_preferred_network_);
 }
 
 /**
