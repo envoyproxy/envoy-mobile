@@ -23,9 +23,12 @@
 - (nullable NSString *)resolveTemplate:(NSString *)templateYAML {
   NSDictionary<NSString *, NSString *> *templateKeysToValues = @{
     @"domain" : self.domain,
-    @"connect_timeout" : [NSString stringWithFormat:@"%is", self.connectTimeoutSeconds],
-    @"dns_refresh_rate" : [NSString stringWithFormat:@"%is", self.dnsRefreshSeconds],
-    @"stats_flush_interval" : [NSString stringWithFormat:@"%is", self.statsFlushSeconds]
+    @"connect_timeout_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],
+    @"dns_refresh_rate_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.dnsRefreshSeconds],
+    @"stats_flush_interval_seconds" :
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds]
   };
 
   for (NSString *templateKey in templateKeysToValues) {
