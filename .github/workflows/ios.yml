@@ -42,7 +42,7 @@ jobs:
       - name: 'Build swift app'
         run: ./bazelw build --config=ios //examples/swift/hello_world:app
       - name: 'Start the iOS simulator'
-        run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.4"
+        run: 'xcrun simctl boot "iPhone X"'
       # Run the app in the background and redirect logs.
       - name: 'Run swift app'
         run: ./bazelw run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
@@ -72,7 +72,7 @@ jobs:
       - name: 'Build objective-c app'
         run: ./bazelw build --config=ios //examples/objective-c/hello_world:app
       - name: 'Start the iOS simulator'
-        run: npm install -g ios-sim && ios-sim start --devicetypeid "iPhone-X, 12.4"
+        run: 'xcrun simctl boot "iPhone X"'
       # Run the app in the background and redirect logs.
       - name: 'Run objective-c app'
         run: ./bazelw run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
