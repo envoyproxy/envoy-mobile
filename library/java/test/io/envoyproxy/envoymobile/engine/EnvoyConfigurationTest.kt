@@ -7,9 +7,9 @@ private const val TEST_CONFIG = """
 mock_template:
 - name: mock
   domain: {{ domain }}
-  connect_timeout: {{ connect_timeout_seconds }}
-  dns_refresh_rate: {{ dns_refresh_rate_seconds }}
-  stats_flush_interval: {{ stats_flush_interval_seconds }}
+  connect_timeout: {{ connect_timeout_seconds }}s
+  dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
+  stats_flush_interval: {{ stats_flush_interval_seconds }}s
 """
 
 
@@ -21,9 +21,9 @@ class EnvoyConfigurationTest {
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG)
     assertThat(resolvedTemplate).contains("domain: api.foo.com")
-    assertThat(resolvedTemplate).contains("connect_timeout: 123")
-    assertThat(resolvedTemplate).contains("dns_refresh_rate: 234")
-    assertThat(resolvedTemplate).contains("stats_flush_interval: 345")
+    assertThat(resolvedTemplate).contains("connect_timeout: 123s")
+    assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
+    assertThat(resolvedTemplate).contains("stats_flush_interval: 345s")
   }
 
 
