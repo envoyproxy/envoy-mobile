@@ -84,7 +84,7 @@ envoy_status_t reset_stream(envoy_stream_t stream);
 envoy_engine_t init_engine();
 
 /**
- * Update the network interface to the preferred network for opening new connections.
+ * Update the network interface to the preferred network for opening new streams.
  * Note that this state is shared by all engines.
  * @param network_interface, the interface to be preferred for new sockets.
  * @return envoy_status_t, the resulting status of the operation.
