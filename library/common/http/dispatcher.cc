@@ -19,8 +19,17 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
-  envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
-  bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+  // TODO: ***HACK*** currently Envoy sends local replies in cases which for a library ought to be
+  // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
+  // make this possible, but nothing expedient. For the immediate term this is our only real
+  // option.(PUT ISSUE HERE)
+  //
+  // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
+  if (headers.get(Http::Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
+    envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+    bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+  } else {
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
