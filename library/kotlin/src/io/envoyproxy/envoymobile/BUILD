@@ -48,3 +48,32 @@ envoy_mobile_kt_library(
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
     ],
 )
+
+kt_jvm_library(
+    name = "envoy_kt_jvm_lib",
+    visibility = ["//visibility:public"],
+
+    srcs = [
+        "GRPCClient.kt",
+        "GRPCRequestBuilder.kt",
+        "GRPCResponseHandler.kt",
+        "GRPCStreamEmitter.kt",
+        "EnvoyClient.kt",
+        "EnvoyClientBuilder.kt",
+        "EnvoyException.kt",
+        "EnvoyStreamEmitter.kt",
+        "HTTPClient.kt",
+        "Request.kt",
+        "RequestBuilder.kt",
+        "RequestMapper.kt",
+        "RequestMethod.kt",
+        "ResponseHandler.kt",
+        "RetryPolicy.kt",
+        "RetryPolicyMapper.kt",
+        "StreamEmitter.kt",
+    ],
+    deps = [
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_jvm_base_engine_lib",
+
+    ]
+)
