@@ -61,6 +61,13 @@ Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle,
     : stream_handle_(stream_handle), underlying_stream_(underlying_stream),
       callbacks_(std::move(callbacks)) {}
 
+AsyncClient::StreamOptions
+Dispatcher::DirectStream::toNativeStreamOptions(envoy_stream_options stream_options) {
+  AsyncClient::StreamOptions native_stream_options;
+  native_stream_options.setBufferBodyForRetry(stream_options.buffer_body_for_retry);
+  return native_stream_options;
+}
+
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
                        Upstream::ClusterManager& cluster_manager) {
   Thread::LockGuard lock(dispatch_lock_);
@@ -91,15 +98,21 @@ void Dispatcher::post(Event::PostCb callback) {
 }
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
-                                       envoy_http_callbacks bridge_callbacks) {
-  post([this, bridge_callbacks, new_stream_handle]() -> void {
+                                       envoy_http_callbacks bridge_callbacks,
+                                       envoy_stream_options stream_options) {
+  post([this, new_stream_handle, bridge_callbacks, stream_options]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
     // The dispatch_lock_ does not need to guard the cluster_manager_ pointer here because this
     // functor is only executed once the init_queue_ has been flushed to Envoy's event dispatcher.
     AsyncClient& async_client =
         TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
-    AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, {});
+    // While this struct is passed by reference to AsyncClient::start, it does not need to be
+    // preserved outside of this stack frame because its values are not used beyond the return of
+    // AsyncClient::start. If this changes, we need to store this struct in the DirectStream.
+    AsyncClient::StreamOptions native_stream_options =
+        Dispatcher::DirectStream::toNativeStreamOptions(stream_options);
+    AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, native_stream_options);
 
     if (!underlying_stream) {
       // TODO: this callback might fire before the startStream function returns.
