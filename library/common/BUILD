@@ -35,3 +35,30 @@ cc_library(
     ],
     deps = [":envoy_main_interface_lib"],
 )
+
+
+cc_library(
+    name = "envoy_java_jni_interface_lib",
+    srcs = [
+        "jni_interface.cc",
+        "@local_jdk//:jni_header",
+#        "@local_jdk//:jni_md_header-linux",
+    ],
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+#        "-llog",
+    ],
+    deps = [":envoy_main_interface_lib"],
+    includes = [
+        "../../external/local_jdk/include",
+        "../../external/local_jdk/include/darwin"
+    ],
+)
+
+cc_binary(
+    name = "envoy_jni.so",
+    deps = [ "envoy_java_jni_interface_lib" ],
+    visibility = ["//visibility:public"],
+    linkshared = 1,
+)
