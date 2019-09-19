@@ -49,15 +49,11 @@ envoy_mobile_kt_library(
     ],
 )
 
-kt_jvm_library(
+envoy_mobile_kt_library(
     name = "envoy_kt_jvm_lib",
     visibility = ["//visibility:public"],
 
     srcs = [
-        "GRPCClient.kt",
-        "GRPCRequestBuilder.kt",
-        "GRPCResponseHandler.kt",
-        "GRPCStreamEmitter.kt",
         "EnvoyClient.kt",
         "EnvoyClientBuilder.kt",
         "EnvoyException.kt",
