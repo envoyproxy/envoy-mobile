@@ -23,7 +23,10 @@ envoy_cc_library(
         "@envoy//source/common/common:lock_guard_lib",
         "@envoy//source/common/common:minimal_logger_lib",
         "@envoy//source/common/common:thread_lib",
+        "@envoy//source/common/http:headers_lib",
+        "@envoy//source/common/http:utility_lib",
     ],
+    external_deps = ["abseil_optional"],
 )
 
 envoy_cc_library(

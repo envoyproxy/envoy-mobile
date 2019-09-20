@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 
+#include "absl/types/optional.h"
+
 #include "envoy/buffer/buffer.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/http/async_client.h"
@@ -104,6 +106,8 @@ private:
   private:
     const envoy_stream_t stream_handle_;
     const envoy_http_callbacks bridge_callbacks_;
+    absl::optional<envoy_error_code_t> error_code_;
+    absl::optional<envoy_data> error_message_;
     Dispatcher& http_dispatcher_;
   };
 

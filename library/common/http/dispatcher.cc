@@ -1,6 +1,7 @@
 #include "library/common/http/dispatcher.h"
 
 #include "common/buffer/buffer_impl.h"
+#include "common/http/headers.h"
 #include "common/http/utility.h"
 #include "common/common/lock_guard.h"
 
@@ -26,12 +27,12 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
   // option.(PUT ISSUE HERE)
 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
-  if (headers.get(Http::Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
+  if (headers->get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
   } else {
     // We assume that all local replies represent error conditions, having audited occurrences in Envoy today. This is not a good long-term solution.
-    uint64_t response_status = Http::Utility::getResponseStatus(headers);
+    uint64_t response_status = Http::Utility::getResponseStatus(*headers);
     switch (response_status) {
       case 503:
         error_code_ = ENVOY_CONNECTION_FAILURE;
@@ -53,7 +54,7 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  if (!error_code_) {
+  if (!error_code_.has_value()) {
     bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                               bridge_callbacks_.context);
   } else {
@@ -64,6 +65,7 @@ void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
     stream->underlying_stream_.reset();
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
