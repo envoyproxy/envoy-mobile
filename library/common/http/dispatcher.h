@@ -2,8 +2,6 @@
 
 #include <unordered_map>
 
-#include "absl/types/optional.h"
-
 #include "envoy/buffer/buffer.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/http/async_client.h"
@@ -13,6 +11,7 @@
 #include "common/common/logger.h"
 #include "common/common/thread.h"
 
+#include "absl/types/optional.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {

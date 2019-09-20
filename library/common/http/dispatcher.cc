@@ -1,9 +1,9 @@
 #include "library/common/http/dispatcher.h"
 
 #include "common/buffer/buffer_impl.h"
+#include "common/common/lock_guard.h"
 #include "common/http/headers.h"
 #include "common/http/utility.h"
-#include "common/common/lock_guard.h"
 
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/buffer/utility.h"
@@ -31,19 +31,20 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
     envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
   } else {
-    // We assume that all local replies represent error conditions, having audited occurrences in Envoy today. This is not a good long-term solution.
+    // We assume that all local replies represent error conditions, having audited occurrences in
+    // Envoy today. This is not a good long-term solution.
     uint64_t response_status = Http::Utility::getResponseStatus(*headers);
     switch (response_status) {
-      case 503:
-        error_code_ = ENVOY_CONNECTION_FAILURE;
-        break;
-      default:
-        error_code_ = ENVOY_UNDEFINED_ERROR;
+    case 503:
+      error_code_ = ENVOY_CONNECTION_FAILURE;
+      break;
+    default:
+      error_code_ = ENVOY_UNDEFINED_ERROR;
     }
     ENVOY_LOG(debug, "[S{}] intercepted local response", stream_handle_);
     if (end_stream) {
-      // The local stream may or may not have completed. We don't want to be tracking/synchronized on that state, so
-      // we just reset everything now to ensure teardown.
+      // The local stream may or may not have completed. We don't want to be tracking/synchronized
+      // on that state, so we just reset everything now to ensure teardown.
       auto stream = http_dispatcher_.getStream(stream_handle_);
       ASSERT(stream);
       stream->underlying_stream_.reset();
@@ -60,8 +61,8 @@ void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_
   } else {
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
-    // The local stream may or may not have completed. We don't want to be tracking/synchronized on that state, so
-    // we just reset everything now to ensure teardown.
+    // The local stream may or may not have completed. We don't want to be tracking/synchronized on
+    // that state, so we just reset everything now to ensure teardown.
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
     stream->underlying_stream_.reset();

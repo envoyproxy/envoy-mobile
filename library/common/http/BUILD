@@ -8,6 +8,7 @@ envoy_cc_library(
     name = "dispatcher_lib",
     srcs = ["dispatcher.cc"],
     hdrs = ["dispatcher.h"],
+    external_deps = ["abseil_optional"],
     repository = "@envoy",
     deps = [
         "//library/common/buffer:bridge_fragment_lib",
@@ -26,7 +27,6 @@ envoy_cc_library(
         "@envoy//source/common/http:headers_lib",
         "@envoy//source/common/http:utility_lib",
     ],
-    external_deps = ["abseil_optional"],
 )
 
 envoy_cc_library(
