@@ -93,6 +93,9 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
+        # Kotlin
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
+
         # Test artifacts
         "org.assertj:assertj-core:3.9.0",
         "junit:junit:4.12",
@@ -103,6 +106,12 @@ maven_install(
         "https://repo1.maven.org/maven2",
         "https://jcenter.bintray.com/",
     ],
+)
+
+http_archive(
+    name = "google_bazel_common",
+    strip_prefix = "bazel-common-f1115e0f777f08c3cdb115526c4e663005bec69b",
+    urls = ["https://github.com/google/bazel-common/archive/f1115e0f777f08c3cdb115526c4e663005bec69b.zip"],
 )
 
 git_repository(

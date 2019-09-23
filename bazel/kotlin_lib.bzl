@@ -1,4 +1,5 @@
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_library")
+load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
 
 # Android library drops exported dependencies from dependent rules. The kt_android_library
 #  internally is just a macro which wraps two rules into one:
@@ -17,7 +18,7 @@ def envoy_mobile_kt_aar_android_library(name, custom_package, manifest, visibili
         custom_package = custom_package,
         manifest = manifest,
         visibility = ["//visibility:public"],
-        deps = deps,
+        deps = ["@maven//:org_jetbrains_kotlin_kotlin_stdlib_jdk8"] + deps,
     )
 
 def envoy_mobile_android_library(name, custom_package, manifest, visibility = None, srcs = [], deps = []):
