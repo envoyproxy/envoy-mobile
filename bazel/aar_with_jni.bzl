@@ -1,3 +1,5 @@
+load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
+
 # This file is based on https://github.com/aj-michael/aar_with_jni which is
 # subject to the following copyright and license:
 
@@ -28,9 +30,6 @@
 # creates a few underlying libraries, because of this the classes.jar in
 # the aar we built was empty. This rule separately builds the underlying
 # kt.jar file, and replaces the aar's classes.jar with the kotlin jar
-
-load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
-
 def aar_with_jni(name, android_library, archive_name = "", visibility = None):
     if not archive_name:
         archive_name = name
