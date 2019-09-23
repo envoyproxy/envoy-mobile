@@ -67,7 +67,6 @@ EOF
         srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk"],
         outs = [archive_name + ".aar"],
         cmd = """
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 cp $(location {android_library}.aar) $(location :{archive_name}.aar)
 chmod +w $(location :{archive_name}.aar)
 origdir=$$PWD
