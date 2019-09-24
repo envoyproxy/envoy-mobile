@@ -203,12 +203,13 @@ AsyncClient& Dispatcher::getClient() {
          "cluster interaction must be performed on the event_dispatcher_'s thread.");
   switch (preferred_network_.load()) {
   case ENVOY_NET_WLAN:
-    return cluster_manager_->httpAsyncClientForCluster("base_wlan");
+    // The ASSERT above ensures the cluster_manager_ is visible/safe to access.
+    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wlan");
   case ENVOY_NET_WWAN:
-    return cluster_manager_->httpAsyncClientForCluster("base_wwan");
+    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wwan");
   case ENVOY_NET_GENERIC:
   default:
-    return cluster_manager_->httpAsyncClientForCluster("base");
+    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
   }
 }
 
