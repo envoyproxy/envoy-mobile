@@ -90,8 +90,8 @@ void Dispatcher::post(Event::PostCb callback) {
   init_queue_.push_back(callback);
 }
 
-Dispatcher::Dispatcher(std::atomic<envoy_network_t>& current_preferred_network)
-    : current_preferred_network_(current_preferred_network) {}
+Dispatcher::Dispatcher(std::atomic<envoy_network_t>& preferred_network)
+    : preferred_network_(preferred_network) {}
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks) {
@@ -201,7 +201,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
 AsyncClient& Dispatcher::getClient() {
   ASSERT(event_dispatcher_.isThreadSafe(),
          "cluster interaction must be performed on the event_dispatcher_'s thread.");
-  switch (current_preferred_network_.load()) {
+  switch (preferred_network_.load()) {
   case ENVOY_NET_WLAN:
     return cluster_manager_.httpAsyncClientForCluster("base_wlan");
   case ENVOY_NET_WWAN:

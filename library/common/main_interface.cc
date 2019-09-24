@@ -26,7 +26,7 @@ static std::unique_ptr<Envoy::MainCommon> main_common_;
 static std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
 static Envoy::Server::ServerLifecycleNotifier::HandlePtr stageone_callback_handler_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
-static std::atomic<envoy_network_t> current_preferred_network_{ENVOY_NET_GENERIC};
+static std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
@@ -60,7 +60,7 @@ envoy_engine_t init_engine() {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
-  current_preferred_network_.store(network);
+  preferred_network_.store(network);
   return ENVOY_SUCCESS;
 }
 
@@ -74,7 +74,7 @@ envoy_status_t set_preferred_network(envoy_network_t network) {
 void setup_envoy() {
   http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(
       main_common_->server()->dispatcher(), main_common_->server()->clusterManager(),
-      current_preferred_network_);
+      preferred_network_);
 }
 
 /**

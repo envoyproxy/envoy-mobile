@@ -22,7 +22,7 @@ namespace Http {
  */
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
-  Dispatcher(std::atomic<envoy_network_t>& current_preferred_network);
+  Dispatcher(std::atomic<envoy_network_t>& preferred_network);
 
   void ready(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
 
@@ -152,7 +152,7 @@ private:
   Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_);
   Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_);
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
-  std::atomic<envoy_network_t>& current_preferred_network_;
+  std::atomic<envoy_network_t>& preferred_network_;
 };
 
 } // namespace Http
