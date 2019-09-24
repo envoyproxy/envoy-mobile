@@ -199,11 +199,13 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
 // Select the client based on the current preferred network. This helps to ensure that
 // the engine uses connections opened on the current favored interface.
 AsyncClient& Dispatcher::getClient() {
-  ASSERT(event_dispatcher_->isThreadSafe(),
+  // This function must be called from the dispatcher's own thread and so this state
+  // is safe to access without holding the dispatch_lock_.
+  ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
          "cluster interaction must be performed on the event_dispatcher_'s thread.");
   switch (preferred_network_.load()) {
   case ENVOY_NET_WLAN:
-    // The ASSERT above ensures the cluster_manager_ is visible/safe to access.
+    // The ASSERT above ensures the cluster_manager_ is safe to access.
     return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wlan");
   case ENVOY_NET_WWAN:
     return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wwan");
