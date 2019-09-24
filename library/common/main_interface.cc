@@ -53,7 +53,7 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
 envoy_status_t reset_stream(envoy_stream_t stream) { return http_dispatcher_->resetStream(stream); }
 
 envoy_engine_t init_engine() {
-  http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>();
+  http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(preferred_network_);
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   return 1;
@@ -62,19 +62,6 @@ envoy_engine_t init_engine() {
 envoy_status_t set_preferred_network(envoy_network_t network) {
   preferred_network_.store(network);
   return ENVOY_SUCCESS;
-}
-
-/*
- * Setup envoy for interaction via the main interface.
- * As it stands this function __must__ be executed after calling `run_engine`.
- * run_engine assigns a static unique pointer used by this function.
- * TODO: this will change when the engine is no longer static:
- * https://github.com/lyft/envoy-mobile/issues/332
- */
-void setup_envoy() {
-  http_dispatcher_ = std::make_unique<Envoy::Http::Dispatcher>(
-      main_common_->server()->dispatcher(), main_common_->server()->clusterManager(),
-      preferred_network_);
 }
 
 /**
