@@ -9,7 +9,7 @@ load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_framework_import
 
 aar_import(
     name = "envoy_mobile_android",
-    aar = "envoy.aar",
+    aar = "envoy-mobile.aar",
     visibility = ["//visibility:public"],
 )
 
