@@ -19,17 +19,24 @@ touch $@
 )
 
 alias(
+    name = "android_pom",
+    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_pom"
+)
+
+alias(
     name = "android_aar",
     actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
 )
 
 genrule(
     name = "android_dist",
-    srcs = ["android_aar"],
-    outs = ["android_out"],
+    srcs = ["android_aar", "android_pom"],
+    outs = ["stub_android_dist_output"],
     cmd = """
-cp $< dist/envoy.aar
-chmod 755 dist/envoy.aar
+cp $(location :android_aar) dist/envoy-mobile.aar
+cp $(location :android_pom) dist/envoy-mobile-pom.xml
+chmod 755 dist/envoy-mobile.aar
+chmod 755 dist/envoy-mobile-pom.xml
 touch $@
 """,
     stamp = True,
