@@ -86,7 +86,7 @@ envoy_engine_t init_engine();
 /**
  * Update the network interface to the preferred network for opening new streams.
  * Note that this state is shared by all engines.
- * @param network, the network to be preferred for new sockets.
+ * @param network, the network to be preferred for new streams.
  * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t set_preferred_network(envoy_network_t network);
