@@ -1,12 +1,10 @@
 /**
  * Templated default configuration
- *
- * Note: Parts of this configuration are required for the direct API to function.
  */
 const char* config_template = R"(
 static_resources:
   clusters:
-  - name: base
+  - name: base # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout_seconds }}s
     dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
     dns_lookup_family: V4_ONLY
@@ -30,7 +28,7 @@ R"(
             - {{ domain }}
       sni: {{ domain }}
     type: LOGICAL_DNS
-  - name: base_wlan
+  - name: base_wlan # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout }}
     dns_refresh_rate: {{ dns_refresh_rate }}
     dns_lookup_family: V4_ONLY
@@ -50,7 +48,7 @@ R"(
             - {{ domain }}
       sni: {{ domain }}
     type: LOGICAL_DNS
-  - name: base_wwan
+  - name: base_wwan # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout }}
     dns_refresh_rate: {{ dns_refresh_rate }}
     dns_lookup_family: V4_ONLY
