@@ -4,7 +4,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.envoyprox.envoymobile</groupId>
+    <groupId>io.envoyproxy.envoymobile</groupId>
     <artifactId>envoy-mobile</artifactId>
     <version>{pom_version}</version>
 
