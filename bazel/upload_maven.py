@@ -6,7 +6,6 @@ import argparse
 import base64
 import os
 import shutil
-import sys
 import time
 
 try:
@@ -22,24 +21,6 @@ _GROUP_ID = "io.envoyproxy.envoymobile"
 _ARTIFACT_ID = "envoy-mobile"
 _BASE_URL = "{}/io/envoyproxy/envoymobile".format(_ARTIFACT_HOST_URL)
 _LOCAL_INSTALL_PATH = os.path.expanduser("~/.m2/repository/io/envoyproxy/envoymobile/{}".format(_ARTIFACT_ID))
-
-
-class _Progress(object):
-    def __init__(self, total_uploads):
-        self._total_uploads = total_uploads
-
-    def __call__(self, completed_uploads, random_name):
-        sys.stdout.write(
-            "[{}/{}] uploading {}...\033[K\r".format(
-                completed_uploads, self._total_uploads, random_name
-            )
-        )
-
-        sys.stdout.flush()
-
-    def done(self):
-        sys.stdout.write("\n")
-        sys.stdout.flush()
 
 
 def _upload(target, version):
