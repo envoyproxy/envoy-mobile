@@ -24,7 +24,7 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
-  // option.(PUT ISSUE HERE)
+  // option. See https://github.com/lyft/envoy-mobile/issues/460
 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
   if (headers->get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
