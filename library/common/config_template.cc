@@ -34,7 +34,7 @@ R"(
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: base
+      cluster_name: base_wlan
       endpoints:
         - lb_endpoints:
             - endpoint:
@@ -54,7 +54,7 @@ R"(
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: base
+      cluster_name: base_wwan
       endpoints:
         - lb_endpoints:
             - endpoint:
