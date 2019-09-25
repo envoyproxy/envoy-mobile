@@ -21,7 +21,7 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
-  // TODO: ***HACK*** currently Envoy sends local replies in cases which for a library ought to be
+  // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
   // option.(PUT ISSUE HERE)
