@@ -85,10 +85,7 @@ static void _ensure_reachability_running() {
   dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
   if (!SCNetworkReachabilitySetDispatchQueue(_reachability_ref, queue)) {
     SCNetworkReachabilitySetCallback(_reachability_ref, NULL, NULL);
-    return;
   }
-
-  return;
 }
 
 @end
