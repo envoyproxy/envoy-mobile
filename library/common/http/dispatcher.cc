@@ -30,25 +30,32 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
   if (headers->get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
-  } else {
-    // We assume that all local replies represent error conditions, having audited occurrences in
-    // Envoy today. This is not a good long-term solution.
-    uint64_t response_status = Http::Utility::getResponseStatus(*headers);
-    switch (response_status) {
-    case 503:
-      error_code_ = ENVOY_CONNECTION_FAILURE;
-      break;
-    default:
-      error_code_ = ENVOY_UNDEFINED_ERROR;
-    }
-    ENVOY_LOG(debug, "[S{}] intercepted local response", stream_handle_);
-    if (end_stream) {
-      // The local stream may or may not have completed. We don't want to be tracking/synchronized
-      // on that state, so we just reset everything now to ensure teardown.
-      auto stream = http_dispatcher_.getStream(stream_handle_);
-      ASSERT(stream);
-      stream->underlying_stream_.reset();
-    }
+    return;
+  }
+
+  // We assume that local replies represent error conditions, having audited occurrences in
+  // Envoy today. This is not a good long-term solution.
+  uint64_t response_status = Http::Utility::getResponseStatus(*headers);
+  switch (response_status) {
+  case 200: {
+    // We still treat successful local responses as actual success.
+    envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+    bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    return;
+  }
+  case 503:
+    error_code_ = ENVOY_CONNECTION_FAILURE;
+    break;
+  default:
+    error_code_ = ENVOY_UNDEFINED_ERROR;
+  }
+  ENVOY_LOG(debug, "[S{}] intercepted local response", stream_handle_);
+  if (end_stream) {
+    // The local stream may or may not have completed. We don't want to be tracking/synchronized
+    // on that state, so we just reset everything now to ensure teardown.
+    auto stream = http_dispatcher_.getStream(stream_handle_);
+    ASSERT(stream);
+    stream->underlying_stream_.reset();
   }
 }
 
