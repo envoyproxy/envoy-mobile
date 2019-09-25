@@ -29,8 +29,8 @@ R"(
       sni: {{ domain }}
     type: LOGICAL_DNS
   - name: base_wlan # Note: the direct API depends on the existence of a cluster with this name.
-    connect_timeout: {{ connect_timeout }}
-    dns_refresh_rate: {{ dns_refresh_rate }}
+    connect_timeout: {{ connect_timeout_seconds }}s
+    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
     load_assignment:
@@ -49,8 +49,8 @@ R"(
       sni: {{ domain }}
     type: LOGICAL_DNS
   - name: base_wwan # Note: the direct API depends on the existence of a cluster with this name.
-    connect_timeout: {{ connect_timeout }}
-    dns_refresh_rate: {{ dns_refresh_rate }}
+    connect_timeout: {{ connect_timeout_seconds }}s
+    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
     dns_lookup_family: V4_ONLY
     lb_policy: ROUND_ROBIN
     load_assignment:
