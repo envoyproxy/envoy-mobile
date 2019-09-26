@@ -7,8 +7,8 @@
 @implementation EnvoyNetworkMonitor
 
 + (void)startReachabilityIfNeeded {
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
+  static dispatch_once_t reachabilityStarted;
+  dispatch_once(&reachabilityStarted, ^{
     _start_reachability();
   });
 }
