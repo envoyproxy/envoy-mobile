@@ -23,6 +23,13 @@ local_repository(
     path = "envoy_build_config",
 )
 
+http_file(
+    name = "xctestrunner",
+    executable = 1,
+    sha256 = "9e46d5782a9dc7d40bc93c99377c091886c180b8c4ffb9f79a19a58e234cdb09",
+    urls = ["https://github.com/google/xctestrunner/releases/download/0.2.10/ios_test_runner.par"],
+)
+
 git_repository(
     name = "build_bazel_rules_apple",
     commit = "a595f71b94f75d531ebdf8ae31cc8eb1ead6a480",
