@@ -25,3 +25,5 @@ for DEP in ${DEPS}
 do
     is_installed "${DEP}" || install "${DEP}"
 done
+
+xcode-select -s /Applications/Xcode_11.app
