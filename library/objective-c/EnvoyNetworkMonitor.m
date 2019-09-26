@@ -13,7 +13,7 @@
   });
 }
 
-#pragma mark - Private methods
+#pragma mark - Private
 
 static SCNetworkReachabilityRef _reachability_ref;
 
