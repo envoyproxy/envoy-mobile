@@ -191,6 +191,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 #pragma mark - EnvoyNetworkMonitor
 
+// Monitors network changes in order to update Envoy network cluster preferences.
 @interface EnvoyNetworkMonitor : NSObject
 
 // Start monitoring reachability, updating the preferred Envoy network cluster on changes.
