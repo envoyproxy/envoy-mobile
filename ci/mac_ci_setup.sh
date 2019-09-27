@@ -26,4 +26,4 @@ do
     is_installed "${DEP}" || install "${DEP}"
 done
 
-xcode-select -s /Applications/Xcode_11.app
+sudo xcode-select --switch /Applications/Xcode_11.app
