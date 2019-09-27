@@ -14,7 +14,9 @@ import android.net.NetworkRequest;
 import android.os.Build;
 
 /**
- * This class makes use of some deprecated APIs, but it's only current purpose is to attempt to distill some notion of a preferred network from the OS, upon which we can assume new sockets will be opened.
+ * This class makes use of some deprecated APIs, but it's only current purpose is to attempt to
+ * distill some notion of a preferred network from the OS, upon which we can assume new sockets will
+ * be opened.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidNetworkMonitor extends BroadcastReceiver {
@@ -42,10 +44,11 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   }
 
   private AndroidNetworkMonitor(Context context) {
-    connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    connectivityManager =
+        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     networkRequest = new NetworkRequest.Builder()
-      .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-      .build();
+                         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                         .build();
 
     networkCallback = new NetworkCallback() {
       @Override
@@ -66,9 +69,9 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       }
     };
 
-    context.registerReceiver(this, new IntentFilter() {{
-      addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-    }});
+    context.registerReceiver(this, new IntentFilter() {
+      { addAction(ConnectivityManager.CONNECTIVITY_ACTION); }
+    });
   }
 
   @Override
@@ -83,13 +86,14 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       return;
     }
     switch (networkInfo.getType()) {
-      case ConnectivityManager.TYPE_MOBILE:
-        AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WWAN);
-        return;
-      case ConnectivityManager.TYPE_WIFI:
-        AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WLAN);
-        return;
-      default:
-        AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
-    }}
+    case ConnectivityManager.TYPE_MOBILE:
+      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WWAN);
+      return;
+    case ConnectivityManager.TYPE_WIFI:
+      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WLAN);
+      return;
+    default:
+      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
+    }
+  }
 }
