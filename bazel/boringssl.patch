@@ -9,5 +9,5 @@ index cb1affaca..ae664d0ac 100644
 -#define OPENSSL_INLINE static inline OPENSSL_UNUSED
 +#define OPENSSL_INLINE __attribute__((weak)) inline OPENSSL_UNUSED
  #endif
- 
+
  #if defined(BORINGSSL_UNSAFE_FUZZER_MODE) && \
