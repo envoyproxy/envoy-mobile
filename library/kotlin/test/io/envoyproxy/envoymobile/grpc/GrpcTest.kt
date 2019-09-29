@@ -4,7 +4,6 @@ import io.envoyproxy.envoymobile.Domain
 import io.envoyproxy.envoymobile.EnvoyClientBuilder
 import io.envoyproxy.envoymobile.EnvoyMobileTestGrpc
 import io.envoyproxy.envoymobile.EnvoyMobileTestOuterClass
-import io.envoyproxy.envoymobile.GRPCClient
 import io.grpc.ManagedChannelBuilder
 import io.grpc.Server
 import io.grpc.ServerBuilder
@@ -17,7 +16,7 @@ import org.junit.Test
 class GrpcTest {
 
   private lateinit var server: Server
-  private val envoyGrpcClient = GRPCClient(EnvoyClientBuilder(Domain("localhost:1234")).build())
+  private val envoyClient = EnvoyClientBuilder(Domain("localhost:1234")).build()
 
   @Before
   fun setup() {

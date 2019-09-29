@@ -68,7 +68,7 @@ def envoy_mobile_kt_test(name, srcs, deps = []):
     _internal_kt_test(name, srcs, deps)
 
 def darwin_jni_kt_test(name, srcs, lib = "", deps = []):
-    _envoy_mobile_kt_test(name, srcs, lib + "_darwin", deps)
+    _envoy_mobile_jni_kt_test(name, srcs, lib + "_darwin", deps)
 
 def linux_jni_kt_test(name, srcs, lib = "", deps = []):
-    _envoy_mobile_kt_test(name, srcs, lib + "_linux", deps)
+    _envoy_mobile_jni_kt_test(name, srcs, lib + "_linux", deps)
