@@ -114,6 +114,15 @@ maven_install(
         "junit:junit:4.12",
         "org.mockito:mockito-inline:2.28.2",
         "org.mockito:mockito-core:2.28.2",
+
+        # GRPC dependencies
+        "com.google.guava:guava:20.0",
+        "com.google.protobuf:protobuf-java:3.6.1",
+        "javax.annotation:javax.annotation-api:1.2",
+        "io.grpc:grpc-core:1.19.0",
+        "io.grpc:grpc-protobuf:1.19.0",
+        "io.grpc:grpc-stub:1.19.0",
+        "io.grpc:grpc-netty-shaded:1.19.0"
     ],
     repositories = [
         "https://repo1.maven.org/maven2",
