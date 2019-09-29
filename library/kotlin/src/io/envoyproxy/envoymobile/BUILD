@@ -2,6 +2,7 @@ licenses(["notice"])  # Apache 2
 
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_kt_aar_android_library", "envoy_mobile_kt_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_binary", "kt_jvm_library")
 
 aar_with_jni(
     name = "android_aar",
@@ -51,8 +52,6 @@ envoy_mobile_kt_library(
 
 envoy_mobile_kt_library(
     name = "envoy_kt_jvm_lib",
-    visibility = ["//visibility:public"],
-
     srcs = [
         "EnvoyClient.kt",
         "EnvoyClientBuilder.kt",
@@ -68,8 +67,8 @@ envoy_mobile_kt_library(
         "RetryPolicyMapper.kt",
         "StreamEmitter.kt",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_jvm_base_engine_lib",
-
-    ]
+    ],
 )
