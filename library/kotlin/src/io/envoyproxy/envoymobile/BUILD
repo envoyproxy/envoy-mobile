@@ -2,6 +2,7 @@ licenses(["notice"])  # Apache 2
 
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_kt_aar_android_library", "envoy_mobile_kt_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_binary", "kt_jvm_library")
 
 aar_with_jni(
     name = "android_aar",

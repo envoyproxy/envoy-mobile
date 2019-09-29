@@ -1,6 +1,8 @@
 licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("//bazel:cc_lib.bzl", "envoy_mobile_cc_jni_library")
 
 envoy_package()
 
@@ -23,7 +25,7 @@ envoy_cc_library(
     ],
 )
 
-cc_library(
+envoy_mobile_cc_jni_library(
     name = "envoy_jni_interface_lib",
     srcs = [
         "jni_interface.cc",
