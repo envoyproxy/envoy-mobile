@@ -1,6 +1,8 @@
 licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("//bazel:cc_lib.bzl", "envoy_mobile_cc_jni_library")
 
 envoy_package()
 
@@ -23,7 +25,7 @@ envoy_cc_library(
     ],
 )
 
-cc_library(
+envoy_mobile_cc_jni_library(
     name = "envoy_jni_interface_lib",
     srcs = [
         "jni_interface.cc",
@@ -34,30 +36,4 @@ cc_library(
         "-llog",
     ],
     deps = [":envoy_main_interface_lib"],
-)
-
-cc_library(
-    name = "envoy_java_jni_interface_lib",
-    srcs = [
-        "jni_interface.cc",
-        "@local_jdk//:jni_header",
-        #        "@local_jdk//:jni_md_header-linux",
-    ],
-    copts = ["-std=c++14"],
-    includes = [
-        "../../external/local_jdk/include",
-        "../../external/local_jdk/include/darwin",
-    ],
-    linkopts = [
-        "-lm",
-        #        "-llog",
-    ],
-    deps = [":envoy_main_interface_lib"],
-)
-
-cc_binary(
-    name = "envoy_jni.so",
-    linkshared = 1,
-    visibility = ["//visibility:public"],
-    deps = ["envoy_java_jni_interface_lib"],
 )

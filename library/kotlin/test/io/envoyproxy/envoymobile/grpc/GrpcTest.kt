@@ -9,6 +9,7 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
