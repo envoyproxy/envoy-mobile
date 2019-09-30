@@ -12,6 +12,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
+import android.util.Log;
 
 /**
  * This class makes use of some deprecated APIs, but it's only current purpose is to attempt to
@@ -84,18 +85,31 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   private void handleNetworkChange() {
     NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
     if (networkInfo == null) {
+      log("network info null");
       AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
       return;
     }
     switch (networkInfo.getType()) {
     case ConnectivityManager.TYPE_MOBILE:
+      log("network info: TYPE_MOBILE");
       AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WWAN);
       return;
     case ConnectivityManager.TYPE_WIFI:
+      log( "network info: TYPE_WIFI");
       AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WLAN);
       return;
     default:
+      log("network info: default");
       AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
     }
+  }
+
+  private void log(String s) {
+    try {
+      throw new RuntimeException();
+    } catch (Throwable e) {
+      Log.d("AndroidNetworkMonitor", s, e)
+    }
+
   }
 }
