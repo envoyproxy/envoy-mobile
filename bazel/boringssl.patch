@@ -1,13 +1,15 @@
-diff --git src/include/openssl/base.h src/include/openssl/base.h
-index cb1affaca..ae664d0ac 100644
 --- src/include/openssl/base.h
 +++ src/include/openssl/base.h
-@@ -263,7 +263,7 @@ extern "C" {
+@@ -263,8 +263,12 @@ extern "C" {
  // Add OPENSSL_UNUSED so that, should an inline function be emitted via macro
  // (e.g. a |STACK_OF(T)| implementation) in a source file without tripping
  // clang's -Wunused-function.
--#define OPENSSL_INLINE static inline OPENSSL_UNUSED
++#if defined(__clang__)
 +#define OPENSSL_INLINE __attribute__((weak)) inline OPENSSL_UNUSED
++#else
+ #define OPENSSL_INLINE static inline OPENSSL_UNUSED
  #endif
++#endif
 
  #if defined(BORINGSSL_UNSAFE_FUZZER_MODE) && \
+     !defined(BORINGSSL_UNSAFE_DETERMINISTIC_MODE)
