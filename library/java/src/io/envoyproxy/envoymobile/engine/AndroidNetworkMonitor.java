@@ -35,7 +35,7 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       return;
     }
 
-    synchronized (instance) {
+    synchronized (AndroidNetworkMonitor.class) {
       if (instance != null) {
         return;
       }
