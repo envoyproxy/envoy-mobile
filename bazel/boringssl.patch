@@ -1,15 +1,11 @@
 --- src/include/openssl/base.h
 +++ src/include/openssl/base.h
-@@ -263,8 +263,12 @@ extern "C" {
+@@ -258,7 +258,7 @@ extern "C" {
+ // with the old gnu89 model:
+ // https://stackoverflow.com/questions/216510/extern-inline
+ #if defined(__cplusplus)
+-#define OPENSSL_INLINE inline
++#define OPENSSL_INLINE static inline
+ #else
  // Add OPENSSL_UNUSED so that, should an inline function be emitted via macro
  // (e.g. a |STACK_OF(T)| implementation) in a source file without tripping
- // clang's -Wunused-function.
-+#if defined(__clang__)
-+#define OPENSSL_INLINE __attribute__((weak)) inline OPENSSL_UNUSED
-+#else
- #define OPENSSL_INLINE static inline OPENSSL_UNUSED
- #endif
-+#endif
-
- #if defined(BORINGSSL_UNSAFE_FUZZER_MODE) && \
-     !defined(BORINGSSL_UNSAFE_DETERMINISTIC_MODE)
