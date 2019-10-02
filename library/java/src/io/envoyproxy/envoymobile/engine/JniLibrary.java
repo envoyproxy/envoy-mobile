@@ -1,12 +1,9 @@
 package io.envoyproxy.envoymobile.engine;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
-
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
 
-class JniLibrary {
+@Native
+public class JniLibrary {
 
   private static final String ENVOY_JNI = "envoy_jni";
 
@@ -35,7 +32,9 @@ class JniLibrary {
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
 
-    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
+    private JavaLoader() {
+      System.loadLibrary(ENVOY_JNI);
+    }
   }
 
   /**
@@ -54,7 +53,7 @@ class JniLibrary {
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure
-   *         status.
+   * status.
    */
   protected static native int startStream(long stream, JvmCallbackContext context);
 
@@ -144,7 +143,7 @@ class JniLibrary {
    * Envoy.
    *
    * @return A template that may be used as a starting point for constructing
-   *         configurations.
+   * configurations.
    */
   public static native String templateString();
 }

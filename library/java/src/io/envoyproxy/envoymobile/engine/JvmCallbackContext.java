@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +12,8 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyError;
 import io.envoyproxy.envoymobile.engine.types.EnvoyErrorCode;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
-class JvmCallbackContext {
+@Native
+public class JvmCallbackContext {
   private enum FrameType {
     NONE,
     HEADERS,
@@ -38,6 +40,7 @@ class JvmCallbackContext {
    * @param length,    the total number of headers included in this header block.
    * @param endStream, whether this header block is the final remote frame.
    */
+  @Native
   public void onHeaders(long length, boolean endStream) {
     startAccumulation(FrameType.HEADERS, length, endStream);
   }
@@ -51,16 +54,13 @@ class JvmCallbackContext {
    * @param endHeaders, indicates this is the last header pair for this header
    *                    block.
    */
+  @Native
   public void passHeader(byte[] key, byte[] value, boolean endHeaders) {
     String headerKey;
     String headerValue;
 
-    try {
-      headerKey = new String(key, "UTF-8");
-      headerValue = new String(value, "UTF-8");
-    } catch (java.io.UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    headerKey = new String(key, StandardCharsets.UTF_8);
+    headerValue = new String(value, StandardCharsets.UTF_8);
 
     List<String> values = headerAccumulator.get(headerKey);
     if (values == null) {
@@ -81,26 +81,24 @@ class JvmCallbackContext {
     final FrameType frameType = pendingFrameType;
     final boolean endStream = pendingEndStream;
 
-    Runnable runnable = new Runnable() {
-      public void run() {
-        if (canceled.get()) {
-          return;
-        }
+    Runnable runnable = () -> {
+      if (canceled.get()) {
+        return;
+      }
 
-        switch (frameType) {
-        case HEADERS:
-          callbacks.onHeaders(headers, endStream);
-          break;
-        case METADATA:
-          callbacks.onMetadata(headers);
-          break;
-        case TRAILERS:
-          callbacks.onTrailers(headers);
-          break;
-        case NONE:
-        default:
-          assert false : "missing header frame type";
-        }
+      switch (frameType) {
+      case HEADERS:
+        callbacks.onHeaders(headers, endStream);
+        break;
+      case METADATA:
+        callbacks.onMetadata(headers);
+        break;
+      case TRAILERS:
+        callbacks.onTrailers(headers);
+        break;
+      case NONE:
+      default:
+        assert false : "missing header frame type";
       }
     };
 
@@ -115,6 +113,7 @@ class JvmCallbackContext {
    * @param data,      chunk of body data from the HTTP response.
    * @param endStream, indicates this is the last remote frame of the stream.
    */
+  @Native
   public void onData(byte[] data, boolean endStream) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
@@ -133,29 +132,25 @@ class JvmCallbackContext {
    * @param message,   the error message.
    * @param errorCode, the envoy_error_code_t.
    */
+  @Native
   public void onError(byte[] message, int errorCode) {
-    callbacks.getExecutor().execute(new Runnable() {
-      public void run() {
-        if (canceled.get()) {
-          return;
-        }
-        String errorMessage = new String(message);
-        EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
-        callbacks.onError(error);
+    callbacks.getExecutor().execute(() -> {
+      if (canceled.get()) {
+        return;
       }
+      String errorMessage = new String(message);
+      EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
+      callbacks.onError(error);
     });
   }
 
   /**
    * Dispatches cancellation notice up to the platform
    */
+  @Native
   public void onCancel() {
-    callbacks.getExecutor().execute(new Runnable() {
-      public void run() {
-        // This call is atomically gated at the call-site and will only happen once.
-        callbacks.onCancel();
-      }
-    });
+    // This call is atomically gated at the call-site and will only happen once.
+    callbacks.getExecutor().execute(callbacks::onCancel);
   }
 
   /**
@@ -164,6 +159,7 @@ class JvmCallbackContext {
    *
    * @return boolean, whether the callback context was canceled or not.
    */
+  @Native
   public boolean cancel() {
     boolean canceled = !this.canceled.getAndSet(true);
     if (canceled) {
@@ -175,7 +171,7 @@ class JvmCallbackContext {
   private void startAccumulation(FrameType type, long length, boolean endStream) {
     assert headerAccumulator == null;
     assert pendingFrameType == FrameType.NONE;
-    assert pendingEndStream == false;
+    assert !pendingEndStream;
     assert expectedHeaderLength == 0;
     assert accumulatedHeaderLength == 0;
 

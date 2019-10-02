@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile.engine;
 import android.content.Context;
 import android.net.ConnectivityManager;
 
+@Native
 public class AndroidJniLibrary {
 
   // Internal reference to helper object used to load and initialize the native library.
@@ -29,7 +30,7 @@ public class AndroidJniLibrary {
   private static class AndroidLoader {
     private AndroidLoader(Context context) {
       AndroidJniLibrary.initialize(
-          (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
+          (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
   }
 

@@ -27,6 +27,7 @@ envoy_mobile_java_library(
         "EnvoyEngineImpl.java",
         "EnvoyHTTPStream.java",
         "JniLibrary.java",
+#        "Native.java",
         "JvmCallbackContext.java",
     ],
     visibility = ["//visibility:public"],

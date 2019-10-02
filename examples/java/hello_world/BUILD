@@ -9,6 +9,7 @@ android_binary(
     deps = [
         "hello_envoy_java_lib",
     ],
+    proguard_specs = ["//dist:proguard_rule"],
 )
 
 # We'll use the kotlin rule here to avoid having an explicit dependency on
