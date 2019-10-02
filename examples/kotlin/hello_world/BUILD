@@ -6,6 +6,7 @@ android_binary(
     name = "hello_envoy_kt",
     custom_package = "io.envoyproxy.envoymobile.helloenvoykotlin",
     manifest = "AndroidManifest.xml",
+    proguard_specs = ["//dist:proguard_rule"],
     deps = [
         "hello_envoy_kt_lib",
     ],
