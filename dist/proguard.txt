@@ -1,14 +1,4 @@
 -dontwarn **
 -dontnote **
 
--keep class io.envoyproxy.envoymobile.engine.JvmCallbackContext {
-   public <methods>;
-}
-
--keep class io.envoyproxy.envoymobile.engine.JniLibrary {
-   native <methods>;
-}
-
--keep class io.envoyproxy.envoymobile.engine.AndroidJniLibrary {
-   native <methods>;
-}
+-keep @io.envoyproxy.envoymobile.Native class * { *; }
