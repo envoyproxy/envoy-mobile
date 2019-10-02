@@ -20,7 +20,7 @@ touch $@
 
 alias(
     name = "android_pom",
-    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_pom"
+    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_pom",
 )
 
 alias(
@@ -30,7 +30,10 @@ alias(
 
 genrule(
     name = "android_dist",
-    srcs = ["android_aar", "android_pom"],
+    srcs = [
+        "android_aar",
+        "android_pom",
+    ],
     outs = ["stub_android_dist_output"],
     cmd = """
 cp $(location :android_aar) dist/envoy-mobile.aar
