@@ -6,10 +6,10 @@ android_binary(
     name = "hello_envoy",
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
     manifest = "AndroidManifest.xml",
+    proguard_specs = ["//dist:proguard_rule"],
     deps = [
         "hello_envoy_java_lib",
     ],
-    proguard_specs = ["//dist:proguard_rule"],
 )
 
 # We'll use the kotlin rule here to avoid having an explicit dependency on

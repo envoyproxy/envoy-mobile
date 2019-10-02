@@ -30,7 +30,7 @@ public class AndroidJniLibrary {
   private static class AndroidLoader {
     private AndroidLoader(Context context) {
       AndroidJniLibrary.initialize(
-          (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+          (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
   }
 
