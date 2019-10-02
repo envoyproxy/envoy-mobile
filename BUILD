@@ -36,8 +36,8 @@ genrule(
     ],
     outs = ["stub_android_dist_output"],
     cmd = """
-cp $(location :android_aar) dist/envoy-mobile.aar
-cp $(location :android_pom) dist/envoy-mobile-pom.xml
+cp $(location :android_aar) dist/envoy.aar
+cp $(location :android_pom) dist/envoy-pom.xml
 chmod 755 dist/envoy.aar
 chmod 755 dist/envoy-pom.xml
 touch $@

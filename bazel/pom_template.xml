@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.envoyproxy.envoymobile</groupId>
-    <artifactId>envoy-mobile</artifactId>
+    <artifactId>envoy</artifactId>
     <version>{pom_version}</version>
     <packaging>aar</packaging>
     <dependencies>

@@ -125,9 +125,9 @@ if __name__ == "__main__":
     # Assume the bazel rule will nicely put the aar and pom in the dist/ directory
     for root, _, files in os.walk("dist"):
         for filepath in files:
-            if filepath.endswith("envoy-mobile-pom.xml"):
+            if filepath.endswith("{}-pom.xml".format(_ARTIFACT_ID)):
                 pom = os.path.join(root, filepath)
-            elif filepath.endswith("envoy-mobile.aar"):
+            elif filepath.endswith("{}.aar".format(_ARTIFACT_ID)):
                 aar = os.path.join(root, filepath)
 
     if pom is None or aar is None:
