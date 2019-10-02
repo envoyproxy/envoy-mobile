@@ -34,6 +34,5 @@ build:fat --ios_multi_cpus=i386,x86_64,armv7,arm64 --fat_apk_cpu=x86,x86_64,arme
 build:release \
   --linkopt=-s \
   --copt=-O2 \
-  --config=fat \
   --apple_bitcode=embedded \
   --copt=-fembed-bitcode
