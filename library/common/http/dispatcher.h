@@ -11,6 +11,7 @@
 #include "common/common/logger.h"
 #include "common/common/thread.h"
 
+#include "absl/types/optional.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -104,6 +105,8 @@ private:
   private:
     const envoy_stream_t stream_handle_;
     const envoy_http_callbacks bridge_callbacks_;
+    absl::optional<envoy_error_code_t> error_code_;
+    absl::optional<envoy_data> error_message_;
     Dispatcher& http_dispatcher_;
   };
 
@@ -149,8 +152,8 @@ private:
   // be accessed from a thread other than the event_dispatcher's own thread.
   Thread::MutexBasicLockable dispatch_lock_;
   std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
-  Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_);
-  Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_);
+  Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
+  Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_){};
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   std::atomic<envoy_network_t>& preferred_network_;
 };

@@ -14,9 +14,13 @@ objc_library(
         "EnvoyEngineImpl.m",
         "EnvoyHTTPCallbacks.m",
         "EnvoyHTTPStreamImpl.m",
+        "EnvoyNetworkMonitor.m",
     ],
     hdrs = [
         "EnvoyEngine.h",
+    ],
+    sdk_frameworks = [
+        "SystemConfiguration",
     ],
     visibility = ["//visibility:public"],
     deps = ["//library/common:envoy_main_interface_lib"],
