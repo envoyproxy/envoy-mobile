@@ -55,10 +55,10 @@ EOF
 
     native.genrule(
         name = name,
-        srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk", "//dist:proguard_rules"],
+        srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk", "//library:proguard_rules"],
         outs = [archive_name + ".aar"],
         cmd = """
-cp $(location //dist:proguard_rules) ./proguard.txt
+cp $(location //library:proguard_rules) ./proguard.txt
 cp $(location {android_library}.aar) $(location :{archive_name}.aar)
 chmod +w $(location :{archive_name}.aar)
 origdir=$$PWD

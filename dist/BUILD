@@ -25,9 +25,3 @@ apple_static_framework_import(
     ],
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "proguard_rules",
-    srcs = ["proguard.txt"],
-    visibility = ["//visibility:public"],
-)
