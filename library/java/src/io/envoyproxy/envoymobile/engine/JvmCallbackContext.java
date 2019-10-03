@@ -12,7 +12,6 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyError;
 import io.envoyproxy.envoymobile.engine.types.EnvoyErrorCode;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
-@Native
 public class JvmCallbackContext {
   private enum FrameType {
     NONE,
@@ -40,7 +39,6 @@ public class JvmCallbackContext {
    * @param length,    the total number of headers included in this header block.
    * @param endStream, whether this header block is the final remote frame.
    */
-  @Native
   public void onHeaders(long length, boolean endStream) {
     startAccumulation(FrameType.HEADERS, length, endStream);
   }
@@ -54,7 +52,6 @@ public class JvmCallbackContext {
    * @param endHeaders, indicates this is the last header pair for this header
    *                    block.
    */
-  @Native
   public void passHeader(byte[] key, byte[] value, boolean endHeaders) {
     String headerKey;
     String headerValue;
@@ -113,7 +110,6 @@ public class JvmCallbackContext {
    * @param data,      chunk of body data from the HTTP response.
    * @param endStream, indicates this is the last remote frame of the stream.
    */
-  @Native
   public void onData(byte[] data, boolean endStream) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
@@ -132,7 +128,6 @@ public class JvmCallbackContext {
    * @param message,   the error message.
    * @param errorCode, the envoy_error_code_t.
    */
-  @Native
   public void onError(byte[] message, int errorCode) {
     callbacks.getExecutor().execute(() -> {
       if (canceled.get()) {
@@ -147,7 +142,6 @@ public class JvmCallbackContext {
   /**
    * Dispatches cancellation notice up to the platform
    */
-  @Native
   public void onCancel() {
     // This call is atomically gated at the call-site and will only happen once.
     callbacks.getExecutor().execute(callbacks::onCancel);
@@ -159,7 +153,6 @@ public class JvmCallbackContext {
    *
    * @return boolean, whether the callback context was canceled or not.
    */
-  @Native
   public boolean cancel() {
     boolean canceled = !this.canceled.getAndSet(true);
     if (canceled) {

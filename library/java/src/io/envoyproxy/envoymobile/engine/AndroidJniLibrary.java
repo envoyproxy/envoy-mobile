@@ -3,7 +3,6 @@ package io.envoyproxy.envoymobile.engine;
 import android.content.Context;
 import android.net.ConnectivityManager;
 
-@Native
 public class AndroidJniLibrary {
 
   // Internal reference to helper object used to load and initialize the native library.

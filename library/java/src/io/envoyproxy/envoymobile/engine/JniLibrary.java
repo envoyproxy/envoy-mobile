@@ -2,7 +2,6 @@ package io.envoyproxy.envoymobile.engine;
 
 import java.nio.ByteBuffer;
 
-@Native
 public class JniLibrary {
 
   private static final String ENVOY_JNI = "envoy_jni";
