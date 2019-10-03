@@ -55,9 +55,10 @@ EOF
 
     native.genrule(
         name = name,
-        srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk"],
+        srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk", "//dist:proguard_rules"],
         outs = [archive_name + ".aar"],
         cmd = """
+cp $(location //dist:proguard_rules) ./proguard.txt
 cp $(location {android_library}.aar) $(location :{archive_name}.aar)
 chmod +w $(location :{archive_name}.aar)
 origdir=$$PWD
@@ -65,7 +66,8 @@ cd $$(mktemp -d)
 unzip $$origdir/$(location :{archive_name}_jni_unsigned.apk) "lib/*"
 cp -r lib jni
 cp $$origdir/$(location {android_library}_kt.jar) classes.jar
-zip -r $$origdir/$(location :{archive_name}.aar) jni/*/*.so classes.jar
+cp $$origdir/proguard.txt .
+zip -r $$origdir/$(location :{archive_name}.aar) jni/*/*.so classes.jar proguard.txt
 """.format(android_library = android_library, archive_name = archive_name),
         visibility = visibility,
     )
