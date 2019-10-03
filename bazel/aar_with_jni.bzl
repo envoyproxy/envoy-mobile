@@ -28,7 +28,7 @@
 # creates a few underlying libraries, because of this the classes.jar in
 # the aar we built was empty. This rule separately builds the underlying
 # kt.jar file, and replaces the aar's classes.jar with the kotlin jar
-def aar_with_jni(name, android_library, archive_name = "", visibility = None):
+def aar_with_jni(name, android_library, proguard_rules = "", archive_name = "", visibility = None):
     if not archive_name:
         archive_name = name
 
@@ -55,10 +55,10 @@ EOF
 
     native.genrule(
         name = name,
-        srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk", "//library:proguard_rules"],
+        srcs = [android_library + "_kt.jar", android_library + ".aar", archive_name + "_jni_unsigned.apk", proguard_rules],
         outs = [archive_name + ".aar"],
         cmd = """
-cp $(location //library:proguard_rules) ./proguard.txt
+cp $(location {proguard_rules}) ./proguard.txt
 cp $(location {android_library}.aar) $(location :{archive_name}.aar)
 chmod +w $(location :{archive_name}.aar)
 origdir=$$PWD
@@ -68,6 +68,6 @@ cp -r lib jni
 cp $$origdir/$(location {android_library}_kt.jar) classes.jar
 cp $$origdir/proguard.txt .
 zip -r $$origdir/$(location :{archive_name}.aar) jni/*/*.so classes.jar proguard.txt
-""".format(android_library = android_library, archive_name = archive_name),
+""".format(android_library = android_library, archive_name = archive_name, proguard_rules = proguard_rules),
         visibility = visibility,
     )
