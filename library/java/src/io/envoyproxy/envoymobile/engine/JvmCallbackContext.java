@@ -1,7 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +11,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyError;
 import io.envoyproxy.envoymobile.engine.types.EnvoyErrorCode;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
-public class JvmCallbackContext {
+class JvmCallbackContext {
   private enum FrameType {
     NONE,
     HEADERS,
@@ -56,8 +55,12 @@ public class JvmCallbackContext {
     String headerKey;
     String headerValue;
 
-    headerKey = new String(key, StandardCharsets.UTF_8);
-    headerValue = new String(value, StandardCharsets.UTF_8);
+    try {
+      headerKey = new String(key, "UTF-8");
+      headerValue = new String(value, "UTF-8");
+    } catch (java.io.UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
 
     List<String> values = headerAccumulator.get(headerKey);
     if (values == null) {
@@ -78,24 +81,26 @@ public class JvmCallbackContext {
     final FrameType frameType = pendingFrameType;
     final boolean endStream = pendingEndStream;
 
-    Runnable runnable = () -> {
-      if (canceled.get()) {
-        return;
-      }
+    Runnable runnable = new Runnable() {
+      public void run() {
+        if (canceled.get()) {
+          return;
+        }
 
-      switch (frameType) {
-      case HEADERS:
-        callbacks.onHeaders(headers, endStream);
-        break;
-      case METADATA:
-        callbacks.onMetadata(headers);
-        break;
-      case TRAILERS:
-        callbacks.onTrailers(headers);
-        break;
-      case NONE:
-      default:
-        assert false : "missing header frame type";
+        switch (frameType) {
+        case HEADERS:
+          callbacks.onHeaders(headers, endStream);
+          break;
+        case METADATA:
+          callbacks.onMetadata(headers);
+          break;
+        case TRAILERS:
+          callbacks.onTrailers(headers);
+          break;
+        case NONE:
+        default:
+          assert false : "missing header frame type";
+        }
       }
     };
 
@@ -129,13 +134,15 @@ public class JvmCallbackContext {
    * @param errorCode, the envoy_error_code_t.
    */
   public void onError(byte[] message, int errorCode) {
-    callbacks.getExecutor().execute(() -> {
-      if (canceled.get()) {
-        return;
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        if (canceled.get()) {
+          return;
+        }
+        String errorMessage = new String(message);
+        EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
+        callbacks.onError(error);
       }
-      String errorMessage = new String(message);
-      EnvoyError error = new EnvoyError(EnvoyErrorCode.fromInt(errorCode), errorMessage);
-      callbacks.onError(error);
     });
   }
 
@@ -143,8 +150,12 @@ public class JvmCallbackContext {
    * Dispatches cancellation notice up to the platform
    */
   public void onCancel() {
-    // This call is atomically gated at the call-site and will only happen once.
-    callbacks.getExecutor().execute(callbacks::onCancel);
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        // This call is atomically gated at the call-site and will only happen once.
+        callbacks.onCancel();
+      }
+    });
   }
 
   /**
@@ -164,7 +175,7 @@ public class JvmCallbackContext {
   private void startAccumulation(FrameType type, long length, boolean endStream) {
     assert headerAccumulator == null;
     assert pendingFrameType == FrameType.NONE;
-    assert !pendingEndStream;
+    assert pendingEndStream == false;
     assert expectedHeaderLength == 0;
     assert accumulatedHeaderLength == 0;
 
