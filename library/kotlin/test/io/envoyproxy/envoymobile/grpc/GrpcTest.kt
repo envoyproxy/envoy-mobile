@@ -7,20 +7,14 @@ import io.grpc.Server
 import io.grpc.ServerBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 
 class GrpcTest {
 
-  private lateinit var server: Server
-
-  @Before
-  fun setup() {
-    server = ServerBuilder.forPort(1234)
-        .addService(EnvoyMobileEchoingTestServer())
-        .build()
-        .start()
-  }
+  private val server = ServerBuilder.forPort(1234)
+      .addService(EnvoyMobileEchoingTestServer())
+      .build()
+      .start()
 
   @After
   fun teardown() {
