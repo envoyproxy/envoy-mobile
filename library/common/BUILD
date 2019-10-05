@@ -38,14 +38,14 @@ cc_library(
 )
 
 cc_library(
-    name = "envoy_jni_interface_lib_for_tests", # TODO: Name better
+    name = "envoy_jni_interface_lib_for_tests",  # TODO: Name better
     srcs = [
         "jni_interface.cc",
         "@local_jdk//:jni_header",
     ] + select({
-            "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
-            "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
-        }),
+        "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
+        "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
+    }),
     copts = ["-std=c++14"],
     includes = [
         "../../external/local_jdk/include",
