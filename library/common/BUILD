@@ -43,20 +43,20 @@ cc_library(
     srcs = [
         "jni_interface.cc",
         "@local_jdk//:jni_header",
-        "@local_jdk//:jni_md_header-darwin"
+        "@local_jdk//:jni_md_header-darwin",
     ],
-#    + select({
-#        "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
-#        "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
-#    }),
+    #    + select({
+    #        "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
+    #        "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
+    #    }),
     copts = ["-std=c++14"],
-    linkopts = [
-        "-lm",
-    ],
-    deps = [":envoy_main_interface_lib"],
     includes = [
         "../../external/local_jdk/include",
         "../../external/local_jdk/include/darwin",
         "../../external/local_jdk/include/linux",
     ],
+    linkopts = [
+        "-lm",
+    ],
+    deps = [":envoy_main_interface_lib"],
 )
