@@ -50,6 +50,6 @@ config_setting(
 config_setting(
     name = "jvm_darwin",
     values = {
-        "define": "darwin",
+        "define": "os=darwin",
     },
 )

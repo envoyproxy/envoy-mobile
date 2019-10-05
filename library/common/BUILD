@@ -2,7 +2,6 @@ licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
-load("//bazel:cc_lib.bzl", "envoy_mobile_cc_jni_library")
 
 envoy_package()
 
@@ -39,16 +38,14 @@ cc_library(
 )
 
 cc_library(
-    name = "envoy_jni_interface_lib_for_tests",
+    name = "envoy_jni_interface_lib_for_tests", # TODO: Name better
     srcs = [
         "jni_interface.cc",
         "@local_jdk//:jni_header",
-        "@local_jdk//:jni_md_header-darwin",
-    ],
-    #    + select({
-    #        "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
-    #        "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
-    #    }),
+    ] + select({
+            "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
+            "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
+        }),
     copts = ["-std=c++14"],
     includes = [
         "../../external/local_jdk/include",

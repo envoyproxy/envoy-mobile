@@ -26,7 +26,7 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
         jvm_flags = jvm_flags,
     )
 
-def _envoy_mobile_jni_kt_test(name, srcs, lib = "", deps = []):
+def envoy_mobile_jni_kt_test(name, srcs, lib = "", deps = []):
     # .so file
     native.cc_binary(
         name = name + "_envoy_jni.so",
@@ -66,9 +66,3 @@ cp $(location {src}) $@
 # )
 def envoy_mobile_kt_test(name, srcs, deps = []):
     _internal_kt_test(name, srcs, deps)
-
-def darwin_jni_kt_test(name, srcs, lib, deps = []):
-    _envoy_mobile_jni_kt_test(name, srcs, lib, deps)
-
-def linux_jni_kt_test(name, srcs, lib, deps = []):
-    _envoy_mobile_jni_kt_test(name, srcs, lib + "_linux", deps)
