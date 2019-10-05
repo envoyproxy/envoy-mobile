@@ -25,7 +25,7 @@ envoy_cc_library(
     ],
 )
 
-envoy_mobile_cc_jni_library(
+cc_library(
     name = "envoy_jni_interface_lib",
     srcs = [
         "jni_interface.cc",
@@ -36,4 +36,27 @@ envoy_mobile_cc_jni_library(
         "-llog",
     ],
     deps = [":envoy_main_interface_lib"],
+)
+
+cc_library(
+    name = "envoy_jni_interface_lib_for_tests",
+    srcs = [
+        "jni_interface.cc",
+        "@local_jdk//:jni_header",
+        "@local_jdk//:jni_md_header-darwin"
+    ],
+#    + select({
+#        "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
+#        "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
+#    }),
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+    ],
+    deps = [":envoy_main_interface_lib"],
+    includes = [
+        "../../external/local_jdk/include",
+        "../../external/local_jdk/include/darwin",
+        "../../external/local_jdk/include/linux",
+    ],
 )
