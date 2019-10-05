@@ -3,7 +3,6 @@ package io.envoyproxy.envoymobile.grpc
 import io.envoyproxy.envoymobile.EnvoyMobileTestGrpc
 import io.envoyproxy.envoymobile.EnvoyMobileTestOuterClass
 import io.grpc.ManagedChannelBuilder
-import io.grpc.Server
 import io.grpc.ServerBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
@@ -15,7 +14,6 @@ class GrpcTest {
   private val server = ServerBuilder.forPort(1234)
       .addService(EnvoyMobileEchoingTestServer())
       .build()
-      .start()
 
   @Before
   fun setup() {
