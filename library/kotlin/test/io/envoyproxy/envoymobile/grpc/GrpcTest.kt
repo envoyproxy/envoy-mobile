@@ -16,11 +16,6 @@ class GrpcTest {
       .build()
       .start()
 
-  @After
-  fun teardown() {
-    server.shutdown()
-  }
-
   @Test
   fun `sanity grpc test`() {
     val channel = ManagedChannelBuilder.forAddress("localhost", 1234)
