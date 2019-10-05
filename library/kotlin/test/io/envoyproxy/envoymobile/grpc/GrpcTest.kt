@@ -7,6 +7,7 @@ import io.grpc.Server
 import io.grpc.ServerBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
+import org.junit.Before
 import org.junit.Test
 
 class GrpcTest {
@@ -15,6 +16,16 @@ class GrpcTest {
       .addService(EnvoyMobileEchoingTestServer())
       .build()
       .start()
+
+  @Before
+  fun setup() {
+    server.start()
+  }
+
+  @After
+  fun teardown() {
+    server.shutdown()
+  }
 
   @Test
   fun `sanity grpc test`() {
