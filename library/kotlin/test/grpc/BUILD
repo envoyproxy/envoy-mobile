@@ -16,5 +16,5 @@ envoy_mobile_kt_library(
 
 java_grpc_library(
     name = "envoy_mobile_test_proto",
-    deps = ["//library/proto/test:envoy_mobile_test_proto"],
+    deps = ["//library/proto/test:echo_service_test_proto"],
 )
