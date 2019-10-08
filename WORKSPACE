@@ -133,11 +133,11 @@ http_archive(
 # where it tries to bind the zlib and errors out
 # The fix went in on this commit:
 # https://github.com/grpc/grpc-java/commit/57e7bd394e92015d2891adc74af0eaf9cd347ea8#diff-515bc54a0cbb4b12fb4a7c465758b011L128-L131
-#
-git_repository(
+http_archive(
     name = "io_grpc_grpc_java",
-    remote = "https://github.com/grpc/grpc-java.git",
-    tag = "v1.24.0",
+    urls = ["https://github.com/grpc/grpc-java/archive/v1.24.0.tar.gz"],
+    sha256 = "8b495f58aaf75138b24775600a062bbdaa754d85f7ab2a47b2c9ecb432836dd1",
+    strip_prefix ="grpc-java-1.24.0",
 )
 
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")

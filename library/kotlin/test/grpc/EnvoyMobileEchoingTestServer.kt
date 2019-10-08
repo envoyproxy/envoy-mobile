@@ -1,29 +1,31 @@
 package io.envoyproxy.envoymobile.grpc
 
-import io.envoyproxy.envoymobile.EnvoyMobileTestGrpc
-import io.envoyproxy.envoymobile.EnvoyMobileTestOuterClass
 import io.grpc.stub.StreamObserver
+import protos.test.EchoServiceGrpc
+import protos.test.EchoServiceTest
 
 
-class EnvoyMobileEchoingTestServer : EnvoyMobileTestGrpc.EnvoyMobileTestImplBase() {
-  override fun stream(responseObserver: StreamObserver<EnvoyMobileTestOuterClass.Response>?): StreamObserver<EnvoyMobileTestOuterClass.Request> {
-    return object : StreamObserver<EnvoyMobileTestOuterClass.Request> {
-      override fun onNext(p0: EnvoyMobileTestOuterClass.Request?) {
-        responseObserver!!.onNext(EnvoyMobileTestOuterClass.Response.newBuilder().setStr(p0!!.str).build())
+class EnvoyMobileEchoingTestServer : EchoServiceGrpc.EchoServiceImplBase() {
+
+  override fun unary(request: EchoServiceTest.EchoServiceRequest?, responseObserver: StreamObserver<EchoServiceTest.EchoServiceResponse>?) {
+    responseObserver!!.onNext(EchoServiceTest.EchoServiceResponse.newBuilder().setStr(request!!.str).build())
+    responseObserver.onCompleted()
+  }
+
+  override fun stream(responseObserver: StreamObserver<EchoServiceTest.EchoServiceResponse>?): StreamObserver<EchoServiceTest.EchoServiceRequest> {
+    return object : StreamObserver<EchoServiceTest.EchoServiceRequest> {
+      override fun onNext(value: EchoServiceTest.EchoServiceRequest?) {
+        responseObserver!!.onNext(EchoServiceTest.EchoServiceResponse.newBuilder().setStr(value!!.str).build())
       }
 
-      override fun onError(p0: Throwable?) {
-        responseObserver!!.onError(p0)
+      override fun onError(t: Throwable?) {
+        responseObserver!!.onError(t)
       }
 
       override fun onCompleted() {
         responseObserver!!.onCompleted()
       }
-    }
-  }
 
-  override fun unary(request: EnvoyMobileTestOuterClass.Request?, responseObserver: StreamObserver<EnvoyMobileTestOuterClass.Response>?) {
-    responseObserver!!.onNext(EnvoyMobileTestOuterClass.Response.newBuilder().setStr(request!!.str).build())
-    responseObserver.onCompleted()
+    }
   }
 }

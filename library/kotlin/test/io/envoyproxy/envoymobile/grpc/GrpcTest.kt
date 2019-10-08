@@ -1,13 +1,13 @@
 package io.envoyproxy.envoymobile.grpc
 
-import io.envoyproxy.envoymobile.EnvoyMobileTestGrpc
-import io.envoyproxy.envoymobile.EnvoyMobileTestOuterClass
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import protos.test.EchoServiceGrpc
+import protos.test.EchoServiceTest
 
 class GrpcTest {
 
@@ -31,7 +31,7 @@ class GrpcTest {
         .usePlaintext()
         .build()
 
-    val response = EnvoyMobileTestGrpc.newBlockingStub(channel).unary(EnvoyMobileTestOuterClass.Request.newBuilder().setStr("hello_world").build())
+    val response = EchoServiceGrpc.newBlockingStub(channel).unary(EchoServiceTest.EchoServiceRequest.newBuilder().setStr("hello_world").build())
 
     assertThat(response.str).isEqualTo("hello_world")
   }
