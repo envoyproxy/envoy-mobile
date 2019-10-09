@@ -62,9 +62,9 @@ cc_library(
         "jni_interface.cc",
         "@local_jdk//:jni_header",
     ] + select({
-        "@bazel_tools//src/conditions:darwin": ["@local_jdk//:jni_md_header-darwin"],
-        "@bazel_tools//src/conditions:darwin_x86_64": ["@local_jdk//:jni_md_header-darwin"],
-        "@bazel_tools//src/conditions:linux_x86_64": ["@local_jdk//:jni_md_header-linux"],
+        "//bazel:darwin": ["@local_jdk//:jni_md_header-darwin"],
+        "//bazel:darwin_x86_64": ["@local_jdk//:jni_md_header-darwin"],
+        "//bazel:linux_x86_64": ["@local_jdk//:jni_md_header-linux"],
     }),
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],

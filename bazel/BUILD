@@ -1,9 +1,24 @@
 licenses(["notice"])  # Apache 2
 
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
+load("//bazel:envoy_build_system.bzl", "envoy_package")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
 envoy_package()
+
+alias(
+    name = "darwin",
+    actual = "@bazel_tools//src/conditions:darwin",
+)
+
+alias(
+    name = "darwin_x86_64",
+    actual = "@bazel_tools//src/conditions:darwin_x86_64",
+)
+
+alias(
+    name = "linux_x86_64",
+    actual = "@bazel_tools//src/conditions:linux_x86_64",
+)
 
 kt_jvm_library(
     name = "envoy_mobile_test_suite",
