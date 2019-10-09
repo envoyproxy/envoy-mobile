@@ -59,7 +59,7 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
-  return init_jvm(static_jvm, connectivity_manager);
+  return platform_setup(static_jvm, connectivity_manager);
 }
 
 extern "C" JNIEXPORT jint JNICALL

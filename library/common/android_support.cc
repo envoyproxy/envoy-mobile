@@ -4,12 +4,11 @@
 
 // NOLINT(namespace-envoy)
 
-jint init_jvm(JavaVM* static_jvm, jobject connectivity_manager) {
-  // See note above about c-ares.
+jint platform_setup(JavaVM* jvm, jobject connectivity_manager) {
   // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
   // More information can be found at:
   // https://c-ares.haxx.se/ares_library_init_android.html
-  ares_library_init_jvm(static_jvm);
+  ares_library_init_jvm(jvm);
 
   return ares_library_init_android(connectivity_manager);
 }
