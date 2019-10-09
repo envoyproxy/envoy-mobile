@@ -1,9 +1,8 @@
-#include <android/log.h>
-#include <ares.h>
 #include <jni.h>
 
 #include <string>
 
+#include "jni_utils.h"
 #include "main_interface.h"
 
 static JavaVM* static_jvm = nullptr;
@@ -52,20 +51,14 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
-  // See note above about c-ares.
-  // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
-  // More information can be found at:
-  // https://c-ares.haxx.se/ares_library_init_android.html
-  ares_library_init_jvm(static_jvm);
-
-  return ares_library_init_android(connectivity_manager);
+  return init_jvm(static_jvm, connectivity_manager);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_isAresInitialized(JNIEnv* env,
                                                                           jclass // class
 ) {
-  return ares_library_android_initialized() == ARES_SUCCESS;
+  return ares_initialized();
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -120,7 +113,7 @@ static JNIEnv* get_env() {
   JNIEnv* env = nullptr;
   int get_env_res = static_jvm->GetEnv((void**)&env, JNI_VERSION);
   if (get_env_res == JNI_EDETACHED) {
-    __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "equals JNI_EDETACHED");
+    jni_log("jni_lib", "equals JNI_EDETACHED");
   }
   return env;
 }
@@ -141,7 +134,7 @@ static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context
 }
 
 static void jvm_on_data(envoy_data data, bool end_stream, void* context) {
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_data");
+  jni_log("jni_lib", "jvm_on_data");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
@@ -163,17 +156,17 @@ static void jvm_on_data(envoy_data data, bool end_stream, void* context) {
 }
 
 static void jvm_on_metadata(envoy_headers metadata, void* context) {
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_metadata");
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", std::to_string(metadata.length).c_str());
+  jni_log("jni_lib", "jvm_on_metadata");
+  jni_log("jni_lib", std::to_string(metadata.length).c_str());
 }
 
 static void jvm_on_trailers(envoy_headers trailers, void* context) {
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_trailers");
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", std::to_string(trailers.length).c_str());
+  jni_log("jni_lib", "jvm_on_trailers");
+  jni_log("jni_lib", std::to_string(trailers.length).c_str());
 }
 
 static void jvm_on_error(envoy_error error, void* context) {
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_error");
+  jni_log("jni_lib", "jvm_on_error");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
