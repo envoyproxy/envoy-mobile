@@ -128,6 +128,7 @@ http_archive(
     name = "google_bazel_common",
     strip_prefix = "bazel-common-f1115e0f777f08c3cdb115526c4e663005bec69b",
     urls = ["https://github.com/google/bazel-common/archive/f1115e0f777f08c3cdb115526c4e663005bec69b.zip"],
+    sha256 = "1e05a4791cc3470d3ecf7edb556f796b1d340359f1c4d293f175d4d0946cf84c",
 )
 
 http_archive(
