@@ -42,8 +42,8 @@ envoy_cc_library(
 cc_binary(
     name = "libenvoy_jni.so",
     srcs = [
-        "jni_interface.cc",
         "android_jni_utils.cc",
+        "jni_interface.cc",
     ],
     hdrs = ["jni_utils.h"],
     copts = ["-std=c++14"],

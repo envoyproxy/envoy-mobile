@@ -1,8 +1,8 @@
 #include <jni.h>
-#include "jni_utils.h"
 
 #include <string>
 
+#include "jni_utils.h"
 #include "main_interface.h"
 
 static JavaVM* static_jvm = nullptr;
