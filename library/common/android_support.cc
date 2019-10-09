@@ -14,8 +14,6 @@ jint init_jvm(JavaVM* static_jvm, jobject connectivity_manager) {
   return ares_library_init_android(connectivity_manager);
 }
 
-jboolean ares_initialized() { return ares_library_android_initialized() == ARES_SUCCESS; }
-
 void jni_log(const char* tag, const char* text) {
   __android_log_write(ANDROID_LOG_ERROR, tag, text);
 }

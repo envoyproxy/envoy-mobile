@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "jni_utils.h"
+#include "jni_support.h"
 #include "main_interface.h"
 
 static JavaVM* static_jvm = nullptr;
@@ -60,13 +60,6 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
   return init_jvm(static_jvm, connectivity_manager);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_isAresInitialized(JNIEnv* env,
-                                                                          jclass // class
-) {
-  return ares_initialized();
 }
 
 extern "C" JNIEXPORT jint JNICALL

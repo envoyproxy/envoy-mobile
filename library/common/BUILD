@@ -42,10 +42,10 @@ envoy_cc_library(
 cc_binary(
     name = "libenvoy_jni.so",
     srcs = [
-        "android_jni_utils.cc",
+        "android_support.cc",
         "jni_interface.cc",
     ],
-    hdrs = ["jni_utils.h"],
+    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
@@ -58,7 +58,7 @@ cc_binary(
 cc_library(
     name = "envoy_jni_interface_lib_for_tests",  # TODO: Name better
     srcs = [
-        "java_jni_utils.cc",
+        "java_support.cc",
         "jni_interface.cc",
         "@local_jdk//:jni_header",
     ] + select({
@@ -66,7 +66,7 @@ cc_library(
         "@bazel_tools//src/conditions:darwin_x86_64": ["@local_jdk//:jni_md_header-darwin"],
         "@bazel_tools//src/conditions:linux_x86_64": ["@local_jdk//:jni_md_header-linux"],
     }),
-    hdrs = ["jni_utils.h"],
+    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     includes = [
         "../../external/local_jdk/include",
