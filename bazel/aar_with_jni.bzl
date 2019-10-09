@@ -79,5 +79,4 @@ cp $$origdir/$(location {android_library}_kt.jar) classes.jar
 cp $$origdir/proguard.txt .
 zip -r $$origdir/$(location :{archive_name}.aar) jni/*/*.so classes.jar proguard.txt
 """.format(android_library = android_library, archive_name = archive_name, proguard_rules = proguard_rules),
-        visibility = visibility,
     )
