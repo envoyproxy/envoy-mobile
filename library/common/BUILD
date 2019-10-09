@@ -38,9 +38,11 @@ envoy_cc_library(
         "@envoy//source/exe:envoy_main_common_lib",
     ],
 )
-
-cc_binary(
-    name = "libenvoy_jni.so",
+#
+#cc_binary(
+#    name = "libenvoy_jni.so",
+cc_library(
+    name = "android_envoy_jni_interface_lib",
     srcs = [
         "android_support.cc",
         "jni_interface.cc",
@@ -51,12 +53,12 @@ cc_binary(
         "-lm",
         "-llog",
     ],
-    linkshared = True,
+#    linkshared = True,
     deps = [":envoy_main_interface_lib"],
 )
 
 cc_library(
-    name = "envoy_jni_interface_lib_for_tests",  # TODO: Name better
+    name = "java_envoy_jni_interface_lib",
     srcs = [
         "java_support.cc",
         "jni_interface.cc",
