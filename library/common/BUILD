@@ -43,8 +43,9 @@ cc_library(
         "jni_interface.cc",
         "@local_jdk//:jni_header",
     ] + select({
-        "//:jvm_darwin": ["@local_jdk//:jni_md_header-darwin"],
-        "//:jvm_linux": ["@local_jdk//:jni_md_header-linux"],
+        "@bazel_tools//src/conditions:darwin": ["@local_jdk//:jni_md_header-darwin"],
+        "@bazel_tools//src/conditions:darwin_x86_64": ["@local_jdk//:jni_md_header-darwin"],
+        "@bazel_tools//src/conditions:linux_x86_64": ["@local_jdk//:jni_md_header-linux"],
     }),
     copts = ["-std=c++14"],
     includes = [

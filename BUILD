@@ -39,17 +39,3 @@ define_kt_toolchain(
     name = "kotlin_toolchain",
     jvm_target = "1.8",
 )
-
-config_setting(
-    name = "jvm_linux",
-    values = {
-        "define": "os=linux",
-    },
-)
-
-config_setting(
-    name = "jvm_darwin",
-    values = {
-        "define": "os=darwin",
-    },
-)
