@@ -1,7 +1,6 @@
 licenses(["notice"])  # Apache 2
 
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
 
 envoy_package()
 
@@ -42,7 +41,7 @@ envoy_cc_library(
 #cc_binary(
 #    name = "libenvoy_jni.so",
 cc_library(
-    name = "android_envoy_jni_interface_lib",
+    name = "envoy_android_jni_lib",
     srcs = [
         "android_support.cc",
         "jni_interface.cc",
@@ -58,7 +57,7 @@ cc_library(
 )
 
 cc_library(
-    name = "java_envoy_jni_interface_lib",
+    name = "envoy_java_jni_lib",
     srcs = [
         "java_support.cc",
         "jni_interface.cc",
