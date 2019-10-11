@@ -9,8 +9,8 @@ envoy_cc_library(
     srcs = [
         "certificates.inc",
         "config_template.cc",
-        "engine.h",
         "engine.cc",
+        "engine.h",
         "main_interface.cc",
     ],
     hdrs = ["main_interface.h"],

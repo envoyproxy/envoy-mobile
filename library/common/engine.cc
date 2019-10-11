@@ -4,7 +4,10 @@
 
 namespace Envoy {
 
-// As a server, Envoy's static factory registration happens when main is run. However, when compiled as a library, there is no guarantee that such registration will happen before the names are needed. The following calls ensure that registration happens before the entities are needed. Note that as more registrations are needed, explicit initialization calls will need to be added here.
+// As a server, Envoy's static factory registration happens when main is run. However, when compiled
+// as a library, there is no guarantee that such registration will happen before the names are
+// needed. The following calls ensure that registration happens before the entities are needed. Note
+// that as more registrations are needed, explicit initialization calls will need to be added here.
 static void registerFactories() {
   Envoy::Extensions::Clusters::DynamicForwardProxy::forceRegisterClusterFactory();
   Envoy::Extensions::HttpFilters::DynamicForwardProxy::
@@ -20,7 +23,8 @@ static void registerFactories() {
 
 absl::once_flag Engine::register_once_;
 
-Engine::Engine(const char* config, const char* log_level, std::atomic<envoy_network_t>& preferred_network) {
+Engine::Engine(const char* config, const char* log_level,
+               std::atomic<envoy_network_t>& preferred_network) {
   // Ensure static factory registration occurs on time.
   absl::call_once(register_once_, registerFactories);
 
@@ -29,7 +33,7 @@ Engine::Engine(const char* config, const char* log_level, std::atomic<envoy_netw
   http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
 
   const char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),
-                        strdup("-l"),    strdup(log_level),       nullptr};
+                              strdup("-l"),    strdup(log_level),       nullptr};
 
   // Start the Envoy on a dedicated thread.
   main_thread_ = std::thread(&Engine::run, this, envoy_argv);
@@ -50,7 +54,7 @@ envoy_status_t Engine::run(const char** envoy_argv) {
       std::cerr << e.what() << std::endl;
       return ENVOY_FAILURE;
     }
-  
+
     // Note: We're waiting longer than we might otherwise to drain to the main thread's dispatcher.
     // This is because we're not simply waiting for its availability and for it to have started, but
     // also because we're waiting for clusters to have done their first attempt at DNS resolution.
@@ -59,10 +63,9 @@ envoy_status_t Engine::run(const char** envoy_argv) {
     // as we did previously).
     auto server = main_common_->server();
     stageone_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
-      Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this, server]() -> void {
-        http_dispatcher_->ready(server->dispatcher(), server->clusterManager());
-      }
-    );
+        Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this, server]() -> void {
+          http_dispatcher_->ready(server->dispatcher(), server->clusterManager());
+        });
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
@@ -75,7 +78,8 @@ Engine::~Engine() {
     return;
   }
 
-  // If we're not on the main thread, we need to be sure that MainCommon is finished being constructed so we can dispatch shutdown.
+  // If we're not on the main thread, we need to be sure that MainCommon is finished being
+  // constructed so we can dispatch shutdown.
   {
     Thread::LockGuard lock(mutex_);
     if (!main_common_) {
@@ -89,8 +93,6 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-Http::Dispatcher& Engine::httpDispatcher() {
-  return *http_dispatcher_;
-}
+Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
 
 } // namespace Envoy

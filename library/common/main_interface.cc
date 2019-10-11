@@ -33,7 +33,9 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
   return engine_->httpDispatcher().sendTrailers(stream, trailers);
 }
 
-envoy_status_t reset_stream(envoy_stream_t stream) { return engine_->httpDispatcher().resetStream(stream); }
+envoy_status_t reset_stream(envoy_stream_t stream) {
+  return engine_->httpDispatcher().resetStream(stream);
+}
 
 envoy_engine_t init_engine() {
   // TODO(goaway): return new handle once multiple engine support is in place.
