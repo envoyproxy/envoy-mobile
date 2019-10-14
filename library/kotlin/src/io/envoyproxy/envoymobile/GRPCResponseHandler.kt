@@ -11,6 +11,20 @@ class GRPCResponseHandler(
     val executor: Executor
 ) {
 
+  /**
+   * Represents the process state of the response stream's body data.
+   */
+  private sealed class ProcessState {
+    // Awaiting a gRPC compression flag.
+    object CompressionFlag : ProcessState()
+
+    // Awaiting the length specification of the next message.
+    object MessageLength : ProcessState()
+
+    // Awaiting a message with the specified length.
+    class Message(val messageLength: Int) : ProcessState()
+  }
+
   internal val underlyingHandler: ResponseHandler = ResponseHandler(executor)
 
   private var errorClosure: (error: EnvoyError) -> Unit = { }
@@ -39,10 +53,10 @@ class GRPCResponseHandler(
    * @return ResponseHandler, this ResponseHandler.
    */
   fun onMessage(closure: (byteBuffer: ByteBuffer) -> Unit): GRPCResponseHandler {
-
     val byteBufferedOutputStream = ByteArrayOutputStream()
-    var messageLength = -1
+    var processState: ProcessState = ProcessState.CompressionFlag
     underlyingHandler.onData { byteBuffer, _ ->
+
       val byteBufferArray = if (byteBuffer.hasArray()) {
         byteBuffer.array()
       } else {
@@ -50,65 +64,9 @@ class GRPCResponseHandler(
         byteBuffer.get(array)
         array
       }
-
       byteBufferedOutputStream.write(byteBufferArray)
-      val array = byteBufferedOutputStream.toByteArray()
 
-      // We have a new message to be streamed through
-      if (messageLength == -1) {
-        if (array.size < MESSAGE_HEADING_OFFSET) {
-          // We don't have enough information so we'll just return
-          return@onData
-        }
-
-        val compressionFlag = array[0]
-        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
-        if (compressionFlag.compareTo(0) != 0) {
-          errorClosure(
-              EnvoyError(
-                  EnvoyErrorCode.ENVOY_UNDEFINED_ERROR,
-                  "Unable to accept compression enabled messages for gRPC"))
-
-          // no op the current onData and clean up
-          underlyingHandler.onData { _, _ -> }
-          byteBufferedOutputStream.reset()
-        }
-
-        messageLength = ByteBuffer.wrap(array.sliceArray(1..4)).int
-
-        if (messageLength == 0) {
-          // No message return empty array
-          messageLength = -1
-          closure(ByteBuffer.wrap(ByteArray(0)))
-        }
-
-        val byteArray = byteBufferedOutputStream.toByteArray()
-        val slicedArray: ByteArray = byteArray.slice(MESSAGE_HEADING_OFFSET until byteArray.size).toByteArray()
-        byteBufferedOutputStream.reset()
-        byteBufferedOutputStream.write(slicedArray)
-      }
-
-      if (array.size < messageLength) {
-        // Current buffered data doesn't contain the whole message
-        // return and away for the next data call
-        return@onData
-      } else {
-        // Current buffered data has enough bytes
-        val byteArray = byteBufferedOutputStream.toByteArray()
-        val messageByteArray = byteArray.slice(0 until messageLength).toByteArray()
-        closure(ByteBuffer.wrap(messageByteArray))
-
-        byteBufferedOutputStream.reset()
-
-        // Add remaining bytes back to the output stream
-        if (byteArray.size > messageLength) {
-          val remainingByteArray = byteArray.slice(messageLength until byteArray.size).toByteArray()
-          byteBufferedOutputStream.write(remainingByteArray)
-        }
-
-        // Reset
-        messageLength = -1
-      }
+      processState = processData(byteBufferedOutputStream, processState, closure)
     }
 
     return this
@@ -161,5 +119,78 @@ class GRPCResponseHandler(
   fun onCanceled(closure: () -> Unit): GRPCResponseHandler {
     underlyingHandler.onCanceled(closure)
     return this
+  }
+
+  /**
+   * Recursively processes a buffer of data, buffering it into messages based on state.
+   * When a message has been fully buffered, `onMessage` will be called with the message.
+   *
+   * @param bufferedStream The buffer of data from which to determine state and messages.
+   * @param processState The current process state of the buffering.
+   * @param onMessage Closure to call when a new message is available.
+   */
+  private fun processData(
+      bufferedStream: ByteArrayOutputStream,
+      processState: ProcessState,
+      onMessage: (byteBuffer: ByteBuffer) -> Unit): ProcessState {
+
+    var nextState = processState
+
+    when (processState) {
+      is ProcessState.CompressionFlag -> {
+        val byteArray = bufferedStream.toByteArray()
+        if (byteArray.size < MESSAGE_HEADING_OFFSET) {
+          // We don't have enough information so we'll just return
+          return ProcessState.CompressionFlag
+        }
+
+        val compressionFlag = byteArray[0]
+        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
+        if (compressionFlag.compareTo(0) != 0) {
+          errorClosure(
+              EnvoyError(
+                  EnvoyErrorCode.ENVOY_UNDEFINED_ERROR,
+                  "Unable to accept compression enabled messages for gRPC"))
+
+          // no op the current onData and clean up
+          underlyingHandler.onData { _, _ -> }
+          bufferedStream.reset()
+        }
+
+        nextState = ProcessState.MessageLength
+      }
+      is ProcessState.MessageLength -> {
+        val byteArray = bufferedStream.toByteArray()
+        val messageLength = ByteBuffer.wrap(byteArray.sliceArray(1..4)).int
+
+        if (messageLength == 0) {
+          onMessage(ByteBuffer.wrap(ByteArray(0)))
+          return ProcessState.CompressionFlag
+        }
+
+        nextState = ProcessState.Message(messageLength)
+      }
+      is ProcessState.Message -> {
+        if (bufferedStream.size() < processState.messageLength + MESSAGE_HEADING_OFFSET) {
+          // We don't have enough bytes to construct the message so we'll return
+          return ProcessState.Message(processState.messageLength)
+        }
+
+        val byteArray = bufferedStream.toByteArray()
+        onMessage(ByteBuffer.wrap(
+            byteArray.sliceArray(MESSAGE_HEADING_OFFSET until MESSAGE_HEADING_OFFSET + processState.messageLength)))
+        bufferedStream.reset()
+        bufferedStream.write(
+            byteArray.sliceArray(MESSAGE_HEADING_OFFSET + processState.messageLength until byteArray.size))
+
+        if (byteArray.sliceArray(MESSAGE_HEADING_OFFSET + processState.messageLength until byteArray.size).isEmpty()) {
+          return ProcessState.CompressionFlag
+        } else {
+          nextState = ProcessState.CompressionFlag
+        }
+      }
+    }
+
+    return processData(bufferedStream, nextState, onMessage)
   }
 }

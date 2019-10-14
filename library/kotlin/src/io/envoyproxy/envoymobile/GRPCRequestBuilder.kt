@@ -4,9 +4,9 @@ package io.envoyproxy.envoymobile
  * Builder used for creating new gRPC `Request` instances.
  */
 class GRPCRequestBuilder(
-    private val path: String,
-    private val authority: String,
-    private val useHTTPS: Boolean
+    path: String,
+    authority: String,
+    useHTTPS: Boolean
 ) {
   private val underlyingBuilder: RequestBuilder = RequestBuilder(
       method = RequestMethod.POST,
