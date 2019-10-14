@@ -2,8 +2,8 @@ import Envoy
 import UIKit
 
 private let kCellID = "cell-id"
-private let kRequestAuthority = "s3.amazonaws.com"
-private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
+private let kRequestAuthority = "api.lyft.com"
+private let kRequestPath = "/ping"
 private let kRequestScheme = "https"
 
 final class ViewController: UITableViewController {
