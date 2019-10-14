@@ -21,12 +21,13 @@ static void registerFactories() {
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
 }
 
-absl::once_flag Engine::register_once_;
+// absl::once_flag Engine::register_once_;
 
 Engine::Engine(const char* config, const char* log_level,
                std::atomic<envoy_network_t>& preferred_network) {
   // Ensure static factory registration occurs on time.
-  absl::call_once(register_once_, registerFactories);
+  // absl::call_once(register_once_, registerFactories);
+  registerFactories();
 
   // Create the Http::Dispatcher first since it contains initial queueing logic.
   // TODO: consider centralizing initial queueing in this class.

@@ -31,7 +31,7 @@ public:
   Http::Dispatcher& httpDispatcher();
 
 private:
-  static absl::once_flag register_once_;
+  // static absl::once_flag register_once_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   std::thread main_thread_;
