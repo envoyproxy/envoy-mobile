@@ -32,10 +32,3 @@ public protocol StreamEmitter: CancelableStream {
   ///                       Otherwise, the stream is closed with an empty data frame.
   func close(trailers: [String: [String]]?)
 }
-
-extension StreamEmitter {
-  /// Convenience function for ending the stream without sending any trailers.
-  public func close() {
-    self.close(trailers: [:])
-  }
-}
