@@ -68,7 +68,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  @param handle Underlying handle of the HTTP stream owned by an Envoy engine.
  @param callbacks The callbacks for the stream.
  */
-- (instancetype)initWithHandle:(uint64_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
+- (instancetype)initWithHandle:(intptr_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
 
 /**
  Send headers over the provided stream.
@@ -186,6 +186,17 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 // Concrete implementation of the `EnvoyEngine` protocol.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
+
+@end
+
+#pragma mark - EnvoyNetworkMonitor
+
+// Monitors network changes in order to update Envoy network cluster preferences.
+@interface EnvoyNetworkMonitor : NSObject
+
+// Start monitoring reachability, updating the preferred Envoy network cluster on changes.
+// This is typically called by `EnvoyEngine` automatically on startup.
++ (void)startReachabilityIfNeeded;
 
 @end
 

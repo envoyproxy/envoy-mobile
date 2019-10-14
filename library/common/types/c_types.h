@@ -11,13 +11,13 @@
  * Handle to an Envoy engine instance. Valid only for the lifetime of the engine and not intended
  * for any external interpretation or use.
  */
-typedef uint64_t envoy_engine_t;
+typedef intptr_t envoy_engine_t;
 
 /**
  * Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
  * intended for any external interpretation or use.
  */
-typedef uint64_t envoy_stream_t;
+typedef intptr_t envoy_stream_t;
 
 /**
  * Result codes returned by all calls made to this interface.
@@ -27,7 +27,19 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 /**
  * Error code associated with terminal status of a HTTP stream.
  */
-typedef enum { ENVOY_UNDEFINED_ERROR, ENVOY_STREAM_RESET } envoy_error_code_t;
+typedef enum {
+  ENVOY_UNDEFINED_ERROR,
+  ENVOY_STREAM_RESET,
+  ENVOY_CONNECTION_FAILURE
+} envoy_error_code_t;
+
+/**
+ * Networks classified by last physical link.
+ * ENVOY_NET_GENERIC is default and includes cases where network characteristics are unknown.
+ * ENVOY_NET_WLAN includes WiFi and other local area wireless networks.
+ * ENVOY_NET_WWAN includes all mobile phone networks.
+ */
+typedef enum { ENVOY_NET_GENERIC, ENVOY_NET_WLAN, ENVOY_NET_WWAN } envoy_network_t;
 
 #ifdef __cplusplus
 extern "C" { // release function
