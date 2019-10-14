@@ -54,6 +54,7 @@ class GRPCResponseHandler(
       byteBufferedOutputStream.write(byteBufferArray)
       val array = byteBufferedOutputStream.toByteArray()
 
+      // We have a new message to be streamed through
       if (messageLength == -1) {
         if (array.size < MESSAGE_HEADING_OFFSET) {
           // We don't have enough information so we'll just return
@@ -61,7 +62,8 @@ class GRPCResponseHandler(
         }
 
         val compressionFlag = array[0]
-        if (compressionFlag.compareTo(0) == 0) {
+        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
+        if (compressionFlag.compareTo(0) != 0) {
           errorClosure(
               EnvoyError(
                   EnvoyErrorCode.ENVOY_UNDEFINED_ERROR,
@@ -93,14 +95,19 @@ class GRPCResponseHandler(
       } else {
         // Current buffered data has enough bytes
         val byteArray = byteBufferedOutputStream.toByteArray()
-        val remainingByteArray = byteArray.slice(messageLength until byteArray.size).toByteArray()
-        byteBufferedOutputStream.reset()
-        if (remainingByteArray.isNotEmpty()) {
-          byteBufferedOutputStream.write(remainingByteArray)
-        }
-        messageLength = -1
         val messageByteArray = byteArray.slice(0 until messageLength).toByteArray()
         closure(ByteBuffer.wrap(messageByteArray))
+
+        byteBufferedOutputStream.reset()
+
+        // Add remaining bytes back to the output stream
+        if (byteArray.size > messageLength) {
+          val remainingByteArray = byteArray.slice(messageLength until byteArray.size).toByteArray()
+          byteBufferedOutputStream.write(remainingByteArray)
+        }
+
+        // Reset
+        messageLength = -1
       }
     }
 
