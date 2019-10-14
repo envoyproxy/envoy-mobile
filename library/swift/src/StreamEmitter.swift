@@ -30,6 +30,11 @@ public protocol StreamEmitter: CancelableStream {
   ///
   /// - parameter trailers: Trailers to send over the stream.
   func close(trailers: [String: [String]])
+
+  /// End the stream with one last data frame.
+  ///
+  /// - parameter data: Data to send over the stream.
+  func closeWithData(_ data: Data)
 }
 
 extension StreamEmitter {

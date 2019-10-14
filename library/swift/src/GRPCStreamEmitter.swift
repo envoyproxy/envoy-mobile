@@ -43,7 +43,9 @@ public final class GRPCStreamEmitter: NSObject {
   }
 
   /// Close this connection.
-  public func close() {
-    self.underlyingEmitter.close()
+  public func close(_ data: Data) {
+    // The gRPC protocol requires the client stream to close with a DATA frame.
+    // More information here: https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests
+    self.underlyingEmitter.closeWithData(data)
   }
 }

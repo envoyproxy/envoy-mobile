@@ -25,6 +25,10 @@ extension EnvoyStreamEmitter: StreamEmitter {
     self.stream.sendTrailers(trailers)
   }
 
+  func closeWithData(_ data: Data) {
+    self.stream.send(data, close: true)
+  }
+
   func cancel() {
     _ = self.stream.cancel()
   }
