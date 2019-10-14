@@ -26,7 +26,7 @@ public:
 
   ~Engine();
 
-  envoy_status_t run(const char** argv);
+  envoy_status_t run(char** argv);
 
   Http::Dispatcher& httpDispatcher();
 

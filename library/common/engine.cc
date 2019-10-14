@@ -32,14 +32,14 @@ Engine::Engine(const char* config, const char* log_level,
   // TODO: consider centralizing initial queueing in this class.
   http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
 
-  const char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),
+  char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),
                               strdup("-l"),    strdup(log_level),       nullptr};
 
   // Start the Envoy on a dedicated thread.
   main_thread_ = std::thread(&Engine::run, this, envoy_argv);
 }
 
-envoy_status_t Engine::run(const char** envoy_argv) {
+envoy_status_t Engine::run(char** envoy_argv) {
   {
     Thread::LockGuard lock(mutex_);
     try {
