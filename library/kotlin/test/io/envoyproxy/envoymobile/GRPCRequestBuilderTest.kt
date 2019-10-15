@@ -25,7 +25,7 @@ class GRPCRequestBuilderTest {
   fun `application gprc is set as content-type header`() {
     val request = GRPCRequestBuilder("/pb.api.v1.Foo/GetBar", "foo.bar.com", false)
         .build()
-    assertThat(request.headers["content-type"]).isEqualTo("application/grpc")
+    assertThat(request.headers["content-type"]).containsExactly("application/grpc")
   }
 
   @Test
@@ -41,13 +41,12 @@ class GRPCRequestBuilderTest {
         .addTimeoutMS(200)
         .build()
 
-    assertThat(request.headers["grpc-timeout"]).isEqualTo("200m")
+    assertThat(request.headers["grpc-timeout"]).containsExactly("200m")
   }
 
   @Test
   fun `grpc-timeout header is not present when no timeout is set`() {
     val request = GRPCRequestBuilder("/pb.api.v1.Foo/GetBar", "foo.bar.com", false)
-        .addTimeoutMS(200)
         .build()
 
     assertThat(request.headers.containsKey("grpc-timeout")).isFalse()

@@ -64,7 +64,7 @@ class GRPCRequestBuilder(
     if (timeoutMS == null) {
       removeHeaders(headerName)
     } else {
-      addHeader(headerName, timeoutMS.toString())
+      addHeader(headerName, "${timeoutMS}m")
     }
     return this
   }
