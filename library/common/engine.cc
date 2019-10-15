@@ -21,30 +21,29 @@ static void registerFactories() {
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
 }
 
-// absl::once_flag Engine::register_once_;
-
 Engine::Engine(const char* config, const char* log_level,
                std::atomic<envoy_network_t>& preferred_network) {
   // Ensure static factory registration occurs on time.
-  // absl::call_once(register_once_, registerFactories);
+  // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   registerFactories();
 
   // Create the Http::Dispatcher first since it contains initial queueing logic.
   // TODO: consider centralizing initial queueing in this class.
   http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
 
-  char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup(config),
-                              strdup("-l"),    strdup(log_level),       nullptr};
-
   // Start the Envoy on a dedicated thread.
-  main_thread_ = std::thread(&Engine::run, this, envoy_argv);
+  main_thread_ = std::thread(&Engine::run, this, std::string(config), std::string(log_level));
 }
 
-envoy_status_t Engine::run(char** envoy_argv) {
+envoy_status_t Engine::run(std::string config, std::string log_level) {
   {
     Thread::LockGuard lock(mutex_);
     try {
+      char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"),   strdup(config.c_str()),
+                            strdup("-l"),    strdup(log_level.c_str()), nullptr};
+
       main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
+      event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyOne();
     } catch (const Envoy::NoServingException& e) {
       return ENVOY_SUCCESS;
@@ -63,7 +62,7 @@ envoy_status_t Engine::run(char** envoy_argv) {
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
     auto server = main_common_->server();
-    stageone_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
+    postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this, server]() -> void {
           http_dispatcher_->ready(server->dispatcher(), server->clusterManager());
         });
@@ -87,7 +86,10 @@ Engine::~Engine() {
       cv_.wait(mutex_);
     }
     ASSERT(main_common_);
-    main_common_->server()->shutdown();
+    // Gracefully shutdown the running envoy instance by resetting the main_common_ unique_ptr.
+    // Destroying MainCommon's member variables shutsdown things in the correct order and
+    // gracefully.
+    event_dispatcher_->post([this]() -> void { TS_UNCHECKED_READ(main_common_).reset(); });
   } // _mutex
 
   // Now we wait for the main thread to wrap things up.

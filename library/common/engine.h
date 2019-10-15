@@ -26,18 +26,18 @@ public:
 
   ~Engine();
 
-  envoy_status_t run(char** argv);
+  envoy_status_t run(std::string config, std::string log_level);
 
   Http::Dispatcher& httpDispatcher();
 
 private:
-  // static absl::once_flag register_once_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   std::thread main_thread_;
   std::unique_ptr<Envoy::Http::Dispatcher> http_dispatcher_;
   std::unique_ptr<Envoy::MainCommon> main_common_ GUARDED_BY(mutex_);
-  Envoy::Server::ServerLifecycleNotifier::HandlePtr stageone_callback_handler_;
+  Envoy::Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
+  Event::Dispatcher* event_dispatcher_;
 };
 
 } // namespace Envoy
