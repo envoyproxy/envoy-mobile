@@ -91,3 +91,13 @@ envoy_mobile_kt_test(
         "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
 )
+
+envoy_mobile_kt_test(
+    name = "grpc_stream_emitter_test",
+    srcs = [
+        "GRPCStreamEmitterTest.kt",
+    ],
+    deps = [
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+    ],
+)
