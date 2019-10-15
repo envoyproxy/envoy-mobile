@@ -5,7 +5,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
-import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 
 class GRPCStreamEmitterTest {
@@ -15,7 +14,6 @@ class GRPCStreamEmitterTest {
   private lateinit var emitter: StreamEmitter
 
   private val dataOutputStream = ByteArrayOutputStream()
-  private val closeOutputStream = ByteArrayOutputStream()
   private var isCloseCalled = false
 
   @Before
@@ -36,7 +34,7 @@ class GRPCStreamEmitterTest {
       }
 
       override fun close(trailers: Map<String, List<String>>?) {
-        throw UnsupportedOperationException("unexpected usage of mock emitter")
+        isCloseCalled = true
       }
     }
   }
@@ -44,7 +42,6 @@ class GRPCStreamEmitterTest {
   @After
   fun teardown() {
     dataOutputStream.reset()
-    closeOutputStream.reset()
     isCloseCalled = false
   }
 
@@ -99,7 +96,6 @@ class GRPCStreamEmitterTest {
 
     grpcStreamEmitter.close()
 
-    assertThat(closeOutputStream.toByteArray()).isEmpty()
     assertThat(isCloseCalled).isTrue()
   }
 }
