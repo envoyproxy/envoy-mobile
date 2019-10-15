@@ -5,6 +5,8 @@
 #include "jni_support.h"
 #include "main_interface.h"
 
+using namespace std;
+
 static JavaVM* static_jvm = nullptr;
 static JNIEnv* static_env = nullptr;
 const static jint JNI_VERSION = JNI_VERSION_1_6;
