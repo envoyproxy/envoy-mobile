@@ -5,6 +5,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
+import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 
 class GRPCStreamEmitterTest {
@@ -22,7 +23,7 @@ class GRPCStreamEmitterTest {
     emitter = object : StreamEmitter {
 
       override fun cancel() {
-        TODO("not implemented")
+        throw UnsupportedOperationException("unexpected usage of mock emitter")
       }
 
       override fun sendData(byteBuffer: ByteBuffer): StreamEmitter {
@@ -31,7 +32,7 @@ class GRPCStreamEmitterTest {
       }
 
       override fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter {
-        TODO("not implemented")
+        throw UnsupportedOperationException("unexpected usage of mock emitter")
       }
 
       override fun close(byteBuffer: ByteBuffer) {
@@ -40,7 +41,7 @@ class GRPCStreamEmitterTest {
       }
 
       override fun close(trailers: Map<String, List<String>>) {
-        TODO("not implemented")
+        throw UnsupportedOperationException("unexpected usage of mock emitter")
       }
     }
   }
@@ -53,18 +54,18 @@ class GRPCStreamEmitterTest {
   }
 
   @Test
-  fun `heading and data is sent on send data`() {
+  fun `prefix and data is sent on send data`() {
     val grpcStreamEmitter = GRPCStreamEmitter(emitter)
 
     val payload = "data".toByteArray(Charsets.UTF_8)
     val message = ByteBuffer.wrap(payload)
     grpcStreamEmitter.sendMessage(message)
 
-    assertThat(dataOutputStream.toByteArray()).hasSize(payload.size + MESSAGE_HEADING_OFFSET)
+    assertThat(dataOutputStream.toByteArray()).hasSize(payload.size + GRPC_PREFIX_LENGTH)
   }
 
   @Test
-  fun `compression flag is set on the first bit of the heading`() {
+  fun `compression flag is set on the first bit of the prefix`() {
     val grpcStreamEmitter = GRPCStreamEmitter(emitter)
 
     val payload = "data".toByteArray(Charsets.UTF_8)
@@ -75,7 +76,7 @@ class GRPCStreamEmitterTest {
   }
 
   @Test
-  fun `message length is set on the 1-4 bytes of the heading`() {
+  fun `message length is set on the 1-4 bytes of the prefix`() {
     val grpcStreamEmitter = GRPCStreamEmitter(emitter)
 
     val payload = "data".toByteArray(Charsets.UTF_8)
@@ -86,14 +87,14 @@ class GRPCStreamEmitterTest {
   }
 
   @Test
-  fun `message is sent after the heading`() {
+  fun `message is sent after the prefix`() {
     val grpcStreamEmitter = GRPCStreamEmitter(emitter)
 
     val payload = "data".toByteArray(Charsets.UTF_8)
     val message = ByteBuffer.wrap(payload)
     grpcStreamEmitter.sendMessage(message)
 
-    assertThat(dataOutputStream.toByteArray().sliceArray(MESSAGE_HEADING_OFFSET until dataOutputStream.size()).toString(Charsets.UTF_8)).isEqualTo("data")
+    assertThat(dataOutputStream.toByteArray().sliceArray(GRPC_PREFIX_LENGTH until dataOutputStream.size()).toString(Charsets.UTF_8)).isEqualTo("data")
 
   }
 

@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
 // 1 byte for the compression flag, 4 bytes for the message length (int)
-const val MESSAGE_HEADING_OFFSET = 5
+const val GRPC_PREFIX_LENGTH = 5
 
 /**
  * Client that supports sending and receiving gRPC traffic.

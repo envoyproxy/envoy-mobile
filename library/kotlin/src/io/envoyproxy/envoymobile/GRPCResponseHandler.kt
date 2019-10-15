@@ -36,10 +36,10 @@ class GRPCResponseHandler(
    *                 and flag indicating if the stream is complete.
    * @return ResponseHandler, this ResponseHandler.
    */
-  fun onHeaders(closure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit): GRPCResponseHandler {
-    underlyingHandler.onHeaders { headers, _, endStream ->
+  fun onHeaders(closure: (headers: Map<String, List<String>>, statusCode: Int) -> Unit): GRPCResponseHandler {
+    underlyingHandler.onHeaders { headers, _, _ ->
       val grpcStatus = headers["grpc-status"]?.first()?.toIntOrNull() ?: 0
-      closure(headers, grpcStatus, endStream)
+      closure(headers, grpcStatus)
     }
     return this
   }
@@ -73,18 +73,6 @@ class GRPCResponseHandler(
   }
 
   /**
-   * Called when response metadata is received by the stream.
-   *
-   * @param metadata the metadata of a response.
-   * @param endStream true if the stream is complete.
-   * @return ResponseHandler, this ResponseHandler.
-   */
-  fun onMetadata(closure: (metadata: Map<String, List<String>>) -> Unit): GRPCResponseHandler {
-    underlyingHandler.onMetadata(closure)
-    return this
-  }
-
-  /**
    * Specify a callback for when trailers are received by the stream.
    * If the closure is called, the stream is complete.
    *
@@ -110,18 +98,6 @@ class GRPCResponseHandler(
   }
 
   /**
-   * Specify a callback for when the stream is canceled.
-   * If the closure is called, the stream is complete.
-   *
-   * @param closure: Closure which will be called when the stream is canceled.
-   * @return ResponseHandler, this ResponseHandler.
-   */
-  fun onCanceled(closure: () -> Unit): GRPCResponseHandler {
-    underlyingHandler.onCanceled(closure)
-    return this
-  }
-
-  /**
    * Recursively processes a buffer of data, buffering it into messages based on state.
    * When a message has been fully buffered, `onMessage` will be called with the message.
    *
@@ -139,8 +115,8 @@ class GRPCResponseHandler(
     when (processState) {
       is ProcessState.CompressionFlag -> {
         val byteArray = bufferedStream.toByteArray()
-        if (byteArray.size < MESSAGE_HEADING_OFFSET) {
-          // We don't have enough information so we'll just return
+        if (byteArray.isEmpty()) {
+          // We don't have enough information to extract the compression flag, so we'll just return
           return ProcessState.CompressionFlag
         }
 
@@ -160,6 +136,11 @@ class GRPCResponseHandler(
         nextState = ProcessState.MessageLength
       }
       is ProcessState.MessageLength -> {
+        if (bufferedStream.size() < GRPC_PREFIX_LENGTH) {
+          // We don't have enough information to extract the message length, so we'll just return
+          return ProcessState.MessageLength
+        }
+
         val byteArray = bufferedStream.toByteArray()
         val messageLength = ByteBuffer.wrap(byteArray.sliceArray(1..4)).int
 
@@ -171,19 +152,19 @@ class GRPCResponseHandler(
         nextState = ProcessState.Message(messageLength)
       }
       is ProcessState.Message -> {
-        if (bufferedStream.size() < processState.messageLength + MESSAGE_HEADING_OFFSET) {
-          // We don't have enough bytes to construct the message so we'll return
+        if (bufferedStream.size() < processState.messageLength + GRPC_PREFIX_LENGTH) {
+          // We don't have enough bytes to construct the message, so we'll just return
           return ProcessState.Message(processState.messageLength)
         }
 
         val byteArray = bufferedStream.toByteArray()
         onMessage(ByteBuffer.wrap(
-            byteArray.sliceArray(MESSAGE_HEADING_OFFSET until MESSAGE_HEADING_OFFSET + processState.messageLength)))
+            byteArray.sliceArray(GRPC_PREFIX_LENGTH until GRPC_PREFIX_LENGTH + processState.messageLength)))
         bufferedStream.reset()
         bufferedStream.write(
-            byteArray.sliceArray(MESSAGE_HEADING_OFFSET + processState.messageLength until byteArray.size))
+            byteArray.sliceArray(GRPC_PREFIX_LENGTH + processState.messageLength until byteArray.size))
 
-        if (byteArray.sliceArray(MESSAGE_HEADING_OFFSET + processState.messageLength until byteArray.size).isEmpty()) {
+        if (byteArray.sliceArray(GRPC_PREFIX_LENGTH + processState.messageLength until byteArray.size).isEmpty()) {
           return ProcessState.CompressionFlag
         } else {
           nextState = ProcessState.CompressionFlag

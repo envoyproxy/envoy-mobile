@@ -41,16 +41,6 @@ interface StreamEmitter : CancelableStream {
   fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter
 
   /**
-   * For ending an associated stream and sending one last data frame.
-   *
-   * @param byteBuffer to send with ending a stream.
-   * @throws IllegalStateException when the stream is not active.
-   * @throws EnvoyException when there is an exception ending the stream or sending trailers.
-   */
-  @Throws(EnvoyException::class)
-  fun close(byteBuffer: ByteBuffer)
-
-  /**
    * For ending an associated stream and sending trailers.
    *
    * @param trailers to send with ending a stream. If null, stream will be closed with an empty data frame.

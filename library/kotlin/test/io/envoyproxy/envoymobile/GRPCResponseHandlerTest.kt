@@ -15,10 +15,9 @@ class GRPCResponseHandlerTest {
     val countDownLatch = CountDownLatch(1)
 
     val handler = GRPCResponseHandler(Executor { })
-        .onHeaders { headers, statusCode, endStream ->
+        .onHeaders { headers, grpcStatus ->
           assertThat(headers).isEqualTo(mapOf("grpc-status" to listOf("1"), "other" to listOf("foo", "bar")))
-          assertThat(statusCode).isEqualTo(1)
-          assertThat(endStream).isTrue()
+          assertThat(grpcStatus).isEqualTo(1)
           countDownLatch.countDown()
         }
 
@@ -51,12 +50,12 @@ class GRPCResponseHandlerTest {
 
     val data = "data".toByteArray(Charsets.UTF_8)
 
-    val heading = ByteBuffer.allocate(5)
-    heading.put(0)
-    heading.putInt(data.size)
+    val prefix = ByteBuffer.allocate(5)
+    prefix.put(0)
+    prefix.putInt(data.size)
 
     val outputStream = ByteArrayOutputStream()
-    outputStream.write(heading.array())
+    outputStream.write(prefix.array())
     outputStream.write(data)
     val byteBuffer = ByteBuffer.wrap(outputStream.toByteArray())
 
@@ -79,12 +78,12 @@ class GRPCResponseHandlerTest {
     val part2 = "_by_".toByteArray(Charsets.UTF_8)
     val part3 = "parts".toByteArray(Charsets.UTF_8)
 
-    val heading = ByteBuffer.allocate(5)
-    heading.put(0)
-    heading.putInt(part1.size + part2.size + part3.size)
+    val prefix = ByteBuffer.allocate(5)
+    prefix.put(0)
+    prefix.putInt(part1.size + part2.size + part3.size)
 
     val outputStream = ByteArrayOutputStream()
-    outputStream.write(heading.array())
+    outputStream.write(prefix.array())
     outputStream.write(part1)
 
     val initialBuffer = ByteBuffer.wrap(outputStream.toByteArray())
@@ -109,18 +108,18 @@ class GRPCResponseHandlerTest {
     val part1 = "part1".toByteArray(Charsets.UTF_8)
     val part2 = "part2".toByteArray(Charsets.UTF_8)
 
-    val heading1 = ByteBuffer.allocate(5)
-    heading1.put(0)
-    heading1.putInt(part1.size)
+    val prefix1 = ByteBuffer.allocate(5)
+    prefix1.put(0)
+    prefix1.putInt(part1.size)
 
-    val heading2 = ByteBuffer.allocate(5)
-    heading2.put(0)
-    heading2.putInt(part2.size)
+    val prefix2 = ByteBuffer.allocate(5)
+    prefix2.put(0)
+    prefix2.putInt(part2.size)
 
     val outputStream = ByteArrayOutputStream()
-    outputStream.write(heading1.array())
+    outputStream.write(prefix1.array())
     outputStream.write(part1)
-    outputStream.write(heading2.array())
+    outputStream.write(prefix2.array())
     outputStream.write(part2)
 
     val part1AndPart2 = ByteBuffer.wrap(outputStream.toByteArray())
@@ -147,18 +146,18 @@ class GRPCResponseHandlerTest {
     val part2a = "part2a".toByteArray(Charsets.UTF_8)
     val part2b = "_part2b".toByteArray(Charsets.UTF_8)
 
-    val heading1 = ByteBuffer.allocate(5)
-    heading1.put(0)
-    heading1.putInt(part1.size)
+    val prefix1 = ByteBuffer.allocate(5)
+    prefix1.put(0)
+    prefix1.putInt(part1.size)
 
-    val heading2 = ByteBuffer.allocate(5)
-    heading2.put(0)
-    heading2.putInt(part2a.size + part2b.size)
+    val prefix2 = ByteBuffer.allocate(5)
+    prefix2.put(0)
+    prefix2.putInt(part2a.size + part2b.size)
 
     val outputStream = ByteArrayOutputStream()
-    outputStream.write(heading1.array())
+    outputStream.write(prefix1.array())
     outputStream.write(part1)
-    outputStream.write(heading2.array())
+    outputStream.write(prefix2.array())
     outputStream.write(part2a)
     val part1AndPart2a = ByteBuffer.wrap(outputStream.toByteArray())
 
@@ -181,12 +180,12 @@ class GRPCResponseHandlerTest {
   @Test(timeout = 200L)
   fun `zero length messages are passed as empty byte buffers`() {
     val countDownLatch = CountDownLatch(1)
-    val heading = ByteBuffer.allocate(5)
-    heading.put(0)
-    heading.putInt(0)
+    val prefix = ByteBuffer.allocate(5)
+    prefix.put(0)
+    prefix.putInt(0)
 
     val outputStream = ByteArrayOutputStream()
-    outputStream.write(heading.array())
+    outputStream.write(prefix.array())
     val data = ByteBuffer.wrap(outputStream.toByteArray())
 
     val messages = mutableListOf<ByteBuffer>()
@@ -208,8 +207,8 @@ class GRPCResponseHandlerTest {
     val countDownLatch = CountDownLatch(1)
 
     val handler = GRPCResponseHandler(Executor { })
-        .onHeaders { _, statusCode, _ ->
-          assertThat(statusCode).isEqualTo(1)
+        .onHeaders { _, grpcStatus ->
+          assertThat(grpcStatus).isEqualTo(1)
           countDownLatch.countDown()
         }
 
@@ -224,8 +223,8 @@ class GRPCResponseHandlerTest {
     val countDownLatch = CountDownLatch(1)
 
     val handler = GRPCResponseHandler(Executor { })
-        .onHeaders { _, statusCode, _ ->
-          assertThat(statusCode).isEqualTo(0)
+        .onHeaders { _, grpcStatus ->
+          assertThat(grpcStatus).isEqualTo(0)
           countDownLatch.countDown()
         }
 
@@ -239,8 +238,8 @@ class GRPCResponseHandlerTest {
     val countDownLatch = CountDownLatch(1)
 
     val handler = GRPCResponseHandler(Executor { })
-        .onHeaders { _, statusCode, _ ->
-          assertThat(statusCode).isEqualTo(0)
+        .onHeaders { _, grpcStatus ->
+          assertThat(grpcStatus).isEqualTo(0)
           countDownLatch.countDown()
         }
 
