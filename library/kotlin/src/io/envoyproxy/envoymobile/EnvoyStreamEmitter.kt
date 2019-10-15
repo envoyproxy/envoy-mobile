@@ -40,7 +40,7 @@ class EnvoyStreamEmitter(
    * @throws IllegalStateException when the stream is not active.
    * @throws EnvoyException when there is an exception ending the stream or sending trailers.
    */
-  override fun close(trailers: Map<String, List<String>>?) {
+  override fun close(trailers: Map<String, List<String>>? = null) {
     trailers?.let {
       stream.sendTrailers(it)
       return
