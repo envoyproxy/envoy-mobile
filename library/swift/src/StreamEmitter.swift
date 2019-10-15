@@ -28,7 +28,7 @@ public protocol StreamEmitter: CancelableStream {
 
   /// End the stream.
   ///
-  /// - parameter trailers: optional trailers to send over the stream.
-  ///                       Otherwise, the stream is closed with an empty data frame.
+  /// - parameter trailers: Trailers with which to close the stream.
+  //                        If nil, stream will be closed with an empty data frame.
   func close(trailers: [String: [String]]?)
 }
