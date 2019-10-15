@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit
 
 class GRPCResponseHandlerTest {
 
-
   @Test(timeout = 100L)
   fun `headers and grpc status is passed to on headers`() {
     val countDownLatch = CountDownLatch(1)
