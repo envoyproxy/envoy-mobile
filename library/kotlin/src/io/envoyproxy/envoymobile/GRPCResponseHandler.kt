@@ -31,7 +31,6 @@ class GRPCResponseHandler(
   private var errorClosure: (error: EnvoyError) -> Unit = { }
   /**
    * Specify a callback for when response headers are received by the stream.
-   * If `endStream` is `true`, the stream is complete.
    *
    * @param closure: Closure which will receive the headers, status code,
    *                 and flag indicating if the stream is complete.
