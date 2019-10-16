@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -52,6 +53,7 @@ class GRPCResponseHandlerTest {
 
     val prefix = ByteBuffer.allocate(5)
     prefix.put(0)
+    prefix.order(ByteOrder.BIG_ENDIAN)
     prefix.putInt(data.size)
 
     val outputStream = ByteArrayOutputStream()
@@ -80,6 +82,7 @@ class GRPCResponseHandlerTest {
 
     val prefix = ByteBuffer.allocate(5)
     prefix.put(0)
+    prefix.order(ByteOrder.BIG_ENDIAN)
     prefix.putInt(part1.size + part2.size + part3.size)
 
     val outputStream = ByteArrayOutputStream()
@@ -110,10 +113,12 @@ class GRPCResponseHandlerTest {
 
     val prefix1 = ByteBuffer.allocate(5)
     prefix1.put(0)
+    prefix1.order(ByteOrder.BIG_ENDIAN)
     prefix1.putInt(part1.size)
 
     val prefix2 = ByteBuffer.allocate(5)
     prefix2.put(0)
+    prefix2.order(ByteOrder.BIG_ENDIAN)
     prefix2.putInt(part2.size)
 
     val outputStream = ByteArrayOutputStream()
@@ -148,10 +153,12 @@ class GRPCResponseHandlerTest {
 
     val prefix1 = ByteBuffer.allocate(5)
     prefix1.put(0)
+    prefix1.order(ByteOrder.BIG_ENDIAN)
     prefix1.putInt(part1.size)
 
     val prefix2 = ByteBuffer.allocate(5)
     prefix2.put(0)
+    prefix2.order(ByteOrder.BIG_ENDIAN)
     prefix2.putInt(part2a.size + part2b.size)
 
     val outputStream = ByteArrayOutputStream()
@@ -184,10 +191,12 @@ class GRPCResponseHandlerTest {
 
     val prefix1 = ByteBuffer.allocate(5)
     prefix1.put(0)
+    prefix1.order(ByteOrder.BIG_ENDIAN)
     prefix1.putInt(0)
 
     val prefix2 = ByteBuffer.allocate(5)
     prefix2.put(0)
+    prefix2.order(ByteOrder.BIG_ENDIAN)
     prefix2.putInt(part2.size)
 
     val outputStream = ByteArrayOutputStream()
@@ -216,6 +225,7 @@ class GRPCResponseHandlerTest {
     val countDownLatch = CountDownLatch(1)
     val prefix = ByteBuffer.allocate(5)
     prefix.put(0)
+    prefix.order(ByteOrder.BIG_ENDIAN)
     prefix.putInt(0)
 
     val outputStream = ByteArrayOutputStream()

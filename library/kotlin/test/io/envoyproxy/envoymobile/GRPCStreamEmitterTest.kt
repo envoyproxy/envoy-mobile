@@ -14,7 +14,7 @@ class GRPCStreamEmitterTest {
   private lateinit var emitter: StreamEmitter
 
   private val dataOutputStream = ByteArrayOutputStream()
-  private var isCloseCalled = false
+  private var isCloseCalledWithNull = false
 
   @Before
   fun setup() {
@@ -34,7 +34,7 @@ class GRPCStreamEmitterTest {
       }
 
       override fun close(trailers: Map<String, List<String>>?) {
-        isCloseCalled = trailers == null
+        isCloseCalledWithNull = trailers == null
       }
     }
   }
@@ -42,7 +42,7 @@ class GRPCStreamEmitterTest {
   @After
   fun teardown() {
     dataOutputStream.reset()
-    isCloseCalled = false
+    isCloseCalledWithNull = false
   }
 
   @Test
@@ -96,6 +96,6 @@ class GRPCStreamEmitterTest {
 
     grpcStreamEmitter.close()
 
-    assertThat(isCloseCalled).isTrue()
+    assertThat(isCloseCalledWithNull).isTrue()
   }
 }
