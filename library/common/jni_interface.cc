@@ -30,9 +30,19 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
   return init_engine();
 }
 
+static void jvm_on_exit() {
+  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_exit");
+  // Note that this is not dispatched because the thread that
+  // needs to be detached is the engine thread.
+  // This function is called from the context of the engine's
+  // thread due to it being posted to the engine's event dispatcher.
+  static_jvm->DetachCurrentThread();
+}
+
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
-  return run_engine(engine, env->GetStringUTFChars(config, nullptr),
+  envoy_engine_callbacks native_callbacks = {jvm_on_exit};
+  return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }
 
