@@ -46,7 +46,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
       event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyOne();
     } catch (const Envoy::NoServingException& e) {
-      return ENVOY_SUCCESS;
+      return ENVOY_FAILURE;
     } catch (const Envoy::MalformedArgvException& e) {
       std::cerr << e.what() << std::endl;
       return ENVOY_FAILURE;
