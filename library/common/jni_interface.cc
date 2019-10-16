@@ -121,6 +121,11 @@ static JNIEnv* get_env() {
   int get_env_res = static_jvm->GetEnv((void**)&env, JNI_VERSION);
   if (get_env_res == JNI_EDETACHED) {
     __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "equals JNI_EDETACHED");
+    // Note: the only thread that should need to be attached is Envoy's engine std::thread.
+    // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
+    // engine's std::thread, and that we detach it successfully.
+    static_jvm->AttachCurrentThread(&env, NULL);
+    static_jvm->GetEnv((void**)&env, JNI_VERSION);
   }
   return env;
 }
