@@ -176,6 +176,40 @@ class GRPCResponseHandlerTest {
     assertThat(messages[1].array().toString(Charsets.UTF_8)).isEqualTo("part2a_part2b")
   }
 
+  @Test(timeout = 200L)
+  fun `empty messages in same will send empty message down`() {
+    val countDownLatch = CountDownLatch(2)
+
+    val part2 = "part2".toByteArray(Charsets.UTF_8)
+
+    val prefix1 = ByteBuffer.allocate(5)
+    prefix1.put(0)
+    prefix1.putInt(0)
+
+    val prefix2 = ByteBuffer.allocate(5)
+    prefix2.put(0)
+    prefix2.putInt(part2.size)
+
+    val outputStream = ByteArrayOutputStream()
+    outputStream.write(prefix1.array())
+    outputStream.write(prefix2.array())
+    outputStream.write(part2)
+    val resultMessages = ByteBuffer.wrap(outputStream.toByteArray())
+
+    val messages = mutableListOf<ByteBuffer>()
+    val handler = GRPCResponseHandler(Executor { })
+        .onMessage { message ->
+          messages.add(message)
+          countDownLatch.countDown()
+        }
+
+    handler.underlyingHandler.underlyingCallbacks.onData(resultMessages, false)
+
+    countDownLatch.await(1L, TimeUnit.SECONDS)
+    assertThat(messages[0].array()).isEmpty()
+    assertThat(messages[1].array().toString(Charsets.UTF_8)).isEqualTo("part2")
+  }
+
 
   @Test(timeout = 200L)
   fun `zero length messages are passed as empty byte buffers`() {

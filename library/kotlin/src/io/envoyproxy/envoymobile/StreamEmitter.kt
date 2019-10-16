@@ -48,5 +48,5 @@ interface StreamEmitter : CancelableStream {
    * @throws EnvoyException when there is an exception ending the stream or sending trailers.
    */
   @Throws(EnvoyException::class)
-  fun close(trailers: Map<String, List<String>>? = null)
+  fun close(trailers: Map<String, List<String>>?)
 }

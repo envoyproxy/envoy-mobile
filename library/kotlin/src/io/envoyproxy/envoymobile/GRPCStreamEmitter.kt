@@ -36,6 +36,6 @@ class GRPCStreamEmitter(
    * Close this connection.
    */
   fun close() {
-    emitter.close()
+    emitter.close(null)
   }
 }

@@ -4,6 +4,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyError
 import io.envoyproxy.envoymobile.engine.types.EnvoyErrorCode
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.Executor
 
 
@@ -34,7 +35,7 @@ class GRPCResponseHandler(
    *
    * @param closure: Closure which will receive the headers, status code,
    *                 and flag indicating if the stream is complete.
-   * @return ResponseHandler, this ResponseHandler.
+   * @return GRPCResponseHandler, this GRPCResponseHandler.
    */
   fun onHeaders(closure: (headers: Map<String, List<String>>, statusCode: Int) -> Unit): GRPCResponseHandler {
     underlyingHandler.onHeaders { headers, _, _ ->
@@ -46,11 +47,10 @@ class GRPCResponseHandler(
 
   /**
    * Specify a callback for when a data frame is received by the stream.
-   * If `endStream` is `true`, the stream is complete.
    *
    * @param closure: Closure which will receive the data,
    *                 and flag indicating if the stream is complete.
-   * @return ResponseHandler, this ResponseHandler.
+   * @return GRPCResponseHandler, this GRPCResponseHandler.
    */
   fun onMessage(closure: (byteBuffer: ByteBuffer) -> Unit): GRPCResponseHandler {
     val byteBufferedOutputStream = ByteArrayOutputStream()
@@ -77,7 +77,7 @@ class GRPCResponseHandler(
    * If the closure is called, the stream is complete.
    *
    * @param closure: Closure which will receive the trailers.
-   * @return ResponseHandler, this ResponseHandler.
+   * @return GRPCResponseHandler, this GRPCResponseHandler.
    */
   fun onTrailers(closure: (trailers: Map<String, List<String>>) -> Unit): GRPCResponseHandler {
     underlyingHandler.onTrailers(closure)
@@ -89,7 +89,7 @@ class GRPCResponseHandler(
    * If the closure is called, the stream is complete.
    *
    * @param closure: Closure which will be called when an error occurs.
-   * @return ResponseHandler, this ResponseHandler.
+   * @return GRPCResponseHandler, this GRPCResponseHandler.
    */
   fun onError(closure: (error: EnvoyError) -> Unit): GRPCResponseHandler {
     this.errorClosure = closure
@@ -126,10 +126,13 @@ class GRPCResponseHandler(
           errorClosure(
               EnvoyError(
                   EnvoyErrorCode.ENVOY_UNDEFINED_ERROR,
-                  "Unable to accept compression enabled messages for gRPC"))
+                  "Unable to read compressed gRPC response message"))
 
           // no op the current onData and clean up
+          underlyingHandler.onHeaders { _, _, _ -> }
           underlyingHandler.onData { _, _ -> }
+          underlyingHandler.onTrailers { }
+          underlyingHandler.onError { }
           bufferedStream.reset()
         }
 
@@ -142,13 +145,9 @@ class GRPCResponseHandler(
         }
 
         val byteArray = bufferedStream.toByteArray()
-        val messageLength = ByteBuffer.wrap(byteArray.sliceArray(1..4)).int
-
-        if (messageLength == 0) {
-          onMessage(ByteBuffer.wrap(ByteArray(0)))
-          return ProcessState.CompressionFlag
-        }
-
+        val buffer = ByteBuffer.wrap(byteArray.sliceArray(1..4))
+        buffer.order(ByteOrder.BIG_ENDIAN)
+        val messageLength = buffer.int
         nextState = ProcessState.Message(messageLength)
       }
       is ProcessState.Message -> {

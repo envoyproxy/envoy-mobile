@@ -34,7 +34,7 @@ class GRPCStreamEmitterTest {
       }
 
       override fun close(trailers: Map<String, List<String>>?) {
-        isCloseCalled = true
+        isCloseCalled = trailers == null
       }
     }
   }
