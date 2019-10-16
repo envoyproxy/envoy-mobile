@@ -35,9 +35,7 @@ class JniLibrary {
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
 
-    private JavaLoader() {
-      System.loadLibrary(ENVOY_JNI);
-    }
+    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
   }
 
   /**
