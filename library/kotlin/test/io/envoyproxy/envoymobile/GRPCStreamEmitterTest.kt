@@ -6,6 +6,7 @@ import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class GRPCStreamEmitterTest {
 
@@ -75,7 +76,7 @@ class GRPCStreamEmitterTest {
     val message = ByteBuffer.wrap(payload)
     grpcStreamEmitter.sendMessage(message)
 
-    assertThat(ByteBuffer.wrap(dataOutputStream.toByteArray().sliceArray(1..4)).int).isEqualTo(payload.size)
+    assertThat(ByteBuffer.wrap(dataOutputStream.toByteArray().sliceArray(1..4)).order(ByteOrder.BIG_ENDIAN).int).isEqualTo(payload.size)
   }
 
   @Test
