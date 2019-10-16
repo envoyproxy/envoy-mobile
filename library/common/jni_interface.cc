@@ -30,11 +30,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
   return init_engine();
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(JNIEnv* env,
-                                                           jclass, // class
-                                                           jstring config, jstring log_level) {
-  return run_engine(env->GetStringUTFChars(config, nullptr),
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
+    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
+  return run_engine(engine, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }
 
