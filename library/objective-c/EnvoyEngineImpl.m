@@ -5,7 +5,7 @@
 
 static void ios_on_exit() {
   // Currently nothing needs to happen in iOS on exit. Just log.
-  NSLog(@"Envoy on exit ran.");
+  NSLog(@"Envoy is exiting.");
 }
 
 @implementation EnvoyEngineImpl {

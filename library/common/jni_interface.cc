@@ -132,7 +132,7 @@ static JNIEnv* get_env() {
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
     // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
     // engine's std::thread, and that we detach it successfully.
-    static_jvm->AttachCurrentThread(&env, NULL);
+    static_jvm->AttachCurrentThread(&env, nullptr);
     static_jvm->GetEnv((void**)&env, JNI_VERSION);
   }
   return env;
