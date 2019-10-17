@@ -4,13 +4,18 @@ package io.envoyproxy.envoymobile
  * Specifies how a request may be retried, containing one or more rules.
  *
  * @param maxRetryCount Maximum number of retries that a request may be performed.
- * @param retryOn Whitelist of rules used for retrying.
+ * @param retryOn Whitelist of rules used for retrying. Must be <= `totalUpstreamTimeoutMS`
+ * or it will be ignored.
  * @param perRetryTimeoutMs Timeout (in milliseconds) to apply to each retry.
+ * @param totalUpstreamTimeoutMS Total timeout (in milliseconds) that includes all retries.
+ * Spans the point at which the entire downstream request has been processed and when the
+ * upstream response has been completely processed.
  */
 data class RetryPolicy(
   val maxRetryCount: Int,
   val retryOn: List<RetryRule>,
-  val perRetryTimeoutMs: Long? = null
+  val perRetryTimeoutMs: Long? = null,
+  val totalUpstreamTimeoutMS: Long = 15000
 )
 
 /**
