@@ -72,7 +72,7 @@ extension RetryPolicy {
 
     return self.maxRetryCount == other.maxRetryCount
       && self.retryOn == other.retryOn
-      && self.perRetryTimeoutMS == other.perRetryTimeoutMS &&
+      && self.perRetryTimeoutMS == other.perRetryTimeoutMS
       && self.totalUpstreamTimeoutMS == other.totalUpstreamTimeoutMS
   }
 }
