@@ -5,7 +5,9 @@ on:
     branches:
       - master
     paths:
-      - 'library/**'
+      - 'library/common/**'
+      - 'library/java/**'
+      - 'library/kotlin/**'
       - 'envoy/**'
 
 jobs:
