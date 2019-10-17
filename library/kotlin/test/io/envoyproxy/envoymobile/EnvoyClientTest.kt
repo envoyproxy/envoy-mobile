@@ -1,9 +1,5 @@
-package library.kotlin.test.io.envoyproxy.envoymobile
+package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.Envoy
-import io.envoyproxy.envoymobile.RequestBuilder
-import io.envoyproxy.envoymobile.RequestMethod
-import io.envoyproxy.envoymobile.ResponseHandler
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
@@ -27,12 +23,12 @@ class EnvoyClientTest {
     val envoy = Envoy(engine, config)
 
     val expectedHeaders = mapOf(
-      "key_1" to listOf("value_a"),
-      ":method" to listOf("POST"),
-      ":scheme" to listOf("https"),
-      ":authority" to listOf("api.foo.com"),
-      ":path" to listOf("foo")
-      )
+        "key_1" to listOf("value_a"),
+        ":method" to listOf("POST"),
+        ":scheme" to listOf("https"),
+        ":authority" to listOf("api.foo.com"),
+        ":path" to listOf("foo")
+    )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
@@ -88,7 +84,7 @@ class EnvoyClientTest {
   }
 
   @Test
-  fun `closing stream sends empty trailers to the underlying stream`() {
+  fun `closing stream sends empty data to the underlying stream`() {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
@@ -101,9 +97,9 @@ class EnvoyClientTest {
             .build(),
         ResponseHandler(Executor {}))
 
-    emitter.close()
+    emitter.close(null)
 
-    verify(stream).sendTrailers(emptyMap())
+    verify(stream).sendData(ByteBuffer.allocate(0), true)
   }
 
   @Test
@@ -132,11 +128,11 @@ class EnvoyClientTest {
     val envoy = Envoy(engine, config)
 
     val expectedHeaders = mapOf(
-      "key_1" to listOf("value_a"),
-      ":method" to listOf("POST"),
-      ":scheme" to listOf("https"),
-      ":authority" to listOf("api.foo.com"),
-      ":path" to listOf("foo")
+        "key_1" to listOf("value_a"),
+        ":method" to listOf("POST"),
+        ":scheme" to listOf("https"),
+        ":authority" to listOf("api.foo.com"),
+        ":path" to listOf("foo")
     )
     envoy.send(
         RequestBuilder(

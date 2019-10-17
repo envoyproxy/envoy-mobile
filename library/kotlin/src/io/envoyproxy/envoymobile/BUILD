@@ -7,6 +7,7 @@ aar_with_jni(
     name = "android_aar",
     android_library = "envoy_lib",
     archive_name = "envoy",
+    proguard_rules = "//library:proguard_rules",
     visibility = ["//visibility:public"],
 )
 
@@ -33,6 +34,10 @@ envoy_mobile_kt_library(
         "EnvoyClientBuilder.kt",
         "EnvoyException.kt",
         "EnvoyStreamEmitter.kt",
+        "GRPCClient.kt",
+        "GRPCRequestBuilder.kt",
+        "GRPCResponseHandler.kt",
+        "GRPCStreamEmitter.kt",
         "HTTPClient.kt",
         "Request.kt",
         "RequestBuilder.kt",

@@ -11,13 +11,13 @@
  * Handle to an Envoy engine instance. Valid only for the lifetime of the engine and not intended
  * for any external interpretation or use.
  */
-typedef uint64_t envoy_engine_t;
+typedef intptr_t envoy_engine_t;
 
 /**
  * Handle to an outstanding Envoy HTTP stream. Valid only for the duration of the stream and not
  * intended for any external interpretation or use.
  */
-typedef uint64_t envoy_stream_t;
+typedef intptr_t envoy_stream_t;
 
 /**
  * Result codes returned by all calls made to this interface.
@@ -27,7 +27,19 @@ typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
 /**
  * Error code associated with terminal status of a HTTP stream.
  */
-typedef enum { ENVOY_UNDEFINED_ERROR, ENVOY_STREAM_RESET } envoy_error_code_t;
+typedef enum {
+  ENVOY_UNDEFINED_ERROR,
+  ENVOY_STREAM_RESET,
+  ENVOY_CONNECTION_FAILURE
+} envoy_error_code_t;
+
+/**
+ * Networks classified by last physical link.
+ * ENVOY_NET_GENERIC is default and includes cases where network characteristics are unknown.
+ * ENVOY_NET_WLAN includes WiFi and other local area wireless networks.
+ * ENVOY_NET_WWAN includes all mobile phone networks.
+ */
+typedef enum { ENVOY_NET_GENERIC, ENVOY_NET_WLAN, ENVOY_NET_WWAN } envoy_network_t;
 
 #ifdef __cplusplus
 extern "C" { // release function
@@ -183,6 +195,11 @@ typedef void (*envoy_on_error_f)(envoy_error error, void* context);
  */
 typedef void (*envoy_on_complete_f)(void* context);
 
+/**
+ * Called when the envoy engine is exiting.
+ */
+typedef void (*envoy_on_exit_f)();
+
 #ifdef __cplusplus
 } // function pointers
 #endif
@@ -199,3 +216,14 @@ typedef struct {
   envoy_on_complete_f on_complete;
   void* context; // Will be passed through to callbacks to provide dispatch and execution state.
 } envoy_http_callbacks;
+
+/**
+ * Interface that can handle Engine callbacks.
+ * Note: currently this set of callbacks doesn't
+ * have a context because users of the library do not interact with the
+ * callbacks. However, these set of callbacks can be easily extended
+ * following the envoy_http_callbacks pattern to do so.
+ */
+typedef struct {
+  envoy_on_exit_f on_exit;
+} envoy_engine_callbacks;

@@ -11,6 +11,7 @@
 #include "common/common/logger.h"
 #include "common/common/thread.h"
 
+#include "absl/types/optional.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -22,6 +23,8 @@ namespace Http {
  */
 class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
+  Dispatcher(std::atomic<envoy_network_t>& preferred_network);
+
   void ready(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
 
   /**
@@ -29,7 +32,7 @@ public:
    * opening a stream may fail. The returned handle is immediately valid for use with this API, but
    * there is no guarantee it will ever functionally represent an open stream.
    * @param stream, the stream to start.
-   * @param bridge_callbacks wrapper for callbacks for events on this stream.
+   * @param bridge_callbacks, wrapper for callbacks for events on this stream.
    * @param stream_options, the config options to start the stream with.
    * @return envoy_stream_t handle to the stream being created.
    */
@@ -104,6 +107,8 @@ private:
   private:
     const envoy_stream_t stream_handle_;
     const envoy_http_callbacks bridge_callbacks_;
+    absl::optional<envoy_error_code_t> error_code_;
+    absl::optional<envoy_data> error_message_;
     Dispatcher& http_dispatcher_;
   };
 
@@ -143,6 +148,7 @@ private:
   void post(Event::PostCb callback);
   // Everything in the below interface must only be accessed from the event_dispatcher's thread.
   // This allows us to generally avoid synchronization.
+  AsyncClient& getClient();
   DirectStream* getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
 
@@ -150,9 +156,10 @@ private:
   // be accessed from a thread other than the event_dispatcher's own thread.
   Thread::MutexBasicLockable dispatch_lock_;
   std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
-  Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_);
-  Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_);
+  Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
+  Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_){};
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
+  std::atomic<envoy_network_t>& preferred_network_;
 };
 
 } // namespace Http

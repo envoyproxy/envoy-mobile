@@ -2,9 +2,9 @@ import Envoy
 import UIKit
 
 private let kCellID = "cell-id"
-private let kRequestAuthority = "s3.amazonaws.com"
-private let kRequestPath = "/api.lyft.com/static/demo/hello_world.txt"
-private let kRequestScheme = "http"
+private let kRequestAuthority = "api.lyft.com"
+private let kRequestPath = "/ping"
+private let kRequestScheme = "https"
 
 final class ViewController: UITableViewController {
   private var requestCount = 0
@@ -33,7 +33,6 @@ final class ViewController: UITableViewController {
   // MARK: - Requests
 
   private func startRequests() {
-    // Note that the first delay will give Envoy time to start up.
     self.timer = .scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
       self?.performRequest()
     }

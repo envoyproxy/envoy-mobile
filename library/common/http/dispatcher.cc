@@ -2,6 +2,8 @@
 
 #include "common/buffer/buffer_impl.h"
 #include "common/common/lock_guard.h"
+#include "common/http/headers.h"
+#include "common/http/utility.h"
 
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/buffer/utility.h"
@@ -19,15 +21,59 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, *headers);
-  envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
-  bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+  // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
+  // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
+  // make this possible, but nothing expedient. For the immediate term this is our only real
+  // option. See https://github.com/lyft/envoy-mobile/issues/460
+
+  // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
+  if (headers->get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
+    envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+    bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    return;
+  }
+
+  // We assume that local replies represent error conditions, having audited occurrences in
+  // Envoy today. This is not a good long-term solution.
+  uint64_t response_status = Http::Utility::getResponseStatus(*headers);
+  switch (response_status) {
+  case 200: {
+    // We still treat successful local responses as actual success.
+    envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+    bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    return;
+  }
+  case 503:
+    error_code_ = ENVOY_CONNECTION_FAILURE;
+    break;
+  default:
+    error_code_ = ENVOY_UNDEFINED_ERROR;
+  }
+  ENVOY_LOG(debug, "[S{}] intercepted local response", stream_handle_);
+  if (end_stream) {
+    // The local stream may or may not have completed. We don't want to be tracking/synchronized
+    // on that state, so we just reset everything now to ensure teardown.
+    auto stream = http_dispatcher_.getStream(stream_handle_);
+    ASSERT(stream);
+    stream->underlying_stream_.reset();
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
-  bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
-                            bridge_callbacks_.context);
+  if (!error_code_.has_value()) {
+    bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
+                              bridge_callbacks_.context);
+  } else {
+    ASSERT(end_stream);
+    error_message_ = Buffer::Utility::toBridgeData(data);
+    // The local stream may or may not have completed. We don't want to be tracking/synchronized on
+    // that state, so we just reset everything now to ensure teardown.
+    auto stream = http_dispatcher_.getStream(stream_handle_);
+    ASSERT(stream);
+    stream->underlying_stream_.reset();
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
@@ -47,7 +93,9 @@ void Dispatcher::DirectStreamCallbacks::onComplete() {
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
-  bridge_callbacks_.on_error({ENVOY_STREAM_RESET, envoy_nodata}, bridge_callbacks_.context);
+  envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
+  envoy_data message = error_message_.value_or(envoy_nodata);
+  bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
   // Very important: onComplete and onReset both clean up stream state in the http dispatcher
   // because the underlying async client implementation **guarantees** that only onComplete **or**
   // onReset will be fired for a stream. This means it is safe to clean up the stream when either of
@@ -97,16 +145,17 @@ void Dispatcher::post(Event::PostCb callback) {
   init_queue_.push_back(callback);
 }
 
+Dispatcher::Dispatcher(std::atomic<envoy_network_t>& preferred_network)
+    : preferred_network_(preferred_network) {}
+
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks,
                                        envoy_stream_options stream_options) {
   post([this, new_stream_handle, bridge_callbacks, stream_options]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
-    // The dispatch_lock_ does not need to guard the cluster_manager_ pointer here because this
-    // functor is only executed once the init_queue_ has been flushed to Envoy's event dispatcher.
-    AsyncClient& async_client =
-        TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
+
+    AsyncClient& async_client = getClient();
     // While this struct is passed by reference to AsyncClient::start, it does not need to be
     // preserved outside of this stack frame because its values are not used beyond the return of
     // AsyncClient::start. If this changes, we need to store this struct in the DirectStream.
@@ -206,6 +255,25 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
     }
   });
   return ENVOY_SUCCESS;
+}
+
+// Select the client based on the current preferred network. This helps to ensure that
+// the engine uses connections opened on the current favored interface.
+AsyncClient& Dispatcher::getClient() {
+  // This function must be called from the dispatcher's own thread and so this state
+  // is safe to access without holding the dispatch_lock_.
+  ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
+         "cluster interaction must be performed on the event_dispatcher_'s thread.");
+  switch (preferred_network_.load()) {
+  case ENVOY_NET_WLAN:
+    // The ASSERT above ensures the cluster_manager_ is safe to access.
+    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wlan");
+  case ENVOY_NET_WWAN:
+    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wwan");
+  case ENVOY_NET_GENERIC:
+  default:
+    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
+  }
 }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {

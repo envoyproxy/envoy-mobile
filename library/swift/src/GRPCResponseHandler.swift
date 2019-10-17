@@ -3,6 +3,8 @@ import Foundation
 /// Handler for responses sent over gRPC.
 @objcMembers
 public final class GRPCResponseHandler: NSObject {
+  private var internalErrorClosure: ((_ error: EnvoyError) -> Void)?
+
   /// Represents the state of a response stream's body data.
   private enum State {
     /// Awaiting a gRPC compression flag.
@@ -28,6 +30,8 @@ public final class GRPCResponseHandler: NSObject {
   ///
   /// - parameter closure: Closure which will receive the headers, gRPC status,
   ///                      and flag indicating if the stream is headers-only.
+  ///
+  /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func onHeaders(_ closure:
     @escaping (_ headers: [String: [String]], _ grpcStatus: Int, _ endStream: Bool) -> Void)
@@ -44,6 +48,8 @@ public final class GRPCResponseHandler: NSObject {
   /// Specify a callback for when a new message has been received by the stream.
   ///
   /// - parameter closure: Closure which will receive messages on the stream.
+  ///
+  /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func onMessage(_ closure:
     @escaping (_ message: Data) -> Void)
@@ -52,10 +58,12 @@ public final class GRPCResponseHandler: NSObject {
     var buffer = Data()
     var state = State.expectingCompressionFlag
     self.underlyingHandler.onData { chunk, _ in
+      // This closure deliberately retains `self` while the underlying handler's
+      // `onData` closure is kept in memory so that messages/errors can be processed.
       // Appending might result in extra copying that can be optimized in the future.
       buffer.append(chunk)
       // gRPC always sends trailers, so the stream will not complete here.
-      GRPCResponseHandler.processBuffer(&buffer, state: &state, onMessage: closure)
+      self.processBuffer(&buffer, state: &state, onMessage: closure)
     }
 
     return self
@@ -65,6 +73,8 @@ public final class GRPCResponseHandler: NSObject {
   /// If the closure is called, the stream is complete.
   ///
   /// - parameter closure: Closure which will receive the trailers.
+  ///
+  /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func onTrailers(_ closure:
     @escaping (_ trailers: [String: [String]]) -> Void)
@@ -78,11 +88,14 @@ public final class GRPCResponseHandler: NSObject {
   /// If the closure is called, the stream is complete.
   ///
   /// - parameter closure: Closure which will be called when an error occurs.
+  ///
+  /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func onError(_ closure:
     @escaping (_ error: EnvoyError) -> Void)
     -> GRPCResponseHandler
   {
+    self.internalErrorClosure = closure
     self.underlyingHandler.onError(closure)
     return self
   }
@@ -106,8 +119,8 @@ public final class GRPCResponseHandler: NSObject {
   /// - parameter buffer:    The buffer of data from which to determine state and messages.
   /// - parameter state:     The current state of the buffering.
   /// - parameter onMessage: Closure to call when a new message is available.
-  private static func processBuffer(_ buffer: inout Data, state: inout State,
-                                    onMessage: (_ message: Data) -> Void)
+  private func processBuffer(_ buffer: inout Data, state: inout State,
+                             onMessage: (_ message: Data) -> Void)
   {
     switch state {
     case .expectingCompressionFlag:
@@ -116,7 +129,12 @@ public final class GRPCResponseHandler: NSObject {
       }
 
       guard compressionFlag == 0 else {
-        assertionFailure("gRPC decompression is not supported")
+        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
+        // Call the handler with an error and ignore all future updates.
+        let error = EnvoyError(
+          errorCode: 0, message: "Unable to read compressed gRPC response message", cause: nil)
+        self.internalErrorClosure?(error)
+        self.resetHandlers()
         buffer.removeAll()
         state = .expectingCompressionFlag
         return
@@ -148,5 +166,14 @@ public final class GRPCResponseHandler: NSObject {
     }
 
     self.processBuffer(&buffer, state: &state, onMessage: onMessage)
+  }
+
+  private func resetHandlers() {
+    self.internalErrorClosure = nil
+    self.underlyingHandler
+      .onHeaders { _, _, _ in }
+      .onData { _, _ in }
+      .onTrailers { _ in }
+      .onError { _ in }
   }
 }

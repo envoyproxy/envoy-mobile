@@ -18,10 +18,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
   }
 
-  // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
-  // More information can be found at:
-  // https://c-ares.haxx.se/ares_library_init_android.html
-  ares_library_init_jvm(vm);
   return JNI_VERSION;
 }
 
@@ -34,12 +30,28 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
   return init_engine();
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(JNIEnv* env,
-                                                           jclass, // class
-                                                           jstring config, jstring log_level) {
-  return run_engine(env->GetStringUTFChars(config, nullptr),
+static void jvm_on_exit() {
+  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_exit");
+  // Note that this is not dispatched because the thread that
+  // needs to be detached is the engine thread.
+  // This function is called from the context of the engine's
+  // thread due to it being posted to the engine's event dispatcher.
+  static_jvm->DetachCurrentThread();
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
+    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
+  envoy_engine_callbacks native_callbacks = {jvm_on_exit};
+  return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
+                                                                jclass // class
+) {
+  jstring result = env->NewStringUTF(config_template);
+  return result;
 }
 
 // AndroidJniLibrary
@@ -49,6 +61,11 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
   // See note above about c-ares.
+  // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
+  // More information can be found at:
+  // https://c-ares.haxx.se/ares_library_init_android.html
+  ares_library_init_jvm(static_jvm);
+
   return ares_library_init_android(connectivity_manager);
 }
 
@@ -59,12 +76,11 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_isAresInitialized(JNIEnv
   return ares_library_android_initialized() == ARES_SUCCESS;
 }
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
-                                                                jclass // class
-) {
-  jstring result = env->NewStringUTF(config_template);
-  return result;
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIEnv* env,
+                                                                            jclass, // class
+                                                                            jint network) {
+  return set_preferred_network(static_cast<envoy_network_t>(network));
 }
 
 // JvmCallbackContext
@@ -113,6 +129,11 @@ static JNIEnv* get_env() {
   int get_env_res = static_jvm->GetEnv((void**)&env, JNI_VERSION);
   if (get_env_res == JNI_EDETACHED) {
     __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "equals JNI_EDETACHED");
+    // Note: the only thread that should need to be attached is Envoy's engine std::thread.
+    // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
+    // engine's std::thread, and that we detach it successfully.
+    static_jvm->AttachCurrentThread(&env, nullptr);
+    static_jvm->GetEnv((void**)&env, JNI_VERSION);
   }
   return env;
 }
@@ -161,7 +182,18 @@ static void jvm_on_metadata(envoy_headers metadata, void* context) {
 
 static void jvm_on_trailers(envoy_headers trailers, void* context) {
   __android_log_write(ANDROID_LOG_ERROR, "jni_lib", "jvm_on_trailers");
-  __android_log_write(ANDROID_LOG_ERROR, "jni_lib", std::to_string(trailers.length).c_str());
+
+  JNIEnv* env = get_env();
+  jobject j_context = static_cast<jobject>(context);
+
+  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onTrailers = env->GetMethodID(jcls_JvmCallbackContext, "onTrailers", "(J)V");
+  // Note: be careful of JVM types
+  // FIXME: make this cast safer
+  env->CallVoidMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
+
+  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  pass_headers(env, trailers, j_context);
 }
 
 static void jvm_on_error(envoy_error error, void* context) {

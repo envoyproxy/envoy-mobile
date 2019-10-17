@@ -18,7 +18,6 @@ interface CancelableStream {
  * Interface allowing for sending/emitting data on an Envoy stream.
  */
 interface StreamEmitter : CancelableStream {
-
   /**
    * For sending data to an associated stream.
    *
@@ -44,10 +43,10 @@ interface StreamEmitter : CancelableStream {
   /**
    * For ending an associated stream and sending trailers.
    *
-   * @param trailers to send with ending a stream. If no trailers are needed, empty map will be the default.
+   * @param trailers to send with ending a stream. If null, stream will be closed with an empty data frame.
    * @throws IllegalStateException when the stream is not active.
    * @throws EnvoyException when there is an exception ending the stream or sending trailers.
    */
   @Throws(EnvoyException::class)
-  fun close(trailers: Map<String, List<String>> = emptyMap())
+  fun close(trailers: Map<String, List<String>>?)
 }
