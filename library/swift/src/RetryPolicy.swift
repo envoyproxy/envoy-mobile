@@ -50,6 +50,11 @@ public final class RetryPolicy: NSObject {
   public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutMS: UInt? = nil,
               totalUpstreamTimeoutMS: UInt = 15_000)
   {
+    if let perRetryTimeoutMS = perRetryTimeoutMS {
+      assert(perRetryTimeoutMS <= totalUpstreamTimeoutMS,
+             "Per-retry timeout must be <= total timeout")
+    }
+
     self.maxRetryCount = maxRetryCount
     self.retryOn = retryOn
     self.perRetryTimeoutMS = perRetryTimeoutMS
