@@ -15,8 +15,7 @@ class ResponseHandler(val executor: Executor) {
       private val executor: Executor
   ) : EnvoyHTTPCallbacks {
 
-    private var onHeadersClosure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit = { _, _, _ -> Unit }
-
+    internal var onHeadersClosure: (headers: Map<String, List<String>>, statusCode: Int, endStream: Boolean) -> Unit = { _, _, _ -> Unit }
     internal var onDataClosure: (byteBuffer: ByteBuffer, endStream: Boolean) -> Unit = { _, _ -> Unit }
     internal var onMetadataClosure: (metadata: Map<String, List<String>>) -> Unit = { Unit }
     internal var onTrailersClosure: (trailers: Map<String, List<String>>) -> Unit = { Unit }
