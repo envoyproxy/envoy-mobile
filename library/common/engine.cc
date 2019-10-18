@@ -64,8 +64,8 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     // as we did previously).
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          http_dispatcher_->ready(TS_UNCHECKED_READ(main_common_)->server()->dispatcher(),
-                                  TS_UNCHECKED_READ(main_common_)->server()->clusterManager());
+          Server::Instance* server = TS_UNCHECKED_READ(main_common_)->server();
+          http_dispatcher_->ready(server->dispatcher(), server->clusterManager());
         });
   } // mutex_
 
