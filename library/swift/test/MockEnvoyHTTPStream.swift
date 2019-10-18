@@ -11,7 +11,7 @@ final class MockEnvoyHTTPStream {
     MockEnvoyHTTPStream.bufferForRetry = bufferForRetry
   }
 
-  /// Reset the current state of the stream. Should be called inbetween tests.
+  /// Reset the current state of the stream. Should be called between tests.
   static func reset() {
     self.onHeaders = nil
     self.onData = nil
