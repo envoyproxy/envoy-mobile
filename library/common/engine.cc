@@ -70,14 +70,14 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
-  TS_UNCHECKED_READ(main_common_)->run();
+  bool run_success = TS_UNCHECKED_READ(main_common_)->run();
   // After the event loop has exited clean up any state that has to be cleaned from the context of
   // main_thread_.
   // It is important to destroy here, because otherwise the destructors will run from the context of
   // the application's main thread, not the Engine's main_thread_.
   postinit_callback_handler_.reset();
   TS_UNCHECKED_READ(main_common_).reset();
-  return ENVOY_SUCCESS;
+  return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
 
 Engine::~Engine() {
