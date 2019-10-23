@@ -1,21 +1,137 @@
-HTTP
-====
+HTTP Requests and Streams
+=========================
 
-Starting an instance of Envoy for making requests is done by creating an ``EnvoyClient``.
-To do so, create an ``EnvoyClientBuilder`` and call ``build()``:
+Streams are first-class citizens in Envoy Mobile, and are supported out-of-the-box.
+
+In fact, unary (single request, single response) HTTP requests are actually written as simply
+convenience functions on top of streams.
+
+``Request``
+-----------
+
+Creating a stream is done by initializing a ``Request`` via a ``RequestBuilder``, then passing it to
+a previously created `Envoy instance <_starting_envoy>`_.
 
 **Kotlin**::
 
-  val envoy = AndroidEnvoyClientBuilder(baseContext, Domain("api.envoyproxy.io"))
-    .addLogLevel(LogLevel.WARN)
-    .addStatsFlushSeconds(60)
+  val request = RequestBuilder(RequestMethod.POST, "https", "api.envoyproxy.io", "/foo")
+    .addRetryPolicy(RetryPolicy(...))
+    .addHeader("x-custom-header", "foobar")
     ...
     .build()
 
 **Swift**::
 
-  let envoy = try EnvoyClientBuilder(domain: "api.envoyproxy.io")
-    .addLogLevel(.warn)
-    .addStatsFlushSeconds(60)
+  let request = RequestBuilder(method: .post, scheme: "https", authority: "api.envoyproxy.io", path: "/foo")
+    .addRetryPolicy(RetryPolicy(...))
+    .addHeader(name: "x-custom-header", value: "foobar")
     ...
     .build()
+
+``ResponseHandler``
+-------------------
+
+In order to receive updates for a given request/stream, a ``ResponseHandler`` must be created.
+This class contains a set of callbacks that will be called whenever an update occurs on the stream.
+
+**Kotlin**::
+
+  val handler = ResponseHandler(Executor {})
+    .onHeaders { headers, statusCode, _ ->
+      Log.d("MainActivity", "Received status: " + statusCode + " and headers: " + headers)
+      Unit
+    }
+    .onData { buffer, endStream ->
+      if (endStream) {
+        Log.d("MainActivity", "Finished receiving body data")
+      } else {
+        Log.d("MainActivity", "Received body data, more incoming")
+      }
+      Unit
+    }
+    .onError { error ->
+      Log.d("MainActivity", "Error received: " + error.message)
+      Unit
+    }
+    ...
+
+**Swift**::
+
+  let handler = ResponseHandler()
+    .onHeaders { headers, statusCode, _ in
+      print("Received status: \(statusCode) and headers: \(headers)")
+    }
+    .onData { buffer, endStream in
+      if endStream {
+        print("Finished receiving body data")
+      } else {
+        print("Received body data, more incoming")
+      }
+    }
+    .onError { error in
+      print("Error received: \(error.message)")
+    }
+    ...
+
+``StreamEmitter``
+-----------------
+
+Once a ``Request`` and ``ResponseHandler`` have been created, a stream can be opened using an
+`Envoy instance <_starting_envoy>`_.
+
+Doing so returns a ``StreamEmitter`` which allows the sender to write to the stream,
+close the stream, send trailers, etc.
+
+**Kotlin**::
+
+  val envoy = AndroidEnvoyClientBuilder(...).build()
+
+  val request = RequestBuilder(...).build()
+  val responseHandler = ResponseHandler(...)
+  val emitter = envoy.send(request, responseHandler)
+
+  emitter.sendData(...)
+  emitter.sendData(...)
+  emitter.close(...)
+
+**Swift**::
+
+  let envoy = try EnvoyClientBuilder(...).build()
+
+  let request = RequestBuilder(...).build()
+  let responseHandler = ResponseHandler(...)
+  let emitter = envoy.send(request, handler: responseHandler)
+
+  emitter.sendData(...)
+  emitter.sendData(...)
+  emitter.close(...)
+
+Unary Requests
+--------------
+
+As mentioned above, unary requests are made using the same types that perform streaming requests.
+
+Sending a unary request may be done by either creating and closing the ``StreamEmitter`` after the
+set of headers/data has been written, or by using the helper functions that return a
+``CancelableStream`` type instead of a ``StreamEmitter``.
+
+The helper function takes optional body data and closes the stream and awaits a response.
+The ``CancelableStream`` it returns does not expose options for sending additional data.
+
+**Kotlin**::
+
+  val envoy = AndroidEnvoyClientBuilder(...).build()
+
+  val request = RequestBuilder(...).build()
+  val responseHandler = ResponseHandler(...)
+  val cancelable = envoy.send(request, body, trailers, responseHandler)
+  // cancelable.cancel()
+
+**Swift**::
+
+  let envoy = try EnvoyClientBuilder(...).build()
+
+  let request = RequestBuilder(...).build()
+  let responseHandler = ResponseHandler(...)
+  let cancelable = envoy.send(request, body, trailers: [:], handler: responseHandler)
+  // cancelable.cancel()

@@ -12,4 +12,3 @@ is grouped by feature and provides examples for both iOS and Android in each sec
   starting_envoy
   http
   grpc
-
