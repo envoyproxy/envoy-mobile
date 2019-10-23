@@ -105,9 +105,10 @@ close the stream, send trailers, etc.
   val request = RequestBuilder(...).build()
   val responseHandler = ResponseHandler(...)
   val emitter = envoy.send(request, responseHandler)
+    .sendData(...)
+    .sendData(...)
 
-  emitter.sendData(...)
-  emitter.sendData(...)
+  ...
   emitter.close(...)
 
 **Swift**::
@@ -117,9 +118,10 @@ close the stream, send trailers, etc.
   let request = RequestBuilder(...).build()
   let responseHandler = ResponseHandler(...)
   let emitter = envoy.send(request, handler: responseHandler)
+    .sendData(...)
+    .sendData(...)
 
-  emitter.sendData(...)
-  emitter.sendData(...)
+  ...
   emitter.close(...)
 
 --------------
