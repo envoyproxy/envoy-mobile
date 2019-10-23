@@ -34,7 +34,7 @@ a previously created `Envoy instance <_starting_envoy>`_.
 -------------------
 
 In order to receive updates for a given request/stream, a ``ResponseHandler`` must be created.
-This class contains a set of callbacks are called whenever an update occurs on the stream.
+This class contains a set of callbacks that are called whenever an update occurs on the stream.
 
 **Kotlin**::
 
@@ -95,8 +95,7 @@ For full documentation of how these retry rules perform, see Envoy's documentati
 Once a ``Request`` and ``ResponseHandler`` have been created, a stream can be opened using an
 `Envoy instance <_starting_envoy>`_.
 
-Doing so returns a ``StreamEmitter`` which allows the sender to write to the stream,
-close the stream, send trailers, etc.
+Doing so returns a ``StreamEmitter`` which allows the sender to interact with the stream.
 
 **Kotlin**::
 
@@ -134,7 +133,7 @@ Sending a unary request may be done by either closing the ``StreamEmitter`` afte
 set of headers/data has been written, or by using the helper function that returns a
 ``CancelableStream`` type instead of a ``StreamEmitter``.
 
-The unary helper function takes optional body data, closes the stream, then waits for a response.
+The unary helper function takes optional body data, then closes the stream.
 The ``CancelableStream`` it returns does not expose options for sending additional data.
 
 **Kotlin**::

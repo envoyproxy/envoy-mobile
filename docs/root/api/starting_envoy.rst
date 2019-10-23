@@ -10,7 +10,10 @@ Starting Envoy
 Starting an instance of Envoy Mobile for making requests is done by creating an ``EnvoyClient``,
 which conforms to the ``HTTPClient`` interface.
 
-To do so, create an ``EnvoyClientBuilder`` and call ``build()``:
+To do so, create an ``EnvoyClientBuilder`` and call ``build()``.
+
+This builder exposes some of Envoy's configuration options programmatically using builder
+functions, some of which are demonstrated below:
 
 **Kotlin example**::
 

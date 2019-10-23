@@ -21,10 +21,12 @@ If the repo was not initially cloned recursively, you can manually initialize th
 Bazel requirements
 ------------------
 
-Envoy Mobile is compiled using Bazel 0.29.1.
+Envoy Mobile is compiled using the version of Bazel specified in the
+:repo:`.bazelversion <.bazelversion>` file.
 
-Take a look at our CI set up for :repo:`mac <ci/mac_ci_setup.sh>` and :repo:`linux <ci/linux_ci_setup.sh>`,
-in order to see how to install a specific Bazel version in your environment.
+Reviewing the CI setup for :repo:`Mac <ci/mac_ci_setup.sh>` and
+:repo:`Linux <ci/linux_ci_setup.sh>` may be helpful when installing a specific Bazel version
+on your environment.
 
 To simplify build consistency across environments, a :repo:`bazelw <bazelw>` script is included in
 the project, along with common build configurations in the project's :repo:`.bazelrc <.bazelrc>`.

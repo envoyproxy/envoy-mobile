@@ -112,8 +112,7 @@ the complete protobuf message data.
 
 Finally, a gRPC stream may be opened using a ``GRPCClient`` instance.
 
-Doing so returns a ``GRPCStreamEmitter`` which allows the sender to write to the stream,
-close the stream, etc.
+Doing so returns a ``GRPCStreamEmitter`` which allows the sender to interact with the stream.
 
 The ``sendMessage`` function should be invoked with the serialized data from a protobuf message.
 The emitter will then transform the provided data into the gRPC wire format and send it over the
