@@ -1,19 +1,22 @@
 .. _api_grpc:
 
-gRPC Streams
+gRPC streams
 ============
 
-Envoy Mobile provides support for gRPC as a thin interface built on top of the `HTTP APIs <_http>`_.
+Envoy Mobile provides support for gRPC as a thin interface built on top of its `HTTP APIs <_http>`_.
 
 gRPC APIs are designed to be used in conjunction with protobuf libraries such as
 `SwiftProtobuf <https://github.com/apple/swift-protobuf>`_ and
 `Java Protobuf <https://github.com/protocolbuffers/protobuf/tree/master/java>`_.
 
-They implement the gRPC protocol, accepting and returning serialized protobuf models.
+Envoy Mobile implements the gRPC protocol, accepting and returning serialized protobuf models.
 
-In the future, Envoy Mobile will provide much more comprehensive integration with gRPC and protobuf,
-utilizing annotations for enhanced functionality.
+.. note::
 
+  In the future, Envoy Mobile will provide much more comprehensive integration with gRPC and protobuf,
+  utilizing annotations for enhanced functionality.
+
+--------------
 ``GRPCClient``
 --------------
 
@@ -26,12 +29,13 @@ To create a ``GRPCClient``, simply `create an HTTP client <_http>`_ and pass it 
 
 This client can then be used with the types outlined below for starting gRPC streams.
 
+----------------------
 ``GRPCRequestBuilder``
 ----------------------
 
 Envoy Mobile provides a ``GRPCRequestBuilder`` which acts very similarly to the ``RequestBuilder``
-type. Upon calling ``build()``, it returns a ``Request`` - the same type used for standard HTTP
-requests/streams.
+type. Upon calling ``build()``, it returns a ``Request`` (the same type used for standard HTTP
+requests/streams) which is preconfigured for gRPC.
 
 To start a gRPC stream, create a ``Request`` using the ``GRPCRequestBuilder``.
 
@@ -49,15 +53,17 @@ To start a gRPC stream, create a ``Request`` using the ``GRPCRequestBuilder``.
     ...
     .build()
 
+-----------------------
 ``GRPCResponseHandler``
 -----------------------
 
 Very similarly to the HTTP ``ResponseHandler``, the ``GRPCResponseHandler`` allows for receiving
-updates to the gRPC stream and contains a set of callbacks that will be called whenever an update
+updates to the gRPC stream and contains a set of callbacks that are called whenever an update
 occurs on the stream.
 
 This handler processes inbound gRPC responses, buffers data as necessary while chunks of
-protobuf messages are received, then finally passes the data through to the callbacks provided.
+protobuf messages are received, then finally passes fully formed protobuf data to the callbacks
+provided.
 
 Typically, consumers should listen to ``onMessage`` and use a protobuf library to deserialize
 the complete protobuf message data.
@@ -100,6 +106,7 @@ the complete protobuf message data.
     ...
 
 
+---------------------
 ``GRPCStreamEmitter``
 ---------------------
 
@@ -109,6 +116,8 @@ Doing so returns a ``GRPCStreamEmitter`` which allows the sender to write to the
 close the stream, etc.
 
 The ``sendMessage`` function should be invoked with the serialized data from a protobuf message.
+The emitter will then transform the provided data into the gRPC wire format and send it over the
+stream.
 
 **Kotlin**::
 

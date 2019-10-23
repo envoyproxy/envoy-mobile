@@ -1,4 +1,4 @@
-HTTP Requests and Streams
+HTTP requests and streams
 =========================
 
 Streams are first-class citizens in Envoy Mobile, and are supported out-of-the-box.
@@ -6,6 +6,7 @@ Streams are first-class citizens in Envoy Mobile, and are supported out-of-the-b
 In fact, unary (single request, single response) HTTP requests are actually written as simply
 convenience functions on top of streams.
 
+-----------
 ``Request``
 -----------
 
@@ -28,11 +29,12 @@ a previously created `Envoy instance <_starting_envoy>`_.
     ...
     .build()
 
+-------------------
 ``ResponseHandler``
 -------------------
 
 In order to receive updates for a given request/stream, a ``ResponseHandler`` must be created.
-This class contains a set of callbacks that will be called whenever an update occurs on the stream.
+This class contains a set of callbacks are called whenever an update occurs on the stream.
 
 **Kotlin**::
 
@@ -73,6 +75,7 @@ This class contains a set of callbacks that will be called whenever an update oc
     }
     ...
 
+---------------
 ``RetryPolicy``
 ---------------
 
@@ -85,6 +88,7 @@ For full documentation of how these retry rules perform, see Envoy's documentati
 - `Automatic retries <https://www.envoyproxy.io/learn/automatic-retries>`_
 - `Retry semantics <https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/http/http_routing.html?highlight=exponential#retry-semantics>`_
 
+-----------------
 ``StreamEmitter``
 -----------------
 
@@ -118,16 +122,17 @@ close the stream, send trailers, etc.
   emitter.sendData(...)
   emitter.close(...)
 
+--------------
 Unary Requests
 --------------
 
 As mentioned above, unary requests are made using the same types that perform streaming requests.
 
-Sending a unary request may be done by either creating and closing the ``StreamEmitter`` after the
-set of headers/data has been written, or by using the helper functions that return a
+Sending a unary request may be done by either closing the ``StreamEmitter`` after the
+set of headers/data has been written, or by using the helper function that returns a
 ``CancelableStream`` type instead of a ``StreamEmitter``.
 
-The helper function takes optional body data and closes the stream and awaits a response.
+The unary helper function takes optional body data, closes the stream, then waits for a response.
 The ``CancelableStream`` it returns does not expose options for sending additional data.
 
 **Kotlin**::

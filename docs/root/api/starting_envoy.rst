@@ -3,10 +3,13 @@
 Starting Envoy
 ==============
 
+---------------
 ``EnvoyClient``
 ---------------
 
-Starting an instance of Envoy for making requests is done by creating an ``EnvoyClient``.
+Starting an instance of Envoy Mobile for making requests is done by creating an ``EnvoyClient``,
+which conforms to the ``HTTPClient`` interface.
+
 To do so, create an ``EnvoyClientBuilder`` and call ``build()``:
 
 **Kotlin example**::
@@ -28,10 +31,11 @@ To do so, create an ``EnvoyClientBuilder`` and call ``build()``:
 After the client is created, it should be stored and kept in memory in order to be used
 for issuing requests.
 
-Advanced Configuration
+----------------------
+Advanced configuration
 ----------------------
 
-In most cases, the functions provided by the builder should cover basic setups.
+In most cases, the functions provided by the builder should cover basic setup requirements.
 However, in some cases it can be useful to provide a
 `Envoy configuration YAML file <https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration>`_
 with additional customizations applied.
@@ -64,7 +68,7 @@ This may be done by initializing a builder with the contents of the YAML file yo
 Making Requests
 ---------------
 
-Now that you have an instance, you can start making requests:
+Now that you have an Envoy Mobile instance, you can start making requests:
 
-- `Standard HTTP requests and streams <_http>`_
+- `HTTP requests and streams <_http>`_
 - `gRPC streams <_grpc>`_
