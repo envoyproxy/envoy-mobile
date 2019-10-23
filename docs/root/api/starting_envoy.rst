@@ -3,8 +3,8 @@
 Starting Envoy
 ==============
 
-Create an instance
-------------------
+``EnvoyClient``
+---------------
 
 Starting an instance of Envoy for making requests is done by creating an ``EnvoyClient``.
 To do so, create an ``EnvoyClientBuilder`` and call ``build()``:
@@ -28,7 +28,7 @@ To do so, create an ``EnvoyClientBuilder`` and call ``build()``:
 After the client is created, it should be stored and kept in memory in order to be used
 for issuing requests.
 
-Advanced configuration
+Advanced Configuration
 ----------------------
 
 In most cases, the functions provided by the builder should cover basic setups.
@@ -61,8 +61,8 @@ This may be done by initializing a builder with the contents of the YAML file yo
   configuration string is not evaluated until runtime, and not all of the core Envoy configuration
   options are supported by Envoy Mobile.
 
-Next: Making requests
----------------------
+Making Requests
+---------------
 
 Now that you have an instance, you can start making requests:
 

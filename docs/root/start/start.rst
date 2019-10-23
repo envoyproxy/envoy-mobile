@@ -8,3 +8,4 @@ Getting Started
 
   building/building
   examples/hello_world
+  ../api/api

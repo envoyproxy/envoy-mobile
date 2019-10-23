@@ -73,6 +73,18 @@ This class contains a set of callbacks that will be called whenever an update oc
     }
     ...
 
+``RetryPolicy``
+---------------
+
+The ``RetryPolicy`` type allows for customizing retry rules that should be applied to an outbound
+request. These rules are added by calling ``addRetryPolicy(...)`` on the ``RequestBuilder``, and
+are applied when the request is sent.
+
+For full documentation of how these retry rules perform, see Envoy's documentation:
+
+- `Automatic retries <https://www.envoyproxy.io/learn/automatic-retries>`_
+- `Retry semantics <https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/http/http_routing.html?highlight=exponential#retry-semantics>`_
+
 ``StreamEmitter``
 -----------------
 
