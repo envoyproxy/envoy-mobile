@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile
 
-import java.io.IOException
-
 /**
  * Error type containing information on failures reported by Envoy.
  *
@@ -9,8 +7,8 @@ import java.io.IOException
  * @param message a description of what exception that occurred.
  * @param cause an optional cause for the exception.
  */
-class EnvoyError(
+class EnvoyError internal constructor(
     val errorCode: Int,
-    override val message: String,
-    override val cause: Throwable? = null
-) : IOException(message, cause)
+    val message: String,
+    val cause: Throwable? = null
+)
