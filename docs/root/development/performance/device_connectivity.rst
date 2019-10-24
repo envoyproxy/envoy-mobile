@@ -7,7 +7,7 @@ Device connectivity analysis
 Results
 ~~~~~~~
 
-Envoy Mobile currently handles switching preferred networks between WiFi/cellular based on
+Envoy Mobile currently handles switching preferred networks between wifi/cellular based on
 reachability updates from the OS. After switching to a new preferred network, all future requests
 made through the library will use the new connection.
 
@@ -28,8 +28,7 @@ preferred network changes, causing them to sometimes hang until they time out.
 Android
 -------
 
-We did not observe any issues when switching between background/foreground or between WiFi/cellular.
-Network requests resumed and were successful after a brief period of time.
+We did not observe any issues when switching between background/foreground or between wifi/cellular.
 
 ~~~~~~~~~~~~~~~~~~~~~~
 Experimentation method
@@ -46,10 +45,10 @@ Lifecycle experiment steps:
 
 Network experimentation steps:
 
-1. Turn on WiFi
+1. Turn on wifi
 2. Open the example application
-3. Turn off WiFi
-4. Turn on WiFi
+3. Turn off wifi
+4. Turn on wifi
 5. Turn on airplane mode
 6. Turn off airplane mode
 
@@ -65,9 +64,9 @@ iOS configuration
 
 4. Set Envoy's logs to ``trace``
 
--------
-Android
--------
+---------------------
+Android configuration
+---------------------
 
 1. Build the library
 
