@@ -8,9 +8,9 @@ import java.nio.ByteBuffer
 interface CancelableStream {
   /**
    * Cancel and end the associated stream.
-   * @throws EnvoyException when there is an exception canceling the stream or sending trailers.
+   * @throws EnvoyError when there is an exception canceling the stream or sending trailers.
    */
-  @Throws(EnvoyException::class)
+  @Throws(EnvoyError::class)
   fun cancel()
 }
 
@@ -23,10 +23,10 @@ interface StreamEmitter : CancelableStream {
    *
    * @param byteBuffer the byte buffer data to send to the stream.
    * @throws IllegalStateException when the stream is not active
-   * @throws EnvoyException when there is an exception sending data.
+   * @throws EnvoyError when there is an exception sending data.
    * @return this stream emitter.
    */
-  @Throws(EnvoyException::class)
+  @Throws(EnvoyError::class)
   fun sendData(byteBuffer: ByteBuffer): StreamEmitter
 
   /**
@@ -34,10 +34,10 @@ interface StreamEmitter : CancelableStream {
    *
    * @param metadata the metadata to send over the stream.
    * @throws IllegalStateException when the stream is not active.
-   * @throws EnvoyException when there is an exception sending metadata.
+   * @throws EnvoyError when there is an exception sending metadata.
    * @return this stream emitter.
    */
-  @Throws(EnvoyException::class)
+  @Throws(EnvoyError::class)
   fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter
 
   /**
@@ -45,8 +45,8 @@ interface StreamEmitter : CancelableStream {
    *
    * @param trailers to send with ending a stream. If null, stream will be closed with an empty data frame.
    * @throws IllegalStateException when the stream is not active.
-   * @throws EnvoyException when there is an exception ending the stream or sending trailers.
+   * @throws EnvoyError when there is an exception ending the stream or sending trailers.
    */
-  @Throws(EnvoyException::class)
+  @Throws(EnvoyError::class)
   fun close(trailers: Map<String, List<String>>?)
 }
