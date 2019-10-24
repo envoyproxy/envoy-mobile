@@ -49,4 +49,3 @@ class EnvoyStreamEmitter(
     stream.cancel()
   }
 }
-
