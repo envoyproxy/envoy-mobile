@@ -8,14 +8,13 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 45
     container:
-      image: envoyproxy/envoy-build-ubuntu@sha256:47380d6ec4a83599fc0fce8f6ef5ee216ecb06c643d195fa43ba6c71f878a9ea
+      image: envoyproxy/envoy-build:cfc514546bc0284536893cca5fa43d7128edcd35
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Run formatters'
         run: |
-          # TODO: need to figure out why the container above does not have clang-format-9.
           export CLANG_FORMAT=clang-format-8
           export BUILDIFIER_BIN=/usr/local/bin/buildifier
           ./tools/check_format.sh
