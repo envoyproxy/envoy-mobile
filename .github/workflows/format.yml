@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 45
     container:
-      image: envoyproxy/envoy-build:cb15cc3d2010aff77d6e022ddf6d723fa8becbc0
+      image: envoyproxy/envoy-build-ubuntu:d9158223e7bc6932593f180870d278ff5f161b73
     steps:
       - uses: actions/checkout@v1
         with:
