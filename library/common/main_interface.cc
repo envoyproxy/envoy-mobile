@@ -7,7 +7,7 @@
 
 // NOLINT(namespace-envoy)
 
-static std::unique_ptr<Envoy::Engine> engine_;
+static std::weak_ptr<Envoy::Engine> engine_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
 static std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
 
@@ -15,27 +15,42 @@ envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
                             envoy_stream_options stream_options) {
-  engine_->httpDispatcher().startStream(stream, callbacks, stream_options);
-  return ENVOY_SUCCESS;
+  if (auto e = engine_.lock()) {
+    e->httpDispatcher().startStream(stream, callbacks, stream_options);
+    return ENVOY_SUCCESS;
+  }
+  return ENVOY_FAILURE;
 }
 
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
-  return engine_->httpDispatcher().sendHeaders(stream, headers, end_stream);
+  if (auto e = engine_.lock()) {
+    return e->httpDispatcher().sendHeaders(stream, headers, end_stream);
+  }
+  return ENVOY_FAILURE;
 }
 
 envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
-  return engine_->httpDispatcher().sendData(stream, data, end_stream);
+  if (auto e = engine_.lock()) {
+    return e->httpDispatcher().sendData(stream, data, end_stream);
+  }
+  return ENVOY_FAILURE;
 }
 
 // TODO: implement.
 envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
-  return engine_->httpDispatcher().sendTrailers(stream, trailers);
+  if (auto e = engine_.lock()) {
+    return e->httpDispatcher().sendTrailers(stream, trailers);
+  }
+  return ENVOY_FAILURE;
 }
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
-  return engine_->httpDispatcher().resetStream(stream);
+  if (auto e = engine_.lock()) {
+    return engine_->httpDispatcher().resetStream(stream);
+  }
+  return ENVOY_FAILURE;
 }
 
 envoy_engine_t init_engine() {
@@ -56,6 +71,8 @@ envoy_status_t run_engine(envoy_engine_t, envoy_engine_callbacks callbacks, cons
                           const char* log_level) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  engine_ = std::make_unique<Envoy::Engine>(callbacks, config, log_level, preferred_network_);
+  static auto internal =
+      std::make_shared<Envoy::Engine>(callbacks, config, log_level, preferred_network_);
+  engine_ = internal;
   return ENVOY_SUCCESS;
 }
