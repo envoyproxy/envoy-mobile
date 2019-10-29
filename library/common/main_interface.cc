@@ -71,8 +71,14 @@ envoy_status_t run_engine(envoy_engine_t, envoy_engine_callbacks callbacks, cons
                           const char* log_level) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  static auto internal =
+
+  // The shared pointer created here will keep the engine alive until static destruction occurs.
+  static auto strong_ref =
       std::make_shared<Envoy::Engine>(callbacks, config, log_level, preferred_network_);
-  engine_ = internal;
+
+  // The weak pointer we actually expose allows calling threads to atomically check if the engine
+  // still exists and acquire a shared pointer to it - ensuring the engine persists at least for
+  // the duration of the call.
+  engine_ = strong_ref;
   return ENVOY_SUCCESS;
 }
