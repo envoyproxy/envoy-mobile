@@ -28,7 +28,9 @@
     @"dns_refresh_rate_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.dnsRefreshSeconds],
     @"stats_flush_interval_seconds" :
-        [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds]
+        [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds],
+    @"device_os" : @"iOS"
+
   };
 
   for (NSString *templateKey in templateKeysToValues) {
