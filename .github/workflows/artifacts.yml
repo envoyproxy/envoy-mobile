@@ -1,5 +1,6 @@
 name: artifacts
 
+on: [push]
 # on:
 #   push:
 #     branches:
@@ -22,7 +23,6 @@ jobs:
         with:
           name: envoy_android_aar.zip
           path: dist/envoy.aar
-
   master_ios_dist:
     name: master_ios_dist
     runs-on: macOS-10.14
