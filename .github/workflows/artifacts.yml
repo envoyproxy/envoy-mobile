@@ -1,9 +1,6 @@
 name: artifacts
 
-on:
-  push:
-    branches:
-      - master
+on: [push]
 
 jobs:
   master_android_dist:
