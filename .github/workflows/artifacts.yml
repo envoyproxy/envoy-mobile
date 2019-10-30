@@ -34,9 +34,7 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - name: 'Build Envoy.framework distributable'
         run: ./bazelw build --config=release-ios --ios_multi_cpus=i386,x86_64,armv7,arm64 //:ios_dist
-      - name: 'Zip Envoy.framework.zip distributable'
-        run: zip -r dist/Envoy.framework.zip dist/Envoy.framework
       - uses: actions/upload-artifact@v1
         with:
           name: envoy_ios_framework.zip
-          path: dist/Envoy.framework.zip
+          path: dist/Envoy.framework
