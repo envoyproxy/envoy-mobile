@@ -6,6 +6,8 @@ private let kMockTemplate = """
 mock_template:
 - name: mock
   domain: {{ domain }}
+  stats_domain: {{ stats_domain }}
+  device_os: {{ device_os }}
   connect_timeout: {{ connect_timeout_seconds }}s
   dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
   stats_flush_interval: {{ stats_flush_interval_seconds }}s
@@ -69,6 +71,7 @@ final class EnvoyClientBuilderTests: XCTestCase {
 
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(domain: "api.foo.com",
+                                    statsDomain: "stats.foo.com",
                                     connectTimeoutSeconds: 200,
                                     dnsRefreshSeconds: 300,
                                     statsFlushSeconds: 400)
@@ -78,13 +81,16 @@ final class EnvoyClientBuilderTests: XCTestCase {
     }
 
     XCTAssertTrue(resolvedYAML.contains("domain: api.foo.com"))
+    XCTAssertTrue(resolvedYAML.contains("stats_domain: stats.foo.com"))
     XCTAssertTrue(resolvedYAML.contains("connect_timeout: 200s"))
     XCTAssertTrue(resolvedYAML.contains("dns_refresh_rate: 300s"))
     XCTAssertTrue(resolvedYAML.contains("stats_flush_interval: 400s"))
+    XCTAssertTrue(resolvedYAML.contains("device_os: iOS"))
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
     let config = EnvoyConfiguration(domain: "api.foo.com",
+                                    statsDomain: "stats.foo.com",
                                     connectTimeoutSeconds: 200,
                                     dnsRefreshSeconds: 300,
                                     statsFlushSeconds: 400)
