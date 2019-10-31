@@ -97,7 +97,7 @@ final class EnvoyClientBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-    func testAddingDNSRefreshSecondsAddsToConfigurationWhenRunningEnvoy() throws {
+  func testAddingDNSRefreshSecondsAddsToConfigurationWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
       XCTAssertEqual(23, config.dnsRefreshSeconds)
@@ -111,7 +111,7 @@ final class EnvoyClientBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-    func testAddingStatsFlushSecondsAddsToConfigurationWhenRunningEnvoy() throws {
+  func testAddingStatsFlushSecondsAddsToConfigurationWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
       XCTAssertEqual(42, config.statsFlushSeconds)
@@ -124,6 +124,7 @@ final class EnvoyClientBuilderTests: XCTestCase {
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
+
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(domain: "api.foo.com",
                                     statsDomain: "stats.foo.com",
