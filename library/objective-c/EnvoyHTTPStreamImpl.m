@@ -153,7 +153,7 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
-      return
+      return;
     }
     if (callbacks.onError) {
       NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
@@ -177,7 +177,7 @@ static void ios_on_error(envoy_error error, void *context) {
   envoy_stream_t _streamHandle;
 }
 
--(void)handleStreamClosed {
+- (void)handleStreamClosed {
   NSLog(@"**Handle stream closed");
   _strongSelf = nil;
 }
