@@ -9,7 +9,6 @@
 
 typedef struct {
   EnvoyHTTPCallbacks *callbacks;
-  void (^streamClosed)();
   atomic_bool *canceled;
 } ios_context;
 
@@ -124,14 +123,15 @@ static void ios_on_trailers(envoy_headers trailers, void *context) {
 }
 
 static void ios_on_complete(void *context) {
+  NSLog(@"**on complete called");
   ios_context *c = (ios_context *)context;
-  void (^streamClosed)() = c->streamClosed;
-  // dispatch_async(callbacks.dispatchQueue, ^{
-    if (atomic_load(c->canceled) || !streamClosed) {
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
+    if (atomic_load(c->canceled) || !callbacks.onStreamClose) {
       return;
     }
-    streamClosed();
-  // });
+    callbacks.onStreamClose();
+  });
 }
 
 static void ios_on_cancel(void *context) {
@@ -139,10 +139,12 @@ static void ios_on_cancel(void *context) {
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
     // This call is atomically gated at the call-site and will only happen once.
-    if (!callbacks.onCancel) {
-      return;
+    if (callbacks.onCancel) {
+      callbacks.onCancel();
     }
-    callbacks.onCancel();
+    if (callbacks.onStreamClose) {
+      callbacks.onStreamClose();
+    }
   });
 }
 
@@ -150,14 +152,19 @@ static void ios_on_error(envoy_error error, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
-    if (atomic_load(c->canceled) || !callbacks.onError) {
-      return;
+    if (atomic_load(c->canceled)) {
+      return
     }
-    NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
-                                                      length:error.message.length
-                                                    encoding:NSUTF8StringEncoding];
-    error.message.release(error.message.context);
-    callbacks.onError(error.error_code, errorMessage);
+    if (callbacks.onError) {
+      NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
+                                                        length:error.message.length
+                                                      encoding:NSUTF8StringEncoding];
+      error.message.release(error.message.context);
+      callbacks.onError(error.error_code, errorMessage);
+    }
+    if (callbacks.onStreamClose) {
+      callbacks.onStreamClose();
+    }
   });
 }
 
@@ -168,6 +175,11 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyHTTPCallbacks *_platformCallbacks;
   envoy_http_callbacks _nativeCallbacks;
   envoy_stream_t _streamHandle;
+}
+
+-(void)handleStreamClosed {
+  NSLog(@"**Handle stream closed");
+  _strongSelf = nil;
 }
 
 - (instancetype)initWithHandle:(envoy_stream_t)handle
@@ -181,6 +193,10 @@ static void ios_on_error(envoy_error error, void *context) {
   _streamHandle = handle;
 
   // Retain platform callbacks
+  __weak typeof(self) weakSelf = self;
+  callbacks.onStreamClose = ^void() {
+    [weakSelf handleStreamClosed];
+  };
   _platformCallbacks = callbacks;
 
   // Create callback context
@@ -188,11 +204,6 @@ static void ios_on_error(envoy_error error, void *context) {
   context->callbacks = callbacks;
   context->canceled = safe_malloc(sizeof(atomic_bool));
   atomic_store(context->canceled, NO);
-
-  __weak typeof(self) weakSelf = self;
-  context->streamClosed = ^void() {
-    [weakSelf handleStreamClosed];
-  };
 
   // Create native callbacks
   envoy_http_callbacks native_callbacks = {ios_on_headers,  ios_on_data,  ios_on_trailers,
@@ -211,10 +222,6 @@ static void ios_on_error(envoy_error error, void *context) {
   }
 
   return self;
-}
-
-- (void)handleStreamClosed {
-  _strongSelf = nil;
 }
 
 - (void)dealloc {
