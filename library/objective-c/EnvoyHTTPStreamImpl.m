@@ -126,17 +126,16 @@ static void ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
-    // TODO: release stream
-    if (atomic_load(c->canceled)) {
+    if (atomic_load(c->canceled) || !callbacks.onComplete) {
       return;
     }
+    callbacks.onComplete();
   });
 }
 
 static void ios_on_cancel(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
-  // TODO: release stream
   dispatch_async(callbacks.dispatchQueue, ^{
     // This call is atomically gated at the call-site and will only happen once.
     if (!callbacks.onCancel) {
@@ -150,7 +149,6 @@ static void ios_on_error(envoy_error error, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
-    // TODO: release stream
     if (atomic_load(c->canceled) || !callbacks.onError) {
       return;
     }
@@ -180,6 +178,7 @@ static void ios_on_error(envoy_error error, void *context) {
   }
 
   _streamHandle = handle;
+
   // Retain platform callbacks
   _platformCallbacks = callbacks;
 
@@ -197,7 +196,6 @@ static void ios_on_error(envoy_error error, void *context) {
 
   // We need create the native-held strong ref on this stream before we call start_stream because
   // start_stream could result in a reset that would release the native ref.
-  // TODO: To be truly safe we probably need stronger guarantees of operation ordering on this ref
   _strongSelf = self;
   envoy_stream_options stream_options = {bufferForRetry};
   envoy_status_t result = start_stream(_streamHandle, native_callbacks, stream_options);
@@ -206,12 +204,23 @@ static void ios_on_error(envoy_error error, void *context) {
     return nil;
   }
 
+  __weak typeof(self) weakSelf = self;
+  _platformCallbacks.onComplete = ^void() {
+    [weakSelf handleStreamClosed];
+  };
+
   return self;
 }
 
+- (void)handleStreamClosed {
+  _strongSelf = nil;
+}
+
 - (void)dealloc {
+  NSLog(@"**Envoy deallocating stream");
   envoy_http_callbacks native_callbacks = _nativeCallbacks;
   ios_context *context = native_callbacks.context;
+  context->callbacks = nil;
   free(context->canceled);
   free(context);
 }
