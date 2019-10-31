@@ -14,7 +14,7 @@ public class EnvoyConfiguration {
    * @param domain                The domain to use with Envoy (i.e.,
    *                              `api.foo.com`). TODO:
    *                              https://github.com/lyft/envoy-mobile/issues/433
-   * @param statsDomain           The domain to flush stats too.
+   * @param statsDomain           The domain to flush stats to.
    * @param connectTimeoutSeconds timeout for new network connections to hosts in
    *                              the cluster.
    * @param dnsRefreshSeconds     rate in seconds to refresh DNS.
@@ -45,7 +45,7 @@ public class EnvoyConfiguration {
             .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
             .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
-            .replace("{{ device_os }}", "android");
+            .replace("{{ device_os }}", "Android");
 
     if (resolvedConfiguration.contains("{{")) {
       throw new ConfigurationException();

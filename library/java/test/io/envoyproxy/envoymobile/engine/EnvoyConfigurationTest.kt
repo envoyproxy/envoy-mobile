@@ -27,7 +27,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("connect_timeout: 123s")
     assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
     assertThat(resolvedTemplate).contains("stats_flush_interval: 345s")
-    assertThat(resolvedTemplate).contains("os: android")
+    assertThat(resolvedTemplate).contains("os: Android")
   }
 
 

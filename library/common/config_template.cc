@@ -24,7 +24,7 @@ static_resources:
             inline_string: |
 )"
 #include "certificates.inc"
-                              R"(
+R"(
           verify_subject_alt_name:
             - {{ domain }}
       sni: {{ domain }}
@@ -58,7 +58,7 @@ static_resources:
     http2_protocol_options: {}
     lb_policy: ROUND_ROBIN
     load_assignment:
-      cluster_name: base_wwan
+      cluster_name: stats
       endpoints:
         - lb_endpoints:
             - endpoint:
