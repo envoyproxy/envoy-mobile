@@ -9,6 +9,7 @@
 
 typedef struct {
   EnvoyHTTPCallbacks *callbacks;
+  void (^streamClosed)();
   atomic_bool *canceled;
 } ios_context;
 
@@ -124,13 +125,13 @@ static void ios_on_trailers(envoy_headers trailers, void *context) {
 
 static void ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
-  EnvoyHTTPCallbacks *callbacks = c->callbacks;
-  dispatch_async(callbacks.dispatchQueue, ^{
-    if (atomic_load(c->canceled) || !callbacks.onComplete) {
+  void (^streamClosed)() = c->streamClosed;
+  // dispatch_async(callbacks.dispatchQueue, ^{
+    if (atomic_load(c->canceled) || !streamClosed) {
       return;
     }
-    callbacks.onComplete();
-  });
+    streamClosed();
+  // });
 }
 
 static void ios_on_cancel(void *context) {
@@ -188,6 +189,11 @@ static void ios_on_error(envoy_error error, void *context) {
   context->canceled = safe_malloc(sizeof(atomic_bool));
   atomic_store(context->canceled, NO);
 
+  __weak typeof(self) weakSelf = self;
+  context->streamClosed = ^void() {
+    [weakSelf handleStreamClosed];
+  };
+
   // Create native callbacks
   envoy_http_callbacks native_callbacks = {ios_on_headers,  ios_on_data,  ios_on_trailers,
                                            ios_on_metadata, ios_on_error, ios_on_complete,
@@ -203,11 +209,6 @@ static void ios_on_error(envoy_error error, void *context) {
     _strongSelf = nil;
     return nil;
   }
-
-  __weak typeof(self) weakSelf = self;
-  _platformCallbacks.onComplete = ^void() {
-    [weakSelf handleStreamClosed];
-  };
 
   return self;
 }
