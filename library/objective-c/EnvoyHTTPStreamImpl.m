@@ -5,17 +5,6 @@
 
 #import <stdatomic.h>
 
-#pragma mark - Callback extension
-
-@interface EnvoyHTTPCallbacks ()
-
-/**
- * Called when the stream has closed (by completion, cancelation, or error).
- */
-@property (nonatomic, strong) void (^_onStreamClose)();
-
-@end
-
 #pragma mark - Utility types and functions
 
 typedef struct {

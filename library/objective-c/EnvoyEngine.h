@@ -56,6 +56,12 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  */
 @property (nonatomic, strong) void (^onCancel)();
 
+/**
+ * Internal use only.
+ * Called when the stream has closed (by completion, cancelation, or error).
+ */
+@property (nonatomic, strong) void (^_onStreamClose)();
+
 @end
 
 #pragma mark - EnvoyHTTPStream
