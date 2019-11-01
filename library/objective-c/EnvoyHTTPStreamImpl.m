@@ -85,6 +85,7 @@ static void ios_on_headers(envoy_headers headers, bool end_stream, void *context
     if (atomic_load(c->canceled) || !callbacks.onHeaders) {
       return;
     }
+
     callbacks.onHeaders(to_ios_headers(headers), end_stream);
   });
 }
@@ -96,6 +97,7 @@ static void ios_on_data(envoy_data data, bool end_stream, void *context) {
     if (atomic_load(c->canceled) || !callbacks.onData) {
       return;
     }
+
     callbacks.onData(to_ios_data(data), end_stream);
   });
 }
@@ -107,6 +109,7 @@ static void ios_on_metadata(envoy_headers metadata, void *context) {
     if (atomic_load(c->canceled) || !callbacks.onMetadata) {
       return;
     }
+
     callbacks.onMetadata(to_ios_headers(metadata));
   });
 }
@@ -118,6 +121,7 @@ static void ios_on_trailers(envoy_headers trailers, void *context) {
     if (atomic_load(c->canceled) || !callbacks.onTrailers) {
       return;
     }
+
     callbacks.onTrailers(to_ios_headers(trailers));
   });
 }
@@ -126,9 +130,11 @@ static void ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
-    if (atomic_load(c->canceled) || !callbacks._onStreamClose) {
+    if (atomic_load(c->canceled)) {
       return;
     }
+
+    assert(callbacks._onStreamClose);
     callbacks._onStreamClose();
   });
 }
@@ -141,9 +147,9 @@ static void ios_on_cancel(void *context) {
     if (callbacks.onCancel) {
       callbacks.onCancel();
     }
-    if (callbacks._onStreamClose) {
-      callbacks._onStreamClose();
-    }
+
+    assert(callbacks._onStreamClose);
+    callbacks._onStreamClose();
   });
 }
 
@@ -154,6 +160,7 @@ static void ios_on_error(envoy_error error, void *context) {
     if (atomic_load(c->canceled)) {
       return;
     }
+
     if (callbacks.onError) {
       NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
                                                         length:error.message.length
@@ -161,9 +168,9 @@ static void ios_on_error(envoy_error error, void *context) {
       error.message.release(error.message.context);
       callbacks.onError(error.error_code, errorMessage);
     }
-    if (callbacks._onStreamClose) {
-      callbacks._onStreamClose();
-    }
+
+    assert(callbacks._onStreamClose);
+    callbacks._onStreamClose();
   });
 }
 
@@ -188,7 +195,7 @@ static void ios_on_error(envoy_error error, void *context) {
     return nil;
   }
 
-  // Release the stream when the connection closes.
+  // Release the strong reference to the stream when the stream is closed.
   // It must be kept in memory while the stream is active in order to receive callbacks.
   __weak typeof(self) weakSelf = self;
   callbacks._onStreamClose = ^void() {
