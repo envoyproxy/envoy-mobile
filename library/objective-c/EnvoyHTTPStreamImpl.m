@@ -232,8 +232,7 @@ static void ios_on_error(envoy_error error, void *context) {
 }
 
 - (void)dealloc {
-  envoy_http_callbacks native_callbacks = self._nativeCallbacks;
-  ios_context *context = native_callbacks.context;
+  ios_context *context = self._nativeCallbacks.context;
   free(context->canceled);
   free(context);
 }
