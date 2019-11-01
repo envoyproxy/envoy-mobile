@@ -56,11 +56,6 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  */
 @property (nonatomic, strong) void (^onCancel)();
 
-/**
- * Called when the async HTTP stream is closed (with completion, cancelation, or error).
- */
-@property (nonatomic, strong) void (^onStreamClose)();
-
 @end
 
 #pragma mark - EnvoyHTTPStream
