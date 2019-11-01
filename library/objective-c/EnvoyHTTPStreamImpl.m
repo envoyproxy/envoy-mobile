@@ -199,6 +199,8 @@ static void ios_on_error(envoy_error error, void *context) {
     return nil;
   }
 
+  // Release the stream when the connection closes.
+  // It must be kept in memory while the stream is active in order to receive callbacks.
   __weak typeof(self) weakSelf = self;
   callbacks._onStreamClose = ^void() {
     weakSelf._strongSelf = nil;
