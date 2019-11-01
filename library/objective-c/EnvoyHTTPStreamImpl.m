@@ -8,8 +8,8 @@
 #pragma mark - Utility types and functions
 
 typedef struct {
-  EnvoyHTTPCallbacks *callbacks;
-  id<EnvoyHTTPStream> stream;
+  __unsafe_unretained EnvoyHTTPCallbacks *callbacks;
+  __unsafe_unretained EnvoyHTTPStreamImpl *stream;
   atomic_bool *canceled;
 } ios_context;
 
@@ -130,7 +130,7 @@ static void ios_on_trailers(envoy_headers trailers, void *context) {
 static void ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
-  id<EnvoyHTTPStream> stream = c->stream;
+  EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
       return;
@@ -143,7 +143,7 @@ static void ios_on_complete(void *context) {
 static void ios_on_cancel(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
-  id<EnvoyHTTPStream> stream = c->stream;
+  EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     // This call is atomically gated at the call-site and will only happen once.
     if (callbacks.onCancel) {
@@ -157,7 +157,7 @@ static void ios_on_cancel(void *context) {
 static void ios_on_error(envoy_error error, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
-  id<EnvoyHTTPStream> stream = c->stream;
+  EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
       return;
@@ -211,6 +211,7 @@ static void ios_on_error(envoy_error error, void *context) {
 
   // We need create the native-held strong ref on this stream before we call start_stream because
   // start_stream could result in a reset that would release the native ref.
+  _strongSelf = self;
   envoy_stream_options stream_options = {bufferForRetry};
   envoy_status_t result = start_stream(_streamHandle, native_callbacks, stream_options);
   if (result != ENVOY_SUCCESS) {
@@ -223,8 +224,6 @@ static void ios_on_error(envoy_error error, void *context) {
 
 - (void)dealloc {
   ios_context *context = _nativeCallbacks.context;
-  context->callbacks = nil;
-  context->stream = nil;
   free(context->canceled);
   free(context);
 }
