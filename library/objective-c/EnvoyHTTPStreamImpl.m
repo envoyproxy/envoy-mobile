@@ -8,8 +8,13 @@
 #pragma mark - Utility types and functions
 
 typedef struct {
-  __unsafe_unretained EnvoyHTTPCallbacks *callbacks;
+  // The stream is kept in memory through a strong reference to itself. In order to free the
+  // stream when it finishes, it is stored in this context so that it can be called when it
+  // is safe to be cleaned up.
+  // This approach allows `EnvoyHTTPCallbacks` to be agnostic of associated streams, enabling
+  // instances to be reused with multiple streams if desired.
   __unsafe_unretained EnvoyHTTPStreamImpl *stream;
+  __unsafe_unretained EnvoyHTTPCallbacks *callbacks;
   atomic_bool *canceled;
 } ios_context;
 
@@ -136,6 +141,7 @@ static void ios_on_complete(void *context) {
       return;
     }
 
+    assert(stream);
     [stream cleanUp];
   });
 }
@@ -150,6 +156,7 @@ static void ios_on_cancel(void *context) {
       callbacks.onCancel();
     }
 
+    assert(stream);
     [stream cleanUp];
   });
 }
@@ -171,6 +178,7 @@ static void ios_on_error(envoy_error error, void *context) {
       callbacks.onError(error.error_code, errorMessage);
     }
 
+    assert(stream);
     [stream cleanUp];
   });
 }
