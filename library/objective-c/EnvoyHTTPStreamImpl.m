@@ -233,6 +233,7 @@ static void ios_on_error(envoy_error error, void *context) {
 
 - (void)dealloc {
   ios_context *context = self._nativeCallbacks.context;
+  context->callbacks = nil;
   free(context->canceled);
   free(context);
 }
