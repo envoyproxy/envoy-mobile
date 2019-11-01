@@ -58,7 +58,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 /**
  * Internal use only.
- * Called when the stream has closed (by completion, cancelation, or error).
+ * Called when the stream has closed (by completion, cancellation, or error).
  */
 @property (nonatomic, strong) void (^_onStreamClose)();
 
