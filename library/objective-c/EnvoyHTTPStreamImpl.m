@@ -8,7 +8,8 @@
 #pragma mark - Utility types and functions
 
 typedef struct {
-  EnvoyHTTPCallbacks *callbacks;
+  EnvoyHTTPCallbacks *callbacks; // Weak
+  id<EnvoyHTTPStream> stream; // Weak
   atomic_bool *canceled;
 } ios_context;
 
@@ -134,8 +135,7 @@ static void ios_on_complete(void *context) {
       return;
     }
 
-    assert(callbacks._onStreamClose);
-    callbacks._onStreamClose();
+    [c->stream cleanUp];
   });
 }
 
@@ -148,8 +148,7 @@ static void ios_on_cancel(void *context) {
       callbacks.onCancel();
     }
 
-    assert(callbacks._onStreamClose);
-    callbacks._onStreamClose();
+    [c->stream cleanUp];
   });
 }
 
@@ -169,23 +168,18 @@ static void ios_on_error(envoy_error error, void *context) {
       callbacks.onError(error.error_code, errorMessage);
     }
 
-    assert(callbacks._onStreamClose);
-    callbacks._onStreamClose();
+    [c->stream cleanUp];
   });
 }
 
 #pragma mark - EnvoyHTTPStreamImpl
 
-@interface EnvoyHTTPStreamImpl ()
-
-@property (nonatomic, strong) EnvoyHTTPStreamImpl *_strongSelf;
-@property (nonatomic, strong) EnvoyHTTPCallbacks *_platformCallbacks;
-@property (nonatomic, assign) envoy_http_callbacks _nativeCallbacks;
-@property (nonatomic, assign) envoy_stream_t _streamHandle;
-
-@end
-
-@implementation EnvoyHTTPStreamImpl
+@implementation EnvoyHTTPStreamImpl {
+  EnvoyHTTPStreamImpl *_strongSelf;
+  EnvoyHTTPCallbacks *_platformCallbacks;
+  envoy_http_callbacks _nativeCallbacks;
+  envoy_stream_t _streamHandle;
+}
 
 - (instancetype)initWithHandle:(envoy_stream_t)handle
                      callbacks:(EnvoyHTTPCallbacks *)callbacks
@@ -195,20 +189,14 @@ static void ios_on_error(envoy_error error, void *context) {
     return nil;
   }
 
-  // Release the strong reference to the stream when the stream is closed.
-  // It must be kept in memory while the stream is active in order to receive callbacks.
-  __weak typeof(self) weakSelf = self;
-  callbacks._onStreamClose = ^void() {
-    weakSelf._strongSelf = nil;
-  };
-
   // Retain platform callbacks
-  self._platformCallbacks = callbacks;
-  self._streamHandle = handle;
+  _platformCallbacks = callbacks;
+  _streamHandle = handle;
 
   // Create callback context
   ios_context *context = safe_malloc(sizeof(ios_context));
   context->callbacks = callbacks;
+  context->stream = self;
   context->canceled = safe_malloc(sizeof(atomic_bool));
   atomic_store(context->canceled, NO);
 
@@ -216,53 +204,56 @@ static void ios_on_error(envoy_error error, void *context) {
   envoy_http_callbacks native_callbacks = {ios_on_headers,  ios_on_data,  ios_on_trailers,
                                            ios_on_metadata, ios_on_error, ios_on_complete,
                                            context};
-  self._nativeCallbacks = native_callbacks;
+  _nativeCallbacks = native_callbacks;
 
   // We need create the native-held strong ref on this stream before we call start_stream because
   // start_stream could result in a reset that would release the native ref.
-  self._strongSelf = self;
   envoy_stream_options stream_options = {bufferForRetry};
-  envoy_status_t result = start_stream(self._streamHandle, native_callbacks, stream_options);
+  envoy_status_t result = start_stream(_streamHandle, native_callbacks, stream_options);
   if (result != ENVOY_SUCCESS) {
-    self._strongSelf = nil;
+    _strongSelf = nil;
     return nil;
   }
 
   return self;
 }
 
+- (void)cleanUp {
+  _strongSelf = nil;
+}
+
 - (void)dealloc {
-  ios_context *context = self._nativeCallbacks.context;
+  ios_context *context = _nativeCallbacks.context;
   context->callbacks = nil;
   free(context->canceled);
   free(context);
 }
 
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
-  send_headers(self._streamHandle, toNativeHeaders(headers), close);
+  send_headers(_streamHandle, toNativeHeaders(headers), close);
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {
-  send_data(self._streamHandle, toNativeData(data), close);
+  send_data(_streamHandle, toNativeData(data), close);
 }
 
 - (void)sendMetadata:(EnvoyHeaders *)metadata {
-  send_metadata(self._streamHandle, toNativeHeaders(metadata));
+  send_metadata(_streamHandle, toNativeHeaders(metadata));
 }
 
 - (void)sendTrailers:(EnvoyHeaders *)trailers {
-  send_trailers(self._streamHandle, toNativeHeaders(trailers));
+  send_trailers(_streamHandle, toNativeHeaders(trailers));
 }
 
 - (int)cancel {
-  ios_context *context = self._nativeCallbacks.context;
+  ios_context *context = _nativeCallbacks.context;
   // Step 1: atomically and synchronously prevent the execution of further callbacks other than
   // on_cancel.
   if (!atomic_exchange(context->canceled, YES)) {
     // Step 2: directly fire the cancel callback.
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
-    reset_stream(self._streamHandle);
+    reset_stream(_streamHandle);
     return 0;
   } else {
     return 1;
