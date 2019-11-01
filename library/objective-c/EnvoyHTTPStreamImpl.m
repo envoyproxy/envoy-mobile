@@ -8,8 +8,8 @@
 #pragma mark - Utility types and functions
 
 typedef struct {
-  EnvoyHTTPCallbacks *callbacks; // Weak
-  id<EnvoyHTTPStream> stream; // Weak
+  EnvoyHTTPCallbacks *callbacks;
+  id<EnvoyHTTPStream> stream;
   atomic_bool *canceled;
 } ios_context;
 
@@ -225,6 +225,7 @@ static void ios_on_error(envoy_error error, void *context) {
 - (void)dealloc {
   ios_context *context = _nativeCallbacks.context;
   context->callbacks = nil;
+  context->stream = nil;
   free(context->canceled);
   free(context);
 }
