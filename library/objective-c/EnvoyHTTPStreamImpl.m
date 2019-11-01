@@ -130,31 +130,34 @@ static void ios_on_trailers(envoy_headers trailers, void *context) {
 static void ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  id<EnvoyHTTPStream> stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
       return;
     }
 
-    [c->stream cleanUp];
+    [stream cleanUp];
   });
 }
 
 static void ios_on_cancel(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  id<EnvoyHTTPStream> stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     // This call is atomically gated at the call-site and will only happen once.
     if (callbacks.onCancel) {
       callbacks.onCancel();
     }
 
-    [c->stream cleanUp];
+    [stream cleanUp];
   });
 }
 
 static void ios_on_error(envoy_error error, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  id<EnvoyHTTPStream> stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     if (atomic_load(c->canceled)) {
       return;
@@ -168,7 +171,7 @@ static void ios_on_error(envoy_error error, void *context) {
       callbacks.onError(error.error_code, errorMessage);
     }
 
-    [c->stream cleanUp];
+    [stream cleanUp];
   });
 }
 
@@ -218,10 +221,6 @@ static void ios_on_error(envoy_error error, void *context) {
   return self;
 }
 
-- (void)cleanUp {
-  _strongSelf = nil;
-}
-
 - (void)dealloc {
   ios_context *context = _nativeCallbacks.context;
   context->callbacks = nil;
@@ -259,6 +258,10 @@ static void ios_on_error(envoy_error error, void *context) {
   } else {
     return 1;
   }
+}
+
+- (void)cleanUp {
+  _strongSelf = nil;
 }
 
 @end
