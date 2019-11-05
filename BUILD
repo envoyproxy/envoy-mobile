@@ -44,7 +44,7 @@ genrule(
     cmd = """
 cp $(location :android_aar) dist/envoy.aar
 cp $(location :android_pom) dist/envoy-pom.xml
-cp $(location :javadocs) dist/envoy-javadoc.jar
+cp $(location :android_javadocs) dist/envoy-javadoc.jar
 chmod 755 dist/envoy.aar
 chmod 755 dist/envoy-pom.xml
 chmod 755 dist/envoy-javadoc.jar
