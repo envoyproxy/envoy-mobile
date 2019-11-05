@@ -5,6 +5,7 @@
 /dist/*.jar
 /dist/envoy_aar_sources.zip
 /dist/Envoy.framework
+/dist/*.asc
 .DS_Store
 /generated
 .idea

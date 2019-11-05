@@ -11,4 +11,16 @@
     <dependencies>
         {generated_bzl_deps}
     </dependencies>
+
+    <name>Envoy Mobile</name>
+    <description>Client networking libraries based on the Envoy project.</description>
+    <url>https://github.com/lyft/envoy-mobile</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 </project>

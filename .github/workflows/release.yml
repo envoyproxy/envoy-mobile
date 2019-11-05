@@ -1,0 +1,83 @@
+name: release
+
+#on:
+#  push:
+#    tags:
+#      - v*
+
+# use this for now
+on: [push]
+
+jobs:
+  android_aar_sonatype_deploy:
+    name: android_deploy
+    runs-on: ubuntu-18.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/linux_ci_setup.sh
+      - name: 'Build envoy.aar distributable'
+        run: |
+          export PATH=/usr/lib/llvm-8/bin:$PATH
+          export CC=clang
+          export CXX=clang++
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
+
+          # Build and create the artifacts
+          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          ./bazelw build \
+            --config=release-android \
+            --fat_apk_cpu=x86 \
+            --define=pom_version=${current_release_tag:1} \
+            //:android_deploy
+      - name: 'Configure gpg signing'
+        env:
+          GPG_KEY: ${{ secrets.gpg_key }}
+          GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
+          GPG_PASSPHRASE: ${{ secrets.gpg_passphrase }}
+        run: |
+          # https://github.com/keybase/keybase-issues/issues/2798
+          export GPG_TTY=$(tty)
+          # Import gpg keys and warm the passphrase to avoid the gpg
+          # passphrase prompt when initating a deploy
+          # `--pinentry-mode=loopback` could be needed to ensure we
+          # suppress the gpg prompt
+          echo $GPG_KEY | base64 --decode > signing-key
+          gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
+          shred signing-key
+
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy.aar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
+      - name: 'Configure git'
+        run: |
+          # Switch global user to be envoy-bot for deployment
+          git config --global user.email "envoy-bot@users.noreply.github.com"
+          git config --global user.name "envoy-bot"
+      - name: 'Release to sonatype'
+        env:
+          SONATYPE_USER: ${{ secrets.sonatype_user }}
+          SONATYPE_PASSWORD: ${{ secrets.sonatype_password }}
+          ENVOY_PROXY_PROFILE_ID: ${{ secrets.envoy_proxy_profile_id }}
+        run: |
+          # Open release candidate with a specified profile id using `current_release_tag`
+          export READWRITE_USER=$SONATYPE_USER
+          export READWRITE_API_KEY=$SONATYPE_PASSWORD
+
+          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+          python dist/upload_maven.py \
+            --profile_id=$ENVOY_PROXY_PROFILE_ID \
+            --version=${current_release_tag:1} \
+            --files dist/envoy-sources.jar \
+                dist/envoy.aar \
+                dist/envoy.aar.asc \
+                dist/envoy-sources.jar.asc \
+                dist/envoy-pom.xml \
+                dist/envoy-pom.xml.asc \
+                dist/envoy-javadoc.jar \
+                dist/envoy-javadoc.jar.asc
