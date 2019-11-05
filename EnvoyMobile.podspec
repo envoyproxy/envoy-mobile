@@ -13,5 +13,5 @@ Pod::Spec.new do |s|
     s.frameworks          = 'SystemConfiguration'
     s.source              = { :http => "https://github.com/lyft/envoy-mobile/releases/download/v#{s.version}/envoy_ios_cocoapods.zip" }
     s.vendored_frameworks = 'envoy_ios_cocoapods/Envoy.framework'
-    s.ios.source_files    = 'envoy_ios_cocoapods/Envoy.framework/Headers/*.h', 'envoy_ios_cocoapods/Envoy.framework/Swift/*.swift'
+    s.source_files        = 'envoy_ios_cocoapods/Envoy.framework/Headers/*.h', 'envoy_ios_cocoapods/Envoy.framework/Swift/*.swift'
 end
