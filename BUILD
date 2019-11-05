@@ -28,18 +28,26 @@ alias(
     actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
 )
 
+alias(
+    name = "android_javadocs",
+    actual = "//library:javadocs",
+)
+
 genrule(
     name = "android_dist",
     srcs = [
         "android_aar",
         "android_pom",
+        "android_javadocs",
     ],
     outs = ["stub_android_dist_output"],
     cmd = """
 cp $(location :android_aar) dist/envoy.aar
 cp $(location :android_pom) dist/envoy-pom.xml
+cp $(location :javadocs) dist/envoy-javadoc.jar
 chmod 755 dist/envoy.aar
 chmod 755 dist/envoy-pom.xml
+chmod 755 dist/envoy-javadoc.jar
 touch $@
 """,
     stamp = True,
