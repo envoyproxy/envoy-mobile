@@ -33,21 +33,29 @@ alias(
     actual = "//library:javadocs",
 )
 
+alias(
+    name = "android_sources",
+    actual = "//library:sources_jar",
+)
+
 genrule(
     name = "android_dist",
     srcs = [
         "android_aar",
         "android_pom",
         "android_javadocs",
+        "android_sources",
     ],
     outs = ["stub_android_dist_output"],
     cmd = """
 cp $(location :android_aar) dist/envoy.aar
 cp $(location :android_pom) dist/envoy-pom.xml
 cp $(location :android_javadocs) dist/envoy-javadoc.jar
+cp $(location :android_sources) dist/envoy-sources.jar
 chmod 755 dist/envoy.aar
 chmod 755 dist/envoy-pom.xml
 chmod 755 dist/envoy-javadoc.jar
+chmod 755 dist/envoy-sources.jar
 touch $@
 """,
     stamp = True,
