@@ -19,9 +19,9 @@ java -jar $$origdir/dokka.jar $$origdir/{path} -format javadoc -output $$tmp_dir
 cd $$tmp_dir
 zip -r $$origdir/$@ .
     """.format(
-        sha256="4c73eee92dd652ea8e2afd7b20732cf863d4938a30f634d12c88fe64def89fd8",
-        version="0.9.18",
-        path="./library" # This is a shortcut since we should more ideally inspect the source files from the src
+        sha256 = "4c73eee92dd652ea8e2afd7b20732cf863d4938a30f634d12c88fe64def89fd8",
+        version = "0.9.18",
+        path = "./library",  # This is a shortcut since we should more ideally inspect the source files from the src
     ),
     visibility = ["//visibility:public"],
 )
