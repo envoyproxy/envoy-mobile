@@ -2,6 +2,7 @@
 /build_*
 /dist/*pom.xml
 /dist/*.aar
+/dist/*.jar
 /dist/Envoy.framework
 .DS_Store
 /generated
