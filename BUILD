@@ -42,6 +42,20 @@ genrule(
     name = "android_dist",
     srcs = [
         "android_aar",
+    ],
+    outs = ["stub_android_dist_output"],
+    cmd = """
+cp $(location :android_aar) dist/envoy.aar
+chmod 755 dist/envoy.aar
+touch $@
+""",
+    stamp = True,
+)
+
+genrule(
+    name = "android_deploy",
+    srcs = [
+        "android_aar",
         "android_pom",
         "android_javadocs",
         "android_sources",
