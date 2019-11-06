@@ -60,7 +60,7 @@ genrule(
         "android_javadocs",
         "android_sources",
     ],
-    outs = ["stub_android_dist_output"],
+    outs = ["stub_android_deploy_output"],
     cmd = """
 cp $(location :android_aar) dist/envoy.aar
 cp $(location :android_pom) dist/envoy-pom.xml
