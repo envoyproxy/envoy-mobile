@@ -43,11 +43,7 @@ jobs:
         run: |
           echo "~~~~~~~~~~~~~~~~~~~~~"
           secret=$TMP_TEST_SECRET_VALUE
-          if [ $secret == "hello_buildbreaker" ]; then
-            echo "secret decoded"
-          else
-            echo "secret not found"
-          fi
+          echo $secret
           echo "~~~~~~~~~~~~~~~~~~~~~"
         env:
           TMP_TEST_SECRET_VALUE: ${{ secrets.TMP_TEST_SECRET_VALUE }}
