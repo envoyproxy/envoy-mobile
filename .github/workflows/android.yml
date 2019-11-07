@@ -42,9 +42,12 @@ jobs:
       - name: 'Test secret integration with github actions...this does not have any real secret values!!!'
         run: |
           echo "~~~~~~~~~~~~~~~~~~~~~"
-          echo $TMP_TEST_SECRET_VALUE
-          echo "---------------------"
-          echo $$TMP_TEST_SECRET_VALUE
+          secret=$TMP_TEST_SECRET_VALUE
+          if [ $secret == "hello_buildbreaker"]; then
+            echo "secret decoded"
+          else
+            echo "secret not found"
+          fi
           echo "~~~~~~~~~~~~~~~~~~~~~"
         env:
           TMP_TEST_SECRET_VALUE: ${{ secrets.TMP_TEST_SECRET_VALUE }}
