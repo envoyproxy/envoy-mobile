@@ -30,7 +30,7 @@ jobs:
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
           ./bazelw build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
   demosecretsthisdoesnotuserealsecrets:
-    name: linux_dist
+    name: secret_testing
     runs-on: ubuntu-18.04
     timeout-minutes: 45
     steps:
