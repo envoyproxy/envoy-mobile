@@ -42,7 +42,7 @@ jobs:
       - name: 'Test secret integration with github actions...this does not have any real secret values!!!'
         run: echo $TMP_TEST_SECRET_VALUE
         env:
-          TMP_TEST_SECRET_VALUE: $
+          TMP_TEST_SECRET_VALUE: ${{ secrets.TMP_TEST_SECRET_VALUE }}
   macdist:
     name: mac_dist
     runs-on: macOS-10.14
