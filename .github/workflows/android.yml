@@ -40,7 +40,12 @@ jobs:
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - name: 'Test secret integration with github actions...this does not have any real secret values!!!'
-        run: echo $TMP_TEST_SECRET_VALUE
+        run: |
+          echo "~~~~~~~~~~~~~~~~~~~~~"
+          echo $TMP_TEST_SECRET_VALUE
+          echo "---------------------"
+          echo $$TMP_TEST_SECRET_VALUE
+          echo "~~~~~~~~~~~~~~~~~~~~~"
         env:
           TMP_TEST_SECRET_VALUE: ${{ secrets.TMP_TEST_SECRET_VALUE }}
   macdist:
