@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "~~~~~~~~~~~~~~~~~~~~~"
           secret=$TMP_TEST_SECRET_VALUE
-          echo $secret
+          echo "hello_buildbreaker"
           echo "~~~~~~~~~~~~~~~~~~~~~"
         env:
           TMP_TEST_SECRET_VALUE: ${{ secrets.TMP_TEST_SECRET_VALUE }}
