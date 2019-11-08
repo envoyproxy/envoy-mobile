@@ -28,7 +28,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: envoy_android_aar_sources
-          path: envoy_aar_sources.zip
+          path: dist/envoy_aar_sources.zip
   master_ios_dist:
     name: master_ios_dist
     runs-on: macOS-10.14
