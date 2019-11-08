@@ -146,7 +146,7 @@ static void ios_on_complete(void *context) {
 static void ios_on_cancel(void *context) {
   // This call is atomically gated at the call-site and will only happen once.
 
-  // The cancelation callback does not clean up the stream, since that will race with work Envoy's
+  // The cancellation callback does not clean up the stream, since that will race with work Envoy's
   // main thread may already be doing. Instead we rely on the reset that's dispatched to Envoy to
   // effect cleanup, with appropriate timing.
   ios_context *c = (ios_context *)context;
