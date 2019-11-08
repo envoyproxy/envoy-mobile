@@ -18,7 +18,6 @@ jobs:
         run: ./ci/linux_ci_setup.sh
       - name: 'Build envoy.aar distributable'
         run: |
-          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`) # this is for releases
           current_short_commit=$(git rev-parse --short HEAD)
           ./bazelw build \
               --config=release-android \
