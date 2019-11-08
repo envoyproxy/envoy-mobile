@@ -18,13 +18,13 @@ jobs:
         run: ./ci/linux_ci_setup.sh
       - name: 'Build envoy.aar distributable'
         run: |
-          current_release_tag=$$(git describe --tags `git rev-list --tags --max-count=1`)
+          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`) # this is for releases
+          current_short_commit=$(git rev-parse --short HEAD)
           ./bazelw build \
               --config=release-android \
               --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
-              --define=pom_version=$$current_release_tag \
+              --define=pom_version=master-$current_short_commit \
               //:android_deploy
-
       - uses: actions/upload-artifact@v1
         with:
           name: envoy_android_aar_sources
