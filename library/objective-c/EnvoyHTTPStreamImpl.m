@@ -137,14 +137,16 @@ static void ios_on_complete(void *context) {
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
-    // FIXME: If the callback queue is not serial, clean up is not currently thread-safe.
+    // TODO: If the callback queue is not serial, clean up is not currently thread-safe.
     assert(stream);
     [stream cleanUp];
   });
 }
 
 static void ios_on_cancel(void *context) {
-  // This call is atomically gated at the call-site and will only happen once.
+  // This call is atomically gated at the call-site and will only happen once. It may still fire
+  // after a complete response or error callback, but no other callbacks for the stream will ever
+  // fire AFTER the cancellation callback.
 
   // The cancellation callback does not clean up the stream, since that will race with work Envoy's
   // main thread may already be doing. Instead we rely on the reset that's dispatched to Envoy to
@@ -172,7 +174,7 @@ static void ios_on_error(envoy_error error, void *context) {
       callbacks.onError(error.error_code, errorMessage);
     }
 
-    // FIXME: If the callback queue is not serial, clean up is not currently thread-safe.
+    // TODO: If the callback queue is not serial, clean up is not currently thread-safe.
     assert(stream);
     [stream cleanUp];
   });
