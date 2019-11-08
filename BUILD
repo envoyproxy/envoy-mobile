@@ -70,6 +70,10 @@ chmod 755 dist/envoy.aar
 chmod 755 dist/envoy-pom.xml
 chmod 755 dist/envoy-javadoc.jar
 chmod 755 dist/envoy-sources.jar
+orig_dir=$$PWD
+pushd dist
+zip -r envoy_aar_sources.zip envoy.aar envoy-pom.xml envoy-javadoc.jar envoy-sources.jar
+popd
 touch $@
 """,
     stamp = True,
