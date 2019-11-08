@@ -26,10 +26,11 @@ jobs:
               --fat_apk_cpu=x86 \
               --define=pom_version=master-$current_short_commit \
               //:android_deploy
+
       - uses: actions/upload-artifact@v1
         with:
           name: envoy_android_aar_sources
-          path: envoy_aar_sources.zip
+          path: dist/envoy_aar_sources.zip
     # TODO: parallelize these two jobs
       - name: 'Build Java app'
         run: |
