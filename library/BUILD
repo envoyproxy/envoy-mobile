@@ -13,7 +13,11 @@ genrule(
     cmd = """
 orig_dir=$$PWD
 tmp_dir=$$(mktemp -d)
-java -jar $(location @kotlin_dokka//jar) $$orig_dir/library/java/src/ $$orig_dir/library/kotlin/src/ -format javadoc -output $$tmp_dir > /dev/null
+java -jar $(location @kotlin_dokka//jar) \
+    $$orig_dir/library/java/src/ \
+    $$orig_dir/library/kotlin/src/ \
+    -format javadoc \
+    -output $$tmp_dir > /dev/null
 cd $$tmp_dir
 zip -r $$orig_dir/$@ . > /dev/null
     """,
