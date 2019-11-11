@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - ci-use-env-variables-from-android
 
 jobs:
   master_android_dist:
