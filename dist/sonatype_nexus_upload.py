@@ -116,6 +116,7 @@ def _create_staging_repository(profile_id):
 def _upload_files(staging_id, version, files):
     for file in files:
         # This will output "dist/envoy", ".aar" for "dist/envoy.aar
+        print("Uploading file {}".format(file))
         suffix, file_extension = _resolve_name(file)
         basename = "{name}-{version}{suffix}.{extension}".format(
             name=_ARTIFACT_ID,
