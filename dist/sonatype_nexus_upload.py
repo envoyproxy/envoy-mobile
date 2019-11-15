@@ -86,6 +86,8 @@ def _urlopen_retried(request, retries=20, delay_sec=1):
             time.sleep(delay_sec)
             return _urlopen_retried(request, retries - 1)
         else:
+            print("Retry limit reached. Will not continue to retry. Received error code {}".format(e.code),
+                  file=sys.stderr)
             raise e
 
 
@@ -141,7 +143,8 @@ def _upload_files(staging_id, version, files):
             _urlopen_retried(request)
         except HTTPError as e:
             if e.code == 403:
-                print("Ignoring duplicate upload for {}".format(artifact_url), file=sys.stderr)
+                # Don't need to pipe to error since we are ignoring duplicated uploads
+                print("Ignoring duplicate upload for {}".format(artifact_url))
             else:
                 raise e
         except Exception as e:
