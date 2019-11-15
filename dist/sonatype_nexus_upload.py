@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import argparse
 import base64
 import json
 import os
 import shutil
+import sys
 import time
 
 try:
@@ -102,7 +105,7 @@ def _create_staging_repository(profile_id):
 
         response = json.load(_urlopen_retried(request))
         staging_id = response["data"]["stagedRepositoryId"]
-        print("staging id {} was created".format(staging_id))
+        print("staging id {} was created".format(staging_id), file=sys.stderr)
         return staging_id
     except Exception as e:
         raise e
@@ -138,7 +141,7 @@ def _upload_files(staging_id, version, files):
             _urlopen_retried(request)
         except HTTPError as e:
             if e.code == 403:
-                print("Ignoring duplicate upload for {}".format(artifact_url))
+                print("Ignoring duplicate upload for {}".format(artifact_url), file=sys.stderr)
             else:
                 raise e
         except Exception as e:
@@ -256,16 +259,17 @@ if __name__ == "__main__":
         try:
             staging_id = _create_staging_repository(args.profile_id)
         except:
-            sys.exit(1, "Unable to create staging id")
+            sys.exit("Unable to create staging id")
 
         try:
             _upload_files(staging_id, args.version, args.files)
             # TODO: _close_staging_repository(args.profile_id, staging_id)
             # TODO: _release_staging_repository(staging_id)
         except:
-            print("Unable to complete file upload. Will attempt to drop staging id: [{}]".format(staging_id))
+            print("Unable to complete file upload. Will attempt to drop staging id: [{}]".format(staging_id),
+                  file=sys.stderr)
             try:
                 _drop_staging_repository(staging_id)
-                sys.exit(1, "Dropping staging id: [{}] successful.".format(staging_id))
+                sys.exit("Dropping staging id: [{}] successful.".format(staging_id))
             except:
-                sys.exit(1, "Dropping staging id: [{}] failed.".format(staging_id))
+                sys.exit("Dropping staging id: [{}] failed.".format(staging_id))
