@@ -266,6 +266,9 @@ if __name__ == "__main__":
         except:
             sys.exit("Unable to create staging id")
 
+        # Upload files using the staging_id, close the staging repository, and release
+        # If an error occurs, we will attempt to drop the repository. The script will
+        # need to be re-run to initiate another upload attempt
         try:
             _upload_files(staging_id, version, args.files)
             _close_staging_repository(args.profile_id, staging_id)
