@@ -205,7 +205,7 @@ def _build_parser():
                         help="""
                         The staging profile id of the sonatype repository target.
                         This is the id in the sonatype web ui. The REST api is:
-                        curl -u {usr}:{psswrd} -H "Accept: application/json" 
+                        curl -u {usr}:{psswrd} -H "Accept: application/json"
                         https://oss.sonatype.org//nexus/service/local/staging/profile_repositories
                         """)
     parser.add_argument("--version", default="LOCAL-SNAPSHOT",
