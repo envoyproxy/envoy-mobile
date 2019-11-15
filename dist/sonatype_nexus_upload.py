@@ -254,8 +254,10 @@ def _build_parser():
 if __name__ == "__main__":
     args = _build_parser().parse_args()
 
+    # TODO: FIX/INLINE WHEN FINISHING
+    version = "{}-ci-test".format(args.version)
     if args.local:
-        _install_locally(args.version, args.files)
+        _install_locally(version, args.files)
     else:
         staging_id = ""
 
@@ -265,8 +267,8 @@ if __name__ == "__main__":
             sys.exit("Unable to create staging id")
 
         try:
-            _upload_files(staging_id, args.version, args.files)
-            # TODO: _close_staging_repository(args.profile_id, staging_id)
+            _upload_files(staging_id, version, args.files)
+            _close_staging_repository(args.profile_id, staging_id)
             # TODO: _release_staging_repository(staging_id)
         except:
             print("Unable to complete file upload. Will attempt to drop staging id: [{}]".format(staging_id),
