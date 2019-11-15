@@ -5,6 +5,7 @@ import base64
 import json
 import os
 import shutil
+import time
 
 try:
     from urllib.request import urlopen, Request, HTTPError
@@ -13,7 +14,7 @@ except ImportError:  # python 2
 
 _USER_CREDS = os.environ.get("READWRITE_USER", "")
 _KEY_CREDS = os.environ.get("READWRITE_API_KEY", "")
-ENCODED_CREDENTIALS = base64.b64encode("{}:{}".format(_USER_CREDS, _KEY_CREDS).encode()).decode()
+BASE64_ENCODED_CREDENTIALS = base64.b64encode("{}:{}".format(_USER_CREDS, _KEY_CREDS).encode()).decode()
 
 _ARTIFACT_HOST_URL = "https://oss.sonatype.org/service/local/staging"
 _GROUP_ID = "io.envoyproxy.envoymobile"
@@ -66,13 +67,21 @@ def _install_locally(version, files):
         shutil.copyfile(file, os.path.join(path, basename))
 
 
-def urlopen_retried(request, retries=3):
+def _urlopen_retried(request, retries=20, delay_sec=1):
+    """
+    Retries a request via recursion. Retries happen with a default delay of 1 second. We do not exponentially back off.
+    :param request: the request to be made
+    :param retries: Number of retries to use, default is 20. The reason we are using such a high retry is because
+    sonatype fails quite frequently
+    :return: the response if successful, raises error otherwise
+    """
     try:
         return urlopen(request)
     except HTTPError as e:
         if retries > 0 and e.code >= 500:
-            print("Retrying request for {}".format(request.url))
-            return urlopen_retried(request, retries - 1)
+            print("Retrying request. Received error code {}".format(e.code), file=sys.stderr)
+            time.sleep(delay_sec)
+            return _urlopen_retried(request, retries - 1)
         else:
             raise e
 
@@ -86,12 +95,12 @@ def _create_staging_repository(profile_id):
             }
         }
         request = Request(url)
-        request.add_header("Authorization", "Basic {}".format(ENCODED_CREDENTIALS))
+        request.add_header("Authorization", "Basic {}".format(BASE64_ENCODED_CREDENTIALS))
         request.add_header("Content-Type", "application/json")
         request.get_method = lambda: "POST"
         request.add_data(json.dumps(data))
 
-        response = json.load(urlopen_retried(request))
+        response = json.load(_urlopen_retried(request))
         staging_id = response["data"]["stagedRepositoryId"]
         print("staging id {} was created".format(staging_id))
         return staging_id
@@ -123,10 +132,10 @@ def _upload_files(staging_id, version, files):
             with open(file, "rb") as f:
                 request = Request(artifact_url, f.read())
 
-            request.add_header("Authorization", "Basic {}".format(ENCODED_CREDENTIALS))
+            request.add_header("Authorization", "Basic {}".format(BASE64_ENCODED_CREDENTIALS))
             request.add_header("Content-Type", "application/x-{extension}".format(extension=file_extension))
             request.get_method = lambda: "PUT"
-            urlopen_retried(request, retries=20)
+            _urlopen_retried(request)
         except HTTPError as e:
             if e.code == 403:
                 print("Ignoring duplicate upload for {}".format(artifact_url))
@@ -148,11 +157,11 @@ def _close_staging_repository(profile_id, staging_id):
     try:
         request = Request(url)
 
-        request.add_header("Authorization", "Basic {}".format(ENCODED_CREDENTIALS))
+        request.add_header("Authorization", "Basic {}".format(BASE64_ENCODED_CREDENTIALS))
         request.add_header("Content-Type", "application/json")
         request.add_data(json.dumps(data))
         request.get_method = lambda: "PUT"
-        urlopen_retried(request)
+        _urlopen_retried(request)
     except Exception as e:
         raise e
 
@@ -169,11 +178,11 @@ def _drop_staging_repository(staging_id):
     try:
         request = Request(url)
 
-        request.add_header("Authorization", "Basic {}".format(ENCODED_CREDENTIALS))
+        request.add_header("Authorization", "Basic {}".format(BASE64_ENCODED_CREDENTIALS))
         request.add_header("Content-Type", "application/json")
         request.add_data(json.dumps(data))
         request.get_method = lambda: "POST"
-        urlopen_retried(request)
+        _urlopen_retried(request)
     except Exception as e:
         raise e
 
@@ -190,11 +199,11 @@ def _release_staging_repository(staging_id):
     try:
         request = Request(url)
 
-        request.add_header("Authorization", "Basic {}".format(ENCODED_CREDENTIALS))
+        request.add_header("Authorization", "Basic {}".format(BASE64_ENCODED_CREDENTIALS))
         request.add_header("Content-Type", "application/json")
         request.add_data(json.dumps(data))
         request.get_method = lambda: "POST"
-        urlopen_retried(request)
+        _urlopen_retried(request)
     except Exception as e:
         raise e
 
