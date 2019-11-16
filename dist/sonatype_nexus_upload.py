@@ -245,11 +245,11 @@ def _build_parser():
                         """)
     parser.add_argument("--files", nargs="+", required=True,
                         help="""
-                        Files to upload. 
-                        Sonatype requires gpg signed artifacts as well as sha256 of the artifacts. 
-                        Sonatype doesn't require all of these to be signed and sha'ed but Envoy 
+                        Files to upload.
+                        Sonatype requires gpg signed artifacts as well as sha256 of the artifacts.
+                        Sonatype doesn't require all of these to be signed and sha'ed but Envoy
                         Mobile will just include it for completeness.
-                        
+
                         The checklist for Envoy Mobile files are:
                         Artifacts:
                             dist/envoy.aar
@@ -298,9 +298,9 @@ if __name__ == "__main__":
             print("Releasing artifact {}...".format(version))
             _release_staging_repository(staging_id)
             print("Release complete!")
-            print("Dropping staging id due to completion...")
-            _drop_staging_repository(staging_id, "completing release")
-            print("Clean up completed!")
+            # print("Dropping staging id due to completion...")
+            # _drop_staging_repository(staging_id, "completing release")
+            # print("Clean up completed!")
         except Exception as e:
             print(e)
 
