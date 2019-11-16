@@ -8,7 +8,6 @@ import json
 import os
 import shutil
 import sys
-import time
 
 try:
     from urllib.request import urlopen, Request, HTTPError
@@ -79,24 +78,24 @@ def _urlopen_retried(request, retries=20, delay_sec=1, attempt=1, max_attempts=0
     sonatype fails quite frequently
     :return: the response if successful, raises error otherwise
     """
-    try:
-        return urlopen(request)
-    except HTTPError as e:
-        if retries > 0 and e.code >= 500:
-            print("[{retry_attempt}/{max_attempts}] Retry attempt]Retrying request. Received error code {code}".format(
-                retry_attempt=attempt,
-                max_attempts=max_attempts,
-                code=e.code
-            ),
-                file=sys.stderr)
-            time.sleep(delay_sec)
-            return _urlopen_retried(request, retries - 1, attempt + 1, max_attempts=retries)
-        elif retries == 0:
-            print("Retry limit reached. Will not continue to retry. Received error code {}".format(e.code),
-                  file=sys.stderr)
-            raise e
-        else:
-            raise e
+    # try:
+    #     return urlopen(request)
+    # except HTTPError as e:
+    #     if retries > 0 and e.code >= 500:
+    #         print("[{retry_attempt}/{max_attempts}] Retry attempt]Retrying request. Received error code {code}".format(
+    #             retry_attempt=attempt,
+    #             max_attempts=max_attempts,
+    #             code=e.code
+    #         ),
+    #             file=sys.stderr)
+    #         time.sleep(delay_sec)
+    #         return _urlopen_retried(request, retries - 1, attempt + 1, max_attempts=retries)
+    #     elif retries == 0:
+    #         print("Retry limit reached. Will not continue to retry. Received error code {}".format(e.code),
+    #               file=sys.stderr)
+    #         raise e
+    #     else:
+    #         raise e
 
 
 def _create_staging_repository(profile_id):
@@ -182,7 +181,7 @@ def _close_staging_repository(profile_id, staging_id):
 
 
 def _drop_staging_repository(staging_id):
-    url = os.path.join(_ARTIFACT_HOST_URL, "/bulk/drop")
+    url = os.path.join(_ARTIFACT_HOST_URL, "bulk/drop")
     data = {
         'data': {
             'stagedRepositoryIds': [staging_id],
@@ -203,7 +202,7 @@ def _drop_staging_repository(staging_id):
 
 
 def _release_staging_repository(staging_id):
-    url = os.path.join(_ARTIFACT_HOST_URL, "/bulk/promote")
+    url = os.path.join(_ARTIFACT_HOST_URL, "bulk/promote")
     data = {
         'data': {
             'stagedRepositoryIds': [staging_id],
