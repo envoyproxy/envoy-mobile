@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import sys
+import time
 
 try:
     from urllib.request import urlopen, Request, HTTPError
