@@ -28,26 +28,27 @@ _LOCAL_INSTALL_PATH = os.path.expanduser("~/.m2/repository/io/envoyproxy/envoymo
 def _resolve_name(file):
     file_name, file_extension = os.path.splitext(file)
 
-    if file_extension[1:] == "asc":
+    extension = file_extension[1:]
+    if extension == "asc" or extension == "sha256":
         if file_name.endswith("pom.xml"):
-            return ".pom", "asc"
+            return ".pom", extension
         elif file_name.endswith("javadoc.jar"):
-            return "-javadoc.jar", "asc"
+            return "-javadoc.jar", extension
         elif file_name.endswith("sources.jar"):
-            return "-sources.jar", "asc"
+            return "-sources.jar", extension
         elif file_name.endswith(".aar"):
-            return ".aar", file_extension[1:]
+            return ".aar", extension
         elif file_name.endswith(".jar"):
-            return ".jar", file_extension[1:]
+            return ".jar", extension
     else:
         if file_name.endswith("pom"):
             return "", "pom"
         elif file_name.endswith("javadoc"):
-            return "-javadoc", file_extension[1:]
+            return "-javadoc", extension
         elif file_name.endswith("sources"):
-            return "-sources", file_extension[1:]
+            return "-sources", extension
         else:
-            return "", file_extension[1:]
+            return "", extension
 
 
 def _install_locally(version, files):
@@ -70,7 +71,7 @@ def _install_locally(version, files):
         shutil.copyfile(file, os.path.join(path, basename))
 
 
-def _urlopen_retried(request, retries=20, delay_sec=1):
+def _urlopen_retried(request, retries=20, delay_sec=1, attempt=1, max_attempts=0):
     """
     Retries a request via recursion. Retries happen with a default delay of 1 second. We do not exponentially back off.
     :param request: the request to be made
@@ -82,12 +83,19 @@ def _urlopen_retried(request, retries=20, delay_sec=1):
         return urlopen(request)
     except HTTPError as e:
         if retries > 0 and e.code >= 500:
-            print("Retrying request. Received error code {}".format(e.code), file=sys.stderr)
+            print("[{retry_attempt}/{max_attempts}] Retry attempt]Retrying request. Received error code {code}".format(
+                retry_attempt=attempt,
+                max_attempts=max_attempts,
+                code=e.code
+            ),
+                file=sys.stderr)
             time.sleep(delay_sec)
-            return _urlopen_retried(request, retries - 1)
-        else:
+            return _urlopen_retried(request, retries - 1, attempt + 1, max_attempts=retries)
+        elif retries == 0:
             print("Retry limit reached. Will not continue to retry. Received error code {}".format(e.code),
                   file=sys.stderr)
+            raise e
+        else:
             raise e
 
 
@@ -167,7 +175,7 @@ def _close_staging_repository(profile_id, staging_id):
         request.add_header("Authorization", "Basic {}".format(BASE64_ENCODED_CREDENTIALS))
         request.add_header("Content-Type", "application/json")
         request.add_data(json.dumps(data))
-        request.get_method = lambda: "PUT"
+        request.get_method = lambda: "POST"
         _urlopen_retried(request)
     except Exception as e:
         raise e
@@ -256,7 +264,7 @@ if __name__ == "__main__":
     args = _build_parser().parse_args()
 
     # TODO: FIX/INLINE WHEN FINISHING
-    version = "{}-ci-test".format(args.version)
+    version = "{}-test".format(args.version)
     if args.local:
         _install_locally(version, args.files)
     else:
@@ -271,10 +279,16 @@ if __name__ == "__main__":
         # If an error occurs, we will attempt to drop the repository. The script will
         # need to be re-run to initiate another upload attempt
         try:
+            print("Uploading files...")
             _upload_files(staging_id, version, args.files)
+            print("Uploading files complete!")
+            print("Closing staging repository...")
             _close_staging_repository(args.profile_id, staging_id)
+            print("Closing staging complete!")
             # TODO: _release_staging_repository(staging_id)
-        except:
+        except Exception as e:
+            print(e, file=sys.stderr)
+
             print("Unable to complete file upload. Will attempt to drop staging id: [{}]".format(staging_id),
                   file=sys.stderr)
             try:

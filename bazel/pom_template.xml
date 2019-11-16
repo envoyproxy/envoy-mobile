@@ -23,4 +23,33 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <developers>
+        <developer>
+            <id>buildbreaker</id>
+            <name>Alan Chiu</name>
+            <email>awlchiu@gmail.com</email>
+        </developer>
+        <developer>
+            <id>rebello95</id>
+            <name>Michael Rebello</name>
+            <email>me@michaelrebello.com</email>
+        </developer>
+        <developer>
+            <id>junr03</id>
+            <name>Jose Ulises Nino Rivera</name>
+            <email>jnino@lyft.com</email>
+        </developer>
+        <developer>
+            <id>goaway</id>
+            <name>Mike Schore</name>
+            <email>mike.schore@gmail.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <url>https://github.com/lyft/envoy-mobile</url>
+        <connection>scm:git:git@github.com:lyft/envoy-mobile.git</connection>
+        <developerConnection>scm:git:git@github.com:lyft/envoy-mobile.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
 </project>

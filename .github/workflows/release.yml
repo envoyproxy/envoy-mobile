@@ -73,11 +73,16 @@ jobs:
           python dist/sonatype_nexus_upload.py \
             --profile_id=$ENVOY_PROXY_PROFILE_ID \
             --version=${current_release_tag:1} \
-            --files dist/envoy-sources.jar \
+            --files \
                 dist/envoy.aar \
                 dist/envoy.aar.asc \
+                dist/envoy.aar.sha256 \
+                dist/envoy-sources.jar \
                 dist/envoy-sources.jar.asc \
+                dist/envoy-sources.jar.sha256 \
                 dist/envoy-pom.xml \
                 dist/envoy-pom.xml.asc \
+                dist/envoy-pom.xml.sha256 \
                 dist/envoy-javadoc.jar \
-                dist/envoy-javadoc.jar.asc
+                dist/envoy-javadoc.jar.asc \
+                dist/envoy-javadoc.jar.sha256
