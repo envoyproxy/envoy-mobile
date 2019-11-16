@@ -185,7 +185,7 @@ def _drop_staging_repository(staging_id):
     url = os.path.join(_ARTIFACT_HOST_URL, "/bulk/drop")
     data = {
         'data': {
-            'stagedRepositoryId': [staging_id],
+            'stagedRepositoryIds': [staging_id],
             'description': ''
         }
     }
@@ -206,7 +206,7 @@ def _release_staging_repository(staging_id):
     url = os.path.join(_ARTIFACT_HOST_URL, "/bulk/promote")
     data = {
         'data': {
-            'stagedRepositoryId': [staging_id],
+            'stagedRepositoryIds': [staging_id],
             'description': ''
         }
     }
@@ -296,5 +296,6 @@ if __name__ == "__main__":
             try:
                 _drop_staging_repository(staging_id)
                 sys.exit("Dropping staging id: [{}] successful.".format(staging_id))
-            except:
+            except Exception as e:
+                print(e, file=sys.stderr)
                 sys.exit("Dropping staging id: [{}] failed.".format(staging_id))
