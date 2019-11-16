@@ -83,14 +83,14 @@ def _urlopen_retried(request, retries=20, delay_sec=1, attempt=1, max_attempts=0
         return urlopen(request)
     except HTTPError as e:
         if retries > 0 and e.code >= 500:
-            print("[{retry_attempt}/{max_attempts}] Retry attempt]Retrying request. Received error code {code}".format(
+            print("[{retry_attempt}/{max_attempts} Retry attempt] Retrying request. Received error code {code}".format(
                 retry_attempt=attempt,
                 max_attempts=max_attempts,
                 code=e.code
             ),
                 file=sys.stderr)
             time.sleep(delay_sec)
-            return _urlopen_retried(request, retries - 1, attempt + 1, max_attempts=retries)
+            return _urlopen_retried(request, retries - 1, attempt + 1, max_attempts=max_attempts)
         elif retries == 0:
             print("Retry limit reached. Will not continue to retry. Received error code {}".format(e.code),
                   file=sys.stderr)
@@ -181,12 +181,12 @@ def _close_staging_repository(profile_id, staging_id):
         raise e
 
 
-def _drop_staging_repository(staging_id):
+def _drop_staging_repository(staging_id, message):
     url = os.path.join(_ARTIFACT_HOST_URL, "bulk/drop")
     data = {
         'data': {
             'stagedRepositoryIds': [staging_id],
-            'description': ''
+            'description': message
         }
     }
 
@@ -245,7 +245,12 @@ def _build_parser():
                         """)
     parser.add_argument("--files", nargs="+", required=True,
                         help="""
-                        Files to upload. The checklist for Envoy Mobile are:
+                        Files to upload. 
+                        Sonatype requires gpg signed artifacts as well as sha256 of the artifacts. 
+                        Sonatype doesn't require all of these to be signed and sha'ed but Envoy 
+                        Mobile will just include it for completeness.
+                        
+                        The checklist for Envoy Mobile files are:
                         Artifacts:
                             dist/envoy.aar
                             dist/envoy-pom.xml
@@ -256,6 +261,11 @@ def _build_parser():
                             dist/envoy-pom.xml.asc
                             dist/envoy-sources.jar.asc
                             dist/envoy-javadoc.jar.asc
+                        Artifact sha256:
+                            dist/envoy.aar.sha256
+                            dist/envoy-pom.xml.sha256
+                            dist/envoy-sources.jar.sha256
+                            dist/envoy-javadoc.jar.sha256
                         """)
     return parser
 
@@ -288,13 +298,16 @@ if __name__ == "__main__":
             print("Releasing artifact {}...".format(version))
             _release_staging_repository(staging_id)
             print("Release complete!")
+            print("Dropping staging id due to completion...")
+            _drop_staging_repository(staging_id, "completing release")
+            print("Clean up completed!")
         except Exception as e:
             print(e)
 
             print("Unable to complete file upload. Will attempt to drop staging id: [{}]".format(staging_id),
                   file=sys.stderr)
             try:
-                _drop_staging_repository(staging_id)
+                _drop_staging_repository(staging_id, "droppng release due to error")
                 sys.exit("Dropping staging id: [{}] successful.".format(staging_id))
             except Exception as e:
                 print(e, file=sys.stderr)
