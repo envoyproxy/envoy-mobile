@@ -289,7 +289,7 @@ if __name__ == "__main__":
             _release_staging_repository(staging_id)
             print("Release complete!")
         except Exception as e:
-            print(e, file=sys.stderr)
+            print(e)
 
             print("Unable to complete file upload. Will attempt to drop staging id: [{}]".format(staging_id),
                   file=sys.stderr)
