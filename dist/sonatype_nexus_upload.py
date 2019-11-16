@@ -264,7 +264,7 @@ if __name__ == "__main__":
     args = _build_parser().parse_args()
 
     # TODO: FIX/INLINE WHEN FINISHING
-    version = "{}-test".format(args.version)
+    version = "{}-TEST".format(args.version)
     if args.local:
         _install_locally(version, args.files)
     else:
@@ -285,7 +285,9 @@ if __name__ == "__main__":
             print("Closing staging repository...")
             _close_staging_repository(args.profile_id, staging_id)
             print("Closing staging complete!")
-            # TODO: _release_staging_repository(staging_id)
+            print("Releasing artifact {}...".format(version))
+            _release_staging_repository(staging_id)
+            print("Release complete!")
         except Exception as e:
             print(e, file=sys.stderr)
 
