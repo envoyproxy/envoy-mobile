@@ -71,27 +71,29 @@ def _install_locally(version, files):
         shutil.copyfile(file, os.path.join(path, basename))
 
 
-def _urlopen_retried(request, retries=20, delay_sec=1, attempt=1, max_attempts=0):
+def _urlopen_retried(request, max_retries=20, attempt=1, delay_sec=1):
     """
     Retries a request via recursion. Retries happen with a default delay of 1 second. We do not exponentially back off.
     :param request: the request to be made
-    :param retries: Number of retries to use, default is 20. The reason we are using such a high retry is because
+    :param max_retries: Number of retries to use, default is 20. The reason we are using such a high retry is because
     sonatype fails quite frequently
+    :param attempt: The current attempt number for the request
+    :param delay_sec: The delay before making a retried request
     :return: the response if successful, raises error otherwise
     """
     try:
         return urlopen(request)
     except HTTPError as e:
-        if retries > 0 and e.code >= 500:
-            print("[{retry_attempt}/{max_attempts} Retry attempt] Retrying request. Received error code {code}".format(
+        if max_retries > 0 and e.code >= 500:
+            print("[{retry_attempt}/{max_retries} Retry attempt] Retrying request. Received error code {code}".format(
                 retry_attempt=attempt,
-                max_attempts=max_attempts,
+                max_retries=max_retries,
                 code=e.code
             ),
                 file=sys.stderr)
             time.sleep(delay_sec)
-            return _urlopen_retried(request, retries - 1, attempt + 1, max_attempts=max_attempts)
-        elif retries == 0:
+            return _urlopen_retried(request, max_retries, attempt + 1)
+        elif max_retries == 0:
             print("Retry limit reached. Will not continue to retry. Received error code {}".format(e.code),
                   file=sys.stderr)
             raise e
@@ -274,7 +276,7 @@ if __name__ == "__main__":
     args = _build_parser().parse_args()
 
     # TODO: FIX/INLINE WHEN FINISHING
-    version = "{}-TEST".format(args.version)
+    version = "{}a-TEST".format(args.version)
     if args.local:
         _install_locally(version, args.files)
     else:
