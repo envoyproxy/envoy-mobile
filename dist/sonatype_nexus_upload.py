@@ -276,7 +276,7 @@ if __name__ == "__main__":
     args = _build_parser().parse_args()
 
     # TODO: FIX/INLINE WHEN FINISHING
-    version = "{}a-TEST".format(args.version)
+    version = "{}-TEST1".format(args.version)
     if args.local:
         _install_locally(version, args.files)
     else:

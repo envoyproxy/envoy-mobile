@@ -31,7 +31,7 @@ jobs:
           ./bazelw build \
             --config=release-android \
             --fat_apk_cpu=x86 \
-            --define=pom_version="${current_release_tag:1}a-TEST" \
+            --define=pom_version="${current_release_tag:1}-TEST1" \
             //:android_deploy
       - name: 'Configure gpg signing'
         env:
