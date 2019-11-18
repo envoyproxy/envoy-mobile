@@ -1,9 +1,11 @@
 name: release
 
-on:
-  push:
-    tags:
-      - v*
+#on:
+#  push:
+#    tags:
+#      - v*
+
+on: [push]
 
 jobs:
   android_aar_sonatype_deploy:
@@ -29,53 +31,53 @@ jobs:
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
 
           # Build and create the artifacts
-          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          ./bazelw build \
-            --config=release-android \
-            --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
-            --define=pom_version="${current_release_tag:1}" \
-            //:android_deploy
-      - name: 'Configure gpg signing'
-        env:
-          GPG_KEY: ${{ secrets.gpg_key }}
-          GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
-          GPG_PASSPHRASE: ${{ secrets.gpg_passphrase }}
-        run: |
-          # https://github.com/keybase/keybase-issues/issues/2798
-          export GPG_TTY=$(tty)
-          # Import gpg keys and warm the passphrase to avoid the gpg
-          # passphrase prompt when initating a deploy
-          # `--pinentry-mode=loopback` could be needed to ensure we
-          # suppress the gpg prompt
-          echo $GPG_KEY | base64 --decode > signing-key
-          gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
-          shred signing-key
-
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy.aar
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
-      - name: 'Release to sonatype repository'
-        env:
-          READWRITE_USER: ${{ secrets.sonatype_user }}
-          READWRITE_API_KEY: ${{ secrets.sonatype_password }}
-          ENVOY_PROXY_PROFILE_ID: ${{ secrets.envoy_proxy_profile_id }}
-        run: |
-          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-
-          python dist/sonatype_nexus_upload.py \
-            --profile_id=$ENVOY_PROXY_PROFILE_ID \
-            --version="${current_release_tag:1}" \
-            --files \
-                dist/envoy.aar \
-                dist/envoy.aar.asc \
-                dist/envoy.aar.sha256 \
-                dist/envoy-sources.jar \
-                dist/envoy-sources.jar.asc \
-                dist/envoy-sources.jar.sha256 \
-                dist/envoy-pom.xml \
-                dist/envoy-pom.xml.asc \
-                dist/envoy-pom.xml.sha256 \
-                dist/envoy-javadoc.jar \
-                dist/envoy-javadoc.jar.asc \
-                dist/envoy-javadoc.jar.sha256
+          current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
+#          ./bazelw build \
+#            --config=release-android \
+#            --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
+#            --define=pom_version="${current_release_tag:1}" \
+#            //:android_deploy
+#      - name: 'Configure gpg signing'
+#        env:
+#          GPG_KEY: ${{ secrets.gpg_key }}
+#          GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
+#          GPG_PASSPHRASE: ${{ secrets.gpg_passphrase }}
+#        run: |
+#          # https://github.com/keybase/keybase-issues/issues/2798
+#          export GPG_TTY=$(tty)
+#          # Import gpg keys and warm the passphrase to avoid the gpg
+#          # passphrase prompt when initating a deploy
+#          # `--pinentry-mode=loopback` could be needed to ensure we
+#          # suppress the gpg prompt
+#          echo $GPG_KEY | base64 --decode > signing-key
+#          gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
+#          shred signing-key
+#
+#          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy.aar
+#          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
+#          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
+#          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
+#      - name: 'Release to sonatype repository'
+#        env:
+#          READWRITE_USER: ${{ secrets.sonatype_user }}
+#          READWRITE_API_KEY: ${{ secrets.sonatype_password }}
+#          ENVOY_PROXY_PROFILE_ID: ${{ secrets.envoy_proxy_profile_id }}
+#        run: |
+#          current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
+#
+#          python dist/sonatype_nexus_upload.py \
+#            --profile_id=$ENVOY_PROXY_PROFILE_ID \
+#            --version="${current_release_tag:1}" \
+#            --files \
+#                dist/envoy.aar \
+#                dist/envoy.aar.asc \
+#                dist/envoy.aar.sha256 \
+#                dist/envoy-sources.jar \
+#                dist/envoy-sources.jar.asc \
+#                dist/envoy-sources.jar.sha256 \
+#                dist/envoy-pom.xml \
+#                dist/envoy-pom.xml.asc \
+#                dist/envoy-pom.xml.sha256 \
+#                dist/envoy-javadoc.jar \
+#                dist/envoy-javadoc.jar.asc \
+#                dist/envoy-javadoc.jar.sha256
