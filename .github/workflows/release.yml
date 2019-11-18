@@ -33,7 +33,7 @@ jobs:
           ./bazelw build \
             --config=release-android \
             --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
-            --define=pom_version="${current_release_tag:1}a" \
+            --define=pom_version="${current_release_tag:1}" \
             //:android_deploy
       - name: 'Configure gpg signing'
         env:
@@ -63,19 +63,19 @@ jobs:
         run: |
           current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
 
-#          python dist/sonatype_nexus_upload.py \
-#            --profile_id=$ENVOY_PROXY_PROFILE_ID \
-#            --version="${current_release_tag:1}a" \
-#            --files \
-#                dist/envoy.aar \
-#                dist/envoy.aar.asc \
-#                dist/envoy.aar.sha256 \
-#                dist/envoy-sources.jar \
-#                dist/envoy-sources.jar.asc \
-#                dist/envoy-sources.jar.sha256 \
-#                dist/envoy-pom.xml \
-#                dist/envoy-pom.xml.asc \
-#                dist/envoy-pom.xml.sha256 \
-#                dist/envoy-javadoc.jar \
-#                dist/envoy-javadoc.jar.asc \
-#                dist/envoy-javadoc.jar.sha256
+          python dist/sonatype_nexus_upload.py \
+            --profile_id=$ENVOY_PROXY_PROFILE_ID \
+            --version="${current_release_tag:1}" \
+            --files \
+                dist/envoy.aar \
+                dist/envoy.aar.asc \
+                dist/envoy.aar.sha256 \
+                dist/envoy-sources.jar \
+                dist/envoy-sources.jar.asc \
+                dist/envoy-sources.jar.sha256 \
+                dist/envoy-pom.xml \
+                dist/envoy-pom.xml.asc \
+                dist/envoy-pom.xml.sha256 \
+                dist/envoy-javadoc.jar \
+                dist/envoy-javadoc.jar.asc \
+                dist/envoy-javadoc.jar.sha256
