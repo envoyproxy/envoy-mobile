@@ -70,10 +70,6 @@ chmod 755 dist/envoy.aar
 chmod 755 dist/envoy-pom.xml
 chmod 755 dist/envoy-javadoc.jar
 chmod 755 dist/envoy-sources.jar
-sha256sum dist/envoy.aar | cut -d " " -f1 > dist/envoy.aar.sha256
-sha256sum dist/envoy-pom.xml | cut -d " " -f1 > dist/envoy-pom.xml.sha256
-sha256sum dist/envoy-javadoc.jar | cut -d " " -f1 > dist/envoy-javadoc.jar.sha256
-sha256sum dist/envoy-sources.jar | cut -d " " -f1 > dist/envoy-sources.jar.sha256
 orig_dir=$$PWD
 pushd dist
 zip -r envoy_aar_sources.zip envoy.aar envoy-pom.xml envoy-javadoc.jar envoy-sources.jar > /dev/null

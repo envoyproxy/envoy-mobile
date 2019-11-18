@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import argparse
 import base64
+import hashlib
 import json
 import os
 import shutil
@@ -123,9 +124,12 @@ def _create_staging_repository(profile_id):
         raise e
 
 
-def _upload_files(staging_id, version, files):
+def _upload_files(staging_id, version, files, ascs, sha256):
     uploaded_file_count = 0
-    for file in files:
+
+    # aggregate all the files for uploading
+    all_files = files + ascs + sha256
+    for file in all_files:
         # This will output "dist/envoy", ".aar" for "dist/envoy.aar
         print("Uploading file {}".format(file))
         suffix, file_extension = _resolve_name(file)
@@ -229,6 +233,26 @@ def _release_staging_repository(staging_id):
         raise e
 
 
+def _create_sha256_files(files):
+    sha256_files = []
+    for file in files:
+        sha256_file_name = "{}.sha256".format(file)
+        sha256 = _sha256(file)
+        sha256_file = open(sha256_file_name, 'w+')
+        sha256_file.write(sha256)
+        sha256_file.close()
+        sha256_files.append(sha256_file_name)
+    return sha256_files
+
+
+def _sha256(file_name):
+    sha256 = hashlib.sha256()
+    with open(file_name, 'rb') as file:
+        for line in file.readlines():
+            sha256.update(line)
+    return sha256.hexdigest()
+
+
 def _build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile_id", required=True,
@@ -251,27 +275,24 @@ def _build_parser():
                         """)
     parser.add_argument("--files", nargs="+", required=True,
                         help="""
-                        Files to upload.
-                        Sonatype requires gpg signed artifacts as well as sha256 of the artifacts.
-                        Sonatype doesn't require all of these to be signed and sha'ed but Envoy
-                        Mobile will just include it for completeness.
+                        Files to upload
 
                         The checklist for Envoy Mobile files are:
-                        Artifacts:
                             dist/envoy.aar
                             dist/envoy-pom.xml
                             dist/envoy-sources.jar
                             dist/envoy-javadoc.jar
+                        """)
+    parser.add_argument("--signed_files", nargs="+", required=True,
+                        help="""
+                        Files to upload.
+                        Sonatype requires uploaded artifacts to be gpg signed
+
                         GPG signed:
                             dist/envoy.aar.asc
                             dist/envoy-pom.xml.asc
                             dist/envoy-sources.jar.asc
                             dist/envoy-javadoc.jar.asc
-                        Artifact sha256:
-                            dist/envoy.aar.sha256
-                            dist/envoy-pom.xml.sha256
-                            dist/envoy-sources.jar.sha256
-                            dist/envoy-javadoc.jar.sha256
                         """)
     return parser
 
@@ -295,7 +316,8 @@ if __name__ == "__main__":
         # need to be re-run to initiate another upload attempt
         try:
             print("Uploading files...")
-            uploaded_file_count = _upload_files(staging_id, version, args.files)
+            sha256_files = _create_sha256_files(args.files)
+            uploaded_file_count = _upload_files(staging_id, version, args.files, args.signed_files, sha256_files)
             if uploaded_file_count > 0:
                 print("Uploading files complete!")
                 print("Closing staging repository...")
