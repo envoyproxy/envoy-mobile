@@ -86,11 +86,15 @@ def _urlopen_retried(request, max_retries=20, attempt=1, delay_sec=1):
         return urlopen(request)
     except HTTPError as e:
         if max_retries > 0 and e.code >= 500:
-            print("[{retry_attempt}/{max_retries} Retry attempt] Retrying request. Received error code {code}".format(
-                retry_attempt=attempt,
-                max_retries=max_retries,
-                code=e.code
-            ),
+            print(
+                "[{retry_attempt}/{max_retries} Retry attempt] Retrying request after {delay}s."
+                " Received error code {code}"
+                    .format(
+                    retry_attempt=attempt,
+                    max_retries=max_retries,
+                    delay=delay_sec,
+                    code=e.code
+                ),
                 file=sys.stderr)
             time.sleep(delay_sec)
             return _urlopen_retried(request, max_retries, attempt + 1)
