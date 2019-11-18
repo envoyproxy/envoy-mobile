@@ -29,7 +29,8 @@ jobs:
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
 
           # Build and create the artifacts
-          current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
+#          current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
+          current_release_tag=$(git describe --tags --abbrev=0)
           ./bazelw build \
             --config=release-android \
             --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
@@ -61,8 +62,8 @@ jobs:
           READWRITE_API_KEY: ${{ secrets.sonatype_password }}
           ENVOY_PROXY_PROFILE_ID: ${{ secrets.envoy_proxy_profile_id }}
         run: |
-          current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
-
+#          current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
+          current_release_tag=$(git describe --tags --abbrev=0)
           python dist/sonatype_nexus_upload.py \
             --profile_id=$ENVOY_PROXY_PROFILE_ID \
             --version="${current_release_tag:1}" \
