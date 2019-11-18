@@ -327,9 +327,9 @@ if __name__ == "__main__":
                 print("Closing staging repository...")
                 _close_staging_repository(args.profile_id, staging_id)
                 print("Closing staging complete!")
-                # print("Releasing artifact {}...".format(version))
-                # _release_staging_repository(staging_id)
-                # print("Release complete!")
+                print("Releasing artifact {}...".format(version))
+                _release_staging_repository(staging_id)
+                print("Release complete!")
             else:
                 print("No files were uploaded. Dropping staging repository...")
                 _drop_staging_repository(staging_id, "droppng release due to no uploaded files")
