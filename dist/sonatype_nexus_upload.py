@@ -124,6 +124,7 @@ def _create_staging_repository(profile_id):
 
 
 def _upload_files(staging_id, version, files):
+    uploaded_file_count = 0
     for file in files:
         # This will output "dist/envoy", ".aar" for "dist/envoy.aar
         print("Uploading file {}".format(file))
@@ -152,6 +153,7 @@ def _upload_files(staging_id, version, files):
             request.add_header("Content-Type", "application/x-{extension}".format(extension=file_extension))
             request.get_method = lambda: "PUT"
             _urlopen_retried(request)
+            uploaded_file_count = uploaded_file_count + 1
         except HTTPError as e:
             if e.code == 403:
                 # Don't need to pipe to error since we are ignoring duplicated uploads
@@ -160,6 +162,8 @@ def _upload_files(staging_id, version, files):
                 raise e
         except Exception as e:
             raise e
+
+    return uploaded_file_count
 
 
 def _close_staging_repository(profile_id, staging_id):
@@ -275,8 +279,7 @@ def _build_parser():
 if __name__ == "__main__":
     args = _build_parser().parse_args()
 
-    # TODO: FIX/INLINE WHEN FINISHING
-    version = "{}-TEST1".format(args.version)
+    version = args.version
     if args.local:
         _install_locally(version, args.files)
     else:
@@ -292,17 +295,19 @@ if __name__ == "__main__":
         # need to be re-run to initiate another upload attempt
         try:
             print("Uploading files...")
-            _upload_files(staging_id, version, args.files)
-            print("Uploading files complete!")
-            print("Closing staging repository...")
-            _close_staging_repository(args.profile_id, staging_id)
-            print("Closing staging complete!")
-            print("Releasing artifact {}...".format(version))
-            _release_staging_repository(staging_id)
-            print("Release complete!")
-            # print("Dropping staging id due to completion...")
-            # _drop_staging_repository(staging_id, "completing release")
-            # print("Clean up completed!")
+            uploaded_file_count = _upload_files(staging_id, version, args.files)
+            if uploaded_file_count > 0:
+                print("Uploading files complete!")
+                print("Closing staging repository...")
+                _close_staging_repository(args.profile_id, staging_id)
+                print("Closing staging complete!")
+                # print("Releasing artifact {}...".format(version))
+                # _release_staging_repository(staging_id)
+                # print("Release complete!")
+            else:
+                print("No files were uploaded. Dropping staging repository...")
+                _drop_staging_repository(staging_id, "droppng release due to no uploaded files")
+                print("Dropping staging id {} complete!".format(staging_id))
         except Exception as e:
             print(e)
 

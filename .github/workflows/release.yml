@@ -19,6 +19,11 @@ jobs:
           submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
+      - name: 'Configure envoy-bot git user'
+        run: |
+          # Switch global user to be envoy-bot for deployment
+          git config --global user.email "envoy-bot@users.noreply.github.com"
+          git config --global user.name "envoy-bot"
       - name: 'Build envoy.aar distributable'
         run: |
           export PATH=/usr/lib/llvm-8/bin:$PATH
@@ -31,7 +36,7 @@ jobs:
           ./bazelw build \
             --config=release-android \
             --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
-            --define=pom_version="${current_release_tag:1}-TEST1" \
+            --define=pom_version="${current_release_tag:1}a" \
             //:android_deploy
       - name: 'Configure gpg signing'
         env:
@@ -53,26 +58,17 @@ jobs:
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
-      - name: 'Configure git'
-        run: |
-          # Switch global user to be envoy-bot for deployment
-          git config --global user.email "envoy-bot@users.noreply.github.com"
-          git config --global user.name "envoy-bot"
-      - name: 'Release to sonatype'
+      - name: 'Release to sonatype repository'
         env:
-          SONATYPE_USER: ${{ secrets.sonatype_user }}
-          SONATYPE_PASSWORD: ${{ secrets.sonatype_password }}
+          READWRITE_USER: ${{ secrets.sonatype_user }}
+          READWRITE_API_KEY: ${{ secrets.sonatype_password }}
           ENVOY_PROXY_PROFILE_ID: ${{ secrets.envoy_proxy_profile_id }}
         run: |
-          # Open release candidate with a specified profile id using `current_release_tag`
-          export READWRITE_USER=$SONATYPE_USER
-          export READWRITE_API_KEY=$SONATYPE_PASSWORD
-
           current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
 
           python dist/sonatype_nexus_upload.py \
             --profile_id=$ENVOY_PROXY_PROFILE_ID \
-            --version=${current_release_tag:1} \
+            --version="${current_release_tag:1}a" \
             --files \
                 dist/envoy.aar \
                 dist/envoy.aar.asc \
