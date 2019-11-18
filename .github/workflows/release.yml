@@ -29,12 +29,12 @@ jobs:
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
 
           # Build and create the artifacts
-          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          ./bazelw build \
-            --config=release-android \
-            --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
-            --define=pom_version="${current_release_tag:1}a" \
-            //:android_deploy
+#          current_release_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+#          ./bazelw build \
+#            --config=release-android \
+#            --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
+#            --define=pom_version="${current_release_tag:1}a" \
+#            //:android_deploy
       - name: 'Configure gpg signing'
         env:
           GPG_KEY: ${{ secrets.gpg_key }}
