@@ -17,7 +17,7 @@ jobs:
           submodules: true
       - name: 'Run formatters'
         run: |
-          export CLANG_FORMAT=clang-format-8
+          export CLANG_FORMAT=clang-format-9
           export BUILDIFIER_BIN=/usr/local/bin/buildifier
           export BUILDOZER_BIN=/usr/local/bin/buildozer
           ./tools/check_format.sh
