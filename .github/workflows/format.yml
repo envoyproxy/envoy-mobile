@@ -19,6 +19,7 @@ jobs:
         run: |
           export CLANG_FORMAT=clang-format-8
           export BUILDIFIER_BIN=/usr/local/bin/buildifier
+          export BUILDOZER_BIN=/usr/local/bin/buildozer
           ./tools/check_format.sh
   precommit:
     name: precommit
