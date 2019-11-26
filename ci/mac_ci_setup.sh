@@ -28,6 +28,3 @@ done
 
 # https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md#xcode
 sudo xcode-select --switch /Applications/Xcode_11.1.app
-
-# symlink bazelisk
-ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel
