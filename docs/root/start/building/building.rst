@@ -24,8 +24,8 @@ Bazel requirements
 Envoy Mobile is compiled using the version of Bazel specified in the
 :repo:`.bazelversion <.bazelversion>` file.
 
-To simplify build consistency across environments, a :repo:`bazelw <bazelw>` script is included in
-the project, along with common build configurations in the project's :repo:`.bazelrc <.bazelrc>`.
+To simplify build consistency across environments, bazelisk is used.
+Follow the Envoy instructions `here <https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#installing-bazelisk-as-bazel>`_ to install bazelisk as bazel.
 
 --------------------
 Android requirements
