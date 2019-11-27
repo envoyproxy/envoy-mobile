@@ -21,6 +21,7 @@ jobs:
           export CLANG_FORMAT=clang-format
           export BUILDIFIER_BIN=/usr/local/bin/buildifier
           export BUILDOZER_BIN=/usr/local/bin/buildozer
+          export ENVOY_BAZEL_PREFIX=@envoy
           ./tools/check_format.sh
   precommit:
     name: precommit
