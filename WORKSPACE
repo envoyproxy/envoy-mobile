@@ -145,9 +145,9 @@ http_archive(
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
 
-kotlin_repositories()  # if you want the default. Otherwise see custom kotlinc distribution below
+kotlin_repositories()
 
-kt_register_toolchains()  # to use the default toolchain, otherwise see toolchains below
+kt_register_toolchains()
 
 # gRPC java for @rules_proto_grpc
 # The current 0.2.0 uses v1.23.0 of gRPC java which has a buggy version of the grpc_java_repositories
