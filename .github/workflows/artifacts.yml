@@ -1,9 +1,6 @@
 name: artifacts
 
-on:
-  push:
-    branches:
-      - master
+on: [push]
 
 jobs:
   master_android_dist:
@@ -32,23 +29,3 @@ jobs:
         with:
           name: envoy_android_aar_sources
           path: dist/envoy_aar_sources.zip
-  master_ios_dist:
-    name: master_ios_dist
-    runs-on: macOS-10.14
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: 'Install dependencies'
-        run: ./ci/mac_ci_setup.sh
-      - name: 'Build Envoy.framework distributable'
-        run: bazel build --config=release-ios --ios_multi_cpus=i386,x86_64,armv7,arm64 //:ios_dist
-      - name: 'Create temporary directory for artifact to produce properly named zip'
-        run: mkdir -p dist/ios_artifact/Envoy.framework
-      - name: 'Move artifact to directory for zipping'
-        run: mv dist/Envoy.framework/* dist/ios_artifact/Envoy.framework
-      - uses: actions/upload-artifact@v1
-        with:
-          name: envoy_ios_framework
-          path: dist/ios_artifact
