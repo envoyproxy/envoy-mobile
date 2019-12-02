@@ -52,7 +52,7 @@ EOF
         name = archive_name + "_jni",
         manifest = archive_name + "_generated_AndroidManifest.xml",
         custom_package = "does.not.matter",
-        deps = [android_library],
+        deps = [android_library, "//library/common:envoy_jni_interface_lib"],
     )
 
     pom_file(
