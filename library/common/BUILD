@@ -37,6 +37,7 @@ cc_library(
     ],
 )
 
+# TODO: https://github.com/lyft/envoy-mobile/issues/604
 cc_binary(
     name = "libenvoy_jni.so",
     srcs = [

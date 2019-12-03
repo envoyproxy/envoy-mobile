@@ -52,7 +52,6 @@ EOF
         name = archive_name + "_jni",
         manifest = archive_name + "_generated_AndroidManifest.xml",
         custom_package = "does.not.matter",
-        # TODO: this is a hack to fix envoy builds: https://github.com/lyft/envoy-mobile/issues/604
         deps = [android_library],
     )
 
