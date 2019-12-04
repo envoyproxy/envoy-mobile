@@ -68,7 +68,7 @@ EOF
         srcs = native_deps,
     )
 
-    # This ouputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
+    # This outputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
     native.android_binary(
         name = jni_archive_name,
         manifest = archive_name + "_generated_AndroidManifest.xml",
@@ -83,7 +83,7 @@ EOF
         name = android_binary_name,
         manifest = manifest,
         srcs = [],
-        deps = [android_library] + native_deps,
+        deps = [android_library],
     )
 
     # This is to generate the envoy mobile aar AndroidManifest.xml
