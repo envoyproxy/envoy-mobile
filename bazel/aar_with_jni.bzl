@@ -37,8 +37,15 @@ def aar_with_jni(name, android_library, manifest, archive_name, native_deps = []
     pom_name = name + "_pom"
     cc_lib_name = name + "_jni_interface_lib"
 
+    # This is for the pom xml. It has a public visibility since this can be accessed in the root BUILD file
+    pom_file(
+        name = pom_name,
+        targets = [android_library],
+        template_file = "//bazel:pom_template.xml",
+        visibility = visibility,
+    )
 
-
+    # Create a dummy manifest file for our android_binary
     native.genrule(
         name = archive_name + "_binary_manifest_generator",
         outs = [archive_name + "_generated_AndroidManifest.xml"],
@@ -61,7 +68,7 @@ EOF
         srcs = native_deps,
     )
 
-    # This ouputs {jni_archive_name}_unsigned.apk
+    # This ouputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
     native.android_binary(
         name = jni_archive_name,
         manifest = archive_name + "_generated_AndroidManifest.xml",
@@ -71,7 +78,7 @@ EOF
     )
 
     # This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/name_bin_deploy.jar
-    # This jar has all the classes needed for our aar
+    # This jar has all the classes needed for our aar and will be our `classes.jar`
     native.android_binary(
         name = android_binary_name,
         manifest = manifest,
@@ -79,7 +86,7 @@ EOF
         deps = [android_library] + native_deps,
     )
 
-    # This is to generate the envoy mobile aar manifest
+    # This is to generate the envoy mobile aar AndroidManifest.xml
     native.genrule(
             name = manifest_name,
             outs = [manifest_name + ".xml"],
@@ -95,14 +102,6 @@ cat > $(OUTS) <<EOF
 </manifest>
 EOF
 """,
-    )
-
-    # This outputs a `pom_name`.xml file
-    pom_file(
-        name = pom_name,
-        targets = [android_library],
-        template_file = "//bazel:pom_template.xml",
-        visibility = visibility,
     )
 
     # This gen rule does the following:
