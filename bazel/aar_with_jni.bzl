@@ -35,6 +35,9 @@ def aar_with_jni(name, android_library, manifest, archive_name, native_deps = []
     android_binary_name = name + "_bin"
     jni_archive_name = archive_name + "_jni"
     pom_name = name + "_pom"
+    cc_lib_name = name + "_jni_interface_lib"
+
+
 
     native.genrule(
         name = archive_name + "_binary_manifest_generator",
@@ -50,13 +53,21 @@ EOF
 """,
     )
 
+    # We wrap our native so dependencies in a cc_library because android_binaries
+    # require a library target as dependencies in order to generate the appropriate
+    # architectures in the directory `lib/`
+    native.cc_library(
+        name = cc_lib_name,
+        srcs = native_deps,
+    )
+
     # This ouputs {jni_archive_name}_unsigned.apk
     native.android_binary(
         name = jni_archive_name,
         manifest = archive_name + "_generated_AndroidManifest.xml",
         custom_package = "does.not.matter",
         srcs = [],
-        deps = [android_library] + native_deps
+        deps = [android_library, cc_lib_name]
     )
 
     # This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/name_bin_deploy.jar
