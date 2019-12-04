@@ -1,12 +1,14 @@
 licenses(["notice"])  # Apache 2
 
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
-load("//bazel:kotlin_lib.bzl", "envoy_mobile_kt_aar_android_library", "envoy_mobile_kt_library")
+load("//bazel:kotlin_lib.bzl", "envoy_mobile_kt_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_library")
 
 aar_with_jni(
     name = "android_aar",
-    android_library = "envoy_lib",
     archive_name = "envoy",
+    android_library = ":envoy_lib",
+    manifest = "EnvoyManifest.xml",
     native_deps = [
         "//library/common:envoy_jni_interface_lib",
     ],
@@ -14,7 +16,9 @@ aar_with_jni(
     visibility = ["//visibility:public"],
 )
 
-envoy_mobile_kt_aar_android_library(
+# This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/libx_envoy_lib.jar
+# and bazel-out/darwin-fastbuild/bin/library/kotlin/src/io/envoyproxy/envoymobile/x_envoy_lib.aar
+kt_android_library(
     name = "envoy_lib",
     srcs = [
         "AndroidEnvoyClientBuilder.kt",
@@ -26,7 +30,7 @@ envoy_mobile_kt_aar_android_library(
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+        ":envoy_interfaces_lib",
     ],
 )
 
