@@ -2,7 +2,7 @@ licenses(["notice"])  # Apache 2
 
 load("//bazel:aar_with_jni.bzl", "aar_with_jni")
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_kt_library")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_library")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 
 aar_with_jni(
     name = "android_aar",
@@ -16,8 +16,6 @@ aar_with_jni(
     visibility = ["//visibility:public"],
 )
 
-# This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/libx_envoy_lib.jar
-# and bazel-out/darwin-fastbuild/bin/library/kotlin/src/io/envoyproxy/envoymobile/x_envoy_lib.aar
 kt_android_library(
     name = "envoy_lib",
     srcs = [
