@@ -263,7 +263,7 @@ static void ios_on_error(envoy_error error, void *context) {
   ios_context *context = _nativeCallbacks.context;
   // Step 1: atomically and synchronously prevent the execution of further callbacks other than
   // on_cancel.
-  if (!atomic_exchange(context->closed, YES)) {
+  if (!dispatchable(context->closed, YES)) {
     // Step 2: directly fire the cancel callback.
     ios_on_cancel(context);
     // Step 3: propagate the reset into native code.
