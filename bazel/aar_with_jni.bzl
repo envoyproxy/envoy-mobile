@@ -74,7 +74,7 @@ EOF
         manifest = archive_name + "_generated_AndroidManifest.xml",
         custom_package = "does.not.matter",
         srcs = [],
-        deps = [android_library, cc_lib_name]
+        deps = [android_library, cc_lib_name],
     )
 
     # This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/name_bin_deploy.jar
@@ -88,9 +88,9 @@ EOF
 
     # This is to generate the envoy mobile aar AndroidManifest.xml
     native.genrule(
-            name = manifest_name,
-            outs = [manifest_name + ".xml"],
-            cmd = """
+        name = manifest_name,
+        outs = [manifest_name + ".xml"],
+        cmd = """
 cat > $(OUTS) <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -119,10 +119,10 @@ EOF
             jni_archive_name + "_unsigned.apk",
             manifest_name + ".xml",
             pom_name + ".xml",
-            proguard_rules
+            proguard_rules,
         ],
         outs = [
-            archive_name + ".aar"
+            archive_name + ".aar",
         ],
         visibility = visibility,
         cmd = """
@@ -140,6 +140,6 @@ cp tmp.aar $$origdir/$@
             manifest = manifest_name + ".xml",
             jar = android_binary_name + "_deploy.jar",
             jni_apk = jni_archive_name + "_unsigned.apk",
-            proguard_rules = proguard_rules
+            proguard_rules = proguard_rules,
         ),
     )
