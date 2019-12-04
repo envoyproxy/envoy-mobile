@@ -6,8 +6,8 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 
 aar_with_jni(
     name = "android_aar",
-    archive_name = "envoy",
     android_library = ":envoy_lib",
+    archive_name = "envoy",
     manifest = "EnvoyManifest.xml",
     native_deps = [
         "//library/common:libenvoy_jni.so",
@@ -25,10 +25,10 @@ kt_android_library(
     manifest = "EnvoyManifest.xml",
     visibility = ["//visibility:public"],
     deps = [
+        ":envoy_interfaces_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
         "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
-        ":envoy_interfaces_lib",
     ],
 )
 
