@@ -78,7 +78,7 @@ public class EnvoyHTTPStream {
    * @return int, success unless the stream has already been canceled.
    */
   public int cancel() {
-    // Determine if this cancelation results in bidirectional signaling (i.e. if onCancel is being
+    // Determine if this cancellation results in bidirectional signaling (i.e. if onCancel is being
     // fired).
     boolean fullCancel = callbacksContext.cancel();
     // Propagate the reset into native code regardless.
