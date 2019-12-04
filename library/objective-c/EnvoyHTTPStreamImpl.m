@@ -84,7 +84,8 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
 
 #pragma mark - C callbacks
 
-// Return whether a callback should be allowed to continue with execution.
+// Return whether a callback should be allowed to continue with execution. This ensures at most one
+// 'terminal' callback is issued for any given stream.
 static bool dispatchable(atomic_bool *closed, bool close) {
   if (close) {
     // Set closed to true and return true if not previously closed.
@@ -175,7 +176,7 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
-    if (!atomic_load(c->closed) && callbacks.onError) {
+    if (!dispatchable(c->closed, YES) && callbacks.onError) {
       NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
                                                         length:error.message.length
                                                       encoding:NSUTF8StringEncoding];
@@ -269,7 +270,8 @@ static void ios_on_error(envoy_error error, void *context) {
     reset_stream(_streamHandle);
     return 0;
   } else {
-    // Propagate reset, but don't worry about callbacks.
+    // Propagate reset, but don't worry about callbacks (another terminal callback has already
+    // fired).
     reset_stream(_streamHandle);
     return 1;
   }
