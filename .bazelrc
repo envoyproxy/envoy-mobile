@@ -29,7 +29,7 @@ build:ios --define=manual_stamp=manual_stamp
 # Default flags for builds targeting Android
 build:android --fat_apk_cpu=x86_64
 
-# Common flags for release builds 
+# Common flags for release builds
 # TODO: Enable `--copt -ggdb3`. Issues were encountered previously with this:
 # https://github.com/lyft/envoy-mobile/pull/155#issuecomment-507461500
 build:release-common --copt=-O2
