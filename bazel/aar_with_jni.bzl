@@ -137,7 +137,7 @@ echo "Constructing aar..."
 final_dir=$$(mktemp -d)
 cp $$classes_dir/classes.jar $$final_dir
 cd $$final_dir
-unzip $$orig_dir/$(location {jni_apk}) lib/ > /dev/null
+unzip $$orig_dir/$(location {jni_apk}) lib/* > /dev/null
 mv lib jni
 cp $$orig_dir/$(location {proguard_rules}) ./proguard.txt
 cp $$orig_dir/$(location {manifest}) AndroidManifest.xml
