@@ -5,11 +5,13 @@
 #include "envoy/buffer/buffer.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/http/async_client.h"
+#include "envoy/http/codec.h"
 #include "envoy/http/header_map.h"
-#include "envoy/upstream/cluster_manager.h"
 
 #include "common/common/logger.h"
 #include "common/common/thread.h"
+#include "common/http/codec_helper.h"
+#include "common/http/conn_manager_impl.h"
 
 #include "absl/types/optional.h"
 #include "library/common/types/c_types.h"
@@ -25,7 +27,7 @@ class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
   Dispatcher(std::atomic<envoy_network_t>& preferred_network);
 
-  void ready(Event::Dispatcher& event_dispatcher, Upstream::ClusterManager& cluster_manager);
+  void ready(Event::Dispatcher& event_dispatcher, ServerConnectionCallbacks& conn_manager);
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -91,18 +93,23 @@ private:
    * DirectStreamCallbacks can continue to receive events until the remote to local stream is
    * closed, or resetStream is called.
    */
-  class DirectStreamCallbacks : public AsyncClient::StreamCallbacks,
-                                public Logger::Loggable<Logger::Id::http> {
+  class DirectStreamCallbacks : public StreamEncoder, public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStreamCallbacks(envoy_stream_t stream_handle, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
 
-    // AsyncClient::StreamCallbacks
-    void onHeaders(HeaderMapPtr&& headers, bool end_stream) override;
-    void onData(Buffer::Instance& data, bool end_stream) override;
-    void onTrailers(HeaderMapPtr&& trailers) override;
-    void onComplete() override;
-    void onReset() override;
+    // StreamEncoder
+    void encodeHeaders(const HeaderMap& headers, bool end_stream) override;
+    void encodeData(Buffer::Instance& data, bool end_stream) override;
+    void encodeTrailers(const HeaderMap& trailers) override;
+    Stream& getStream() override;
+    // TODO: implement
+    void encode100ContinueHeaders(const HeaderMap&) override {}
+    void encodeMetadata(const MetadataMapVector&) override {}
+
+    // FIXME
+    // void onComplete() override;
+    // void onReset() override;
 
   private:
     const envoy_stream_t stream_handle_;
@@ -118,25 +125,31 @@ private:
    * Contains state about an HTTP stream; both in the outgoing direction via an underlying
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
-  class DirectStream {
+  // TODO: consider if we want to make this class Event::DeferredDeletable.
+  // TODO: need to deal with the terminal states. Completion and Reset
+  class DirectStream : public Stream, public StreamCallbackHelper {
   public:
-    DirectStream(envoy_stream_t stream_handle, AsyncClient::Stream& underlying_stream,
+    DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
                  DirectStreamCallbacksPtr&& callbacks);
 
-    static AsyncClient::StreamOptions toNativeStreamOptions(envoy_stream_options stream_options);
+    // Stream
+    void addCallbacks(StreamCallbacks& callbacks) override { addCallbacks_(callbacks); }
+    void removeCallbacks(StreamCallbacks& callbacks) override { removeCallbacks_(callbacks); }
+    void resetStream(StreamResetReason) override {}
+    // FIXME: implement
+    void readDisable(bool) override {}
+    uint32_t bufferLimit() override { return 0; }
 
     const envoy_stream_t stream_handle_;
     // Used to issue outgoing HTTP stream operations.
-    AsyncClient::Stream& underlying_stream_;
+    StreamDecoder& stream_decoder_;
     // Used to receive incoming HTTP stream operations.
     const DirectStreamCallbacksPtr callbacks_;
 
-    HeaderMapPtr headers_;
     // TODO: because the client may send infinite metadata frames we need some ongoing way to
     // free metadata ahead of object destruction.
     // An implementation option would be to have drainable header maps, or done callbacks.
     std::vector<HeaderMapPtr> metadata_;
-    HeaderMapPtr trailers_;
   };
 
   using DirectStreamPtr = std::unique_ptr<DirectStream>;
@@ -146,9 +159,6 @@ private:
    * @param callback, the functor to post.
    */
   void post(Event::PostCb callback);
-  // Everything in the below interface must only be accessed from the event_dispatcher's thread.
-  // This allows us to generally avoid synchronization.
-  AsyncClient& getClient();
   DirectStream* getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
 
@@ -157,7 +167,7 @@ private:
   Thread::MutexBasicLockable dispatch_lock_;
   std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
   Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
-  Upstream::ClusterManager* cluster_manager_ GUARDED_BY(dispatch_lock_){};
+  ServerConnectionCallbacks* conn_manager_ GUARDED_BY(dispatch_lock_){};
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   std::atomic<envoy_network_t>& preferred_network_;
 };

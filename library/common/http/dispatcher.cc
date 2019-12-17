@@ -18,28 +18,28 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
     : stream_handle_(stream), bridge_callbacks_(bridge_callbacks),
       http_dispatcher_(http_dispatcher) {}
 
-void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool end_stream) {
+void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
-            end_stream, *headers);
+            end_stream, headers);
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
   // option. See https://github.com/lyft/envoy-mobile/issues/460
 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
-  if (headers->get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
-    envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+  if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
+    envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
     return;
   }
 
   // We assume that local replies represent error conditions, having audited occurrences in
   // Envoy today. This is not a good long-term solution.
-  uint64_t response_status = Http::Utility::getResponseStatus(*headers);
+  uint64_t response_status = Http::Utility::getResponseStatus(headers);
   switch (response_status) {
   case 200: {
     // We still treat successful local responses as actual success.
-    envoy_headers bridge_headers = Utility::toBridgeHeaders(*headers);
+    envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
     return;
   }
@@ -55,11 +55,12 @@ void Dispatcher::DirectStreamCallbacks::onHeaders(HeaderMapPtr&& headers, bool e
     // on that state, so we just reset everything now to ensure teardown.
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
-    stream->underlying_stream_.reset();
+    // FIXME
+    // stream->underlying_stream_.reset();
   }
 }
 
-void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_stream) {
+void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
             data.length(), end_stream);
   if (!error_code_.has_value()) {
@@ -72,52 +73,59 @@ void Dispatcher::DirectStreamCallbacks::onData(Buffer::Instance& data, bool end_
     // that state, so we just reset everything now to ensure teardown.
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
-    stream->underlying_stream_.reset();
+    // FIXME
+    // stream->underlying_stream_.reset();
   }
 }
 
-void Dispatcher::DirectStreamCallbacks::onTrailers(HeaderMapPtr&& trailers) {
-  ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, *trailers);
-  bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(*trailers), bridge_callbacks_.context);
+void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers) {
+  ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, trailers);
+  bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
 }
 
-void Dispatcher::DirectStreamCallbacks::onComplete() {
-  ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
-  bridge_callbacks_.on_complete(bridge_callbacks_.context);
-  // Very important: onComplete and onReset both clean up stream state in the http dispatcher
-  // because the underlying async client implementation **guarantees** that only onComplete **or**
-  // onReset will be fired for a stream. This means it is safe to clean up the stream when either of
-  // the terminal callbacks fire without keeping additional state in this layer.
-  http_dispatcher_.cleanup(stream_handle_);
+Stream& Dispatcher::DirectStreamCallbacks::getStream() {
+  auto stream = http_dispatcher_.getStream(stream_handle_);
+  // The stream owns the callbacks.
+  // Hence if this code is executing the stream must still exist.
+  ASSERT(stream);
+  return *stream;
 }
 
-void Dispatcher::DirectStreamCallbacks::onReset() {
-  ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
-  envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
-  envoy_data message = error_message_.value_or(envoy_nodata);
-  bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
-  // Very important: onComplete and onReset both clean up stream state in the http dispatcher
-  // because the underlying async client implementation **guarantees** that only onComplete **or**
-  // onReset will be fired for a stream. This means it is safe to clean up the stream when either of
-  // the terminal callbacks fire without keeping additional state in this layer.
-  http_dispatcher_.cleanup(stream_handle_);
-}
+// FIXME
+// void Dispatcher::DirectStreamCallbacks::onComplete() {
+//   ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
+//   bridge_callbacks_.on_complete(bridge_callbacks_.context);
+//   // Very important: onComplete and onReset both clean up stream state in the http dispatcher
+//   // because the underlying async client implementation **guarantees** that only onComplete
+//   **or**
+//   // onReset will be fired for a stream. This means it is safe to clean up the stream when either
+//   of
+//   // the terminal callbacks fire without keeping additional state in this layer.
+//   http_dispatcher_.cleanup(stream_handle_);
+// }
 
-Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle,
-                                       AsyncClient::Stream& underlying_stream,
+// FIXME
+// void Dispatcher::DirectStreamCallbacks::onReset() {
+//   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
+//   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
+//   envoy_data message = error_message_.value_or(envoy_nodata);
+//   bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
+//   // Very important: onComplete and onReset both clean up stream state in the http dispatcher
+//   // because the underlying async client implementation **guarantees** that only onComplete
+//   **or**
+//   // onReset will be fired for a stream. This means it is safe to clean up the stream when either
+//   of
+//   // the terminal callbacks fire without keeping additional state in this layer.
+//   http_dispatcher_.cleanup(stream_handle_);
+// }
+
+Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
                                        DirectStreamCallbacksPtr&& callbacks)
-    : stream_handle_(stream_handle), underlying_stream_(underlying_stream),
+    : stream_handle_(stream_handle), stream_decoder_(stream_decoder),
       callbacks_(std::move(callbacks)) {}
 
-AsyncClient::StreamOptions
-Dispatcher::DirectStream::toNativeStreamOptions(envoy_stream_options stream_options) {
-  AsyncClient::StreamOptions native_stream_options;
-  native_stream_options.setBufferBodyForRetry(stream_options.buffer_body_for_retry);
-  return native_stream_options;
-}
-
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
-                       Upstream::ClusterManager& cluster_manager) {
+                       ServerConnectionCallbacks& conn_manager) {
   Thread::LockGuard lock(dispatch_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
@@ -128,7 +136,7 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
   // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
   // we rely on atomics instead of locks).
   event_dispatcher_ = &event_dispatcher;
-  cluster_manager_ = &cluster_manager;
+  conn_manager_ = &conn_manager;
 }
 
 void Dispatcher::post(Event::PostCb callback) {
@@ -150,29 +158,23 @@ Dispatcher::Dispatcher(std::atomic<envoy_network_t>& preferred_network)
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks,
-                                       envoy_stream_options stream_options) {
-  post([this, new_stream_handle, bridge_callbacks, stream_options]() -> void {
+                                       envoy_stream_options) {
+  post([this, new_stream_handle, bridge_callbacks]() -> void {
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
 
-    AsyncClient& async_client = getClient();
-    // While this struct is passed by reference to AsyncClient::start, it does not need to be
-    // preserved outside of this stack frame because its values are not used beyond the return of
-    // AsyncClient::start. If this changes, we need to store this struct in the DirectStream.
-    AsyncClient::StreamOptions native_stream_options =
-        Dispatcher::DirectStream::toNativeStreamOptions(stream_options);
-    AsyncClient::Stream* underlying_stream = async_client.start(*callbacks, native_stream_options);
+    // TODO:
+    // 1. Preferred network.
+    // 2. Stream options -- buffering.
+    preferred_network_.load();
 
-    if (!underlying_stream) {
-      // TODO: this callback might fire before the startStream function returns.
-      // Take this into account when thinking about stream cancellation.
-      callbacks->onReset();
-    } else {
-      DirectStreamPtr direct_stream = std::make_unique<DirectStream>(
-          new_stream_handle, *underlying_stream, std::move(callbacks));
-      streams_.emplace(new_stream_handle, std::move(direct_stream));
-      ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
-    }
+    // Only the initial setting of the conn_manager_ is guarded.
+    StreamDecoder& stream_decoder = TS_UNCHECKED_READ(conn_manager_)->newStream(*callbacks);
+
+    DirectStreamPtr direct_stream =
+        std::make_unique<DirectStream>(new_stream_handle, stream_decoder, std::move(callbacks));
+    streams_.emplace(new_stream_handle, std::move(direct_stream));
+    ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
   });
 
   return ENVOY_SUCCESS;
@@ -190,10 +192,10 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
     if (direct_stream != nullptr) {
-      direct_stream->headers_ = Utility::toInternalHeaders(headers);
+      HeaderMapPtr internal_headers = Utility::toInternalHeaders(headers);
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
-                *direct_stream->headers_);
-      direct_stream->underlying_stream_.sendHeaders(*direct_stream->headers_, end_stream);
+                *internal_headers);
+      direct_stream->stream_decoder_.decodeHeaders(std::move(internal_headers), end_stream);
     }
   });
 
@@ -217,7 +219,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
 
       ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
                 data.length, end_stream);
-      direct_stream->underlying_stream_.sendData(*buf, end_stream);
+      direct_stream->stream_decoder_.decodeData(*buf, end_stream);
     }
   });
 
@@ -238,42 +240,24 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
     if (direct_stream != nullptr) {
-      direct_stream->trailers_ = Utility::toInternalHeaders(trailers);
-      ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *direct_stream->trailers_);
-      direct_stream->underlying_stream_.sendTrailers(*direct_stream->trailers_);
+      HeaderMapPtr internal_trailers = Utility::toInternalHeaders(trailers);
+      ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
+      direct_stream->stream_decoder_.decodeTrailers(std::move(internal_trailers));
     }
   });
 
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
-  post([this, stream]() -> void {
-    DirectStream* direct_stream = getStream(stream);
-    if (direct_stream) {
-      direct_stream->underlying_stream_.reset();
-    }
-  });
+// FIXME
+envoy_status_t Dispatcher::resetStream(envoy_stream_t) {
+  // post([this, stream]() -> void {
+  //   DirectStream* direct_stream = getStream(stream);
+  //   if (direct_stream) {
+  //     direct_stream->underlying_stream_.reset();
+  //   }
+  // });
   return ENVOY_SUCCESS;
-}
-
-// Select the client based on the current preferred network. This helps to ensure that
-// the engine uses connections opened on the current favored interface.
-AsyncClient& Dispatcher::getClient() {
-  // This function must be called from the dispatcher's own thread and so this state
-  // is safe to access without holding the dispatch_lock_.
-  ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
-         "cluster interaction must be performed on the event_dispatcher_'s thread.");
-  switch (preferred_network_.load()) {
-  case ENVOY_NET_WLAN:
-    // The ASSERT above ensures the cluster_manager_ is safe to access.
-    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wlan");
-  case ENVOY_NET_WWAN:
-    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base_wwan");
-  case ENVOY_NET_GENERIC:
-  default:
-    return TS_UNCHECKED_READ(cluster_manager_)->httpAsyncClientForCluster("base");
-  }
 }
 
 Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
