@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "envoy/buffer/buffer.h"
+#include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/http/async_client.h"
 #include "envoy/http/codec.h"
@@ -129,7 +130,7 @@ private:
    */
   // TODO: consider if we want to make this class Event::DeferredDeletable.
   // TODO: need to deal with the terminal states. Completion and Reset
-  class DirectStream : public Stream, public StreamCallbackHelper {
+  class DirectStream : public Stream, public StreamCallbackHelper, public Event::DeferredDeletable {
   public:
     DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
                  DirectStreamCallbacksPtr&& callbacks, Dispatcher& http_dispatcher);
@@ -148,8 +149,8 @@ private:
     bool complete();
 
     const envoy_stream_t stream_handle_;
-    bool local_end_stream_{};
-    bool remote_end_stream_{};
+    bool local_closed_{};
+    bool remote_closed_{};
     // Used to issue outgoing HTTP stream operations.
     StreamDecoder& stream_decoder_;
     // Used to receive incoming HTTP stream operations.

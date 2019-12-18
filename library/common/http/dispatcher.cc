@@ -12,6 +12,14 @@
 namespace Envoy {
 namespace Http {
 
+/**
+ * IMPORTANT: stream closure semantics in envoy mobile depends on the fact that the HCM fires a
+ * stream reset when the remote side of the stream is closed but the local side remains open.
+ * In other words the HCM (like the rest of Envoy) dissallows locally half-open streams.
+ * If this changes in Envoy, this file will need to change as well.
+ * For implementation details @see Dispatcher::DirectStreamCallbacks::closeRemote.
+ */
+
 Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
                                                          envoy_http_callbacks bridge_callbacks,
                                                          Dispatcher& http_dispatcher)
@@ -21,7 +29,6 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, headers);
-  // FIXME FIXME
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
@@ -35,9 +42,6 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
     return;
   }
 
-  // FIXME
-  // We assume that local replies represent error conditions, having audited occurrences in
-  // Envoy today. This is not a good long-term solution.
   uint64_t response_status = Http::Utility::getResponseStatus(headers);
   switch (response_status) {
   case 200: {
@@ -55,12 +59,15 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   }
   ENVOY_LOG(debug, "[S{}] intercepted local response", stream_handle_);
   if (end_stream) {
-    // The local stream may or may not have completed. We don't want to be tracking/synchronized
-    // on that state, so we just reset everything now to ensure teardown.
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
-    // FIXME
-    // stream->underlying_stream_.reset();
+    // The local stream may or may not have completed.
+    // If the local is not closed envoy will fire the reset for us.
+    // @see Dispatcher::DirectStreamCallbacks::closeRemote.
+    // Otherwise fire the reset from here.
+    if (stream->local_closed_) {
+      onReset();
+    }
   }
 }
 
@@ -74,12 +81,15 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   } else {
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
-    // The local stream may or may not have completed. We don't want to be tracking/synchronized on
-    // that state, so we just reset everything now to ensure teardown.
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
-    // FIXME
-    // stream->underlying_stream_.reset();
+    // The local stream may or may not have completed.
+    // If the local is not closed envoy will fire the reset for us.
+    // @see Dispatcher::DirectStreamCallbacks::closeRemote.
+    // Otherwise fire the reset from here.
+    if (stream->local_closed_) {
+      onReset();
+    }
   }
 }
 
@@ -89,9 +99,13 @@ void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers
   closeRemote(true);
 }
 
-// FIXME the other option is to make the DirectStreamCallbacks aware of the DirectStream.
 void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
   if (end_stream) {
+    // Envoy itself does not currently allow half-open streams where the local half is open
+    // but the remote half is closed. Therefore, we fire the on_complete callback
+    // to the platform layer whenever remote closes.
+    // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
+    bridge_callbacks_.on_complete(bridge_callbacks_.context);
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
     stream->closeRemote(true);
@@ -113,8 +127,8 @@ Stream& Dispatcher::DirectStreamCallbacks::getStream() {
 //   // Very important: onComplete and onReset both clean up stream state in the http dispatcher
 //   // because the underlying async client implementation **guarantees** that only onComplete
 //   **or**
-//   // onReset will be fired for a stream. This means it is safe to clean up the stream when either
-//   of
+//   // onReset will be fired for a stream. This means it is safe to clean up the stream when
+//   either of
 //   // the terminal callbacks fire without keeping additional state in this layer.
 //   http_dispatcher_.cleanup(stream_handle_);
 // }
@@ -139,24 +153,28 @@ Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, StreamDecod
     : stream_handle_(stream_handle), stream_decoder_(stream_decoder),
       callbacks_(std::move(callbacks)), parent_(http_dispatcher) {}
 
-// FIXME, the stream reset reason will always be local. Confirm this.
-// The router will fire a chain of events that ends up surfacing here.
+// TODO wire StreamResetReason to onReset
 void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
 
 void Dispatcher::DirectStream::closeLocal(bool end_stream) {
-  local_end_stream_ = end_stream;
-  if (complete()) {
-    parent_.cleanup(stream_handle_);
-  }
+  // TODO: potentially guard against double local closure.
+  local_closed_ = end_stream;
+
+  // No cleanup happens here because cleanup always happens on remote closure.
+  // see @Dispatcher::DirectStreamCallbacks::closeRemote.
 }
 void Dispatcher::DirectStream::closeRemote(bool end_stream) {
-  remote_end_stream_ = end_stream;
+  remote_closed_ = end_stream;
+  // Even though we have potentially fired an on_complete callback to the bridge_callbacks,
+  // We will only cleanup if **both** the local and the remote have closed because otherwise we
+  // can be expecting a reset from envoy.
+  // See the comment for @see Dispatcher::DirectStreamCallbacks::closeRemote().
   if ((complete())) {
     parent_.cleanup(stream_handle_);
   }
 }
 
-bool Dispatcher::DirectStream::complete() { return local_end_stream_ && remote_end_stream_; }
+bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
                        ServerConnectionCallbacks& conn_manager) {
@@ -248,8 +266,8 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
     if (direct_stream != nullptr) {
-      // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime of
-      // the InstancePtr to outlive this function call.
+      // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
+      // of the InstancePtr to outlive this function call.
       Buffer::InstancePtr buf = Buffer::Utility::toInternalData(data);
 
       ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
@@ -312,6 +330,8 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   RELEASE_ASSERT(direct_stream,
                  "cleanup is a private method that is only called with stream ids that exist");
 
+  auto it = streams_.find(stream_handle);
+  TS_UNCHECKED_READ(event_dispatcher_)->deferredDelete(std::move(it->second));
   size_t erased = streams_.erase(stream_handle);
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
   ENVOY_LOG(debug, "[S{}] remove stream", stream_handle);
