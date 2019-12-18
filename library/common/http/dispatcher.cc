@@ -21,6 +21,7 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
 void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
             end_stream, headers);
+  // FIXME FIXME
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
@@ -30,9 +31,11 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    closeRemote(end_stream);
     return;
   }
 
+  // FIXME
   // We assume that local replies represent error conditions, having audited occurrences in
   // Envoy today. This is not a good long-term solution.
   uint64_t response_status = Http::Utility::getResponseStatus(headers);
@@ -41,6 +44,7 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
     // We still treat successful local responses as actual success.
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
     bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    closeRemote(end_stream);
     return;
   }
   case 503:
@@ -66,6 +70,7 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   if (!error_code_.has_value()) {
     bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                               bridge_callbacks_.context);
+    closeRemote(end_stream);
   } else {
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
@@ -81,6 +86,16 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
 void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, trailers);
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
+  closeRemote(true);
+}
+
+// FIXME the other option is to make the DirectStreamCallbacks aware of the DirectStream.
+void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
+  if (end_stream) {
+    auto stream = http_dispatcher_.getStream(stream_handle_);
+    ASSERT(stream);
+    stream->closeRemote(true);
+  }
 }
 
 Stream& Dispatcher::DirectStreamCallbacks::getStream() {
@@ -104,25 +119,44 @@ Stream& Dispatcher::DirectStreamCallbacks::getStream() {
 //   http_dispatcher_.cleanup(stream_handle_);
 // }
 
-// FIXME
-// void Dispatcher::DirectStreamCallbacks::onReset() {
-//   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
-//   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
-//   envoy_data message = error_message_.value_or(envoy_nodata);
-//   bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
-//   // Very important: onComplete and onReset both clean up stream state in the http dispatcher
-//   // because the underlying async client implementation **guarantees** that only onComplete
-//   **or**
-//   // onReset will be fired for a stream. This means it is safe to clean up the stream when either
-//   of
-//   // the terminal callbacks fire without keeping additional state in this layer.
-//   http_dispatcher_.cleanup(stream_handle_);
-// }
+void Dispatcher::DirectStreamCallbacks::onReset() {
+  ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
+  envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
+  envoy_data message = error_message_.value_or(envoy_nodata);
+  bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
+  // Very important: onComplete and onReset both clean up stream state in the http dispatcher
+  // because the underlying async client implementation **guarantees** that only onComplete
+  // **or**
+  // onReset will be fired for a stream. This means it is safe to clean up the stream when either
+  // of
+  // the terminal callbacks fire without keeping additional state in this layer.
+  http_dispatcher_.cleanup(stream_handle_);
+}
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
-                                       DirectStreamCallbacksPtr&& callbacks)
+                                       DirectStreamCallbacksPtr&& callbacks,
+                                       Dispatcher& http_dispatcher)
     : stream_handle_(stream_handle), stream_decoder_(stream_decoder),
-      callbacks_(std::move(callbacks)) {}
+      callbacks_(std::move(callbacks)), parent_(http_dispatcher) {}
+
+// FIXME, the stream reset reason will always be local. Confirm this.
+// The router will fire a chain of events that ends up surfacing here.
+void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
+
+void Dispatcher::DirectStream::closeLocal(bool end_stream) {
+  local_end_stream_ = end_stream;
+  if (complete()) {
+    parent_.cleanup(stream_handle_);
+  }
+}
+void Dispatcher::DirectStream::closeRemote(bool end_stream) {
+  remote_end_stream_ = end_stream;
+  if ((complete())) {
+    parent_.cleanup(stream_handle_);
+  }
+}
+
+bool Dispatcher::DirectStream::complete() { return local_end_stream_ && remote_end_stream_; }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
                        ServerConnectionCallbacks& conn_manager) {
@@ -171,8 +205,8 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     // Only the initial setting of the conn_manager_ is guarded.
     StreamDecoder& stream_decoder = TS_UNCHECKED_READ(conn_manager_)->newStream(*callbacks);
 
-    DirectStreamPtr direct_stream =
-        std::make_unique<DirectStream>(new_stream_handle, stream_decoder, std::move(callbacks));
+    DirectStreamPtr direct_stream = std::make_unique<DirectStream>(
+        new_stream_handle, stream_decoder, std::move(callbacks), *this);
     streams_.emplace(new_stream_handle, std::move(direct_stream));
     ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
   });
@@ -196,6 +230,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
                 *internal_headers);
       direct_stream->stream_decoder_.decodeHeaders(std::move(internal_headers), end_stream);
+      direct_stream->closeLocal(end_stream);
     }
   });
 
@@ -220,6 +255,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
       ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
                 data.length, end_stream);
       direct_stream->stream_decoder_.decodeData(*buf, end_stream);
+      direct_stream->closeLocal(end_stream);
     }
   });
 
@@ -243,20 +279,21 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
       HeaderMapPtr internal_trailers = Utility::toInternalHeaders(trailers);
       ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
       direct_stream->stream_decoder_.decodeTrailers(std::move(internal_trailers));
+      direct_stream->closeLocal(true);
     }
   });
 
   return ENVOY_SUCCESS;
 }
 
-// FIXME
-envoy_status_t Dispatcher::resetStream(envoy_stream_t) {
-  // post([this, stream]() -> void {
-  //   DirectStream* direct_stream = getStream(stream);
-  //   if (direct_stream) {
-  //     direct_stream->underlying_stream_.reset();
-  //   }
-  // });
+envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
+  post([this, stream]() -> void {
+    DirectStream* direct_stream = getStream(stream);
+    if (direct_stream) {
+      // FIXME discuss the enum case to use.
+      direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+    }
+  });
   return ENVOY_SUCCESS;
 }
 
@@ -269,9 +306,9 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
 }
 
+// FIXME consider calling cleanup with a stream ref rather than doing a lookup again!
 void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   DirectStream* direct_stream = getStream(stream_handle);
-
   RELEASE_ASSERT(direct_stream,
                  "cleanup is a private method that is only called with stream ids that exist");
 

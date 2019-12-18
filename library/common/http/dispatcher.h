@@ -107,9 +107,11 @@ private:
     void encode100ContinueHeaders(const HeaderMap&) override {}
     void encodeMetadata(const MetadataMapVector&) override {}
 
+    void onReset();
+    void closeRemote(bool end_stream);
+
     // FIXME
     // void onComplete() override;
-    // void onReset() override;
 
   private:
     const envoy_stream_t stream_handle_;
@@ -130,21 +132,29 @@ private:
   class DirectStream : public Stream, public StreamCallbackHelper {
   public:
     DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
-                 DirectStreamCallbacksPtr&& callbacks);
+                 DirectStreamCallbacksPtr&& callbacks, Dispatcher& http_dispatcher);
 
     // Stream
     void addCallbacks(StreamCallbacks& callbacks) override { addCallbacks_(callbacks); }
     void removeCallbacks(StreamCallbacks& callbacks) override { removeCallbacks_(callbacks); }
-    void resetStream(StreamResetReason) override {}
+    void resetStream(StreamResetReason) override;
+
     // FIXME: implement
     void readDisable(bool) override {}
     uint32_t bufferLimit() override { return 0; }
 
+    void closeLocal(bool end_stream);
+    void closeRemote(bool end_stream);
+    bool complete();
+
     const envoy_stream_t stream_handle_;
+    bool local_end_stream_{};
+    bool remote_end_stream_{};
     // Used to issue outgoing HTTP stream operations.
     StreamDecoder& stream_decoder_;
     // Used to receive incoming HTTP stream operations.
     const DirectStreamCallbacksPtr callbacks_;
+    Dispatcher& parent_;
 
     // TODO: because the client may send infinite metadata frames we need some ongoing way to
     // free metadata ahead of object destruction.
