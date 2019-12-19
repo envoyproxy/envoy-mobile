@@ -14,8 +14,8 @@ def _main():
 def _touch_deps_files(args):
     # type: (str) -> None
     "Touch the Xcode required .d files"
-    output_file_map_flag = args.index("-output-file-map")
-    output_file_map_path = args[output_file_map_flag + 1]
+    flag = args.index("-output-file-map")
+    output_file_map_path = args[flag + 1]
 
     with open(output_file_map_path) as f:
         output_file_map = json.load(f)
@@ -39,8 +39,8 @@ def _touch_swiftmodule(args):
 
 
 def _touch(path):
-    open(path, "w")
     # type: (str) -> None
+    open(path, "w")
 
 
 if __name__ == "__main__":
