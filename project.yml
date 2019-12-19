@@ -1,0 +1,44 @@
+name: envoy-mobile
+options:
+  createIntermediateGroups: true
+  defaultConfig: Debug
+  groupSortPosition: none
+settings:
+  CODE_SIGNING_ALLOWED: false
+  DONT_RUN_SWIFT_STDLIB_TOOL: true
+  CC: /usr/bin/true
+  LD: /usr/bin/true
+  LIBTOOL: /usr/bin/true
+  SWIFT_EXEC: /usr/bin/true
+  SWIFT_OBJC_INTERFACE_HEADER_NAME: ""
+  SWIFT_VERSION: 5
+targets:
+  envoy-mobile:
+    type: framework.static
+    platform: iOS
+    settings:
+      PRODUCT_MODULE_NAME: Envoy
+      PRODUCT_NAME: Envoy.framework
+      BAZEL_PACKAGE: library
+      USER_HEADER_SEARCH_PATHS:
+        - $(SRCROOT)
+        - $(SRCROOT)/envoy/source
+        - $(SRCROOT)/envoy/include
+    preBuildScripts:
+      - name: Build with bazel
+        script: |
+          set -e
+          PATH=${PATH} bazel build --config=ios ios_dist
+    sources:
+      - library/common
+      - library/swift/src
+      - library/objective-c
+      - envoy/source
+      - envoy/include
+schemes:
+  envoy-mobile:
+    build:
+      parallelizeBuild: false
+      buildImplicitDependencies: false
+      targets:
+        envoy-mobile: [run]
