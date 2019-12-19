@@ -20,11 +20,30 @@ targets:
       PRODUCT_MODULE_NAME: Envoy
       PRODUCT_NAME: Envoy.framework
       BAZEL_PACKAGE: library
+      USE_HEADERMAP: NO
       USER_HEADER_SEARCH_PATHS:
         - $(SRCROOT)
-        - $(SRCROOT)/envoy/source
+        - $(SRCROOT)/envoy/api
         - $(SRCROOT)/envoy/include
+        - $(SRCROOT)/envoy/source
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_circonus_labs_libcircllhist/src
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_cyan4973_xxhash
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_fmtlib_fmt/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_gabime_spdlog/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_grpc_grpc/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_jbeder_yaml_cpp/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_libevent_libevent/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_mirror_tclap/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_github_tencent_rapidjson/include
         - $(SRCROOT)/bazel-envoy-mobile/external/com_google_absl
+        - $(SRCROOT)/bazel-envoy-mobile/external/prometheus_metrics_model/cpp
+        - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/com_envoyproxy_protoc_gen_validate
+        - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/com_google_googleapis
+        - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/envoy_api
+        - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/opencensus_proto
+      HEADER_SEARCH_PATHS:
+        - $(SRCROOT)/bazel-envoy-mobile/external/boringssl/src/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_google_protobuf/src
     preBuildScripts:
       - name: Build with bazel
         script: PATH=${PATH} "$SRCROOT"/tools/xcode-build.sh
