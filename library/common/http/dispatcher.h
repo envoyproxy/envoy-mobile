@@ -99,6 +99,9 @@ private:
     DirectStreamCallbacks(envoy_stream_t stream_handle, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
 
+    void onReset();
+    void closeRemote(bool end_stream);
+
     // StreamEncoder
     void encodeHeaders(const HeaderMap& headers, bool end_stream) override;
     void encodeData(Buffer::Instance& data, bool end_stream) override;
@@ -107,12 +110,6 @@ private:
     // TODO: implement
     void encode100ContinueHeaders(const HeaderMap&) override {}
     void encodeMetadata(const MetadataMapVector&) override {}
-
-    void onReset();
-    void closeRemote(bool end_stream);
-
-    // FIXME
-    // void onComplete() override;
 
   private:
     const envoy_stream_t stream_handle_;
@@ -128,8 +125,6 @@ private:
    * Contains state about an HTTP stream; both in the outgoing direction via an underlying
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
-  // TODO: consider if we want to make this class Event::DeferredDeletable.
-  // TODO: need to deal with the terminal states. Completion and Reset
   class DirectStream : public Stream, public StreamCallbackHelper, public Event::DeferredDeletable {
   public:
     DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,

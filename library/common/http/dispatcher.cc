@@ -105,6 +105,7 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // but the remote half is closed. Therefore, we fire the on_complete callback
     // to the platform layer whenever remote closes.
     // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
+    ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
     bridge_callbacks_.on_complete(bridge_callbacks_.context);
     auto stream = http_dispatcher_.getStream(stream_handle_);
     ASSERT(stream);
@@ -120,30 +121,17 @@ Stream& Dispatcher::DirectStreamCallbacks::getStream() {
   return *stream;
 }
 
-// FIXME
-// void Dispatcher::DirectStreamCallbacks::onComplete() {
-//   ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
-//   bridge_callbacks_.on_complete(bridge_callbacks_.context);
-//   // Very important: onComplete and onReset both clean up stream state in the http dispatcher
-//   // because the underlying async client implementation **guarantees** that only onComplete
-//   **or**
-//   // onReset will be fired for a stream. This means it is safe to clean up the stream when
-//   either of
-//   // the terminal callbacks fire without keeping additional state in this layer.
-//   http_dispatcher_.cleanup(stream_handle_);
-// }
-
 void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
+  // Note: in the case that we received a complete remote response but envoy is resetting the stream
+  // due to an incomplete local request this on_error call will happen after an on_complete.
+  // FIXME: we still have to think these scenarios a bit more carefully.
+  // FIXME: After some discussion of this we decided to
+  // move atomic platform state, contracts, and cancellation down here.
+  // Will do that ASAP after getting the HCM out of envoy.
   bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
-  // Very important: onComplete and onReset both clean up stream state in the http dispatcher
-  // because the underlying async client implementation **guarantees** that only onComplete
-  // **or**
-  // onReset will be fired for a stream. This means it is safe to clean up the stream when either
-  // of
-  // the terminal callbacks fire without keeping additional state in this layer.
   http_dispatcher_.cleanup(stream_handle_);
 }
 
@@ -153,7 +141,6 @@ Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, StreamDecod
     : stream_handle_(stream_handle), stream_decoder_(stream_decoder),
       callbacks_(std::move(callbacks)), parent_(http_dispatcher) {}
 
-// TODO wire StreamResetReason to onReset
 void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
 
 void Dispatcher::DirectStream::closeLocal(bool end_stream) {
@@ -215,7 +202,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     DirectStreamCallbacksPtr callbacks =
         std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
 
-    // TODO:
+    // FIXME:
     // 1. Preferred network.
     // 2. Stream options -- buffering.
     preferred_network_.load();
@@ -309,6 +296,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
     DirectStream* direct_stream = getStream(stream);
     if (direct_stream) {
       // FIXME discuss the enum case to use.
+      // FIXME Cleanup at this layer because of a local cancellation.
       direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
     }
   });
@@ -324,7 +312,6 @@ Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
 }
 
-// FIXME consider calling cleanup with a stream ref rather than doing a lookup again!
 void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   DirectStream* direct_stream = getStream(stream_handle);
   RELEASE_ASSERT(direct_stream,
