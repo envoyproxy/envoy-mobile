@@ -6,10 +6,10 @@ options:
 settings:
   CODE_SIGNING_ALLOWED: false
   DONT_RUN_SWIFT_STDLIB_TOOL: true
-  CC: /usr/bin/true
+  CC: $(SRCROOT)/tools/cc-stub.sh
   LD: /usr/bin/true
   LIBTOOL: /usr/bin/true
-  SWIFT_EXEC: /usr/bin/true
+  SWIFT_EXEC: $(SRCROOT)/tools/swiftc_stub.py
   SWIFT_OBJC_INTERFACE_HEADER_NAME: ""
   SWIFT_VERSION: 5
 targets:
@@ -24,17 +24,25 @@ targets:
         - $(SRCROOT)
         - $(SRCROOT)/envoy/source
         - $(SRCROOT)/envoy/include
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_google_absl
     preBuildScripts:
       - name: Build with bazel
-        script: |
-          set -e
-          PATH=${PATH} bazel build --config=ios ios_dist
+        script: PATH=${PATH} "$SRCROOT"/tools/xcode-build.sh
     sources:
-      - library/common
-      - library/swift/src
-      - library/objective-c
-      - envoy/source
-      - envoy/include
+      - path: library/common
+        headerVisibility: project
+      - path: library/swift/src
+        headerVisibility: project
+      - path: library/objective-c
+        headerVisibility: project
+      - path: envoy/source
+        headerVisibility: project
+        excludes:
+          - "**/*.md"
+          - "**/*.py"
+          - "**/xDS_code_diagram.png"
+      - path: envoy/include
+        headerVisibility: project
 schemes:
   envoy-mobile:
     build:
