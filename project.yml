@@ -26,6 +26,7 @@ targets:
         - $(SRCROOT)/envoy/api
         - $(SRCROOT)/envoy/include
         - $(SRCROOT)/envoy/source
+        - $(SRCROOT)/bazel-envoy-mobile/external/com_envoyproxy_protoc_gen_validate
         - $(SRCROOT)/bazel-envoy-mobile/external/com_github_circonus_labs_libcircllhist/src
         - $(SRCROOT)/bazel-envoy-mobile/external/com_github_cyan4973_xxhash
         - $(SRCROOT)/bazel-envoy-mobile/external/com_github_fmtlib_fmt/include
@@ -39,6 +40,7 @@ targets:
         - $(SRCROOT)/bazel-envoy-mobile/external/prometheus_metrics_model/cpp
         - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/com_envoyproxy_protoc_gen_validate
         - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/com_google_googleapis
+        - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/envoy
         - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/envoy_api
         - $(SRCROOT)/bazel-out/ios-x86_64-min10.0-applebin_ios-ios_x86_64-fastbuild/bin/external/opencensus_proto
       HEADER_SEARCH_PATHS:
