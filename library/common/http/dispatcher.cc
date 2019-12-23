@@ -164,7 +164,7 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
 bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
-                       ServerConnectionCallbacks& conn_manager) {
+                       ServerConnectionCallbacks* conn_manager) {
   Thread::LockGuard lock(dispatch_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
@@ -175,7 +175,7 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
   // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
   // we rely on atomics instead of locks).
   event_dispatcher_ = &event_dispatcher;
-  conn_manager_ = &conn_manager;
+  conn_manager_ = conn_manager;
 }
 
 void Dispatcher::post(Event::PostCb callback) {

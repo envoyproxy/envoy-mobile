@@ -3,6 +3,30 @@
  */
 const char* config_template = R"(
 static_resources:
+  listeners:
+  - name: api_listener
+    address:
+      socket_address:
+        protocol: TCP
+        address: 0.0.0.0
+        port_value: 10000
+    api_listener:
+      api_listener:
+        "@type": type.googleapis.com/envoy.config.filter.network.http_connection_manager.v2.HttpConnectionManager
+        stat_prefix: hcm
+        route_config:
+          name: api_router
+          virtual_hosts:
+            - name: api
+              domains:
+                - "*"
+              routes:
+                - match:
+                    prefix: "/"
+                  route:
+                    cluster: base_wlan
+        http_filters:
+          - name: envoy.router
   clusters:
   - name: base # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -23,7 +47,7 @@ static_resources:
             inline_string: |
 )"
 #include "certificates.inc"
-R"(
+                              R"(
           verify_subject_alt_name:
             - {{ domain }}
       sni: {{ domain }}
