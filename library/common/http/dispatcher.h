@@ -87,6 +87,8 @@ public:
   envoy_status_t resetStream(envoy_stream_t stream);
 
 private:
+  class DirectStream;
+
   /**
    * Notifies caller of async HTTP stream status.
    * Note the HTTP stream is full-duplex, even if the local to remote stream has been ended
@@ -96,7 +98,7 @@ private:
    */
   class DirectStreamCallbacks : public StreamEncoder, public Logger::Loggable<Logger::Id::http> {
   public:
-    DirectStreamCallbacks(envoy_stream_t stream_handle, envoy_http_callbacks bridge_callbacks,
+    DirectStreamCallbacks(DirectStream& direct_stream, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
 
     void onReset();
@@ -112,7 +114,7 @@ private:
     void encodeMetadata(const MetadataMapVector&) override {}
 
   private:
-    const envoy_stream_t stream_handle_;
+    DirectStream& direct_stream_;
     const envoy_http_callbacks bridge_callbacks_;
     absl::optional<envoy_error_code_t> error_code_;
     absl::optional<envoy_data> error_message_;
@@ -127,8 +129,7 @@ private:
    */
   class DirectStream : public Stream, public StreamCallbackHelper, public Event::DeferredDeletable {
   public:
-    DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
-                 DirectStreamCallbacksPtr&& callbacks, Dispatcher& http_dispatcher);
+    DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher);
 
     // Stream
     void addCallbacks(StreamCallbacks& callbacks) override { addCallbacks_(callbacks); }
@@ -137,7 +138,7 @@ private:
 
     // FIXME: implement
     void readDisable(bool) override {}
-    uint32_t bufferLimit() override { return 0; }
+    uint32_t bufferLimit() override { return 65000; }
 
     void closeLocal(bool end_stream);
     void closeRemote(bool end_stream);
@@ -147,9 +148,9 @@ private:
     bool local_closed_{};
     bool remote_closed_{};
     // Used to issue outgoing HTTP stream operations.
-    StreamDecoder& stream_decoder_;
+    StreamDecoder* stream_decoder_;
     // Used to receive incoming HTTP stream operations.
-    const DirectStreamCallbacksPtr callbacks_;
+    DirectStreamCallbacksPtr callbacks_;
     Dispatcher& parent_;
 
     // TODO: because the client may send infinite metadata frames we need some ongoing way to

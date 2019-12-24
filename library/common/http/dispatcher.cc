@@ -20,15 +20,15 @@ namespace Http {
  * For implementation details @see Dispatcher::DirectStreamCallbacks::closeRemote.
  */
 
-Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(envoy_stream_t stream,
+Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream,
                                                          envoy_http_callbacks bridge_callbacks,
                                                          Dispatcher& http_dispatcher)
-    : stream_handle_(stream), bridge_callbacks_(bridge_callbacks),
+    : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks),
       http_dispatcher_(http_dispatcher) {}
 
 void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, bool end_stream) {
-  ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}", stream_handle_,
-            end_stream, headers);
+  ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
+            direct_stream_.stream_handle_, end_stream, headers);
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
@@ -57,23 +57,21 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   default:
     error_code_ = ENVOY_UNDEFINED_ERROR;
   }
-  ENVOY_LOG(debug, "[S{}] intercepted local response", stream_handle_);
+  ENVOY_LOG(debug, "[S{}] intercepted local response", direct_stream_.stream_handle_);
   if (end_stream) {
-    auto stream = http_dispatcher_.getStream(stream_handle_);
-    ASSERT(stream);
     // The local stream may or may not have completed.
     // If the local is not closed envoy will fire the reset for us.
     // @see Dispatcher::DirectStreamCallbacks::closeRemote.
     // Otherwise fire the reset from here.
-    if (stream->local_closed_) {
+    if (direct_stream_.local_closed_) {
       onReset();
     }
   }
 }
 
 void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
-  ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})", stream_handle_,
-            data.length(), end_stream);
+  ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
+            direct_stream_.stream_handle_, data.length(), end_stream);
   if (!error_code_.has_value()) {
     bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                               bridge_callbacks_.context);
@@ -81,20 +79,19 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   } else {
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
-    auto stream = http_dispatcher_.getStream(stream_handle_);
-    ASSERT(stream);
     // The local stream may or may not have completed.
     // If the local is not closed envoy will fire the reset for us.
     // @see Dispatcher::DirectStreamCallbacks::closeRemote.
     // Otherwise fire the reset from here.
-    if (stream->local_closed_) {
+    if (direct_stream_.local_closed_) {
       onReset();
     }
   }
 }
 
 void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers) {
-  ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", stream_handle_, trailers);
+  ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
+            trailers);
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
   closeRemote(true);
 }
@@ -105,24 +102,16 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // but the remote half is closed. Therefore, we fire the on_complete callback
     // to the platform layer whenever remote closes.
     // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
-    ENVOY_LOG(debug, "[S{}] complete stream", stream_handle_);
+    ENVOY_LOG(debug, "[S{}] complete stream", direct_stream_.stream_handle_);
     bridge_callbacks_.on_complete(bridge_callbacks_.context);
-    auto stream = http_dispatcher_.getStream(stream_handle_);
-    ASSERT(stream);
-    stream->closeRemote(true);
+    direct_stream_.closeRemote(true);
   }
 }
 
-Stream& Dispatcher::DirectStreamCallbacks::getStream() {
-  auto stream = http_dispatcher_.getStream(stream_handle_);
-  // The stream owns the callbacks.
-  // Hence if this code is executing the stream must still exist.
-  ASSERT(stream);
-  return *stream;
-}
+Stream& Dispatcher::DirectStreamCallbacks::getStream() { return direct_stream_; }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
-  ENVOY_LOG(debug, "[S{}] remote reset stream", stream_handle_);
+  ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
   // Note: in the case that we received a complete remote response but envoy is resetting the stream
@@ -132,14 +121,11 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // move atomic platform state, contracts, and cancellation down here.
   // Will do that ASAP after getting the HCM out of envoy.
   bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
-  http_dispatcher_.cleanup(stream_handle_);
+  http_dispatcher_.cleanup(direct_stream_.stream_handle_);
 }
 
-Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, StreamDecoder& stream_decoder,
-                                       DirectStreamCallbacksPtr&& callbacks,
-                                       Dispatcher& http_dispatcher)
-    : stream_handle_(stream_handle), stream_decoder_(stream_decoder),
-      callbacks_(std::move(callbacks)), parent_(http_dispatcher) {}
+Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher)
+    : stream_handle_(stream_handle), parent_(http_dispatcher) {}
 
 void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
 
@@ -199,8 +185,9 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks,
                                        envoy_stream_options) {
   post([this, new_stream_handle, bridge_callbacks]() -> void {
-    DirectStreamCallbacksPtr callbacks =
-        std::make_unique<DirectStreamCallbacks>(new_stream_handle, bridge_callbacks, *this);
+    DirectStreamPtr direct_stream{new DirectStream(new_stream_handle, *this)};
+    direct_stream->callbacks_ =
+        std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
     // FIXME:
     // 1. Preferred network.
@@ -208,10 +195,10 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     preferred_network_.load();
 
     // Only the initial setting of the conn_manager_ is guarded.
-    StreamDecoder& stream_decoder = TS_UNCHECKED_READ(conn_manager_)->newStream(*callbacks);
+    direct_stream->stream_decoder_ =
+        &TS_UNCHECKED_READ(conn_manager_)->newStream(*direct_stream->callbacks_);
+    ENVOY_LOG(error, "got stream decoder");
 
-    DirectStreamPtr direct_stream = std::make_unique<DirectStream>(
-        new_stream_handle, stream_decoder, std::move(callbacks), *this);
     streams_.emplace(new_stream_handle, std::move(direct_stream));
     ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
   });
@@ -234,7 +221,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
       HeaderMapPtr internal_headers = Utility::toInternalHeaders(headers);
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
                 *internal_headers);
-      direct_stream->stream_decoder_.decodeHeaders(std::move(internal_headers), end_stream);
+      direct_stream->stream_decoder_->decodeHeaders(std::move(internal_headers), end_stream);
       direct_stream->closeLocal(end_stream);
     }
   });
@@ -259,7 +246,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
 
       ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
                 data.length, end_stream);
-      direct_stream->stream_decoder_.decodeData(*buf, end_stream);
+      direct_stream->stream_decoder_->decodeData(*buf, end_stream);
       direct_stream->closeLocal(end_stream);
     }
   });
@@ -283,7 +270,7 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
     if (direct_stream != nullptr) {
       HeaderMapPtr internal_trailers = Utility::toInternalHeaders(trailers);
       ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
-      direct_stream->stream_decoder_.decodeTrailers(std::move(internal_trailers));
+      direct_stream->stream_decoder_->decodeTrailers(std::move(internal_trailers));
       direct_stream->closeLocal(true);
     }
   });

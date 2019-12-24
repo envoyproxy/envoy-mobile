@@ -24,9 +24,16 @@ static_resources:
                 - match:
                     prefix: "/"
                   route:
-                    cluster: base_wlan
+                    cluster: dynamic_forward_proxy_cluster
         http_filters:
+          - name: envoy.filters.http.dynamic_forward_proxy
+            config:
+              dns_cache_config:
+                name: dynamic_forward_proxy_cache_config
+                dns_lookup_family: V4_ONLY
           - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.filter.http.router.v2.Router
   clusters:
   - name: base # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -41,7 +48,7 @@ static_resources:
                 address:
                   socket_address: {address: {{ domain }}, port_value: 443}
     tls_context: &base_tls_context
-      common_tls_context:
+      common_tls_context: &base_common_tls_context
         validation_context:
           trusted_ca:
             inline_string: |
@@ -72,6 +79,21 @@ static_resources:
       endpoints: *base_endpoints
     tls_context: *base_tls_context
     type: LOGICAL_DNS
+  - name: dynamic_forward_proxy_cluster
+    connect_timeout: 1s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.config.cluster.dynamic_forward_proxy.v2alpha.ClusterConfig
+        dns_cache_config:
+          name: dynamic_forward_proxy_cache_config
+          dns_lookup_family: V4_ONLY
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
+        common_tls_context: *base_common_tls_context
   - name: stats
     connect_timeout: {{ connect_timeout_seconds }}s
     dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
