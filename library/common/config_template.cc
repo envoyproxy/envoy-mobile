@@ -4,7 +4,7 @@
 const char* config_template = R"(
 static_resources:
   listeners:
-  - name: api_listener
+  - name: base_api_listener
     address:
       socket_address:
         protocol: TCP

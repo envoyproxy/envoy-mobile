@@ -63,10 +63,13 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     // When we improve synchronous failure handling and/or move to dynamic forwarding, we only need
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
+    // TODO(junr03): allow the callback to specify the API Listener to get once we allow
+    // instance-based engines in Envoy Mobile.
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           Server::Instance* server = TS_UNCHECKED_READ(main_common_)->server();
-          http_dispatcher_->ready(server->dispatcher(), server->apiListener());
+          http_dispatcher_->ready(server->dispatcher(),
+                                  server->listenerManager().apiListener("base_api_listener"));
         });
   } // mutex_
 
