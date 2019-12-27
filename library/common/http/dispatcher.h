@@ -135,7 +135,9 @@ private:
     void addCallbacks(StreamCallbacks& callbacks) override { addCallbacks_(callbacks); }
     void removeCallbacks(StreamCallbacks& callbacks) override { removeCallbacks_(callbacks); }
     void resetStream(StreamResetReason) override;
-    const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override { return parent_.address_; }
+    const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override {
+      return parent_.address_;
+    }
     // FIXME: implement
     void readDisable(bool) override {}
     uint32_t bufferLimit() override { return 65000; }
