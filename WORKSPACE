@@ -170,6 +170,20 @@ grpc_java_repositories(
     omit_net_zlib = True,
 )
 
+# Apply patches to protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617.
+# TODO: Remove after https://github.com/bazelbuild/bazel/pull/10493 is merged to Bazel and we upgrade.
+http_archive(
+    name = "com_google_protobuf",
+    patches = ["//bazel:protobuf1.patch", "//bazel:protobuf2.patch"],
+    sha256 = "3df786d47a813a2912f0fcdd79c2bc49be123a8c37949e45dbb16bcec4883b11",
+    strip_prefix = "boringssl-6263268b8c1b78a8a9b65acd6f5dd5c04dd9b0e1",
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/6263268b8c1b78a8a9b65acd6f5dd5c04dd9b0e1.tar.gz"],
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
 http_archive(
     name = "rules_proto_grpc",
     sha256 = "1e08cd6c61f893417b14930ca342950f5f22f71f929a38a8c4bbfeae2a80d03e",
