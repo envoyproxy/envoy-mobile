@@ -1,5 +1,16 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 
+# Apply patches to protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617.
+# More details: https://github.com/protocolbuffers/protobuf/issues/7046.
+# TODO: Remove after https://github.com/bazelbuild/bazel/pull/10493 is merged to Bazel and we upgrade.
+http_archive(
+    name = "com_google_protobuf",
+    patches = ["//bazel:protobuf_1.patch", "//bazel:protobuf_2.patch"],
+    sha256 = "d7cfd31620a352b2ee8c1ed883222a0d77e44346643458e062e86b1d069ace3e",
+    strip_prefix = "protobuf-3.10.1",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v3.10.1/protobuf-all-3.10.1.tar.gz"],
+)
+
 # Patch upstream Abseil to prevent Foundation dependency from leaking into Android builds.
 # Workaround for https://github.com/abseil/abseil-cpp/issues/326.
 # TODO: Should be removed in https://github.com/lyft/envoy-mobile/issues/136 once rules_android
@@ -169,20 +180,6 @@ grpc_java_repositories(
     omit_com_google_protobuf_javalite = True,
     omit_net_zlib = True,
 )
-
-# Apply patches to protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617.
-# TODO: Remove after https://github.com/bazelbuild/bazel/pull/10493 is merged to Bazel and we upgrade.
-http_archive(
-    name = "com_google_protobuf",
-    patches = ["//bazel:protobuf1.patch", "//bazel:protobuf2.patch"],
-    sha256 = "3df786d47a813a2912f0fcdd79c2bc49be123a8c37949e45dbb16bcec4883b11",
-    strip_prefix = "boringssl-6263268b8c1b78a8a9b65acd6f5dd5c04dd9b0e1",
-    urls = ["https://github.com/protocolbuffers/protobuf/archive/6263268b8c1b78a8a9b65acd6f5dd5c04dd9b0e1.tar.gz"],
-)
-
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
-
-protobuf_deps()
 
 http_archive(
     name = "rules_proto_grpc",
