@@ -5,7 +5,8 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file"
 # TODO: Remove after https://github.com/bazelbuild/bazel/pull/10493 is merged to Bazel and we upgrade.
 http_archive(
     name = "com_google_protobuf",
-    patches = ["//bazel:protobuf_1.patch", "//bazel:protobuf_2.patch"],
+    patch_args = ["-p1"],
+    patches = ["//bazel:protobuf.patch", "@envoy//bazel:protobuf.patch"],
     sha256 = "d7cfd31620a352b2ee8c1ed883222a0d77e44346643458e062e86b1d069ace3e",
     strip_prefix = "protobuf-3.10.1",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v3.10.1/protobuf-all-3.10.1.tar.gz"],
