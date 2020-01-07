@@ -38,7 +38,7 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - uses: actions/download-artifact@v1
         with:
-          name: master_ios_dist
+          name: envoy_ios_framework
           path: dist/envoy_ios_cocoapods
       - name: 'Copy license for CocoaPods'
         run: cp LICENSE dist/envoy_ios_cocoapods
