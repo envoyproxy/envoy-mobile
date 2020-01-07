@@ -42,6 +42,8 @@ jobs:
           path: dist/envoy_ios_cocoapods
       - name: 'Copy license for CocoaPods'
         run: cp LICENSE dist/envoy_ios_cocoapods
+      - name: 'Create empty Swift sources directory'
+        run: mkdir -p dist/envoy_ios_cocoapods/Envoy.framework/Swift
       - name: 'Create empty Swift file to force Swift libraries to link properly'
         run: touch dist/envoy_ios_cocoapods/Envoy.framework/Swift/Empty.swift
       - uses: actions/upload-artifact@v1
