@@ -5,6 +5,7 @@
 #include "envoy/buffer/buffer.h"
 #include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
+#include "envoy/http/api_listener.h"
 #include "envoy/http/async_client.h"
 #include "envoy/http/codec.h"
 #include "envoy/http/header_map.h"
@@ -12,7 +13,6 @@
 #include "common/common/logger.h"
 #include "common/common/thread.h"
 #include "common/http/codec_helper.h"
-#include "common/http/conn_manager_impl.h"
 
 #include "absl/types/optional.h"
 #include "library/common/types/c_types.h"
@@ -28,7 +28,7 @@ class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
   Dispatcher(std::atomic<envoy_network_t>& preferred_network);
 
-  void ready(Event::Dispatcher& event_dispatcher, ServerConnectionCallbacks* conn_manager);
+  void ready(Event::Dispatcher& event_dispatcher, ApiListener* api_listener);
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -176,7 +176,7 @@ private:
   Thread::MutexBasicLockable dispatch_lock_;
   std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
   Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
-  ServerConnectionCallbacks* conn_manager_ GUARDED_BY(dispatch_lock_){};
+  ApiListener* api_listener_ GUARDED_BY(dispatch_lock_){};
   std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.

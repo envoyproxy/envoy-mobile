@@ -7,6 +7,7 @@
 #include "test/common/http/common.h"
 #include "test/mocks/buffer/mocks.h"
 #include "test/mocks/event/mocks.h"
+#include "test/mocks/http/api_listener.h"
 #include "test/mocks/http/mocks.h"
 #include "test/mocks/local_info/mocks.h"
 #include "test/mocks/upstream/mocks.h"
@@ -30,7 +31,7 @@ namespace Http {
 
 class DispatcherTest : public testing::Test {
 public:
-  DispatcherTest() { http_dispatcher_.ready(event_dispatcher_, conn_manager_); }
+  DispatcherTest() { http_dispatcher_.ready(event_dispatcher_, &api_listener_); }
 
   typedef struct {
     uint32_t on_headers_calls;
@@ -39,7 +40,7 @@ public:
     uint32_t on_error_calls;
   } callbacks_called;
 
-  MockServerConnectionCallbacks conn_manager_;
+  MockApiListener api_listener_;
   MockStreamDecoder request_decoder_;
   StreamEncoder* response_encoder_{};
   NiceMock<Event::MockDispatcher> event_dispatcher_;
@@ -80,7 +81,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
   // API.
-  EXPECT_CALL(conn_manager_, newStream(_, _))
+  EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
         // encoder.getStream().addCallbacks(server_stream_callbacks_);
@@ -150,7 +151,7 @@ TEST_F(DispatcherTest, BasicStream) {
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
   // API.
-  EXPECT_CALL(conn_manager_, newStream(_, _))
+  EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
         // encoder.getStream().addCallbacks(server_stream_callbacks_);
@@ -234,7 +235,7 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
   // API.
-  EXPECT_CALL(conn_manager_, newStream(_, _))
+  EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
         // encoder.getStream().addCallbacks(server_stream_callbacks_);
@@ -317,7 +318,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
   // API.
-  EXPECT_CALL(conn_manager_, newStream(_, _))
+  EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
         // encoder.getStream().addCallbacks(server_stream_callbacks_);
@@ -367,7 +368,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
   // API.
-  EXPECT_CALL(conn_manager_, newStream(_, _))
+  EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder2 = &encoder;
         // encoder.getStream().addCallbacks(server_stream_callbacks_);

@@ -78,6 +78,8 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
                               bridge_callbacks_.context);
     closeRemote(end_stream);
   } else {
+    // FIXME: should this be an ASSERT? Yes, if we are in the local response path, then Envoy
+    // finishes the sequence with an encodeData. What if it later does trailers?
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
     // The local stream may or may not have completed.
@@ -122,6 +124,8 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // move atomic platform state, contracts, and cancellation down here.
   // Will do that ASAP after getting the HCM out of envoy.
   bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
+  // FIXME: this can't be right because then we could be potentially calling cleanup twice on a
+  // stream.
   http_dispatcher_.cleanup(direct_stream_.stream_handle_);
 }
 
@@ -136,6 +140,8 @@ void Dispatcher::DirectStream::closeLocal(bool end_stream) {
 
   // No cleanup happens here because cleanup always happens on remote closure.
   // see @Dispatcher::DirectStreamCallbacks::closeRemote.
+  // Remote closure is guaranteed to happen either through the golden path, or through an Envoy
+  // driven reset.
 }
 void Dispatcher::DirectStream::closeRemote(bool end_stream) {
   remote_closed_ = end_stream;
@@ -150,8 +156,7 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
 
 bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
-void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
-                       ServerConnectionCallbacks* conn_manager) {
+void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener* api_listener) {
   Thread::LockGuard lock(dispatch_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
@@ -162,7 +167,7 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher,
   // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
   // we rely on atomics instead of locks).
   event_dispatcher_ = &event_dispatcher;
-  conn_manager_ = conn_manager;
+  api_listener_ = api_listener;
 }
 
 void Dispatcher::post(Event::PostCb callback) {
@@ -196,9 +201,9 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     // 2. Stream options -- buffering.
     preferred_network_.load();
 
-    // Only the initial setting of the conn_manager_ is guarded.
+    // Only the initial setting of the api_listener_ is guarded.
     direct_stream->stream_decoder_ =
-        &TS_UNCHECKED_READ(conn_manager_)->newStream(*direct_stream->callbacks_);
+        &TS_UNCHECKED_READ(api_listener_)->newStream(*direct_stream->callbacks_);
     ENVOY_LOG(error, "got stream decoder");
 
     streams_.emplace(new_stream_handle, std::move(direct_stream));
