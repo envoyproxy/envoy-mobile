@@ -6,8 +6,8 @@ Releasing
 Prepare for release
 -------------------
 
-When a new `release <https://github.com/lyft/envoy-mobile/releases>`_ is ready to be tagged,
-the following workflow should be followed to create and publish a new Envoy Mobile release.
+The following workflow should be followed to create and publish a new Envoy Mobile
+`release <https://github.com/lyft/envoy-mobile/releases>`_.
 
 Before cutting the release, submit and merge a PR with the following changes:
 
