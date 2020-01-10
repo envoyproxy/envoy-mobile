@@ -3,8 +3,8 @@
 Releasing
 =========
 
-Pepare for release
-------------------
+Prepare for release
+-------------------
 
 When a new `release <https://github.com/lyft/envoy-mobile/releases>`_ is ready to be tagged,
 the following workflow should be followed to create and publish a new Envoy Mobile release.
