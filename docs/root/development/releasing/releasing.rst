@@ -3,11 +3,11 @@
 Releasing
 =========
 
-Prepare for release
--------------------
-
 The following workflow should be followed to create and publish a new Envoy Mobile
 `release <https://github.com/lyft/envoy-mobile/releases>`_.
+
+Prepare for release
+-------------------
 
 Before cutting the release, submit and merge a PR with the following changes:
 
