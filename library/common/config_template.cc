@@ -47,18 +47,24 @@ static_resources:
             - endpoint:
                 address:
                   socket_address: {address: {{ domain }}, port_value: 443}
-    tls_context: &base_tls_context
-      common_tls_context: &base_common_tls_context
-        validation_context:
-          trusted_ca:
-            inline_string: |
+    transport_socket: &base_transport_socket
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3alpha.UpstreamTlsContext
+        common_tls_context:
+          validation_context:
+            trusted_ca:
+              inline_string: |
 )"
 #include "certificates.inc"
                               R"(
-          verify_subject_alt_name:
-            - {{ domain }}
-      sni: {{ domain }}
+        sni: {{ domain }}
     type: LOGICAL_DNS
+    upstream_connection_options: &upstream_opts
+      tcp_keepalive:
+        keepalive_interval: 10
+        keepalive_probes: 1
+        keepalive_time: 5
   - name: base_wlan # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout_seconds }}s
     dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
@@ -67,8 +73,9 @@ static_resources:
     load_assignment:
       cluster_name: base_wlan
       endpoints: *base_endpoints
-    tls_context: *base_tls_context
+    transport_socket: *base_transport_socket
     type: LOGICAL_DNS
+    upstream_connection_options: *upstream_opts
   - name: base_wwan # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout_seconds }}s
     dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
@@ -77,7 +84,8 @@ static_resources:
     load_assignment:
       cluster_name: base_wwan
       endpoints: *base_endpoints
-    tls_context: *base_tls_context
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
     type: LOGICAL_DNS
   - name: dynamic_forward_proxy_cluster
     connect_timeout: 1s
@@ -89,11 +97,8 @@ static_resources:
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: V4_ONLY
-    transport_socket:
-      name: envoy.transport_sockets.tls
-      typed_config:
-        "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
-        common_tls_context: *base_common_tls_context
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
   - name: stats
     connect_timeout: {{ connect_timeout_seconds }}s
     dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
@@ -106,12 +111,13 @@ static_resources:
             - endpoint:
                 address:
                   socket_address: {address: {{ stats_domain }}, port_value: 443}
-    tls_context: *base_tls_context
+    transport_socket: *base_transport_socket
     type: LOGICAL_DNS
 stats_flush_interval: {{ stats_flush_interval_seconds }}s
 stats_sinks:
   - name: envoy.metrics_service
-    config:
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.metrics.v3alpha.MetricsServiceConfig
       grpc_service:
         envoy_grpc:
           cluster_name: stats
