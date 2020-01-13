@@ -38,7 +38,9 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
   if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
-    bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    if (direct_stream_.dispatchable()) {
+      bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    }
     closeRemote(end_stream);
     return;
   }
@@ -48,7 +50,9 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   case 200: {
     // We still treat successful local responses as actual success.
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
-    bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    if (direct_stream_.dispatchable()) {
+      bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+    }
     closeRemote(end_stream);
     return;
   }
@@ -74,8 +78,10 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
   if (!error_code_.has_value()) {
-    bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
-                              bridge_callbacks_.context);
+    if (direct_stream_.dispatchable()) {
+      bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
+                                bridge_callbacks_.context);
+    }
     closeRemote(end_stream);
   } else {
     // FIXME: should this be an ASSERT? Yes, if we are in the local response path, then Envoy
@@ -95,7 +101,9 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
 void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
-  bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
+  if (direct_stream_.dispatchable()) {
+    bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
+  }
   closeRemote(true);
 }
 
@@ -106,7 +114,9 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // to the platform layer whenever remote closes.
     // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
     ENVOY_LOG(debug, "[S{}] complete stream", direct_stream_.stream_handle_);
-    bridge_callbacks_.on_complete(bridge_callbacks_.context);
+    if (direct_stream_.dispatchable(true)) {
+      bridge_callbacks_.on_complete(bridge_callbacks_.context);
+    }
     direct_stream_.closeRemote(true);
   }
 }
@@ -123,7 +133,9 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // FIXME: After some discussion of this we decided to
   // move atomic platform state, contracts, and cancellation down here.
   // Will do that ASAP after getting the HCM out of envoy.
-  bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
+  if (direct_stream_.dispatchable(true)) {
+    bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
+  }
   // FIXME: this can't be right because then we could be potentially calling cleanup twice on a
   // stream.
   http_dispatcher_.cleanup(direct_stream_.stream_handle_);
@@ -155,6 +167,22 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
 }
 
 bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
+
+bool Dispatcher::DirectStream::dispatchable(bool close) {
+  // FIXME: discuss my thought that this state does not need to be atomic because it will all be
+  // accessed from within the context of Envoy's main thread. So all we need is an assertion like:
+  //   The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
+  //   function should only be called from the context of Envoy's event dispatcher.
+  //   ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
+  //          "stream interaction must be performed on the event_dispatcher_'s thread.");
+  if (close) {
+    // Set closed to true and return true if not previously closed.
+    return !std::atomic_exchange(&closed_, close);
+  }
+  return dispatchable();
+}
+
+bool Dispatcher::DirectStream::dispatchable() { return !std::atomic_load(&closed_); }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener* api_listener) {
   Thread::LockGuard lock(dispatch_lock_);
@@ -224,7 +252,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
     // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
-    if (direct_stream != nullptr) {
+    if (direct_stream) {
       HeaderMapPtr internal_headers = Utility::toInternalHeaders(headers);
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
                 *internal_headers);
@@ -246,7 +274,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
     // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
-    if (direct_stream != nullptr) {
+    if (direct_stream) {
       // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
       // of the InstancePtr to outlive this function call.
       Buffer::InstancePtr buf = Buffer::Utility::toInternalData(data);
@@ -274,7 +302,7 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
     // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
     // from the caller.
     // https://github.com/lyft/envoy-mobile/issues/301
-    if (direct_stream != nullptr) {
+    if (direct_stream) {
       HeaderMapPtr internal_trailers = Utility::toInternalHeaders(trailers);
       ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
       direct_stream->stream_decoder_->decodeTrailers(std::move(internal_trailers));
@@ -289,8 +317,12 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
   post([this, stream]() -> void {
     DirectStream* direct_stream = getStream(stream);
     if (direct_stream) {
+      if (direct_stream->dispatchable(true)) {
+        // fire cancel callback
+      }
       // FIXME discuss the enum case to use.
-      // FIXME Cleanup at this layer because of a local cancellation.
+      // FIXME Cleanup at this layer because of a local cancellation. Does this fire all the way
+      // back up to cause direct_stream cleanup?
       direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
     }
   });

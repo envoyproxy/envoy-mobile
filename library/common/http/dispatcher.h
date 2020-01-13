@@ -145,8 +145,26 @@ private:
     void closeLocal(bool end_stream);
     void closeRemote(bool end_stream);
     bool complete();
+    /**
+     * Return whether a callback should be allowed to continue with execution.
+     * This ensures at most one 'terminal' callback is issued for any given stream.
+     * FIXME: should this be in the DirectStreamCallbacks?
+     *
+     * @param close, whether the DirectStream should close if it has not closed before.
+     * @return bool, whether callbacks on this stream are dispatchable or not.
+     */
+    bool dispatchable(bool close);
+    /**
+     * Return whether a callback should be allowed to continue with execution.
+     * This ensures at most one 'terminal' callback is issued for any given stream.
+     * FIXME: should this be in the DirectStreamCallbacks?
+     *
+     * @return bool, whether callbacks on this stream are dispatchable or not.
+     */
+    bool dispatchable();
 
     const envoy_stream_t stream_handle_;
+    std::atomic_bool closed_;
     bool local_closed_{};
     bool remote_closed_{};
     // Used to issue outgoing HTTP stream operations.

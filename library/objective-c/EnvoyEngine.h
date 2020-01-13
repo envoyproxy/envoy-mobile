@@ -110,10 +110,8 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 /**
  Cancel the stream. This functions as an interrupt, and aborts further callbacks and handling of the
  stream.
-
- @return Success unless the stream has already been canceled.
  */
-- (int)cancel;
+- (void)cancel;
 
 /**
  Clean up the stream after it's closed (by completion, cancellation, or error).
