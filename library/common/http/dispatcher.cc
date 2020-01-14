@@ -39,6 +39,9 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
     if (direct_stream_.dispatchable()) {
+      ENVOY_LOG(debug,
+                "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
+                direct_stream_.stream_handle_, end_stream, headers);
       bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
     }
     closeRemote(end_stream);
@@ -79,6 +82,9 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
             direct_stream_.stream_handle_, data.length(), end_stream);
   if (!error_code_.has_value()) {
     if (direct_stream_.dispatchable()) {
+      ENVOY_LOG(debug,
+                "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
+                direct_stream_.stream_handle_, data.length(), end_stream);
       bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                                 bridge_callbacks_.context);
     }
@@ -102,6 +108,8 @@ void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
   if (direct_stream_.dispatchable()) {
+    ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
+              direct_stream_.stream_handle_, trailers);
     bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
   }
   closeRemote(true);
@@ -115,6 +123,8 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
     ENVOY_LOG(debug, "[S{}] complete stream", direct_stream_.stream_handle_);
     if (direct_stream_.dispatchable(true)) {
+      ENVOY_LOG(debug, "[S{}] dispatching to platform complete stream",
+                direct_stream_.stream_handle_);
       bridge_callbacks_.on_complete(bridge_callbacks_.context);
     }
     direct_stream_.closeRemote(true);
@@ -134,6 +144,8 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // move atomic platform state, contracts, and cancellation down here.
   // Will do that ASAP after getting the HCM out of envoy.
   if (direct_stream_.dispatchable(true)) {
+    ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
+              direct_stream_.stream_handle_);
     bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
   }
   // FIXME: this can't be right because then we could be potentially calling cleanup twice on a
@@ -162,6 +174,7 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
   // can be expecting a reset from envoy.
   // See the comment for @see Dispatcher::DirectStreamCallbacks::closeRemote().
   if ((complete())) {
+    ENVOY_LOG(debug, "[S{}] scheduling cleanup", stream_handle_);
     parent_.cleanup(stream_handle_);
   }
 }

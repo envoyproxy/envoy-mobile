@@ -127,7 +127,7 @@ private:
    * Contains state about an HTTP stream; both in the outgoing direction via an underlying
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
-  class DirectStream : public Stream, public StreamCallbackHelper, public Event::DeferredDeletable {
+  class DirectStream : public Stream, public StreamCallbackHelper, public Event::DeferredDeletable, public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher);
 
@@ -164,7 +164,7 @@ private:
     bool dispatchable();
 
     const envoy_stream_t stream_handle_;
-    std::atomic_bool closed_;
+    std::atomic_bool closed_{};
     bool local_closed_{};
     bool remote_closed_{};
     // Used to issue outgoing HTTP stream operations.
