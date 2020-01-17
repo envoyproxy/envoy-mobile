@@ -139,9 +139,9 @@ static void ios_on_cancel(void *context) {
   // This call is atomically gated at the call-site and will only happen once. It may still fire
   // after a complete response or error callback, but no other callbacks for the stream will ever
   // fire AFTER the cancellation callback.
-  // FIXME: this is no longer the case with cancellation pushed down to the core. Because the
-  // complete, or error callback would render the cancel callback undispatchable in the context of
-  // the envoy main thread.
+  // FIXME: before merge. this is no longer the case with cancellation pushed down to the core.
+  // Because the complete, or error callback would render the cancel callback undispatchable in the
+  // context of the envoy main thread.
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
@@ -152,9 +152,10 @@ static void ios_on_cancel(void *context) {
     // The cancellation callback does not clean up the stream, since that will race with work
     // Envoy's main thread may already be doing. Instead we rely on the reset that's dispatched to
     // Envoy to do cleanup, with appropriate timing.
-    // FIXME: discuss this. By pushing closed state down to the core, this is no longer the case, as
-    // the ios_on_error will never fire AFTER and thus clean up would not happen if it didn't happen
-    // here.
+    // FIXME: before merge. discuss this. By pushing closed state down to the core, this is no
+    // longer the case, as the ios_on_error will never fire AFTER and thus clean up would not happen
+    // if it didn't happen here. On the other hand if a complete or error callback happens first
+    // then there is nothing to cleanup here.
     // TODO: If the callback queue is not serial, clean up is not currently thread-safe.
     assert(stream);
     [stream cleanUp];
@@ -166,9 +167,8 @@ static void ios_on_error(envoy_error error, void *context) {
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
-    // FIXME: discuss. I think there was a bug here: it should have been if dispatchable without the
-    // not.
-    // if (!dispatchable(c->closed, YES) && callbacks.onError) {
+    // FIXME: before merge. discuss. I think there was a bug here: it should have been if
+    // dispatchable without the not. if (!dispatchable(c->closed, YES) && callbacks.onError) {
     if (callbacks.onError) {
       NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
                                                         length:error.message.length
@@ -214,7 +214,7 @@ static void ios_on_error(envoy_error error, void *context) {
   // Create native callbacks
   envoy_http_callbacks native_callbacks = {ios_on_headers,  ios_on_data,  ios_on_trailers,
                                            ios_on_metadata, ios_on_error, ios_on_complete,
-                                           context};
+                                           ios_on_cancel,   context};
   _nativeCallbacks = native_callbacks;
 
   // We need create the native-held strong ref on this stream before we call start_stream because

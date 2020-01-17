@@ -64,8 +64,8 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           Server::Instance* server = TS_UNCHECKED_READ(main_common_)->server();
-          // FIXME check for nullptr.
           Http::ApiListener* api_listener = server->listenerManager().apiListener()->http();
+          ASSERT(api_listener != nullptr);
           http_dispatcher_->ready(server->dispatcher(), api_listener);
         });
   } // mutex_

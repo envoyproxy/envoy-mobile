@@ -102,6 +102,7 @@ private:
                           Dispatcher& http_dispatcher);
 
     void onReset();
+    void onCancel();
     void closeRemote(bool end_stream);
 
     // StreamEncoder
@@ -127,7 +128,10 @@ private:
    * Contains state about an HTTP stream; both in the outgoing direction via an underlying
    * AsyncClient::Stream and in the incoming direction via DirectStreamCallbacks.
    */
-  class DirectStream : public Stream, public StreamCallbackHelper, public Event::DeferredDeletable, public Logger::Loggable<Logger::Id::http> {
+  class DirectStream : public Stream,
+                       public StreamCallbackHelper,
+                       public Event::DeferredDeletable,
+                       public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher);
 
@@ -138,7 +142,7 @@ private:
     const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override {
       return parent_.address_;
     }
-    // FIXME: implement
+    // FIXME: before merge. implement
     void readDisable(bool) override {}
     uint32_t bufferLimit() override { return 65000; }
 
@@ -148,7 +152,7 @@ private:
     /**
      * Return whether a callback should be allowed to continue with execution.
      * This ensures at most one 'terminal' callback is issued for any given stream.
-     * FIXME: should this be in the DirectStreamCallbacks?
+     * FIXME: before merge. should this be in the DirectStreamCallbacks?
      *
      * @param close, whether the DirectStream should close if it has not closed before.
      * @return bool, whether callbacks on this stream are dispatchable or not.
@@ -157,7 +161,7 @@ private:
     /**
      * Return whether a callback should be allowed to continue with execution.
      * This ensures at most one 'terminal' callback is issued for any given stream.
-     * FIXME: should this be in the DirectStreamCallbacks?
+     * FIXME: before merge. should this be in the DirectStreamCallbacks?
      *
      * @return bool, whether callbacks on this stream are dispatchable or not.
      */

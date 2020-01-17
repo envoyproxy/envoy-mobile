@@ -90,7 +90,7 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
     }
     closeRemote(end_stream);
   } else {
-    // FIXME: should this be an ASSERT? Yes, if we are in the local response path, then Envoy
+    // FIXME: before merge. should this be an ASSERT? Yes, if we are in the local response path, then Envoy
     // finishes the sequence with an encodeData. What if it later does trailers?
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
@@ -139,8 +139,8 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   envoy_data message = error_message_.value_or(envoy_nodata);
   // Note: in the case that we received a complete remote response but envoy is resetting the stream
   // due to an incomplete local request this on_error call will happen after an on_complete.
-  // FIXME: we still have to think these scenarios a bit more carefully.
-  // FIXME: After some discussion of this we decided to
+  // FIXME: before merge. we still have to think these scenarios a bit more carefully.
+  // FIXME: before merge. After some discussion of this we decided to
   // move atomic platform state, contracts, and cancellation down here.
   // Will do that ASAP after getting the HCM out of envoy.
   if (direct_stream_.dispatchable(true)) {
@@ -148,9 +148,20 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
               direct_stream_.stream_handle_);
     bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
   }
-  // FIXME: this can't be right because then we could be potentially calling cleanup twice on a
-  // stream.
+  // FIXME: before merge. this can't be right because then we could be potentially calling cleanup twice on a
+  // stream. For instance on an inline reset?
+  // Not for the case with the local_closed_ false but remote_closed_ true. Because in that case the cleanup call is guarded by complete(), right?
   http_dispatcher_.cleanup(direct_stream_.stream_handle_);
+}
+
+void Dispatcher::DirectStreamCallbacks::onCancel() {
+  // This call is guarded at the call-site @see Dispatcher::DirectStream::resetStream().
+  // Therefore, it is dispatched here without protection.
+  ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
+  bridge_callbacks_.on_cancel(bridge_callbacks_.context);
+
+  // FIXME: before merge. what about clean up? It all depends on if the reset we send down causes a reset coming
+  // up, which will not fire a callback, but will result in stream clean up.
 }
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher)
@@ -182,7 +193,7 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
 bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
 bool Dispatcher::DirectStream::dispatchable(bool close) {
-  // FIXME: discuss my thought that this state does not need to be atomic because it will all be
+  // FIXME: before merge. discuss my thought that this state does not need to be atomic because it will all be
   // accessed from within the context of Envoy's main thread. So all we need is an assertion like:
   //   The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
   //   function should only be called from the context of Envoy's event dispatcher.
@@ -237,7 +248,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     direct_stream->callbacks_ =
         std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
-    // FIXME:
+    // FIXME: before merge.
     // 1. Preferred network.
     // 2. Stream options -- buffering.
     preferred_network_.load();
@@ -331,7 +342,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
     DirectStream* direct_stream = getStream(stream);
     if (direct_stream) {
       if (direct_stream->dispatchable(true)) {
-        // fire cancel callback
+        direct_stream->callbacks_->onCancel();
       }
       // FIXME discuss the enum case to use.
       // FIXME Cleanup at this layer because of a local cancellation. Does this fire all the way
