@@ -28,7 +28,7 @@ class Dispatcher : public Logger::Loggable<Logger::Id::http> {
 public:
   Dispatcher(std::atomic<envoy_network_t>& preferred_network);
 
-  void ready(Event::Dispatcher& event_dispatcher, ApiListener* api_listener);
+  void ready(Event::Dispatcher& event_dispatcher, ApiListener& api_listener);
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and

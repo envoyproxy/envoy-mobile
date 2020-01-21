@@ -90,8 +90,8 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
     }
     closeRemote(end_stream);
   } else {
-    // FIXME: before merge. should this be an ASSERT? Yes, if we are in the local response path, then Envoy
-    // finishes the sequence with an encodeData. What if it later does trailers?
+    // FIXME: before merge. should this be an ASSERT? Yes, if we are in the local response path,
+    // then Envoy finishes the sequence with an encodeData. What if it later does trailers?
     ASSERT(end_stream);
     error_message_ = Buffer::Utility::toBridgeData(data);
     // The local stream may or may not have completed.
@@ -148,9 +148,10 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
               direct_stream_.stream_handle_);
     bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
   }
-  // FIXME: before merge. this can't be right because then we could be potentially calling cleanup twice on a
-  // stream. For instance on an inline reset?
-  // Not for the case with the local_closed_ false but remote_closed_ true. Because in that case the cleanup call is guarded by complete(), right?
+  // FIXME: before merge. this can't be right because then we could be potentially calling cleanup
+  // twice on a stream. For instance on an inline reset? Not for the case with the local_closed_
+  // false but remote_closed_ true. Because in that case the cleanup call is guarded by complete(),
+  // right?
   http_dispatcher_.cleanup(direct_stream_.stream_handle_);
 }
 
@@ -160,8 +161,8 @@ void Dispatcher::DirectStreamCallbacks::onCancel() {
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   bridge_callbacks_.on_cancel(bridge_callbacks_.context);
 
-  // FIXME: before merge. what about clean up? It all depends on if the reset we send down causes a reset coming
-  // up, which will not fire a callback, but will result in stream clean up.
+  // FIXME: before merge. what about clean up? It all depends on if the reset we send down causes a
+  // reset coming up, which will not fire a callback, but will result in stream clean up.
 }
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher)
@@ -193,8 +194,9 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
 bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
 bool Dispatcher::DirectStream::dispatchable(bool close) {
-  // FIXME: before merge. discuss my thought that this state does not need to be atomic because it will all be
-  // accessed from within the context of Envoy's main thread. So all we need is an assertion like:
+  // FIXME: before merge. discuss my thought that this state does not need to be atomic because it
+  // will all be accessed from within the context of Envoy's main thread. So all we need is an
+  // assertion like:
   //   The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
   //   function should only be called from the context of Envoy's event dispatcher.
   //   ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
@@ -208,7 +210,7 @@ bool Dispatcher::DirectStream::dispatchable(bool close) {
 
 bool Dispatcher::DirectStream::dispatchable() { return !std::atomic_load(&closed_); }
 
-void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener* api_listener) {
+void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_listener) {
   Thread::LockGuard lock(dispatch_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
@@ -219,7 +221,7 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener* api_lis
   // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
   // we rely on atomics instead of locks).
   event_dispatcher_ = &event_dispatcher;
-  api_listener_ = api_listener;
+  api_listener_ = &api_listener;
 }
 
 void Dispatcher::post(Event::PostCb callback) {

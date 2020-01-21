@@ -12,7 +12,7 @@ static_resources:
         port_value: 10000
     api_listener:
       api_listener:
-        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3alpha.HttpConnectionManager
+        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
         stat_prefix: hcm
         route_config:
           name: api_router
@@ -28,13 +28,13 @@ static_resources:
         http_filters:
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3alpha.FilterConfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
               dns_cache_config:
                 name: dynamic_forward_proxy_cache_config
                 dns_lookup_family: V4_ONLY
           - name: envoy.router
             typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3alpha.Router
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
   - name: base # Note: the direct API depends on the existence of a cluster with this name.
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -94,7 +94,7 @@ static_resources:
     cluster_type:
       name: envoy.clusters.dynamic_forward_proxy
       typed_config:
-        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3alpha.ClusterConfig
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
           dns_lookup_family: V4_ONLY
