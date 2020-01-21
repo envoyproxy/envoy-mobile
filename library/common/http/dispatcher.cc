@@ -203,12 +203,12 @@ bool Dispatcher::DirectStream::dispatchable(bool close) {
   //          "stream interaction must be performed on the event_dispatcher_'s thread.");
   if (close) {
     // Set closed to true and return true if not previously closed.
-    return !std::atomic_exchange(&closed_, close);
+    return !closed_.exchange(close);
   }
   return dispatchable();
 }
 
-bool Dispatcher::DirectStream::dispatchable() { return !std::atomic_load(&closed_); }
+bool Dispatcher::DirectStream::dispatchable() { return !closed_.load(); }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_listener) {
   Thread::LockGuard lock(dispatch_lock_);

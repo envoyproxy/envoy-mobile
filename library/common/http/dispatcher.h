@@ -168,7 +168,7 @@ private:
     bool dispatchable();
 
     const envoy_stream_t stream_handle_;
-    std::atomic_bool closed_{};
+    std::atomic<bool> closed_{};
     bool local_closed_{};
     bool remote_closed_{};
     // Used to issue outgoing HTTP stream operations.
