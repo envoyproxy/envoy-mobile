@@ -20,7 +20,7 @@ public final class EnvoyClientBuilder: NSObject {
   // MARK: - Public
 
   /// Initialize a new builder with standard HTTP library configuration.
-  override public init() {
+  public override init() {
     self.base = .standard
   }
 
