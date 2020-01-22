@@ -16,8 +16,8 @@ public class EnvoyConfiguration {
    * @param dnsRefreshSeconds     rate in seconds to refresh DNS.
    * @param statsFlushSeconds     interval at which to flush Envoy stats.
    */
-  public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds,
-                            int dnsRefreshSeconds, int statsFlushSeconds) {
+  public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
+                            int statsFlushSeconds) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
