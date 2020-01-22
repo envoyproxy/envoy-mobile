@@ -31,7 +31,7 @@ namespace Http {
 
 class DispatcherTest : public testing::Test {
 public:
-  DispatcherTest() { http_dispatcher_.ready(event_dispatcher_, &api_listener_); }
+  DispatcherTest() { http_dispatcher_.ready(event_dispatcher_, api_listener_); }
 
   typedef struct {
     uint32_t on_headers_calls;
@@ -99,7 +99,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   send_headers_post_cb();
 
   // Encode response headers.
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
 
@@ -180,7 +180,7 @@ TEST_F(DispatcherTest, BasicStream) {
   // Encode response headers and data.
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
   response_encoder_->encodeData(*response_data, true);
 
@@ -275,7 +275,7 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   response_encoder_->encodeHeaders(response_headers, false);
   Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
   response_encoder_->encodeData(*response_data, false);
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("response body2")};
   response_encoder_->encodeData(*response_data2, true);
 
@@ -386,14 +386,14 @@ TEST_F(DispatcherTest, MultipleStreams) {
   send_headers_post_cb2();
 
   // Finish stream 2.
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   TestHeaderMapImpl response_headers2{{":status", "200"}};
   response_encoder2->encodeHeaders(response_headers2, true);
   // Ensure that the on_headers on the bridge_callbacks was called.
   // ASSERT_EQ(cc2.on_headers_calls, 1);
 
   // Finish stream 1.
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
