@@ -1,13 +1,6 @@
 Version history
 ---------------
 
-0.2.1-alpha1 (Jan 22, 2020)
-===========================
-
-This release contains a ref update for upstream Envoy. Other notable changes include:
-- Moving the v3alpha config to v3 `#636 <https://github.com/lyft/envoy-mobile/pull/636>`_
-- Fix developer build issues related to Swift cacheable modules
-
 0.2.1 (Jan 6, 2020)
 ===================
 
