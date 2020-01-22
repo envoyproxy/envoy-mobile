@@ -38,3 +38,9 @@ directory, run:
 ``pod trunk push``
 
 Note: This last step is slated to be automated in :issue:`#624 <624>`.
+
+
+Pre-release versioning
+----------------------
+
+Pre-releases are published on a weekly basis. The versioning scheme we use is ``X.Y.Z.{ddmmyy}``
