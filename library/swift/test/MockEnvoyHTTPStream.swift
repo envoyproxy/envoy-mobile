@@ -35,9 +35,7 @@ extension MockEnvoyHTTPStream: EnvoyHTTPStream {
     MockEnvoyHTTPStream.onTrailers?(trailers)
   }
 
-  func cancel() -> Int32 {
-    return 0
-  }
+  func cancel() {}
 
   func cleanUp() {}
 }
