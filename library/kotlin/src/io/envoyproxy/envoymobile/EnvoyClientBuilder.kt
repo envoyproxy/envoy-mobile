@@ -4,10 +4,10 @@ import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 
-sealed class BaseConfiguration {
-  class Standard : BaseConfiguration()
-  class Custom(val yaml: String) : BaseConfiguration()
-}
+sealed class BaseConfiguration
+
+class Standard : BaseConfiguration()
+class Custom(val yaml: String) : BaseConfiguration()
 
 open class EnvoyClientBuilder(
     private val configuration: BaseConfiguration
@@ -75,10 +75,10 @@ open class EnvoyClientBuilder(
    */
   fun build(): Envoy {
     return when (configuration) {
-      is BaseConfiguration.Custom -> {
+      is Custom -> {
         return Envoy(engineType(), configuration.yaml, logLevel)
       }
-      is BaseConfiguration.Standard -> {
+      is Standard -> {
         Envoy(engineType(), EnvoyConfiguration(statsDomain, connectTimeoutSeconds, dnsRefreshSeconds, statsFlushSeconds), logLevel)
       }
     }
