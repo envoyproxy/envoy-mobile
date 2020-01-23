@@ -38,25 +38,28 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
   if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
-    if (direct_stream_.dispatchable()) {
+    if (direct_stream_.dispatchable(end_stream)) {
       ENVOY_LOG(debug,
                 "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
                 direct_stream_.stream_handle_, end_stream, headers);
       bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+      closeRemote(end_stream);
     }
-    closeRemote(end_stream);
     return;
   }
 
+  // Deal with a local response based on the HTTP status code received. Envoy Mobile treats
+  // successful local responses as actual success. Envoy Mobile surfaces non-200 local responses as
+  // errors via callbacks rather than an HTTP response. This is inline with behaviour of other
+  // mobile networking libraries.
   uint64_t response_status = Http::Utility::getResponseStatus(headers);
   switch (response_status) {
   case 200: {
-    // We still treat successful local responses as actual success.
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
-    if (direct_stream_.dispatchable()) {
+    if (direct_stream_.dispatchable(end_stream)) {
       bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+      closeRemote(end_stream);
     }
-    closeRemote(end_stream);
     return;
   }
   case 503:
@@ -81,18 +84,17 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
   if (!error_code_.has_value()) {
-    if (direct_stream_.dispatchable()) {
+    if (direct_stream_.dispatchable(end_stream)) {
       ENVOY_LOG(debug,
                 "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
                 direct_stream_.stream_handle_, data.length(), end_stream);
       bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                                 bridge_callbacks_.context);
+      closeRemote(end_stream);
     }
-    closeRemote(end_stream);
   } else {
-    // FIXME: before merge. should this be an ASSERT? Yes, if we are in the local response path,
-    // then Envoy finishes the sequence with an encodeData. What if it later does trailers?
-    ASSERT(end_stream);
+    ASSERT(end_stream, "local response has to end the stream with a data frame. If Envoy changes "
+                       "this expectation, this code needs to be updated.");
     error_message_ = Buffer::Utility::toBridgeData(data);
     // The local stream may or may not have completed.
     // If the local is not closed envoy will fire the reset for us.
@@ -107,14 +109,16 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
 void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
-  if (direct_stream_.dispatchable()) {
+  if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
               direct_stream_.stream_handle_, trailers);
     bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
+    closeRemote(true);
   }
-  closeRemote(true);
 }
 
+// n.b: all calls to closeRemote are guarded by a call to dispatchable. Hence the on_complete call
+// here does not, and should not call dispatchable.
 void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
   if (end_stream) {
     // Envoy itself does not currently allow half-open streams where the local half is open
@@ -122,11 +126,7 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // to the platform layer whenever remote closes.
     // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
     ENVOY_LOG(debug, "[S{}] complete stream", direct_stream_.stream_handle_);
-    if (direct_stream_.dispatchable(true)) {
-      ENVOY_LOG(debug, "[S{}] dispatching to platform complete stream",
-                direct_stream_.stream_handle_);
-      bridge_callbacks_.on_complete(bridge_callbacks_.context);
-    }
+    bridge_callbacks_.on_complete(bridge_callbacks_.context);
     direct_stream_.closeRemote(true);
   }
 }
@@ -137,22 +137,19 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
-  // Note: in the case that we received a complete remote response but envoy is resetting the stream
-  // due to an incomplete local request this on_error call will happen after an on_complete.
-  // FIXME: before merge. we still have to think these scenarios a bit more carefully.
-  // FIXME: before merge. After some discussion of this we decided to
-  // move atomic platform state, contracts, and cancellation down here.
-  // Will do that ASAP after getting the HCM out of envoy.
+
   if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
               direct_stream_.stream_handle_);
     bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
   }
-  // FIXME: before merge. this can't be right because then we could be potentially calling cleanup
-  // twice on a stream. For instance on an inline reset? Not for the case with the local_closed_
-  // false but remote_closed_ true. Because in that case the cleanup call is guarded by complete(),
-  // right?
-  http_dispatcher_.cleanup(direct_stream_.stream_handle_);
+
+  // If the DirectStream was completed in a healthy fashion then it was already deferred deleted.
+  // FIXME: before merge. Can the guarantee here be stronger? i.e can this actually be:
+  // ASSERT(!direct_stream_.complete());
+  if (!direct_stream_.complete()) {
+    http_dispatcher_.cleanup(direct_stream_.stream_handle_);
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::onCancel() {
@@ -160,14 +157,12 @@ void Dispatcher::DirectStreamCallbacks::onCancel() {
   // Therefore, it is dispatched here without protection.
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   bridge_callbacks_.on_cancel(bridge_callbacks_.context);
-
-  // FIXME: before merge. what about clean up? It all depends on if the reset we send down causes a
-  // reset coming up, which will not fire a callback, but will result in stream clean up.
 }
 
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher)
     : stream_handle_(stream_handle), parent_(http_dispatcher) {}
 
+// FIXME: before merge. Use the reset reason.
 void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
 
 void Dispatcher::DirectStream::closeLocal(bool end_stream) {
@@ -194,21 +189,12 @@ void Dispatcher::DirectStream::closeRemote(bool end_stream) {
 bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
 bool Dispatcher::DirectStream::dispatchable(bool close) {
-  // FIXME: before merge. discuss my thought that this state does not need to be atomic because it
-  // will all be accessed from within the context of Envoy's main thread. So all we need is an
-  // assertion like:
-  //   The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
-  //   function should only be called from the context of Envoy's event dispatcher.
-  //   ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
-  //          "stream interaction must be performed on the event_dispatcher_'s thread.");
   if (close) {
     // Set closed to true and return true if not previously closed.
     return !closed_.exchange(close);
   }
-  return dispatchable();
+  return !closed_.load();
 }
-
-bool Dispatcher::DirectStream::dispatchable() { return !closed_.load(); }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_listener) {
   Thread::LockGuard lock(dispatch_lock_);
@@ -346,10 +332,16 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
       if (direct_stream->dispatchable(true)) {
         direct_stream->callbacks_->onCancel();
       }
-      // FIXME discuss the enum case to use.
-      // FIXME Cleanup at this layer because of a local cancellation. Does this fire all the way
-      // back up to cause direct_stream cleanup?
+      // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
+      // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream only
+      // needs to be as long as that deferred delete. Therefore, we synchronously call cleanup here
+      // which will defer delete the DirectStream, which by definition will be scheduled **after**
+      // the HCM's defer delete as they are scheduled on the same dispatcher context.
+      //
+      // StreamResetReason::RemoteReset is used as the platform code that issues the cancellation is
+      // considered the remote.
       direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+      cleanup(direct_stream->stream_handle_);
     }
   });
   return ENVOY_SUCCESS;
@@ -370,7 +362,11 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
                  "cleanup is a private method that is only called with stream ids that exist");
 
   auto it = streams_.find(stream_handle);
+  // The DirectStream should live through synchronous code that already has a reference to it.
+  // Hence why it is scheduled for deferred deletion.
   TS_UNCHECKED_READ(event_dispatcher_)->deferredDelete(std::move(it->second));
+  // However, being able to get a reference to it after cleanup returns should be impossible.
+  // Hence why it is synchronously erased from the streams map.
   size_t erased = streams_.erase(stream_handle);
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
   ENVOY_LOG(debug, "[S{}] remove stream", stream_handle);

@@ -158,14 +158,6 @@ private:
      * @return bool, whether callbacks on this stream are dispatchable or not.
      */
     bool dispatchable(bool close);
-    /**
-     * Return whether a callback should be allowed to continue with execution.
-     * This ensures at most one 'terminal' callback is issued for any given stream.
-     * FIXME: before merge. should this be in the DirectStreamCallbacks?
-     *
-     * @return bool, whether callbacks on this stream are dispatchable or not.
-     */
-    bool dispatchable();
 
     const envoy_stream_t stream_handle_;
     std::atomic<bool> closed_{};
