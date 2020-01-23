@@ -5,7 +5,7 @@ import io.envoyproxy.envoymobile.engine.AndroidEngineImpl
 
 class AndroidEnvoyClientBuilder(
     context: Context,
-    baseConfiguration: BaseConfiguration
+    baseConfiguration: BaseConfiguration = Standard()
 ) : EnvoyClientBuilder(baseConfiguration) {
 
   init {
