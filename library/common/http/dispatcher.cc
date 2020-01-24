@@ -236,7 +236,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     direct_stream->callbacks_ =
         std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
-    // FIXME: before merge.
+    //  before merge.
     // 1. Preferred network.
     // 2. Stream options -- buffering.
     preferred_network_.load();
@@ -268,6 +268,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
       HeaderMapPtr internal_headers = Utility::toInternalHeaders(headers);
       ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
                 *internal_headers);
+      attachPreferredNetwork(*internal_headers);
       direct_stream->stream_decoder_->decodeHeaders(std::move(internal_headers), end_stream);
       direct_stream->closeLocal(end_stream);
     }
@@ -370,6 +371,27 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   size_t erased = streams_.erase(stream_handle);
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
   ENVOY_LOG(debug, "[S{}] remove stream", stream_handle);
+}
+
+namespace {
+const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
+const std::string BaseCluster = "base";
+const std::string BaseWlanCluster = "base_wlan";
+const std::string BaseWwanCluster = "base_wwan";
+} // namespace
+
+void Dispatcher::attachPreferredNetwork(HeaderMap& headers) {
+  switch (preferred_network_.load()) {
+  case ENVOY_NET_WLAN:
+    headers.addReference(ClusterHeader, BaseWlanCluster);
+    break;
+  case ENVOY_NET_WWAN:
+    headers.addReference(ClusterHeader, BaseWwanCluster);
+    break;
+  case ENVOY_NET_GENERIC:
+  default:
+    headers.addReference(ClusterHeader, BaseCluster);
+  }
 }
 
 } // namespace Http

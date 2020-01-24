@@ -24,30 +24,30 @@ static_resources:
                 - match:
                     prefix: "/"
                   route:
-                    cluster: dynamic_forward_proxy_cluster
+                    cluster_header: x-envoy-mobile-cluster
         http_filters:
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
               dns_cache_config:
                 name: dynamic_forward_proxy_cache_config
-                dns_lookup_family: V4_ONLY
+                dns_lookup_family: AUTO
+                dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-  - name: base # Note: the direct API depends on the existence of a cluster with this name.
+  - name: base
     connect_timeout: {{ connect_timeout_seconds }}s
-    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
-    http2_protocol_options: {}
-    lb_policy: ROUND_ROBIN
-    load_assignment:
-      cluster_name: base
-      endpoints: &base_endpoints
-        - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address: {address: {{ domain }}, port_value: 443}
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config:
+          name: dynamic_forward_proxy_cache_config
+          dns_lookup_family: AUTO
+          dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
     transport_socket: &base_transport_socket
       name: envoy.transport_sockets.tls
       typed_config:
@@ -60,36 +60,15 @@ static_resources:
 #include "certificates.inc"
                               R"(
         sni: {{ domain }}
-    type: LOGICAL_DNS
     upstream_connection_options: &upstream_opts
       tcp_keepalive:
         keepalive_interval: 10
         keepalive_probes: 1
         keepalive_time: 5
-  - name: base_wlan # Note: the direct API depends on the existence of a cluster with this name.
-    connect_timeout: {{ connect_timeout_seconds }}s
-    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
-    http2_protocol_options: {}
-    lb_policy: ROUND_ROBIN
-    load_assignment:
-      cluster_name: base_wlan
-      endpoints: *base_endpoints
-    transport_socket: *base_transport_socket
-    type: LOGICAL_DNS
-    upstream_connection_options: *upstream_opts
-  - name: base_wwan # Note: the direct API depends on the existence of a cluster with this name.
-    connect_timeout: {{ connect_timeout_seconds }}s
-    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
-    http2_protocol_options: {}
-    lb_policy: ROUND_ROBIN
-    load_assignment:
-      cluster_name: base_wwan
-      endpoints: *base_endpoints
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
-    type: LOGICAL_DNS
-  - name: dynamic_forward_proxy_cluster
-    connect_timeout: 1s
+  - name: base_wlan
+    connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
       name: envoy.clusters.dynamic_forward_proxy
@@ -97,7 +76,21 @@ static_resources:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config:
           name: dynamic_forward_proxy_cache_config
-          dns_lookup_family: V4_ONLY
+          dns_lookup_family: AUTO
+          dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+  - name: base_wwan
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config:
+          name: dynamic_forward_proxy_cache_config
+          dns_lookup_family: AUTO
+          dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
   - name: stats

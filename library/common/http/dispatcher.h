@@ -184,6 +184,7 @@ private:
   void post(Event::PostCb callback);
   DirectStream* getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
+  void attachPreferredNetwork(HeaderMap& headers);
 
   // The dispatch_lock_ and init_queue_, and event_dispatcher_ are the only member state that may
   // be accessed from a thread other than the event_dispatcher's own thread.
