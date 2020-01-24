@@ -236,11 +236,6 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     direct_stream->callbacks_ =
         std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
-    //  before merge.
-    // 1. Preferred network.
-    // 2. Stream options -- buffering.
-    preferred_network_.load();
-
     // Only the initial setting of the api_listener_ is guarded.
     direct_stream->stream_decoder_ =
         &TS_UNCHECKED_READ(api_listener_)->newStream(*direct_stream->callbacks_);
