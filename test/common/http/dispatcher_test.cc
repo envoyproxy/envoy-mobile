@@ -38,6 +38,7 @@ public:
     uint32_t on_data_calls;
     uint32_t on_complete_calls;
     uint32_t on_error_calls;
+    uint32_t on_cancel_calls;
   } callbacks_called;
 
   MockApiListener api_listener_;
@@ -53,7 +54,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -84,7 +85,6 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
-        // encoder.getStream().addCallbacks(server_stream_callbacks_);
         return request_decoder_;
       }));
   start_stream_post_cb();
@@ -94,25 +94,27 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   send_headers_post_cb();
 
   // Encode response headers.
+  Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
+  ASSERT_EQ(cc.on_headers_calls, 1);
+  stream_deletion_post_cb();
 
   // Ensure that the callbacks on the bridge_callbacks were called.
-  ASSERT_EQ(cc.on_headers_calls, 1);
-  // ASSERT_EQ(cc.on_complete_calls, 1);
+  ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
 TEST_F(DispatcherTest, BasicStream) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -149,12 +151,11 @@ TEST_F(DispatcherTest, BasicStream) {
   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
-  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
-  // API.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the
+  // dispatcher API.
   EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
-        // encoder.getStream().addCallbacks(server_stream_callbacks_);
         return request_decoder_;
       }));
   start_stream_post_cb();
@@ -164,7 +165,6 @@ TEST_F(DispatcherTest, BasicStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, false));
   headers_post_cb();
 
@@ -173,27 +173,31 @@ TEST_F(DispatcherTest, BasicStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&data_post_cb));
   http_dispatcher_.sendData(stream, c_data, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), true));
   data_post_cb();
 
   // Encode response headers and data.
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
+  ASSERT_EQ(cc.on_headers_calls, 1);
+
+  Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
   Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
   response_encoder_->encodeData(*response_data, true);
+  ASSERT_EQ(cc.on_data_calls, 1);
+  stream_deletion_post_cb();
 
   // Ensure that the callbacks on the bridge_callbacks were called.
-  ASSERT_EQ(cc.on_headers_calls, 1);
-  ASSERT_EQ(cc.on_data_calls, 1);
+  ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
 TEST_F(DispatcherTest, MultipleDataStream) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -238,7 +242,6 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
-        // encoder.getStream().addCallbacks(server_stream_callbacks_);
         return request_decoder_;
       }));
   start_stream_post_cb();
@@ -248,7 +251,6 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, false));
   headers_post_cb();
 
@@ -257,7 +259,6 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&data_post_cb));
   http_dispatcher_.sendData(stream, c_data, false);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
   data_post_cb();
 
@@ -266,22 +267,27 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&data_post_cb2));
   http_dispatcher_.sendData(stream, c_data2, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body2"), true));
   data_post_cb2();
 
   // Encode response headers and data.
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
+  ASSERT_EQ(cc.on_headers_calls, 1);
   Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
   response_encoder_->encodeData(*response_data, false);
+  ASSERT_EQ(cc.on_data_calls, 1);
+
+  Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
   Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("response body2")};
   response_encoder_->encodeData(*response_data2, true);
+  ASSERT_EQ(cc.on_data_calls, 2);
+  stream_deletion_post_cb();
 
   // Ensure that the callbacks on the bridge_callbacks were called.
-  ASSERT_EQ(cc.on_headers_calls, 1);
-  ASSERT_EQ(cc.on_data_calls, 2);
+  ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
 TEST_F(DispatcherTest, MultipleStreams) {
@@ -290,7 +296,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   // Start stream1.
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -321,7 +327,6 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder_ = &encoder;
-        // encoder.getStream().addCallbacks(server_stream_callbacks_);
         return request_decoder_;
       }));
   start_stream_post_cb();
@@ -331,7 +336,6 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream1, c_headers, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   send_headers_post_cb();
 
@@ -340,7 +344,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   NiceMock<MockStreamDecoder> request_decoder2;
   StreamEncoder* response_encoder2{};
   envoy_http_callbacks bridge_callbacks2;
-  callbacks_called cc2 = {0, 0, 0, 0};
+  callbacks_called cc2 = {0, 0, 0, 0, 0};
   bridge_callbacks2.context = &cc2;
   bridge_callbacks2.on_headers = [](envoy_headers c_headers, bool end_stream,
                                     void* context) -> void {
@@ -371,7 +375,6 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(api_listener_, newStream(_, _))
       .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
         response_encoder2 = &encoder;
-        // encoder.getStream().addCallbacks(server_stream_callbacks_);
         return request_decoder2;
       }));
   start_stream_post_cb2();
@@ -381,513 +384,213 @@ TEST_F(DispatcherTest, MultipleStreams) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb2));
   http_dispatcher_.sendHeaders(stream2, c_headers2, true);
 
-  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(request_decoder2, decodeHeaders_(_, true));
   send_headers_post_cb2();
 
   // Finish stream 2.
+  Event::PostCb stream_deletion_post_cb2;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb2));
   TestHeaderMapImpl response_headers2{{":status", "200"}};
   response_encoder2->encodeHeaders(response_headers2, true);
+  ASSERT_EQ(cc2.on_headers_calls, 1);
+  stream_deletion_post_cb2();
   // Ensure that the on_headers on the bridge_callbacks was called.
-  // ASSERT_EQ(cc2.on_headers_calls, 1);
+  ASSERT_EQ(cc2.on_complete_calls, 1);
 
   // Finish stream 1.
+  Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
   TestHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
+  stream_deletion_post_cb();
+  ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
-// TEST_F(DispatcherTest, ResetStream) {
-//   envoy_stream_t stream = 1;
-//   envoy_http_callbacks bridge_callbacks;
-//   callbacks_called cc = {0, 0, 0, 0};
-//   bridge_callbacks.context = &cc;
-//   bridge_callbacks.on_error = [](envoy_error actual_error, void* context) -> void {
-//     envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
-//     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_error_calls++;
-//   };
-//   bridge_callbacks.on_complete = [](void* context) -> void {
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_complete_calls++;
-//   };
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(
-//           WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream*
-//           {
-//             return client_.start(callbacks, AsyncClient::StreamOptions());
-//           })));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
-
-//   Event::PostCb post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
-//   http_dispatcher_.resetStream(stream);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   post_cb();
-
-//   // Ensure that the on_error on the bridge_callbacks was called.
-//   ASSERT_EQ(cc.on_error_calls, 1);
-//   ASSERT_EQ(cc.on_complete_calls, 0);
-// }
-
-// TEST_F(DispatcherTest, LocalResetAfterStreamStart) {
-//   envoy_stream_t stream = 1;
-//   envoy_http_callbacks bridge_callbacks;
-//   callbacks_called cc = {0, 0, 0, 0};
-//   bridge_callbacks.context = &cc;
-
-//   bridge_callbacks.on_error = [](envoy_error actual_error, void* context) -> void {
-//     envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
-//     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_error_calls++;
-//   };
-//   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-//                                    void* context) -> void {
-//     ASSERT_FALSE(end_stream);
-//     HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
-//     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_headers_calls++;
-//   };
-//   bridge_callbacks.on_complete = [](void* context) -> void {
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_complete_calls++;
-//   };
-
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         response_decoder_ = &decoder;
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   // Create a stream.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(
-//           WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream*
-//           {
-//             return client_.start(callbacks, AsyncClient::StreamOptions());
-//           })));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   Event::PostCb send_headers_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, false);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
-//   send_headers_post_cb();
-
-//   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}),
-//   false);
-//   // Ensure that the on_headers on the bridge_callbacks was called.
-//   ASSERT_EQ(cc.on_headers_calls, 1);
-
-//   Event::PostCb reset_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_post_cb));
-//   http_dispatcher_.resetStream(stream);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   reset_post_cb();
-
-//   // Ensure that the on_error on the bridge_callbacks was called.
-//   ASSERT_EQ(cc.on_error_calls, 1);
-//   ASSERT_EQ(cc.on_complete_calls, 0);
-// }
-
-// TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
-//   envoy_stream_t stream = 1;
-//   envoy_http_callbacks bridge_callbacks;
-//   callbacks_called cc = {0, 0, 0, 0};
-//   bridge_callbacks.context = &cc;
-
-//   bridge_callbacks.on_error = [](envoy_error actual_error, void* context) -> void {
-//     envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
-//     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_error_calls++;
-//   };
-//   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-//                                    void* context) -> void {
-//     ASSERT_FALSE(end_stream);
-//     HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
-//     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_headers_calls++;
-//   };
-//   bridge_callbacks.on_complete = [](void* context) -> void {
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_complete_calls++;
-//   };
-
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         response_decoder_ = &decoder;
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   // Create a stream.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(
-//           WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream*
-//           {
-//             return client_.start(callbacks, AsyncClient::StreamOptions());
-//           })));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   Event::PostCb send_headers_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, false);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(2).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
-//   send_headers_post_cb();
-
-//   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}),
-//   false);
-//   // Ensure that the on_headers on the bridge_callbacks was called.
-//   ASSERT_EQ(cc.on_headers_calls, 1);
-
-//   stream_encoder_.getStream().resetStream(StreamResetReason::RemoteReset);
-//   // Ensure that the on_error on the bridge_callbacks was called.
-//   ASSERT_EQ(cc.on_error_calls, 1);
-//   ASSERT_EQ(cc.on_complete_calls, 0);
-// }
-
-// TEST_F(DispatcherTest, DestroyWithActiveStream) {
-//   envoy_stream_t stream = 1;
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         response_decoder_ = &decoder;
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   // Create a stream.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions())));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks_, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
-//   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
-//   EXPECT_CALL(stream_callbacks_, onReset());
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   http_dispatcher_.sendHeaders(stream, c_headers, false);
-// }
-
-// TEST_F(DispatcherTest, ResetInOnHeaders) {
-//   envoy_stream_t stream = 1;
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         response_decoder_ = &decoder;
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   // Create a stream.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions())));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks_, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   Event::PostCb send_headers_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, false);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
-//   send_headers_post_cb();
-
-//   TestHeaderMapImpl expected_headers{{":status", "200"}};
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(event_dispatcher_, post(_));
-//   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_headers), false))
-//       .WillOnce(Invoke([this, stream](HeaderMap&, bool) { http_dispatcher_.resetStream(stream);
-//       }));
-//   EXPECT_CALL(stream_callbacks_, onData(_, _)).Times(0);
-//   EXPECT_CALL(stream_callbacks_, onReset());
-
-//   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}),
-//   false);
-// }
-
-// TEST_F(DispatcherTest, StreamTimeout) {
-//   envoy_stream_t stream = 1;
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder&,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions().setTimeout(
-//                                                             std::chrono::milliseconds(40)))));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks_, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   Event::PostCb send_headers_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, true);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
-//   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
-//   EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40), _));
-//   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
-
-//   TestHeaderMapImpl expected_timeout{
-//       {":status", "504"}, {"content-length", "24"}, {"content-type", "text/plain"}};
-//   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), false));
-//   EXPECT_CALL(stream_callbacks_, onData(_, true));
-//   EXPECT_CALL(stream_callbacks_, onComplete());
-//   send_headers_post_cb();
-//   timer_->invokeCallback();
-
-//   EXPECT_EQ(1UL,
-//             cm_.thread_local_cluster_.cluster_.info_->stats_store_.counter("upstream_rq_timeout")
-//                 .value());
-//   EXPECT_EQ(1UL, cm_.conn_pool_.host_->stats().rq_timeout_.value());
-//   EXPECT_EQ(
-//       1UL,
-//       cm_.thread_local_cluster_.cluster_.info_->stats_store_.counter("upstream_rq_504").value());
-// }
-
-// TEST_F(DispatcherTest, StreamTimeoutHeadReply) {
-//   envoy_stream_t stream = 1;
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder&,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers, "HEAD");
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions().setTimeout(
-//                                                             std::chrono::milliseconds(40)))));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks_, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   Event::PostCb send_headers_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, true);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
-//   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
-//   EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40), _));
-//   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
-
-//   TestHeaderMapImpl expected_timeout{
-//       {":status", "504"}, {"content-length", "24"}, {"content-type", "text/plain"}};
-//   EXPECT_CALL(stream_callbacks_, onHeaders_(HeaderMapEqualRef(&expected_timeout), true));
-//   EXPECT_CALL(stream_callbacks_, onComplete());
-//   send_headers_post_cb();
-//   timer_->invokeCallback();
-// }
-
-// TEST_F(DispatcherTest, DisableTimerWithStream) {
-//   envoy_stream_t stream = 1;
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder&,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         return nullptr;
-//       }));
-
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers, "HEAD");
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(Return(client_.start(stream_callbacks_, AsyncClient::StreamOptions().setTimeout(
-//                                                             std::chrono::milliseconds(40)))));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks_, {}), ENVOY_SUCCESS);
-
-//   // Send request headers and reset stream.
-//   Event::PostCb send_headers_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, true);
-//   Event::PostCb reset_stream_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-//   http_dispatcher_.resetStream(stream);
-
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
-//   timer_ = new NiceMock<Event::MockTimer>(&event_dispatcher_);
-//   EXPECT_CALL(*timer_, enableTimer(std::chrono::milliseconds(40), _));
-//   EXPECT_CALL(*timer_, disableTimer());
-//   EXPECT_CALL(stream_encoder_.stream_, resetStream(_));
-//   EXPECT_CALL(stream_callbacks_, onReset());
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   send_headers_post_cb();
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   reset_stream_post_cb();
-// }
-
-// TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
-//   envoy_stream_t stream = 1;
-//   // Setup bridge_callbacks to handle the response headers.
-//   envoy_http_callbacks bridge_callbacks;
-//   callbacks_called cc = {0, 0, 0, 0};
-//   bridge_callbacks.context = &cc;
-//   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-//                                    void* context) -> void {
-//     ASSERT_TRUE(end_stream);
-//     HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
-//     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_headers_calls++;
-//   };
-//   bridge_callbacks.on_complete = [](void* context) -> void {
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_complete_calls++;
-//   };
-//   bridge_callbacks.on_error = [](envoy_error actual_error, void* context) -> void {
-//     envoy_error expected_error = {ENVOY_STREAM_RESET, envoy_nodata};
-//     ASSERT_EQ(actual_error.error_code, expected_error.error_code);
-//     callbacks_called* cc = static_cast<callbacks_called*>(context);
-//     cc->on_error_calls++;
-//   };
-
-//   // Grab the response decoder in order to dispatch responses on the stream.
-//   EXPECT_CALL(cm_.conn_pool_, newStream(_, _))
-//       .WillOnce(Invoke([&](StreamDecoder& decoder,
-//                            ConnectionPool::Callbacks& callbacks) -> ConnectionPool::Cancellable*
-//                            {
-//         callbacks.onPoolReady(stream_encoder_, cm_.conn_pool_.host_, stream_info_);
-//         response_decoder_ = &decoder;
-//         return nullptr;
-//       }));
-
-//   // Build a set of request headers.
-//   TestHeaderMapImpl headers;
-//   HttpTestUtility::addDefaultHeaders(headers);
-//   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-//   // Create a stream.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(cm_, httpAsyncClientForCluster("base")).WillOnce(ReturnRef(cm_.async_client_));
-//   EXPECT_CALL(cm_.async_client_, start(_, _))
-//       .WillOnce(
-//           WithArg<0>(Invoke([&](AsyncClient::StreamCallbacks& callbacks) -> AsyncClient::Stream*
-//           {
-//             return client_.start(callbacks, AsyncClient::StreamOptions());
-//           })));
-//   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
-
-//   // Send request headers.
-//   Event::PostCb post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&post_cb));
-//   http_dispatcher_.sendHeaders(stream, c_headers, true);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   EXPECT_CALL(stream_encoder_, encodeHeaders(_, true));
-//   post_cb();
-
-//   // Decode response headers. decodeHeaders with true will bubble up to onHeaders, which will in
-//   // turn cause closeRemote. Because closeLocal has already been called, cleanup will happen;
-//   hence
-//   // the second call to isThreadSafe.
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   response_decoder_->decode100ContinueHeaders(
-//       HeaderMapPtr(new TestHeaderMapImpl{{":status", "100"}}));
-//   response_decoder_->decodeHeaders(HeaderMapPtr(new TestHeaderMapImpl{{":status", "200"}}),
-//   true);
-
-//   EXPECT_EQ(
-//       1UL,
-//       cm_.thread_local_cluster_.cluster_.info_->stats_store_.counter("upstream_rq_200").value());
-//   EXPECT_EQ(1UL, cm_.thread_local_cluster_.cluster_.info_->stats_store_
-//                      .counter("internal.upstream_rq_200")
-//                      .value());
-
-//   // resetStream after onComplete has fired is a no-op, as the stream is cleaned from the
-//   // dispatcher.
-//   Event::PostCb reset_post_cb;
-//   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_post_cb));
-//   http_dispatcher_.resetStream(stream);
-
-//   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
-//   reset_post_cb();
-
-//   // Ensure that the callbacks on the bridge_callbacks were called.
-//   ASSERT_EQ(cc.on_headers_calls, 1);
-//   ASSERT_EQ(cc.on_complete_calls, 1);
-//   ASSERT_EQ(cc.on_data_calls, 0);
-//   ASSERT_EQ(cc.on_error_calls, 0);
-// }
+TEST_F(DispatcherTest, ResetStreamLocal) {
+  envoy_stream_t stream = 1;
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_error_calls++;
+  };
+  bridge_callbacks.on_complete = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete_calls++;
+  };
+  bridge_callbacks.on_cancel = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_cancel_calls++;
+  };
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  Event::PostCb reset_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
+  ASSERT_EQUAL(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  // The callback happens synchronously outside of the reset_stream_post_cb().
+  ASSERT_EQ(cc.on_cancel_calls, 1);
+
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  reset_stream_post_cb();
+  stream_deletion_post_cb();
+
+  // Ensure that the on_error on the bridge_callbacks was called.
+  ASSERT_EQ(cc.on_error_calls, 0);
+  ASSERT_EQ(cc.on_complete_calls, 0);
+}
+
+TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response headers.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
+                                   void* context) -> void {
+    ASSERT_FALSE(end_stream);
+    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_headers_calls++;
+  };
+  bridge_callbacks.on_complete = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete_calls++;
+  };
+  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_error_calls++;
+  };
+  bridge_callbacks.on_cancel = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_cancel_calls++;
+  };
+
+  // Build a set of request headers.
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, true);
+
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
+  send_headers_post_cb();
+
+  // Encode response headers.
+  TestHeaderMapImpl response_headers{{":status", "200"}};
+  response_encoder_->encodeHeaders(response_headers, false);
+  ASSERT_EQ(cc.on_headers_calls, 1);
+
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  response_encoder_->getStream().resetStream(StreamResetReason::RemoteReset);
+  stream_deletion_post_cb();
+  // Ensure that the on_error on the bridge_callbacks was called.
+  ASSERT_EQ(cc.on_error_calls, 1);
+  ASSERT_EQ(cc.on_complete_calls, 0);
+}
+
+TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response headers.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
+                                   void* context) -> void {
+    ASSERT_TRUE(end_stream);
+    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_headers_calls++;
+  };
+  bridge_callbacks.on_complete = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete_calls++;
+  };
+
+  // Build a set of request headers.
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, true);
+
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
+  send_headers_post_cb();
+
+  // Encode response headers.
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  TestHeaderMapImpl response_headers{{":status", "200"}};
+  response_encoder_->encodeHeaders(response_headers, true);
+  ASSERT_EQ(cc.on_headers_calls, 1);
+  stream_deletion_post_cb();
+
+  // Ensure that the callbacks on the bridge_callbacks were called.
+  ASSERT_EQ(cc.on_complete_calls, 1);
+
+  // Cancellation should have no effect as the stream should have already been cleaned up.
+  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_FAILURE);
+}
 
 } // namespace Http
 } // namespace Envoy

@@ -130,7 +130,6 @@ private:
    */
   class DirectStream : public Stream,
                        public StreamCallbackHelper,
-                       public Event::DeferredDeletable,
                        public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher);
@@ -175,14 +174,14 @@ private:
     std::vector<HeaderMapPtr> metadata_;
   };
 
-  using DirectStreamPtr = std::unique_ptr<DirectStream>;
+  using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;
 
   /**
    * Post a functor to the dispatcher. This is safe cross thread.
    * @param callback, the functor to post.
    */
   void post(Event::PostCb callback);
-  DirectStream* getStream(envoy_stream_t stream_handle);
+  DirectStreamSharedPtr getStream(envoy_stream_t stream_handle);
   void cleanup(envoy_stream_t stream_handle);
   void attachPreferredNetwork(HeaderMap& headers);
 
@@ -192,7 +191,10 @@ private:
   std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
   Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
   ApiListener* api_listener_ GUARDED_BY(dispatch_lock_){};
-  std::unordered_map<envoy_stream_t, DirectStreamPtr> streams_;
+  // streams_ holds shared_ptr in order to allow cancellation to happen synchronously even though
+  // DirectStream cleanup happens asynchronously.
+  // @see Dispatcher::resetStream.
+  std::unordered_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;

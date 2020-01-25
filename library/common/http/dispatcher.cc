@@ -232,14 +232,13 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks,
                                        envoy_stream_options) {
   post([this, new_stream_handle, bridge_callbacks]() -> void {
-    DirectStreamPtr direct_stream{new DirectStream(new_stream_handle, *this)};
+    Dispatcher::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
     direct_stream->callbacks_ =
         std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
     // Only the initial setting of the api_listener_ is guarded.
     direct_stream->stream_decoder_ =
         &TS_UNCHECKED_READ(api_listener_)->newStream(*direct_stream->callbacks_);
-    ENVOY_LOG(error, "got stream decoder");
 
     streams_.emplace(new_stream_handle, std::move(direct_stream));
     ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
@@ -251,7 +250,7 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
 envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers headers,
                                        bool end_stream) {
   post([this, stream, headers, end_stream]() -> void {
-    DirectStream* direct_stream = getStream(stream);
+    Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
     // except silently swallow this.
@@ -274,7 +273,7 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
 
 envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   post([this, stream, data, end_stream]() -> void {
-    DirectStream* direct_stream = getStream(stream);
+    Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
     // except silently swallow this.
@@ -302,7 +301,7 @@ envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) { return 
 
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   post([this, stream, trailers]() -> void {
-    DirectStream* direct_stream = getStream(stream);
+    Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
     // If direct_stream is not found, it means the stream has already closed or been reset
     // and the appropriate callback has been issued to the caller. There's nothing to do here
     // except silently swallow this.
@@ -322,46 +321,57 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
 }
 
 envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
-  post([this, stream]() -> void {
-    DirectStream* direct_stream = getStream(stream);
-    if (direct_stream) {
-      if (direct_stream->dispatchable(true)) {
-        direct_stream->callbacks_->onCancel();
-      }
-      // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
-      // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream only
-      // needs to be as long as that deferred delete. Therefore, we synchronously call cleanup here
-      // which will defer delete the DirectStream, which by definition will be scheduled **after**
-      // the HCM's defer delete as they are scheduled on the same dispatcher context.
-      //
-      // StreamResetReason::RemoteReset is used as the platform code that issues the cancellation is
-      // considered the remote.
-      direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
-      cleanup(direct_stream->stream_handle_);
+  Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
+  if (direct_stream) {
+    if (direct_stream->dispatchable(true)) {
+      direct_stream->callbacks_->onCancel();
     }
-  });
-  return ENVOY_SUCCESS;
+
+    post([this, stream]() -> void {
+      Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
+      if (direct_stream) {
+        // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
+        // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream
+        // only needs to be as long as that deferred delete. Therefore, we synchronously call
+        // cleanup here which will defer delete the DirectStream, which by definition will be
+        // scheduled **after** the HCM's defer delete as they are scheduled on the same dispatcher
+        // context.
+        //
+        // StreamResetReason::RemoteReset is used as the platform code that issues the cancellation
+        // is considered the remote.
+        direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+        cleanup(direct_stream->stream_handle_);
+      }
+    });
+    return ENVOY_SUCCESS;
+  }
+
+  return ENVOY_FAILURE;
 }
 
-Dispatcher::DirectStream* Dispatcher::getStream(envoy_stream_t stream) {
+Dispatcher::DirectStreamSharedPtr Dispatcher::getStream(envoy_stream_t stream) {
   // The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
   // function should only be called from the context of Envoy's event dispatcher.
-  ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
-         "stream interaction must be performed on the event_dispatcher_'s thread.");
+
   auto direct_stream_pair_it = streams_.find(stream);
-  return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second.get() : nullptr;
+  return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second : nullptr;
 }
 
 void Dispatcher::cleanup(envoy_stream_t stream_handle) {
-  DirectStream* direct_stream = getStream(stream_handle);
+  ASSERT(TS_UNCHECKED_READ(event_dispatcher_)->isThreadSafe(),
+         "stream cleanup must be performed on the event_dispatcher_'s thread.");
+  Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream_handle);
   RELEASE_ASSERT(direct_stream,
                  "cleanup is a private method that is only called with stream ids that exist");
 
-  auto it = streams_.find(stream_handle);
   // The DirectStream should live through synchronous code that already has a reference to it.
-  // Hence why it is scheduled for deferred deletion.
-  TS_UNCHECKED_READ(event_dispatcher_)->deferredDelete(std::move(it->second));
-  // However, being able to get a reference to it after cleanup returns should be impossible.
+  // Hence why it is scheduled for deferred deletion. If this was all that was needed then it would
+  // be sufficient to return a shared_ptr in getStream. However, deferred deletion is still required
+  // because in Dispatcher::resetStream the DirectStream needs to live for as long and the HCM's
+  // ActiveStream lives. Hence its deletion needs to live beyond the synchronous code in
+  // Dispatcher::resetStream.
+  TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {});
+  // However, the entry in the map should not exist after cleanup.
   // Hence why it is synchronously erased from the streams map.
   size_t erased = streams_.erase(stream_handle);
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
