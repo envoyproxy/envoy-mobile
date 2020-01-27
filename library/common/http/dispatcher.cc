@@ -162,7 +162,8 @@ void Dispatcher::DirectStreamCallbacks::onCancel() {
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher)
     : stream_handle_(stream_handle), parent_(http_dispatcher) {}
 
-// FIXME: before merge. Use the reset reason.
+// TODO(junr03): map from StreamResetReason to Envoy Mobile's error types. Right now all reasets
+// will be ENVOY_STREAM_RESET.
 void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
 
 void Dispatcher::DirectStream::closeLocal(bool end_stream) {
@@ -240,7 +241,9 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     direct_stream->stream_decoder_ =
         &TS_UNCHECKED_READ(api_listener_)->newStream(*direct_stream->callbacks_);
 
+    Thread::ReleasableLockGuard lock(streams_lock_);
     streams_.emplace(new_stream_handle, std::move(direct_stream));
+    lock.release();
     ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
   });
 
@@ -350,10 +353,12 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
 }
 
 Dispatcher::DirectStreamSharedPtr Dispatcher::getStream(envoy_stream_t stream) {
-  // The dispatch_lock_ does not need to guard the event_dispatcher_ pointer here because this
-  // function should only be called from the context of Envoy's event dispatcher.
+  Thread::LockGuard lock(streams_lock_);
 
   auto direct_stream_pair_it = streams_.find(stream);
+  // Returning will copy the shared_ptr and increase the ref count. Moreover, this is safe because
+  // creation of the return value happens before destruction of local variables:
+  // https://stackoverflow.com/questions/33150508/in-c-which-happens-first-the-copy-of-a-return-object-or-local-objects-destru
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second : nullptr;
 }
 
@@ -373,7 +378,9 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {});
   // However, the entry in the map should not exist after cleanup.
   // Hence why it is synchronously erased from the streams map.
+  Thread::ReleasableLockGuard lock(streams_lock_);
   size_t erased = streams_.erase(stream_handle);
+  lock.release();
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
   ENVOY_LOG(debug, "[S{}] remove stream", stream_handle);
 }

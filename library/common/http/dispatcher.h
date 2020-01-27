@@ -141,7 +141,7 @@ private:
     const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override {
       return parent_.address_;
     }
-    // FIXME: before merge. implement
+    // TODO: stream watermark control.
     void readDisable(bool) override {}
     uint32_t bufferLimit() override { return 65000; }
 
@@ -151,7 +151,6 @@ private:
     /**
      * Return whether a callback should be allowed to continue with execution.
      * This ensures at most one 'terminal' callback is issued for any given stream.
-     * FIXME: before merge. should this be in the DirectStreamCallbacks?
      *
      * @param close, whether the DirectStream should close if it has not closed before.
      * @return bool, whether callbacks on this stream are dispatchable or not.
@@ -191,10 +190,17 @@ private:
   std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
   Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
   ApiListener* api_listener_ GUARDED_BY(dispatch_lock_){};
+  // std::unordered_map does is not safe for concurrent access. Thus a cross-thread, concurrent find
+  // in cancellation (which happens in a platform thread) with an erase (which always happens in the
+  // Envoy Main thread) is not safe.
+  // TODO: implement a lock-free access scheme here.
+  Thread::MutexBasicLockable streams_lock_;
   // streams_ holds shared_ptr in order to allow cancellation to happen synchronously even though
-  // DirectStream cleanup happens asynchronously.
+  // DirectStream cleanup happens asynchronously. This is also done to keep the scope of the
+  // streams_lock_ small to make it easier to remove; one could easily use the lock in the
+  // Dispatcher::resetStream to avoid using shared_ptrs.
   // @see Dispatcher::resetStream.
-  std::unordered_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
+  std::unordered_map<envoy_stream_t, DirectStreamSharedPtr> streams_ GUARDED_BY(streams_lock_);
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
