@@ -196,8 +196,7 @@ typedef void (*envoy_on_error_f)(envoy_error error, void* context);
 typedef void (*envoy_on_complete_f)(void* context);
 
 /**
- * Called when the async HTTP stream has been cancelled by the application (FIXME: before merge.
- * word choice).
+ * Called when the async HTTP stream has been cancelled by the client.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  */

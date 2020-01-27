@@ -214,14 +214,15 @@ static void jvm_on_error(envoy_error error, void* context) {
 }
 
 static void jvm_on_complete(void* context) {
-  JNIEnv* env = nullptr;
-  static_jvm->GetEnv((void**)&env, JNI_VERSION);
+  JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   env->DeleteGlobalRef(j_context);
 }
 
 static void jvm_on_cancel(void* context) {
-  // FIXME: before merge. implement this.
+  JNIEnv* env = get_env();
+  jobject j_context = static_cast<jobject>(context);
+  env->DeleteGlobalRef(j_context);
 }
 
 // Utility functions

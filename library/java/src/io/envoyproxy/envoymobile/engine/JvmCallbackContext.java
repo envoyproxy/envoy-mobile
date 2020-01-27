@@ -11,13 +11,9 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 class JvmCallbackContext {
   private enum FrameType {
-    NONE,
-    HEADERS,
-    METADATA,
-    TRAILERS,
+    NONE, HEADERS, METADATA, TRAILERS,
   }
 
-  private final AtomicBoolean closed = new AtomicBoolean(false);
   private final EnvoyHTTPCallbacks callbacks;
 
   // State-tracking for header accumulation
@@ -27,20 +23,8 @@ class JvmCallbackContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
-  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) { this.callbacks = callbacks; }
-
-  /**
-   * Return whether a callback should be allowed to continue with execution. This ensures at most
-   * one 'terminal' callback is issued for any given stream.
-   *
-   * @param close, whether the stream should be closed as part of this determination.
-   */
-  private boolean dispatchable(boolean close) {
-    if (close) {
-      // Set closed to true and return true if not previously closed.
-      return !closed.getAndSet(true);
-    }
-    return !closed.get();
+  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) {
+    this.callbacks = callbacks;
   }
 
   /**
@@ -60,7 +44,9 @@ class JvmCallbackContext {
    *
    * @param length, the total number of trailers included in this header block.
    */
-  public void onTrailers(long length) { startAccumulation(FrameType.TRAILERS, length, true); }
+  public void onTrailers(long length) {
+    startAccumulation(FrameType.TRAILERS, length, true);
+  }
 
   /**
    * Allows pairs of strings to be passed across the JVM, reducing overall calls
@@ -103,10 +89,6 @@ class JvmCallbackContext {
 
     Runnable runnable = new Runnable() {
       public void run() {
-        if (!dispatchable(endStream)) {
-          return;
-        }
-
         switch (frameType) {
         case HEADERS:
           callbacks.onHeaders(headers, endStream);
@@ -138,9 +120,6 @@ class JvmCallbackContext {
   public void onData(byte[] data, boolean endStream) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
-        if (!dispatchable(endStream)) {
-          return;
-        }
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);
         callbacks.onData(dataBuffer, endStream);
       }
@@ -156,9 +135,6 @@ class JvmCallbackContext {
   public void onError(byte[] message, int errorCode) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
-        if (!dispatchable(true)) {
-          return;
-        }
         String errorMessage = new String(message);
         callbacks.onError(errorCode, errorMessage);
       }
@@ -177,22 +153,6 @@ class JvmCallbackContext {
     });
   }
 
-  /**
-   * Cancel the callback context atomically so that no further callbacks occur
-   * other than onCancel.
-   *
-   * @return boolean, whether the callback context was closed or not.
-   */
-  public boolean cancel() {
-    // Atomically close the stream if not already closed.
-    boolean closed = dispatchable(true);
-    if (closed) {
-      // Directly fire callback if closure occurred.
-      onCancel();
-    }
-    return closed;
-  }
-
   private void startAccumulation(FrameType type, long length, boolean endStream) {
     assert headerAccumulator == null;
     assert pendingFrameType == FrameType.NONE;
@@ -200,7 +160,7 @@ class JvmCallbackContext {
     assert expectedHeaderLength == 0;
     assert accumulatedHeaderLength == 0;
 
-    headerAccumulator = new HashMap((int)length);
+    headerAccumulator = new HashMap((int) length);
     pendingFrameType = type;
     expectedHeaderLength = length;
     pendingEndStream = endStream;
