@@ -444,7 +444,7 @@ TEST_F(DispatcherTest, ResetStreamLocal) {
 
   Event::PostCb reset_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-  ASSERT_EQUAL(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
   // The callback happens synchronously outside of the reset_stream_post_cb().
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
