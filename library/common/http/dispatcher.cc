@@ -38,6 +38,10 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
   if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
     envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
+
+    // Testing hook.
+    http_dispatcher_.synchronizer_.syncPoint("dispatch_encode_headers");
+
     if (direct_stream_.dispatchable(end_stream)) {
       ENVOY_LOG(debug,
                 "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
@@ -137,6 +141,9 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
+
+  // Testing hook.
+  http_dispatcher_.synchronizer_.syncPoint("dispatch_on_error");
 
   if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
@@ -326,27 +333,34 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
 envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
   Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
   if (direct_stream) {
+
+    // Testing hook.
+    synchronizer_.syncPoint("dispatch_on_cancel");
+
     if (direct_stream->dispatchable(true)) {
       direct_stream->callbacks_->onCancel();
-    }
 
-    post([this, stream]() -> void {
-      Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
-      if (direct_stream) {
-        // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
-        // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream
-        // only needs to be as long as that deferred delete. Therefore, we synchronously call
-        // cleanup here which will defer delete the DirectStream, which by definition will be
-        // scheduled **after** the HCM's defer delete as they are scheduled on the same dispatcher
-        // context.
-        //
-        // StreamResetReason::RemoteReset is used as the platform code that issues the cancellation
-        // is considered the remote.
-        direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
-        cleanup(direct_stream->stream_handle_);
-      }
-    });
-    return ENVOY_SUCCESS;
+      // n.b: this is guarded by the call above. If the onCancel is not dispatchable then that means
+      // that another terminal callback has already happened. All terminal callbacks clean up stream
+      // state, so there is no need to dispatch here.
+      post([this, stream]() -> void {
+        Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
+        if (direct_stream) {
+          // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
+          // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream
+          // only needs to be as long as that deferred delete. Therefore, we synchronously call
+          // cleanup here which will defer delete the DirectStream, which by definition will be
+          // scheduled **after** the HCM's defer delete as they are scheduled on the same dispatcher
+          // context.
+          //
+          // StreamResetReason::RemoteReset is used as the platform code that issues the
+          // cancellation is considered the remote.
+          direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+          cleanup(direct_stream->stream_handle_);
+        }
+      });
+      return ENVOY_SUCCESS;
+    }
   }
 
   return ENVOY_FAILURE;
@@ -370,11 +384,14 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
                  "cleanup is a private method that is only called with stream ids that exist");
 
   // The DirectStream should live through synchronous code that already has a reference to it.
-  // Hence why it is scheduled for deferred deletion. If this was all that was needed then it would
-  // be sufficient to return a shared_ptr in getStream. However, deferred deletion is still required
-  // because in Dispatcher::resetStream the DirectStream needs to live for as long and the HCM's
-  // ActiveStream lives. Hence its deletion needs to live beyond the synchronous code in
+  // Hence why it is scheduled for deferred deletion. If this was all that was needed then it
+  // would be sufficient to return a shared_ptr in getStream. However, deferred deletion is still
+  // required because in Dispatcher::resetStream the DirectStream needs to live for as long and
+  // the HCM's ActiveStream lives. Hence its deletion needs to live beyond the synchronous code in
   // Dispatcher::resetStream.
+  // TODO: currently upstream Envoy does not have a deferred delete version for shared_ptr. This
+  // means that instead of efficiently queuing the deletes for one event in the event loop, all
+  // deletes here get queued up as individual posts.
   TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {});
   // However, the entry in the map should not exist after cleanup.
   // Hence why it is synchronously erased from the streams map.

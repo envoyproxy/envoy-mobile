@@ -12,6 +12,7 @@
 
 #include "common/common/logger.h"
 #include "common/common/thread.h"
+#include "common/common/thread_synchronizer.h"
 #include "common/http/codec_helper.h"
 
 #include "absl/types/optional.h"
@@ -85,6 +86,8 @@ public:
    * @return envoy_status_t, the resulting status of the operation.
    */
   envoy_status_t resetStream(envoy_stream_t stream);
+
+  Thread::ThreadSynchronizer& synchronizer() { return synchronizer_; }
 
 private:
   class DirectStream;
@@ -204,6 +207,7 @@ private:
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
+  Thread::ThreadSynchronizer synchronizer_;
 };
 
 } // namespace Http
