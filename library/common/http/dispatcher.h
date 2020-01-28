@@ -136,6 +136,7 @@ private:
                        public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher);
+    ~DirectStream();
 
     // Stream
     void addCallbacks(StreamCallbacks& callbacks) override { addCallbacks_(callbacks); }
@@ -149,8 +150,7 @@ private:
     uint32_t bufferLimit() override { return 65000; }
 
     void closeLocal(bool end_stream);
-    void closeRemote(bool end_stream);
-    bool complete();
+
     /**
      * Return whether a callback should be allowed to continue with execution.
      * This ensures at most one 'terminal' callback is issued for any given stream.
@@ -163,7 +163,7 @@ private:
     const envoy_stream_t stream_handle_;
     std::atomic<bool> closed_{};
     bool local_closed_{};
-    bool remote_closed_{};
+
     // Used to issue outgoing HTTP stream operations.
     StreamDecoder* stream_decoder_;
     // Used to receive incoming HTTP stream operations.

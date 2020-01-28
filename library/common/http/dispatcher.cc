@@ -131,7 +131,12 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
     ENVOY_LOG(debug, "[S{}] complete stream", direct_stream_.stream_handle_);
     bridge_callbacks_.on_complete(bridge_callbacks_.context);
-    direct_stream_.closeRemote(true);
+    // Envoy dissallows half-open local streams so we cleanup whenever remote closes even though
+    // local might be open. Note that if local is open Envoy will reset the stream. Calling cleanup
+    // here is fine because the stream reset will come through synchronously in the same thread.
+    // Thus the stream deletion will happen necessarily after the reset occurs.
+    ENVOY_LOG(debug, "[S{}] scheduling cleanup", direct_stream_.stream_handle_);
+    http_dispatcher_.cleanup(direct_stream_.stream_handle_);
   }
 }
 
@@ -145,16 +150,18 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // Testing hook.
   http_dispatcher_.synchronizer_.syncPoint("dispatch_on_error");
 
+  // direct_stream_ will not be a dangling reference even in the case that closeRemote cleaned up
+  // because in that case this reset is happening synchronously, with the encoding call that called
+  // closeRemote, in the Envoy Main thread. Hence DirectStream destruction which is posted on the
+  // Envoy Main thread's event loop will strictly happen after this direct_stream_ reference is
+  // used.
   if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
               direct_stream_.stream_handle_);
     bridge_callbacks_.on_error({code, message}, bridge_callbacks_.context);
-  }
 
-  // If the DirectStream was completed in a healthy fashion then it was already deferred deleted.
-  // FIXME: before merge. Can the guarantee here be stronger? i.e can this actually be:
-  // ASSERT(!direct_stream_.complete());
-  if (!direct_stream_.complete()) {
+    // All the terminal callbacks only cleanup if they are dispatchable.
+    // This ensures that cleanup will happen exactly one time.
     http_dispatcher_.cleanup(direct_stream_.stream_handle_);
   }
 }
@@ -169,7 +176,11 @@ void Dispatcher::DirectStreamCallbacks::onCancel() {
 Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher& http_dispatcher)
     : stream_handle_(stream_handle), parent_(http_dispatcher) {}
 
-// TODO(junr03): map from StreamResetReason to Envoy Mobile's error types. Right now all reasets
+Dispatcher::DirectStream::~DirectStream() {
+  ENVOY_LOG(debug, "[S{}] destroy stream", stream_handle_);
+}
+
+// TODO(junr03): map from StreamResetReason to Envoy Mobile's error types. Right now all resets
 // will be ENVOY_STREAM_RESET.
 void Dispatcher::DirectStream::resetStream(StreamResetReason) { callbacks_->onReset(); }
 
@@ -182,19 +193,6 @@ void Dispatcher::DirectStream::closeLocal(bool end_stream) {
   // Remote closure is guaranteed to happen either through the golden path, or through an Envoy
   // driven reset.
 }
-void Dispatcher::DirectStream::closeRemote(bool end_stream) {
-  remote_closed_ = end_stream;
-  // Even though we have potentially fired an on_complete callback to the bridge_callbacks,
-  // We will only cleanup if **both** the local and the remote have closed because otherwise we
-  // can be expecting a reset from envoy.
-  // See the comment for @see Dispatcher::DirectStreamCallbacks::closeRemote().
-  if ((complete())) {
-    ENVOY_LOG(debug, "[S{}] scheduling cleanup", stream_handle_);
-    parent_.cleanup(stream_handle_);
-  }
-}
-
-bool Dispatcher::DirectStream::complete() { return local_closed_ && remote_closed_; }
 
 bool Dispatcher::DirectStream::dispatchable(bool close) {
   if (close) {
@@ -331,6 +329,9 @@ envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers tra
 }
 
 envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
+  // Testing hook.
+  synchronizer_.syncPoint("getStream_on_cancel");
+
   Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
   if (direct_stream) {
 
@@ -359,8 +360,8 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
           cleanup(direct_stream->stream_handle_);
         }
       });
-      return ENVOY_SUCCESS;
     }
+    return ENVOY_SUCCESS;
   }
 
   return ENVOY_FAILURE;
@@ -392,14 +393,16 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   // TODO: currently upstream Envoy does not have a deferred delete version for shared_ptr. This
   // means that instead of efficiently queuing the deletes for one event in the event loop, all
   // deletes here get queued up as individual posts.
-  TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {});
+  TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {
+    ENVOY_LOG(debug, "[S{}] deferred deletion of stream", direct_stream->stream_handle_);
+  });
   // However, the entry in the map should not exist after cleanup.
   // Hence why it is synchronously erased from the streams map.
   Thread::ReleasableLockGuard lock(streams_lock_);
   size_t erased = streams_.erase(stream_handle);
   lock.release();
   ASSERT(erased == 1, "cleanup should always remove one entry from the streams map");
-  ENVOY_LOG(debug, "[S{}] remove stream", stream_handle);
+  ENVOY_LOG(debug, "[S{}] erased stream from streams container", stream_handle);
 }
 
 namespace {
