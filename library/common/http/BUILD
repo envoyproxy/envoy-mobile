@@ -25,6 +25,7 @@ envoy_cc_library(
         "@envoy//source/common/common:lock_guard_lib",
         "@envoy//source/common/common:minimal_logger_lib",
         "@envoy//source/common/common:thread_lib",
+        "@envoy//source/common/common:thread_synchronizer_lib",
         "@envoy//source/common/http:codec_helper_lib",
         "@envoy//source/common/http:headers_lib",
         "@envoy//source/common/http:utility_lib",
