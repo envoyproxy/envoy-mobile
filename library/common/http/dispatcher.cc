@@ -127,13 +127,14 @@ void Dispatcher::DirectStreamCallbacks::closeRemote(bool end_stream) {
     // Envoy itself does not currently allow half-open streams where the local half is open
     // but the remote half is closed. Therefore, we fire the on_complete callback
     // to the platform layer whenever remote closes.
-    // To understand DirectStream cleanup @see Dispatcher::DirectStream::closeRemote().
     ENVOY_LOG(debug, "[S{}] complete stream", direct_stream_.stream_handle_);
     bridge_callbacks_.on_complete(bridge_callbacks_.context);
-    // Envoy dissallows half-open local streams so we cleanup whenever remote closes even though
+    // Likewise cleanup happens whenever remote closes even though
     // local might be open. Note that if local is open Envoy will reset the stream. Calling cleanup
-    // here is fine because the stream reset will come through synchronously in the same thread.
-    // Thus the stream deletion will happen necessarily after the reset occurs.
+    // here is fine because the stream reset will come through synchronously in the same thread as
+    // this closeRemote code. Because DirectStream deletion is deferred, the deletion will happen
+    // necessarily after the reset occurs. Thus Dispatcher::DirectStreamCallbacks::onReset will
+    // **not** have a dangling reference.
     ENVOY_LOG(debug, "[S{}] scheduling cleanup", direct_stream_.stream_handle_);
     http_dispatcher_.cleanup(direct_stream_.stream_handle_);
   }
@@ -153,7 +154,7 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // because in that case this reset is happening synchronously, with the encoding call that called
   // closeRemote, in the Envoy Main thread. Hence DirectStream destruction which is posted on the
   // Envoy Main thread's event loop will strictly happen after this direct_stream_ reference is
-  // used.
+  // used. @see Dispatcher::DirectStreamCallbacks::closeRemote() for more details.
   if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
               direct_stream_.stream_handle_);
@@ -187,10 +188,9 @@ void Dispatcher::DirectStream::closeLocal(bool end_stream) {
   // TODO: potentially guard against double local closure.
   local_closed_ = end_stream;
 
-  // No cleanup happens here because cleanup always happens on remote closure.
-  // see @Dispatcher::DirectStreamCallbacks::closeRemote.
-  // Remote closure is guaranteed to happen either through the golden path, or through an Envoy
-  // driven reset.
+  // No cleanup happens here because cleanup always happens on remote closure or local reset.
+  // @see Dispatcher::DirectStreamCallbacks::closeRemote, and @see Dispatcher::resetStream,
+  // respectively.
 }
 
 bool Dispatcher::DirectStream::dispatchable(bool close) {
