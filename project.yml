@@ -13,6 +13,13 @@ settings:
   SWIFT_OBJC_INTERFACE_HEADER_NAME: ""
   SWIFT_VERSION: 5
 targets:
+  ios_framework:
+    type: framework.static
+    platform: iOS
+    settings:
+      PRODUCT_MODULE_NAME: Envoy
+    sources:
+      - path: library/swift/src
   envoy-mobile:
     type: framework.static
     platform: iOS
@@ -51,8 +58,6 @@ targets:
         script: PATH=${PATH} "$SRCROOT"/tools/xcode-build.sh
     sources:
       - path: library/common
-        headerVisibility: project
-      - path: library/swift/src
         headerVisibility: project
       - path: library/objective-c
         headerVisibility: project
