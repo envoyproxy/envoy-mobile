@@ -1,8 +1,8 @@
+#include "test/common/http/common.h"
 #include "test/integration/integration.h"
 #include "test/server/utility.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/utility.h"
-#include "test/common/http/common.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,7 +25,8 @@ typedef struct {
   ConditionalInitializer* terminal_callback;
 } callbacks_called;
 
-// TODO(junr03): move this to derive from the ApiListenerIntegrationTest after moving that class into a test lib.
+// TODO(junr03): move this to derive from the ApiListenerIntegrationTest after moving that class
+// into a test lib.
 class DispatcherIntegrationTest : public BaseIntegrationTest,
                                   public testing::TestWithParam<Network::Address::IpVersion> {
 public:
