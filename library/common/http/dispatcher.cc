@@ -37,8 +37,6 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
 
   // The presence of EnvoyUpstreamServiceTime implies these headers are not due to a local reply.
   if (headers.get(Headers::get().EnvoyUpstreamServiceTime) != nullptr) {
-    envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
-
     // Testing hook.
     http_dispatcher_.synchronizer_.syncPoint("dispatch_encode_headers");
 
@@ -46,7 +44,8 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
       ENVOY_LOG(debug,
                 "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
                 direct_stream_.stream_handle_, end_stream, headers);
-      bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+      bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
+                                   bridge_callbacks_.context);
       closeRemote(end_stream);
     }
     return;
@@ -59,9 +58,9 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   uint64_t response_status = Http::Utility::getResponseStatus(headers);
   switch (response_status) {
   case 200: {
-    envoy_headers bridge_headers = Utility::toBridgeHeaders(headers);
     if (direct_stream_.dispatchable(end_stream)) {
-      bridge_callbacks_.on_headers(bridge_headers, end_stream, bridge_callbacks_.context);
+      bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
+                                   bridge_callbacks_.context);
       closeRemote(end_stream);
     }
     return;
