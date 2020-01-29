@@ -50,6 +50,114 @@ public:
   Dispatcher http_dispatcher_{preferred_network_};
 };
 
+TEST_F(DispatcherTest, PreferredNetwork) {
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response headers.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
+                                   void* context) -> void {
+    ASSERT_TRUE(end_stream);
+    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_headers_calls++;
+  };
+  bridge_callbacks.on_complete = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete_calls++;
+  };
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](StreamEncoder& encoder, bool) -> StreamDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers. Sending multiple headers is illegal and the upstream codec would not
+  // accept it. However, given we are just trying to test preferred network headers and using mocks
+  // this is fine.
+
+  TestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  preferred_network_.store(ENVOY_NET_WLAN);
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, false);
+
+  TestHeaderMapImpl expected_headers{
+      {":scheme", "http"},
+      {":method", "GET"},
+      {":authority", "host"},
+      {":path", "/"},
+      {"x-envoy-mobile-cluster", "base_wlan"},
+  };
+  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers), false));
+  send_headers_post_cb();
+
+  TestHeaderMapImpl headers2;
+  HttpTestUtility::addDefaultHeaders(headers2);
+  envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
+
+  preferred_network_.store(ENVOY_NET_WLAN);
+  Event::PostCb send_headers_post_cb2;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb2));
+  http_dispatcher_.sendHeaders(stream, c_headers2, false);
+
+  TestHeaderMapImpl expected_headers2{
+      {":scheme", "http"},
+      {":method", "GET"},
+      {":authority", "host"},
+      {":path", "/"},
+      {"x-envoy-mobile-cluster", "base_wlan"},
+  };
+  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
+  send_headers_post_cb2();
+
+  TestHeaderMapImpl headers3;
+  HttpTestUtility::addDefaultHeaders(headers3);
+  envoy_headers c_headers3 = Utility::toBridgeHeaders(headers3);
+
+  preferred_network_.store(ENVOY_NET_WWAN);
+  Event::PostCb send_headers_post_cb3;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb3));
+  http_dispatcher_.sendHeaders(stream, c_headers3, true);
+
+  TestHeaderMapImpl expected_headers3{
+      {":scheme", "http"},
+      {":method", "GET"},
+      {":authority", "host"},
+      {":path", "/"},
+      {"x-envoy-mobile-cluster", "base_wwan"},
+  };
+  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
+  send_headers_post_cb3();
+
+  // Encode response headers.
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  TestHeaderMapImpl response_headers{{":status", "200"}};
+  response_encoder_->encodeHeaders(response_headers, true);
+  ASSERT_EQ(cc.on_headers_calls, 1);
+  stream_deletion_post_cb();
+
+  // Ensure that the callbacks on the bridge_callbacks were called.
+  ASSERT_EQ(cc.on_complete_calls, 1);
+}
+
 TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
