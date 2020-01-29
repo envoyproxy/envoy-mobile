@@ -1,7 +1,6 @@
 #include <atomic>
 
 #include "common/buffer/buffer_impl.h"
-#include "common/http/async_client_impl.h"
 #include "common/http/context_impl.h"
 
 #include "test/common/http/common.h"

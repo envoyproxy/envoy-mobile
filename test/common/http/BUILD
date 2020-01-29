@@ -12,7 +12,6 @@ envoy_cc_test(
         "//library/common/http:dispatcher_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
-        "@envoy//source/common/http:async_client_lib",
         "@envoy//source/common/http:context_lib",
         "@envoy//test/common/http:common_lib",
         "@envoy//test/mocks/buffer:buffer_mocks",
