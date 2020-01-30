@@ -9,6 +9,7 @@
 #include "library/common/buffer/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/network/synthetic_address_impl.h"
+#include "library/common/thread/lock_guard.h"
 
 namespace Envoy {
 namespace Http {
@@ -40,12 +41,16 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
     // Testing hook.
     http_dispatcher_.synchronizer_.syncPoint("dispatch_encode_headers");
 
+    // @see Dispatcher::DirectStream::dispatch_lock_ for why this lock is necessary.
+    Thread::BasicLockable* mutex = end_stream ? nullptr : &direct_stream_.dispatch_lock_;
+    Thread::OptionalReleasableLockGuard lock(mutex);
     if (direct_stream_.dispatchable(end_stream)) {
       ENVOY_LOG(debug,
                 "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
                 direct_stream_.stream_handle_, end_stream, headers);
       bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
                                    bridge_callbacks_.context);
+      lock.release();
       closeRemote(end_stream);
     }
     return;
@@ -58,9 +63,13 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   uint64_t response_status = Http::Utility::getResponseStatus(headers);
   switch (response_status) {
   case 200: {
+    // @see Dispatcher::DirectStream::dispatch_lock_ for why this lock is necessary.
+    Thread::BasicLockable* mutex = end_stream ? nullptr : &direct_stream_.dispatch_lock_;
+    Thread::OptionalReleasableLockGuard lock(mutex);
     if (direct_stream_.dispatchable(end_stream)) {
       bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
                                    bridge_callbacks_.context);
+      lock.release();
       closeRemote(end_stream);
     }
     return;
@@ -87,12 +96,16 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
   if (!error_code_.has_value()) {
+    // @see Dispatcher::DirectStream::dispatch_lock_ for why this lock is necessary.
+    Thread::BasicLockable* mutex = end_stream ? nullptr : &direct_stream_.dispatch_lock_;
+    Thread::OptionalReleasableLockGuard lock(mutex);
     if (direct_stream_.dispatchable(end_stream)) {
       ENVOY_LOG(debug,
                 "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
                 direct_stream_.stream_handle_, data.length(), end_stream);
       bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                                 bridge_callbacks_.context);
+      lock.release();
       closeRemote(end_stream);
     }
   } else {
@@ -202,7 +215,7 @@ bool Dispatcher::DirectStream::dispatchable(bool close) {
 }
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_listener) {
-  Thread::LockGuard lock(dispatch_lock_);
+  Thread::LockGuard lock(ready_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
   for (const Event::PostCb& cb : init_queue_) {
@@ -216,7 +229,7 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_lis
 }
 
 void Dispatcher::post(Event::PostCb callback) {
-  Thread::LockGuard lock(dispatch_lock_);
+  Thread::LockGuard lock(ready_lock_);
 
   // If the event_dispatcher_ is set, then post the functor directly to it.
   if (event_dispatcher_ != nullptr) {
@@ -337,9 +350,11 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
     // Testing hook.
     synchronizer_.syncPoint("dispatch_on_cancel");
 
+    // @see Dispatcher::DirectStream::dispatch_lock_ for why this lock is necessary.
+    Thread::ReleasableLockGuard lock(direct_stream->dispatch_lock_);
     if (direct_stream->dispatchable(true)) {
       direct_stream->callbacks_->onCancel();
-
+      lock.release();
       // n.b: this is guarded by the call above. If the onCancel is not dispatchable then that means
       // that another terminal callback has already happened. All terminal callbacks clean up stream
       // state, so there is no need to dispatch here.
@@ -362,7 +377,6 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
     }
     return ENVOY_SUCCESS;
   }
-
   return ENVOY_FAILURE;
 }
 

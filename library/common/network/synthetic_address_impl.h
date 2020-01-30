@@ -10,9 +10,10 @@ namespace Address {
 
 // TODO(junr03): https://github.com/envoyproxy/envoy/pull/9362/ introduced API surface to the
 // codec's Stream interface that made it necessary for Stream to be aware of its underlying
-// connection. This class is created in order to stub out connections for Stream implementations
+// connection. This class is created in order to stub out Address for Stream implementations
 // that have no backing connection, e.g Envoy Mobile's DirectStream. It might be possible to
 // eliminate this dependency.
+// TODO(junr03): consider moving this code to Envoy's codebase.
 class SyntheticAddressImpl : public Instance {
 public:
   SyntheticAddressImpl() {}

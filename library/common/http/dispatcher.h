@@ -161,6 +161,22 @@ private:
     bool dispatchable(bool close);
 
     const envoy_stream_t stream_handle_;
+    // https://github.com/lyft/envoy-mobile/pull/616 moved stream cancellation (and its atomic
+    // state) from the platform layer to the core layer, here. This change was made to solidify two
+    // platform-level implementations into one implementation in the core layer. Moreover, it
+    // allowed Envoy Mobile to have test coverage where it didn't before.
+
+    // However, it introduced a subtle race between Dispatcher::resetStream's onCancel and any of
+    // encodeHeaders/Data's callbacks that are _not_ terminal. The race happens because the two
+    // callbacks are being enqueued onto the same dispatch queue/ran on the same executor by two
+    // different threading contexts _after_ the atomic check of the closed_ state happens. This
+    // means that they could be serialized in either order; whereas we want to guarantee that _no_
+    // callback will be executed after onCancel fires in the application. The lock protects the
+    // critical region between the call to dispatchable, and after the call that dispatches the
+    // appropriate callback. There should not be much lock contention because most calls will happen
+    // from the single-threaded context of the Envoy Main thread (encodeHeaders/Data). Alternative
+    // solutions will be considered in: https://github.com/lyft/envoy-mobile/issues/647
+    Thread::MutexBasicLockable dispatch_lock_;
     std::atomic<bool> closed_{};
     bool local_closed_{};
 
@@ -187,12 +203,10 @@ private:
   void cleanup(envoy_stream_t stream_handle);
   void attachPreferredNetwork(HeaderMap& headers);
 
-  // The dispatch_lock_ and init_queue_, and event_dispatcher_ are the only member state that may
-  // be accessed from a thread other than the event_dispatcher's own thread.
-  Thread::MutexBasicLockable dispatch_lock_;
-  std::list<Event::PostCb> init_queue_ GUARDED_BY(dispatch_lock_);
-  Event::Dispatcher* event_dispatcher_ GUARDED_BY(dispatch_lock_){};
-  ApiListener* api_listener_ GUARDED_BY(dispatch_lock_){};
+  Thread::MutexBasicLockable ready_lock_;
+  std::list<Event::PostCb> init_queue_ GUARDED_BY(ready_lock_);
+  Event::Dispatcher* event_dispatcher_ GUARDED_BY(ready_lock_){};
+  ApiListener* api_listener_ GUARDED_BY(ready_lock_){};
   // std::unordered_map does is not safe for concurrent access. Thus a cross-thread, concurrent find
   // in cancellation (which happens in a platform thread) with an erase (which always happens in the
   // Envoy Main thread) is not safe.
