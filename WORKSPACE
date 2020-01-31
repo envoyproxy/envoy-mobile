@@ -19,7 +19,7 @@ http_archive(
 )
 
 # Patch upstream Abseil to prevent Foundation dependency from leaking into Android builds.
-# Workaround for https://gigit thub.com/abseil/abseil-cpp/issues/326.
+# Workaround for https://github.com/abseil/abseil-cpp/issues/326.
 # TODO: Should be removed in https://github.com/lyft/envoy-mobile/issues/136 once rules_android
 # supports platform toolchains.
 http_archive(
