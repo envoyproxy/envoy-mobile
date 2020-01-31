@@ -6,10 +6,12 @@ set -e
 
 # We need to set ENVOY_DOCS_VERSION_STRING and ENVOY_DOCS_RELEASE_LEVEL for Sphinx.
 # We also validate that the tag and version match at this point if needed.
-if [ -n "$CIRCLE_TAG" ]
+VERSION_NUMBER=$(cat VERSION)
+# Docs for release tags are reserved for vX.Y.Z versions.
+# vX.Y.Z.ddmmyy do not publish tagged docs.
+if [[ -n "$CIRCLE_TAG" ]] && [[ "${VERSION_NUMBER}" =~ ^[0-9]+\.[0-9]+\.[0-9]$ ]]
 then
   # Check the git tag matches the version number in the VERSION file.
-  VERSION_NUMBER=$(cat VERSION)
   if [ "v${VERSION_NUMBER}" != "${CIRCLE_TAG}" ]; then
     echo "Given git tag does not match the VERSION file content:"
     echo "${CIRCLE_TAG} vs $(cat VERSION)"
