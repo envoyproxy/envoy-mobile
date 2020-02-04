@@ -19,7 +19,7 @@ data class RetryPolicy(
   init {
     if (perRetryTimeoutMS != null && totalUpstreamTimeoutMS != null &&
         perRetryTimeoutMS > totalUpstreamTimeoutMS && totalUpstreamTimeoutMS != 0L) {
-      throw IllegalArgumentException("Per-retry timeout must be <= total timeout when != 0")
+      throw IllegalArgumentException("Per-retry timeout cannot be less than total timeout")
     }
   }
 }
