@@ -41,7 +41,7 @@ class RetryPolicyMapperTest {
   }
 
   @Test
-  fun `retry policy without totalUpstreamTimeoutMS should include zero ms header`() {
+  fun `retry policy with null totalUpstreamTimeoutMS should include zero ms header`() {
     val retryPolicy = RetryPolicy(
         maxRetryCount = 123,
         retryOn = listOf(RetryRule.STATUS_5XX),
