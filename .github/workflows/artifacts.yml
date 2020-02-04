@@ -61,16 +61,18 @@ jobs:
       - uses: actions/checkout@v1
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
+      - name: 'Create temporary directory for artifact to produce properly named zip'
+        run: mkdir -p dist/envoy_ios_cocoapods
       - uses: actions/download-artifact@v1
         with:
           name: envoy_ios_framework
-          path: dist/envoy_ios_cocoapods
+          path: dist/envoy_ios_cocoapods/envoy_ios_cocoapods
       - name: 'Copy license for CocoaPods'
-        run: cp LICENSE dist/envoy_ios_cocoapods
+        run: cp LICENSE dist/envoy_ios_cocoapods/envoy_ios_cocoapods
       - name: 'Create empty Swift sources directory'
-        run: mkdir -p dist/envoy_ios_cocoapods/Envoy.framework/Swift
+        run: mkdir -p dist/envoy_ios_cocoapods/envoy_ios_cocoapods/Envoy.framework/Swift
       - name: 'Create empty Swift file to force Swift libraries to link properly'
-        run: touch dist/envoy_ios_cocoapods/Envoy.framework/Swift/Empty.swift
+        run: touch dist/envoy_ios_cocoapods/envoy_ios_cocoapods/Envoy.framework/Swift/Empty.swift
       - uses: actions/upload-artifact@v1
         with:
           name: envoy_ios_cocoapods
