@@ -44,12 +44,13 @@ class RetryPolicyMapperTest {
   fun `retry policy without totalUpstreamTimeoutMS should include zero ms header`() {
     val retryPolicy = RetryPolicy(
         maxRetryCount = 123,
-        retryOn = listOf(RetryRule.STATUS_5XX))
+        retryOn = listOf(RetryRule.STATUS_5XX),
+        totalUpstreamTimeoutMS = null)
 
         assertThat(retryPolicy.outboundHeaders()).isEqualTo(mapOf(
           "x-envoy-max-retries" to listOf("3"),
           "x-envoy-retry-on" to listOf("5xx"),
-          "x-envoy-upstream-rq-per-try-timeout-ms" to listOf("0"),
+          "x-envoy-upstream-rq-per-try-timeout-ms" to listOf("0")
       ))
   }
 
