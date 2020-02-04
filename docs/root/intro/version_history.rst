@@ -1,6 +1,16 @@
 Version history
 ---------------
 
+0.2.2 (Feb 3, 2020)
+===================
+
+Envoy Mobile v0.2.2 changes how network requests are performed to no longer use Envoy's `AsyncClient` and to instead consume the `ApiListener` directly (#616).
+
+Additional changes:
+
+- Domain is no longer required to be specified when starting Envoy Mobile (#641, #642)
+- Less aggressive retry back-off policies (#652)
+
 0.2.1 (Jan 6, 2020)
 ===================
 
