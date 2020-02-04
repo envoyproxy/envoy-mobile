@@ -34,7 +34,7 @@ public final class RetryPolicy: NSObject {
   public let maxRetryCount: UInt
   public let retryOn: [RetryRule]
   public let perRetryTimeoutMS: UInt?
-  public let totalUpstreamTimeoutMS: UInt
+  public let totalUpstreamTimeoutMS: UInt?
 
   /// Designated initializer.
   ///
@@ -47,13 +47,15 @@ public final class RetryPolicy: NSObject {
   ///                                     retries. Spans the point at which the entire downstream
   ///                                     request has been processed and when the upstream
   ///                                     response has been completely processed.
-  ///                                     Zero may be specified to disable the upstream timeout.
+  ///                                     Nil may be specified to disable the upstream timeout.
   public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutMS: UInt? = nil,
-              totalUpstreamTimeoutMS: UInt = 15_000)
+              totalUpstreamTimeoutMS: UInt? = 15_000)
   {
-    if let perRetryTimeoutMS = perRetryTimeoutMS {
-      assert(perRetryTimeoutMS <= totalUpstreamTimeoutMS || totalUpstreamTimeoutMS == 0,
-             "Per-retry timeout must be <= total timeout if total timeout != 0")
+    if let perRetryTimeoutMS = perRetryTimeoutMS,
+      let totalUpstreamTimeoutMS = totalUpstreamTimeoutMS
+    {
+      assert(perRetryTimeoutMS <= totalUpstreamTimeoutMS,
+             "Per-retry timeout must be <= total timeout")
     }
 
     self.maxRetryCount = maxRetryCount

@@ -8,18 +8,17 @@ package io.envoyproxy.envoymobile
  * @param perRetryTimeoutMS Timeout (in milliseconds) to apply to each retry. Must be <= `totalUpstreamTimeoutMS` if it is non-zero.
  * @param totalUpstreamTimeoutMS Total timeout (in milliseconds) that includes all retries.
  * Spans the point at which the entire downstream request has been processed and when the
- * upstream response has been completely processed. Zero may be specified to disable the upstream timeout.
+ * upstream response has been completely processed. Null may be specified to disable the upstream timeout.
  */
 data class RetryPolicy(
   val maxRetryCount: Int,
   val retryOn: List<RetryRule>,
   val perRetryTimeoutMS: Long? = null,
-  val totalUpstreamTimeoutMS: Long = 15000
+  val totalUpstreamTimeoutMS: Long? = 15000
 ) {
   init {
-    if (perRetryTimeoutMS != null && perRetryTimeoutMS > totalUpstreamTimeoutMS && totalUpstreamTimeoutMS != 0L) {
-      throw IllegalArgumentException(
-        "Per-retry timeout must be <= total timeout if total timeout != 0")
+    if (perRetryTimeoutMS != null && totalUpstreamTimeoutMS != null && perRetryTimeoutMS > totalUpstreamTimeoutMS) {
+      throw IllegalArgumentException("Per-retry timeout must be <= total timeout")
     }
   }
 }

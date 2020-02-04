@@ -23,4 +23,9 @@ final class RetryPolicyMapperTests: XCTestCase {
     let policy = RetryPolicy(maxRetryCount: 123, retryOn: RetryRule.allCases)
     XCTAssertNil(policy.outboundHeaders()["x-envoy-upstream-rq-per-try-timeout-ms"])
   }
+
+  func testConvertingToHeadersWithoutUpstreamTimeoutIncludesZeroForTimeoutHeader() {
+    let policy = RetryPolicy(maxRetryCount: 123, retryOn: RetryRule.allCases)
+    XCTAssertEqual(["0"], policy.outboundHeaders()["x-envoy-upstream-rq-timeout-ms"])
+  }
 }
