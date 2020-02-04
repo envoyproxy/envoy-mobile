@@ -42,17 +42,18 @@ public final class RetryPolicy: NSObject {
   ///                                     performed.
   /// - parameter retryOn:                Whitelist of rules used for retrying.
   /// - parameter perRetryTimeoutMS:      Timeout (in milliseconds) to apply to each retry. Must
-  ///                                     be <= `totalUpstreamTimeoutMS` or it will be ignored.
+  ///                                     be <= `totalUpstreamTimeoutMS` if it is non-zero.
   /// - parameter totalUpstreamTimeoutMS: Total timeout (in milliseconds) that includes all
   ///                                     retries. Spans the point at which the entire downstream
   ///                                     request has been processed and when the upstream
   ///                                     response has been completely processed.
+  ///                                     Zero may be specified to disable the upstream timeout.
   public init(maxRetryCount: UInt, retryOn: [RetryRule], perRetryTimeoutMS: UInt? = nil,
               totalUpstreamTimeoutMS: UInt = 15_000)
   {
     if let perRetryTimeoutMS = perRetryTimeoutMS {
-      assert(perRetryTimeoutMS <= totalUpstreamTimeoutMS,
-             "Per-retry timeout must be <= total timeout")
+      assert(perRetryTimeoutMS <= totalUpstreamTimeoutMS || totalUpstreamTimeoutMS == 0,
+             "Per-retry timeout must be <= total timeout if total timeout != 0")
     }
 
     self.maxRetryCount = maxRetryCount
