@@ -8,7 +8,7 @@ Envoy Mobile v0.2.2 changes how network requests are performed to no longer use 
 
 Additional changes:
 
-- Domain is no longer required to be specified when starting Envoy Mobile (#641, #642)
+- Domain specification when starting the library is no longer supported (#641, #642). Envoy Mobile now uses the authority specified when starting a new stream
 - Less aggressive retry back-off policies (#652)
 
 0.2.1 (Jan 6, 2020)
