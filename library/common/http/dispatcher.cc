@@ -96,6 +96,11 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
   if (!error_code_.has_value()) {
+    // Testing hook.
+    if (end_stream) {
+      http_dispatcher_.synchronizer_.syncPoint("dispatch_encode_final_data");
+    }
+
     // @see Dispatcher::DirectStream::dispatch_lock_ for why this lock is necessary.
     Thread::BasicLockable* mutex = end_stream ? nullptr : &direct_stream_.dispatch_lock_;
     Thread::OptionalReleasableLockGuard lock(mutex);
@@ -324,7 +329,7 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
 }
 
 // TODO: implement.
-envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
+envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   post([this, stream, trailers]() -> void {
@@ -378,6 +383,10 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
           // StreamResetReason::RemoteReset is used as the platform code that issues the
           // cancellation is considered the remote.
           direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+
+          // Testing hook.
+          synchronizer_.syncPoint("resetStream_cleanup");
+
           cleanup(direct_stream->stream_handle_);
         }
       });
