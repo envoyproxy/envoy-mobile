@@ -32,9 +32,12 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
 
+  // @see Dispatcher::resetStream's comment on its call to runResetCallbacks.
+  // Envoy only deferredDeletes the ActiveStream if it was fully closed otherwise it issues a reset.
   if (direct_stream_.local_closed_ && end_stream) {
     direct_stream_.pending_stream_deferred_delete_ = true;
   }
+
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
@@ -100,6 +103,8 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
 
+  // @see Dispatcher::resetStream's comment on its call to runResetCallbacks.
+  // Envoy only deferredDeletes the ActiveStream if it was fully closed otherwise it issues a reset.
   if (direct_stream_.local_closed_ && end_stream) {
     direct_stream_.pending_stream_deferred_delete_ = true;
   }
@@ -140,6 +145,8 @@ void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
 
+  // @see Dispatcher::resetStream's comment on its call to runResetCallbacks.
+  // Envoy only deferredDeletes the ActiveStream if it was fully closed otherwise it issues a reset.
   if (direct_stream_.local_closed_) {
     direct_stream_.pending_stream_deferred_delete_ = true;
   }
@@ -219,6 +226,9 @@ void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
   // resetStream on the response_encoder_'s Stream. It is up to the response_encoder_ to
   // runResetCallbacks in order to have the Http::ConnectionManager call doDeferredStreamDestroy in
   // ConnectionManagerImpl::ActiveStream::onResetStream.
+  //
+  // @see Dispatcher::resetStream's comment on its call to runResetCallbacks for an explanation if
+  // this if guard.
   if (!pending_stream_deferred_delete_) {
     pending_stream_deferred_delete_ = true;
     runResetCallbacks(reason);
@@ -403,7 +413,15 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
           //
           // This call is guarded by pending_stream_deferred_delete_ to protect against the
           // following race condition:
-          //
+          //   1. resetStream executes first on a platform thread, getting through the dispatch
+          //   guard and posting this lambda.
+          //   2. The event dispatcher's thread executes a terminal encoding or a reset in the
+          //   Http::ConnectionManager, thus calling deferredDelete on the ActiveStream.
+          //   3. The event dispatcher's thread executes this post body, thus calling
+          //   runResetCallbacks, which ends up calling deferredDelete (for a second time!) on the
+          //   ActiveStream.
+          // This protection makes sure that Envoy Mobile's Http::Dispatcher::DirectStream knows
+          // synchronously when the ActiveStream is deferredDelete'd for the first time.
           if (!direct_stream->pending_stream_deferred_delete_) {
             direct_stream->pending_stream_deferred_delete_ = true;
             direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
