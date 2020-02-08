@@ -108,7 +108,7 @@ private:
     void onCancel();
     void closeRemote(bool end_stream);
 
-    // RequestEncoder
+    // ResponseEncoder
     void encodeHeaders(const HeaderMap& headers, bool end_stream) override;
     void encodeData(Buffer::Instance& data, bool end_stream) override;
     void encodeTrailers(const HeaderMap& trailers) override;
