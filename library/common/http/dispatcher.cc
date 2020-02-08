@@ -31,6 +31,10 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_st
 void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
+
+  if (direct_stream_.local_closed_ && end_stream) {
+    direct_stream_.pending_stream_deferred_delete_ = true;
+  }
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
   // surfaced via the error path. There are ways we can clean up Envoy's local reply path to
   // make this possible, but nothing expedient. For the immediate term this is our only real
@@ -95,6 +99,11 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
 void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
+
+  if (direct_stream_.local_closed_ && end_stream) {
+    direct_stream_.pending_stream_deferred_delete_ = true;
+  }
+
   if (!error_code_.has_value()) {
     // Testing hook.
     if (end_stream) {
@@ -130,6 +139,11 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
 void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers) {
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
+
+  if (direct_stream_.local_closed_) {
+    direct_stream_.pending_stream_deferred_delete_ = true;
+  }
+
   if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
               direct_stream_.stream_handle_, trailers);
@@ -205,7 +219,10 @@ void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
   // resetStream on the response_encoder_'s Stream. It is up to the response_encoder_ to
   // runResetCallbacks in order to have the Http::ConnectionManager call doDeferredStreamDestroy in
   // ConnectionManagerImpl::ActiveStream::onResetStream.
-  runResetCallbacks(reason);
+  if (!pending_stream_deferred_delete_) {
+    pending_stream_deferred_delete_ = true;
+    runResetCallbacks(reason);
+  }
   callbacks_->onReset();
 }
 
@@ -329,7 +346,9 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
 }
 
 // TODO: implement.
-envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) {
+  NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+}
 
 envoy_status_t Dispatcher::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   post([this, stream, trailers]() -> void {
@@ -382,11 +401,14 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
           //
           // StreamResetReason::RemoteReset is used as the platform code that issues the
           // cancellation is considered the remote.
-          direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
-
-          // Testing hook.
-          synchronizer_.syncPoint("resetStream_cleanup");
-
+          //
+          // This call is guarded by pending_stream_deferred_delete_ to protect against the
+          // following race condition:
+          //
+          if (!direct_stream->pending_stream_deferred_delete_) {
+            direct_stream->pending_stream_deferred_delete_ = true;
+            direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+          }
           cleanup(direct_stream->stream_handle_);
         }
       });
