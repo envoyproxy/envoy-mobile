@@ -99,9 +99,7 @@ private:
    * DirectStreamCallbacks can continue to receive events until the remote to local stream is
    * closed, or resetStream is called.
    */
-  class DirectStreamCallbacks : public RequestEncoder,
-                                public ResponseEncoder,
-                                public Logger::Loggable<Logger::Id::http> {
+  class DirectStreamCallbacks : public ResponseEncoder, public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStreamCallbacks(DirectStream& direct_stream, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
