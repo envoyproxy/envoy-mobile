@@ -345,7 +345,6 @@ envoy_status_t Dispatcher::sendData(envoy_stream_t stream, envoy_data data, bool
   return ENVOY_SUCCESS;
 }
 
-// TODO: implement.
 envoy_status_t Dispatcher::sendMetadata(envoy_stream_t, envoy_headers) {
   NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
 }
