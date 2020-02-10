@@ -35,7 +35,7 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const HeaderMap& headers, 
   // @see Dispatcher::resetStream's comment on its call to runResetCallbacks.
   // Envoy only deferredDeletes the ActiveStream if it was fully closed otherwise it issues a reset.
   if (direct_stream_.local_closed_ && end_stream) {
-    direct_stream_.pending_stream_deferred_delete_ = true;
+    direct_stream_.hcm_stream_pending_destroy_ = true;
   }
 
   // TODO: ***HACK*** currently Envoy sends local replies in cases where an error ought to be
@@ -106,7 +106,7 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   // @see Dispatcher::resetStream's comment on its call to runResetCallbacks.
   // Envoy only deferredDeletes the ActiveStream if it was fully closed otherwise it issues a reset.
   if (direct_stream_.local_closed_ && end_stream) {
-    direct_stream_.pending_stream_deferred_delete_ = true;
+    direct_stream_.hcm_stream_pending_destroy_ = true;
   }
 
   if (!error_code_.has_value()) {
@@ -148,7 +148,7 @@ void Dispatcher::DirectStreamCallbacks::encodeTrailers(const HeaderMap& trailers
   // @see Dispatcher::resetStream's comment on its call to runResetCallbacks.
   // Envoy only deferredDeletes the ActiveStream if it was fully closed otherwise it issues a reset.
   if (direct_stream_.local_closed_) {
-    direct_stream_.pending_stream_deferred_delete_ = true;
+    direct_stream_.hcm_stream_pending_destroy_ = true;
   }
 
   if (direct_stream_.dispatchable(true)) {
@@ -229,8 +229,8 @@ void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
   //
   // @see Dispatcher::resetStream's comment on its call to runResetCallbacks for an explanation if
   // this if guard.
-  if (!pending_stream_deferred_delete_) {
-    pending_stream_deferred_delete_ = true;
+  if (!hcm_stream_pending_destroy_) {
+    hcm_stream_pending_destroy_ = true;
     runResetCallbacks(reason);
   }
   callbacks_->onReset();
@@ -411,7 +411,7 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
           // StreamResetReason::RemoteReset is used as the platform code that issues the
           // cancellation is considered the remote.
           //
-          // This call is guarded by pending_stream_deferred_delete_ to protect against the
+          // This call is guarded by hcm_stream_pending_destroy_ to protect against the
           // following race condition:
           //   1. resetStream executes first on a platform thread, getting through the dispatch
           //   guard and posting this lambda.
@@ -422,8 +422,8 @@ envoy_status_t Dispatcher::resetStream(envoy_stream_t stream) {
           //   ActiveStream.
           // This protection makes sure that Envoy Mobile's Http::Dispatcher::DirectStream knows
           // synchronously when the ActiveStream is deferredDelete'd for the first time.
-          if (!direct_stream->pending_stream_deferred_delete_) {
-            direct_stream->pending_stream_deferred_delete_ = true;
+          if (!direct_stream->hcm_stream_pending_destroy_) {
+            direct_stream->hcm_stream_pending_destroy_ = true;
             direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
           }
           cleanup(direct_stream->stream_handle_);
