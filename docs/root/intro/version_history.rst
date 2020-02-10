@@ -1,6 +1,17 @@
 Version history
 ---------------
 
+0.2.3 (Feb 10, 2020)
+====================
+
+This release provides stabilization fixes as follow-up changes to 0.2.2:
+
+- Prevent race that caused double-deletion of HCM active streams crashing (#669)
+- Fix DNS resolution when starting Envoy Mobile offline on iOS (#672)
+- Fixes for API listener crashes (#667 and #674)
+- Additional fixes for linking and assertions (#663)
+- Allow zero for upstream timeout specification (#659)
+
 0.2.2 (Feb 3, 2020)
 ===================
 
