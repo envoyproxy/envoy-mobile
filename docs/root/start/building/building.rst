@@ -63,7 +63,7 @@ an example of how this artifact may be used.
 **When building the artifact for release** (usage outside of development), be sure to include the
 ``--config=release-android`` option, along with the architectures for which the artifact is being built:
 
-``bazel build android_dist --config=release-android``
+``bazel build android_dist --config=release-android --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a``
 
 For a demo of a working app using this artifact, see the :ref:`hello_world` example.
 
