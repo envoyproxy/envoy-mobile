@@ -21,15 +21,15 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
   return transformed_headers;
 }
 
-RequestTrailerMapPtr toRequestTrailers(envoy_headers headers) {
-  RequestTrailerMapPtr transformed_headers = std::make_unique<RequestTrailerMapImpl>();
-  for (envoy_header_size_t i = 0; i < headers.length; i++) {
-    transformed_headers->addCopy(LowerCaseString(convertToString(headers.headers[i].key)),
-                                 convertToString(headers.headers[i].value));
+RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers) {
+  RequestTrailerMapPtr transformed_trailers = std::make_unique<RequestTrailerMapImpl>();
+  for (envoy_header_size_t i = 0; i < trailers.length; i++) {
+    transformed_trailers->addCopy(LowerCaseString(convertToString(trailers.headers[i].key)),
+                                 convertToString(trailers.headers[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
-  release_envoy_headers(headers);
-  return transformed_headers;
+  release_envoy_headers(trailers);
+  return transformed_trailers;
 }
 
 envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
