@@ -51,7 +51,7 @@ TEST(RequestHeaderDataConstructorTest, FromCToCpp) {
   }
 
   envoy_headers c_headers = {static_cast<envoy_header_size_t>(headers.size()), header_array};
-  // This copy is used for assertions given that envoy_headers are released when toInternalHeaders
+  // This copy is used for assertions given that envoy_headers are released when toRequestHeaders
   // is called.
   envoy_headers c_headers_copy = copy_envoy_headers(c_headers);
 
@@ -92,7 +92,7 @@ TEST(RequestTrailerDataConstructorTest, FromCToCpp) {
   }
 
   envoy_headers c_trailers = {static_cast<envoy_header_size_t>(trailers.size()), header_array};
-  // This copy is used for assertions given that envoy_trailers are released when toInternalHeaders
+  // This copy is used for assertions given that envoy_trailers are released when toRequestTrailers
   // is called.
   envoy_headers c_trailers_copy = copy_envoy_headers(c_trailers);
 
