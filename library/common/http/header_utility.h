@@ -27,10 +27,10 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers);
 /**
  * Transform envoy_headers to RequestHeaderMap.
  * This function copies the content.
- * @param headers, the envoy_headers to transform.
+ * @param trailers, the envoy_headers (trailers) to transform.
  * @return RequestTrailerMapPtr, the RequestTrailerMap 1:1 transformation of the headers param.
  */
-RequestTrailerMapPtr toRequestTrailers(envoy_headers headers);
+RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers);
 
 /**
  * Transform envoy_headers to HeaderMap.
