@@ -7,7 +7,6 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -205,49 +204,6 @@ class EnvoyClientTest {
         ResponseHandler(Executor {}))
 
     verify(stream).sendTrailers(trailers)
-  }
-
-  @Test
-  fun `sending request with retryPolicy creates a stream with buffering`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
-
-    val trailers = mapOf("key_1" to listOf("value_a"))
-    envoy.send(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "api.foo.com",
-            path = "foo")
-            .addRetryPolicy(RetryPolicy(23, listOf(RetryRule.STATUS_5XX, RetryRule.CONNECT_FAILURE), 1234))
-            .build(),
-        ByteBuffer.allocate(0),
-        trailers,
-        ResponseHandler(Executor {}))
-
-    verify(stream).sendTrailers(trailers)
-    verify(engine).startStream(any(), eq(true))
-  }
-
-  @Test
-  fun `sending request without retryPolicy creates a stream without buffering`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
-
-    val trailers = mapOf("key_1" to listOf("value_a"))
-    envoy.send(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "api.foo.com",
-            path = "foo")
-            .build(),
-        ByteBuffer.allocate(0),
-        trailers,
-        ResponseHandler(Executor {}))
-
-    verify(stream).sendTrailers(trailers)
-    verify(engine).startStream(any(), eq(false))
   }
 
   @Test
