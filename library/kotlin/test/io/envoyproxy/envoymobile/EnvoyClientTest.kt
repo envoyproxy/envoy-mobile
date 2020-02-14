@@ -3,15 +3,14 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
+import java.nio.ByteBuffer
+import java.util.concurrent.Executor
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import java.nio.ByteBuffer
-import java.util.concurrent.Executor
 
 class EnvoyClientTest {
 
@@ -21,7 +20,7 @@ class EnvoyClientTest {
 
   @Test
   fun `starting a stream on envoy sends headers`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val expectedHeaders = mapOf(
@@ -46,7 +45,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending data on stream stream forwards data to the underlying stream`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val emitter = envoy.send(
@@ -67,7 +66,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending metadata on stream forwards metadata to the underlying stream`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val metadata = mapOf("key_1" to listOf("value_a"))
@@ -87,7 +86,7 @@ class EnvoyClientTest {
 
   @Test
   fun `closing stream sends empty data to the underlying stream`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val emitter = envoy.send(
@@ -106,7 +105,7 @@ class EnvoyClientTest {
 
   @Test
   fun `closing stream with trailers sends trailers to the underlying stream `() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val trailers = mapOf("key_1" to listOf("value_a"))
@@ -126,7 +125,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending request on envoy sends headers`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val expectedHeaders = mapOf(
@@ -152,7 +151,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending request on envoy passes the body buffer`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val body = ByteBuffer.allocate(0)
@@ -171,7 +170,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending request on envoy without trailers sends empty trailers`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val body = ByteBuffer.allocate(0)
@@ -190,7 +189,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending request on envoy sends trailers`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val trailers = mapOf("key_1" to listOf("value_a"))
@@ -210,7 +209,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending request with retryPolicy creates a stream with buffering`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val trailers = mapOf("key_1" to listOf("value_a"))
@@ -232,7 +231,7 @@ class EnvoyClientTest {
 
   @Test
   fun `sending request without retryPolicy creates a stream without buffering`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val trailers = mapOf("key_1" to listOf("value_a"))
@@ -253,7 +252,7 @@ class EnvoyClientTest {
 
   @Test
   fun `cancelling stream cancels the underlying stream`() {
-    `when`(engine.startStream(any(), anyBoolean())).thenReturn(stream)
+    `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
     val trailers = mapOf("key_1" to listOf("value_a"))
