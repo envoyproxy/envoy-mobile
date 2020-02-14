@@ -35,7 +35,9 @@ class JniLibrary {
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
 
-    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
+    private JavaLoader() {
+      System.loadLibrary(ENVOY_JNI);
+    }
   }
 
   /**
@@ -50,17 +52,13 @@ class JniLibrary {
    * Open an underlying HTTP stream. Note: Streams must be started before other
    * other interaction can can occur.
    *
-   * @param stream,        handle to the stream to be started.
-   * @param context,       context that contains dispatch logic to fire callbacks
-   *                       callbacks.
-   * @param bufferForRetry Whether this stream should be buffered to support
-   *                       future retries. Must be true for requests that support
-   *                       retrying.
+   * @param stream,  handle to the stream to be started.
+   * @param context, context that contains dispatch logic to fire callbacks
+   *                 callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure
    *         status.
    */
-  protected static native int startStream(long stream, JvmCallbackContext context,
-                                          boolean bufferForRetry);
+  protected static native int startStream(long stream, JvmCallbackContext context);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and

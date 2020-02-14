@@ -13,10 +13,10 @@ public class EnvoyHTTPStream {
   private final long streamHandle;
   private final JvmCallbackContext callbacksContext;
 
-  EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks, boolean bufferForRetry) {
+  EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks) {
     this.streamHandle = streamHandle;
     callbacksContext = new JvmCallbackContext(callbacks);
-    JniLibrary.startStream(streamHandle, callbacksContext, bufferForRetry);
+    JniLibrary.startStream(streamHandle, callbacksContext);
   }
 
   /**
@@ -77,7 +77,9 @@ public class EnvoyHTTPStream {
    *
    * @return int, success unless the stream has already been canceled.
    */
-  public int cancel() { return JniLibrary.resetStream(streamHandle); }
+  public int cancel() {
+    return JniLibrary.resetStream(streamHandle);
+  }
 
   private static byte[][] toJniLibraryHeaders(Map<String, List<String>> headers) {
     // Create array with some room for potential headers that have more than one
