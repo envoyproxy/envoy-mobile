@@ -77,9 +77,7 @@ public class EnvoyHTTPStream {
    *
    * @return int, success unless the stream has already been canceled.
    */
-  public int cancel() {
-    return JniLibrary.resetStream(streamHandle);
-  }
+  public int cancel() { return JniLibrary.resetStream(streamHandle); }
 
   private static byte[][] toJniLibraryHeaders(Map<String, List<String>> headers) {
     // Create array with some room for potential headers that have more than one
