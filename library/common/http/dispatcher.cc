@@ -28,7 +28,8 @@ Dispatcher::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_st
     : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks),
       http_dispatcher_(http_dispatcher) {}
 
-void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers, bool end_stream) {
+void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
+                                                      bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
 
