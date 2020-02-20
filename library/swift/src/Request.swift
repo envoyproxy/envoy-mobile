@@ -11,13 +11,13 @@ public final class Request: NSObject {
   public let authority: String
   /// The URL path for the request (i.e., "/foo").
   public let path: String
-  /// The protcol version to use for upstream requests.
-  public let upstreamHttpProtocol: UpstreamHttpProtocol
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public let headers: [String: [String]]
-  // Retry policy to use for this request.
+  /// Retry policy to use for this request.
   public let retryPolicy: RetryPolicy?
+  /// The protocol version to use for upstream requests.
+  public let upstreamHttpProtocol: UpstreamHttpProtocol?
 
   /// Converts the request back to a builder so that it can be modified (i.e., by a filter).
   ///
@@ -31,17 +31,17 @@ public final class Request: NSObject {
        scheme: String,
        authority: String,
        path: String,
-       upstreamHttpProtocol: UpstreamHttpProtocol,
        headers: [String: [String]] = [:],
-       retryPolicy: RetryPolicy?)
+       retryPolicy: RetryPolicy?,
+       upstreamHttpProtocol: UpstreamHttpProtocol?)
   {
     self.method = method
     self.scheme = scheme
     self.authority = authority
     self.path = path
-    self.upstreamHttpProtocol = upstreamHttpProtocol
     self.headers = headers
     self.retryPolicy = retryPolicy
+    self.upstreamHttpProtocol = upstreamHttpProtocol
   }
 }
 
@@ -57,8 +57,8 @@ extension Request {
       && self.scheme == other.scheme
       && self.authority == other.authority
       && self.path == other.path
-      && self.upstreamHttpProtocol == other.upstreamHttpProtocol
       && self.headers == other.headers
       && self.retryPolicy == other.retryPolicy
+      && self.upstreamHttpProtocol == other.upstreamHttpProtocol
   }
 }

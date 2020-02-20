@@ -13,11 +13,14 @@ extension Request {
         ":scheme": [self.scheme],
         ":authority": [self.authority],
         ":path": [self.path],
-        "x-envoy-mobile-upstream-protocol": [self.upstreamHttpProtocol.stringValue],
       ]) { $0[$1.key] = $1.value }
 
     if let retryPolicy = self.retryPolicy {
       headers = headers.merging(retryPolicy.outboundHeaders()) { _, retryHeader in retryHeader }
+    }
+
+    if let upstreamHttpProtocol = self.upstreamHttpProtocol {
+      headers["x-envoy-mobile-upstream-protocol"] = [upstreamHttpProtocol.stringValue]
     }
 
     return headers

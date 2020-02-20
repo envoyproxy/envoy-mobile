@@ -10,7 +10,10 @@ internal fun Request.outboundHeaders(): Map<String, List<String>> {
   result[":scheme"] = listOf(scheme)
   result[":authority"] = listOf(authority)
   result[":path"] = listOf(path)
-  result["x-envoy-mobile-upstream-protocol"] = listOf(upstreamHttpProtocol.stringValue)
+
+  if (upstreamHttpProtocol != null) {
+    result["x-envoy-mobile-upstream-protocol"] = listOf(upstreamHttpProtocol.stringValue)
+  }
 
   return result
 }

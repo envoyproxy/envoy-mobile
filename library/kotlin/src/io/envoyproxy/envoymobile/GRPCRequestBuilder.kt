@@ -12,11 +12,10 @@ class GRPCRequestBuilder(
       method = RequestMethod.POST,
       scheme = if (useHTTPS) "https" else "http",
       authority = authority,
-      path = path,
-      upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+      path = path)
 
   init {
-    underlyingBuilder.addHeader("content-type", "application/grpc")
+    underlyingBuilder.addHeader("content-type", "application/grpc").addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
   }
 
   /**

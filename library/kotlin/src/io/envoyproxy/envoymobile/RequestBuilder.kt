@@ -8,14 +8,12 @@ package io.envoyproxy.envoymobile
  * @param scheme The URL scheme for the request (i.e., "https").
  * @param authority The URL authority for the request (i.e., "api.foo.com").
  * @param path The URL path for the request (i.e., "/foo").
- * @param upstreamHttpProtocol Whether the request should be sent to the upstream via h2 or not.
  */
 class RequestBuilder(
     val method: RequestMethod,
     val scheme: String = "https",
     val authority: String,
-    val path: String,
-    val upstreamHttpProtocol: UpstreamHttpProtocol
+    val path: String
 ) {
   // Headers to send with the request.
   // Multiple values for a given name are valid, and will be sent as comma-separated values.
@@ -24,16 +22,8 @@ class RequestBuilder(
   // Retry policy to use for this request.
   private var retryPolicy: RetryPolicy? = null
 
-  /**
-   * Add a retry policy to use for this request.
-   *
-   * @param retryPolicy the {@link io.envoyproxy.envoymobile.RetryPolicy} for this request.
-   * @return this builder.
-   */
-  fun addRetryPolicy(retryPolicy: RetryPolicy?): RequestBuilder {
-    this.retryPolicy = retryPolicy
-    return this
-  }
+  // The protocol version to use for upstream requests.
+  private var upstreamHttpProtocol: UpstreamHttpProtocol? = null
 
   /**
    * Append a value to the header key.
@@ -80,6 +70,28 @@ class RequestBuilder(
   }
 
   /**
+   * Add a retry policy to use for this request.
+   *
+   * @param retryPolicy the {@link io.envoyproxy.envoymobile.RetryPolicy} for this request.
+   * @return this builder.
+   */
+  fun addRetryPolicy(retryPolicy: RetryPolicy?): RequestBuilder {
+    this.retryPolicy = retryPolicy
+    return this
+  }
+
+  /**
+   * Add a http protocol hint for this request.
+   *
+   * @param upstreamHttpProtocol the {@link io.envoyproxy.envoymobile.UpstreamHttpProtocol} for this request.
+   * @return this builder.
+   */
+  fun addUpstreamHttpProtocol(upstreamHttpProtocol: UpstreamHttpProtocol?): RequestBuilder {
+    this.upstreamHttpProtocol = upstreamHttpProtocol
+    return this
+  }
+
+  /**
    * Creates the {@link io.envoyproxy.envoymobile.Request} object using the data set in the builder.
    *
    * @return the {@link io.envoyproxy.envoymobile.Request} object.
@@ -90,9 +102,9 @@ class RequestBuilder(
         scheme,
         authority,
         path,
-        upstreamHttpProtocol,
         headers,
-        retryPolicy
+        retryPolicy,
+        upstreamHttpProtocol
     )
   }
 

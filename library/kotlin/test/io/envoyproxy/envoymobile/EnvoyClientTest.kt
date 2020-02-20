@@ -27,16 +27,14 @@ class EnvoyClientTest {
         ":method" to listOf("POST"),
         ":scheme" to listOf("https"),
         ":authority" to listOf("api.foo.com"),
-        ":path" to listOf("foo"),
-        "x-envoy-mobile-upstream-protocol" to listOf(UpstreamHttpProtocol.HTTP2.stringValue)
+        ":path" to listOf("foo")
     )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
         ResponseHandler(Executor {}))
@@ -54,8 +52,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         ResponseHandler(Executor {}))
 
@@ -77,8 +74,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         ResponseHandler(Executor {}))
 
@@ -97,8 +93,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         ResponseHandler(Executor {}))
 
@@ -118,8 +113,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         ResponseHandler(Executor {}))
 
@@ -138,16 +132,14 @@ class EnvoyClientTest {
         ":method" to listOf("POST"),
         ":scheme" to listOf("https"),
         ":authority" to listOf("api.foo.com"),
-        ":path" to listOf("foo"),
-        "x-envoy-mobile-upstream-protocol" to listOf(UpstreamHttpProtocol.HTTP2.stringValue)
+        ":path" to listOf("foo")
     )
     envoy.send(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
         ByteBuffer.allocate(0),
@@ -167,8 +159,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         body,
         ResponseHandler(Executor {}))
@@ -187,8 +178,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         body,
         ResponseHandler(Executor {}))
@@ -207,8 +197,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         ByteBuffer.allocate(0),
         trailers,
@@ -228,8 +217,7 @@ class EnvoyClientTest {
             method = RequestMethod.POST,
             scheme = "https",
             authority = "api.foo.com",
-            path = "foo",
-            upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+            path = "foo")
             .build(),
         ByteBuffer.allocate(0),
         trailers,
