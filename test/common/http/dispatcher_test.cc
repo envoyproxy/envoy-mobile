@@ -265,24 +265,24 @@ TEST_F(DispatcherTest, SetDestinationClusterUpstreamProtocol) {
   send_headers_post_cb3();
 
   // Anything other than http2 sends to the base http1 cluster.
-  // TestRequestHeaderMapImpl headers4{{"x-envoy-mobile-upstream-protocol", "garbage"}};
-  // HttpTestUtility::addDefaultHeaders(headers4);
-  // envoy_headers c_headers4 = Utility::toBridgeHeaders(headers4);
+  TestRequestHeaderMapImpl headers4{{"x-envoy-mobile-upstream-protocol", "garbage"}};
+  HttpTestUtility::addDefaultHeaders(headers4);
+  envoy_headers c_headers4 = Utility::toBridgeHeaders(headers4);
 
-  // preferred_network_.store(ENVOY_NET_WWAN);
-  // Event::PostCb send_headers_post_cb4;
-  // EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb4));
-  // http_dispatcher_.sendHeaders(stream, c_headers4, true);
+  preferred_network_.store(ENVOY_NET_WWAN);
+  Event::PostCb send_headers_post_cb4;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb4));
+  http_dispatcher_.sendHeaders(stream, c_headers4, true);
 
-  // TestResponseHeaderMapImpl expected_headers4{
-  //     {":scheme", "http"},
-  //     {":method", "GET"},
-  //     {":authority", "host"},
-  //     {":path", "/"},
-  //     {"x-envoy-mobile-cluster", "base_wwan"},
-  // };
-  // EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers4), true));
-  // send_headers_post_cb4();
+  TestResponseHeaderMapImpl expected_headers4{
+      {":scheme", "http"},
+      {":method", "GET"},
+      {":authority", "host"},
+      {":path", "/"},
+      {"x-envoy-mobile-cluster", "base_wwan"},
+  };
+  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers4), true));
+  send_headers_post_cb4();
 
   // Encode response headers.
   Event::PostCb stream_deletion_post_cb;
