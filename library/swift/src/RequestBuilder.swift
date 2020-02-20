@@ -86,9 +86,9 @@ public final class RequestBuilder: NSObject {
                    scheme: self.scheme,
                    authority: self.authority,
                    path: self.path,
-                   upstreamHttpProtocol: self.upstreamHttpProtocol,
                    headers: self.headers,
-                   retryPolicy: self.retryPolicy)
+                   retryPolicy: self.retryPolicy,
+                   upstreamHttpProtocol: self.upstreamHttpProtocol)
   }
 }
 
