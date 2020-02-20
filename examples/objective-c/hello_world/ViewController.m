@@ -70,7 +70,7 @@ NSString *_REQUEST_SCHEME = @"https";
                                                             scheme:_REQUEST_SCHEME
                                                          authority:_REQUEST_AUTHORITY
                                                               path:_REQUEST_PATH
-                                              upstreamHttpProtocol:YES];
+                                              upstreamHttpProtocol:UpstreamHttpProtocolHttp2];
   Request *request = [builder build];
   ResponseHandler *handler = [[ResponseHandler alloc] initWithQueue:dispatch_get_main_queue()];
 

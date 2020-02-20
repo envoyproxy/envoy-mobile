@@ -13,6 +13,7 @@ import io.envoyproxy.envoymobile.Envoy
 import io.envoyproxy.envoymobile.RequestBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.ResponseHandler
+import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
@@ -73,7 +74,7 @@ class MainActivity : Activity() {
   }
 
   private fun makeRequest() {
-    val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
+    val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH, UpstreamHttpProtocol.HTTP2)
         .build()
     val responseHeaders = HashMap<String, List<String>>()
     val responseStatus = AtomicInteger()

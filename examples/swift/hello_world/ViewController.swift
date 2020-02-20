@@ -49,7 +49,7 @@ final class ViewController: UITableViewController {
     let requestID = self.requestCount
     let request = RequestBuilder(method: .get, scheme: kRequestScheme,
                                  authority: kRequestAuthority,
-                                 path: kRequestPath, upstreamHttpProtocol: true).build()
+                                 path: kRequestPath, upstreamHttpProtocol: .http2).build()
     let handler = ResponseHandler()
       .onHeaders { [weak self] headers, statusCode, _ in
         NSLog("Response status (\(requestID)): \(statusCode)\n\(headers)")

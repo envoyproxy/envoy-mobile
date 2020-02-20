@@ -17,7 +17,7 @@ a previously created :ref:`Envoy instance <api_starting_envoy>`.
 
 **Kotlin**::
 
-  val request = RequestBuilder(RequestMethod.POST, "https", "api.envoyproxy.io", "/foo")
+  val request = RequestBuilder(RequestMethod.POST, "https", "api.envoyproxy.io", "/foo", upstreamHttpProtocol = UpstreamRequestProtocol.HTTP2)
     .addRetryPolicy(RetryPolicy(...))
     .addHeader("x-custom-header", "foobar")
     ...
@@ -25,7 +25,7 @@ a previously created :ref:`Envoy instance <api_starting_envoy>`.
 
 **Swift**::
 
-  let request = RequestBuilder(method: .post, scheme: "https", authority: "api.envoyproxy.io", path: "/foo", upstreamHttpProtocol: true)
+  let request = RequestBuilder(method: .post, scheme: "https", authority: "api.envoyproxy.io", path: "/foo", upstreamHttpProtocol: .http2)
     .addRetryPolicy(RetryPolicy(...))
     .addHeader(name: "x-custom-header", value: "foobar")
     ...
