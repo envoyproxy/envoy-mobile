@@ -14,8 +14,6 @@ import io.envoyproxy.envoymobile.Request;
 import io.envoyproxy.envoymobile.RequestBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
 import io.envoyproxy.envoymobile.ResponseHandler;
-import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
-
 import io.envoyproxy.envoymobile.shared.Failure;
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
 import io.envoyproxy.envoymobile.shared.Success;
@@ -76,9 +74,9 @@ public class MainActivity extends Activity {
   }
 
   private void makeRequest() {
-    Request request = new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY,
-                                         REQUEST_PATH)
-                          .build();
+    Request request =
+      new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
+        .build();
     Map<String, List<String>> responseHeaders = new HashMap<>();
     AtomicInteger responseStatus = new AtomicInteger();
     ResponseHandler handler =
