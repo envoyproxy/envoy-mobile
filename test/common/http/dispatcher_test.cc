@@ -288,7 +288,7 @@ TEST_F(DispatcherTest, SetDestinationClusterUpstreamProtocol) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
   stream_deletion_post_cb();
