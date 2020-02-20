@@ -7,7 +7,7 @@ class RequestMapperTest {
 
   @Test
   fun `method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -16,7 +16,7 @@ class RequestMapperTest {
 
   @Test
   fun `scheme is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -26,7 +26,7 @@ class RequestMapperTest {
 
   @Test
   fun `authority is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -35,7 +35,7 @@ class RequestMapperTest {
 
   @Test
   fun `path is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -43,8 +43,26 @@ class RequestMapperTest {
   }
 
   @Test
+  fun `h1 is added to outbound request headers`() {
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP1)
+        .build()
+        .outboundHeaders()
+
+    assertThat(requestHeaders["x-envoy-mobile-upstream-protocol"]).containsExactly("http1")
+  }
+
+  @Test
+  fun `h2 is added to outbound request headers`() {
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
+        .build()
+        .outboundHeaders()
+
+    assertThat(requestHeaders["x-envoy-mobile-upstream-protocol"]).containsExactly("http2")
+  }
+
+  @Test
   fun `same key headers are joined to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .addHeader("header_1", "value_a")
         .addHeader("header_1", "value_b")
         .build()
@@ -55,31 +73,35 @@ class RequestMapperTest {
 
   @Test
   fun `invalid semicolon prefixed header keys are filtered out of outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .addHeader(":restricted", "value")
+        .addHeader("x-envoy-mobile-test", "value")
         .build()
         .outboundHeaders()
 
     assertThat(requestHeaders).doesNotContainKey(":restricted")
+    assertThat(requestHeaders).doesNotContainKey("x-envoy-mobile-test")
   }
 
   @Test
   fun `restricted headers are not overwritten in outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .addHeader(":scheme", "override")
         .addHeader(":authority", "override")
         .addHeader(":path", "override")
+        .addHeader("x-envoy-mobile-upstream-protocol", "override")
         .build()
         .outboundHeaders()
 
     assertThat(requestHeaders[":scheme"]).containsExactly("https")
     assertThat(requestHeaders[":authority"]).containsExactly("api.foo.com")
     assertThat(requestHeaders[":path"]).containsExactly("/foo")
+    assertThat(requestHeaders["x-envoy-mobile-upstream-protocol"]).containsExactly("http2")
   }
 
   @Test
   fun `request headers are forwarded to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .addHeader("header_1", "value_a")
         .addHeader("header_2", "value_b")
         .build()
@@ -102,7 +124,7 @@ class RequestMapperTest {
         perRetryTimeoutMS = 9001)
     val retryPolicyHeaders = retryPolicy.outboundHeaders()
 
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .addRetryPolicy(retryPolicy)
         .build()
         .outboundHeaders()
@@ -123,7 +145,7 @@ class RequestMapperTest {
         perRetryTimeoutMS = 9001)
     val retryPolicyHeaders = retryPolicy.outboundHeaders()
 
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .addHeader("x-envoy-max-retries", "override")
         .addRetryPolicy(retryPolicy)
         .build()
@@ -134,7 +156,7 @@ class RequestMapperTest {
 
   @Test
   fun `delete method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.DELETE, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.DELETE, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -143,7 +165,7 @@ class RequestMapperTest {
 
   @Test
   fun `get method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.GET, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.GET, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -152,7 +174,7 @@ class RequestMapperTest {
 
   @Test
   fun `head method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.HEAD, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.HEAD, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -161,7 +183,7 @@ class RequestMapperTest {
 
   @Test
   fun `options method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.OPTIONS, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.OPTIONS, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -170,7 +192,7 @@ class RequestMapperTest {
 
   @Test
   fun `patch method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.PATCH, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.PATCH, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -179,7 +201,7 @@ class RequestMapperTest {
 
   @Test
   fun `post method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -188,7 +210,7 @@ class RequestMapperTest {
 
   @Test
   fun `put method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.PUT, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.PUT, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 
@@ -197,7 +219,7 @@ class RequestMapperTest {
 
   @Test
   fun `trace method is added to outbound request headers`() {
-    val requestHeaders = RequestBuilder(method = RequestMethod.TRACE, scheme = "https", authority = "api.foo.com", path = "/foo")
+    val requestHeaders = RequestBuilder(method = RequestMethod.TRACE, scheme = "https", authority = "api.foo.com", path = "/foo", upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
         .build()
         .outboundHeaders()
 

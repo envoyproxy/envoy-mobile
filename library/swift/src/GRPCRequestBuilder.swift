@@ -14,7 +14,8 @@ public final class GRPCRequestBuilder: NSObject {
     self.underlyingBuilder = RequestBuilder(method: .post,
                                             scheme: useHTTPS ? "https" : "http",
                                             authority: authority,
-                                            path: path)
+                                            path: path,
+                                            upstreamHttpProtocol: .http2)
     self.underlyingBuilder.addHeader(name: "content-type", value: "application/grpc")
   }
 

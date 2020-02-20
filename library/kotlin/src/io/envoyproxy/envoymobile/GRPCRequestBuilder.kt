@@ -12,7 +12,8 @@ class GRPCRequestBuilder(
       method = RequestMethod.POST,
       scheme = if (useHTTPS) "https" else "http",
       authority = authority,
-      path = path)
+      path = path,
+      upstreamHttpProtocol = UpstreamHttpProtocol.HTTP2)
 
   init {
     underlyingBuilder.addHeader("content-type", "application/grpc")

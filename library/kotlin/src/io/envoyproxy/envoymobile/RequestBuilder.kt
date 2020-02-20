@@ -8,12 +8,14 @@ package io.envoyproxy.envoymobile
  * @param scheme The URL scheme for the request (i.e., "https").
  * @param authority The URL authority for the request (i.e., "api.foo.com").
  * @param path The URL path for the request (i.e., "/foo").
+ * @param upstreamHttpProtocol Whether the request should be sent to the upstream via h2 or not.
  */
 class RequestBuilder(
     val method: RequestMethod,
     val scheme: String = "https",
     val authority: String,
-    val path: String
+    val path: String,
+    val upstreamHttpProtocol: UpstreamHttpProtocol
 ) {
   // Headers to send with the request.
   // Multiple values for a given name are valid, and will be sent as comma-separated values.
@@ -88,6 +90,7 @@ class RequestBuilder(
         scheme,
         authority,
         path,
+        upstreamHttpProtocol,
         headers,
         retryPolicy
     )

@@ -11,7 +11,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testHasMatchingMethodPresentInRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .build()
     XCTAssertEqual(.post, request.method)
   }
@@ -20,7 +20,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testHasMatchingURLPresentInRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .build()
     XCTAssertEqual("https", request.scheme)
     XCTAssertEqual("api.foo.com", request.authority)
@@ -31,7 +31,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testAddingRetryPolicyHasRetryPolicyInRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addRetryPolicy(kRetryPolicy)
       .build()
     XCTAssertEqual(kRetryPolicy, request.retryPolicy)
@@ -39,7 +39,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testNotAddingRetryPolicyHasNilRetryPolicyInRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .build()
     XCTAssertNil(request.retryPolicy)
   }
@@ -48,7 +48,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testAddingNewHeaderAddsToListOfHeaderKeys() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addHeader(name: "foo", value: "bar")
       .build()
     XCTAssertEqual(["bar"], request.headers["foo"])
@@ -56,7 +56,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testRemovingSpecificHeaderKeyRemovesAllOfItsValuesFromRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .removeHeaders(name: "foo")
@@ -66,7 +66,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testRemovingSpecificHeaderKeyDoesNotRemoveOtherKeysFromRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "bar", value: "2")
       .removeHeaders(name: "foo")
@@ -76,7 +76,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testRemovingSpecificHeaderValueRemovesItFromRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .addHeader(name: "foo", value: "3")
@@ -87,7 +87,7 @@ final class RequestBuilderTests: XCTestCase {
 
   func testRemovingAllHeaderValuesRemovesKeyFromRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",
-                                 authority: "api.foo.com", path: "/foo")
+                                 authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")
       .removeHeader(name: "foo", value: "1")
@@ -119,7 +119,7 @@ final class RequestBuilderTests: XCTestCase {
   // MARK: - Private
 
   private func newRequestBuilder() -> RequestBuilder {
-    return RequestBuilder(method: .post, scheme: "https", authority: "api.foo.com", path: "/foo")
+    return RequestBuilder(method: .post, scheme: "https", authority: "api.foo.com", path: "/foo", upstreamHttpProtocol: .http2)
       .addRetryPolicy(kRetryPolicy)
       .addHeader(name: "foo", value: "1")
       .addHeader(name: "foo", value: "2")

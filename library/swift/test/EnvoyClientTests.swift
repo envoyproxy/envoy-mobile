@@ -28,7 +28,7 @@ final class EnvoyClientTests: XCTestCase {
     let closeExpectation = self.expectation(description: "Calls close")
 
     let expectedRequest = RequestBuilder(
-      method: .get, scheme: "https", authority: "www.envoyproxy.io", path: "/docs")
+      method: .get, scheme: "https", authority: "www.envoyproxy.io", path: "/docs", upstreamHttpProtocol: .http2)
       .build()
     let expectedData = Data([1, 2, 3])
     let expectedTrailers = ["foo": ["bar", "baz"]]

@@ -11,6 +11,8 @@ public final class RequestBuilder: NSObject {
   public let authority: String
   /// The URL path for the request (i.e., "/foo").
   public let path: String
+  /// The protcol version to use for upstream requests.
+  public let upstreamHttpProtocol: UpstreamHttpProtocol
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public private(set) var headers: [String: [String]] = [:]
@@ -25,6 +27,7 @@ public final class RequestBuilder: NSObject {
     self.scheme = request.scheme
     self.authority = request.authority
     self.path = request.path
+    self.upstreamHttpProtocol = request.upstreamHttpProtocol
     self.headers = request.headers
     self.retryPolicy = request.retryPolicy
   }
@@ -33,12 +36,14 @@ public final class RequestBuilder: NSObject {
   public init(method: RequestMethod,
               scheme: String = "https",
               authority: String,
-              path: String)
+              path: String,
+              upstreamHttpProtocol: UpstreamHttpProtocol)
   {
     self.method = method
     self.scheme = scheme
     self.authority = authority
     self.path = path
+    self.upstreamHttpProtocol = upstreamHttpProtocol
   }
 
   // MARK: - Builder functions
@@ -76,6 +81,7 @@ public final class RequestBuilder: NSObject {
                    scheme: self.scheme,
                    authority: self.authority,
                    path: self.path,
+                   upstreamHttpProtocol: self.upstreamHttpProtocol,
                    headers: self.headers,
                    retryPolicy: self.retryPolicy)
   }
@@ -96,11 +102,12 @@ extension Request {
                           scheme: String,
                           authority: String,
                           path: String,
+                          upstreamHttpProtocol: UpstreamHttpProtocol,
                           build: (RequestBuilder) -> Void)
     -> Request
   {
     let builder = RequestBuilder(method: method, scheme: scheme,
-                                 authority: authority, path: path)
+                                 authority: authority, path: path, upstreamHttpProtocol: upstreamHttpProtocol)
     build(builder)
     return builder.build()
   }

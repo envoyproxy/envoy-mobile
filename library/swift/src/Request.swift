@@ -11,6 +11,8 @@ public final class Request: NSObject {
   public let authority: String
   /// The URL path for the request (i.e., "/foo").
   public let path: String
+  /// The protcol version to use for upstream requests.
+  public let upstreamHttpProtocol: UpstreamHttpProtocol
   /// Headers to send with the request.
   /// Multiple values for a given name are valid, and will be sent as comma-separated values.
   public let headers: [String: [String]]
@@ -29,6 +31,7 @@ public final class Request: NSObject {
        scheme: String,
        authority: String,
        path: String,
+       upstreamHttpProtocol: UpstreamHttpProtocol,
        headers: [String: [String]] = [:],
        retryPolicy: RetryPolicy?)
   {
@@ -36,6 +39,7 @@ public final class Request: NSObject {
     self.scheme = scheme
     self.authority = authority
     self.path = path
+    self.upstreamHttpProtocol = upstreamHttpProtocol
     self.headers = headers
     self.retryPolicy = retryPolicy
   }
@@ -53,6 +57,7 @@ extension Request {
       && self.scheme == other.scheme
       && self.authority == other.authority
       && self.path == other.path
+      && self.upstreamHttpProtocol == other.upstreamHttpProtocol
       && self.headers == other.headers
       && self.retryPolicy == other.retryPolicy
   }

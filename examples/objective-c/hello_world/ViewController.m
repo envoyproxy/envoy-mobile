@@ -69,7 +69,8 @@ NSString *_REQUEST_SCHEME = @"https";
   RequestBuilder *builder = [[RequestBuilder alloc] initWithMethod:RequestMethodGet
                                                             scheme:_REQUEST_SCHEME
                                                          authority:_REQUEST_AUTHORITY
-                                                              path:_REQUEST_PATH];
+                                                              path:_REQUEST_PATH
+                                              upstreamHttpProtocol:YES];
   Request *request = [builder build];
   ResponseHandler *handler = [[ResponseHandler alloc] initWithQueue:dispatch_get_main_queue()];
 

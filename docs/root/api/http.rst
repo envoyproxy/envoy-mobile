@@ -25,7 +25,7 @@ a previously created :ref:`Envoy instance <api_starting_envoy>`.
 
 **Swift**::
 
-  let request = RequestBuilder(method: .post, scheme: "https", authority: "api.envoyproxy.io", path: "/foo")
+  let request = RequestBuilder(method: .post, scheme: "https", authority: "api.envoyproxy.io", path: "/foo", upstreamHttpProtocol: true)
     .addRetryPolicy(RetryPolicy(...))
     .addHeader(name: "x-custom-header", value: "foobar")
     ...
