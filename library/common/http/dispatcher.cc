@@ -496,6 +496,8 @@ void Dispatcher::setDestinationCluster(HeaderMap& headers) {
   if (entry) {
     if (entry->value() == "http2") {
       use_h2_cluster = true;
+    } else {
+      ASSERT(entry->value() == "http1", fmt::format("using unsupported protocol version {}", entry->value().getStringView()));
     }
     headers.remove(H2UpstreamHeader);
   }

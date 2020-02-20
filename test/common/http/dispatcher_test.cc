@@ -264,8 +264,8 @@ TEST_F(DispatcherTest, SetDestinationClusterUpstreamProtocol) {
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
   send_headers_post_cb3();
 
-  // Anything other than http2 sends to the base http1 cluster.
-  TestRequestHeaderMapImpl headers4{{"x-envoy-mobile-upstream-protocol", "garbage"}};
+  // Setting http1.
+  TestRequestHeaderMapImpl headers4{{"x-envoy-mobile-upstream-protocol", "http1"}};
   HttpTestUtility::addDefaultHeaders(headers4);
   envoy_headers c_headers4 = Utility::toBridgeHeaders(headers4);
 

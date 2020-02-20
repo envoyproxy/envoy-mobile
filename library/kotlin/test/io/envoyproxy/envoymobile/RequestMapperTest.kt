@@ -74,7 +74,7 @@ class RequestMapperTest {
   }
 
   @Test
-  fun `invalid semicolon prefixed header keys are filtered out of outbound request headers`() {
+  fun `restricted header keys are filtered out of outbound request headers`() {
     val requestHeaders = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "/foo")
         .addHeader(":restricted", "value")
         .addHeader("x-envoy-mobile-test", "value")

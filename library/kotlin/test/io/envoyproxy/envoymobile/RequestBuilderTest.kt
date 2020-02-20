@@ -36,7 +36,7 @@ class RequestBuilderTest {
   }
 
   @Test
-  fun `not adding upstream http protocol should have null body in request`() {
+  fun `not adding upstream http protocol should have null upstream protocol in request`() {
     val request = RequestBuilder(method = RequestMethod.POST, scheme = "https", authority = "api.foo.com", path = "foo")
         .build()
 

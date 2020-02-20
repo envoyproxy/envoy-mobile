@@ -81,7 +81,7 @@ class RequestBuilder(
   }
 
   /**
-   * Add a http protocol hint for this request.
+   * Add an HTTP protocol hint for this request.
    *
    * @param upstreamHttpProtocol the {@link io.envoyproxy.envoymobile.UpstreamHttpProtocol} for this request.
    * @return this builder.

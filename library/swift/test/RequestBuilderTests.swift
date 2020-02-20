@@ -96,7 +96,7 @@ final class RequestBuilderTests: XCTestCase {
     XCTAssertNil(request.headers["foo"])
   }
 
-  // MARK: - Upstream Http Protocol
+  // MARK: - Upstream HTTP Protocol
 
   func testAddingUpstreamHttpProtocolHasUpstreamHttpProtocolInRequest() {
     let request = RequestBuilder(method: .post, scheme: "https",

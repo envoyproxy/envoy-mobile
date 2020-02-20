@@ -1,4 +1,4 @@
-private let kRestrictedHeaderPrefix = [":", "x-envoy-mobile"]
+private let kRestrictedHeaderPrefixes = [":", "x-envoy-mobile"]
 
 extension Request {
   /// Returns a set of outbound headers that include HTTP
@@ -7,7 +7,7 @@ extension Request {
   /// - returns: Outbound headers to send with an HTTP request.
   func outboundHeaders() -> [String: [String]] {
     var headers = self.headers
-      .filter { !kRestrictedHeaderPrefix.contains(where: $0.key.hasPrefix) }
+      .filter { !kRestrictedHeaderPrefixes.contains(where: $0.key.hasPrefix) }
       .reduce(into: [
         ":method": [self.method.stringValue],
         ":scheme": [self.scheme],
