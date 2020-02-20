@@ -74,7 +74,9 @@ public final class RequestBuilder: NSObject {
   }
 
   @discardableResult
-  public func addUpstreamHttpProtocol(_ upstreamHttpProtocol: UpstreamHttpProtocol) -> RequestBuilder {
+  public func addUpstreamHttpProtocol(_ upstreamHttpProtocol: UpstreamHttpProtocol)
+    -> RequestBuilder
+  {
     self.upstreamHttpProtocol = upstreamHttpProtocol
     return self
   }
