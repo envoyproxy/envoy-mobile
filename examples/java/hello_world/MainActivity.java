@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 
   private void makeRequest() {
     Request request = new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY,
-                                         REQUEST_PATH, UpstreamHttpProtocol.HTTP2)
+                                         REQUEST_PATH)
                           .build();
     Map<String, List<String>> responseHeaders = new HashMap<>();
     AtomicInteger responseStatus = new AtomicInteger();

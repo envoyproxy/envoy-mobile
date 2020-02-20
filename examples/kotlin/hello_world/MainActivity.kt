@@ -74,7 +74,8 @@ class MainActivity : Activity() {
   }
 
   private fun makeRequest() {
-    val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH, UpstreamHttpProtocol.HTTP2)
+    val request = RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
+        .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
         .build()
     val responseHeaders = HashMap<String, List<String>>()
     val responseStatus = AtomicInteger()
