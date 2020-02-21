@@ -28,6 +28,18 @@ using testing::WithArg;
 namespace Envoy {
 namespace Http {
 
+// Based on Http::Utility::toRequestHeaders() but only used for these tests.
+ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
+  ResponseHeaderMapPtr transformed_headers = std::make_unique<ResponseHeaderMapImpl>();
+  for (envoy_header_size_t i = 0; i < headers.length; i++) {
+    transformed_headers->addCopy(LowerCaseString(Utility::convertToString(headers.headers[i].key)),
+                                 Utility::convertToString(headers.headers[i].value));
+  }
+  // The C envoy_headers struct can be released now because the headers have been copied.
+  release_envoy_headers(headers);
+  return transformed_headers;
+}
+
 class DispatcherTest : public testing::Test {
 public:
   DispatcherTest() { http_dispatcher_.ready(event_dispatcher_, api_listener_); }
@@ -58,7 +70,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -71,7 +83,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -87,7 +99,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   // accept it. However, given we are just trying to test preferred network headers and using mocks
   // this is fine.
 
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
@@ -96,7 +108,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
   http_dispatcher_.sendHeaders(stream, c_headers, false);
 
-  TestHeaderMapImpl expected_headers{
+  TestRequestHeaderMapImpl expected_headers{
       {":scheme", "http"},
       {":method", "GET"},
       {":authority", "host"},
@@ -106,7 +118,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers), false));
   send_headers_post_cb();
 
-  TestHeaderMapImpl headers2;
+  TestRequestHeaderMapImpl headers2;
   HttpTestUtility::addDefaultHeaders(headers2);
   envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
 
@@ -115,7 +127,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb2));
   http_dispatcher_.sendHeaders(stream, c_headers2, false);
 
-  TestHeaderMapImpl expected_headers2{
+  TestRequestHeaderMapImpl expected_headers2{
       {":scheme", "http"},
       {":method", "GET"},
       {":authority", "host"},
@@ -125,7 +137,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
   send_headers_post_cb2();
 
-  TestHeaderMapImpl headers3;
+  TestRequestHeaderMapImpl headers3;
   HttpTestUtility::addDefaultHeaders(headers3);
   envoy_headers c_headers3 = Utility::toBridgeHeaders(headers3);
 
@@ -134,7 +146,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb3));
   http_dispatcher_.sendHeaders(stream, c_headers3, true);
 
-  TestHeaderMapImpl expected_headers3{
+  TestRequestHeaderMapImpl expected_headers3{
       {":scheme", "http"},
       {":method", "GET"},
       {":authority", "host"},
@@ -148,7 +160,7 @@ TEST_F(DispatcherTest, PreferredNetwork) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
   stream_deletion_post_cb();
@@ -166,7 +178,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -177,14 +189,14 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -208,7 +220,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
   stream_deletion_post_cb();
@@ -226,7 +238,7 @@ TEST_F(DispatcherTest, BasicStream) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_FALSE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -244,7 +256,7 @@ TEST_F(DispatcherTest, BasicStream) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
@@ -255,7 +267,7 @@ TEST_F(DispatcherTest, BasicStream) {
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the
@@ -284,7 +296,7 @@ TEST_F(DispatcherTest, BasicStream) {
   data_post_cb();
 
   // Encode response headers and data.
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc.on_headers_calls, 1);
 
@@ -309,7 +321,7 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_FALSE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -326,7 +338,7 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
@@ -341,7 +353,7 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -378,7 +390,7 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   data_post_cb2();
 
   // Encode response headers and data.
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc.on_headers_calls, 1);
   Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
@@ -408,7 +420,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -419,14 +431,14 @@ TEST_F(DispatcherTest, MultipleStreams) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream1, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream1, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -456,7 +468,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   bridge_callbacks2.on_headers = [](envoy_headers c_headers, bool end_stream,
                                     void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     bool* on_headers_called2 = static_cast<bool*>(context);
     *on_headers_called2 = true;
@@ -467,14 +479,14 @@ TEST_F(DispatcherTest, MultipleStreams) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers2;
+  TestRequestHeaderMapImpl headers2;
   HttpTestUtility::addDefaultHeaders(headers2);
   envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb2;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb2));
-  EXPECT_EQ(http_dispatcher_.startStream(stream2, bridge_callbacks2, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream2, bridge_callbacks2), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -498,7 +510,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   Event::PostCb stream_deletion_post_cb2;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb2));
-  TestHeaderMapImpl response_headers2{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers2{{":status", "200"}};
   response_encoder2->encodeHeaders(response_headers2, true);
   ASSERT_EQ(cc2.on_headers_calls, 1);
   stream_deletion_post_cb2();
@@ -509,7 +521,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
   stream_deletion_post_cb();
@@ -537,7 +549,7 @@ TEST_F(DispatcherTest, ResetStreamLocal) {
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -574,7 +586,7 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_FALSE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -593,14 +605,14 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -621,7 +633,7 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   send_headers_post_cb();
 
   // Encode response headers.
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc.on_headers_calls, 1);
 
@@ -644,7 +656,7 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -655,14 +667,14 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
   };
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -686,7 +698,7 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
   stream_deletion_post_cb();
@@ -706,7 +718,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -727,14 +739,14 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
   http_dispatcher_.synchronizer().enable();
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -757,7 +769,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
   // Start a thread to encode response headers. This will wait pre-dispatchable call.
   http_dispatcher_.synchronizer().waitOn("dispatch_encode_headers");
   std::thread t1([&] {
-    TestHeaderMapImpl response_headers{{":status", "200"}};
+    TestResponseHeaderMapImpl response_headers{{":status", "200"}};
     response_headers.setEnvoyUpstreamServiceTime(20);
     response_encoder_->encodeHeaders(response_headers, true);
   });
@@ -795,7 +807,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -816,14 +828,14 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
   http_dispatcher_.synchronizer().enable();
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -858,7 +870,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_headers.setEnvoyUpstreamServiceTime(20);
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
@@ -883,7 +895,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -904,14 +916,14 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
   http_dispatcher_.synchronizer().enable();
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -946,7 +958,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_headers.setEnvoyUpstreamServiceTime(20);
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
@@ -973,7 +985,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRaceLocalWins) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -994,14 +1006,14 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRaceLocalWins) {
   http_dispatcher_.synchronizer().enable();
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -1059,7 +1071,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -1080,14 +1092,14 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
   http_dispatcher_.synchronizer().enable();
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -1144,7 +1156,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -1165,14 +1177,14 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
   http_dispatcher_.synchronizer().enable();
 
   // Build a set of request headers.
-  TestHeaderMapImpl headers;
+  TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -1230,7 +1242,7 @@ TEST_F(DispatcherTest, ResetWhenRemoteClosesBeforeLocal) {
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
     ASSERT_TRUE(end_stream);
-    HeaderMapPtr response_headers = Utility::toInternalHeaders(c_headers);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
@@ -1243,7 +1255,7 @@ TEST_F(DispatcherTest, ResetWhenRemoteClosesBeforeLocal) {
   // Create a stream.
   Event::PostCb start_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks, {}), ENVOY_SUCCESS);
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
 
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -1259,7 +1271,7 @@ TEST_F(DispatcherTest, ResetWhenRemoteClosesBeforeLocal) {
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
-  TestHeaderMapImpl response_headers{{":status", "200"}};
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 1);
   ASSERT_EQ(cc.on_complete_calls, 1);
