@@ -52,7 +52,7 @@ final class ViewController: UITableViewController {
     // end-to-end tests in CI.
     let request = RequestBuilder(method: .get, scheme: kRequestScheme,
                                  authority: kRequestAuthority,
-                                 path: kRequestPath, upstreamHttpProtocol: .http2)
+                                 path: kRequestPath)
         .addUpstreamHttpProtocol(.http2)
         .build()
     let handler = ResponseHandler()
