@@ -108,6 +108,11 @@ Engine::~Engine() {
 }
 
 void Engine::flushStats() {
+  // Stats must be flushed from the main thread. If we aren't on the main thread, join it.
+  if (main_thread_.joinable()) {
+    main_thread_.join();
+  }
+
   // Server instance will be null if the post-init callback has not been completed within run().
   // In this case, we can simply ignore the flush.
   if (server_instance_ != nullptr) {
