@@ -26,8 +26,6 @@ public:
 
   ~Engine();
 
-  envoy_status_t run(std::string config, std::string log_level);
-
   Http::Dispatcher& httpDispatcher();
 
 private:
@@ -39,6 +37,8 @@ private:
   std::unique_ptr<Envoy::MainCommon> main_common_ GUARDED_BY(mutex_);
   Envoy::Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
   Event::Dispatcher* event_dispatcher_;
+
+  envoy_status_t run(std::string config, std::string log_level);
 };
 
 } // namespace Envoy
