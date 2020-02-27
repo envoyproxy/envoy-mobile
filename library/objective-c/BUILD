@@ -8,6 +8,7 @@ objc_library(
     name = "envoy_engine_objc_lib",
     srcs = [
         "EnvoyConfiguration.m",
+        "EnvoyDeviceLifecycleMonitor.m",
         "EnvoyEngineImpl.m",
         "EnvoyHTTPCallbacks.m",
         "EnvoyHTTPStreamImpl.m",
@@ -18,6 +19,7 @@ objc_library(
     ],
     sdk_frameworks = [
         "SystemConfiguration",
+        "UIKit",
     ],
     visibility = ["//visibility:public"],
     deps = ["//library/common:envoy_main_interface_lib"],

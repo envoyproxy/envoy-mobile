@@ -208,4 +208,14 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 @end
 
+#pragma mark - EnvoyDeviceLifecycleMonitor
+
+@interface EnvoyDeviceLifecycleMonitor : NSObject
+
+// Start monitoring device lifecycle changes.
+// Flushes stats when the app resigns active or is about to be terminated.
++ (void)startFlushingStatsOnLifecycleChanges;
+
+@end
+
 NS_ASSUME_NONNULL_END

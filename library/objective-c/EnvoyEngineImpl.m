@@ -20,6 +20,7 @@ static void ios_on_exit() {
 
   _engineHandle = init_engine();
   [EnvoyNetworkMonitor startReachabilityIfNeeded];
+  [EnvoyDeviceLifecycleMonitor startFlushingStatsOnLifecycleChanges];
   return self;
 }
 
