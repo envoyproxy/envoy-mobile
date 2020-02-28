@@ -66,7 +66,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
           Server::Instance* server = TS_UNCHECKED_READ(main_common_)->server();
           auto api_listener = server->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
-          server_instance_ = server;
+          server_ = server;
           http_dispatcher_->ready(server->dispatcher(), api_listener.value());
         });
   } // mutex_
@@ -108,15 +108,11 @@ Engine::~Engine() {
 }
 
 void Engine::flushStats() {
-  // Stats must be flushed from the main thread. If we aren't on the main thread, join it.
-  if (main_thread_.joinable()) {
-    main_thread_.join();
-  }
-
-  // Server instance will be null if the post-init callback has not been completed within run().
+  // The server will be null if the post-init callback has not been completed within run().
   // In this case, we can simply ignore the flush.
-  if (server_instance_ != nullptr) {
-    server_instance_->flushStats();
+  if (server_) {
+    // Stats must be flushed from the main thread.
+    server_->dispatcher().post([this]() -> void { server_->flushStats(); });
   }
 }
 
