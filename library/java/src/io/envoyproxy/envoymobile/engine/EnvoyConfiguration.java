@@ -5,8 +5,8 @@ public class EnvoyConfiguration {
   public final String statsDomain;
   public final Integer connectTimeoutSeconds;
   public final Integer dnsRefreshSeconds;
-  public final Integer dnsRefreshSecondsBase;
-  public final Integer dnsRefreshSecondsMax;
+  public final Integer dnsFailureRefreshSecondsBase;
+  public final Integer dnsFailureRefreshSecondsMax;
   public final Integer statsFlushSeconds;
 
   /**

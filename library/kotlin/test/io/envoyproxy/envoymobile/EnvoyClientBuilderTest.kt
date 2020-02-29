@@ -56,7 +56,7 @@ class EnvoyBuilderTest {
     clientBuilder = EnvoyClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
-    clientBuilder.addDNSRefreshSeconds(1234, 5678)
+    clientBuilder.addDNSFailureRefreshSeconds(1234, 5678)
     val envoy = clientBuilder.build()
     assertThat(envoy.envoyConfiguration!!.dnsFailureRefreshSecondsBase).isEqualTo(1234)
     assertThat(envoy.envoyConfiguration!!.dnsFailureRefreshSecondsMax).isEqualTo(5678)
