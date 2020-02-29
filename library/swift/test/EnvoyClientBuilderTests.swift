@@ -9,6 +9,9 @@ mock_template:
   device_os: {{ device_os }}
   connect_timeout: {{ connect_timeout_seconds }}s
   dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
+  dns_failure_refresh_rate:
+    base_interval: {{ dns_failure_refresh_rate_seconds_base }}s
+    max_interval: {{ dns_failure_refresh_rate_seconds_max }}s
   stats_flush_interval: {{ stats_flush_interval_seconds }}s
 """
 
@@ -103,6 +106,21 @@ final class EnvoyClientBuilderTests: XCTestCase {
     _ = try EnvoyClientBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addDNSRefreshSeconds(23)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingDNSFailureRefreshSecondsAddsToConfigurationWhenRunningEnvoy() throws {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(1234, config.dnsFailureRefreshSecondsBase)
+      XCTAssertEqual(5678, config.dnsFailureRefreshSecondsMax)
+      expectation.fulfill()
+    }
+
+    _ = try EnvoyClientBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addDNSFailureRefreshSeconds(base: 1234, max: 5678)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }

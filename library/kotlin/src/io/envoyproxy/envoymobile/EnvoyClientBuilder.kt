@@ -18,6 +18,8 @@ open class EnvoyClientBuilder(
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30
   private var dnsRefreshSeconds = 60
+  private var dnsFailureRefreshSecondsBase: UInt = 2
+  private var dnsFailureRefreshSecondsMax: UInt = 10
   private var statsFlushSeconds = 60
 
   /**
@@ -55,6 +57,18 @@ open class EnvoyClientBuilder(
    */
   fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): EnvoyClientBuilder {
     this.dnsRefreshSeconds = dnsRefreshSeconds
+    return this
+  }
+
+  /**
+   * Add a rate at which to refresh DNS in case of DNS failure.
+   *
+   * @param base rate in seconds.
+   * @param max rate in seconds.
+   */
+  fun addDNSFailureRefreshSeconds(base: UInt, max: UInt): EnvoyClientBuilder {
+    this.dnsFailureRefreshSecondsBase = base
+    this.dnsFailureRefreshSecondsMax = max
     return this
   }
 
