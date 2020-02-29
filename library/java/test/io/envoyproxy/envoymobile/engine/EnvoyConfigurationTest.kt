@@ -36,7 +36,7 @@ class EnvoyConfigurationTest {
 
   @Test(expected = EnvoyConfiguration.ConfigurationException::class)
   fun `resolve templates with invalid templates will throw on build`() {
-    val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345)
+    val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567)
 
     envoyConfiguration.resolveTemplate("{{ }}")
   }
