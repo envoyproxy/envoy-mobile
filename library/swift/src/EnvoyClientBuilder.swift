@@ -115,7 +115,8 @@ public final class EnvoyClientBuilder: NSObject {
       let config = EnvoyConfiguration(statsDomain: self.statsDomain,
                                       connectTimeoutSeconds: self.connectTimeoutSeconds,
                                       dnsRefreshSeconds: self.dnsRefreshSeconds,
-                                      dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
+                                      dnsFailureRefreshSecondsBase:
+                                        self.dnsFailureRefreshSecondsBase,
                                       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
                                       statsFlushSeconds: self.statsFlushSeconds)
       return EnvoyClient(config: config, logLevel: self.logLevel, engine: engine)
