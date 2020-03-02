@@ -1,9 +1,11 @@
 package io.envoyproxy.envoymobile.engine;
 
+import android.app.Application;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 public class EnvoyEngineImpl implements EnvoyEngine {
   private final long engineHandle;
+  private AndroidAppLifecycleMonitor lifecycleMonitor;
 
   public EnvoyEngineImpl() {
     JniLibrary.load();
@@ -47,6 +49,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    */
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
+    if (envoyConfiguration.appForLifecycleHandling != null) {
+      AndroidAppLifecycleMonitor monitor = AndroidAppLifecycleMonitor();
+      envoyConfiguration.appForLifecycleHandling.registerActivityLifecycleCallbacks(monitor);
+    }
     return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString()), logLevel);
   }
 }
