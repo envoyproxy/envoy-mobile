@@ -23,7 +23,7 @@ class Engine {
 public:
   /**
    * Constructor for a new engine instance.
-   * @param callbacks, the callbacks to be used for streams started through the engine.
+   * @param callbacks, the callbacks to use for engine lifecycle monitoring.
    * @param config, the Envoy configuration to use when starting the instance.
    * @param log_level, the log level with which to configure the engine.
    * @param preferred_network, the preferred network that should be used for new streams.
