@@ -12,7 +12,7 @@ public class EnvoyConfiguration {
   /**
    * Create an EnvoyConfiguration with a user provided configuration values.
    *
-   * @param statsDomain                  The domain to flush stats to.
+   * @param statsDomain                  the domain to flush stats to.
    * @param connectTimeoutSeconds        timeout for new network connections to hosts in
    *                                     the cluster.
    * @param dnsRefreshSeconds            rate in seconds to refresh DNS.

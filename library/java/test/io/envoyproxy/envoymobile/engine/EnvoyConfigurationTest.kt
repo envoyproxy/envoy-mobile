@@ -27,8 +27,8 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("stats_domain: stats.foo.com")
     assertThat(resolvedTemplate).contains("connect_timeout: 123s")
     assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
-    assertThat(resolvedTemplate).contains("base_interval: 345")
-    assertThat(resolvedTemplate).contains("max_interval: 456")
+    assertThat(resolvedTemplate).contains("base_interval: 345s")
+    assertThat(resolvedTemplate).contains("max_interval: 456s")
     assertThat(resolvedTemplate).contains("stats_flush_interval: 567s")
     assertThat(resolvedTemplate).contains("os: Android")
   }
