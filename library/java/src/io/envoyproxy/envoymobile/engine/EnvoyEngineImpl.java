@@ -3,7 +3,6 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 public class EnvoyEngineImpl implements EnvoyEngine {
-
   private final long engineHandle;
 
   public EnvoyEngineImpl() {

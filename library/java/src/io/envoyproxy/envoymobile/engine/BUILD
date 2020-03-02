@@ -1,8 +1,11 @@
+load("@rules_android//android:rules.bzl", "android_library")
+
 licenses(["notice"])  # Apache 2
 
 android_library(
     name = "envoy_engine_lib",
     srcs = [
+        "AndroidDeviceLifecycleMonitor.java",
         "AndroidEngineImpl.java",
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",

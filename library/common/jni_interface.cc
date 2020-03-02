@@ -76,6 +76,13 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIE
   return set_preferred_network(static_cast<envoy_network_t>(network));
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_flushStats(JNIEnv* env,
+                                                                   jclass // class
+) {
+  return flush_stats();
+}
+
 // JvmCallbackContext
 
 static void pass_headers(JNIEnv* env, envoy_headers headers, jobject j_context) {

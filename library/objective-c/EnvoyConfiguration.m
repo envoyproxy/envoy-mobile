@@ -9,7 +9,8 @@
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                  statsFlushSeconds:(UInt32)statsFlushSeconds {
+                  statsFlushSeconds:(UInt32)statsFlushSeconds
+        appLifecycleHandlingEnabled:(BOOL)appLifecycleHandlingEnabled {
   self = [super init];
   if (!self) {
     return nil;
@@ -21,6 +22,7 @@
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
   self.statsFlushSeconds = statsFlushSeconds;
+  self.appLifecycleHandlingEnabled = appLifecycleHandlingEnabled;
   return self;
 }
 
@@ -38,7 +40,6 @@
     @"stats_flush_interval_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds],
     @"device_os" : @"iOS"
-
   };
 
   for (NSString *templateKey in templateKeysToValues) {

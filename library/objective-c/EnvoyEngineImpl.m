@@ -3,6 +3,8 @@
 #import "library/common/main_interface.h"
 #import "library/common/types/c_types.h"
 
+#import <UIKit/UIKit.h>
+
 static void ios_on_exit() {
   // Currently nothing needs to happen in iOS on exit. Just log.
   NSLog(@"[Envoy] library is exiting");
@@ -23,11 +25,19 @@ static void ios_on_exit() {
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
     return 1;
+  }
+
+  if (config.appLifecycleHandlingEnabled) {
+    [self startObservingLifecycleNotifications];
   }
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel];
@@ -50,6 +60,25 @@ static void ios_on_exit() {
 - (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks {
   return [[EnvoyHTTPStreamImpl alloc] initWithHandle:init_stream(_engineHandle)
                                            callbacks:callbacks];
+}
+
+#pragma mark - Private
+
+- (void)startObservingLifecycleNotifications {
+  NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+  [notificationCenter addObserver:self
+                         selector:@selector(lifecycleDidChangeWithNotification:)
+                             name:UIApplicationWillResignActiveNotification
+                           object:nil];
+  [notificationCenter addObserver:self
+                         selector:@selector(lifecycleDidChangeWithNotification:)
+                             name:UIApplicationWillTerminateNotification
+                           object:nil];
+}
+
+- (void)lifecycleDidChangeWithNotification:(NSNotification *)notification {
+  NSLog(@"[Envoy] triggering stats flush (%@)", notification.name);
+  flush_stats();
 }
 
 @end

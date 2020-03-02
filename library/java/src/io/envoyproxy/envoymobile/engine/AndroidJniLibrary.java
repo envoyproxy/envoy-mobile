@@ -4,8 +4,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 
 public class AndroidJniLibrary {
-
-  // Internal reference to helper object used to load and initialize the native library.
+  // Internal reference to helper object used to load and initialize the native
+  // library.
   // Volatile to ensure double-checked locking works correctly.
   private static volatile AndroidLoader loader = null;
 
@@ -24,12 +24,11 @@ public class AndroidJniLibrary {
     }
   }
 
-  // Private helper class used by the load method to ensure the native library and its
-  // dependencies are loaded and initialized at most once.
+  // Private helper class used by the load method to ensure the native library and
+  // its dependencies are loaded and initialized at most once.
   private static class AndroidLoader {
     private AndroidLoader(Context context) {
-      AndroidJniLibrary.initialize(
-          (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
+      AndroidJniLibrary.initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
   }
 
@@ -41,5 +40,19 @@ public class AndroidJniLibrary {
    */
   protected static native int initialize(ConnectivityManager connectivityManager);
 
+  /**
+   * Update the network interface to the preferred network for opening new
+   * streams. Note that this state is shared by all engines.
+   *
+   * @param network, the network to be preferred for new streams.
+   * @return envoy_status_t, the resulting status of the operation.
+   */
   protected static native int setPreferredNetwork(int network);
+
+  /**
+   * Flush the stats sinks outside of a flushing interval. Note: stats flushing
+   * may not be synchronous. Therefore, this function may return prior to flushing
+   * taking place.
+   */
+  protected static native void flushStats();
 }
