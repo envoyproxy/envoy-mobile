@@ -26,7 +26,7 @@ public:
    * @param callbacks, the callbacks to use for engine lifecycle monitoring.
    * @param config, the Envoy configuration to use when starting the instance.
    * @param log_level, the log level with which to configure the engine.
-   * @param preferred_network, the preferred network that should be used for new streams.
+   * @param preferred_network, hook to obtain the preferred network for new streams.
    */
   Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
          std::atomic<envoy_network_t>& preferred_network);
