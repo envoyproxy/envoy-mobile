@@ -29,6 +29,6 @@ public class AndroidEngineImpl implements EnvoyEngine {
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
     AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
     application.registerActivityLifecycleCallbacks(monitor);
-    return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
+    return this.runWithConfig(envoyConfiguration, logLevel);
   }
 }

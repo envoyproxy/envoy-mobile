@@ -36,11 +36,12 @@ static void ios_on_exit() {
     return 1;
   }
 
-  [self startObservingLifecycleNotifications];
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel];
 }
 
 - (int)runWithConfigYAML:(NSString *)configYAML logLevel:(NSString *)logLevel {
+  [self startObservingLifecycleNotifications];
+
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
