@@ -101,7 +101,7 @@ open class EnvoyClientBuilder(
    *
    * @return A new instance of Envoy.
    */
-  open fun build(): Envoy {
+  fun build(): Envoy {
     return when (configuration) {
       is Custom -> {
         return Envoy(engineType(), configuration.yaml, logLevel)

@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile.engine;
 import android.app.Application;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
+/* Android-specific implementation of the `EnvoyEngine` interface. */
 public class AndroidEngineImpl implements EnvoyEngine {
   private final Application application;
   private final EnvoyEngine envoyEngine;
