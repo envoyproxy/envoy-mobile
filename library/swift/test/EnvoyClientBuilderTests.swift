@@ -159,7 +159,8 @@ final class EnvoyClientBuilderTests: XCTestCase {
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    statsFlushSeconds: 600)
+                                    statsFlushSeconds: 600,
+                                    appLifecycleHandlingEnabled: false)
     guard let resolvedYAML = config.resolveTemplate(kMockTemplate) else {
       XCTFail("Resolved template YAML is nil")
       return
@@ -180,7 +181,8 @@ final class EnvoyClientBuilderTests: XCTestCase {
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    statsFlushSeconds: 600)
+                                    statsFlushSeconds: 600,
+                                    appLifecycleHandlingEnabled: false)
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))
   }
 }

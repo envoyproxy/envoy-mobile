@@ -28,15 +28,16 @@ public class AndroidJniLibrary {
   // its dependencies are loaded and initialized at most once.
   private static class AndroidLoader {
     private AndroidLoader(Context context) {
-      AndroidJniLibrary.initialize((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+      AndroidJniLibrary.initialize(
+          (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
   }
 
   /**
-   * Native binding to register the ConnectivityManager to C-Ares
+   * Native binding to register the ConnectivityManager to C-Ares.
    *
-   * @param connectivityManager Android's ConnectivityManager
-   * @return int for successful initialization
+   * @param connectivityManager Android's ConnectivityManager.
+   * @return The resulting status of the initialization.
    */
   protected static native int initialize(ConnectivityManager connectivityManager);
 
@@ -45,7 +46,7 @@ public class AndroidJniLibrary {
    * streams. Note that this state is shared by all engines.
    *
    * @param network, the network to be preferred for new streams.
-   * @return envoy_status_t, the resulting status of the operation.
+   * @return The resulting status of the operation.
    */
   protected static native int setPreferredNetwork(int network);
 

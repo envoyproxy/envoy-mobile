@@ -2,7 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
-/* Typed configuration that may be used for starting Envoy. */
+/* Wrapper layer for calling into Envoy's C/++ API. */
 public interface EnvoyEngine {
   /**
    * Creates a new stream with the provided callbacks.

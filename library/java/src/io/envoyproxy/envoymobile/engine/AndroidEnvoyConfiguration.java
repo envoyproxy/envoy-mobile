@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import android.app.Application;
 
+/* Android-specific configuration that may be used for starting Envoy. */
 public class AndroidEnvoyConfiguration extends EnvoyConfiguration {
   public final Application appForLifecycleHandling;
 

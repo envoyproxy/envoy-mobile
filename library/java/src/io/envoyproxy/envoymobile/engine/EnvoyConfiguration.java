@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+/* Typed configuration that may be used for starting Envoy. */
 public class EnvoyConfiguration {
   public final String statsDomain;
   public final Integer connectTimeoutSeconds;

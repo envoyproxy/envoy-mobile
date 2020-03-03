@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
-/* Android-specific configuration that may be used for starting Envoy. */
+/* Android-specific wrapper layer for calling into Envoy's C/++ API. */
 public interface AndroidEnvoyEngine extends EnvoyEngine {
   /**
    * Run the Envoy engine with the provided EnvoyConfiguration and log level.
