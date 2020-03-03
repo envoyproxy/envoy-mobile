@@ -1,6 +1,5 @@
 package io.envoyproxy.envoymobile
 
-import android.app.Application
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
@@ -22,7 +21,6 @@ open class EnvoyClientBuilder(
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
   private var statsFlushSeconds = 60
-  private var appForLifecycleHandling: Application? = null
 
   /**
    * Add a log level to use with Envoy.
@@ -93,19 +91,6 @@ open class EnvoyClientBuilder(
    */
   fun addStatsFlushSeconds(statsFlushSeconds: Int): EnvoyClientBuilder {
     this.statsFlushSeconds = statsFlushSeconds
-    return this
-  }
-
-  /**
-   * Enables app lifecycle handling by subscribing the Envoy client to notifications and
-   * performing optimizations based on them (i.e., flusing stats on app backgrounding).
-   *
-   * @param app the app to use for registering lifecycle handler callbacks.
-   *
-   * @return this builder.
-   */
-  fun addAppLifecycleHandling(app: Application): EnvoyClientBuilder {
-    this.appForLifecycleHandling = app
     return this
   }
 

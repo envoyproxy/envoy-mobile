@@ -1,7 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
 public interface AndroidEnvoyEngine extends EnvoyEngine {
-
     /**
      * Run the Envoy engine with the provided EnvoyConfiguration and log level.
      *

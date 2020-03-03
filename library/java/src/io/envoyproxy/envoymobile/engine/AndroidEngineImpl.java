@@ -4,7 +4,6 @@ import android.content.Context;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 public class AndroidEngineImpl implements EnvoyEngine {
-
   private final EnvoyEngine envoyEngine;
 
   public AndroidEngineImpl(Context context) {
@@ -29,6 +28,11 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   public int runWithConfig(AndroidEnvoyConfiguration envoyConfiguration, String logLevel) {
+    if (envoyConfiguration.appForLifecycleHandling != null) {
+      AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
+      envoyConfiguration.appForLifecycleHandling.registerActivityLifecycleCallbacks(monitor);
+    }
+
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
   }
 }

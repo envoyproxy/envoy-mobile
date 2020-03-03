@@ -1,5 +1,3 @@
-load("@rules_android//android:rules.bzl", "android_library")
-
 licenses(["notice"])  # Apache 2
 
 android_library(
@@ -7,6 +5,7 @@ android_library(
     srcs = [
         "AndroidAppLifecycleMonitor.java",
         "AndroidEngineImpl.java",
+        "AndroidEnvoyConfiguration.java",
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",
     ],

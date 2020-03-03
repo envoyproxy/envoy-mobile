@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine;
 
-import android.app.Application;
-
 public class EnvoyConfiguration {
   public final String statsDomain;
   public final Integer connectTimeoutSeconds;
@@ -9,31 +7,27 @@ public class EnvoyConfiguration {
   public final Integer dnsFailureRefreshSecondsBase;
   public final Integer dnsFailureRefreshSecondsMax;
   public final Integer statsFlushSeconds;
-  public final Application appForLifecycleHandling;
 
   /**
-   * Create an EnvoyConfiguration with a user provided configuration values.
+   * Create a new instance of the configuration.
    *
    * @param statsDomain                  the domain to flush stats to.
-   * @param connectTimeoutSeconds        timeout for new network connections to
-   *                                     hosts in the cluster.
+   * @param connectTimeoutSeconds        timeout for new network connections to hosts in
+   *                                     the cluster.
    * @param dnsRefreshSeconds            rate in seconds to refresh DNS.
-   * @param dnsFailureRefreshSecondsBase base rate in seconds to refresh DNS on
-   *                                     failure.
-   * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on
-   *                                     failure.
+   * @param dnsFailureRefreshSecondsBase base rate in seconds to refresh DNS on failure.
+   * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on failure.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
-      int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax, int statsFlushSeconds,
-      Application appForLifecycleHandling) {
+                            int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
+                            int statsFlushSeconds) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
     this.statsFlushSeconds = statsFlushSeconds;
-    this.appForLifecycleHandling = appForLifecycleHandling;
   }
 
   /**
@@ -46,13 +40,16 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(String templateYAML) {
-    String resolvedConfiguration = templateYAML.replace("{{ stats_domain }}", String.format("%s", statsDomain))
-        .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
-        .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
-        .replace("{{ dns_failure_refresh_rate_seconds_base }}", String.format("%s", dnsFailureRefreshSecondsBase))
-        .replace("{{ dns_failure_refresh_rate_seconds_max }}", String.format("%s", dnsFailureRefreshSecondsMax))
-        .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
-        .replace("{{ device_os }}", "Android");
+    String resolvedConfiguration =
+        templateYAML.replace("{{ stats_domain }}", String.format("%s", statsDomain))
+            .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
+            .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
+            .replace("{{ dns_failure_refresh_rate_seconds_base }}",
+                     String.format("%s", dnsFailureRefreshSecondsBase))
+            .replace("{{ dns_failure_refresh_rate_seconds_max }}",
+                     String.format("%s", dnsFailureRefreshSecondsMax))
+            .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
+            .replace("{{ device_os }}", "Android");
 
     if (resolvedConfiguration.contains("{{")) {
       throw new ConfigurationException();
@@ -61,8 +58,6 @@ public class EnvoyConfiguration {
   }
 
   static class ConfigurationException extends RuntimeException {
-    ConfigurationException() {
-      super("Unresolved Template Key");
-    }
+    ConfigurationException() { super("Unresolved Template Key"); }
   }
 }

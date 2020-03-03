@@ -80,7 +80,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_flushStats(JNIEnv* env,
                                                                    jclass // class
 ) {
-  return flush_stats();
+  flush_stats();
 }
 
 // JvmCallbackContext
