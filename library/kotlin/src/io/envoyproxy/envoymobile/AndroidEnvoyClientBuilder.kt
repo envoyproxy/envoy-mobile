@@ -16,7 +16,7 @@ class AndroidEnvoyClientBuilder @JvmOverloads constructor (
 
   /**
    * Enables app lifecycle handling by subscribing the Envoy client to notifications and
-   * performing optimizations based on them (i.e., flusing stats on app backgrounding).
+   * performing optimizations based on them (i.e., flushing stats on app backgrounding).
    *
    * @param app the app to use for registering lifecycle handler callbacks.
    *

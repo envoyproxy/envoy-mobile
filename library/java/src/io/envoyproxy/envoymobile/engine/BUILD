@@ -6,6 +6,7 @@ android_library(
         "AndroidAppLifecycleMonitor.java",
         "AndroidEngineImpl.java",
         "AndroidEnvoyConfiguration.java",
+        "AndroidEnvoyEngine.java",
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",
     ],

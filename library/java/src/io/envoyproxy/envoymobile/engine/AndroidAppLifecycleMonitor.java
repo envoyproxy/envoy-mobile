@@ -6,6 +6,10 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
 
+/*
+ * This class may be registered to an app's lifecycle callbacks in order to perform custom handling
+ * of lifecycle events, such as flushing stats when the app is paused.
+ */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidAppLifecycleMonitor implements ActivityLifecycleCallbacks {
   @Override

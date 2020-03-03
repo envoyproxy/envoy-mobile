@@ -24,6 +24,7 @@ open class EnvoyClientBuilder(
 
   /**
    * Add a log level to use with Envoy.
+   *
    * @param logLevel the log level to use with Envoy.
    *
    * @return this builder.
@@ -35,6 +36,7 @@ open class EnvoyClientBuilder(
 
   /**
    * Add a domain to flush stats to.
+   *
    * @param statsDomain the domain to flush stats to.
    *
    * @return this builder.
