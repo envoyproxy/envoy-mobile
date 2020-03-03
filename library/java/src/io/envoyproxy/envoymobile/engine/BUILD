@@ -5,8 +5,6 @@ android_library(
     srcs = [
         "AndroidAppLifecycleMonitor.java",
         "AndroidEngineImpl.java",
-        "AndroidEnvoyConfiguration.java",
-        "AndroidEnvoyEngine.java",
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",
     ],

@@ -1,15 +1,17 @@
 package io.envoyproxy.envoymobile.engine;
 
-import android.content.Context;
+import android.app.Application;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
-public class AndroidEngineImpl implements AndroidEnvoyEngine {
+public class AndroidEngineImpl implements EnvoyEngine {
+  private final Application application;
   private final EnvoyEngine envoyEngine;
 
-  public AndroidEngineImpl(Context context) {
-    envoyEngine = new EnvoyEngineImpl();
-    AndroidJniLibrary.load(context);
-    AndroidNetworkMonitor.load(context);
+  public AndroidEngineImpl(Application application) {
+    this.application = application;
+    this.envoyEngine = new EnvoyEngineImpl();
+    AndroidJniLibrary.load(application.getBaseContext());
+    AndroidNetworkMonitor.load(application.getBaseContext());
   }
 
   @Override
@@ -24,16 +26,8 @@ public class AndroidEngineImpl implements AndroidEnvoyEngine {
 
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
-    return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
-  }
-
-  @Override
-  public int runWithConfig(AndroidEnvoyConfiguration envoyConfiguration, String logLevel) {
-    if (envoyConfiguration.appForLifecycleHandling != null) {
-      AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
-      envoyConfiguration.appForLifecycleHandling.registerActivityLifecycleCallbacks(monitor);
-    }
-
+    AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
+    application.registerActivityLifecycleCallbacks(monitor);
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
   }
 }
