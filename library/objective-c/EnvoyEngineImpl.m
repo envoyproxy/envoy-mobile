@@ -36,10 +36,7 @@ static void ios_on_exit() {
     return 1;
   }
 
-  if (config.appLifecycleHandlingEnabled) {
-    [self startObservingLifecycleNotifications];
-  }
-
+  [self startObservingLifecycleNotifications];
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel];
 }
 
