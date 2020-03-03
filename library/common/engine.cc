@@ -112,6 +112,7 @@ void Engine::flushStats() {
   // In this case, we can simply ignore the flush.
   if (server_) {
     // Stats must be flushed from the main thread.
+    // Dispatching should be moved after https://github.com/lyft/envoy-mobile/issues/720
     server_->dispatcher().post([this]() -> void { server_->flushStats(); });
   }
 }
