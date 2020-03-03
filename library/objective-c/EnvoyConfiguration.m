@@ -9,8 +9,7 @@
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                  statsFlushSeconds:(UInt32)statsFlushSeconds
-        appLifecycleHandlingEnabled:(BOOL)appLifecycleHandlingEnabled {
+                  statsFlushSeconds:(UInt32)statsFlushSeconds {
   self = [super init];
   if (!self) {
     return nil;
@@ -22,7 +21,6 @@
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
   self.statsFlushSeconds = statsFlushSeconds;
-  self.appLifecycleHandlingEnabled = appLifecycleHandlingEnabled;
   return self;
 }
 

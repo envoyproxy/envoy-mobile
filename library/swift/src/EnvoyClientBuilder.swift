@@ -18,7 +18,6 @@ public final class EnvoyClientBuilder: NSObject {
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
   private var statsFlushSeconds: UInt32 = 60
-  private var appLifecycleHandlingEnabled = false
 
   // MARK: - Public
 
@@ -104,16 +103,6 @@ public final class EnvoyClientBuilder: NSObject {
     return self
   }
 
-  /// Enables app lifecycle handling by subscribing the Envoy client to notifications and
-  /// performing optimizations based on them (i.e., flushing stats on app backgrounding).
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func addAppLifecycleHandling() -> EnvoyClientBuilder {
-    self.appLifecycleHandlingEnabled = true
-    return self
-  }
-
   /// Builds a new instance of EnvoyClient using the provided configurations.
   ///
   /// - returns: A new instance of EnvoyClient.
@@ -129,8 +118,7 @@ public final class EnvoyClientBuilder: NSObject {
         dnsRefreshSeconds: self.dnsRefreshSeconds,
         dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
         dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
-        statsFlushSeconds: self.statsFlushSeconds,
-        appLifecycleHandlingEnabled: self.appLifecycleHandlingEnabled)
+        statsFlushSeconds: self.statsFlushSeconds)
       return EnvoyClient(config: config, logLevel: self.logLevel, engine: engine)
     }
   }

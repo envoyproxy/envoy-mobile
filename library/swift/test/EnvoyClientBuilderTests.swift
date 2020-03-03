@@ -139,28 +139,13 @@ final class EnvoyClientBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-  func testAddingAppLifecycleHandlingAddsToConfigurationWhenRunningEnvoy() throws {
-    let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertTrue(config.appLifecycleHandlingEnabled)
-      expectation.fulfill()
-    }
-
-    _ = try EnvoyClientBuilder()
-      .addEngineType(MockEnvoyEngine.self)
-      .addAppLifecycleHandling()
-      .build()
-    self.waitForExpectations(timeout: 0.01)
-  }
-
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(statsDomain: "stats.foo.com",
                                     connectTimeoutSeconds: 200,
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    statsFlushSeconds: 600,
-                                    appLifecycleHandlingEnabled: false)
+                                    statsFlushSeconds: 600)
     guard let resolvedYAML = config.resolveTemplate(kMockTemplate) else {
       XCTFail("Resolved template YAML is nil")
       return
@@ -181,8 +166,7 @@ final class EnvoyClientBuilderTests: XCTestCase {
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    statsFlushSeconds: 600,
-                                    appLifecycleHandlingEnabled: false)
+                                    statsFlushSeconds: 600)
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))
   }
 }

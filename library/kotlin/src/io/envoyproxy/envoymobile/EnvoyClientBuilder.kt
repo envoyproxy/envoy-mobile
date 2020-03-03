@@ -10,17 +10,17 @@ class Standard : BaseConfiguration()
 class Custom(val yaml: String) : BaseConfiguration()
 
 open class EnvoyClientBuilder(
-  val configuration: BaseConfiguration = Standard()
+    private val configuration: BaseConfiguration = Standard()
 ) {
-  var logLevel = LogLevel.INFO
-  var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
+  private var logLevel = LogLevel.INFO
+  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
 
-  var statsDomain = "0.0.0.0"
-  var connectTimeoutSeconds = 30
-  var dnsRefreshSeconds = 60
-  var dnsFailureRefreshSecondsBase = 2
-  var dnsFailureRefreshSecondsMax = 10
-  var statsFlushSeconds = 60
+  private var statsDomain = "0.0.0.0"
+  private var connectTimeoutSeconds = 30
+  private var dnsRefreshSeconds = 60
+  private var dnsFailureRefreshSecondsBase = 2
+  private var dnsFailureRefreshSecondsMax = 10
+  private var statsFlushSeconds = 60
 
   /**
    * Add a log level to use with Envoy.
@@ -97,17 +97,6 @@ open class EnvoyClientBuilder(
   }
 
   /**
-   * Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
-   * A new instance of this engine will be created when `build()` is called.
-   *
-   * @return this builder.
-   */
-  fun addEngineType(engineType: () -> EnvoyEngine): EnvoyClientBuilder {
-    this.engineType = engineType
-    return this
-  }
-
-  /**
    * Builds a new instance of Envoy using the provided configurations.
    *
    * @return A new instance of Envoy.
@@ -121,5 +110,15 @@ open class EnvoyClientBuilder(
         Envoy(engineType(), EnvoyConfiguration(statsDomain, connectTimeoutSeconds, dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, statsFlushSeconds), logLevel)
       }
     }
+  }
+
+  /**
+   * Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
+   *
+   * A new instance of this engine will be created when `build()` is called.
+   */
+  fun addEngineType(engineType: () -> EnvoyEngine): EnvoyClientBuilder {
+    this.engineType = engineType
+    return this
   }
 }

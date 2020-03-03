@@ -41,9 +41,7 @@ class MainActivity : Activity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    envoy = AndroidEnvoyClientBuilder(baseContext)
-      .addAppLifecycleHandling(getApplication())
-      .build()
+    envoy = AndroidEnvoyClientBuilder(getApplication()).build()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView
     recyclerView.layoutManager = LinearLayoutManager(this)
