@@ -10,17 +10,17 @@ class Standard : BaseConfiguration()
 class Custom(val yaml: String) : BaseConfiguration()
 
 open class EnvoyClientBuilder(
-  private val configuration: BaseConfiguration = Standard()
+  val configuration: BaseConfiguration = Standard()
 ) {
-  private var logLevel = LogLevel.INFO
-  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
+  var logLevel = LogLevel.INFO
+  var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
 
-  private var statsDomain = "0.0.0.0"
-  private var connectTimeoutSeconds = 30
-  private var dnsRefreshSeconds = 60
-  private var dnsFailureRefreshSecondsBase = 2
-  private var dnsFailureRefreshSecondsMax = 10
-  private var statsFlushSeconds = 60
+  var statsDomain = "0.0.0.0"
+  var connectTimeoutSeconds = 30
+  var dnsRefreshSeconds = 60
+  var dnsFailureRefreshSecondsBase = 2
+  var dnsFailureRefreshSecondsMax = 10
+  var statsFlushSeconds = 60
 
   /**
    * Add a log level to use with Envoy.
@@ -97,22 +97,6 @@ open class EnvoyClientBuilder(
   }
 
   /**
-   * Builds a new instance of Envoy using the provided configurations.
-   *
-   * @return A new instance of Envoy.
-   */
-  fun build(): Envoy {
-    return when (configuration) {
-      is Custom -> {
-        return Envoy(engineType(), configuration.yaml, logLevel)
-      }
-      is Standard -> {
-        Envoy(engineType(), EnvoyConfiguration(statsDomain, connectTimeoutSeconds, dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, statsFlushSeconds), logLevel)
-      }
-    }
-  }
-
-  /**
    * Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
    * A new instance of this engine will be created when `build()` is called.
    *
@@ -121,5 +105,21 @@ open class EnvoyClientBuilder(
   fun addEngineType(engineType: () -> EnvoyEngine): EnvoyClientBuilder {
     this.engineType = engineType
     return this
+  }
+
+  /**
+   * Builds a new instance of Envoy using the provided configurations.
+   *
+   * @return A new instance of Envoy.
+   */
+  open fun build(): Envoy {
+    return when (configuration) {
+      is Custom -> {
+        return Envoy(engineType(), configuration.yaml, logLevel)
+      }
+      is Standard -> {
+        Envoy(engineType(), EnvoyConfiguration(statsDomain, connectTimeoutSeconds, dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, statsFlushSeconds), logLevel)
+      }
+    }
   }
 }
