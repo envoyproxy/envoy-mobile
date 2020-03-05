@@ -12,7 +12,7 @@ In order for us to consider Envoy Mobile to be "working properly" with respect
 to VPNs, it needs to:
 
 - Send all traffic over the VPN if enabled when the library starts
-- Send all new requests over the VPN if the VPN is enabled after the library starts
+- Send all new requests over the VPN if the VPN is enabled **after** the library starts
 - Properly recover from dead VPN connections if the VPN is disabled after the library starts
 - Mirror this behavior on both iOS and Android
 
