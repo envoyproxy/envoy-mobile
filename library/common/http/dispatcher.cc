@@ -322,8 +322,6 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
     // https://github.com/lyft/envoy-mobile/issues/301
     if (direct_stream) {
       RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
-      ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
-                *internal_headers);
       setDestinationCluster(*internal_headers);
       // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS enabled.
       // This is done here because the ApiListener's synthetic connection would make the Http::ConnectionManager set the scheme to http otherwise.
@@ -335,6 +333,8 @@ envoy_status_t Dispatcher::sendHeaders(envoy_stream_t stream, envoy_headers head
       // Unfortunately, the router relies on the present of this header to determine if it should provided a route for a request here:
       // https://github.com/envoyproxy/envoy/blob/c9e3b9d2c453c7fe56a0e3615f0c742ac0d5e768/source/common/router/config_impl.cc#L1091-L1096
       internal_headers->setReferenceForwardedProto(Headers::get().SchemeValues.Https);
+      ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
+                *internal_headers);
       direct_stream->request_decoder_->decodeHeaders(std::move(internal_headers), end_stream);
       direct_stream->closeLocal(end_stream);
     }
