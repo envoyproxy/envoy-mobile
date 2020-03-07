@@ -296,7 +296,6 @@ envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
     // Only the initial setting of the api_listener_ is guarded.
     //
     // Note: streams created by Envoy Mobile are tagged as is_internally_created. This means that the Http::ConnectionManager _will not_ sanitize headers when creating a stream.
-    // This seems like the correct thing to do, as we want the headers created by the client to be preserved.
     direct_stream->request_decoder_ =
         &TS_UNCHECKED_READ(api_listener_)->newStream(*direct_stream->callbacks_, true /* is_internally_created */);
 
