@@ -35,12 +35,7 @@ class RetryPolicyMapperTest {
   fun `retry policy without perRetryTimeoutMS should exclude per try time ms header key`() {
     val retryPolicy = RetryPolicy(
         maxRetryCount = 123,
-        retryOn = listOf(
-            RetryRule.STATUS_5XX,
-            RetryRule.GATEWAY_ERROR,
-            RetryRule.CONNECT_FAILURE,
-            RetryRule.RETRIABLE_4XX,
-            RetryRule.REFUSED_UPSTREAM))
+        retryOn = listOf(RetryRule.STATUS_5XX, RetryRule.GATEWAY_ERROR))
 
     assertThat(retryPolicy.outboundHeaders()).doesNotContainKey("x-envoy-upstream-rq-per-try-timeout-ms")
   }
