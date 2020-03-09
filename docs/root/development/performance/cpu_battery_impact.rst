@@ -59,7 +59,7 @@ iOS
 ---
 
 The sample apps checked into
-`this analysis repository release <https://github.com/rebello95/EnvoyMobileAnalysis/releases/tag/v0.2.3.03062020>`_
+`this analysis repository <https://github.com/rebello95/EnvoyMobileAnalysis/tree/v0.2.3.03062020>`_
 were used to run the analysis outlined in this document.
 
 For the analysis, we utilized Xcode Instruments to monitor the 2 sample apps
