@@ -114,10 +114,10 @@ will be emitted.
 **Example**::
 
   // Kotlin
-  builder.addStatsDomain("io.envoyproxy.envoy-mobile")
+  builder.addStatsDomain("envoy-mobile.envoyproxy.io")
 
   // Swift
-  builder.addStatsDomain("io.envoyproxy.envoy-mobile")
+  builder.addStatsDomain("envoy-mobile.envoyproxy.io")
 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 ``addStatsFlushSeconds``
