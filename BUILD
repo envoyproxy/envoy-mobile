@@ -1,7 +1,7 @@
 licenses(["notice"])  # Apache 2
 
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
-
+exports_files(["Info.plist"])
 alias(
     name = "ios_framework",
     actual = "//library/swift/src:ios_framework",
