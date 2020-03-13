@@ -2,7 +2,7 @@
 This rules creates a fat static framework that can be included later with
 static_framework_import
 """
-
+load("@build_bazel_rules_apple//apple:ios.bzl", "ios_framework", "ios_static_framework")
 load("@build_bazel_apple_support//lib:apple_support.bzl", "apple_support")
 load("@build_bazel_rules_swift//swift:swift.bzl", "SwiftInfo", "swift_library")
 
@@ -195,6 +195,15 @@ def swift_static_framework(
         visibility = ["//visibility:public"],
         deps = deps,
     )
+    ios_framework(
+         name = "dynamic",
+         deps = [archive_name],
+         minimum_os_version = "10.0",
+         bundle_id = "foo",
+         infoplists = ["//:Info.plist"],
+         families = ["iphone"],
+         visibility = ["//visibility:public"],
+     )
 
     _swift_static_framework(
         name = name,

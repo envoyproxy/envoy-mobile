@@ -335,6 +335,9 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer
 // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BZ(
     JNIEnv* env, jclass, jlong stream_handle, jbyteArray data, jboolean end_stream) {
+  if (end_stream) {
+    __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_send_data_end_stream");
+  }
 
   // TODO: check for null pointer in envoy_data.bytes - we could copy or raise an exception
   return send_data(static_cast<envoy_stream_t>(stream_handle), array_to_native_data(env, data),
@@ -350,7 +353,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendTrailers(
     JNIEnv* env, jclass, jlong stream_handle, jobjectArray trailers) {
-
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_send_trailers");
   return send_trailers(static_cast<envoy_stream_t>(stream_handle),
                        to_native_headers(env, trailers));
 }

@@ -6,7 +6,8 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 swift_library(
     name = "appmain",
     srcs = glob(["*.swift"]),
-    deps = ["//dist:envoy_mobile_ios"],
+#    deps = ["//dist:envoy_mobile_ios"],
+    deps = ["//library/swift/src:dynamic"],
 )
 
 ios_application(
