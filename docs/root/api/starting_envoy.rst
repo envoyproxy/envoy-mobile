@@ -125,8 +125,6 @@ will be emitted.
 
 Specify the rate at which Envoy Mobile should flush its queued stats.
 
-Note that the library automatically flushes stats on application backgrounding/termination as well.
-
 **Example**::
 
   // Kotlin
@@ -134,6 +132,36 @@ Note that the library automatically flushes stats on application backgrounding/t
 
   // Swift
   builder.addStatsFlushSeconds(5)
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+``addAppVersion``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify the version of the app using Envoy Mobile. This information is sent as identifying
+information when flushing metrics.
+
+**Example**::
+
+  // Kotlin
+  builder.addAppVersion("version")
+
+  // Swift
+  builder.addAppVersion("version")
+
+~~~~~~~~~~~~~~~~~~~~~~~~
+``addId``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify the ID of the app using Envoy Mobile. This information is sent as identifying
+information when flushing metrics.
+
+**Example**::
+
+  // Kotlin
+  builder.addId("id")
+
+  // Swift
+  builder.addId("id")
 
 ----------------------
 Advanced configuration
