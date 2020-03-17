@@ -15,7 +15,7 @@ class EnvoyClientTest {
 
   private val engine = mock(EnvoyEngine::class.java)
   private val stream = mock(EnvoyHTTPStream::class.java)
-  private val config = EnvoyConfiguration("stats.foo.com", 0, 0, 0, 0, 0)
+  private val config = EnvoyConfiguration("stats.foo.com", 0, 0, 0, 0, 0, "version", "id")
 
   @Test
   fun `starting a stream on envoy sends headers`() {

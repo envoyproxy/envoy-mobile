@@ -172,4 +172,6 @@ watchdog:
 node:
   metadata:
     os: {{ device_os }}
+    app_version : {{ app_version }}
+    app_id : {{ app_id }}
 )";
