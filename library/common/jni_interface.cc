@@ -215,8 +215,7 @@ static void jvm_on_error(envoy_error error, void* context) {
   // TODO: check if copied via isCopy.
   // TODO: check for NULL.
   // https://github.com/lyft/envoy-mobile/issues/758
-  void* critical_error_message =
-      env->GetPrimitiveArrayCritical(j_error_message, nullptr);
+  void* critical_error_message = env->GetPrimitiveArrayCritical(j_error_message, nullptr);
   memcpy(critical_error_message, error.message.bytes, error.message.length);
   // Here '0' (for which there is no named constant) indicates we want to commit the changes back
   // to the JVM and free the c array, where applicable.
