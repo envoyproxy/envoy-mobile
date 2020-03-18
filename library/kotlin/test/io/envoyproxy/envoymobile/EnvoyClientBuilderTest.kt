@@ -78,10 +78,10 @@ class EnvoyBuilderTest {
     clientBuilder = EnvoyClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
-    clientBuilder.addAppVersion("version")
+    clientBuilder.addAppVersion("v1.2.3")
     clientBuilder.build()
     val envoy = clientBuilder.build()
-    assertThat(envoy.envoyConfiguration!!.appVersion).isEqualTo("version")
+    assertThat(envoy.envoyConfiguration!!.appVersion).isEqualTo("v1.2.3")
   }
 
   @Test
@@ -89,9 +89,9 @@ class EnvoyBuilderTest {
     clientBuilder = EnvoyClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
-    clientBuilder.addAppId("id")
+    clientBuilder.addAppId("com.mydomain.myapp")
     clientBuilder.build()
     val envoy = clientBuilder.build()
-    assertThat(envoy.envoyConfiguration!!.appId).isEqualTo("id")
+    assertThat(envoy.envoyConfiguration!!.appId).isEqualTo("com.mydomain.myapp")
   }
 }

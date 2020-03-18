@@ -144,13 +144,13 @@ final class EnvoyClientBuilderTests: XCTestCase {
   func testAddingAppVersionAddsToConfigurationWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual("version", config.appVersion)
+      XCTAssertEqual("v1.2.3", config.appVersion)
       expectation.fulfill()
     }
 
     _ = try EnvoyClientBuilder()
       .addEngineType(MockEnvoyEngine.self)
-      .addAppVersion("version")
+      .addAppVersion("v1.2.3")
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -158,13 +158,13 @@ final class EnvoyClientBuilderTests: XCTestCase {
   func testAddingAppIdAddsToConfigurationWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual("id", config.appId)
+      XCTAssertEqual("com.mydomain.myapp", config.appId)
       expectation.fulfill()
     }
 
     _ = try EnvoyClientBuilder()
       .addEngineType(MockEnvoyEngine.self)
-      .addAppId("id")
+      .addAppId("com.mydomain.myapp")
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -176,8 +176,8 @@ final class EnvoyClientBuilderTests: XCTestCase {
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
                                     statsFlushSeconds: 600,
-                                    appVersion: "version",
-                                    appId: "id")
+                                    appVersion: "v1.2.3",
+                                    appId: "com.mydomain.myapp")
     guard let resolvedYAML = config.resolveTemplate(kMockTemplate) else {
       XCTFail("Resolved template YAML is nil")
       return
@@ -190,8 +190,8 @@ final class EnvoyClientBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("max_interval: 500s"))
     XCTAssertTrue(resolvedYAML.contains("stats_flush_interval: 600s"))
     XCTAssertTrue(resolvedYAML.contains("device_os: iOS"))
-    XCTAssertTrue(resolvedYAML.contains("app_version: version"))
-    XCTAssertTrue(resolvedYAML.contains("app_id: id"))
+    XCTAssertTrue(resolvedYAML.contains("app_version: v1.2.3"))
+    XCTAssertTrue(resolvedYAML.contains("app_id: com.mydomain.myapp"))
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
@@ -201,8 +201,8 @@ final class EnvoyClientBuilderTests: XCTestCase {
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
                                     statsFlushSeconds: 600,
-                                    appVersion: "version",
-                                    appId: "id")
+                                    appVersion: "v1.2.3",
+                                    appId: "com.mydomain.myapp")
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))
   }
 }

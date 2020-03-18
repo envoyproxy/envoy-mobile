@@ -133,35 +133,35 @@ Specify the rate at which Envoy Mobile should flush its queued stats.
   // Swift
   builder.addStatsFlushSeconds(5)
 
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 ``addAppVersion``
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
-Specify the version of the app using Envoy Mobile. This information is sent as identifying
-information when flushing metrics.
-
-**Example**::
-
-  // Kotlin
-  builder.addAppVersion("version")
-
-  // Swift
-  builder.addAppVersion("version")
-
-~~~~~~~~~~~~~~~~~~~~~~~~
-``addId``
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Specify the ID of the app using Envoy Mobile. This information is sent as identifying
-information when flushing metrics.
+Specify the version of the app using Envoy Mobile.
+This information is sent as metadata when flushing stats.
 
 **Example**::
 
   // Kotlin
-  builder.addId("id")
+  builder.addAppVersion("v1.2.3")
 
   // Swift
-  builder.addId("id")
+  builder.addAppVersion("v1.2.3")
+
+~~~~~~~~~~~~
+``addAppId``
+~~~~~~~~~~~~
+
+Specify the version of the app using Envoy Mobile.
+This information is sent as metadata when flushing stats.
+
+**Example**::
+
+  // Kotlin
+  builder.addAppId("com.mydomain.myapp")
+
+  // Swift
+  builder.addAppId("com.mydomain.myapp)
 
 ----------------------
 Advanced configuration
