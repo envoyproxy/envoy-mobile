@@ -8,7 +8,7 @@ sudo rm -rf /var/lib/apt/lists/*
 
 # We have seen problems with heroku's keys.
 # We do not use heroku, but it is pre-installed in the github actions machines.
-curl https://cli-assets.heroku.com/apt/release.key | apt-key add -
+curl https://cli-assets.heroku.com/apt/release.key | sudo apt-key add -
 
 sudo apt-get clean
 sudo apt-get update
