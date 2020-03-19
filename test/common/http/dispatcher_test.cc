@@ -332,16 +332,19 @@ TEST_F(DispatcherTest, Queueing) {
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
-  // These two stream operations will get queued up in the Http::Dispatcher's queue awaiting for the call to ready.
-  // Create a stream.
+  // These two stream operations will get queued up in the Http::Dispatcher's queue awaiting for the
+  // call to ready. Create a stream.
   EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
   // Send request headers.
   http_dispatcher_.sendHeaders(stream, c_headers, true);
 
-  // After ready is called the queue will be flushed and two events will be posted to the event_dispatcher.
+  // After ready is called the queue will be flushed and two events will be posted to the
+  // event_dispatcher.
   Event::PostCb start_stream_post_cb;
   Event::PostCb send_headers_post_cb;
-  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  EXPECT_CALL(event_dispatcher_, post(_))
+      .WillOnce(SaveArg<0>(&start_stream_post_cb))
+      .WillOnce(SaveArg<0>(&send_headers_post_cb));
   ready();
   // Grab the response encoder in order to dispatch responses on the stream.
   // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
@@ -355,7 +358,6 @@ TEST_F(DispatcherTest, Queueing) {
 
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   send_headers_post_cb();
-
 
   // Encode response headers.
   Event::PostCb stream_deletion_post_cb;
