@@ -5,6 +5,12 @@ set -e
 # Set up basic requirements and install them.
 # workaround https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
 sudo rm -rf /var/lib/apt/lists/*
+
+# We have seen problems with heroku's keys.
+# We do not use heroku, but it is pre-installed in the github actions machines.
+sudo apt-get remove heroku
+sudo rm -f /etc/apt/sources.list.d/heroku.list
+
 sudo apt-get clean
 sudo apt-get update
 export DEBIAN_FRONTEND=noninteractive
