@@ -48,7 +48,7 @@ public class EnvoyConfiguration {
    */
   String resolveTemplate(String templateYAML) {
     String resolvedConfiguration =
-        templateYAML.replace("{{ stats_domain }}", String.format("%s", statsDomain))
+        templateYAML.replace("{{ stats_domain }}", statsDomain)
             .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
             .replace("{{ dns_failure_refresh_rate_seconds_base }}",
@@ -57,8 +57,8 @@ public class EnvoyConfiguration {
                      String.format("%s", dnsFailureRefreshSecondsMax))
             .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
             .replace("{{ device_os }}", "Android")
-            .replace("{{ app_version }}", String.format("%s", appVersion))
-            .replace("{{ app_id }}", String.format("%s", appId));
+            .replace("{{ app_version }}", appVersion)
+            .replace("{{ app_id }}", appId);
 
     if (resolvedConfiguration.contains("{{")) {
       throw new ConfigurationException();
