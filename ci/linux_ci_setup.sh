@@ -8,7 +8,7 @@ sudo rm -rf /var/lib/apt/lists/*
 
 # We have seen problems with heroku's keys.
 # We do not use heroku, but it is pre-installed in the github actions machines.
-sudo apt remove heroku
+sudo apt-key adv --keyserver  keyserver.ubuntu.com --recv-keys 30739094656B3CC5
 
 sudo apt-get clean
 sudo apt-get update
