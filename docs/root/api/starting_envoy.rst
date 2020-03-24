@@ -163,6 +163,27 @@ This information is sent as metadata when flushing stats.
   // Swift
   builder.addAppId("com.mydomain.myapp)
 
+~~~~~~~~~~~~
+``addVirtualClusters``
+~~~~~~~~~~~~
+
+Specify the virtual clusters config for Envoy Mobile's configuration.
+The configuration is expected as a JSON list.
+This functionality is used for stat segmentation.
+
+.. attention::
+
+    This API is non-ideal as it exposes lower-level internals of Envoy than desired by this project.
+    https://github.com/lyft/envoy-mobile/issues/770 tracks enhancing this API.
+
+**Example**::
+
+  // Kotlin
+  builder.addVirtualClusters("[{json_config}]")
+
+  // Swift
+  builder.addVirtualClusters("[{json_config}]")
+
 ----------------------
 Advanced configuration
 ----------------------
