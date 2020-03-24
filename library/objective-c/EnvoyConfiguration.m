@@ -46,7 +46,7 @@
     @"device_os" : @"iOS",
     @"app_version" : self.appVersion,
     @"app_id" : self.appId,
-    @"virtual_clusters": self.virtualClusters
+    @"virtual_clusters" : self.virtualClusters
   };
 
   for (NSString *templateKey in templateKeysToValues) {

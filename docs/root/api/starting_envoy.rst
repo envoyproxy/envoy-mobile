@@ -174,15 +174,15 @@ This functionality is used for stat segmentation.
 .. attention::
 
     This API is non-ideal as it exposes lower-level internals of Envoy than desired by this project.
-    https://github.com/lyft/envoy-mobile/issues/770 tracks enhancing this API.
+    :issue:`#770 <770>` tracks enhancing this API.
 
 **Example**::
 
   // Kotlin
-  builder.addVirtualClusters("[{json_config}]")
+  builder.addVirtualClusters("[{\"name\":\"vcluster\",\"headers\":[{\"name\":\":path\",\"exact_match\":\"/v1/vcluster\"}]}]")
 
   // Swift
-  builder.addVirtualClusters("[{json_config}]")
+  builder.addVirtualClusters("[{\"name\":\"vcluster\",\"headers\":[{\"name\":\":path\",\"exact_match\":\"/v1/vcluster\"}]}]")
 
 ----------------------
 Advanced configuration

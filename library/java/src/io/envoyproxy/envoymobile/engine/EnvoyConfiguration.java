@@ -24,11 +24,12 @@ public class EnvoyConfiguration {
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param appVersion                   the App Version of the App using this Envoy Client.
    * @param appId                        the App ID of the App using this Envoy Client.
-   * @param virtualClusters              the virtual cluster config.
+   * @param virtualClusters              the JSON list of virtual cluster configs.
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            int statsFlushSeconds, String appVersion, String appId, String virtualClusters) {
+                            int statsFlushSeconds, String appVersion, String appId,
+                            String virtualClusters) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
