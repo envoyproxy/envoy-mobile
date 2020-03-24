@@ -190,15 +190,23 @@ static_resources:
                   socket_address: {address: {{ stats_domain }}, port_value: 443}
     transport_socket: *base_transport_socket
     type: LOGICAL_DNS
+  - name: statsd
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: statsd
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address: {address: 127.0.0.1, port_value: 8125}
+    type: STATIC
 stats_flush_interval: {{ stats_flush_interval_seconds }}s
 stats_sinks:
-  - name: envoy.metrics_service
+  - name: envoy.statsd
     typed_config:
-      "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
-      report_counters_as_deltas: true
-      grpc_service:
-        envoy_grpc:
-          cluster_name: stats
+      "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+      tcp_cluster_name: statsd
 stats_config:
   stats_matcher:
     inclusion_list:
@@ -225,6 +233,8 @@ watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
 node:
+  id: "client"
+  cluster: "envoymobile"
   metadata:
     app_id : {{ app_id }}
     app_version : {{ app_version }}
