@@ -163,9 +163,9 @@ This information is sent as metadata when flushing stats.
   // Swift
   builder.addAppId("com.mydomain.myapp)
 
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 ``addVirtualClusters``
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Specify the virtual clusters config for Envoy Mobile's configuration.
 The configuration is expected as a JSON list.
