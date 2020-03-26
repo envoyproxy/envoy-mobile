@@ -1,6 +1,24 @@
 Version history
 ---------------
 
+0.3.0 (Mar 26,2020)
+===================
+
+This is the first release of Envoy Mobile we are tagging as production ready 🎉
+
+Since early November, when the team tagged v0.2.0, we have been hard at work to stabilize the library,
+and harden it via experiments with Lyft's Alpha and Beta releases. We have released our production
+binaries with Envoy Mobile for a couple weeks now, and are starting to expose a percentage of our
+production clients to Envoy Mobile with this release.
+
+Since v0.2.3 we have largely focused on observability (#701, #702, #718, #722, #751, #768, #771)
+
+Additional changes:
+
+- Fixes iOS on trailers missing (#703)
+- Adds ability to set DNS failure refresh rate (#714)
+- Adds docs on the EnvoyClientBuilder (#745)
+
 0.2.3 (Feb 21, 2020)
 ====================
 
