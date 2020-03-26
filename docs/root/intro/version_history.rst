@@ -2,9 +2,9 @@ Version history
 ---------------
 
 0.3.0 (Mar 26, 2020)
-===================
+====================
 
-This is the first release of Envoy Mobile we are tagging as production ready 🎉
+This is the first release of Envoy Mobile Lyft is using in a production application! 🎉
 
 Since early November, when the team tagged v0.2.0, we have been hard at work to stabilize the library,
 and harden it via experiments with Lyft's Alpha and Beta releases. We have released Lyft's production
