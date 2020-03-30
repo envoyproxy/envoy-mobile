@@ -74,7 +74,7 @@ static_resources:
       thresholds:
         - priority: DEFAULT
           # n.b: with mobile clients there are scenarios where all concurrent requests might be
-          # retries, e.g when the phone goes offline. Therefore, Envoy Mobile allows all concurrent
+          # retries (e.g., when the phone goes offline). Therefore, Envoy Mobile allows all concurrent
           # requests to be retries by setting the concurrent retry budget to 100%.
           # This configuration uses the default for max concurrent requests (1024) because there is
           # no reasonable scenario where a mobile client should have even close to that many concurrent
