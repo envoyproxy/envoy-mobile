@@ -70,6 +70,12 @@ static_resources:
         keepalive_interval: 10
         keepalive_probes: 1
         keepalive_time: 5
+    circuit_breakers: &circuit_breakers_settings
+      thresholds:
+        - priority: DEFAULT
+          retry_budget:
+            budget_percent:
+              value: 50
   - name: base_wlan
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
@@ -80,6 +86,7 @@ static_resources:
         dns_cache_config: *dns_cache_config
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wwan
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
@@ -90,6 +97,7 @@ static_resources:
         dns_cache_config: *dns_cache_config
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -101,6 +109,7 @@ static_resources:
         dns_cache_config: *dns_cache_config
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wlan_h2
     http2_protocol_options: {}
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -112,6 +121,7 @@ static_resources:
         dns_cache_config: *dns_cache_config
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wwan_h2
     http2_protocol_options: {}
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -123,6 +133,7 @@ static_resources:
         dns_cache_config: *dns_cache_config
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: stats
     connect_timeout: {{ connect_timeout_seconds }}s
     dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
