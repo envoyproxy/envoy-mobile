@@ -197,6 +197,7 @@ def swift_static_framework(
     )
     ios_framework(
          name = "dynamic",
+         linkopts = ["-lresolv.9", "-lc++"],
          deps = [archive_name],
          minimum_os_version = "10.0",
          bundle_id = "foo",
