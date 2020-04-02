@@ -42,13 +42,13 @@ http_archive(
 )
 
 local_repository(
-    name = "envoy",
-    path = "envoy",
+    name = "envoy_build_config",
+    path = "envoy_build_config",
 )
 
 local_repository(
-    name = "envoy_build_config",
-    path = "envoy_build_config",
+    name = "envoy",
+    path = "envoy",
 )
 
 http_file(
