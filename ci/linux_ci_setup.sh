@@ -34,7 +34,7 @@ gpg --version
 
 # buildifier
 sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/2.2.1/buildifier
-chmod +x /usr/local/bin/buildifier
+sudo chmod +x /usr/local/bin/buildifier
 
 # bazelisk
 sudo wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
