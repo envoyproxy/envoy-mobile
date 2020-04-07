@@ -18,8 +18,4 @@ jobs:
         with:
           submodules: true
       - name: 'Run coverage'
-        run: |
-          export PATH=/usr/lib/llvm-8/bin:$PATH
-          export CC=clang
-          export CXX=clang++
-          ./test/coverage/run_coverage.sh
+        run: ./test/coverage/run_coverage.sh
