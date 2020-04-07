@@ -5,12 +5,15 @@ on:
     branches:
       - master
   pull_request:
+    paths:
+      - 'library/common/**'
+      - 'test/**'
 
 jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-18.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v1
         with:
