@@ -229,5 +229,9 @@ TEST_P(DispatcherIntegrationTest, RaceDoesNotCauseDoubleDeletion) {
   http_dispatcher_.synchronizer().signal("dispatch_encode_final_data");
 }
 
+// TODO(junr03): test with envoy local reply with local stream not close, which causes a reset fired
+// from the Http:ConnectionManager rather than the Http::Dispatcher. This cannot be done in unit
+// tests because the Http::ConnectionManager is mocked using a mock response encoder.
+
 } // namespace
 } // namespace Envoy

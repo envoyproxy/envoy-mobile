@@ -47,6 +47,7 @@ public:
   typedef struct {
     uint32_t on_headers_calls;
     uint32_t on_data_calls;
+    uint32_t on_trailers_calls;
     uint32_t on_complete_calls;
     uint32_t on_error_calls;
     uint32_t on_cancel_calls;
@@ -67,7 +68,7 @@ TEST_F(DispatcherTest, SetDestinationCluster) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -180,7 +181,7 @@ TEST_F(DispatcherTest, SetDestinationClusterUpstreamProtocol) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -312,7 +313,7 @@ TEST_F(DispatcherTest, Queueing) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -378,7 +379,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -440,7 +441,7 @@ TEST_F(DispatcherTest, BasicStream) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -519,13 +520,123 @@ TEST_F(DispatcherTest, BasicStream) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
+TEST_F(DispatcherTest, BasicStreamWithTrailers) {
+  ready();
+
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
+                                   void* context) -> void {
+    ASSERT_FALSE(end_stream);
+    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
+    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_headers_calls++;
+  };
+  bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void {
+    ASSERT_FALSE(end_stream);
+    ASSERT_EQ(Http::Utility::convertToString(c_data), "response body");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_data_calls++;
+    c_data.release(c_data.context);
+  };
+  bridge_callbacks.on_trailers = [](envoy_headers c_trailers, void* context) -> void {
+    ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
+    EXPECT_EQ(response_trailers->get(LowerCaseString("x-test-trailer"))->value().getStringView(),
+              "test_trailer");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_trailers_calls++;
+  };
+  bridge_callbacks.on_complete = [](void* context) -> void {
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_complete_calls++;
+  };
+
+  // Build a set of request headers.
+  TestRequestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  // Build body data
+  Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
+  envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
+
+  // Build a set of request trailers.
+  TestRequestTrailerMapImpl trailers;
+  envoy_headers c_trailers = Utility::toBridgeHeaders(trailers);
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the
+  // dispatcher API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](ResponseEncoder& encoder, bool) -> RequestDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers.
+  Event::PostCb headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, false);
+
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, false));
+  headers_post_cb();
+
+  // Send request data.
+  Event::PostCb data_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&data_post_cb));
+  http_dispatcher_.sendData(stream, c_data, false);
+
+  EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
+  data_post_cb();
+
+  // Send request trailers.
+  Event::PostCb trailers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&trailers_post_cb));
+  http_dispatcher_.sendTrailers(stream, c_trailers);
+
+  EXPECT_CALL(request_decoder_, decodeTrailers_(_));
+  trailers_post_cb();
+
+  // Encode response headers.
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
+  response_encoder_->encodeHeaders(response_headers, false);
+  ASSERT_EQ(cc.on_headers_calls, 1);
+
+  // Encode response data.
+  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
+  response_encoder_->encodeData(*response_data, false);
+  ASSERT_EQ(cc.on_data_calls, 1);
+
+  // Encode response trailers.
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  TestResponseTrailerMapImpl response_trailers{{"x-test-trailer", "test_trailer"}};
+  response_encoder_->encodeTrailers(response_trailers);
+  ASSERT_EQ(cc.on_trailers_calls, 1);
+  stream_deletion_post_cb();
+
+  // Ensure that the callbacks on the bridge_callbacks were called.
+  ASSERT_EQ(cc.on_complete_calls, 1);
+}
+
 TEST_F(DispatcherTest, MultipleDataStream) {
   ready();
 
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -626,7 +737,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   // Start stream1.
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -674,7 +785,7 @@ TEST_F(DispatcherTest, MultipleStreams) {
   NiceMock<MockRequestDecoder> request_decoder2;
   ResponseEncoder* response_encoder2{};
   envoy_http_callbacks bridge_callbacks2;
-  callbacks_called cc2 = {0, 0, 0, 0, 0};
+  callbacks_called cc2 = {0, 0, 0, 0, 0, 0};
   bridge_callbacks2.context = &cc2;
   bridge_callbacks2.on_headers = [](envoy_headers c_headers, bool end_stream,
                                     void* context) -> void {
@@ -739,12 +850,189 @@ TEST_F(DispatcherTest, MultipleStreams) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
+TEST_F(DispatcherTest, EnvoyLocalReply) {
+  ready();
+
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response headers.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_error_calls++;
+  };
+
+  // Build a set of request headers.
+  TestRequestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](ResponseEncoder& encoder, bool) -> RequestDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, true);
+
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
+  send_headers_post_cb();
+
+  // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
+  // 503 should have an ENVOY_CONNECTION_FAILURE error code.
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  TestResponseHeaderMapImpl response_headers{{":status", "503"}};
+  response_encoder_->encodeHeaders(response_headers, true);
+  ASSERT_EQ(cc.on_headers_calls, 0);
+  stream_deletion_post_cb();
+
+  // Ensure that the callbacks on the bridge_callbacks were called.
+  ASSERT_EQ(cc.on_complete_calls, 0);
+  ASSERT_EQ(cc.on_error_calls, 1);
+}
+
+TEST_F(DispatcherTest, EnvoyLocalReplyNon503) {
+  ready();
+
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response headers.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_UNDEFINED_ERROR);
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_error_calls++;
+  };
+
+  // Build a set of request headers.
+  TestRequestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](ResponseEncoder& encoder, bool) -> RequestDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, true);
+
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
+  send_headers_post_cb();
+
+  // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
+  // non-503 should have an ENVOY_UNDEFINED_ERROR error code.
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  TestResponseHeaderMapImpl response_headers{{":status", "504"}};
+  response_encoder_->encodeHeaders(response_headers, true);
+  ASSERT_EQ(cc.on_headers_calls, 0);
+  stream_deletion_post_cb();
+
+  // Ensure that the callbacks on the bridge_callbacks were called.
+  ASSERT_EQ(cc.on_complete_calls, 0);
+  ASSERT_EQ(cc.on_error_calls, 1);
+}
+
+TEST_F(DispatcherTest, EnvoyLocalReplyWithData) {
+  ready();
+
+  envoy_stream_t stream = 1;
+  // Setup bridge_callbacks to handle the response headers.
+  envoy_http_callbacks bridge_callbacks;
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
+  bridge_callbacks.context = &cc;
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
+    ASSERT_EQ(Http::Utility::convertToString(error.message), "error message");
+    callbacks_called* cc = static_cast<callbacks_called*>(context);
+    cc->on_error_calls++;
+    error.message.release(error.message.context);
+  };
+
+  // Build a set of request headers.
+  TestRequestHeaderMapImpl headers;
+  HttpTestUtility::addDefaultHeaders(headers);
+  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
+
+  // Create a stream.
+  Event::PostCb start_stream_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&start_stream_post_cb));
+  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+
+  // Grab the response encoder in order to dispatch responses on the stream.
+  // Return the request decoder to make sure calls are dispatched to the decoder via the dispatcher
+  // API.
+  EXPECT_CALL(api_listener_, newStream(_, _))
+      .WillOnce(Invoke([&](ResponseEncoder& encoder, bool) -> RequestDecoder& {
+        response_encoder_ = &encoder;
+        return request_decoder_;
+      }));
+  start_stream_post_cb();
+
+  // Send request headers.
+  Event::PostCb send_headers_post_cb;
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&send_headers_post_cb));
+  http_dispatcher_.sendHeaders(stream, c_headers, true);
+
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
+  send_headers_post_cb();
+
+  // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
+  // 503 should have an ENVOY_CONNECTION_FAILURE error code. However, do not end the stream yet.
+  TestResponseHeaderMapImpl response_headers{{":status", "503"}};
+  response_encoder_->encodeHeaders(response_headers, false);
+  ASSERT_EQ(cc.on_headers_calls, 0);
+
+  Event::PostCb stream_deletion_post_cb;
+  EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
+  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
+  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("error message")};
+  response_encoder_->encodeData(*response_data, true);
+  ASSERT_EQ(cc.on_data_calls, 0);
+  stream_deletion_post_cb();
+
+  // Ensure that the callbacks on the bridge_callbacks were called.
+  ASSERT_EQ(cc.on_complete_calls, 0);
+  ASSERT_EQ(cc.on_error_calls, 1);
+}
+
 TEST_F(DispatcherTest, ResetStreamLocal) {
   ready();
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -796,7 +1084,7 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -810,7 +1098,11 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
+    // This will use envoy_noop_release.
+    error.message.release(error.message.context);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -878,7 +1170,7 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -942,7 +1234,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -952,7 +1244,9 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1033,7 +1327,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -1043,7 +1337,9 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1123,7 +1419,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -1133,7 +1429,9 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1215,7 +1513,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRaceLocalWins) {
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -1225,7 +1523,9 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRaceLocalWins) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1303,7 +1603,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -1313,7 +1613,9 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1390,7 +1692,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
 
   envoy_stream_t stream = 1;
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
@@ -1400,7 +1702,9 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    ASSERT_EQ(error.message.length, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1478,7 +1782,7 @@ TEST_F(DispatcherTest, ResetWhenRemoteClosesBeforeLocal) {
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response headers.
   envoy_http_callbacks bridge_callbacks;
-  callbacks_called cc = {0, 0, 0, 0, 0};
+  callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void {
