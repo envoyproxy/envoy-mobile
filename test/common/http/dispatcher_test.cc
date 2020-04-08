@@ -373,7 +373,7 @@ TEST_F(DispatcherTest, Queueing) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
-TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
+TEST_F(DispatcherTest, BasicStreamHeaders) {
   ready();
 
   envoy_stream_t stream = 1;
@@ -435,7 +435,7 @@ TEST_F(DispatcherTest, BasicStreamHeadersOnly) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
-TEST_F(DispatcherTest, BasicStream) {
+TEST_F(DispatcherTest, BasicStreamData) {
   ready();
 
   envoy_stream_t stream = 1;
@@ -443,14 +443,6 @@ TEST_F(DispatcherTest, BasicStream) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_FALSE(end_stream);
-    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
-    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-    callbacks_called* cc = static_cast<callbacks_called*>(context);
-    cc->on_headers_calls++;
-  };
   bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void {
     ASSERT_TRUE(end_stream);
     ASSERT_EQ(Http::Utility::convertToString(c_data), "response body");
@@ -462,11 +454,6 @@ TEST_F(DispatcherTest, BasicStream) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
   };
-
-  // Build a set of request headers.
-  TestRequestHeaderMapImpl headers;
-  HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
 
   // Build body data
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
@@ -487,15 +474,8 @@ TEST_F(DispatcherTest, BasicStream) {
       }));
   start_stream_post_cb();
 
-  // Send request headers.
-  Event::PostCb headers_post_cb;
-  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&headers_post_cb));
-  http_dispatcher_.sendHeaders(stream, c_headers, false);
-
-  EXPECT_CALL(request_decoder_, decodeHeaders_(_, false));
-  headers_post_cb();
-
-  // Send request data.
+  // Send request data. Although HTTP would need headers before data this unit test only wants to
+  // test data functionality.
   Event::PostCb data_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&data_post_cb));
   http_dispatcher_.sendData(stream, c_data, true);
@@ -503,11 +483,7 @@ TEST_F(DispatcherTest, BasicStream) {
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), true));
   data_post_cb();
 
-  // Encode response headers and data.
-  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
-  response_encoder_->encodeHeaders(response_headers, false);
-  ASSERT_EQ(cc.on_headers_calls, 1);
-
+  // Encode response data.
   Event::PostCb stream_deletion_post_cb;
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&stream_deletion_post_cb));
@@ -520,7 +496,7 @@ TEST_F(DispatcherTest, BasicStream) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 }
 
-TEST_F(DispatcherTest, BasicStreamWithTrailers) {
+TEST_F(DispatcherTest, BasicStreamTrailers) {
   ready();
 
   envoy_stream_t stream = 1;
@@ -528,21 +504,6 @@ TEST_F(DispatcherTest, BasicStreamWithTrailers) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_FALSE(end_stream);
-    ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
-    EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
-    callbacks_called* cc = static_cast<callbacks_called*>(context);
-    cc->on_headers_calls++;
-  };
-  bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void {
-    ASSERT_FALSE(end_stream);
-    ASSERT_EQ(Http::Utility::convertToString(c_data), "response body");
-    callbacks_called* cc = static_cast<callbacks_called*>(context);
-    cc->on_data_calls++;
-    c_data.release(c_data.context);
-  };
   bridge_callbacks.on_trailers = [](envoy_headers c_trailers, void* context) -> void {
     ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
     EXPECT_EQ(response_trailers->get(LowerCaseString("x-test-trailer"))->value().getStringView(),
@@ -554,15 +515,6 @@ TEST_F(DispatcherTest, BasicStreamWithTrailers) {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
   };
-
-  // Build a set of request headers.
-  TestRequestHeaderMapImpl headers;
-  HttpTestUtility::addDefaultHeaders(headers);
-  envoy_headers c_headers = Utility::toBridgeHeaders(headers);
-
-  // Build body data
-  Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
 
   // Build a set of request trailers.
   TestRequestTrailerMapImpl trailers;
@@ -583,39 +535,14 @@ TEST_F(DispatcherTest, BasicStreamWithTrailers) {
       }));
   start_stream_post_cb();
 
-  // Send request headers.
-  Event::PostCb headers_post_cb;
-  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&headers_post_cb));
-  http_dispatcher_.sendHeaders(stream, c_headers, false);
-
-  EXPECT_CALL(request_decoder_, decodeHeaders_(_, false));
-  headers_post_cb();
-
-  // Send request data.
-  Event::PostCb data_post_cb;
-  EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&data_post_cb));
-  http_dispatcher_.sendData(stream, c_data, false);
-
-  EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
-  data_post_cb();
-
-  // Send request trailers.
+  // Send request trailers. Although HTTP would need headers before trailers this unit test only
+  // wants to test trailers functionality.
   Event::PostCb trailers_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&trailers_post_cb));
   http_dispatcher_.sendTrailers(stream, c_trailers);
 
   EXPECT_CALL(request_decoder_, decodeTrailers_(_));
   trailers_post_cb();
-
-  // Encode response headers.
-  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
-  response_encoder_->encodeHeaders(response_headers, false);
-  ASSERT_EQ(cc.on_headers_calls, 1);
-
-  // Encode response data.
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
-  response_encoder_->encodeData(*response_data, false);
-  ASSERT_EQ(cc.on_data_calls, 1);
 
   // Encode response trailers.
   Event::PostCb stream_deletion_post_cb;
