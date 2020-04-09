@@ -1,4 +1,4 @@
-protocol RequestFilterCallback {
+public protocol RequestFilterCallback {
     /**
      * Continue iterating through the filter chain with buffered headers and body data. This routine
      * can only be called if the filter has previously returned StopIteration from onHeaders() AND
@@ -16,13 +16,13 @@ protocol RequestFilterCallback {
      * @return const Data the currently buffered data as buffered by this filter or
      *         previous ones in the filter chain. May be nullptr if nothing has been buffered yet.
      */
-    func requestBuffer() -> Data
+    func requestBuffer() -> Data?
 
     /**
      * Allows modifying the encoding buffer. May only be called before any data has been continued
      * past the calling filter.
      */
-    func modifyRequestBuffer(callback: (inout Data) -> Unit)
+    func modifyRequestBuffer(callback: (inout Data) -> Void)
 
     /**
      * Adds request trailers. May only be called in onData when end_stream is set to true.
@@ -33,5 +33,5 @@ protocol RequestFilterCallback {
      *
      * @return a reference to the newly created trailers Dictionary.
      */
-    func addRequestTrailers() -> Dictionary<String, Array<String>>
+    func addRequestTrailers() -> RequestHeaders
 }

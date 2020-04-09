@@ -1,9 +1,9 @@
-enum DataStatus {
+public enum DataStatus {
     // Continue filter chain iteration. If headers have not yet been sent to the next filter, they
     // will be sent first via decodeHeaders()/encodeHeaders(). If data has previously been buffered,
     // the data in this callback will be added to the buffer before the entirety is sent to the next
     // filter.
-    case `continue`
+    case `continue`(Data)
 
     // Do not iterate to any of the remaining filters in the chain, and buffer body data for later
     // dispatching. Returning FilterDataStatus::Continue from decodeData()/encodeData() or calling
@@ -14,11 +14,11 @@ enum DataStatus {
     //
     // If buffering the request causes buffered data to exceed the configured buffer limit, a 413 will
     // be sent to the user. On the response path exceeding buffer limits will result in a 500.
-    case stopIterationAndBuffer
+    case stopIterationAndBuffer(Data)
 
     // Do not iterate to any of the remaining filters in the chain, but do not buffer any of the
     // body data for later dispatching. Returning FilterDataStatus::Continue from
     // decodeData()/encodeData() or calling continueDecoding()/continueEncoding() MUST be called if
     // continued filter iteration is desired.
-    case stopIteration // Envoy: stopIterationNoBuffer
+    case stopIteration(Data) // Envoy: stopIterationNoBuffer
 }

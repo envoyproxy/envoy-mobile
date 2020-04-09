@@ -18,17 +18,13 @@ public protocol StreamEmitter: CancelableStream {
   @discardableResult
   func sendData(_ data: Data) -> StreamEmitter
 
-  /// Send metadata over the associated stream.
-  ///
-  /// - parameter metadata: Metadata to send over the stream.
-  ///
-  /// - returns: The stream emitter, for chaining syntax.
-  @discardableResult
-  func sendMetadata(_ metadata: [String: [String]]) -> StreamEmitter
-
   /// End the stream.
   ///
   /// - parameter trailers: Trailers with which to close the stream.
-  //                        If nil, stream will be closed with an empty data frame.
-  func close(trailers: [String: [String]]?)
+  func close(trailers: RequestHeaders)
+
+  /// End the stream.
+  ///
+  /// - parameter data: Data with which to close the stream.
+  func close(data: Data)
 }

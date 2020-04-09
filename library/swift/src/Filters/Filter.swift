@@ -1,1 +1,1 @@
-protocol Filter {}
+public protocol Filter {}

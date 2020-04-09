@@ -16,17 +16,12 @@ extension EnvoyStreamEmitter: StreamEmitter {
     return self
   }
 
-  func sendMetadata(_ metadata: [String: [String]]) -> StreamEmitter {
-    self.stream.sendMetadata(metadata)
-    return self
+  func close(trailers: RequestHeaders) {
+    self.stream.sendTrailers(trailers)
   }
 
-  func close(trailers: [String: [String]]?) {
-    if let trailers = trailers {
-      self.stream.sendTrailers(trailers)
-    } else {
-      self.stream.send(Data(), close: true)
-    }
+  func close(data: Data) {
+    self.stream.send(data, close: true)
   }
 
   func cancel() {

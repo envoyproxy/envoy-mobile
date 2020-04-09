@@ -1,5 +1,4 @@
-protocol ResponseFilter : Filter {
-
+public protocol ResponseFilter: Filter {
     /**
      * Called by the filter manager once to initialize the filter callbacks that the filter should
      * use. Callbacks will not be invoked by the filter after onDestroy() is called.
@@ -19,7 +18,7 @@ protocol ResponseFilter : Filter {
      * @param endStream  Whether this response is headers-only. If true, no body should be expected.
      * @return The header status.
      */
-    func onResponseHeaders(headers: inout ResponseHeaders, endStream: Bool) -> HeaderStatus
+    func onResponseHeaders(headers: ResponseHeaders, endStream: Bool) -> HeaderStatus<ResponseHeaders>
 
     /**
      * Called any number of times whenever body data is received.
@@ -34,7 +33,7 @@ protocol ResponseFilter : Filter {
      *                        continue to remain open.
      * @return The data status.
      */
-    func onResponseData(body: inout Data, endStream: Bool) -> DataStatus
+    func onResponseData(body: Data, endStream: Bool) -> DataStatus
 
     /**
      * Called at most once when the request is closed from the server with trailers.
@@ -47,7 +46,7 @@ protocol ResponseFilter : Filter {
      * @param trailers The inbound trailers.
      * @return The trailer status.
      */
-    func onResponseTrailers(trailers: inout Dictionary<String, Array<String>>) -> TrailerStatus
+    func onResponseTrailers(trailers: ResponseHeaders) -> TrailerStatus<ResponseHeaders>
 
     /**
      * Called at most once when an error within Envoy occurs.

@@ -1,5 +1,4 @@
-protocol RequestFilter: Filter {
-
+public protocol RequestFilter: Filter {
     /**
      * Called by the filter manager once to initialize the filter callbacks that the filter should
      * use. Callbacks will not be invoked by the filter after onDestroy() is called.
@@ -17,7 +16,7 @@ protocol RequestFilter: Filter {
      * @param request The outbound request.
      * @return The header status.
      */
-    func onRequestHeaders(request: inout RequestHeaders) -> HeaderStatus
+    func onRequestHeaders(request: RequestHeaders) -> HeaderStatus<RequestHeaders>
 
     /**
      * Called any number of times whenever body data is sent.
@@ -32,7 +31,7 @@ protocol RequestFilter: Filter {
      *                        continue to remain open after this data is sent.
      * @return The data status.
      */
-    func onRequestData(body: inout Data, endStream: Bool) -> DataStatus
+    func onRequestData(body: Data, endStream: Bool) -> DataStatus
 
     /**
      * Called at most once when the request is closed from the client with trailers.
@@ -45,5 +44,5 @@ protocol RequestFilter: Filter {
      * @param trailers The outbound trailers.
      * @return The trailer status
      */
-    func onRequestTrailers(trailers: inout Dictionary<String, Array<String>>?) -> TrailerStatus
+    func onRequestTrailers(trailers: RequestHeaders) -> TrailerStatus<RequestHeaders>
 }
