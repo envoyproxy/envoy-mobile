@@ -20,10 +20,11 @@ public final class ResponseHandler: NSObject {
   ///                      and flag indicating if the stream is headers-only.
   @discardableResult
   public func onHeaders(_ closure:
-    @escaping (_ headers: [String: [String]], _ statusCode: Int, _ endStream: Bool) -> Void)
+    @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void)
     -> ResponseHandler
   {
     self.underlyingCallbacks.onHeaders = { headers, endStream in
+      // Request filters go here
       closure(headers, ResponseHandler.statusCode(fromHeaders: headers), endStream)
     }
 
@@ -50,7 +51,7 @@ public final class ResponseHandler: NSObject {
   /// - parameter closure: Closure which will receive the trailers.
   @discardableResult
   public func onTrailers(_ closure:
-    @escaping (_ trailers: [String: [String]]) -> Void)
+    @escaping (_ trailers: ResponseTrailers) -> Void)
     -> ResponseHandler
   {
     self.underlyingCallbacks.onTrailers = closure
