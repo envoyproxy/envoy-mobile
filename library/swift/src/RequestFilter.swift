@@ -1,3 +1,5 @@
+import Foundation
+
 public protocol RequestFilter: Filter {
     /**
      * Called by the filter manager once to initialize the filter callbacks that the filter should

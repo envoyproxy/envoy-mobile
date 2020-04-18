@@ -1,3 +1,5 @@
+import Foundation
+
 public protocol ResponseFilterCallback {
     /**
      * Continue iterating through the filter chain with buffered headers and body data. This routine
