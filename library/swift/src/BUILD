@@ -1,9 +1,11 @@
 licenses(["notice"])  # Apache 2
 
-load("//bazel:swift_static_framework.bzl", "swift_static_framework")
+load("@build_bazel_rules_apple//apple:ios.bzl", "ios_static_framework")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("//bazel:swift_header_collector.bzl", "swift_header_collector")
 
-swift_static_framework(
-    name = "ios_framework",
+swift_library(
+    name = "lib",
     srcs = [
         "Data+Extension.swift",
         "EnvoyClient.swift",
@@ -27,9 +29,19 @@ swift_static_framework(
         "UpstreamHttpProtocol.swift",
     ],
     module_name = "Envoy",
-    objc_includes = [
-        "//library/objective-c:EnvoyEngine.h",
-    ],
+    private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
+)
+
+swift_header_collector(
+    name = "collector",
+    deps = ["lib"],
+)
+
+ios_static_framework(
+    name = "ios_framework",
+    hdrs = ["collector"],
+    bundle_name = "Envoy",
+    minimum_os_version = "10.0",
     visibility = ["//visibility:public"],
-    deps = ["//library/objective-c:envoy_engine_objc_lib"],
+    deps = ["lib"],
 )
