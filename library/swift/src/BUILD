@@ -33,13 +33,13 @@ swift_library(
 )
 
 swift_header_collector(
-    name = "collector",
+    name = "lib_headers",
     library = "lib",
 )
 
 ios_static_framework(
     name = "ios_framework",
-    hdrs = ["collector"],
+    hdrs = ["lib_headers"],
     bundle_name = "Envoy",
     minimum_os_version = "10.0",
     visibility = ["//visibility:public"],
