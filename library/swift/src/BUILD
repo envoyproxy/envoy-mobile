@@ -30,6 +30,7 @@ swift_library(
     ],
     module_name = "Envoy",
     private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
+    visibility = ["//visibility:public"],
 )
 
 swift_header_collector(
