@@ -34,7 +34,7 @@ swift_library(
 
 swift_header_collector(
     name = "collector",
-    deps = ["lib"],
+    library = "lib",
 )
 
 ios_static_framework(
