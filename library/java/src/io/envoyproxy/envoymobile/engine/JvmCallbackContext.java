@@ -11,7 +11,10 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 class JvmCallbackContext {
   private enum FrameType {
-    NONE, HEADERS, METADATA, TRAILERS,
+    NONE,
+    HEADERS,
+    METADATA,
+    TRAILERS,
   }
 
   private final EnvoyHTTPCallbacks callbacks;
@@ -23,9 +26,7 @@ class JvmCallbackContext {
   private long expectedHeaderLength = 0;
   private long accumulatedHeaderLength = 0;
 
-  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) {
-    this.callbacks = callbacks;
-  }
+  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) { this.callbacks = callbacks; }
 
   /**
    * Initializes state for accumulating header pairs via passHeaders, ultimately
@@ -44,9 +45,7 @@ class JvmCallbackContext {
    *
    * @param length, the total number of trailers included in this header block.
    */
-  public void onTrailers(long length) {
-    startAccumulation(FrameType.TRAILERS, length, true);
-  }
+  public void onTrailers(long length) { startAccumulation(FrameType.TRAILERS, length, true); }
 
   /**
    * Allows pairs of strings to be passed across the JVM, reducing overall calls
@@ -90,17 +89,17 @@ class JvmCallbackContext {
     Runnable runnable = new Runnable() {
       public void run() {
         switch (frameType) {
-          case HEADERS:
-            callbacks.onHeaders(headers, endStream);
-            break;
-          case METADATA:
-            break;
-          case TRAILERS:
-            callbacks.onTrailers(headers);
-            break;
-          case NONE:
-          default:
-            assert false : "missing header frame type";
+        case HEADERS:
+          callbacks.onHeaders(headers, endStream);
+          break;
+        case METADATA:
+          break;
+        case TRAILERS:
+          callbacks.onTrailers(headers);
+          break;
+        case NONE:
+        default:
+          assert false : "missing header frame type";
         }
       }
     };
@@ -159,7 +158,7 @@ class JvmCallbackContext {
     assert expectedHeaderLength == 0;
     assert accumulatedHeaderLength == 0;
 
-    headerAccumulator = new HashMap((int) length);
+    headerAccumulator = new HashMap((int)length);
     pendingFrameType = type;
     expectedHeaderLength = length;
     pendingEndStream = endStream;
