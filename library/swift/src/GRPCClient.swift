@@ -19,7 +19,7 @@ public final class GRPCClient: NSObject {
   ///
   /// - returns: An emitter that can be used for sending more traffic over the stream.
   public func send(_ request: Request, handler: GRPCResponseHandler) -> GRPCStreamEmitter {
-    let emitter = self.httpClient.send(request, handler: handler.underlyingHandler)
+    let emitter = self.httpClient.start(request, handler: handler.underlyingHandler)
     return GRPCStreamEmitter(emitter: emitter)
   }
 }
