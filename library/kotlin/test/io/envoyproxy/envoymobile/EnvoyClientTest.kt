@@ -29,7 +29,7 @@ class EnvoyClientTest {
         ":authority" to listOf("api.foo.com"),
         ":path" to listOf("foo")
     )
-    envoy.send(
+    envoy.start(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -47,7 +47,7 @@ class EnvoyClientTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
-    val emitter = envoy.send(
+    val emitter = envoy.start(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -68,7 +68,7 @@ class EnvoyClientTest {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
-    val emitter = envoy.send(
+    val emitter = envoy.start(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -88,7 +88,7 @@ class EnvoyClientTest {
     val envoy = Envoy(engine, config)
 
     val trailers = mapOf("key_1" to listOf("value_a"))
-    val emitter = envoy.send(
+    val emitter = envoy.start(
         RequestBuilder(
             method = RequestMethod.POST,
             scheme = "https",
@@ -123,13 +123,14 @@ class EnvoyClientTest {
             .setHeaders(mapOf("key_1" to listOf("value_a")))
             .build(),
         ByteBuffer.allocate(0),
+        null,
         ResponseHandler(Executor {}))
 
     verify(stream).sendHeaders(expectedHeaders, false)
   }
 
   @Test
-  fun `sending request on envoy passes the body buffer`() {
+  fun `sending request buffer without trailers passes the body buffer and closes stream`() {
     `when`(engine.startStream(any())).thenReturn(stream)
     val envoy = Envoy(engine, config)
 
@@ -142,9 +143,10 @@ class EnvoyClientTest {
             path = "foo")
             .build(),
         body,
+        null,
         ResponseHandler(Executor {}))
 
-    verify(stream).sendData(body, false)
+    verify(stream).sendData(body, true)
   }
 
   @Test
@@ -161,6 +163,7 @@ class EnvoyClientTest {
             path = "foo")
             .build(),
         body,
+        emptyMap(),
         ResponseHandler(Executor {}))
 
     verify(stream).sendTrailers(emptyMap())

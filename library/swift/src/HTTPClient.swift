@@ -20,6 +20,7 @@ public protocol HTTPClient {
   /// - parameter request:  The request headers to send.
   /// - parameter body:     Data to send as the body.
   /// - parameter trailers: Trailers to send with the request.
+  /// - parameter handler:  Handler for receiving response events.
   ///
   /// - returns: A cancelable request.
   @discardableResult
