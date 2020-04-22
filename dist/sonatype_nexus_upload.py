@@ -72,7 +72,7 @@ def _install_locally(version, files):
         shutil.copyfile(file, os.path.join(path, basename))
 
 
-def _urlopen_retried(request, max_retries=20, attempt=1, delay_sec=1):
+def _urlopen_retried(request, max_retries=500, attempt=1, delay_sec=1):
     """
     Retries a request via recursion. Retries happen with a default delay of 1 second. We do not exponentially back off.
     :param request: the request to be made
