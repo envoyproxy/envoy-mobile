@@ -4,18 +4,18 @@ build:
 
 processors:
   active: true
-  exclude:
+
+complexity:
+  ComplexCondition:
+    active: false
+  TooManyFunctions:
+    active: false
 
 console-reports:
   active: true
-  exclude:
 
 style:
-  ComplexCondition:
-    active: false
   MagicNumber:
     active: false
   MaxLineLength:
     maxLineLength: 100
-  TooManyFunctions:
-    active: false
