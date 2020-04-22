@@ -18,12 +18,12 @@ public protocol StreamEmitter: CancelableStream {
   @discardableResult
   func sendData(_ data: Data) -> StreamEmitter
 
-  /// End the stream.
+  /// Close the stream with trailers.
   ///
   /// - parameter trailers: Trailers with which to close the stream.
   func close(trailers: RequestHeaders)
 
-  /// End the stream.
+  /// Close the stream with a data frame.
   ///
   /// - parameter data: Data with which to close the stream.
   func close(data: Data)

@@ -9,18 +9,16 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class GRPCStreamEmitterTest {
-
   // TODO: Problems with nhaarman/mockito-kotlin https://github.com/lyft/envoy-mobile/issues/504
   // This is a total hack to get something to work.
   private lateinit var emitter: StreamEmitter
 
   private val dataOutputStream = ByteArrayOutputStream()
-  private var isCloseCalledWithNull = false
+  private var isClosedCallWithEmptyData = false
 
   @Before
   fun setup() {
     emitter = object : StreamEmitter {
-
       override fun cancel() {
         throw UnsupportedOperationException("unexpected usage of mock emitter")
       }
@@ -30,12 +28,12 @@ class GRPCStreamEmitterTest {
         return this
       }
 
-      override fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter {
+      override fun close(trailers: Map<String, List<String>>) {
         throw UnsupportedOperationException("unexpected usage of mock emitter")
       }
 
-      override fun close(trailers: Map<String, List<String>>?) {
-        isCloseCalledWithNull = trailers == null
+      override fun close(byteBuffer: ByteBuffer) {
+        isClosedCallWithEmptyData = byteBuffer.array().size == 0
       }
     }
   }
@@ -43,7 +41,7 @@ class GRPCStreamEmitterTest {
   @After
   fun teardown() {
     dataOutputStream.reset()
-    isCloseCalledWithNull = false
+    isClosedCallWithEmptyData = false
   }
 
   @Test
@@ -73,7 +71,8 @@ class GRPCStreamEmitterTest {
     GRPCStreamEmitter(emitter)
       .sendMessage(message)
 
-    assertThat(ByteBuffer.wrap(dataOutputStream.toByteArray().sliceArray(1..4)).order(ByteOrder.BIG_ENDIAN).int).isEqualTo(payload.size)
+    assertThat(ByteBuffer.wrap(dataOutputStream.toByteArray().sliceArray(1..4))
+      .order(ByteOrder.BIG_ENDIAN).int).isEqualTo(payload.size)
   }
 
   @Test
@@ -83,8 +82,11 @@ class GRPCStreamEmitterTest {
     GRPCStreamEmitter(emitter)
       .sendMessage(message)
 
-    assertThat(dataOutputStream.toByteArray().sliceArray(GRPC_PREFIX_LENGTH until dataOutputStream.size()).toString(Charsets.UTF_8)).isEqualTo("data")
-
+    assertThat(
+      dataOutputStream.toByteArray()
+        .sliceArray(GRPC_PREFIX_LENGTH until dataOutputStream.size())
+        .toString(Charsets.UTF_8)
+    ).isEqualTo("data")
   }
 
   @Test
@@ -92,6 +94,6 @@ class GRPCStreamEmitterTest {
     GRPCStreamEmitter(emitter)
       .close()
 
-    assertThat(isCloseCalledWithNull).isTrue()
+    assertThat(isClosedCallWithEmptyData).isTrue()
   }
 }

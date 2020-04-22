@@ -25,17 +25,16 @@ interface StreamEmitter : CancelableStream {
   fun sendData(byteBuffer: ByteBuffer): StreamEmitter
 
   /**
-   * For sending a map of metadata to an associated stream.
+   * Close the stream with trailers.
    *
-   * @param metadata the metadata to send over the stream.
-   * @return this stream emitter.
+   * @param trailers trailers with which to close the stream.
    */
-  fun sendMetadata(metadata: Map<String, List<String>>): StreamEmitter
+  fun close(trailers: Map<String, List<String>>)
 
   /**
-   * For ending an associated stream and sending trailers.
+   * Close the stream with a data frame.
    *
-   * @param trailers to send with ending a stream. If null, stream will be closed with an empty data frame.
+   * @param byteBuffer data with which to close the stream.
    */
-  fun close(trailers: Map<String, List<String>>?)
+  fun close(byteBuffer: ByteBuffer)
 }
