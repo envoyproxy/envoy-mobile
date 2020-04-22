@@ -11,5 +11,11 @@ console-reports:
   exclude:
 
 style:
+  ComplexCondition:
+    active: false
   MagicNumber:
+    active: false
+  MaxLineLength:
+    maxLineLength: 100
+  TooManyFunctions:
     active: false

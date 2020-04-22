@@ -101,6 +101,7 @@ class GRPCResponseHandler(
    * @param bufferedStream The buffer of data from which to determine state and messages.
    * @param processState The current process state of the buffering.
    * @param onMessage Closure to call when a new message is available.
+   * @return ProcessState, the state after processing the passed data.
    */
   private fun processData(
       bufferedStream: ByteArrayOutputStream,
