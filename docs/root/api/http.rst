@@ -139,11 +139,19 @@ set of headers/data has been written, or by using the helper function that retur
 
 The unary helper function allows for easily performing the following request types:
 
-- Headers-only: Send request headers then close the stream. Done by passing ``nil`` body and ``nil`` trailers.
-- Close with data: Send request headers and data, then close. Done by passing ``nil`` trailers.
-- Close with trailers: Send request headers and data, then close with trailers. Done by passing a body and trailers.
+- **Headers-only:** Send request headers then close the stream.
 
-The ``CancelableStream`` it returns does not expose options for sending additional data.
+  - Done by passing ``nil`` body and ``nil`` trailers.
+
+- **Close with data:** Send request headers and data, then close.
+
+  - Done by passing ``nil`` trailers.
+
+- **Close with trailers:** Send request headers and data, then close with trailers.
+
+  - Done by passing a body and trailers.
+
+The ``CancelableStream`` returned by the unary function does not expose options for sending additional data.
 
 **Kotlin**::
 
@@ -154,9 +162,11 @@ The ``CancelableStream`` it returns does not expose options for sending addition
 
   // Headers-only
   val cancelable = envoy.send(request, null, null, responseHandler)
-  // Close with data
+
+  // Close using data
   val cancelable = envoy.send(request, body, null, responseHandler)
-  // Close with trailers
+
+  // Close using trailers
   val cancelable = envoy.send(request, body, trailers, responseHandler)
 
   // To cancel the request:
@@ -171,9 +181,11 @@ The ``CancelableStream`` it returns does not expose options for sending addition
 
   // Headers-only
   let cancelable = envoy.send(request, nil, trailers: nil, handler: responseHandler)
-  // Close with data
+
+  // Close using data
   let cancelable = envoy.send(request, body, trailers: nil, handler: responseHandler)
-  // Close with trailers
+
+  // Close using trailers
   let cancelable = envoy.send(request, body, trailers: trailers, handler: responseHandler)
 
   // To cancel the request:
