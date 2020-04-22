@@ -2,9 +2,6 @@
 build:
   maxIssues: 0
 
-processors:
-  active: true
-
 complexity:
   ComplexCondition:
     active: false
@@ -12,6 +9,9 @@ complexity:
     active: false
 
 console-reports:
+  active: true
+
+processors:
   active: true
 
 style:
