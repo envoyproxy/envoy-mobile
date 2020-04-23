@@ -55,5 +55,7 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - name: 'Run Kotlin lint'
-        run: ./ci/kotlin_lint.sh
+      - name: 'Run Kotlin Lint'
+        run: |
+          bazel build //library/kotlin/src/io/envoyproxy/envoymobile:envoy_lib_lint
+          bazel build //examples/kotlin/hello_world:hello_envoy_kt_lint
