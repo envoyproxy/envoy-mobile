@@ -56,4 +56,7 @@ jobs:
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - name: 'Run Kotlin Lint'
-        run: bazel build $(bazel query 'kind("detekt rule", //...)')
+        run: |
+          export CC=clang
+          export CXX=clang++
+          bazel build $(bazel query 'kind("detekt rule", //...)')
