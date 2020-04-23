@@ -57,6 +57,7 @@ jobs:
         run: ./ci/linux_ci_setup.sh
       - name: 'Run Kotlin Lint'
         run: |
+          export PATH=/usr/lib/llvm-8/bin:$PATH
           export CC=clang
           export CXX=clang++
           bazel build $(bazel query 'kind("detekt rule", //...)')
