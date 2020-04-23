@@ -74,14 +74,12 @@ static_resources:
       thresholds:
         - priority: DEFAULT
           # n.b: with mobile clients there are scenarios where all concurrent requests might be
-          # retries (e.g., when the phone goes offline). Therefore, Envoy Mobile allows all concurrent
-          # requests to be retries by setting the concurrent retry budget to 100%.
+          # retries (e.g., when the phone goes offline). Therefore, Envoy Mobile allows for the same
+          # amount of concurrency for retries as the default value for concurrency for requests.
           # This configuration uses the default for max concurrent requests (1024) because there is
           # no reasonable scenario where a mobile client should have even close to that many concurrent
           # requests.
-          retry_budget:
-            budget_percent:
-              value: 100
+          max_retries: 1024
   - name: base_wlan
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
