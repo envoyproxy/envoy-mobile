@@ -142,6 +142,7 @@ final class GRPCResponseHandlerTests: XCTestCase {
       .onError { error in
         let message = "Unable to read compressed gRPC response message"
         XCTAssertEqual(message, error.message)
+        XCTAssertEqual(0, error.attemptCount)
         expectation.fulfill()
       }
 
