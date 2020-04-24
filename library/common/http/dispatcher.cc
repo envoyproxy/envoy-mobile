@@ -90,7 +90,8 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
   }
 
   uint32_t attempt_count;
-  if (headers.EnvoyAttemptCount() && absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count)) {
+  if (headers.EnvoyAttemptCount() &&
+      absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count)) {
     error_attempt_count_ = attempt_count;
   }
 

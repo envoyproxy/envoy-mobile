@@ -104,10 +104,10 @@ public class MainActivity extends Activity {
               return Unit.INSTANCE;
             })
             .onError((error) -> {
-              String msg = new String("failed with error after " + error.getAttemptCount() + " attempts: " + error.getMessage());
+              String msg = new String("failed with error after " + error.getAttemptCount() +
+                                      " attempts: " + error.getMessage());
               Log.d("MainActivity", msg);
-              recyclerView.post(
-                  () -> viewAdapter.add(new Failure(msg)));
+              recyclerView.post(() -> viewAdapter.add(new Failure(msg)));
               return Unit.INSTANCE;
             });
 

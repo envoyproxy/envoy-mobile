@@ -92,7 +92,8 @@ NSString *_REQUEST_SCHEME = @"https";
   }];
 
   [handler onError:^(EnvoyError *error) {
-    NSLog(@"Error (%i): Request failed after %i attempts: %@", requestID, error.attemptCount, error.message);
+    NSLog(@"Error (%i): Request failed after %i attempts: %@", requestID, error.attemptCount,
+          error.message);
   }];
 
   [self.envoy send:request body:nil trailers:nil handler:handler];
