@@ -123,7 +123,7 @@ class GRPCResponseHandler(
         val compressionFlag = byteArray[0]
         // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501.
         if (compressionFlag.compareTo(0) != 0) {
-          errorClosure(EnvoyError(0, "Unable to read compressed gRPC response message"))
+          errorClosure(EnvoyError(0, "Unable to read compressed gRPC response message", 1))
 
           // no op the current onData and clean up
           errorClosure = { }

@@ -42,7 +42,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 /**
  * Called when the async HTTP stream has an error.
  */
-@property (nonatomic, strong) void (^onError)(uint64_t errorCode, NSString *message);
+@property (nonatomic, strong) void (^onError)(uint64_t errorCode, NSString *message, uint32_t attemptCount);
 
 /**
  * Called when the async HTTP stream is canceled.

@@ -39,8 +39,9 @@ public interface EnvoyHTTPCallbacks {
    *
    * @param errorCode, the error code.
    * @param message,   the error message.
+   * @param attemptCount, the number of times an operation was attempted before firing this error.
    */
-  void onError(int errorCode, String message);
+  void onError(int errorCode, String message, int attemptCount);
 
   /**
    * Called when the async HTTP stream is canceled.
