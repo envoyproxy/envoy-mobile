@@ -133,7 +133,7 @@ public final class GRPCResponseHandler: NSObject {
         // Call the handler with an error and ignore all future updates.
         let error = EnvoyError(
           errorCode: 0, message: "Unable to read compressed gRPC response message",
-          attemptCount: 1, cause: nil)
+          attemptCount: 0, cause: nil)
         self.internalErrorClosure?(error)
         self.resetHandlers()
         buffer.removeAll()
