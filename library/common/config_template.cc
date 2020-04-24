@@ -79,7 +79,14 @@ static_resources:
           # This configuration uses the default for max concurrent requests (1024) because there is
           # no reasonable scenario where a mobile client should have even close to that many concurrent
           # requests.
-          max_retries: 1024
+          #
+          # `max_retries` could be used but maintainers advised against it, as there are plans to
+          # deprecate that setting.
+          # https://github.com/lyft/envoy-mobile/pull/811#issuecomment-619169529.
+          retry_budget:
+            budget_percent:
+              value: 100
+            min_retry_concurrency: 1024
   - name: base_wlan
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
