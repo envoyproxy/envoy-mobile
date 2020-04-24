@@ -67,7 +67,8 @@ public final class ResponseHandler: NSObject {
     -> ResponseHandler
   {
     self.underlyingCallbacks.onError = { errorCode, message, attemptCount in
-      closure(EnvoyError(errorCode: errorCode, message: message, attemptCount: attemptCount, cause: nil))
+      closure(EnvoyError(errorCode: errorCode, message: message, attemptCount: attemptCount,
+                         cause: nil))
     }
     return self
   }
