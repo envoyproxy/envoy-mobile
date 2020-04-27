@@ -5,6 +5,7 @@ static_framework_import
 
 load("@build_bazel_apple_support//lib:apple_support.bzl", "apple_support")
 load("@build_bazel_rules_swift//swift:swift.bzl", "SwiftInfo", "swift_library")
+load("@build_bazel_rules_apple//apple/internal:transition_support.bzl", "transition_support")
 
 MINIMUM_IOS_VERSION = "10.0"
 
@@ -133,6 +134,9 @@ _swift_static_framework = rule(
             cfg = "host",
             executable = True,
         ),
+        _whitelist_function_transition = attr.label(
+            default = "@build_bazel_rules_apple//tools/whitelists/function_transition_whitelist",
+        ),
         _zipper = attr.label(
             default = "@bazel_tools//tools/zip:zipper",
             cfg = "host",
@@ -152,6 +156,7 @@ _swift_static_framework = rule(
             default = str(apple_common.platform_type.ios),
         ),
     ),
+    cfg = transition_support.static_framework_transition,
     fragments = [
         "apple",
     ],
@@ -176,7 +181,8 @@ def swift_static_framework(
             appending Framework so you can depend on this from other modules
         srcs: Custom source paths for the swift files
         copts: Any custom swiftc opts passed through to the swift_library
-        deps: Any deps the swift_library requires
+        private_deps: Any deps the swift_library requires. They must be imported
+            with @_implementationOnly and not exposed publicly.
     """
     archive_name = name + "_archive"
     module_name = module_name or name + "_framework"
@@ -185,9 +191,9 @@ def swift_static_framework(
         srcs = srcs,
         copts = copts,
         module_name = module_name,
-        visibility = ["//visibility:public"],
         private_deps = private_deps,
-        features = ["swift.enable_library_evolution", "swift.emit_swiftinterface"],
+        visibility = ["//visibility:public"],
+        features = ["swift.enable_library_evolution"],
     )
 
     _swift_static_framework(
