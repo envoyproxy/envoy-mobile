@@ -16,6 +16,10 @@ internal fun RetryPolicy.outboundHeaders(): Map<String, List<String>> {
   if (perRetryTimeoutMS != null) {
     headers["x-envoy-upstream-rq-per-try-timeout-ms"] = listOf("$perRetryTimeoutMS")
   }
+
+  if (retryStatusCodes.isNotEmpty()) {
+    headers["x-envoy-retriable-status-codes"] = retryStatusCodes.map { value -> value.toString() }
+  }
   return headers
 }
 
@@ -31,7 +35,6 @@ private fun RetryRule.stringValue(): String {
     RetryRule.CONNECT_FAILURE -> "connect-failure"
     RetryRule.REFUSED_STREAM -> "refused-stream"
     RetryRule.RETRIABLE_4XX -> "retriable-4xx"
-    RetryRule.RETRIABLE_STATUS_CODES -> "retriable-status-codes"
     RetryRule.RETRIABLE_HEADERS -> "retriable-headers"
     RetryRule.RESET -> "reset"
   }

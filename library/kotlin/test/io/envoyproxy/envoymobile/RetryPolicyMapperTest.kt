@@ -14,17 +14,18 @@ class RetryPolicyMapperTest {
             RetryRule.CONNECT_FAILURE,
             RetryRule.REFUSED_STREAM,
             RetryRule.RETRIABLE_4XX,
-            RetryRule.RETRIABLE_STATUS_CODES,
             RetryRule.RETRIABLE_HEADERS,
             RetryRule.RESET),
+        retryStatusCodes = listOf(400, 422, 500),
         perRetryTimeoutMS = 15000,
         totalUpstreamTimeoutMS = 60000)
 
     assertThat(retryPolicy.outboundHeaders()).isEqualTo(mapOf(
         "x-envoy-max-retries" to listOf("3"),
+        "x-envoy-retriable-status-codes" to listOf("400", "422", "500"),
         "x-envoy-retry-on" to listOf(
           "5xx", "gateway-error", "connect-failure", "refused-stream", "retriable-4xx",
-          "retriable-status-codes", "retriable-headers", "reset"
+          "retriable-headers", "reset"
         ),
         "x-envoy-upstream-rq-per-try-timeout-ms" to listOf("15000"),
         "x-envoy-upstream-rq-timeout-ms" to listOf("60000")
