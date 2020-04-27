@@ -65,7 +65,10 @@ def _swift_static_framework_impl(ctx):
             fail("Expected exactly 1 '-Swift.h' header, got {}".format(", ".join(header_names)))
 
         swiftdoc = swift_info.direct_swiftdocs[0]
-        swiftmodule = swift_info.direct_swiftmodules[0]
+        swiftinterfaces = swift_info.transitive_swiftinterfaces.to_list()
+        if len(swiftinterfaces) != 1:
+            fail("Expected a single swiftinterface file, got: {}".format(swiftinterfaces))
+        swiftinterface = swiftinterfaces[0]
 
         libraries = archive[CcInfo].linking_context.libraries_to_link
         archives = []
@@ -91,10 +94,10 @@ def _swift_static_framework_impl(ctx):
 
         input_archives.append(platform_archive)
 
-        input_modules_docs += [swiftdoc, swiftmodule]
+        input_modules_docs += [swiftdoc, swiftinterface]
         zip_args += [
             _zip_swift_arg(module_name, swiftmodule_identifier, swiftdoc),
-            _zip_swift_arg(module_name, swiftmodule_identifier, swiftmodule),
+            _zip_swift_arg(module_name, swiftmodule_identifier, swiftinterface),
         ]
 
     ctx.actions.run(
@@ -163,10 +166,8 @@ def swift_static_framework(
         name,
         module_name = None,
         srcs = [],
-        deps = [],
-        objc_includes = [],
+        private_deps = [],
         copts = [],
-        swiftc_inputs = [],
         visibility = []):
     """Create a static library, and static framework target for a swift module
 
@@ -174,26 +175,19 @@ def swift_static_framework(
         name: The name of the module, the framework's name will be this name
             appending Framework so you can depend on this from other modules
         srcs: Custom source paths for the swift files
-        objc_includes: Header files for any objective-c dependencies (required for linking)
         copts: Any custom swiftc opts passed through to the swift_library
-        swiftc_inputs: Any labels that require expansion for copts (would also apply to linkopts)
         deps: Any deps the swift_library requires
     """
     archive_name = name + "_archive"
     module_name = module_name or name + "_framework"
-    if objc_includes:
-        locations = ["$(location {})".format(x) for x in objc_includes]
-        copts = copts + ["-import-objc-header"] + locations
-        swiftc_inputs = swiftc_inputs + objc_includes
-
     swift_library(
         name = archive_name,
         srcs = srcs,
         copts = copts,
-        swiftc_inputs = swiftc_inputs,
         module_name = module_name,
         visibility = ["//visibility:public"],
-        deps = deps,
+        private_deps = private_deps,
+        features = ["swift.enable_library_evolution", "swift.emit_swiftinterface"],
     )
 
     _swift_static_framework(
