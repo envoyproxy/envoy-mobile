@@ -82,8 +82,8 @@ class RetryPolicyMapperTest {
         totalUpstreamTimeoutMS = null)
 
     val headers = retryPolicy.outboundHeaders()
-    assertThat(headers["x-envoy-retriable-status-codes"]).isNotNull()
-    assertThat(headers["x-envoy-retry-on"]).contains("retriable-status-codes")
+    assertThat(headers["x-envoy-retriable-status-codes"]).isNull()
+    assertThat(headers["x-envoy-retry-on"]).doesNotContain("retriable-status-codes")
 
   }
 }
