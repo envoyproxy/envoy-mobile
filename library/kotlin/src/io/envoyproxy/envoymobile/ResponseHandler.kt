@@ -100,7 +100,7 @@ class ResponseHandler(val executor: Executor) {
    */
   fun onError(closure: (error: EnvoyError) -> Unit): ResponseHandler {
     underlyingCallbacks.onErrorClosure = { errorCode, message, attemptCount ->
-      closure(EnvoyError(errorCode, message, attemptCount))
+      closure(EnvoyError(errorCode, message, if (attemptCount < 0) null else attemptCount))
       Unit
     }
     return this

@@ -193,7 +193,7 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
-  uint32_t attempt_count = error_attempt_count_.value_or(0);
+  int32_t attempt_count = error_attempt_count_.value_or(-1);
 
   // Testing hook.
   http_dispatcher_.synchronizer_.syncPoint("dispatch_on_error");

@@ -127,7 +127,7 @@ class JvmCallbackContext {
   /**
    * Dispatches error received from the JNI layer up to the platform.
    *
-   * @param errorCode,    the envoy_error_code_t.
+   * @param errorCode,    the error code.
    * @param message,      the error message.
    * @param attemptCount, the number of times an operation was attempted before firing this error.
    */
