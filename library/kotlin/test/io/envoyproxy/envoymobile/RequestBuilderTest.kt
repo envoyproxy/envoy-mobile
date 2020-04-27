@@ -14,8 +14,12 @@ class RequestBuilderTest {
         .addRetryPolicy(retryPolicy)
         .build()
 
-    assertThat(request.retryPolicy)
-      .isEqualTo(RetryPolicy(23, listOf(RetryRule.STATUS_5XX, RetryRule.CONNECT_FAILURE), 1234))
+    assertThat(request.retryPolicy).isEqualTo(
+        RetryPolicy(
+            maxRetryCount =23,
+            retryOn = listOf(RetryRule.STATUS_5XX, RetryRule.CONNECT_FAILURE),
+            perRetryTimeoutMS = 1234)
+    )
   }
 
   @Test
@@ -29,8 +33,10 @@ class RequestBuilderTest {
 
   @Test
   fun `adding upstream http protocol should have hint present in request`() {
-    val retryPolicy = RetryPolicy(maxRetryCount = 23,
-      retryOn = listOf(RetryRule.STATUS_5XX, RetryRule.CONNECT_FAILURE), perRetryTimeoutMS = 1234)
+    val retryPolicy = RetryPolicy(
+        maxRetryCount = 23,
+        retryOn = listOf(RetryRule.STATUS_5XX, RetryRule.CONNECT_FAILURE),
+        perRetryTimeoutMS = 1234)
     val request = RequestBuilder(method = RequestMethod.POST, scheme = "https",
       authority = "api.foo.com", path = "foo")
         .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
