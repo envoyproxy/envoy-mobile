@@ -25,7 +25,7 @@ class RetryPolicyMapperTest {
         "x-envoy-retriable-status-codes" to listOf("400", "422", "500"),
         "x-envoy-retry-on" to listOf(
           "5xx", "gateway-error", "connect-failure", "refused-stream", "retriable-4xx",
-          "retriable-headers", "reset"
+          "retriable-headers", "reset", "retriable-status-codes"
         ),
         "x-envoy-upstream-rq-per-try-timeout-ms" to listOf("15000"),
         "x-envoy-upstream-rq-timeout-ms" to listOf("60000")
@@ -64,5 +64,26 @@ class RetryPolicyMapperTest {
         perRetryTimeoutMS = 2,
         totalUpstreamTimeoutMS = 1
     )
+  }
+
+  @Test
+  fun `converting headers without retry status code does not set retriable status code headers`() {
+    val retryPolicy = RetryPolicy(
+        maxRetryCount = 123,
+        retryOn = listOf(
+            RetryRule.STATUS_5XX,
+            RetryRule.GATEWAY_ERROR,
+            RetryRule.CONNECT_FAILURE,
+            RetryRule.REFUSED_STREAM,
+            RetryRule.RETRIABLE_4XX,
+            RetryRule.RETRIABLE_HEADERS,
+            RetryRule.RESET),
+        retryStatusCodes = emptyList(),
+        totalUpstreamTimeoutMS = null)
+
+    val headers = retryPolicy.outboundHeaders()
+    assertThat(headers["x-envoy-retriable-status-codes"]).isNotNull()
+    assertThat(headers["x-envoy-retry-on"]).contains("retriable-status-codes")
+
   }
 }
