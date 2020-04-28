@@ -787,7 +787,7 @@ TEST_F(DispatcherTest, EnvoyLocalReply) {
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -845,7 +845,7 @@ TEST_F(DispatcherTest, EnvoyLocalReplyNon503) {
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_UNDEFINED_ERROR);
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -904,7 +904,7 @@ TEST_F(DispatcherTest, EnvoyLocalReplyWithData) {
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
     ASSERT_EQ(Http::Utility::convertToString(error.message), "error message");
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
     error.message.release(error.message.context);
@@ -1089,7 +1089,7 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
     ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     // This will use envoy_noop_release.
     error.message.release(error.message.context);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -1236,7 +1236,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
     ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1609,7 +1609,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
     ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -1699,7 +1699,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
     ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
     ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+    ASSERT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
