@@ -51,6 +51,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v1
+        with:
+          submodules: true
       - name: 'Install dependencies'
         run: ./ci/linux_ci_setup.sh
       - name: 'Run Kotlin Lint (Detekt)'
