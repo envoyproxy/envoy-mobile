@@ -8,6 +8,8 @@ build --define=signal_trace=disabled
 build --define=tcmalloc=disabled
 build --features=debug_prefix_map_pwd_is_dot
 build --features=swift.cacheable_swiftmodules
+# Remove once https://github.com/bazelbuild/rules_swift/pull/427 is merged
+build --swiftcopt=-Xfrontend --swiftcopt=-no-serialize-debugging-options
 build --host_force_python=PY3
 build --ios_minimum_os=10.0
 build --ios_simulator_device="iPhone 11"
@@ -19,6 +21,7 @@ build --xcode_version=11.3.1
 build --incompatible_bzl_disallow_load_after_statement=false
 build --javabase=@bazel_tools//tools/jdk:jdk
 build --define disable_known_issue_asserts=true
+build --define=no_debug_info=1
 
 # Default flags for builds targeting iOS
 # Manual Stamping is necessary in order to get versioning information in the ios
@@ -30,18 +33,12 @@ build:ios --define=manual_stamp=manual_stamp
 # Default flags for builds targeting Android
 build:android --define logger=android
 
-# Common flags for release builds
-# TODO: Enable `--copt -ggdb3`. Issues were encountered previously with this:
-# https://github.com/lyft/envoy-mobile/pull/155#issuecomment-507461500
-build:release-common --copt=-O2
-build:release-common --linkopt=-s
-
 # Flags for release builds targeting iOS
 build:release-ios --apple_bitcode=embedded
 build:release-ios --config=ios
-build:release-ios --config=release-common
 build:release-ios --copt=-fembed-bitcode
+build:release-ios --compilation_mode=opt
 
 # Flags for release builds targeting Android or the JVM
 build:release-android --config=android
-build:release-android --config=release-common
+build:release-android --compilation_mode=opt
