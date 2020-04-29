@@ -7,7 +7,7 @@ package io.envoyproxy.envoymobile
  * @param message a description of what exception that occurred.
  * @param cause an optional cause for the exception.
  */
-class EnvoyError internal constructor(
+class EnvoyError constructor(
     val errorCode: Int,
     val message: String,
     val cause: Throwable? = null
