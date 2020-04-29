@@ -110,6 +110,8 @@ void flush_stats();
 envoy_status_t run_engine(envoy_engine_t engine, envoy_engine_callbacks callbacks,
                           const char* config, const char* log_level);
 
+void stop_loop();
+
 #ifdef __cplusplus
 } // functions
 #endif

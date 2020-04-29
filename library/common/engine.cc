@@ -82,6 +82,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset();
   TS_UNCHECKED_READ(main_common_).reset();
+  http_dispatcher_.reset();
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }

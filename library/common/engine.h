@@ -49,6 +49,17 @@ public:
    */
   void flushStats();
 
+  void stopLoop() {
+    Thread::LockGuard lock(mutex_);
+    if (!main_common_) {
+      cv_.wait(mutex_);
+    }
+
+    ASSERT(event_dispatcher_ != nullptr);
+
+    event_dispatcher_->exit();
+  }
+
 private:
   envoy_status_t run(std::string config, std::string log_level);
 

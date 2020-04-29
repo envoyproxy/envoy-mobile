@@ -86,3 +86,9 @@ envoy_status_t run_engine(envoy_engine_t, envoy_engine_callbacks callbacks, cons
   engine_ = strong_ref;
   return ENVOY_SUCCESS;
 }
+
+void stop_loop() {
+  if (auto e = engine_.lock()) {
+    return e->stopLoop();
+  }
+}
