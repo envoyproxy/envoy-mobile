@@ -46,8 +46,9 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
 
       main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
       event_dispatcher_ = &main_common_->server()->dispatcher();
-      cv_.notifyOne();
+      cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
+      std::cerr << e.what() << std::endl;
       return ENVOY_FAILURE;
     } catch (const Envoy::MalformedArgvException& e) {
       std::cerr << e.what() << std::endl;
@@ -66,24 +67,23 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           Server::Instance* server = TS_UNCHECKED_READ(main_common_)->server();
-          auto api_listener = server->listenerManager().apiListener()->get().http();
-          ASSERT(api_listener.has_value());
+          // auto api_listener = server->listenerManager().apiListener()->get().http();
+          // ASSERT(api_listener.has_value());
           server_ = server;
-          http_dispatcher_->ready(server->dispatcher(), api_listener.value());
+          http_dispatcher_->ready(server->dispatcher(), nullptr);
         });
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
   bool run_success = TS_UNCHECKED_READ(main_common_)->run();
 
-  // The above call is blocking; at this point the event loop has exited.
-  callbacks_.on_exit();
-
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset();
   TS_UNCHECKED_READ(main_common_).reset();
-  http_dispatcher_.reset();
 
+  // The above call is blocking; at this point the event loop has exited.
+  callbacks_.on_exit(callbacks_.context);
+  
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
 

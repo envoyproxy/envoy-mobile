@@ -260,7 +260,7 @@ bool Dispatcher::DirectStream::dispatchable(bool close) {
   return !closed_.load();
 }
 
-void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_listener) {
+void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener* api_listener) {
   Thread::LockGuard lock(ready_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
@@ -271,17 +271,24 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher, ApiListener& api_lis
   // Ordering somewhat matters here if concurrency guarantees are loosened (e.g. if
   // we rely on atomics instead of locks).
   event_dispatcher_ = &event_dispatcher;
-  api_listener_ = &api_listener;
+  api_listener_ = api_listener;
 }
 
 void Dispatcher::post(Event::PostCb callback) {
   Thread::LockGuard lock(ready_lock_);
 
   // If the event_dispatcher_ is set, then post the functor directly to it.
+  ENVOY_LOG_MISC(error, "HERE");
   if (event_dispatcher_ != nullptr) {
+      ENVOY_LOG_MISC(error, "HERE2");
+
     event_dispatcher_->post(callback);
+      ENVOY_LOG_MISC(error, "HERE3");
+
     return;
   }
+    ENVOY_LOG_MISC(error, "HERE4");
+
 
   // Otherwise, push the functor to the init_queue_ which will be drained once the
   // event_dispatcher_ is ready.

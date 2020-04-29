@@ -42,7 +42,7 @@ ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
 
 class DispatcherTest : public testing::Test {
 public:
-  void ready() { http_dispatcher_.ready(event_dispatcher_, api_listener_); }
+  void ready() { http_dispatcher_.ready(event_dispatcher_, &api_listener_); }
 
   typedef struct {
     uint32_t on_headers_calls;
