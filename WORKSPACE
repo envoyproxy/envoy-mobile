@@ -150,9 +150,9 @@ http_archive(
     urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
 )
 
-rules_kotlin_version = "legacy-1.3.0-rc2"
+rules_kotlin_version = "legacy-1.3.0"
 
-rules_kotlin_sha = "dc1c76f91228ddaf4f7ca4190b82d61939e95369f61dea715e8be28792072b1b"
+rules_kotlin_sha = "4fd769fb0db5d3c6240df8a9500515775101964eebdf85a3f9f0511130885fde"
 
 http_archive(
     name = "io_bazel_rules_kotlin",
