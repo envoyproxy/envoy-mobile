@@ -4,8 +4,8 @@
 namespace Envoy {
 
 TEST(MobileMainCommonTest, SignalHandlingFalse) {
-  char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"), strdup("{}"), nullptr};
-  MobileMainCommon main_common{3, envoy_argv};
+  std::vector<const char*> envoy_argv{"envoy", "--config-yaml", "{}", nullptr};
+  MobileMainCommon main_common{3, &envoy_argv[0]};
   ASSERT_FALSE(main_common.server()->options().signalHandlingEnabled());
 }
 
