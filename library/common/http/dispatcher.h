@@ -123,6 +123,7 @@ private:
     const envoy_http_callbacks bridge_callbacks_;
     absl::optional<envoy_error_code_t> error_code_;
     absl::optional<envoy_data> error_message_;
+    absl::optional<int32_t> error_attempt_count_;
     Dispatcher& http_dispatcher_;
   };
 
@@ -140,14 +141,14 @@ private:
     ~DirectStream();
 
     // Stream
-    void addCallbacks(StreamCallbacks& callbacks) override { addCallbacks_(callbacks); }
-    void removeCallbacks(StreamCallbacks& callbacks) override { removeCallbacks_(callbacks); }
+    void addCallbacks(StreamCallbacks& callbacks) override { addCallbacksHelper(callbacks); }
+    void removeCallbacks(StreamCallbacks& callbacks) override { removeCallbacksHelper(callbacks); }
     void resetStream(StreamResetReason) override;
     const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override {
       return parent_.address_;
     }
-    // TODO: stream watermark control.
-    void readDisable(bool) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+    // TODO: https://github.com/lyft/envoy-mobile/issues/825
+    void readDisable(bool /*disable*/) override {}
     uint32_t bufferLimit() override { return 65000; }
 
     void closeLocal(bool end_stream);
