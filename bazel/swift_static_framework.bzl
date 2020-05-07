@@ -66,6 +66,7 @@ def _swift_static_framework_impl(ctx):
             fail("Expected exactly 1 '-Swift.h' header, got {}".format(", ".join(header_names)))
 
         swiftdoc = swift_info.direct_swiftdocs[0]
+        swiftmodule = swift_info.direct_swiftmodules[0]
         swiftinterfaces = swift_info.transitive_swiftinterfaces.to_list()
         if len(swiftinterfaces) != 1:
             fail("Expected a single swiftinterface file, got: {}".format(swiftinterfaces))
@@ -95,9 +96,10 @@ def _swift_static_framework_impl(ctx):
 
         input_archives.append(platform_archive)
 
-        input_modules_docs += [swiftdoc, swiftinterface]
+        input_modules_docs += [swiftdoc, swiftmodule, swiftinterface]
         zip_args += [
             _zip_swift_arg(module_name, swiftmodule_identifier, swiftdoc),
+            _zip_swift_arg(module_name, swiftmodule_identifier, swiftmodule),
             _zip_swift_arg(module_name, swiftmodule_identifier, swiftinterface),
         ]
 
