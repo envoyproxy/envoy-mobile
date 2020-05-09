@@ -1,5 +1,6 @@
 import Foundation
 
+/// Filter executed for outbound requests, providing the ability to observe and mutate streams.
 public protocol RequestFilter: Filter {
   /// Called by the filter manager once to initialize the filter callbacks that the filter should
   /// use.
