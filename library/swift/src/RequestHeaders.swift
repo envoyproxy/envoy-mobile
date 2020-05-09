@@ -5,22 +5,22 @@ import Foundation
 public final class RequestHeaders: Headers {
   /// Method for the request.
   public var method: RequestMethod {
-    return RequestMethod(stringValue: self.value(forName: ":method")!.first!)!
+    return self.value(forName: ":method")?.first.flatMap(RequestMethod.init)
   }
 
   /// The URL scheme for the request (i.e., "https").
-  public var scheme: String {
-    return self.value(forName: ":scheme")!.first!
+  public var scheme: String! {
+    return self.value(forName: ":scheme")?.first
   }
 
   /// The URL authority for the request (i.e., "api.foo.com").
-  public var authority: String {
-    return self.value(forName: ":authority")!.first!
+  public var authority: String! {
+    return self.value(forName: ":authority")?.first
   }
 
   /// The URL path for the request (i.e., "/foo").
-  public var path: String {
-    return self.value(forName: ":path")!.first!
+  public var path: String! {
+    return self.value(forName: ":path")?.first
   }
 
   /// Retry policy to use for this request.

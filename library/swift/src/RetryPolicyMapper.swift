@@ -27,7 +27,9 @@ extension RetryPolicy {
   ///
   /// - parameter headers: The headers with which to initialize the retry policy.
   convenience init?(headers: Headers) {
-    guard let maxRetryCount = headers.value(forName: "x-envoy-max-retries")?.first.flatMap(UInt.init) else {
+    guard let maxRetryCount = headers.value(forName: "x-envoy-max-retries")?
+      .first.flatMap(UInt.init) else
+    {
       return nil
     }
 
