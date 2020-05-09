@@ -21,7 +21,7 @@ public protocol StreamEmitter: CancelableStream {
   /// Close the stream with trailers.
   ///
   /// - parameter trailers: Trailers with which to close the stream.
-  func close(trailers: RequestHeaders)
+  func close(trailers: [String: [String]])
 
   /// Close the stream with a data frame.
   ///

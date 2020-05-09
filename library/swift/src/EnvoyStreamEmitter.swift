@@ -1,7 +1,5 @@
 import Foundation
 
-// This class will be combined with StreamEmitter to produce ActiveStream.
-
 /// Default implementation of the `StreamEmitter` interface.
 @objcMembers
 final class EnvoyStreamEmitter {
@@ -14,12 +12,11 @@ final class EnvoyStreamEmitter {
 
 extension EnvoyStreamEmitter: StreamEmitter {
   func sendData(_ data: Data) -> StreamEmitter {
-    // Filters go here
     self.stream.send(data, close: false)
     return self
   }
 
-  func close(trailers: RequestHeaders) {
+  func close(trailers: [String: [String]]) {
     self.stream.sendTrailers(trailers)
   }
 
