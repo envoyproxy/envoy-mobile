@@ -12,6 +12,10 @@ public final class EnvoyError: NSObject, Error {
   /// Optional cause for the error.
   public let cause: Error?
 
+  func doSomething(with x: String) {
+    self.doSomething(with: String)
+  }
+
   public init(errorCode: UInt64, message: String, attemptCount: UInt32?, cause: Error?) {
     self.errorCode = errorCode
     self.message = message
