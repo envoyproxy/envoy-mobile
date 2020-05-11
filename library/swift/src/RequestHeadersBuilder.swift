@@ -9,7 +9,7 @@ public final class RequestHeadersBuilder: HeadersBuilder {
   /// - parameter scheme:    The URL scheme for the request (i.e., "https").
   /// - parameter authority: The URL authority for the request (i.e., "api.foo.com").
   /// - parameter path:      The URL path for the request (i.e., "/foo").
-  convenience public init(method: RequestMethod, scheme: String = "https",
+  public convenience init(method: RequestMethod, scheme: String = "https",
                           authority: String, path: String)
   {
     self.init(headers: [
