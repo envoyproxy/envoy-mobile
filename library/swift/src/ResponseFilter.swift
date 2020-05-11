@@ -6,7 +6,7 @@ public protocol ResponseFilter: Filter {
   /// use.
   ///
   /// - parameter callbacks: The callbacks for this filter to use to interact with the chain.
-  func setResponseFilterCallbacks(callbacks: ResponseFilterCallbacks)
+  func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks)
 
   /// Called once when the response is initiated.
   ///
@@ -27,7 +27,7 @@ public protocol ResponseFilter: Filter {
   /// - parameter endStream: Whether this is the last data frame.
   ///
   /// - returns: The data status containing body with which to continue or buffer.
-  func onResponseData(body: Data, endStream: Bool) -> FilterDataStatus
+  func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus
 
   /// Called at most once when the response is closed from the server with trailers.
   ///
@@ -36,7 +36,7 @@ public protocol ResponseFilter: Filter {
   /// - parameter trailers: The outbound trailers.
   ///
   /// - returns: The trailer status containing body with which to continue or buffer.
-  func onResponseTrailers(trailers: ResponseTrailers) -> FilterTrailerStatus<ResponseTrailers>
+  func onResponseTrailers(_ trailers: ResponseTrailers) -> FilterTrailerStatus<ResponseTrailers>
 
   /// Called at most once when an error within Envoy occurs.
   ///
@@ -44,7 +44,7 @@ public protocol ResponseFilter: Filter {
   /// `stopIteration{...}`.
   ///
   /// - error: The error that occurred within Envoy.
-  func onError(error: EnvoyError)
+  func onError(_ error: EnvoyError)
 
   /// Called at most once when the client cancels a response.
   ///

@@ -8,11 +8,11 @@ public protocol RequestFilterCallbacks {
   ///
   /// Headers and any buffered body data will be passed to the next filter in the chain.
   ///
-  /// If the request is not complete, this filter will still receive `onData()`/`onTrailers()`
+  /// If the request is not complete, the filter will still receive `onData()`/`onTrailers()`
   /// calls.
   func continueRequest()
 
-  /// - returns: The currently buffered data as buffered by this filter or previous ones in the
+  /// - returns: The currently buffered data as buffered by the filter or previous ones in the
   ///            filter chain. Nil if nothing has been buffered yet.
   func requestBuffer() -> Data?
 
