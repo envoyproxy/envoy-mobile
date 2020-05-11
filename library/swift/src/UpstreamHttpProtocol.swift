@@ -2,7 +2,7 @@ import Foundation
 
 /// Available upstream HTTP protocols.
 @objc
-public enum UpstreamHttpProtocol: Int {
+public enum UpstreamHttpProtocol: Int, CaseIterable {
   case http1
   case http2
 

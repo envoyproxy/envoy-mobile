@@ -9,16 +9,15 @@ public final class RequestHeadersBuilder: HeadersBuilder {
   /// - parameter scheme:    The URL scheme for the request (i.e., "https").
   /// - parameter authority: The URL authority for the request (i.e., "api.foo.com").
   /// - parameter path:      The URL path for the request (i.e., "/foo").
-  public init(method: RequestMethod,
-              scheme: String = "https",
-              authority: String,
-              path: String)
+  convenience public init(method: RequestMethod, scheme: String = "https",
+                          authority: String, path: String)
   {
-    super.init()
-    self.add(name: ":method", value: method.stringValue)
-    self.add(name: ":scheme", value: scheme)
-    self.add(name: ":authority", value: authority)
-    self.add(name: ":path", value: scheme)
+    self.init(headers: [
+      ":authority": [authority],
+      ":method": [method.stringValue],
+      ":path": [path],
+      ":scheme": [scheme],
+    ])
   }
 
   /// Add a retry policy to be used with this request.

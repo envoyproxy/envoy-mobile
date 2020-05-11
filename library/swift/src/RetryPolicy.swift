@@ -36,7 +36,7 @@ public enum RetryRule: Int, CaseIterable {
   ///
   /// - parameter stringValue: Case-insensitive rule value to use for initialization.
   init?(stringValue: String) {
-    switch stringValue.uppercased() {
+    switch stringValue.lowercased() {
     case "5xx":
       self = .status5xx
     case "gateway-error":
@@ -47,8 +47,6 @@ public enum RetryRule: Int, CaseIterable {
       self = .refusedStream
     case "retriable-4xx":
       self = .retriable4xx
-    case "retriable-status-codes":
-      self = .retriableStatusCodes
     case "retriable-headers":
       self = .retriableHeaders
     case "reset":

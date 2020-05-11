@@ -4,7 +4,7 @@ import Foundation
 @objcMembers
 public final class RequestHeaders: Headers {
   /// Method for the request.
-  public var method: RequestMethod {
+  public var method: RequestMethod! {
     return self.value(forName: ":method")?.first.flatMap(RequestMethod.init)
   }
 

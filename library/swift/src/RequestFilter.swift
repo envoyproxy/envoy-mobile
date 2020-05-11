@@ -6,7 +6,7 @@ public protocol RequestFilter: Filter {
   /// use.
   ///
   /// - parameter callbacks: The callbacks for this filter to use to interact with the chain.
-  func setRequestFilterCallbacks(_ callbacks: RequestFilterCallback)
+  func setRequestFilterCallbacks(_ callbacks: RequestFilterCallbacks)
 
   /// Called once when the request is initiated.
   ///

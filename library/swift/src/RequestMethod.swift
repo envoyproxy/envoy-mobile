@@ -2,7 +2,7 @@ import Foundation
 
 /// Represents an HTTP request method.
 @objc
-public enum RequestMethod: Int {
+public enum RequestMethod: Int, CaseIterable {
   case delete
   case get
   case head

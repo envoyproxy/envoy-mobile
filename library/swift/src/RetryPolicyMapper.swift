@@ -36,6 +36,8 @@ extension RetryPolicy {
     self.init(
       maxRetryCount: maxRetryCount,
       retryOn: headers.value(forName: "x-envoy-retry-on")?.compactMap(RetryRule.init) ?? [],
+      retryStatusCodes: headers.value(forName: "x-envoy-retriable-status-codes")?
+        .compactMap(UInt.init) ?? [],
       perRetryTimeoutMS: headers.value(forName: "x-envoy-upstream-rq-per-try-timeout-ms")?
         .first.flatMap(UInt.init),
       totalUpstreamTimeoutMS: headers.value(forName: "x-envoy-upstream-rq-timeout-ms")?
