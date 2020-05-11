@@ -1,24 +1,25 @@
-licenses(["notice"])  # Apache 2
-
 load("//bazel:swift_static_framework.bzl", "swift_static_framework")
+
+licenses(["notice"])  # Apache 2
 
 swift_static_framework(
     name = "ios_framework",
     srcs = [
         "Data+Extension.swift",
-        "DataStatus.swift",
         "EnvoyClient.swift",
         "EnvoyClientBuilder.swift",
         "EnvoyError.swift",
         "EnvoyStreamEmitter.swift",
         "Filter.swift",
+        "FilterDataStatus.swift",
+        "FilterHeaderStatus.swift",
         "FilterRegistry.swift",
+        "FilterTrailerStatus.swift",
         "GRPCClient.swift",
         "GRPCRequestBuilder.swift",
         "GRPCResponseHandler.swift",
         "GRPCStreamEmitter.swift",
         "HTTPClient.swift",
-        "HeaderStatus.swift",
         "Headers.swift",
         "HeadersBuilder.swift",
         "LogLevel.swift",
@@ -40,7 +41,6 @@ swift_static_framework(
         "RetryPolicy.swift",
         "RetryPolicyMapper.swift",
         "StreamEmitter.swift",
-        "TrailerStatus.swift",
         "UpstreamHttpProtocol.swift",
     ],
     module_name = "Envoy",

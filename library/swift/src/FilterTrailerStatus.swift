@@ -1,5 +1,5 @@
 /// Status returned by filters when transmitting or receiving trailers.
-public enum TrailerStatus<T: Headers> {
+public enum FilterTrailerStatus<T: Headers> {
   /// Continue filter chain iteration, passing the provided trailers through.
   case `continue`(T)
 

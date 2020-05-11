@@ -1,5 +1,5 @@
 /// Status returned by filters when transmitting or receiving headers.
-public enum HeaderStatus<T: Headers> {
+public enum FilterHeaderStatus<T: Headers> {
   /// Continue filter chain iteration, passing the provided headers through.
   case `continue`(T)
 

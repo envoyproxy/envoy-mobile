@@ -17,7 +17,7 @@ public protocol ResponseFilter: Filter {
   ///
   /// - returns: The header status containing headers with which to continue or buffer.
   func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
-    -> HeaderStatus<ResponseHeaders>
+    -> FilterHeaderStatus<ResponseHeaders>
 
   /// Called any number of times whenever body data is received.
   ///
@@ -27,7 +27,7 @@ public protocol ResponseFilter: Filter {
   /// - parameter endStream: Whether this is the last data frame.
   ///
   /// - returns: The data status containing body with which to continue or buffer.
-  func onResponseData(body: Data, endStream: Bool) -> DataStatus
+  func onResponseData(body: Data, endStream: Bool) -> FilterDataStatus
 
   /// Called at most once when the response is closed from the server with trailers.
   ///
@@ -36,7 +36,7 @@ public protocol ResponseFilter: Filter {
   /// - parameter trailers: The outbound trailers.
   ///
   /// - returns: The trailer status containing body with which to continue or buffer.
-  func onResponseTrailers(trailers: ResponseTrailers) -> TrailerStatus<ResponseTrailers>
+  func onResponseTrailers(trailers: ResponseTrailers) -> FilterTrailerStatus<ResponseTrailers>
 
   /// Called at most once when an error within Envoy occurs.
   ///
