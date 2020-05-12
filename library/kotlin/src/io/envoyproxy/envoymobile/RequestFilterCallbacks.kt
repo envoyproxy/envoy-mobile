@@ -1,3 +1,7 @@
+package io.envoyproxy.envoymobile
+
+import java.nio.ByteBuffer
+
 /*
  * Interface for RequestFilters to access FilterManager state.
  */

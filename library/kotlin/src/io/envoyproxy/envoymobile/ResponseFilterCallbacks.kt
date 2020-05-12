@@ -1,7 +1,11 @@
+package io.envoyproxy.envoymobile
+
+import java.nio.ByteBuffer
+
 /*
  * Interface for ResponseFilters to access FilterManager state.
  */
-public protocol ResponseFilterCallbacks {
+interface ResponseFilterCallbacks {
   /**
    * Continue iterating through the filter chain with buffered headers and body data.
    *
@@ -19,7 +23,7 @@ public protocol ResponseFilterCallbacks {
    * @return ByteBuffer?: The currently buffered data as buffered by the filter or previous ones in
    *                      the filter chain. Nil if nothing has been buffered yet.
    */
-  fun responseBuffer() -> Data?
+  fun responseBuffer(): ByteBuffer?
 
   /**
    * Adds response trailers. May only be called in `onHeaders()`/`onData()` when

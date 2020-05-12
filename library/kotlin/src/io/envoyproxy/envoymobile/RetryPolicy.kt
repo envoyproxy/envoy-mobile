@@ -33,10 +33,11 @@ data class RetryPolicy(
    */
   constructor(headers: Headers): this(
       headers.value("x-envoy-max-retries")?.first()!!.toInt(),
-      headers.value("x-envoy-retry-on")?.map { retryOn -> RetryRule.enumValue(retryOn) }.filterNotNull() :? emptyList(),
-      headers.value("x-envoy-retriable-status-codes")?.map { statusCode -> statusCode.toIntOrNull() }.filterNotNull() :? emptyList(),
-      headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.first()?.toIntOrNull(),
-      headers.value("x-envoy-upstream-rq-timeout-ms")?.first()?.toIntOrNull(),
+      // TODO: should we have ? after the map?
+      headers.value("x-envoy-retry-on")?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
+      headers.value("x-envoy-retriable-status-codes")?.map { statusCode -> statusCode.toIntOrNull() }?.filterNotNull() ?: emptyList(),
+      headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.first()?.toLongOrNull(),
+      headers.value("x-envoy-upstream-rq-timeout-ms")?.first()?.toLongOrNull(),
     )
 }
 
@@ -54,7 +55,7 @@ enum class RetryRule {
   RESET;
 
   companion object {
-    fun enumValue(stringRepresentation: String): RetryPolicy? {
+    fun enumValue(stringRepresentation: String): RetryRule? {
       return when (stringRepresentation) {
         "status-5xx" -> STATUS_5XX
         "gateway-error" -> GATEWAY_ERROR

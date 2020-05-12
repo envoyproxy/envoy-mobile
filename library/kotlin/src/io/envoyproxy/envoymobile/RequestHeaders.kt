@@ -1,8 +1,16 @@
 
+package io.envoyproxy.envoymobile
+
 /*
  * Headers representing an outbound request.
  */
 class RequestHeaders: Headers {
+  /**
+   * Internal constructor used by builders.
+   *
+   * @param headers: Headers to set.
+   */
+  internal constructor(headers: Map<String, List<String>>) : super(headers) {}
 
   /**
    * Method for the request.
@@ -33,7 +41,8 @@ class RequestHeaders: Headers {
   /**
    * The protocol version to use for upstream requests.
    */
-  val upstreamHttpProtocol = UpstreamHttpProtocol(value("x-envoy-mobile-upstream-protocol")?.first()!!)
+  val upstreamHttpProtocol =
+    UpstreamHttpProtocol.enumValue(value("x-envoy-mobile-upstream-protocol")?.first()!!)
 
   /**
    * Convert the headers back to a builder for mutation.
@@ -41,6 +50,6 @@ class RequestHeaders: Headers {
    * @return RequestHeadersBuilder, The new builder.
    */
   fun toBuilder(): RequestHeadersBuilder {
-    return RequestHeadersBuilder(this.headers)
+    return RequestHeadersBuilder(this.headers.mapValues { it.value.toMutableList() }.toMutableMap())
   }
 }

@@ -1,9 +1,20 @@
+package io.envoyproxy.envoymobile
+
 /*
  * Base builder class used to construct `Headers` instances.
  * See `{Request|Response}HeadersBuilder` for usage.
  */
-class HeadersBuilder {
+open class HeadersBuilder {
   protected val headers: MutableMap<String, MutableList<String>>
+
+  /**
+   * Instantiate a new builder, only used by child classes.
+   *
+   * @param headers: The headers to start with.
+   */
+  protected constructor(headers: MutableMap<String, MutableList<String>>) {
+    this.headers = headers
+  }
 
   /**
    * Append a value to the header name.
@@ -41,14 +52,5 @@ class HeadersBuilder {
   fun remove(name: String): HeadersBuilder {
     headers.remove(name)
     return this
-  }
-
-  /**
-   * Instantiate a new builder.
-   *
-   * @param headers: The headers to start with.
-   */
-  protected constructor(headers: MutableMap<String, MutableList<String>>) {
-    this.headers = headers
   }
 }

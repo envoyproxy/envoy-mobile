@@ -1,3 +1,7 @@
+package io.envoyproxy.envoymobile
+
+import java.nio.ByteBuffer
+
 /*
  * Filter executed for outbound requests, providing the ability to observe and mutate streams.
  */
@@ -20,7 +24,7 @@ interface RequestFilter: Filter {
    *
    * @return: The header status containing headers with which to continue or buffer.
    */
-  fun onRequestHeaders(headers: RequestHeaders, endStream: Bool): FilterHeaderStatus<RequestHeaders>
+  fun onRequestHeaders(headers: RequestHeaders, endStream: Boolean): FilterHeaderStatus<RequestHeaders>
 
   /**
    * Called any number of times whenever body data is sent.
@@ -32,7 +36,7 @@ interface RequestFilter: Filter {
    *
    * @return: The data status containing body with which to continue or buffer.
    */
-  fun onRequestData(body: ByteBuffer, endStream: Bool): FilterDataStatus
+  fun onRequestData(body: ByteBuffer, endStream: Boolean): FilterDataStatus
 
   /**
    * Called at most once when the request is closed from the client with trailers.
