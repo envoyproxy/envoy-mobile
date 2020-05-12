@@ -10,5 +10,5 @@ class RequestTrailers: Headers {
    *
    * @param trailers: Headers to set.
    */
-  internal constructor(trailers: Map<String, List<String>>) : super(trailers) {}
+  internal constructor(trailers: Map<String, List<String>>) : super(trailers)
 }

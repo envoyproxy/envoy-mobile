@@ -17,7 +17,7 @@ class RequestHeadersBuilder: HeadersBuilder {
                 super(mutableMapOf(":authority" to mutableListOf(authority),
                                    ":method" to mutableListOf(method.stringValue()),
                                    ":path" to mutableListOf(path),
-                                   ":scheme" to mutableListOf()))
+                                   ":scheme" to mutableListOf(scheme)))
 
   /**
    * Instantiate a new builder. Used only by RequestHeaders to convert back to

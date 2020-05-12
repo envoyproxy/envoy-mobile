@@ -34,10 +34,12 @@ data class RetryPolicy(
   constructor(headers: Headers): this(
       headers.value("x-envoy-max-retries")?.first()!!.toInt(),
       // TODO: should we have ? after the map?
-      headers.value("x-envoy-retry-on")?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
-      headers.value("x-envoy-retriable-status-codes")?.map { statusCode -> statusCode.toIntOrNull() }?.filterNotNull() ?: emptyList(),
+      headers.value("x-envoy-retry-on")
+        ?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
+      headers.value("x-envoy-retriable-status-codes")
+        ?.map { statusCode -> statusCode.toIntOrNull() }?.filterNotNull() ?: emptyList(),
       headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.first()?.toLongOrNull(),
-      headers.value("x-envoy-upstream-rq-timeout-ms")?.first()?.toLongOrNull(),
+      headers.value("x-envoy-upstream-rq-timeout-ms")?.first()?.toLongOrNull()
     )
 }
 

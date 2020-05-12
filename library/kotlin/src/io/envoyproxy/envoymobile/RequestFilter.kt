@@ -24,7 +24,8 @@ interface RequestFilter: Filter {
    *
    * @return: The header status containing headers with which to continue or buffer.
    */
-  fun onRequestHeaders(headers: RequestHeaders, endStream: Boolean): FilterHeaderStatus<RequestHeaders>
+  fun onRequestHeaders(headers: RequestHeaders, endStream: Boolean):
+    FilterHeaderStatus<RequestHeaders>
 
   /**
    * Called any number of times whenever body data is sent.

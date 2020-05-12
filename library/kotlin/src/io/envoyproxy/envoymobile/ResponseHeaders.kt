@@ -9,7 +9,7 @@ class ResponseHeaders: Headers {
    *
    * @param headers: Headers to set.
    */
-  internal constructor(headers: Map<String, List<String>>) : super(headers) {}
+  internal constructor(headers: Map<String, List<String>>) : super(headers)
 
   /**
    * HTTP status code received with the response.

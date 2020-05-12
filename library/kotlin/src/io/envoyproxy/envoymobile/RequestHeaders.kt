@@ -10,7 +10,7 @@ class RequestHeaders: Headers {
    *
    * @param headers: Headers to set.
    */
-  internal constructor(headers: Map<String, List<String>>) : super(headers) {}
+  internal constructor(headers: Map<String, List<String>>) : super(headers)
 
   /**
    * Method for the request.

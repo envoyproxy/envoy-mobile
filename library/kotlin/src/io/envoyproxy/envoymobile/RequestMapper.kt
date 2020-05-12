@@ -19,16 +19,3 @@ internal fun Request.outboundHeaders(): Map<String, List<String>> {
 
   return result
 }
-
-internal fun RequestMethod.stringValue(): String {
-  return when (this) {
-    RequestMethod.DELETE -> "DELETE"
-    RequestMethod.GET -> "GET"
-    RequestMethod.HEAD -> "HEAD"
-    RequestMethod.OPTIONS -> "OPTIONS"
-    RequestMethod.PATCH -> "PATCH"
-    RequestMethod.POST -> "POST"
-    RequestMethod.PUT -> "PUT"
-    RequestMethod.TRACE -> "TRACE"
-  }
-}
