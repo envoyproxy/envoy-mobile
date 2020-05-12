@@ -30,6 +30,7 @@ internal fun RetryPolicy.outboundHeaders(): Map<String, List<String>> {
  *
  * @return The string representation of the retry rule
  */
+ //TODO: change to enum pattern in UpstreamHttpProtocol
 private fun RetryRule.stringValue(): String {
   return when (this) {
     RetryRule.STATUS_5XX -> "5xx"

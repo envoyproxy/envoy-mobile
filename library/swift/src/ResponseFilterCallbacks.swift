@@ -1,5 +1,6 @@
 import Foundation
 
+/// Interface for RequestFilters to access FilterManager state.
 public protocol ResponseFilterCallbacks {
   /// Continue iterating through the filter chain with buffered headers and body data.
   ///
@@ -20,5 +21,5 @@ public protocol ResponseFilterCallbacks {
   /// `endStream = true` in order to guarantee that the client will not send its own trailers.
   ///
   /// - parameter trailers: The trailers to add and pass to subsequent filters.
-  func addResponseTrailers() -> ResponseHeaders
+  func addResponseTrailers(_ trailers: ResponseTrailers)
 }

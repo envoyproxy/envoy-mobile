@@ -20,7 +20,7 @@ internal fun Request.outboundHeaders(): Map<String, List<String>> {
   return result
 }
 
-private fun RequestMethod.stringValue(): String {
+internal fun RequestMethod.stringValue(): String {
   return when (this) {
     RequestMethod.DELETE -> "DELETE"
     RequestMethod.GET -> "GET"

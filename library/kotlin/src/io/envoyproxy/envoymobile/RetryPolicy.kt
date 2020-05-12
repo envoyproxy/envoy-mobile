@@ -25,6 +25,19 @@ data class RetryPolicy(
       throw IllegalArgumentException("Per-retry timeout cannot be less than total timeout")
     }
   }
+
+  /**
+   * Initialize the retry policy from a set of headers.
+   *
+   * @param headers: The headers with which to initialize the retry policy.
+   */
+  constructor(headers: Headers): this(
+      headers.value("x-envoy-max-retries")?.first()!!.toInt(),
+      headers.value("x-envoy-retry-on")?.map { retryOn -> RetryRule.enumValue(retryOn) }.filterNotNull() :? emptyList(),
+      headers.value("x-envoy-retriable-status-codes")?.map { statusCode -> statusCode.toIntOrNull() }.filterNotNull() :? emptyList(),
+      headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.first()?.toIntOrNull(),
+      headers.value("x-envoy-upstream-rq-timeout-ms")?.first()?.toIntOrNull(),
+    )
 }
 
 /**
@@ -38,5 +51,20 @@ enum class RetryRule {
   REFUSED_STREAM,
   RETRIABLE_4XX,
   RETRIABLE_HEADERS,
-  RESET,
+  RESET;
+
+  companion object {
+    fun enumValue(stringRepresentation: String): RetryPolicy? {
+      return when (stringRepresentation) {
+        "status-5xx" -> STATUS_5XX
+        "gateway-error" -> GATEWAY_ERROR
+        "connect-failure" -> CONNECT_FAILURE
+        "refused-stream" -> REFUSED_STREAM
+        "retriable-4xx" -> RETRIABLE_4XX
+        "retriable-headers" -> RETRIABLE_HEADERS
+        "reset" -> RESET
+        else -> null
+      }
+    }
+  }
 }
