@@ -8,7 +8,7 @@ internal fun Request.outboundHeaders(): Map<String, List<String>> {
     !entry.key.startsWith(":") && !entry.key.startsWith("x-envoy-mobile")
   })
   result.putAll(retryPolicyHeaders)
-  result[":method"] = listOf(method.stringValue())
+  result[":method"] = listOf(method.stringValue)
   result[":scheme"] = listOf(scheme)
   result[":authority"] = listOf(authority)
   result[":path"] = listOf(path)

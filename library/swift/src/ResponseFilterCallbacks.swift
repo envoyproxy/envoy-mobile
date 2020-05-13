@@ -1,6 +1,5 @@
 import Foundation
 
-/// Interface for RequestFilters to access FilterManager state.
 public protocol ResponseFilterCallbacks {
   /// Continue iterating through the filter chain with buffered headers and body data.
   ///

@@ -2,9 +2,6 @@ package io.envoyproxy.envoymobile
 
 import java.nio.ByteBuffer
 
-/*
- * Interface for RequestFilters to access FilterManager state.
- */
 interface RequestFilterCallbacks {
   /**
    * Continue iterating through the filter chain with buffered headers and body data.

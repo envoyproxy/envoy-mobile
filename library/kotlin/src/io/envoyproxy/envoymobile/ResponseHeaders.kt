@@ -14,5 +14,5 @@ class ResponseHeaders: Headers {
   /**
    * HTTP status code received with the response.
    */
-  val httpStatus = value(":status")?.first()?.toInt()
+  val httpStatus = value(":status")?.first()?.toIntOrNull()
 }

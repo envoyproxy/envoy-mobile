@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
 /*
- * Builder used for constructing instances of `RequestHeaders` types.
+ * Builder used for constructing instances of RequestHeaders`.
  */
 class RequestHeadersBuilder: HeadersBuilder {
   /**
@@ -15,7 +15,7 @@ class RequestHeadersBuilder: HeadersBuilder {
   constructor(method: RequestMethod, scheme: String = "https",
               authority: String, path: String) :
                 super(mutableMapOf(":authority" to mutableListOf(authority),
-                                   ":method" to mutableListOf(method.stringValue()),
+                                   ":method" to mutableListOf(method.stringValue),
                                    ":path" to mutableListOf(path),
                                    ":scheme" to mutableListOf(scheme)))
 

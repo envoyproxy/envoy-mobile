@@ -1,30 +1,19 @@
 package io.envoyproxy.envoymobile
+
 import java.lang.IllegalArgumentException
+
 /**
  * Represents an HTTP request method.
  */
-enum class RequestMethod {
-  DELETE,
-  GET,
-  HEAD,
-  OPTIONS,
-  PATCH,
-  POST,
-  PUT,
-  TRACE;
-
-  fun stringValue(): String {
-    return when (this) {
-      RequestMethod.DELETE -> "DELETE"
-      RequestMethod.GET -> "GET"
-      RequestMethod.HEAD -> "HEAD"
-      RequestMethod.OPTIONS -> "OPTIONS"
-      RequestMethod.PATCH -> "PATCH"
-      RequestMethod.POST -> "POST"
-      RequestMethod.PUT -> "PUT"
-      RequestMethod.TRACE -> "TRACE"
-    }
-  }
+enum class RequestMethod(internal val stringValue: String) {
+  DELETE("DELETE"),
+  GET("GET"),
+  HEAD("HEAD"),
+  OPTIONS("OPTIONS"),
+  PATCH("PATCH"),
+  POST("POST"),
+  PUT("PUT"),
+  TRACE("TRACE");
 
   companion object {
     fun enumValue(stringRepresentation: String): RequestMethod {

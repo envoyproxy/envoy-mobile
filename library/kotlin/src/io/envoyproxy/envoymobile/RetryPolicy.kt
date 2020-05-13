@@ -38,8 +38,8 @@ data class RetryPolicy(
         ?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
       headers.value("x-envoy-retriable-status-codes")
         ?.map { statusCode -> statusCode.toIntOrNull() }?.filterNotNull() ?: emptyList(),
-      headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.first()?.toLongOrNull(),
-      headers.value("x-envoy-upstream-rq-timeout-ms")?.first()?.toLongOrNull()
+      headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.firstOrNull()?.toLongOrNull(),
+      headers.value("x-envoy-upstream-rq-timeout-ms")?.firstOrNull()?.toLongOrNull()
     )
 }
 
@@ -47,14 +47,14 @@ data class RetryPolicy(
  * Rules that may be used with `RetryPolicy`.
  * See the `x-envoy-retry-on` Envoy header for documentation.
  */
-enum class RetryRule {
-  STATUS_5XX,
-  GATEWAY_ERROR,
-  CONNECT_FAILURE,
-  REFUSED_STREAM,
-  RETRIABLE_4XX,
-  RETRIABLE_HEADERS,
-  RESET;
+enum class RetryRule(internal val stringValue: String) {
+  STATUS_5XX("5xx"),
+  GATEWAY_ERROR("gateway-error"),
+  CONNECT_FAILURE("connect-failure"),
+  REFUSED_STREAM("refused-stream"),
+  RETRIABLE_4XX("retriable-4xx"),
+  RETRIABLE_HEADERS("retriable-headers"),
+  RESET("reset");
 
   companion object {
     fun enumValue(stringRepresentation: String): RetryRule? {

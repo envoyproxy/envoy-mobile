@@ -35,14 +35,13 @@ class RequestHeaders: Headers {
   /**
    * Retry policy to use for this request.
    */
-  // TODO: retry policy mapper
   val retryPolicy = RetryPolicy(this)
 
   /**
    * The protocol version to use for upstream requests.
    */
   val upstreamHttpProtocol =
-    UpstreamHttpProtocol.enumValue(value("x-envoy-mobile-upstream-protocol")?.first()!!)
+    value("x-envoy-mobile-upstream-protocol")?.firstOrNull()?.let { UpstreamHttpProtocol.enumValue(it) }
 
   /**
    * Convert the headers back to a builder for mutation.
