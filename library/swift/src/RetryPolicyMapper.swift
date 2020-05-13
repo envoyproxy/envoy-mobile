@@ -38,7 +38,6 @@ extension RetryPolicy {
       retryOn: headers.value(forName: "x-envoy-retry-on")?.compactMap(RetryRule.init) ?? [],
       retryStatusCodes: headers.value(forName: "x-envoy-retriable-status-codes")?
         .compactMap(UInt.init) ?? [],
-      // TODO: is the flatmap to apply the constructor even if there is only one value?
       perRetryTimeoutMS: headers.value(forName: "x-envoy-upstream-rq-per-try-timeout-ms")?
         .first.flatMap(UInt.init),
       totalUpstreamTimeoutMS: headers.value(forName: "x-envoy-upstream-rq-timeout-ms")?
