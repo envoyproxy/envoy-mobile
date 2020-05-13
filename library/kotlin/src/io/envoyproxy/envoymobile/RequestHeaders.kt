@@ -15,33 +15,34 @@ class RequestHeaders: Headers {
   /**
    * Method for the request.
    */
-  val method = RequestMethod.enumValue(value(":method")?.first()!!)
+  val method: RequestMethod by lazy { RequestMethod.enumValue(value(":method")?.first()!!) }
 
   /**
    * The URL scheme for the request (i.e., "https").
    */
-  val scheme = value(":scheme")?.first()!!
+  val scheme: String by lazy { value(":scheme")?.first()!! }
 
   /**
    * The URL authority for the request (i.e., "api.foo.com").
    */
-  val authority = value(":authority")?.first()!!
+  val authority: String by lazy { value(":authority")?.first()!! }
 
   /**
    * The URL path for the request (i.e., "/foo").
    */
-  val path = value(":path")?.first()!!
+  val path: String by lazy { value(":path")?.first()!! }
 
   /**
    * Retry policy to use for this request.
    */
-  val retryPolicy = RetryPolicy(this)
+  val retryPolicy: RetryPolicy by lazy { RetryPolicy(this) }
 
   /**
    * The protocol version to use for upstream requests.
    */
-  val upstreamHttpProtocol =
-    value("x-envoy-mobile-upstream-protocol")?.firstOrNull()?.let { UpstreamHttpProtocol.enumValue(it) }
+  val upstreamHttpProtocol: UpstreamHttpProtocol? by lazy {
+    value("x-envoy-mobile-upstream-protocol")?.firstOrNull()
+      ?.let { UpstreamHttpProtocol.enumValue(it) } }
 
   /**
    * Convert the headers back to a builder for mutation.
