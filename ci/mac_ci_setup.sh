@@ -2,8 +2,7 @@
 
 set -e
 
-# Uninstall bazel so bazelisk has to be used
-brew uninstall --force bazel
+brew unlink bazelbuild/tap/bazelisk || true
 
 # Leverage Envoy upstream's setup scripts to avoid repeating here.
 ./envoy/ci/mac_ci_setup.sh
