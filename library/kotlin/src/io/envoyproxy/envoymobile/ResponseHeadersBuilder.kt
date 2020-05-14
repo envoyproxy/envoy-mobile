@@ -14,7 +14,7 @@ class ResponseHeadersBuilder: HeadersBuilder {
    * Instantiate a new builder. Used only by ResponseHeaders to convert back to
    * ResponseHeadersBuilder.
    *
-   * @param headers: The trailers to start with.
+   * @param headers: The headers to start with.
    */
   internal constructor(headers: MutableMap<String, MutableList<String>>) : super(headers)
 
