@@ -48,5 +48,5 @@ interface RequestFilter: Filter {
    *
    * @return: The trailer status containing body with which to continue or buffer.
    */
-  fun onRequestTrailers(trailers: RequestTrailers): FilterTrailerStatus<RequestHeaders>
+  fun onRequestTrailers(trailers: RequestTrailers): FilterTrailerStatus<RequestTrailers>
 }

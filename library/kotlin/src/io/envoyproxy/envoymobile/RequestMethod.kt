@@ -16,7 +16,7 @@ enum class RequestMethod(internal val stringValue: String) {
   TRACE("TRACE");
 
   companion object {
-    fun enumValue(stringRepresentation: String): RequestMethod {
+    internal fun enumValue(stringRepresentation: String): RequestMethod {
       return when (stringRepresentation) {
         "DELETE" -> RequestMethod.DELETE
         "GET" -> RequestMethod.GET

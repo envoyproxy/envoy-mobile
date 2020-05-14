@@ -8,7 +8,7 @@ class ResponseTrailers: Headers {
   /**
    * Internal constructor used by builders.
    *
-   * @param trailers: Headers to set.
+   * @param trailers: Trailers to set.
    */
   internal constructor(trailers: Map<String, List<String>>) : super(trailers)
 }

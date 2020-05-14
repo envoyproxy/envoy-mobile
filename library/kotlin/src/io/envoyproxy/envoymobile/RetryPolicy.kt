@@ -57,7 +57,7 @@ enum class RetryRule(internal val stringValue: String) {
   RESET("reset");
 
   companion object {
-    fun enumValue(stringRepresentation: String): RetryRule? {
+    internal fun enumValue(stringRepresentation: String): RetryRule? {
       return when (stringRepresentation) {
         "status-5xx" -> STATUS_5XX
         "gateway-error" -> GATEWAY_ERROR
@@ -66,7 +66,10 @@ enum class RetryRule(internal val stringValue: String) {
         "retriable-4xx" -> RETRIABLE_4XX
         "retriable-headers" -> RETRIABLE_HEADERS
         "reset" -> RESET
-        else -> null
+        // This is mapped to null because this string value is added to headers automatically
+        // in RetryPolicy.outboundHeaders()
+        "retriable-status-codes" -> null
+        else -> throw IllegalArgumentException("Unable to find value for $stringRepresentation")
       }
     }
   }
