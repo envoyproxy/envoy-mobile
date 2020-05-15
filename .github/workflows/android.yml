@@ -21,8 +21,9 @@ jobs:
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
       - run: |
-          export ADB_INSTALL_DEFAULT_INCREMENTAL=false
-          bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+          bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+          adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
+          adb shell monkey -p io.envoyproxy.envoymobile.helloenvoykotlin -c android.intent.category.LAUNCHER 1
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
