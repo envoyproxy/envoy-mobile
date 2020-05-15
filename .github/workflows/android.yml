@@ -17,10 +17,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/download-artifact@v1
-        with:
-          name: envoy.aar
-          path: dist/
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
@@ -38,10 +34,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/download-artifact@v1
-        with:
-          name: envoy.aar
-          path: dist/
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
