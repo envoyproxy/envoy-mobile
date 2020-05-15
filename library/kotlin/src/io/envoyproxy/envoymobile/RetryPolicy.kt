@@ -26,21 +26,26 @@ data class RetryPolicy(
     }
   }
 
-  /**
-   * Initialize the retry policy from a set of headers.
-   *
-   * @param headers: The headers with which to initialize the retry policy.
-   */
-  constructor(headers: Headers): this(
-      headers.value("x-envoy-max-retries")?.first()!!.toInt(),
-      // TODO: should we have ? after the map?
-      headers.value("x-envoy-retry-on")
-        ?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
-      headers.value("x-envoy-retriable-status-codes")
-        ?.map { statusCode -> statusCode.toIntOrNull() }?.filterNotNull() ?: emptyList(),
-      headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.firstOrNull()?.toLongOrNull(),
-      headers.value("x-envoy-upstream-rq-timeout-ms")?.firstOrNull()?.toLongOrNull()
-    )
+  companion object {
+    /**
+     * Initialize the retry policy from a set of headers.
+     *
+     * @param headers: The headers with which to initialize the retry policy.
+     */
+    internal fun from(headers: RequestHeaders): RetryPolicy? {
+      val maxRetries = headers.value("x-envoy-max-retries")?.first()?.toIntOrNull() ?: return null
+
+      return RetryPolicy(maxRetries,
+        // TODO: should we have ? after the map?
+        headers.value("x-envoy-retry-on")
+          ?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
+        headers.value("x-envoy-retriable-status-codes")
+          ?.map { statusCode -> statusCode.toIntOrNull() }?.filterNotNull() ?: emptyList(),
+        headers.value("x-envoy-upstream-rq-per-try-timeout-ms")?.firstOrNull()?.toLongOrNull(),
+        headers.value("x-envoy-upstream-rq-timeout-ms")?.firstOrNull()?.toLongOrNull()
+      )
+    }
+  }
 }
 
 /**

@@ -35,7 +35,7 @@ class RequestHeaders: Headers {
   /**
    * Retry policy to use for this request.
    */
-  val retryPolicy: RetryPolicy by lazy { RetryPolicy(this) }
+  val retryPolicy: RetryPolicy? by lazy { RetryPolicy.from(this) }
 
   /**
    * The protocol version to use for upstream requests.
