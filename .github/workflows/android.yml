@@ -33,25 +33,8 @@ jobs:
         run: |
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
           bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
-  macdist:
-    name: mac_dist
-    runs-on: macOS-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - run: ./ci/mac_ci_setup.sh
-        name: 'Install dependencies'
-      - name: 'Build envoy.aar distributable'
-        run: bazel build --fat_apk_cpu=x86 //:android_dist
-      - uses: actions/upload-artifact@v1
-        with:
-          name: envoy.aar
-          path: dist/envoy.aar
   macjava:
     name: mac_java_helloworld
-    needs: macdist
     runs-on: macOS-latest
     timeout-minutes: 45
     steps:
@@ -67,13 +50,12 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: bazel mobile-install --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+      - run: ./bzldev mobile-install --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
   mackotlin:
     name: mac_kotlin_helloworld
-    needs: macdist
     runs-on: macOS-latest
     timeout-minutes: 45
     steps:
@@ -89,7 +71,7 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: bazel mobile-install --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+      - run: ./bzldev mobile-install --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
         name: 'Start kotlin app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
