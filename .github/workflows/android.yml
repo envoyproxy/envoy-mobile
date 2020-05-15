@@ -20,7 +20,9 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: bazel mobile-install --adb_arg=--no-incremental --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+      - run: |
+          export ADB_INSTALL_DEFAULT_INCREMENTAL=false
+          bazel mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
