@@ -26,7 +26,7 @@ enum class RequestMethod(internal val stringValue: String) {
         "POST" -> RequestMethod.POST
         "PUT" -> RequestMethod.PUT
         "TRACE" -> RequestMethod.TRACE
-        else -> throw IllegalArgumentException("Unable to find value for $stringRepresentation")
+        else -> throw IllegalArgumentException("invalid value $stringRepresentation")
       }
     }
   }

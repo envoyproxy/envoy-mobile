@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import java.lang.IllegalArgumentException
+
 /**
  * Available upstream HTTP protocols.
  */
@@ -12,7 +14,7 @@ enum class UpstreamHttpProtocol(internal val stringValue: String) {
       return when (stringRepresentation) {
         "http1" -> UpstreamHttpProtocol.HTTP1
         "http2" -> UpstreamHttpProtocol.HTTP2
-        else -> throw IllegalArgumentException("Unable to find value for $stringRepresentation")
+        else -> throw IllegalArgumentException("invalid value $stringRepresentation")
       }
     }
   }

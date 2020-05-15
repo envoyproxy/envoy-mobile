@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import java.lang.IllegalArgumentException
+
 /**
  * Specifies how a request may be retried, containing one or more rules.
  *
@@ -74,7 +76,7 @@ enum class RetryRule(internal val stringValue: String) {
         // This is mapped to null because this string value is added to headers automatically
         // in RetryPolicy.outboundHeaders()
         "retriable-status-codes" -> null
-        else -> throw IllegalArgumentException("Unable to find value for $stringRepresentation")
+        else -> throw IllegalArgumentException("invalid value $stringRepresentation")
       }
     }
   }
