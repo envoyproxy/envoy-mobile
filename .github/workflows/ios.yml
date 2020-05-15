@@ -18,7 +18,7 @@ jobs:
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Build Envoy.framework distributable'
-        run: bazel build --config=ios //:ios_dist
+        run: bazelisk build --config=ios //:ios_dist
       - name: 'Zip Envoy.framework.zip distributable'
         run: zip -r dist/Envoy.framework.zip dist/Envoy.framework
       - run: ls -lh dist/
@@ -44,10 +44,10 @@ jobs:
       - run: unzip dist/Envoy.framework.zip
       - run: ls -lh dist/
       - name: 'Build swift app'
-        run: bazel build --config=ios //examples/swift/hello_world:app
+        run: bazelisk build --config=ios //examples/swift/hello_world:app
       # Run the app in the background and redirect logs.
       - name: 'Run swift app'
-        run: bazel run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
+        run: bazelisk run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
       # Wait for the app to start and get some requests/responses.
       - name: 'Sleep'
         run: sleep 120
@@ -76,10 +76,10 @@ jobs:
       - run: unzip dist/Envoy.framework.zip
       - run: ls -lh dist/
       - name: 'Build objective-c app'
-        run: bazel build --config=ios //examples/objective-c/hello_world:app
+        run: bazelisk build --config=ios //examples/objective-c/hello_world:app
       # Run the app in the background and redirect logs.
       - name: 'Run objective-c app'
-        run: bazel run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
+        run: bazelisk run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
       # Wait for the app to start and get some requests/responses.
       - name: 'Sleep'
         run: sleep 120
@@ -101,4 +101,4 @@ jobs:
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Run swift library tests'
-        run: bazel test --test_output=all --config=ios --build_tests_only //library/swift/test/...
+        run: bazelisk test --test_output=all --config=ios --build_tests_only //library/swift/test/...

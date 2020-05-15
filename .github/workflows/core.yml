@@ -18,7 +18,7 @@ jobs:
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Run tests'
-        run: bazel test --test_output=all //test/...
+        run: bazelisk test --test_output=all //test/...
   tsan:
     name: tsan
     runs-on: ubuntu-18.04
