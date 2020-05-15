@@ -20,7 +20,7 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: ./bzldev mobile-install --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+      - run: ./bzldev mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
@@ -37,7 +37,7 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: ./bzldev mobile-install --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+      - run: ./bzldev mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
         name: 'Start kotlin app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
