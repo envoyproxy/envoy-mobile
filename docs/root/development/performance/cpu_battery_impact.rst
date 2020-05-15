@@ -84,9 +84,6 @@ Modified versions of the "hello world" example apps were used to run these exper
 - :tree:`Android control app <8636711/examples/kotlin/control>`
 - :tree:`Android Envoy app <8636711/examples/kotlin/hello_world>`
 
-We're currently using ``HttpURLConnection`` to communicate and send requests to Envoy. Envoy in it's current state is run as
-a process listening to traffic sent over this connection.
-
 Getting the build:
 
 1. Build the library using ``bazel build android_dist --config=android --fat_apk_cpu=armeabi-v7a``
