@@ -36,19 +36,19 @@ Control:
 Android
 -------
 
-Valid through SHA :tree:`8636711 <8636711>`.
+Valid through SHA :tree:`v0.3.0.05122020 <v0.3.0.05122020>`.
 
 Envoy:
 
-- Avg CPU: 33.16075949%
-- Avg memory: 2.765822785%
-- Battery: 0.17%/min
+- Avg CPU: ~5.16%
+- Avg memory: 109MB
+- Battery: 0.2%/min
 
 Control:
 
-- Avg CPU: 28.81012658%
-- Avg memory: 2.169620253%
-- Battery: 0.18%/min
+- Avg CPU: ~2.94%
+- Avg memory: 52MB
+- Battery: 0.23%/min
 
 **Based on these results, control and Envoy are relatively similar.**
 
