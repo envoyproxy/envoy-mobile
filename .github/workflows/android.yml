@@ -22,7 +22,7 @@ jobs:
         run: ./ci/mac_start_emulator.sh
       - run: |
           bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
-          adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
+          adb install -r --no-incremental bazel-out/examples/java/hello_world/hello_envoy.apk
           adb shell shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin.MainActivity
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
@@ -40,7 +40,9 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: ADB_INSTALL_DEFAULT_INCREMENTAL=false ./bzldev mobile-install --fat_apk_cpu=x86 --resource_apk=bazel-bin/examples/java/hello_world/hello_envoy.apk --start_app //examples/kotlin/hello_world:hello_envoy_kt
+      - run:
+        env: ./bzldev mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
+          ADB_INSTALL_DEFAULT_INCREMENTAL: false
         name: 'Start kotlin app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
