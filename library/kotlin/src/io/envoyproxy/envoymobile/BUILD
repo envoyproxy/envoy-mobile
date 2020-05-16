@@ -52,8 +52,6 @@ envoy_mobile_kt_library(
         "Headers.kt",
         "HeadersBuilder.kt",
         "HTTPClient.kt",
-        "Headers.kt",
-        "HeadersBuilder.kt",
         "LogLevel.kt",
         "Request.kt",
         "RequestBuilder.kt",
