@@ -6,6 +6,9 @@ on:
       - master
   pull_request:
 
+env:
+  ADB_INSTALL_DEFAULT_INCREMENTAL: false
+
 jobs:
   macjava:
     name: mac_java_helloworld
