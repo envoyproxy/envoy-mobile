@@ -26,7 +26,7 @@ jobs:
       - run: |
           bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
           adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
-          adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin.MainActivity
+          adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
@@ -43,7 +43,10 @@ jobs:
       - run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
-      - run: ./bzldev mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
+      - run: |
+          bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+          adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
+          adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin/.MainActivity
         name: 'Start kotlin appp'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
