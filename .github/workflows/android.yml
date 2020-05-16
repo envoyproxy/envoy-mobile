@@ -25,7 +25,7 @@ jobs:
         run: ./ci/mac_start_emulator.sh
       - run: |
           bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
-          adb install -r --no-incremental bazel-out/examples/java/hello_world/hello_envoy.apk
+          adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
           adb shell shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin.MainActivity
         name: 'Start java app'
       - run: 'adb logcat -e "successful response" -m 1'
