@@ -41,8 +41,6 @@ jobs:
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
       - run: ./bzldev mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
-        env:
-          ADB_INSTALL_DEFAULT_INCREMENTAL: false
         name: 'Start kotlin appp'
       - run: 'adb logcat -e "successful response" -m 1'
         name: 'Check liveliness'
