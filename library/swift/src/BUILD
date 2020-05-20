@@ -4,7 +4,7 @@ licenses(["notice"])  # Apache 2
 
 swift_static_framework(
     name = "ios_framework",
-    srcs = [
+    srcs = glob([
         "Data+Extension.swift",
         "EnvoyClient.swift",
         "EnvoyClientBuilder.swift",
@@ -34,7 +34,7 @@ swift_static_framework(
         "UpstreamHttpProtocol.swift",
         "filters/*.swift",
         "grpc/*.swift",
-    ],
+    ]),
     module_name = "Envoy",
     objc_includes = [
         "//library/objective-c:EnvoyEngine.h",

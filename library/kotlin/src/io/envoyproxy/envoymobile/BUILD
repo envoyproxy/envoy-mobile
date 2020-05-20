@@ -35,7 +35,7 @@ kt_android_library(
 
 envoy_mobile_kt_library(
     name = "envoy_interfaces_lib",
-    srcs = [
+    srcs = glob([
         "Envoy.kt",
         "EnvoyClientBuilder.kt",
         "EnvoyError.kt",
@@ -63,7 +63,7 @@ envoy_mobile_kt_library(
         "UpstreamHttpProtocol.kt",
         "filters/*.kt",
         "grpc/*.kt",
-    ],
+    ]),
     visibility = ["//visibility:public"],
     deps = [
         "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
