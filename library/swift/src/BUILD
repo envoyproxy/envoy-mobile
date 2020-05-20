@@ -10,8 +10,6 @@ swift_static_framework(
         "EnvoyClientBuilder.swift",
         "EnvoyError.swift",
         "EnvoyStreamEmitter.swift",
-        "filters/*.swift",
-        "grpc/*.swift",
         "HTTPClient.swift",
         "Headers.swift",
         "HeadersBuilder.swift",
@@ -34,6 +32,8 @@ swift_static_framework(
         "RetryPolicyMapper.swift",
         "StreamEmitter.swift",
         "UpstreamHttpProtocol.swift",
+        "filters/*.swift",
+        "grpc/*.swift",
     ],
     module_name = "Envoy",
     objc_includes = [
