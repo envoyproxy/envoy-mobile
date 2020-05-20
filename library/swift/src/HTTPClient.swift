@@ -5,11 +5,11 @@ import Foundation
 public protocol HTTPClient {
   /// Start a new stream.
   ///
-  /// - parameter request: The request headers for opening a stream.
-  /// - parameter handler: Handler for receiving stream events.
+  /// - parameter headers: The request headers for opening a stream.
+  /// - parameter queue:   Queue on which to receive callback events.
   ///
-  /// - returns: Emitter for sending streaming data outward.
-  func start(_ request: Request, handler: ResponseHandler) -> StreamEmitter
+  /// - returns: Stream for sending and receiving data.
+  func start(_ headers: RequestHeaders, queue: DispatchQueue) -> Stream
 
   /// Send a unary (non-streamed) request.
   ///
@@ -17,14 +17,14 @@ public protocol HTTPClient {
   /// Close with data:         Pass a body and nil trailers.
   /// Close with trailers:     Pass non-nil trailers.
   ///
-  /// - parameter request:  The request headers to send.
+  /// - parameter headers:  The request headers to send.
   /// - parameter body:     Data to send as the body.
   /// - parameter trailers: Trailers to send with the request.
-  /// - parameter handler:  Handler for receiving response events.
+  /// - parameter queue:    Queue on which to receive callback events.
   ///
   /// - returns: A cancelable request.
   @discardableResult
-  func send(_ request: Request, body: Data?,
-            trailers: [String: [String]]?, handler: ResponseHandler)
-    -> CancelableStream
+  func send(_ headers: RequestHeaders, body: Data?, trailers: RequestTrailers?,
+            queue: DispatchQueue) -> Stream
+  // TODO: Should this have a reduced interface that doesn't allow for sending more data?
 }
