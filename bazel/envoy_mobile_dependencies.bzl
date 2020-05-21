@@ -11,7 +11,6 @@ def envoy_mobile_dependencies():
     _swift_dependencies()
     _kotlin_dependencies()
 
-
 def _envoy_overrides():
     # Patch protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617
     # More details: https://github.com/protocolbuffers/protobuf/issues/7046
@@ -54,7 +53,6 @@ def _envoy_overrides():
         urls = ["https://github.com/google/boringssl/archive/37b57ed537987f1b4c60c60fa1aba20f3a0f6d26.tar.gz"],
     )
 
-
 def _swift_dependencies():
     http_file(
         name = "xctestrunner",
@@ -83,7 +81,6 @@ def _swift_dependencies():
         strip_prefix = "apple_support-e16463ef91ed77622c17441f9569bda139d45b18",
         urls = ["https://github.com/bazelbuild/apple_support/archive/e16463ef91ed77622c17441f9569bda139d45b18.tar.gz"],
     )
-
 
 def _kotlin_dependencies():
     http_archive(

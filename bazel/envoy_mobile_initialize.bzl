@@ -13,13 +13,10 @@ def envoy_mobile_initialize():
     _swift_ios_dependencies()
     _kotlin_android_dependencies()
 
-
 def _swift_ios_dependencies():
-
     apple_support_dependencies()
     apple_rules_dependencies(ignore_version_differences = True)
     swift_rules_dependencies()
-
 
 def _kotlin_android_dependencies():
     maven_install(
