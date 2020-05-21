@@ -14,4 +14,4 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
 }
 
-}
+} // namespace Envoy
