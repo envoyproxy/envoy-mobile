@@ -14,7 +14,7 @@ envoy_cc_library(
         "engine.h",
         "main_interface.cc",
     ],
-    hdrs = ["main_interface.h"],
+    hdrs = ["main_interface.h", "jni_support.h"],
     repository = "@envoy",
     deps = [
         ":envoy_mobile_main_common_lib",
@@ -43,6 +43,7 @@ envoy_cc_library(
 cc_binary(
     name = "libenvoy_jni.so",
     srcs = [
+        "android_support.cc",
         "jni_interface.cc",
     ],
     copts = ["-std=c++17"],
@@ -52,5 +53,25 @@ cc_binary(
         "-Wl,-s",
     ],
     linkshared = True,
+    deps = [":envoy_main_interface_lib"],
+)
+
+cc_binary(
+    name = "java_libenvoy_jni.so",
+    srcs = [
+        "java_support.cc",
+        "jni_interface.cc",
+    ],
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+    ],
+    toolchains = ["@bazel_tools//tools/jdk:current_java_runtime",],
+    linkshared = True,
+    includes = [
+        "../../external/local_jdk/include",
+        "../../external/local_jdk/include/darwin",
+        "../../external/local_jdk/include/linux",
+    ],
     deps = [":envoy_main_interface_lib"],
 )
