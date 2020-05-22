@@ -1,9 +1,9 @@
-#include <android/log.h>
 #include <ares.h>
 #include <jni.h>
 
 #include <string>
 
+#include "jni_support.h"
 #include "main_interface.h"
 
 static JavaVM* static_jvm = nullptr;
@@ -31,7 +31,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 }
 
 static void jvm_on_exit() {
-  __android_log_write(ANDROID_LOG_INFO, "[Envoy]", "library is exiting");
+  jni_log( "[Envoy]", "library is exiting");
   // Note that this is not dispatched because the thread that
   // needs to be detached is the engine thread.
   // This function is called from the context of the engine's
@@ -60,20 +60,14 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
-  // See note above about c-ares.
-  // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
-  // More information can be found at:
-  // https://c-ares.haxx.se/ares_library_init_android.html
-  ares_library_init_jvm(static_jvm);
-
-  return ares_library_init_android(connectivity_manager);
+  return platform_setup(static_jvm, connectivity_manager);
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIEnv* env,
                                                                             jclass, // class
                                                                             jint network) {
-  __android_log_write(ANDROID_LOG_INFO, "[Envoy]", "setting preferred network");
+  jni_log("[Envoy]", "setting preferred network");
   return set_preferred_network(static_cast<envoy_network_t>(network));
 }
 
@@ -81,7 +75,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_flushStats(JNIEnv* env,
                                                                    jclass // class
 ) {
-  __android_log_write(ANDROID_LOG_INFO, "[Envoy]", "triggering stats flush");
+  jni_log("[Envoy]", "triggering stats flush");
   flush_stats();
 }
 
@@ -133,12 +127,13 @@ static JNIEnv* get_env() {
   JNIEnv* env = nullptr;
   int get_env_res = static_jvm->GetEnv((void**)&env, JNI_VERSION);
   if (get_env_res == JNI_EDETACHED) {
-    __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "environment is JNI_EDETACHED");
+    jni_log("[Envoy]", "environment is JNI_EDETACHED");
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
     // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
     // engine's std::thread, and that we detach it successfully.
-    static_jvm->AttachCurrentThread(&env, nullptr);
-    static_jvm->GetEnv((void**)&env, JNI_VERSION);
+    void** v = (void**)&env;
+    static_jvm->AttachCurrentThread(v, nullptr);
+    static_jvm->GetEnv(v, JNI_VERSION);
   }
   return env;
 }
@@ -159,7 +154,7 @@ static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context
 }
 
 static void jvm_on_data(envoy_data data, bool end_stream, void* context) {
-  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_data");
+  jni_log("[Envoy]", "jvm_on_data");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
@@ -183,12 +178,12 @@ static void jvm_on_data(envoy_data data, bool end_stream, void* context) {
 }
 
 static void jvm_on_metadata(envoy_headers metadata, void* context) {
-  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_metadata");
-  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", std::to_string(metadata.length).c_str());
+  jni_log("[Envoy]", "jvm_on_metadata");
+  jni_log("[Envoy]", std::to_string(metadata.length).c_str());
 }
 
 static void jvm_on_trailers(envoy_headers trailers, void* context) {
-  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_trailers");
+  jni_log("[Envoy]", "jvm_on_trailers");
 
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
@@ -204,7 +199,7 @@ static void jvm_on_trailers(envoy_headers trailers, void* context) {
 }
 
 static void jvm_on_error(envoy_error error, void* context) {
-  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_error");
+  jni_log("[Envoy]", "jvm_on_error");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
@@ -350,6 +345,9 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer
 // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BZ(
     JNIEnv* env, jclass, jlong stream_handle, jbyteArray data, jboolean end_stream) {
+  if (end_stream) {
+    jni_log("[Envoy]", "jvm_send_data_end_stream");
+  }
 
   // TODO: check for null pointer in envoy_data.bytes - we could copy or raise an exception.
   return send_data(static_cast<envoy_stream_t>(stream_handle), array_to_native_data(env, data),
@@ -365,7 +363,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendTrailers(
     JNIEnv* env, jclass, jlong stream_handle, jobjectArray trailers) {
-
+  jni_log("[Envoy]", "jvm_send_trailers");
   return send_trailers(static_cast<envoy_stream_t>(stream_handle),
                        to_native_headers(env, trailers));
 }
