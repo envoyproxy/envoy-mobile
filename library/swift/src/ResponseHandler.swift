@@ -1,5 +1,124 @@
 import Foundation
 
+enum Testing {
+    static func example() throws {
+        let headers = RequestHeadersBuilder(headers: [:])
+            .add(name: "x-foo", value: "123")
+            .build()
+
+        let envoy = try EnvoyClientBuilder()
+            .build()
+
+        let stream = envoy
+//            .start(headers, queue: .main)
+            .newStreamBuilder(queue: .main)
+            .onResponseHeaders { headers, endStream in
+
+            }
+            .onResponseData { data, endStream in
+
+            }
+            .onCanceled {
+
+            }
+            .start()
+
+//            .sendHeaders(headers, endStream: false)
+        stream.sendData(Data([0x0, 0x1, 0x2]))
+        stream.cancel()
+    }
+}
+
+final class StreamCallbacks {
+  var onHeaders: ((_ headers: ResponseHeaders, _ endStream: Bool) -> Void)?
+  var onData: ((_ body: Data, _ endStream: Bool) -> Void)?
+  var onTrailers: ((_ trailers: ResponseTrailers) -> Void)?
+  var onError: ((_ error: EnvoyError) -> Void)?
+  var onCanceled: (() -> Void)?
+}
+
+@objcMembers
+public final class StreamBuilder: NSObject {
+  private let callbacks = StreamCallbacks()
+  private let queue: DispatchQueue
+
+  // TODO: It'd probably be weird to pass in an HTTPClient here, which would be required for a build() function
+  // since we need to call into engine.startStream
+  init(queue: DispatchQueue = .main) {
+    self.queue = queue
+    super.init()
+  }
+
+  func start() -> Stream {
+
+  }
+
+  /// <#function description#>
+  ///
+  /// - parameter closure: <#closure description#>
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func onResponseHeaders(
+    closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void) -> StreamBuilder
+  {
+    self.callbacks.onHeaders = closure
+    return self
+  }
+
+  /// <#function description#>
+  ///
+  /// - parameter closure: <#closure description#>
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func onResponseData(
+    closure: @escaping (_ body: Data, _ endStream: Bool) -> Void) -> StreamBuilder
+  {
+    self.callbacks.onData = closure
+    return self
+  }
+
+  /// <#function description#>
+  ///
+  /// - parameter closure: <#closure description#>
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func onResponseTrailers(
+    closure: @escaping (_ trailers: ResponseTrailers) -> Void) -> StreamBuilder
+  {
+    self.callbacks.onTrailers = closure
+    return self
+  }
+
+  /// <#function description#>
+  ///
+  /// - parameter closure: <#closure description#>
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func onError(
+    closure: @escaping (_ error: EnvoyError) -> Void) -> StreamBuilder
+  {
+    self.callbacks.onError = closure
+    return self
+  }
+
+  /// <#function description#>
+  ///
+  /// - parameter closure: <#closure description#>
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func onCanceled(
+    closure: @escaping () -> Void) -> StreamBuilder
+  {
+    self.callbacks.onCanceled = closure
+    return self
+  }
+}
+
 /// Interface for receiving responses on a stream.
 /// Used by the `FilterManager` to relay responses after filtering.
 protocol ResponseHandler: AnyObject {
@@ -158,6 +277,7 @@ extension FilterManager: ResponseFilterCallbacks {
 }
 
 // Will the filter chain break if filters hold a strong reference to their filter manager (callbacks)?
+//  - Yes, we can potentially solve this with a wrapper like what Envoy has which holds a weak reference
 // Since the client starts the request immediately, but consumers won't be able to specify callback closures until after the `Stream` object is returned, is it possible for them to miss synchronous completions?
 // I.e., the request filter chain will execute before the `Stream` object is returned to the consumer
 // Should the stream be created by the engine, or should the stream be started using a provided engine?
@@ -235,73 +355,6 @@ public final class Stream: NSObject {
   public func cancel() {
     self.filterManager.cancel()
   }
-
-  // MARK: - Public inbound interface
-
-  /// <#function description#>
-  ///
-  /// - parameter closure: <#closure description#>
-  ///
-  /// - returns: This stream, for chaining syntax.
-  @discardableResult
-  public func onResponseHeaders(
-    closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void) -> Stream
-  {
-    self.onHeadersCallback = closure
-    return self
-  }
-
-  /// <#function description#>
-  ///
-  /// - parameter closure: <#closure description#>
-  ///
-  /// - returns: This stream, for chaining syntax.
-  @discardableResult
-  public func onResponseData(
-    closure: @escaping (_ body: Data, _ endStream: Bool) -> Void) -> Stream
-  {
-    self.onDataCallback = closure
-    return self
-  }
-
-  /// <#function description#>
-  ///
-  /// - parameter closure: <#closure description#>
-  ///
-  /// - returns: This stream, for chaining syntax.
-  @discardableResult
-  public func onResponseTrailers(
-    closure: @escaping (_ trailers: ResponseTrailers) -> Void) -> Stream
-  {
-    self.onTrailersCallback = closure
-    return self
-  }
-
-  /// <#function description#>
-  ///
-  /// - parameter closure: <#closure description#>
-  ///
-  /// - returns: This stream, for chaining syntax.
-  @discardableResult
-  public func onError(
-    closure: @escaping (_ error: EnvoyError) -> Void) -> Stream
-  {
-    self.onErrorCallback = closure
-    return self
-  }
-
-  /// <#function description#>
-  ///
-  /// - parameter closure: <#closure description#>
-  ///
-  /// - returns: This stream, for chaining syntax.
-  @discardableResult
-  public func onCanceled(
-    closure: @escaping () -> Void) -> Stream
-  {
-    self.onCanceledCallback = closure
-    return self
-  }
 }
 
 extension Stream: ResponseHandler {
@@ -325,3 +378,5 @@ extension Stream: ResponseHandler {
     self.onCanceledCallback?()
   }
 }
+
+
