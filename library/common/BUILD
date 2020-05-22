@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
 
 licenses(["notice"])  # Apache 2
@@ -13,10 +14,10 @@ envoy_cc_library(
         "engine.h",
         "main_interface.cc",
     ],
-    hdrs = ["main_interface.h"],
+    hdrs = ["main_interface.h", "jni_support.h"],
     repository = "@envoy",
     deps = [
-        ":envoy_mobile_main_common_lib_stamped",
+        ":envoy_mobile_main_common_lib",
         "//library/common/buffer:utility_lib",
         "//library/common/http:dispatcher_lib",
         "//library/common/http:header_utility_lib",
@@ -34,15 +35,43 @@ envoy_cc_library(
     deps = [
         "@envoy//source/common/common:random_generator_lib",
         "@envoy//source/common/runtime:runtime_lib",
-        "@envoy//source/exe:main_common_lib",
+        "@envoy//source/exe:envoy_common_lib",
+        "@envoy//source/exe:envoy_main_common_lib",
     ],
 )
 
-envoy_cc_library(
-    name = "envoy_mobile_main_common_lib_stamped",
-    repository = "@envoy",
-    deps = [
-        ":envoy_mobile_main_common_lib",
-        "@envoy//source/exe:envoy_main_common_lib",
+cc_binary(
+    name = "libenvoy_jni.so",
+    srcs = [
+        "android_support.cc",
+        "jni_interface.cc",
     ],
+    copts = ["-std=c++17"],
+    linkopts = [
+        "-lm",
+        "-llog",
+        "-Wl,-s",
+    ],
+    linkshared = True,
+    deps = [":envoy_main_interface_lib"],
+)
+
+cc_binary(
+    name = "java_libenvoy_jni.so",
+    srcs = [
+        "java_support.cc",
+        "jni_interface.cc",
+    ],
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+    ],
+    toolchains = ["@bazel_tools//tools/jdk:current_java_runtime",],
+    linkshared = True,
+    includes = [
+        "../../external/local_jdk/include",
+        "../../external/local_jdk/include/darwin",
+        "../../external/local_jdk/include/linux",
+    ],
+    deps = [":envoy_main_interface_lib"],
 )
