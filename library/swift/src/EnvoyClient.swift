@@ -52,43 +52,13 @@ public final class EnvoyClient: NSObject {
     self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine,
               filterRegistry: filterRegistry)
   }
-}
 
-extension EnvoyClient: HTTPClient {
-  public func start(_ headers: RequestHeaders, queue: DispatchQueue) -> Stream {
-    let callbacks = EnvoyHTTPCallbacks()
-    callbacks.dispatchQueue = queue
+  // MARK: - Public interface
 
-    let underlyingStream = self.engine.startStream(with: callbacks)
-    let stream = Stream(underlyingStream: underlyingStream,
-                        underlyingCallbacks: callbacks,
-                        filterRegistry: self.filterRegistry)
-    stream.sendHeaders(headers, endStream: false)
-    return stream
-  }
-
-  @discardableResult
-  public func send(_ headers: RequestHeaders, body: Data?, trailers: RequestTrailers?,
-                   queue: DispatchQueue) -> Stream
-  {
-    let callbacks = EnvoyHTTPCallbacks()
-    callbacks.dispatchQueue = queue
-
-    let underlyingStream = self.engine.startStream(with: callbacks)
-    let stream = Stream(underlyingStream: underlyingStream,
-                        underlyingCallbacks: callbacks,
-                        filterRegistry: self.filterRegistry)
-    if let body = body, let trailers = trailers { // Close with trailers
-      stream.sendHeaders(headers, endStream: false)
-      stream.sendData(body)
-      stream.close(trailers: trailers)
-    } else if let body = body { // Close with data
-      stream.sendHeaders(headers, endStream: false)
-      stream.close(data: body)
-    } else { // Close with headers-only
-      stream.sendHeaders(headers, endStream: true)
-    }
-
-    return stream
+  /// Create a new inactive stream which can be used to start active streams.
+  ///
+  /// - returns: The new inactive stream.
+  public func newStream() -> InactiveStream {
+    return InactiveStream(engine: self.engine)
   }
 }
