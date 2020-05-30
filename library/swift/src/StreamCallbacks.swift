@@ -5,7 +5,7 @@ import Foundation
 /// A collection of platform-level callbacks that are specified by consumers
 /// who wish to interact with streams.
 ///
-/// `StreamCallbacks` are bridged through to engine `EnvoyHTTPCallbacks` to communicate with the engine.
+/// `StreamCallbacks` are bridged through to `EnvoyHTTPCallbacks` to communicate with the engine.
 final class StreamCallbacks {
   var onHeaders: ((_ headers: ResponseHeaders, _ endStream: Bool) -> Void)?
   var onData: ((_ body: Data, _ endStream: Bool) -> Void)?

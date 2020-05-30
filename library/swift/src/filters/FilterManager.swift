@@ -185,7 +185,3 @@
 //// I.e., the request filter chain will execute before the `Stream` object is returned to the consumer
 //// Should the stream be created by the engine, or should the stream be started using a provided engine?
 ////  The former would be more testable
-////
-//// Engine should take the queue when starting the stream
-//// What do we do with Cancelable stream?
-//// How do we test this from the platform layer?

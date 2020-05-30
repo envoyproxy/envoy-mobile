@@ -14,8 +14,8 @@ final class FilterRegistry {
 
   /// Create a set of filters from the registry.
   ///
-  /// - returns: The set of filters (both request and response filters) from the registry, listed in the order
-  ///            they were added.
+  /// - returns: The set of filters (both request and response filters) from the registry,
+  ///            listed in the order they were added.
   func createFilters() -> [Filter] {
     return self.factories.map { $0() }
   }

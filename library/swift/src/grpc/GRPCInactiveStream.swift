@@ -36,7 +36,8 @@ public final class GRPCInactiveStream: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnResponseHeaders(
-    closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void) -> GRPCInactiveStream
+    closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void)
+    -> GRPCInactiveStream
   {
     self.underlyingStream.setOnResponseHeaders(closure: closure)
     return self
