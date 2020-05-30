@@ -1,11 +1,11 @@
 import Dispatch
-import Foundation
 @_implementationOnly import EnvoyEngine
+import Foundation
 
 /// A type representing a stream that has not yet been started.
 ///
-/// Inactive streams are typically created via the `EnvoyClient`, and are used to assign
-/// response callbacks prior to starting an active stream.
+/// Constructed via `StreamClient`, and used to assign response callbacks
+/// prior to starting an `ActiveStream` by calling `start()`.
 @objcMembers
 public final class InactiveStream: NSObject {
   private let engine: EnvoyEngine
@@ -19,7 +19,7 @@ public final class InactiveStream: NSObject {
     super.init()
   }
 
-  // MARK: - Public interface
+  // MARK: - Public
 
   /// Start a new active stream.
   ///

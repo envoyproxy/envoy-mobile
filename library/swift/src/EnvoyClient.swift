@@ -3,7 +3,7 @@ import Foundation
 
 /// Envoy's implementation of `HTTPClient`, buildable using `EnvoyClientBuilder`.
 @objcMembers
-public final class EnvoyClient: NSObject {
+final class EnvoyClient: NSObject {
   private let engine: EnvoyEngine
   private let filterRegistry: FilterRegistry
 
@@ -52,13 +52,10 @@ public final class EnvoyClient: NSObject {
     self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine,
               filterRegistry: filterRegistry)
   }
+}
 
-  // MARK: - Public interface
-
-  /// Create a new inactive stream which can be used to start active streams.
-  ///
-  /// - returns: The new inactive stream.
-  public func newStream() -> InactiveStream {
+extension EnvoyClient: StreamClient {
+  func newStream() -> InactiveStream {
     return InactiveStream(engine: self.engine)
   }
 }

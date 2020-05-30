@@ -152,10 +152,10 @@ public final class EnvoyClientBuilder: NSObject {
     return self
   }
 
-  /// Builds a new instance of EnvoyClient using the provided configurations.
+  /// Builds a new instance of a `StreamClient` using the provided configurations.
   ///
-  /// - returns: A new instance of EnvoyClient.
-  public func build() throws -> EnvoyClient {
+  /// - returns: A new instance of a `StreamClient`.
+  public func build() throws -> StreamClient {
     let engine = self.engineType.init()
     switch self.base {
     case .custom(let yaml):

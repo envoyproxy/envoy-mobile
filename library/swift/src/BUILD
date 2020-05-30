@@ -25,6 +25,7 @@ swift_static_framework(
         "RetryPolicy.swift",
         "RetryPolicyMapper.swift",
         "StreamCallbacks.swift",
+        "StreamClient.swift",
         "UpstreamHttpProtocol.swift",
         "filters/*.swift",
         "grpc/*.swift",

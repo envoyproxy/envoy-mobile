@@ -1,6 +1,9 @@
-import Foundation
 @_implementationOnly import EnvoyEngine
+import Foundation
 
+/// A type representing a stream that is actively transferring data.
+///
+/// Constructed using `InactiveStream`, and used to write to the network.
 @objcMembers
 public final class ActiveStream: NSObject {
   private let underlyingStream: EnvoyHTTPStream
@@ -13,9 +16,9 @@ public final class ActiveStream: NSObject {
     super.init()
   }
 
-  // MARK: - Public outbound interface
+  // MARK: - Public
 
-  /// Send headers over the associated stream.
+  /// Send headers over the stream.
   ///
   /// - parameter headers:   Headers to send over the stream.
   /// - parameter endStream: Whether this is a headers-only request.
@@ -27,7 +30,7 @@ public final class ActiveStream: NSObject {
     return self
   }
 
-  /// Send data over the associated stream.
+  /// Send data over the stream.
   ///
   /// - parameter data: Data to send over the stream.
   ///

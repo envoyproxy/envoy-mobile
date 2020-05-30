@@ -1,5 +1,5 @@
-@_implementationOnly import EnvoyEngine
 import Dispatch
+@_implementationOnly import EnvoyEngine
 import Foundation
 
 /// A collection of platform-level callbacks that are specified by consumers
