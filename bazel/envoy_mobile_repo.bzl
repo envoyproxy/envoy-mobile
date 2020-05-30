@@ -1,7 +1,19 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 
-def envoy_mobile_repo():
+def envoy_mobile_repos():
     _upstream_envoy_overrides()
+
+    http_archive(
+        name = "google_bazel_common",
+        sha256 = "d8c9586b24ce4a5513d972668f94b62eb7d705b92405d4bc102131f294751f1d",
+        strip_prefix = "bazel-common-413b433b91f26dbe39cdbc20f742ad6555dd1e27",
+        urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
+    )
+
+    _swift_repos()
+    _kotlin_repos()
+
+
 
 def _upstream_envoy_overrides():
     # Patch protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617
@@ -43,4 +55,86 @@ def _upstream_envoy_overrides():
         sha256 = "36049e6cd09b353c83878cae0dd84e8b603ba1a40dcd74e44ebad101fc5c672d",
         strip_prefix = "boringssl-37b57ed537987f1b4c60c60fa1aba20f3a0f6d26",
         urls = ["https://github.com/google/boringssl/archive/37b57ed537987f1b4c60c60fa1aba20f3a0f6d26.tar.gz"],
+    )
+
+def _swift_repos():
+    http_file(
+        name = "xctestrunner",
+        executable = 1,
+        sha256 = "0338c71977106f1304a8056739db6f462a76f386a299052c1ed7f8fd463d01a8",
+        urls = ["https://github.com/google/xctestrunner/releases/download/0.2.11/ios_test_runner.par"],
+    )
+
+    http_archive(
+        name = "build_bazel_rules_apple",
+        sha256 = "ee9e6073aeb5a65c100cb9c44b0017c937706a4ae03176e14a7e78620a198079",
+        strip_prefix = "rules_apple-5131f3d46794bf227d296c82f30c2499c9de3c5b",
+        url = "https://github.com/bazelbuild/rules_apple/archive/5131f3d46794bf227d296c82f30c2499c9de3c5b.tar.gz",
+    )
+
+    http_archive(
+        name = "build_bazel_rules_swift",
+        sha256 = "d0833bc6dad817a367936a5f902a0c11318160b5e80a20ece35fb85a5675c886",
+        strip_prefix = "rules_swift-3eeeb53cebda55b349d64c9fc144e18c5f7c0eb8",
+        url = "https://github.com/bazelbuild/rules_swift/archive/3eeeb53cebda55b349d64c9fc144e18c5f7c0eb8.tar.gz",
+    )
+
+
+    http_archive(
+        name = "build_bazel_apple_support",
+        sha256 = "595a6652d8d65380a3d764826bf1a856a8cc52371bbd961dfcd942fdb14bc133",
+        strip_prefix = "apple_support-e16463ef91ed77622c17441f9569bda139d45b18",
+        urls = ["https://github.com/bazelbuild/apple_support/archive/e16463ef91ed77622c17441f9569bda139d45b18.tar.gz"],
+    )
+
+def _kotlin_repos():
+
+    http_archive(
+        name = "rules_jvm_external",
+        sha256 = "1bbf2e48d07686707dd85357e9a94da775e1dbd7c464272b3664283c9c716d26",
+        strip_prefix = "rules_jvm_external-2.10",
+        url = "https://github.com/bazelbuild/rules_jvm_external/archive/2.10.zip",
+    )
+
+    rules_kotlin_version = "legacy-1.3.0-rc2"
+
+    rules_kotlin_sha = "dc1c76f91228ddaf4f7ca4190b82d61939e95369f61dea715e8be28792072b1b"
+
+    http_archive(
+        name = "io_bazel_rules_kotlin",
+        sha256 = rules_kotlin_sha,
+        strip_prefix = "rules_kotlin-%s" % rules_kotlin_version,
+        type = "zip",
+        urls = ["https://github.com/bazelbuild/rules_kotlin/archive/%s.zip" % rules_kotlin_version],
+    )
+
+
+    rules_detekt_version = "0.3.0"
+
+    rules_detekt_sha = "b1b4c8a3228f880a169ab60a817619bc4cf254443196e7e108ece411cb9c580e"
+
+    http_archive(
+        name = "rules_detekt",
+        sha256 = rules_detekt_sha,
+        strip_prefix = "bazel_rules_detekt-{v}".format(v = rules_detekt_version),
+        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v{v}.tar.gz".format(v = rules_detekt_version),
+    )
+
+    # gRPC java for @rules_proto_grpc
+    # The current 0.2.0 uses v1.23.0 of gRPC java which has a buggy version of the grpc_java_repositories
+    # where it tries to bind the zlib and errors out
+    # The fix went in on this commit:
+    # https://github.com/grpc/grpc-java/commit/57e7bd394e92015d2891adc74af0eaf9cd347ea8#diff-515bc54a0cbb4b12fb4a7c465758b011L128-L131
+    http_archive(
+        name = "io_grpc_grpc_java",
+        sha256 = "8b495f58aaf75138b24775600a062bbdaa754d85f7ab2a47b2c9ecb432836dd1",
+        strip_prefix = "grpc-java-1.24.0",
+        urls = ["https://github.com/grpc/grpc-java/archive/v1.24.0.tar.gz"],
+    )
+
+    http_archive(
+        name = "rules_proto_grpc",
+        sha256 = "1e08cd6c61f893417b14930ca342950f5f22f71f929a38a8c4bbfeae2a80d03e",
+        strip_prefix = "rules_proto_grpc-0.2.0",
+        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
     )
