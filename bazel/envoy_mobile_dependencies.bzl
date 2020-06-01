@@ -20,7 +20,6 @@ def _swift_dependencies():
     apple_rules_dependencies(ignore_version_differences = True)
     swift_rules_dependencies()
 
-
 def _kotlin_dependencies():
     maven_install(
         artifacts = [
@@ -34,7 +33,6 @@ def _kotlin_dependencies():
     )
     kotlin_repositories()
     rules_detekt_dependencies()
-
 
     grpc_java_repositories(
         omit_bazel_skylib = True,
