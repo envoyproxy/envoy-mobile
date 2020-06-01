@@ -13,8 +13,6 @@ def envoy_mobile_repos():
     _swift_repos()
     _kotlin_repos()
 
-
-
 def _upstream_envoy_overrides():
     # Patch protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617
     # More details: https://github.com/protocolbuffers/protobuf/issues/7046
@@ -79,7 +77,6 @@ def _swift_repos():
         url = "https://github.com/bazelbuild/rules_swift/archive/3eeeb53cebda55b349d64c9fc144e18c5f7c0eb8.tar.gz",
     )
 
-
     http_archive(
         name = "build_bazel_apple_support",
         sha256 = "595a6652d8d65380a3d764826bf1a856a8cc52371bbd961dfcd942fdb14bc133",
@@ -88,7 +85,6 @@ def _swift_repos():
     )
 
 def _kotlin_repos():
-
     http_archive(
         name = "rules_jvm_external",
         sha256 = "1bbf2e48d07686707dd85357e9a94da775e1dbd7c464272b3664283c9c716d26",
@@ -107,7 +103,6 @@ def _kotlin_repos():
         type = "zip",
         urls = ["https://github.com/bazelbuild/rules_kotlin/archive/%s.zip" % rules_kotlin_version],
     )
-
 
     rules_detekt_version = "0.3.0"
 
