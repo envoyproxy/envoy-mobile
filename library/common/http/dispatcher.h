@@ -144,7 +144,7 @@ private:
     absl::optional<envoy_error_code_t> error_code_;
     absl::optional<envoy_data> error_message_;
     absl::optional<int32_t> error_attempt_count_;
-    bool observed_success_;
+    bool observed_success_{};
   };
 
   using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
