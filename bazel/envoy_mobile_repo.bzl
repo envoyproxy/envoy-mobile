@@ -1,8 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 
 def envoy_mobile_repos():
-    _upstream_envoy_overrides()
-
     http_archive(
         name = "google_bazel_common",
         sha256 = "d8c9586b24ce4a5513d972668f94b62eb7d705b92405d4bc102131f294751f1d",
@@ -13,7 +11,7 @@ def envoy_mobile_repos():
     _swift_repos()
     _kotlin_repos()
 
-def _upstream_envoy_overrides():
+def upstream_envoy_overrides():
     # Patch protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617
     # More details: https://github.com/protocolbuffers/protobuf/issues/7046
     # TODO: Remove after https://github.com/bazelbuild/bazel/pull/10493 is merged to Bazel

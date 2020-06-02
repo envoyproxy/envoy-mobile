@@ -1,5 +1,5 @@
-load("//bazel:envoy_mobile_repo.bzl", "envoy_mobile_repos")
-envoy_mobile_repos()
+load("//bazel:envoy_mobile_repo.bzl", "upstream_envoy_overrides")
+upstream_envoy_overrides()
 
 local_repository(
     name = "envoy",
@@ -25,6 +25,9 @@ envoy_dependencies_extra()
 
 load("@envoy//bazel:dependency_imports.bzl", "envoy_dependency_imports")
 envoy_dependency_imports()
+
+load("//bazel:envoy_mobile_repo.bzl", "envoy_mobile_repos")
+envoy_mobile_repos()
 
 load("//bazel:envoy_mobile_dependencies.bzl", "envoy_mobile_dependencies")
 envoy_mobile_dependencies()
