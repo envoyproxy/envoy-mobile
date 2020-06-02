@@ -8,8 +8,8 @@ def envoy_mobile_repos():
         urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
     )
 
-    _swift_repos()
-    _kotlin_repos()
+    swift_repos()
+    kotlin_repos()
 
 def upstream_envoy_overrides():
     # Patch protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617
@@ -53,7 +53,7 @@ def upstream_envoy_overrides():
         urls = ["https://github.com/google/boringssl/archive/37b57ed537987f1b4c60c60fa1aba20f3a0f6d26.tar.gz"],
     )
 
-def _swift_repos():
+def swift_repos():
     http_file(
         name = "xctestrunner",
         executable = 1,
@@ -82,7 +82,7 @@ def _swift_repos():
         urls = ["https://github.com/bazelbuild/apple_support/archive/e16463ef91ed77622c17441f9569bda139d45b18.tar.gz"],
     )
 
-def _kotlin_repos():
+def kotlin_repos():
     http_archive(
         name = "rules_jvm_external",
         sha256 = "1bbf2e48d07686707dd85357e9a94da775e1dbd7c464272b3664283c9c716d26",
