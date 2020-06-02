@@ -219,7 +219,7 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   if (direct_stream_.dispatchable(true)) {
     ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
               direct_stream_.stream_handle_);
-    // only count the on error if it is dispatchable. Otherwise, the onReset was caused due to a
+    // Only count the on error if it is dispatchable. Otherwise, the onReset was caused due to a
     // client side cancel via Dispatcher::DirectStream::resetStream().
     http_dispatcher_.stats().stream_failure_.inc();
     bridge_callbacks_.on_error({code, message, attempt_count}, bridge_callbacks_.context);

@@ -178,6 +178,7 @@ TEST_P(DispatcherIntegrationTest, Basic) {
   ASSERT_EQ(cc.on_data_calls, 2);
   ASSERT_EQ(cc.on_complete_calls, 1);
 
+  // stream_success gets charged for 2xx status codes.
   test_server_->waitForCounterEq("http.dispatcher.stream_success", 1);
 }
 
@@ -191,7 +192,7 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
   });
   ready_ran.waitReady();
 
-  // Set response header status to be non-2xx to test correct stats get charged.
+  // Set response header status to be non-2xx to test that the correct stats get charged.
   reinterpret_cast<AutonomousUpstream*>(fake_upstreams_.front().get())
       ->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
           Http::TestHeaderMapImpl({{":status", "503"}, {"content-length", "0"}})));
@@ -231,6 +232,7 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
   ASSERT_EQ(cc.on_headers_calls, 1);
   ASSERT_EQ(cc.on_complete_calls, 1);
 
+  // stream_failure gets charged for all non-2xx status codes.
   test_server_->waitForCounterEq("http.dispatcher.stream_failure", 1);
 }
 
@@ -270,6 +272,7 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
   terminal_callback.waitReady();
 
   ASSERT_EQ(cc.on_error_calls, 1);
+  // Reset causes a charge to stream_failure.
   test_server_->waitForCounterEq("http.dispatcher.stream_failure", 1);
 }
 
@@ -335,7 +338,8 @@ TEST_P(DispatcherIntegrationTest, RaceDoesNotCauseDoubleDeletion) {
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
   http_dispatcher_.synchronizer().signal("dispatch_encode_final_data");
-
+  // stream_cancel gets charged even though the request was a success because the cancellation won
+  // the dispatch race.
   test_server_->waitForCounterEq("http.dispatcher.stream_cancel", 1);
 }
 
