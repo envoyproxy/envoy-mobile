@@ -203,7 +203,8 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
   ConditionalInitializer terminal_callback;
   callbacks_called cc = {0, 0, 0, 0, 0, &terminal_callback};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream, void* context) -> void {
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
+                                   void* context) -> void {
     ASSERT_TRUE(end_stream);
     Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "503");
