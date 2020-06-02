@@ -8,6 +8,7 @@ def envoy_mobile_repos():
         urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
     )
 
+    upstream_envoy_overrides()
     swift_repos()
     kotlin_repos()
 
@@ -74,13 +75,6 @@ def swift_repos():
         strip_prefix = "rules_swift-3eeeb53cebda55b349d64c9fc144e18c5f7c0eb8",
         url = "https://github.com/bazelbuild/rules_swift/archive/3eeeb53cebda55b349d64c9fc144e18c5f7c0eb8.tar.gz",
     )
-#
-#    http_archive(
-#        name = "build_bazel_apple_support",
-#        sha256 = "595a6652d8d65380a3d764826bf1a856a8cc52371bbd961dfcd942fdb14bc133",
-#        strip_prefix = "apple_support-e16463ef91ed77622c17441f9569bda139d45b18",
-#        urls = ["https://github.com/bazelbuild/apple_support/archive/e16463ef91ed77622c17441f9569bda139d45b18.tar.gz"],
-#    )
 
 def kotlin_repos():
     http_archive(
