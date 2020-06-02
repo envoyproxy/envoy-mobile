@@ -216,7 +216,8 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
     cc->on_complete_calls++;
     cc->terminal_callback->setReady();
   };
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    error.message.release(error.message.context);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
   };
@@ -256,7 +257,8 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
   ConditionalInitializer terminal_callback;
   callbacks_called cc = {0, 0, 0, 0, 0, &terminal_callback};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
+    error.message.release(error.message.context);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
     cc->terminal_callback->setReady();
