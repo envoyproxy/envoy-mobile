@@ -1,5 +1,5 @@
-load("//bazel:envoy_mobile_repo.bzl", "envoy_mobile_repos")
-envoy_mobile_repos()
+load("//bazel:envoy_mobile_repositories.bzl", "envoy_mobile_repositories")
+envoy_mobile_repositories()
 
 local_repository(
     name = "envoy",
