@@ -117,3 +117,8 @@ def kotlin_repos():
         strip_prefix = "rules_proto_grpc-0.2.0",
         urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
     )
+    http_jar(
+        name = "kotlin_dokka",
+        sha256 = "4c73eee92dd652ea8e2afd7b20732cf863d4938a30f634d12c88fe64def89fd8",
+        url = "https://github.com/Kotlin/dokka/releases/download/0.9.18/dokka-fatjar-0.9.18.jar",
+    )
