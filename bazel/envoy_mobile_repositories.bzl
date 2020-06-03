@@ -96,7 +96,7 @@ def kotlin_repos():
         name = "rules_detekt",
         sha256 = "b1b4c8a3228f880a169ab60a817619bc4cf254443196e7e108ece411cb9c580e",
         strip_prefix = "bazel_rules_detekt-0.3.0",
-        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v.format(v = rules_detekt_version).tar.gz",
+        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.3.0.tar.gz",
     )
 
     # gRPC java for @rules_proto_grpc
