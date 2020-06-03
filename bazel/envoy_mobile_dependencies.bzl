@@ -22,6 +22,12 @@ def kotlin_dependencies():
         artifacts = [
             # Kotlin
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
+
+            # Test artifacts
+            "org.assertj:assertj-core:3.9.0",
+            "junit:junit:4.12",
+            "org.mockito:mockito-inline:2.28.2",
+            "org.mockito:mockito-core:2.28.2",
         ],
         repositories = [
             "https://repo1.maven.org/maven2",

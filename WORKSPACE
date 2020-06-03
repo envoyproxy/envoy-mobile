@@ -38,19 +38,3 @@ envoy_mobile_toolchains()
 android_sdk_repository(name = "androidsdk")
 
 android_ndk_repository(name = "androidndk")
-
-load("@rules_jvm_external//:defs.bzl", "maven_install")
-maven_install(
-    artifacts = [
-        # Test artifacts
-        "org.assertj:assertj-core:3.9.0",
-        "junit:junit:4.12",
-        "org.mockito:mockito-inline:2.28.2",
-        "org.mockito:mockito-core:2.28.2",
-    ],
-    repositories = [
-        "https://repo1.maven.org/maven2",
-        "https://jcenter.bintray.com/",
-    ],
-)
-
