@@ -1,5 +1,5 @@
 licenses(["notice"])  # Apache 2
-
+load("//bazel:sources_jar.bzl", "sources_jar")
 filegroup(
     name = "proguard_rules",
     srcs = ["proguard.txt"],
@@ -27,7 +27,7 @@ zip -r $$orig_dir/$@ . > /dev/null
 
 genrule(
     name = "sources_jar",
-    srcs = [],
+    srcs = ["//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib"],
     outs = ["envoy-sources.jar"],
     cmd = """
 orig_dir=$$PWD
@@ -38,4 +38,11 @@ cd $$tmp_dir
 zip -r $$orig_dir/$@ . > /dev/null
     """,
     visibility = ["//visibility:public"],
+)
+
+# This is stupid
+sources_jar(
+    name = "hello_sources",
+    srcs = ["//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib"],
+    deps = ["//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib", "sources_jar"]
 )
