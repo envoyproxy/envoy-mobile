@@ -46,19 +46,9 @@ genrule(
         "android_javadocs",
         "android_sources",
     ],
+    tools = ["@bazel_tools//tools/zip:zipper"],
     outs = ["envoy_mobile.zip"],
-    cmd = """
-orig_dir=$$PWD
-tmp_dir=$$(mktemp -d)
-pushd $$tmp_dir
-cp $(location :android_aar) .
-cp $(location :android_pom) .
-cp $(location :android_javadocs) .
-cp $(location :android_sources) .
-chmod 755 *
-zip -r $$orig_dir/$@ $(location :android_aar) $(location :android_pom) $(location :android_javadocs) $(location :android_sources) > /dev/null
-popd
-""",
+    cmd = "$(location @bazel_tools//tools/zip:zipper) fc $@ $(SRCS)",
     stamp = True
 )
 
@@ -83,11 +73,10 @@ genrule(
     ],
     outs = ["stub_android_deploy_output"],
     cmd = """
-orig_dir=$$PWD
-pushd dist
-unzip $(location :android_zip)
-cp $(location :android_zip) .
-popd
+tmp_dir=$$(mktemp -d)
+unzip $(SRCS) -d $$tmp_dir
+chmod 755 $$tmp_dir/*
+mv $$tmp_dir/* ./dist
 touch $@
 """,
     stamp = True,
