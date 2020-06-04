@@ -46,6 +46,7 @@ genrule(
         "android_javadocs",
         "android_sources",
     ],
+    visibility = ["//visibility:public"],
     tools = ["@bazel_tools//tools/zip:zipper"],
     outs = ["envoy_mobile.zip"],
     cmd = "$(location @bazel_tools//tools/zip:zipper) fc $@ $(SRCS)",
