@@ -1,4 +1,4 @@
-load("//bazel:swift_test.bzl", "envoy_mobile_swift_test")
+load("@envoy_mobile//bazel:swift_test.bzl", "envoy_mobile_swift_test")
 
 licenses(["notice"])  # Apache 2
 
@@ -10,7 +10,7 @@ envoy_mobile_swift_test(
         "MockEnvoyHTTPStream.swift",
     ],
     deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
+        "@envoy_mobile//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 
@@ -22,7 +22,7 @@ envoy_mobile_swift_test(
         "MockEnvoyHTTPStream.swift",
     ],
     deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
+        "@envoy_mobile//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 
@@ -39,7 +39,7 @@ envoy_mobile_swift_test(
         "GRPCResponseHandlerTests.swift",
     ],
     deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
+        "@envoy_mobile//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 

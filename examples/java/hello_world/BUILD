@@ -7,7 +7,7 @@ android_binary(
     name = "hello_envoy",
     custom_package = "io.envoyproxy.envoymobile.helloenvoy",
     manifest = "AndroidManifest.xml",
-    proguard_specs = ["//library:proguard_rules"],
+    proguard_specs = ["@envoy_mobile//library:proguard_rules"],
     deps = [
         "hello_envoy_java_lib",
     ],
@@ -27,9 +27,9 @@ kt_android_library(
         "res/layout/activity_main.xml",
     ],
     deps = [
-        "//dist:envoy_mobile_android",
-        "//examples/kotlin/shared:hello_envoy_shared_lib",
         "@androidsdk//com.android.support:appcompat-v7-25.0.0",
         "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
+        "@envoy_mobile//dist:envoy_mobile_android",
+        "@envoy_mobile//examples/kotlin/shared:hello_envoy_shared_lib",
     ],
 )

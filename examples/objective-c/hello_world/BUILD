@@ -9,7 +9,7 @@ objc_library(
         "*.h",
         "*.m",
     ]),
-    deps = ["//dist:envoy_mobile_ios"],
+    deps = ["@envoy_mobile//dist:envoy_mobile_ios"],
 )
 
 ios_application(

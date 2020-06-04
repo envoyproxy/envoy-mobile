@@ -1,4 +1,4 @@
-load("//bazel:swift_static_framework.bzl", "swift_static_framework")
+load("@envoy_mobile//bazel:swift_static_framework.bzl", "swift_static_framework")
 
 licenses(["notice"])  # Apache 2
 
@@ -35,6 +35,6 @@ swift_static_framework(
         "grpc/*.swift",
     ]),
     module_name = "Envoy",
-    private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
+    private_deps = ["@envoy_mobile//library/objective-c:envoy_engine_objc_lib"],
     visibility = ["//visibility:public"],
 )
