@@ -39,6 +39,30 @@ alias(
 )
 
 genrule(
+    name = "android_zip",
+    srcs = [
+        "android_aar",
+        "android_pom",
+        "android_javadocs",
+        "android_sources",
+    ],
+    outs = ["envoy_mobile.zip"],
+    cmd = """
+orig_dir=$$PWD
+tmp_dir=$$(mktemp -d)
+pushd $$tmp_dir
+cp $(location :android_aar) .
+cp $(location :android_pom) .
+cp $(location :android_javadocs) .
+cp $(location :android_sources) .
+chmod 755 *
+zip -r $$orig_dir/$@ $(location :android_aar) $(location :android_pom) $(location :android_javadocs) $(location :android_sources) > /dev/null
+popd
+""",
+    stamp = True
+)
+
+genrule(
     name = "android_dist",
     srcs = [
         "android_aar",
@@ -55,24 +79,14 @@ touch $@
 genrule(
     name = "android_deploy",
     srcs = [
-        "android_aar",
-        "android_pom",
-        "android_javadocs",
-        "android_sources",
+        "android_zip",
     ],
     outs = ["stub_android_deploy_output"],
     cmd = """
-cp $(location :android_aar) dist/envoy.aar
-cp $(location :android_pom) dist/envoy-pom.xml
-cp $(location :android_javadocs) dist/envoy-javadoc.jar
-cp $(location :android_sources) dist/envoy-sources.jar
-chmod 755 dist/envoy.aar
-chmod 755 dist/envoy-pom.xml
-chmod 755 dist/envoy-javadoc.jar
-chmod 755 dist/envoy-sources.jar
 orig_dir=$$PWD
 pushd dist
-zip -r envoy_aar_sources.zip envoy.aar envoy-pom.xml envoy-javadoc.jar envoy-sources.jar > /dev/null
+unzip $(location :android_zip)
+cp $(location :android_zip) .
 popd
 touch $@
 """,
