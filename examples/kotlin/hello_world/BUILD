@@ -1,4 +1,4 @@
-load("@rules_android//android:rules.bzl", "android_binary")
+load("@build_bazel_rules_android//android:rules.bzl", "android_binary")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
 load("@rules_detekt//detekt:defs.bzl", "detekt")
 

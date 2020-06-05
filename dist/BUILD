@@ -1,4 +1,4 @@
-load("@rules_android//android:rules.bzl", "aar_import")
+load("@build_bazel_rules_android//android:rules.bzl", "aar_import")
 load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_framework_import")
 
 licenses(["notice"])  # Apache 2
