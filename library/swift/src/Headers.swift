@@ -23,8 +23,18 @@ public class Headers: NSObject {
   }
 }
 
+// MARK: - Equatable
+
 extension Headers {
-    public override func isEqual(_ object: Any?) -> Bool {
-        return (object as? Self)?.headers == self.headers
-    }
+  public override func isEqual(_ object: Any?) -> Bool {
+    return (object as? Self)?.headers == self.headers
+  }
+}
+
+// MARK: - CustomStringConvertible
+
+extension Headers {
+  public override var description: String {
+    return "\(type(of: self)) \(self.headers.description)"
+  }
 }

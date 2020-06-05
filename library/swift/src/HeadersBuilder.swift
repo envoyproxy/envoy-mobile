@@ -50,7 +50,7 @@ public class HeadersBuilder: NSObject {
 }
 
 extension HeadersBuilder {
-    public override func isEqual(_ object: Any?) -> Bool {
-        return (object as? Self)?.headers == self.headers
-    }
+  public override func isEqual(_ object: Any?) -> Bool {
+    return (object as? Self)?.headers == self.headers
+  }
 }
