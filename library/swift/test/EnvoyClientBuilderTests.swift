@@ -176,11 +176,7 @@ final class EnvoyClientBuilderTests: XCTestCase {
                                     appVersion: "v1.2.3",
                                     appId: "com.mydomain.myapp",
                                     virtualClusters: "[test]")
-    guard let resolvedYAML = config.resolveTemplate(kMockTemplate) else {
-      XCTFail("Resolved template YAML is nil")
-      return
-    }
-
+    let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
     XCTAssertTrue(resolvedYAML.contains("stats_domain: stats.foo.com"))
     XCTAssertTrue(resolvedYAML.contains("connect_timeout: 200s"))
     XCTAssertTrue(resolvedYAML.contains("dns_refresh_rate: 300s"))

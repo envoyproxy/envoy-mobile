@@ -74,7 +74,7 @@ public final class GRPCInactiveStream: NSObject {
   ///
   /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
-  public func setOnTrailers(_ closure:
+  public func setOnResponseTrailers(_ closure:
     @escaping (_ trailers: ResponseTrailers) -> Void)
     -> GRPCInactiveStream
   {

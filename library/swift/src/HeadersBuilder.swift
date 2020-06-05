@@ -48,3 +48,9 @@ public class HeadersBuilder: NSObject {
     self.headers = headers
   }
 }
+
+extension HeadersBuilder {
+    public override func isEqual(_ object: Any?) -> Bool {
+        return (object as? Self)?.headers == self.headers
+    }
+}

@@ -22,3 +22,9 @@ public class Headers: NSObject {
     self.headers = headers
   }
 }
+
+extension Headers {
+    public override func isEqual(_ object: Any?) -> Bool {
+        return (object as? Self)?.headers == self.headers
+    }
+}
