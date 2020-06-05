@@ -5,18 +5,14 @@ import Foundation
 @objcMembers
 final class EnvoyClient: NSObject {
   private let engine: EnvoyEngine
-  private let filterRegistry: FilterRegistry
 
   private enum ConfigurationType {
     case yaml(String)
     case typed(EnvoyConfiguration)
   }
 
-  private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine,
-               filterRegistry: FilterRegistry)
-  {
+  private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine) {
     self.engine = engine
-    self.filterRegistry = filterRegistry
     super.init()
 
     switch configType {
@@ -29,28 +25,20 @@ final class EnvoyClient: NSObject {
 
   /// Initialize a new Envoy instance using a typed configuration.
   ///
-  /// - parameter config:         Configuration to use for starting Envoy.
-  /// - parameter logLevel:       Log level to use for this instance.
-  /// - parameter engine:         The underlying engine to use for starting Envoy.
-  /// - parameter filterRegistry: The filter registry to use for requests.
-  convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   filterRegistry: FilterRegistry)
-  {
-    self.init(configType: .typed(config), logLevel: logLevel, engine: engine,
-              filterRegistry: filterRegistry)
+  /// - parameter config:   Configuration to use for starting Envoy.
+  /// - parameter logLevel: Log level to use for this instance.
+  /// - parameter engine:   The underlying engine to use for starting Envoy.
+  convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+    self.init(configType: .typed(config), logLevel: logLevel, engine: engine)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter configYAML:     Configuration yaml to use for starting Envoy.
-  /// - parameter logLevel:       Log level to use for this instance.
-  /// - parameter engine:         The underlying engine to use for starting Envoy.
-  /// - parameter filterRegistry: The filter registry to use for requests.
-  convenience init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   filterRegistry: FilterRegistry)
-  {
-    self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine,
-              filterRegistry: filterRegistry)
+  /// - parameter configYAML: Configuration yaml to use for starting Envoy.
+  /// - parameter logLevel:   Log level to use for this instance.
+  /// - parameter engine:     The underlying engine to use for starting Envoy.
+  convenience init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
+    self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine)
   }
 }
 

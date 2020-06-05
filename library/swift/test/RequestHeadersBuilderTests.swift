@@ -61,37 +61,46 @@ final class RequestHeadersBuilderTests: XCTestCase {
     XCTAssertEqual(["1", "2"], headers.value(forName: "x-foo"))
   }
 
-//  func testStripsHeadersWithSemicolonPrefix() {
-//    let headers = RequestBuilder(method: .post, scheme: "https", authority: "x.y.z", path: "/foo")
-//      .addHeader(name: ":restricted", value: "someValue")
-//      .build()
-//      .outboundHeaders()
-//    XCTAssertNil(headers[":restricted"])
-//  }
-//
-//  func testStripsHeadersWithXEnvoyMobilePrefix() {
-//    let headers = RequestBuilder(method: .post, scheme: "https", authority: "x.y.z", path: "/foo")
-//      .addHeader(name: "x-envoy-mobile-test", value: "someValue")
-//      .build()
-//      .outboundHeaders()
-//    XCTAssertNil(headers["x-envoy-mobile-test"])
-//  }
-//
-//  func testCannotOverrideStandardRestrictedHeaders() {
-//    let headers = RequestBuilder(method: .post, scheme: "https", authority: "x.y.z", path: "/foo")
-//      .addUpstreamHttpProtocol(.http2)
-//      .addHeader(name: ":scheme", value: "override")
-//      .addHeader(name: ":authority", value: "override")
-//      .addHeader(name: ":path", value: "override")
-//      .addHeader(name: "x-envoy-mobile-upstream-protocol", value: "override")
-//      .build()
-//      .outboundHeaders()
-//
-//    XCTAssertEqual(["https"], headers[":scheme"])
-//    XCTAssertEqual(["x.y.z"], headers[":authority"])
-//    XCTAssertEqual(["/foo"], headers[":path"])
-//    XCTAssertEqual(["http2"], headers["x-envoy-mobile-upstream-protocol"])
-//  }
+  func testCannotPubliclyAddHeadersWithRestrictedPrefix() {
+    let headers = RequestHeadersBuilder(method: .post, scheme: "https",
+                                        authority: "envoyproxy.io", path: "/mock")
+      .set(name: ":x-foo", value: ["123"])
+      .set(name: "x-envoy-mobile-foo", value: ["abc"])
+      .build()
+    XCTAssertNil(headers.value(forName: ":x-foo"))
+    XCTAssertNil(headers.value(forName: "x-envoy-mobile-foo"))
+  }
+
+  func testCannotPubliclySetHeadersWithRestrictedPrefix() {
+    let headers = RequestHeadersBuilder(method: .post, scheme: "https",
+                                        authority: "envoyproxy.io", path: "/mock")
+      .add(name: ":x-foo", value: "123")
+      .add(name: "x-envoy-mobile-foo", value: "abc")
+      .build()
+    XCTAssertNil(headers.value(forName: ":x-foo"))
+    XCTAssertNil(headers.value(forName: "x-envoy-mobile-foo"))
+  }
+
+  func testCannotPubliclyRemoveHeadersWithRestrictedPrefix() {
+    let headers = RequestHeadersBuilder(method: .post, scheme: "https",
+                                        authority: "envoyproxy.io", path: "/mock")
+      .addUpstreamHttpProtocol(.http2)
+      .remove(name: ":path")
+      .remove(name: "x-envoy-mobile-upstream-protocol")
+      .build()
+    XCTAssertEqual(["/mock"], headers.value(forName: ":path"))
+    XCTAssertEqual(["http2"], headers.value(forName: "x-envoy-mobile-upstream-protocol"))
+  }
+
+  func testCanInternallySetHeadersWithRestrictedPrefix() {
+    let headers = RequestHeadersBuilder(method: .post, scheme: "https",
+                                        authority: "envoyproxy.io", path: "/mock")
+      .internalSet(name: ":x-foo", value: ["123"])
+      .internalSet(name: "x-envoy-mobile-foo", value: ["abc"])
+      .build()
+    XCTAssertEqual(["123"], headers.value(forName: ":x-foo"))
+    XCTAssertNil(["abc"], headers.value(forName: "x-envoy-mobile-foo"))
+  }
 
   func testIncludesRetryPolicyHeaders() {
     let retryPolicy = RetryPolicy(maxRetryCount: 123, retryOn: RetryRule.allCases,
@@ -133,18 +142,18 @@ final class RequestHeadersBuilderTests: XCTestCase {
     let retryPolicy = RetryPolicy(maxRetryCount: 123, retryOn: RetryRule.allCases,
                                   retryStatusCodes: [400, 410], perRetryTimeoutMS: 9001)
     let headers = Headers(headers: retryPolicy.outboundHeaders())
-    XCTAssertEqual(RetryPolicy.from(headers: headers), retryPolicy)
+    XCTAssertEqual(retryPolicy, RetryPolicy.from(headers: headers))
   }
 
   func testConvertingRequestMethodToStringAndBackCreatesTheSameRequestMethod() {
     for method in RequestMethod.allCases {
-      XCTAssertEqual(RequestMethod(stringValue: method.stringValue), method)
+      XCTAssertEqual(method, RequestMethod(stringValue: method.stringValue))
     }
   }
 
   func testConvertingHttpProtocolToStringAndBackCreatesTheSameHttpProtocol() {
     for httpProtocol in UpstreamHttpProtocol.allCases {
-      XCTAssertEqual(UpstreamHttpProtocol(stringValue: httpProtocol.stringValue), httpProtocol)
+      XCTAssertEqual(httpProtocol, UpstreamHttpProtocol(stringValue: httpProtocol.stringValue))
     }
   }
 }

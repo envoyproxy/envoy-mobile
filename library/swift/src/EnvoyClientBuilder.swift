@@ -5,7 +5,6 @@ import Foundation
 @objcMembers
 public final class EnvoyClientBuilder: NSObject {
   private let base: BaseConfiguration
-  private let filterRegistry = FilterRegistry()
   private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var logLevel: LogLevel = .info
 
@@ -141,17 +140,6 @@ public final class EnvoyClientBuilder: NSObject {
     return self
   }
 
-  /// Register a new filter factory that will be called to instantiate new filter instances for
-  /// outbound requests/streams.
-  ///
-  /// - parameter factory: Closure that, when called, will return a new instance of a filter.
-  ///                      The filter may be a `RequestFilter`, `ResponseFilter`, or both.
-  @discardableResult
-  public func registerFilter(_ factory: @escaping () -> Filter) -> EnvoyClientBuilder {
-    self.filterRegistry.register(factory: factory)
-    return self
-  }
-
   /// Builds a new instance of a `StreamClient` using the provided configurations.
   ///
   /// - returns: A new instance of a `StreamClient`.
@@ -159,8 +147,7 @@ public final class EnvoyClientBuilder: NSObject {
     let engine = self.engineType.init()
     switch self.base {
     case .custom(let yaml):
-      return EnvoyClient(configYAML: yaml, logLevel: self.logLevel, engine: engine,
-                         filterRegistry: self.filterRegistry)
+      return EnvoyClient(configYAML: yaml, logLevel: self.logLevel, engine: engine)
     case .standard:
       let config = EnvoyConfiguration(
         statsDomain: self.statsDomain,
@@ -172,8 +159,7 @@ public final class EnvoyClientBuilder: NSObject {
         appVersion: self.appVersion,
         appId: self.appId,
         virtualClusters: self.virtualClusters)
-      return EnvoyClient(config: config, logLevel: self.logLevel, engine: engine,
-                         filterRegistry: self.filterRegistry)
+      return EnvoyClient(config: config, logLevel: self.logLevel, engine: engine)
     }
   }
 

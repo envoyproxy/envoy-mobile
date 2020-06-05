@@ -1,5 +1,11 @@
 import Foundation
 
+private let kRestrictedPrefixes = [":", "x-envoy-mobile"]
+
+private func isRestrictedHeader(name: String) -> Bool {
+  return kRestrictedPrefixes.contains { name.hasPrefix($0) }
+}
+
 /// Base builder class used to construct `Headers` instances.
 /// See `{Request|Response}HeadersBuilder` for usage.
 @objcMembers
@@ -14,6 +20,10 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func add(name: String, value: String) -> Self {
+    if isRestrictedHeader(name: name) {
+      return self
+    }
+
     self.headers[name, default: []].append(value)
     return self
   }
@@ -26,6 +36,10 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func set(name: String, value: [String]) -> Self {
+    if isRestrictedHeader(name: name) {
+      return self
+    }
+
     self.headers[name] = value
     return self
   }
@@ -37,8 +51,22 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func remove(name: String) -> Self {
+    if isRestrictedHeader(name: name) {
+      return self
+    }
+
     self.headers[name] = nil
     return self
+  }
+
+  // MARK: - Internal
+
+  /// Allows for setting headers that are not publicly mutable (i.e., restricted headers).
+  ///
+  /// - parameter name: The header name.
+  /// - parameter value: Value the value associated to the header name.
+  func internalSet(name: String, value: [String]) {
+    self.headers[name] = value
   }
 
   /// Instantiate a new builder.
@@ -48,6 +76,8 @@ public class HeadersBuilder: NSObject {
     self.headers = headers
   }
 }
+
+// MARK: - Equatable
 
 extension HeadersBuilder {
   public override func isEqual(_ object: Any?) -> Bool {
