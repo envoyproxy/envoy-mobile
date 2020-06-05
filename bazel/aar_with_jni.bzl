@@ -210,6 +210,3 @@ EOF
     echo "Finished!"
     """,
     )
-
-def _aar_companion_artifacts(name, android_library):
-    return
