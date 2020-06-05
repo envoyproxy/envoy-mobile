@@ -4,12 +4,12 @@ licenses(["notice"])  # Apache 2
 
 alias(
     name = "ios_framework",
-    actual = "//library/swift/src:ios_framework",
+    actual = "@envoy_mobile//library/swift/src:ios_framework",
 )
 
 genrule(
     name = "ios_dist",
-    srcs = ["//:ios_framework"],
+    srcs = [":ios_framework"],
     outs = ["ios_out"],
     cmd = """
 unzip -o $< -d dist/
@@ -20,7 +20,7 @@ touch $@
 
 alias(
     name = "android_aar",
-    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
+    actual = "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
 )
 
 genrule(
