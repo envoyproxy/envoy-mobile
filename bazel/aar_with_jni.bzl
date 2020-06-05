@@ -131,16 +131,29 @@ EOF
         srcs = [_sources_name + "_deploy-src.jar"],
         outs = [_javadocs_name + ".jar"],
         cmd = """
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     orig_dir=$$PWD
     sources_dir=$$(mktemp -d)
+    echo "sources dir:"
+    echo $$sources_dir
+
     unzip $(SRCS) -d $$sources_dir > /dev/null
+    echo "===="
+    ls $$sources_dir
+    echo "===="
     tmp_dir=$$(mktemp -d)
+    echo "tmp dir:"
+    echo $$tmp_dir
     java -jar $(location @kotlin_dokka//jar) \
         $$sources_dir \
         -format javadoc \
         -output $$tmp_dir > /dev/null
     cd $$tmp_dir
+    echo "#################"
+    ls
+    echo "#################"
     zip -r $$orig_dir/$@ . > /dev/null
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         """,
         tools = ["@kotlin_dokka//jar"],
     )
