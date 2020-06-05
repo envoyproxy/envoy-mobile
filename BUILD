@@ -28,11 +28,11 @@ genrule(
     srcs = [
         "android_aar",
     ],
-    visibility = ["//visibility:public"],
-    tools = ["@bazel_tools//tools/zip:zipper"],
     outs = ["envoy_mobile.zip"],
     cmd = "$(location @bazel_tools//tools/zip:zipper) fc $@ $(SRCS)",
-    stamp = True
+    stamp = True,
+    tools = ["@bazel_tools//tools/zip:zipper"],
+    visibility = ["//visibility:public"],
 )
 
 genrule(
