@@ -19,32 +19,14 @@ touch $@
 )
 
 alias(
-    name = "android_pom",
-    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_pom",
-)
-
-alias(
     name = "android_aar",
     actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
-)
-
-alias(
-    name = "android_javadocs",
-    actual = "//library:javadocs",
-)
-
-alias(
-    name = "android_sources",
-    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:sources_jar_deploy-src.jar",
 )
 
 genrule(
     name = "android_zip",
     srcs = [
         "android_aar",
-        "android_pom",
-        "android_javadocs",
-        "android_sources",
     ],
     visibility = ["//visibility:public"],
     tools = ["@bazel_tools//tools/zip:zipper"],
@@ -58,26 +40,12 @@ genrule(
     srcs = [
         "android_aar",
     ],
-    outs = ["stub_android_dist_output"],
+    outs = ["output_in_dist_directory"],
     cmd = """
-cp $(location :android_aar) dist/envoy.aar
-chmod 755 dist/envoy.aar
-touch $@
-""",
-    stamp = True,
-)
-
-genrule(
-    name = "android_deploy",
-    srcs = [
-        "android_zip",
-    ],
-    outs = ["stub_android_deploy_output"],
-    cmd = """
-tmp_dir=$$(mktemp -d)
-unzip $(SRCS) -d $$tmp_dir
-chmod 755 $$tmp_dir/*
-mv $$tmp_dir/* ./dist
+for artifact in $(SRCS); do
+    chmod 755 $$artifact
+    mv $$artifact dist/
+done
 touch $@
 """,
     stamp = True,

@@ -17,12 +17,6 @@ aar_with_jni(
     visibility = ["//visibility:public"],
 )
 
-java_binary(
-    name = "sources_jar",
-    visibility = ["//visibility:public"],
-    runtime_deps = [":envoy_lib"],
-)
-
 kt_android_library(
     name = "envoy_lib",
     srcs = [
