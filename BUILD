@@ -42,12 +42,12 @@ genrule(
     ],
     outs = ["output_in_dist_directory"],
     cmd = """
-for artifact in $(SRCS); do
-    chmod 755 $$artifact
-    mv $$artifact dist/
-done
-touch $@
-""",
+    for artifact in $(SRCS); do
+        chmod 755 $$artifact
+        mv $$artifact dist/
+    done
+    touch $@
+    """,
     stamp = True,
 )
 
