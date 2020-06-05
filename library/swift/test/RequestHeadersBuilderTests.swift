@@ -99,7 +99,7 @@ final class RequestHeadersBuilderTests: XCTestCase {
       .internalSet(name: "x-envoy-mobile-foo", value: ["abc"])
       .build()
     XCTAssertEqual(["123"], headers.value(forName: ":x-foo"))
-    XCTAssertNil(["abc"], headers.value(forName: "x-envoy-mobile-foo"))
+    XCTAssertEqual(["abc"], headers.value(forName: "x-envoy-mobile-foo"))
   }
 
   func testIncludesRetryPolicyHeaders() {

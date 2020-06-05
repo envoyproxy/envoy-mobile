@@ -65,8 +65,12 @@ public class HeadersBuilder: NSObject {
   ///
   /// - parameter name: The header name.
   /// - parameter value: Value the value associated to the header name.
-  func internalSet(name: String, value: [String]) {
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  func internalSet(name: String, value: [String]) -> Self {
     self.headers[name] = value
+    return self
   }
 
   /// Instantiate a new builder.
