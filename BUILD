@@ -35,7 +35,7 @@ alias(
 
 alias(
     name = "android_sources",
-    actual = "//library:sources_jar",
+    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:sources_jar_deploy-src.jar",
 )
 
 genrule(
