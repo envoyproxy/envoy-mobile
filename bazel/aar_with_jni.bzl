@@ -1,5 +1,3 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
-load("@rules_android//android:rules.bzl", "android_binary")
 load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
 
 # This file is based on https://github.com/aj-michael/aar_with_jni which is
