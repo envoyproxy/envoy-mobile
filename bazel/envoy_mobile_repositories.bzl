@@ -120,8 +120,8 @@ def kotlin_repos():
     )
     http_jar(
         name = "kotlin_dokka",
-        sha256 = "4c73eee92dd652ea8e2afd7b20732cf863d4938a30f634d12c88fe64def89fd8",
-        url = "https://github.com/Kotlin/dokka/releases/download/0.9.18/dokka-fatjar-0.9.18.jar",
+        sha256 = "fc315c6aeab2015789f1a964e38bfc46758a6b7bf4f9671687d4e277f92a52a4",
+        url = "https://github.com/Kotlin/dokka/releases/download/0.10.1/dokka-fatjar-0.10.1.jar",
     )
 
 def android_repos():
