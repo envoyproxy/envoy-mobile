@@ -57,11 +57,11 @@ final class ViewController: UITableViewController {
 
     client
       .newStream()
-      .setOnResponseHeaders { [weak self] headers, endStream in
+      .setOnResponseHeaders { [weak self] headers, _ in
         let statusCode = headers.httpStatus ?? -1
         NSLog("Response status (\(requestID)): \(statusCode)\n\(headers)")
         self?.add(result: .success(Response(id: requestID, body: "Status: \(statusCode)",
-          serverHeader: headers.value(forName: "server")?.first ?? "")))
+                  serverHeader: headers.value(forName: "server")?.first ?? "")))
       }
       .setOnResponseData { data, _ in
         NSLog("Response data (\(requestID)): \(data.count) bytes")
