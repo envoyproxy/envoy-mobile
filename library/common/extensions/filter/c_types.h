@@ -26,12 +26,14 @@ typedef enum {
 /**
  * Function signature for header filter invocations.
  */
-typedef envoy_filter_headers_status_t (*envoy_filter_on_headers_f)(envoy_headers headers, bool end_stream, void* context);
+typedef envoy_filter_headers_status_t (*envoy_filter_on_headers_f)(envoy_headers headers,
+                                                                   bool end_stream, void* context);
 
 /**
  * Function signature for data filter invocations.
  */
-typedef envoy_filter_data_status_t (*envoy_filter_on_data_f)(envoy_data data, bool end_stream, void* context);
+typedef envoy_filter_data_status_t (*envoy_filter_on_data_f)(envoy_data data, bool end_stream,
+                                                             void* context);
 
 /**
  * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the
@@ -44,4 +46,3 @@ typedef struct {
   envoy_filter_on_data_f on_response_data;
   void* context;
 } envoy_http_filter;
-

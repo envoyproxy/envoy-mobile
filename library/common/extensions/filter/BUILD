@@ -7,7 +7,10 @@ envoy_package()
 envoy_cc_library(
     name = "platform_filter_lib",
     srcs = ["platform_filter.cc"],
-    hdrs = ["c_types.h", "platform_filter.h"],
+    hdrs = [
+        "c_types.h",
+        "platform_filter.h",
+    ],
     repository = "@envoy",
     deps = [
         "//library/common/buffer:utility_lib",
@@ -17,4 +20,3 @@ envoy_cc_library(
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
     ],
 )
-

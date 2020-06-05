@@ -12,14 +12,14 @@ namespace Http {
  * Harness to bridge Envoy filter invocations up to the platform layer.
  */
 class PlatformExtensionFilter final : public PassThroughFilter {
-public: 
+public:
   PlatformExtensionFilter(envoy_http_filter platform_filter) : platform_filter_(platform_filter) {}
 
   // StreamDecoderFilter
   FilterHeadersStatus decodeHeaders(RequestHeaderMap& headers, bool end_stream) override;
   FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
   FilterTrailersStatus decodeTrailers(RequestTrailerMap& trailers) override;
-  FilterMetadataStatus decodeMetadata(MetadataMap& metadata) override; 
+  FilterMetadataStatus decodeMetadata(MetadataMap& metadata) override;
 
   // StreamEncoderFilter
   FilterHeadersStatus encode100ContinueHeaders(ResponseHeaderMap& headers) override;

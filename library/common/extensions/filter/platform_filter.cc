@@ -10,26 +10,29 @@ namespace Envoy {
 namespace Http {
 
 FilterHeadersStatus mapStatus(envoy_filter_headers_status_t status) {
-  switch(status) {
-    case ENVOY_FILTER_HEADERS_STATUS_CONTINUE:
-      return FilterHeadersStatus::Continue;
-    case ENVOY_FILTER_HEADERS_STATUS_STOP_ITERATION:
-      return FilterHeadersStatus::StopIteration;
-    case ENVOY_FILTER_HEADERS_STATUS_CONTINUE_AND_END_STREAM:
-      return FilterHeadersStatus::ContinueAndEndStream;
-    case ENVOY_FILTER_HEADERS_STATUS_STOP_ALL_ITERATION_AND_BUFFER:
-      return FilterHeadersStatus::StopAllIterationAndBuffer;
-    default:
-      ASSERT(false, "unrecognized filter status from platform: {}");
-      return FilterHeadersStatus::Continue;
+  switch (status) {
+  case ENVOY_FILTER_HEADERS_STATUS_CONTINUE:
+    return FilterHeadersStatus::Continue;
+  case ENVOY_FILTER_HEADERS_STATUS_STOP_ITERATION:
+    return FilterHeadersStatus::StopIteration;
+  case ENVOY_FILTER_HEADERS_STATUS_CONTINUE_AND_END_STREAM:
+    return FilterHeadersStatus::ContinueAndEndStream;
+  case ENVOY_FILTER_HEADERS_STATUS_STOP_ALL_ITERATION_AND_BUFFER:
+    return FilterHeadersStatus::StopAllIterationAndBuffer;
+  default:
+    ASSERT(false, "unrecognized filter status from platform: {}");
+    return FilterHeadersStatus::Continue;
   }
 }
 
-FilterHeadersStatus PlatformExtensionFilter::decodeHeaders(RequestHeaderMap& headers, bool end_stream) {
-  return mapStatus(platform_filter_.on_request_headers(Utility::toBridgeHeaders(headers), end_stream, platform_filter_.context));
+FilterHeadersStatus PlatformExtensionFilter::decodeHeaders(RequestHeaderMap& headers,
+                                                           bool end_stream) {
+  return mapStatus(platform_filter_.on_request_headers(Utility::toBridgeHeaders(headers),
+                                                       end_stream, platform_filter_.context));
 }
 
-FilterDataStatus PlatformExtensionFilter::decodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
+FilterDataStatus PlatformExtensionFilter::decodeData(Buffer::Instance& /*data*/,
+                                                     bool /*end_stream*/) {
   return FilterDataStatus::Continue;
 }
 
@@ -41,15 +44,18 @@ FilterMetadataStatus PlatformExtensionFilter::decodeMetadata(MetadataMap& /*meta
   return FilterMetadataStatus::Continue;
 }
 
-FilterHeadersStatus PlatformExtensionFilter::encode100ContinueHeaders(ResponseHeaderMap& /*headers*/) {
+FilterHeadersStatus
+PlatformExtensionFilter::encode100ContinueHeaders(ResponseHeaderMap& /*headers*/) {
   return FilterHeadersStatus::Continue;
 }
 
-FilterHeadersStatus PlatformExtensionFilter::encodeHeaders(ResponseHeaderMap& /*headers*/, bool /*end_stream*/) {
+FilterHeadersStatus PlatformExtensionFilter::encodeHeaders(ResponseHeaderMap& /*headers*/,
+                                                           bool /*end_stream*/) {
   return FilterHeadersStatus::Continue;
 }
 
-FilterDataStatus PlatformExtensionFilter::encodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
+FilterDataStatus PlatformExtensionFilter::encodeData(Buffer::Instance& /*data*/,
+                                                     bool /*end_stream*/) {
   return FilterDataStatus::Continue;
 }
 
