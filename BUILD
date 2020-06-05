@@ -29,9 +29,9 @@ genrule(
         "android_aar",
     ],
     outs = ["envoy_mobile.zip"],
-    cmd = "$(location @bazel_tools//tools/zip:zipper) fc $@ $(SRCS)",
+    cmd = "$(location @envoy_mobile//bazel:zipper) fc $@ $(SRCS)",
     stamp = True,
-    tools = ["@bazel_tools//tools/zip:zipper"],
+    tools = ["@envoy_mobile//bazel:zipper"],
     visibility = ["//visibility:public"],
 )
 
