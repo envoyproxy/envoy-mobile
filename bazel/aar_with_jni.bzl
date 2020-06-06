@@ -123,19 +123,9 @@ def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, vi
     native.genrule(
         name = _manifest_name,
         outs = [_manifest_name + ".xml"],
-        cmd = """
-cat > $(OUTS) <<EOF
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.envoyproxy.envoymobile" >
-
-    <application>
-    </application>
-
-</manifest>
-EOF
-""",
+        cmd = "cat > $(OUTS) <<EOF {}EOF".format(_manifest("io.envoyproxy.envoymobile")),
     )
+
     native.genrule(
         name = name,
         outs = [_aar_output],
@@ -184,15 +174,7 @@ def _create_jni_library(name, native_deps = []):
     native.genrule(
         name = name + "_binary_manifest_generator",
         outs = [name + "_generated_AndroidManifest.xml"],
-        cmd = """
-cat > $(OUTS) <<EOF
-<manifest
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  package="does.not.matter">
-  <uses-sdk android:minSdkVersion="999"/>
-</manifest>
-EOF
-""",
+        cmd = """cat > $(OUTS) <<EOF {}EOF""".format(_manifest("does.not.matter")),
     )
 
     # This outputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
@@ -306,3 +288,15 @@ def _create_pom_xml(name, android_library):
         template_file = "//bazel:pom_template.xml",
     )
     return _pom_name
+
+def _manifest(package_name):
+    """
+    Helper function to create an appropriate manifest with a provided package name.
+
+    :pram package_name The package name used in the manifest file.
+    """
+    return """
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="{}" >
+</manifest>
+""".format(package_name)
