@@ -4,21 +4,21 @@ load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
 
 # This file is based on https://github.com/aj-michael/aar_with_jni which is
 # subject to the following copyright and license:
-
+#
 # MIT License
-
+#
 # Copyright (c) 2019 Adam Michael
-
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,28 +26,164 @@ load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-# android_library's implicit aar doesn't flatten its transitive
-# dependencies. When using the kotlin rules, the kt_android_library rule
-# creates a few underlying libraries, because of this the classes.jar in
-# the aar we built was empty. This rule separately builds the underlying
-# kt.jar file, and replaces the aar's classes.jar with the kotlin jar
-#
-# The final resulting artifacts are:
-#   {archive_name}.aar
-#   {archive_name}_pom.xml
-#   {archive_name}-sources.jar
-#   {archive_name}-javadoc.jar
 def aar_with_jni(name, android_library, manifest, archive_name, native_deps = [], proguard_rules = "", visibility = []):
-    manifest_name = name + "_android_manifest"
-    android_binary_name = name + "_bin"
-    jni_archive_name = archive_name + "_jni"
+    """
+    NOTE: The bazel android_library's implicit aar output doesn't flatten its transitive
+    dependencies. Additionally, when using the kotlin rules, the kt_android_library rule
+    creates a few underlying libraries which makes the declared sources and dependencies
+    a transitive dependency on the resulting android_library. The result of this is that
+    the classes.jar in the resulting aar will be empty. In order to workaround this issue,
+    this rule manually constructs the aar.
+
+
+    This macro exposes two gen rules:
+    1. `{name}` which outputs the aar, pom, sources.jar, javadoc.jar.
+    2. `{name}_aar_only` which outputs the aar.
+
+    :param name The name of the underlying gen rule.
+    :param android_library The android library target.
+    :native_deps The native dependency targets.
+    :proguard_rules The proguard rules used for the aar.
+    :visibility The visibility of the underlying gen rule.
+    """
+
+    # Create the aar
+    _classes_jar = _create_classes_jar(archive_name, manifest, android_library)
+    _jni_archive = _create_jni_library(archive_name, native_deps)
+    _aar_output = _create_aar(name + "_aar_only", archive_name, _classes_jar, _jni_archive, proguard_rules, visibility)
+
+    # Generate other needed files for a maven publish
+    _sources_name, _javadocs_name = _create_sources_javadocs(name, android_library)
+    _pom_name = _create_pom_xml(name, android_library)
+    native.genrule(
+        name = name,
+        srcs = [
+            _aar_output,
+            _pom_name,
+            _sources_name + "_deploy-src.jar",
+            _javadocs_name,
+        ],
+        outs = [
+            archive_name + ".aar",
+            archive_name + "_pom.xml",
+            archive_name + "-sources.jar",
+            archive_name + "-javadoc.jar",
+        ],
+        visibility = visibility,
+        cmd = """
+                # Set source variables
+                set -- $(SRCS)
+                src_aar=$$1
+                src_pom_xml=$$2
+                src_sources_jar=$$3
+                src_javadocs=$$4
+
+                # Set output variables
+                set -- $(OUTS)
+                out_aar=$$1
+                out_pom_xml=$$2
+                out_sources_jar=$$3
+                out_javadocs=$$4
+
+                echo "Outputting pom.xml, sources.jar, and javadocs.jar..."
+                cp $$src_aar $$out_aar
+                cp $$src_pom_xml $$out_pom_xml
+                cp $$src_sources_jar $$out_sources_jar
+                cp $$src_javadocs $$out_javadocs
+                echo "Finished!"
+            """,
+    )
+
+def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, visibility):
+    """
+    This macro rule manually creates an aar artifact.
+
+    The underlying gen rule does the following:
+    1. Create the final aar manifest file.
+    2. Unzips the apk file generated by the `jni_archive_name` into a temporary directory.
+    3. Renames the `lib` directory to `jni` directory since the aar requires the so files
+       to be in the `jni` directory.
+    4. Copy the android binary `jar` output from the `android_binary_name` as `classes.jar`.
+    5. Copy the proguard rules specified in the macro parameters.
+    6. Override the apk's aar with a generated one.
+    7. Zip everything in the temporary directory into the output.
+
+
+    :param name Name of the aar generation rule.
+    :param archive_name Name of the resulting aar archive.
+    :param classes_jar The classes.jar file which contains all the kotlin/java classes.
+    :param jni_archive The apk with the desired jni libraries.
+    :param proguard_rules The proguard.txt file.
+    :param visibility The bazel visibility for the underlying rule.
+    """
+    _aar_output = name + "_local.aar"
+
+    # This is to generate the envoy mobile aar AndroidManifest.xml
+    _manifest_name = name + "_android_manifest"
+    native.genrule(
+        name = _manifest_name,
+        outs = [_manifest_name + ".xml"],
+        cmd = """
+cat > $(OUTS) <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.envoyproxy.envoymobile" >
+
+    <application>
+    </application>
+
+</manifest>
+EOF
+""",
+    )
+    native.genrule(
+        name = name,
+        outs = [_aar_output],
+        srcs = [
+            classes_jar,
+            jni_archive,
+            _manifest_name,
+            proguard_rules,
+        ],
+        cmd = """
+            # Set source variables
+            set -- $(SRCS)
+            src_classes_jar=$$1
+            src_jni_archive_apk=$$2
+            src_manifest_xml=$$3
+            src_proguard_txt=$$4
+
+            original_directory=$$PWD
+
+            echo "Constructing aar..."
+            final_dir=$$(mktemp -d)
+            cp $$src_classes_jar $$final_dir/classes.jar
+            cd $$final_dir
+            unzip $$original_directory/$$src_jni_archive_apk lib/* > /dev/null
+            mv lib jni
+            cp $$original_directory/$$src_proguard_txt ./proguard.txt
+            cp $$original_directory/$$src_manifest_xml AndroidManifest.xml
+            zip -r tmp.aar * > /dev/null
+            cp tmp.aar $$original_directory/$@
+        """,
+        visibility = visibility,
+    )
+    return _aar_output
+
+def _create_jni_library(name, native_deps = []):
+    """
+    Creates an apk containing the jni so files.
+
+    :param name The name of the top level macro.
+    :param native_deps The list of native dependency targets.
+    """
     cc_lib_name = name + "_jni_interface_lib"
+    jni_archive_name = name + "_jni"
 
     # Create a dummy manifest file for our android_binary
     native.genrule(
-        name = archive_name + "_binary_manifest_generator",
-        outs = [archive_name + "_generated_AndroidManifest.xml"],
+        name = name + "_binary_manifest_generator",
+        outs = [name + "_generated_AndroidManifest.xml"],
         cmd = """
 cat > $(OUTS) <<EOF
 <manifest
@@ -62,10 +198,10 @@ EOF
     # This outputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
     android_binary(
         name = jni_archive_name,
-        manifest = archive_name + "_generated_AndroidManifest.xml",
+        manifest = name + "_generated_AndroidManifest.xml",
         custom_package = "does.not.matter",
         srcs = [],
-        deps = [android_library, cc_lib_name],
+        deps = [cc_lib_name],
     )
 
     # We wrap our native so dependencies in a cc_library because android_binaries
@@ -76,6 +212,18 @@ EOF
         srcs = native_deps,
     )
 
+    return jni_archive_name + "_unsigned.apk"
+
+def _create_classes_jar(name, manifest, android_library):
+    """
+    Creates the classes.jar which contains all the kotlin/java classes
+
+    :param name The name of the top level macro
+    :param manifest The manifest file used to create the initial apk
+    :param android_library The android library target
+    """
+    android_binary_name = name + "_bin"
+
     # This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/{name}_bin_deploy.jar
     # This jar has all the classes needed for our aar and will be our `classes.jar`
     android_binary(
@@ -85,44 +233,40 @@ EOF
         deps = [android_library],
     )
 
-    # This is to generate the envoy mobile aar AndroidManifest.xml
     native.genrule(
-        name = manifest_name,
-        outs = [manifest_name + ".xml"],
+        name = name + "_classes_jar",
+        outs = [name + "_classes.jar"],
+        srcs = [android_binary_name + "_deploy.jar"],
         cmd = """
-cat > $(OUTS) <<EOF
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.envoyproxy.envoymobile" >
-
-    <application>
-    </application>
-
-</manifest>
-EOF
-""",
+            original_directory=$$PWD
+            classes_dir=$$(mktemp -d)
+            echo "Creating classes.jar from $(SRCS)"
+            pushd $$classes_dir
+            unzip $$original_directory/$(SRCS) "io/envoyproxy/*" "META-INF/" > /dev/null
+            zip -r classes.jar * > /dev/null
+            popd
+            cp $$classes_dir/classes.jar $@
+        """,
     )
 
-    # Internal names for aar companion artifacts:
-    # 1. pom.xml generation rule
-    # 2. sources jar generation rule (via java_binary)
-    # 3. java docs jar generation rule (from sources jar)
-    _pom_name = name + "_envoy_pom_xml"
+    return name + "_classes.jar"
+
+def _create_sources_javadocs(name, android_library):
+    """
+    Creates the sources.jar and javadocs.jar for the provided android library.
+    This rule generates a sources jar first using a proxy java_binary's result and then uses
+    kotlin/dokka's CLI tool to generate javadocs from the sources.jar.
+
+    :param name The name of the top level macro.
+    :param android_library The android library which to extract the sources and javadocs.
+    """
     _sources_name = name + "_android_sources_jar"
     _javadocs_name = name + "_android_javadocs"
-
-    # This is for the pom xml. It has a public visibility since this can be accessed in the root BUILD file
-    pom_file(
-        name = _pom_name,
-        targets = [android_library],
-        template_file = "//bazel:pom_template.xml",
-    )
 
     # This implicitly outputs {name}_deploy-src.jar which is the sources jar
     native.java_binary(
         name = _sources_name,
         runtime_deps = [android_library],
-        visibility = visibility,
     )
 
     # This takes all the source files from the source jar and creates a javadoc.jar from it
@@ -131,7 +275,7 @@ EOF
         srcs = [_sources_name + "_deploy-src.jar"],
         outs = [_javadocs_name + ".jar"],
         cmd = """
-            orig_dir=$$PWD
+            original_directory=$$PWD
             sources_dir=$$(mktemp -d)
             unzip $(SRCS) -d $$sources_dir > /dev/null
             tmp_dir=$$(mktemp -d)
@@ -140,97 +284,25 @@ EOF
                 -format javadoc \
                 -output $$tmp_dir > /dev/null
             cd $$tmp_dir
-            zip -r $$orig_dir/$@ . > /dev/null
+            zip -r $$original_directory/$@ . > /dev/null
         """,
         tools = ["@kotlin_dokka//jar"],
     )
+    return _sources_name, _javadocs_name
 
-    # This gen rule does the following:
-    # 1. Unzips the apk file generated by the `jni_archive_name` into a temporary directory
-    # 2. Renames the `lib` directory to `jni` directory since the aar requires the so files
-    #    to be in the `jni` directory
-    # 3. Copy the android binary `jar` output from the `android_binary_name` as `classes.jar`
-    # 4. Copy the proguard rules specified in the macro parameters
-    # 5. Override the apk's aar with a generated one
-    # 6. Zip everything in the temporary directory into the output
-    native.genrule(
-        name = name,
-        outs = [
-            archive_name + "_local.aar",
-        ],
-        srcs = [
-            android_binary_name + "_deploy.jar",
-            jni_archive_name + "_unsigned.apk",
-            manifest_name,
-            proguard_rules,
-        ],
-        cmd = """
-            # Set source variables
-            set -- $(SRCS)
-            src_deploy_jar=$$1
-            src_jni_archive_apk=$$2
-            src_manifest_xml=$$3
-            src_proguard_txt=$$4
+def _create_pom_xml(name, android_library):
+    """
+    Creates a pom xml associated with the android_library target.
 
-            orig_dir=$$PWD
-            classes_dir=$$(mktemp -d)
-            echo "Creating classes.jar from $$src_deploy_jar"
-            cd $$classes_dir
-            unzip $$orig_dir/$$src_deploy_jar "io/envoyproxy/*" "META-INF/" > /dev/null
-            zip -r classes.jar * > /dev/null
-            cd $$orig_dir
+    :param name The name of the top level macro.
+    :param android_library The android library to generate a pom xml for.
+    """
+    _pom_name = name + "_envoy_pom_xml"
 
-            echo "Constructing aar..."
-            final_dir=$$(mktemp -d)
-            cp $$classes_dir/classes.jar $$final_dir
-            cd $$final_dir
-            unzip $$orig_dir/$$src_jni_archive_apk lib/* > /dev/null
-            mv lib jni
-            cp $$orig_dir/$$src_proguard_txt ./proguard.txt
-            cp $$orig_dir/$$src_manifest_xml AndroidManifest.xml
-            zip -r tmp.aar * > /dev/null
-            mv tmp.aar $$orig_dir/$@
-
-        """,
-        visibility = visibility,
+    # This is for the pom xml. It has a public visibility since this can be accessed in the root BUILD file
+    pom_file(
+        name = _pom_name,
+        targets = [android_library],
+        template_file = "//bazel:pom_template.xml",
     )
-
-    native.genrule(
-        name = name + "_all",
-        srcs = [
-            name,
-            _pom_name,
-            _sources_name + "_deploy-src.jar",
-            _javadocs_name,
-        ],
-        outs = [
-            archive_name + ".aar",
-            archive_name + "_pom.xml",
-            archive_name + "-sources.jar",
-            archive_name + "-javadoc.jar",
-        ],
-        visibility = visibility,
-        cmd = """
-            # Set source variables
-            set -- $(SRCS)
-            src_aar=$$1
-            src_pom_xml=$$2
-            src_sources_jar=$$3
-            src_javadocs=$$4
-
-            # Set output variables
-            set -- $(OUTS)
-            out_aar=$$1
-            out_pom_xml=$$2
-            out_sources_jar=$$3
-            out_javadocs=$$4
-
-            echo "Outputting pom.xml, sources.jar, and javadocs.jar..."
-            mv $$src_aar $$out_aar
-            mv $$src_pom_xml $$out_pom_xml
-            mv $$src_sources_jar $$out_sources_jar
-            mv $$src_javadocs $$out_javadocs
-            echo "Finished!"
-        """,
-    )
-
+    return _pom_name
