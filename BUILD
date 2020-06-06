@@ -26,7 +26,7 @@ alias(
 genrule(
     name = "android_zip",
     srcs = [
-        "android_aar",
+        "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_all",
     ],
     outs = ["envoy_mobile.zip"],
     cmd = "$(location @envoy_mobile//bazel:zipper) fc $@ $(SRCS)",
@@ -38,7 +38,7 @@ genrule(
 genrule(
     name = "android_dist",
     srcs = [
-        "android_aar",
+        "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_all",
     ],
     outs = ["output_in_dist_directory"],
     cmd = """

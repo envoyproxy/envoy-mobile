@@ -59,14 +59,6 @@ EOF
 """,
     )
 
-    # We wrap our native so dependencies in a cc_library because android_binaries
-    # require a library target as dependencies in order to generate the appropriate
-    # architectures in the directory `lib/`
-    cc_library(
-        name = cc_lib_name,
-        srcs = native_deps,
-    )
-
     # This outputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
     android_binary(
         name = jni_archive_name,
@@ -74,6 +66,14 @@ EOF
         custom_package = "does.not.matter",
         srcs = [],
         deps = [android_library, cc_lib_name],
+    )
+
+    # We wrap our native so dependencies in a cc_library because android_binaries
+    # require a library target as dependencies in order to generate the appropriate
+    # architectures in the directory `lib/`
+    cc_library(
+        name = cc_lib_name,
+        srcs = native_deps,
     )
 
     # This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/{name}_bin_deploy.jar
@@ -131,16 +131,16 @@ EOF
         srcs = [_sources_name + "_deploy-src.jar"],
         outs = [_javadocs_name + ".jar"],
         cmd = """
-    orig_dir=$$PWD
-    sources_dir=$$(mktemp -d)
-    unzip $(SRCS) -d $$sources_dir > /dev/null
-    tmp_dir=$$(mktemp -d)
-    java -jar $(location @kotlin_dokka//jar) \
-        $$sources_dir \
-        -format javadoc \
-        -output $$tmp_dir > /dev/null
-    cd $$tmp_dir
-    zip -r $$orig_dir/$@ . > /dev/null
+            orig_dir=$$PWD
+            sources_dir=$$(mktemp -d)
+            unzip $(SRCS) -d $$sources_dir > /dev/null
+            tmp_dir=$$(mktemp -d)
+            java -jar $(location @kotlin_dokka//jar) \
+                $$sources_dir \
+                -format javadoc \
+                -output $$tmp_dir > /dev/null
+            cd $$tmp_dir
+            zip -r $$orig_dir/$@ . > /dev/null
         """,
         tools = ["@kotlin_dokka//jar"],
     )
@@ -155,14 +155,53 @@ EOF
     # 6. Zip everything in the temporary directory into the output
     native.genrule(
         name = name,
+        outs = [
+            archive_name + "_local.aar",
+        ],
         srcs = [
             android_binary_name + "_deploy.jar",
             jni_archive_name + "_unsigned.apk",
             manifest_name,
+            proguard_rules,
+        ],
+        cmd = """
+            # Set source variables
+            set -- $(SRCS)
+            src_deploy_jar=$$1
+            src_jni_archive_apk=$$2
+            src_manifest_xml=$$3
+            src_proguard_txt=$$4
+
+            orig_dir=$$PWD
+            classes_dir=$$(mktemp -d)
+            echo "Creating classes.jar from $$src_deploy_jar"
+            cd $$classes_dir
+            unzip $$orig_dir/$$src_deploy_jar "io/envoyproxy/*" "META-INF/" > /dev/null
+            zip -r classes.jar * > /dev/null
+            cd $$orig_dir
+
+            echo "Constructing aar..."
+            final_dir=$$(mktemp -d)
+            cp $$classes_dir/classes.jar $$final_dir
+            cd $$final_dir
+            unzip $$orig_dir/$$src_jni_archive_apk lib/* > /dev/null
+            mv lib jni
+            cp $$orig_dir/$$src_proguard_txt ./proguard.txt
+            cp $$orig_dir/$$src_manifest_xml AndroidManifest.xml
+            zip -r tmp.aar * > /dev/null
+            mv tmp.aar $$orig_dir/$@
+
+        """,
+        visibility = visibility,
+    )
+
+    native.genrule(
+        name = name + "_all",
+        srcs = [
+            name,
             _pom_name,
             _sources_name + "_deploy-src.jar",
             _javadocs_name,
-            proguard_rules,
         ],
         outs = [
             archive_name + ".aar",
@@ -172,47 +211,26 @@ EOF
         ],
         visibility = visibility,
         cmd = """
-    # Set source variables
-    set -- $(SRCS)
-    src_deploy_jar=$$1
-    src_jni_archive_apk=$$2
-    src_manifest_xml=$$3
-    src_pom_xml=$$4
-    src_sources_jar=$$5
-    src_javadocs=$$6
-    src_proguard_txt=$$7
+            # Set source variables
+            set -- $(SRCS)
+            src_aar=$$1
+            src_pom_xml=$$2
+            src_sources_jar=$$3
+            src_javadocs=$$4
 
-    # Set output variables
-    set -- $(OUTS)
-    out_aar=$$1
-    out_pom_xml=$$2
-    out_sources_jar=$$3
-    out_javadocs=$$4
+            # Set output variables
+            set -- $(OUTS)
+            out_aar=$$1
+            out_pom_xml=$$2
+            out_sources_jar=$$3
+            out_javadocs=$$4
 
-    orig_dir=$$PWD
-    classes_dir=$$(mktemp -d)
-    echo "Creating classes.jar from $$src_deploy_jar"
-    cd $$classes_dir
-    unzip $$orig_dir/$$src_deploy_jar "io/envoyproxy/*" "META-INF/" > /dev/null
-    zip -r classes.jar * > /dev/null
-    cd $$orig_dir
-
-    echo "Constructing aar..."
-    final_dir=$$(mktemp -d)
-    cp $$classes_dir/classes.jar $$final_dir
-    cd $$final_dir
-    unzip $$orig_dir/$$src_jni_archive_apk lib/* > /dev/null
-    mv lib jni
-    cp $$orig_dir/$$src_proguard_txt ./proguard.txt
-    cp $$orig_dir/$$src_manifest_xml AndroidManifest.xml
-    zip -r tmp.aar * > /dev/null
-
-    echo "Outputting pom.xml, sources.jar, and javadocs.jar..."
-    mv tmp.aar $$orig_dir/$$out_aar
-    cd $$orig_dir
-    mv $$src_pom_xml $$out_pom_xml
-    mv $$src_sources_jar $$out_sources_jar
-    mv $$src_javadocs $$out_javadocs
-    echo "Finished!"
-    """,
+            echo "Outputting pom.xml, sources.jar, and javadocs.jar..."
+            mv $$src_aar $$out_aar
+            mv $$src_pom_xml $$out_pom_xml
+            mv $$src_sources_jar $$out_sources_jar
+            mv $$src_javadocs $$out_javadocs
+            echo "Finished!"
+        """,
     )
+
