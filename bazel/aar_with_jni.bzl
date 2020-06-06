@@ -158,6 +158,7 @@ def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, vi
         """,
         visibility = visibility,
     )
+
     return _aar_output
 
 def _create_jni_library(name, native_deps = []):
@@ -270,6 +271,7 @@ def _create_sources_javadocs(name, android_library):
         """,
         tools = ["@kotlin_dokka//jar"],
     )
+
     return _sources_name, _javadocs_name
 
 def _create_pom_xml(name, android_library):
@@ -287,6 +289,7 @@ def _create_pom_xml(name, android_library):
         targets = [android_library],
         template_file = "//bazel:pom_template.xml",
     )
+
     return _pom_name
 
 def _manifest(package_name):
