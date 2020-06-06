@@ -142,8 +142,13 @@ EOF
     ls $$sources_dir
     echo "===="
     tmp_dir=$$(mktemp -d)
+    echo "===="
     echo "tmp dir:"
     echo $$tmp_dir
+    echo "===="
+    ls $$sources_dir
+    echo "===="
+
     java -jar $(location @kotlin_dokka//jar) \
         $$sources_dir \
         -format javadoc \
