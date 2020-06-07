@@ -272,7 +272,7 @@ def _create_sources_javadocs(name, android_library):
         unzip $(SRCS) -d $$sources_dir > /dev/null
         tmp_dir=$$(mktemp -d)
         java -jar $(location @kotlin_dokka//jar) \
-            $$sources_dir \
+            library/java/src/ \
             -format javadoc \
             -output $$tmp_dir > /dev/null
         cd $$tmp_dir
