@@ -11,7 +11,8 @@ aar_with_jni(
     archive_name = "envoy",
     manifest = "EnvoyManifest.xml",
     native_deps = [
-        "//library/common:libenvoy_jni.so",
+# TODO: fix this
+#        "//library/common:libenvoy_jni.so",
     ],
     proguard_rules = "//library:proguard_rules",
     visibility = ["//visibility:public"],
