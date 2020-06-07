@@ -259,6 +259,30 @@ def _create_sources_javadocs(name, android_library):
     # This takes all the source files from the source jar and creates a javadoc.jar from it
     native.genrule(
         name = _javadocs_name,
+        srcs = [_sources_name + "_deploy-src.jar"],
+        outs = [_javadocs_name + ".jar"],
+        message = "Generating javadocs...",
+        cmd = """
+        echo "~~~~~~~~~~~~~~~"
+        java -version
+        echo "~~~~~~~~~~~~~~~"
+        original_directory=$$PWD
+        sources_dir=$$(mktemp -d)
+        unzip $(SRCS) -d $$sources_dir > /dev/null
+        tmp_dir=$$(mktemp -d)
+        java -jar $(location @kotlin_dokka//jar) \
+            library/java/src/ \
+            -format javadoc \
+            -output $$tmp_dir > /dev/null
+        cd $$tmp_dir
+        zip -r $$original_directory/$@ . > /dev/null
+        """,
+        visibility = ["//visibility:public"],
+        tools = ["@kotlin_dokka//jar"],
+    )
+
+    native.genrule(
+        name = _javadocs_name+"_empty",
         srcs = [],
         outs = [_javadocs_name + ".jar"],
         message = "Generating javadocs...",
