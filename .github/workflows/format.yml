@@ -1,10 +1,11 @@
 name: format
 
+
 on:
   push:
-    branches:
-      - master
-  pull_request:
+    tags:
+      - v*
+
 
 jobs:
   formatall:

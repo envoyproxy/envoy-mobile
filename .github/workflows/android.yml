@@ -1,10 +1,10 @@
 name: android
 
+
 on:
   push:
-    branches:
-      - master
-  pull_request:
+    tags:
+      - v*
 
 jobs:
   linuxdist:
