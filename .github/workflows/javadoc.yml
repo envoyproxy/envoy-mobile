@@ -1,0 +1,46 @@
+name: javadocs
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  linuxdist:
+    name: linux_dist
+    runs-on: ubuntu-18.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/linux_ci_setup.sh
+      # TODO: parallelize these two jobs
+      - name: 'javadoc'
+        run: |
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
+          bazel build --fat_apk_cpu=x86 //library/kotlin/src/io/envoyproxy/envoymobile:android_aar_android_javadocs
+      - name: 'aar javadoc'
+        run: |
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
+          bazel build --fat_apk_cpu=x86 //:javadocs
+  macdist:
+    name: mac_dist
+    runs-on: macOS-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - name: 'javadoc'
+        run: |
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
+          bazel build --fat_apk_cpu=x86 //library/kotlin/src/io/envoyproxy/envoymobile:android_aar_android_javadocs
+      - name: 'aar javadoc'
+        run: |
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
+          bazel build --fat_apk_cpu=x86 //:javadocs
