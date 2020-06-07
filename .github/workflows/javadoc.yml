@@ -29,9 +29,9 @@ jobs:
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
           bazel build --fat_apk_cpu=x86 //library/kotlin/src/io/envoyproxy/envoymobile:android_aar_android_javadocs_empty
       - name: 'aar javadoc'
-          run: |
-            export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-            bazel build --fat_apk_cpu=x86 //library/kotlin/src/io/envoyproxy/envoymobile:android_aar_android_javadocs
+        run: |
+          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
+          bazel build --fat_apk_cpu=x86 //library/kotlin/src/io/envoyproxy/envoymobile:android_aar_android_javadocs
   macdist:
     name: mac_dist
     runs-on: macOS-latest
