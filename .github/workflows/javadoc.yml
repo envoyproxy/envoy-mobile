@@ -1,4 +1,4 @@
-name: javadocs
+name: javadocstesting
 
 on:
   push:
