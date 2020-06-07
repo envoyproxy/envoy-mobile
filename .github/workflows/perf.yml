@@ -1,10 +1,10 @@
 name: perf
 
-
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - master
+  pull_request:
 
 jobs:
   sizecurrent:

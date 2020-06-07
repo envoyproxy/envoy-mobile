@@ -1,10 +1,11 @@
 name: artifacts
 
-
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - master
+    paths:
+      - VERSION
 
 jobs:
   master_android_dist:
