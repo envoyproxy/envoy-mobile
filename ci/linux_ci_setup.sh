@@ -6,7 +6,7 @@ set -e
 # workaround https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
 sudo rm -rf /var/lib/apt/lists/*
 
-wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 656408E390CFB1F5
 
 # We have seen problems with heroku's keys.
 # We do not use heroku, but it is pre-installed in the github actions machines.
