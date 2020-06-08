@@ -10,13 +10,13 @@ sudo rm -rf /var/lib/apt/lists/*
 # We have seen problems with heroku's keys.
 # We do not use heroku, but it is pre-installed in the github actions machines.
 echo "Getting heroku keys..."
-wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
 curl https://cli-assets.heroku.com/apt/release.key | sudo apt-key add -
 
 # https://github.com/bazelbuild/bazel/issues/11470#issuecomment-633205152
 echo "Getting bazel-release gpg..."
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
 
+wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
 sudo apt-get clean
 sudo apt-get update
 
