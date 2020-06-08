@@ -16,8 +16,7 @@ curl https://cli-assets.heroku.com/apt/release.key | sudo apt-key add -
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
 
 sudo apt-get clean
-sudo apt-get update -y
-apt-get install mongodb-org -y
+sudo apt-get update
 
 export DEBIAN_FRONTEND=noninteractive
 sudo apt-get install -y wget software-properties-common make cmake git \
