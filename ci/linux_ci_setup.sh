@@ -13,6 +13,7 @@ curl https://cli-assets.heroku.com/apt/release.key | sudo apt-key add -
 # https://github.com/bazelbuild/bazel/issues/11470#issuecomment-633205152
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
 
+wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
 sudo apt-get clean
 sudo apt-get update
 
