@@ -6,6 +6,8 @@ set -e
 # workaround https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
 sudo rm -rf /var/lib/apt/lists/*
 
+# Workaround for the mongdb issue where they are tying the 4.4 gpg key to the 4.2 version
+# https://github.com/actions/virtual-environments/issues/1019
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 656408E390CFB1F5
 
 # We have seen problems with heroku's keys.
