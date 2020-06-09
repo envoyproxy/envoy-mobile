@@ -10,7 +10,7 @@ envoy_mobile_swift_test(
         "MockEnvoyHTTPStream.swift",
     ],
     deps = [
-        "@envoy_mobile//library/objective-c:envoy_engine_objc_lib",
+        "//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 
@@ -22,7 +22,7 @@ envoy_mobile_swift_test(
         "MockEnvoyHTTPStream.swift",
     ],
     deps = [
-        "@envoy_mobile//library/objective-c:envoy_engine_objc_lib",
+        "//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 
@@ -39,7 +39,7 @@ envoy_mobile_swift_test(
         "GRPCResponseHandlerTests.swift",
     ],
     deps = [
-        "@envoy_mobile//library/objective-c:envoy_engine_objc_lib",
+        "//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 

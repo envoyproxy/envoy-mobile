@@ -19,11 +19,11 @@ envoy_cc_library(
     deps = [
         ":envoy_mobile_main_common_lib",
         "@envoy//include/envoy/server:lifecycle_notifier_interface",
-        "@envoy_mobile//library/common/buffer:utility_lib",
-        "@envoy_mobile//library/common/extensions:registry",
-        "@envoy_mobile//library/common/http:dispatcher_lib",
-        "@envoy_mobile//library/common/http:header_utility_lib",
-        "@envoy_mobile//library/common/types:c_types_lib",
+        "//library/common/buffer:utility_lib",
+        "//library/common/extensions:registry",
+        "//library/common/http:dispatcher_lib",
+        "//library/common/http:header_utility_lib",
+        "//library/common/types:c_types_lib",
     ],
 )
 

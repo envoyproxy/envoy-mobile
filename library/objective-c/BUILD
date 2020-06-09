@@ -24,5 +24,5 @@ objc_library(
         "UIKit",
     ],
     visibility = ["//visibility:public"],
-    deps = ["@envoy_mobile//library/common:envoy_main_interface_lib"],
+    deps = ["//library/common:envoy_main_interface_lib"],
 )

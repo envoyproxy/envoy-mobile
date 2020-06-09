@@ -11,9 +11,9 @@ aar_with_jni(
     archive_name = "envoy",
     manifest = "EnvoyManifest.xml",
     native_deps = [
-        "@envoy_mobile//library/common:libenvoy_jni.so",
+        "//library/common:libenvoy_jni.so",
     ],
-    proguard_rules = "@envoy_mobile//library:proguard_rules",
+    proguard_rules = "//library:proguard_rules",
     visibility = ["//visibility:public"],
 )
 
@@ -27,9 +27,9 @@ kt_android_library(
     visibility = ["//visibility:public"],
     deps = [
         ":envoy_interfaces_lib",
-        "@envoy_mobile//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
-        "@envoy_mobile//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
-        "@envoy_mobile//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
+        "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
     ],
 )
 
@@ -66,7 +66,7 @@ envoy_mobile_kt_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "@envoy_mobile//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
+        "//library/java/src/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
     ],
 )
 
@@ -74,5 +74,5 @@ detekt(
     name = "envoy_lib_lint",
     srcs = glob(["*.kt"]),
     build_upon_default_config = True,
-    cfgs = ["@envoy_mobile//:kotlin_lint_config"],
+    cfgs = ["//:kotlin_lint_config"],
 )

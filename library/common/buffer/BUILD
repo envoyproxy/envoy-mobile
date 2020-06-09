@@ -10,7 +10,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "@envoy//include/envoy/buffer:buffer_interface",
-        "@envoy_mobile//library/common/types:c_types_lib",
+        "//library/common/types:c_types_lib",
     ],
 )
 
@@ -23,6 +23,6 @@ envoy_cc_library(
         ":bridge_fragment_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//source/common/buffer:buffer_lib",
-        "@envoy_mobile//library/common/types:c_types_lib",
+        "//library/common/types:c_types_lib",
     ],
 )

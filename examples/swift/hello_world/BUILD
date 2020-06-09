@@ -6,7 +6,7 @@ licenses(["notice"])  # Apache 2
 swift_library(
     name = "appmain",
     srcs = glob(["*.swift"]),
-    deps = ["@envoy_mobile//dist:envoy_mobile_ios"],
+    deps = ["//dist:envoy_mobile_ios"],
 )
 
 ios_application(

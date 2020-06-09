@@ -4,7 +4,7 @@ licenses(["notice"])  # Apache 2
 
 alias(
     name = "ios_framework",
-    actual = "@envoy_mobile//library/swift/src:ios_framework",
+    actual = "//library/swift/src:ios_framework",
     visibility = ["//visibility:public"],
 )
 
@@ -21,14 +21,14 @@ touch $@
 
 alias(
     name = "android_aar",
-    actual = "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_only_aar",
+    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar_only_aar",
     visibility = ["//visibility:public"],
 )
 
 genrule(
     name = "android_zip",
     srcs = [
-        "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
     ],
     outs = ["envoy_mobile.zip"],
     cmd = "$(location @envoy_mobile//bazel:zipper) fc $@ $(SRCS)",
@@ -40,7 +40,7 @@ genrule(
 genrule(
     name = "android_dist",
     srcs = [
-        "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
     ],
     outs = ["output_in_dist_directory"],
     cmd = """

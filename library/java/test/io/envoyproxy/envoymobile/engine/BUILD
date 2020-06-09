@@ -8,6 +8,6 @@ envoy_mobile_kt_test(
         "EnvoyConfigurationTest.kt",
     ],
     deps = [
-        "@envoy_mobile//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
 )

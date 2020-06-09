@@ -16,7 +16,7 @@ kt_android_library(
         "res/values/colors.xml",
         "res/values/strings.xml",
     ]),
-    visibility = ["@envoy_mobile//visibility:public"],
+    visibility = ["//visibility:public"],
     deps = [
         "@androidsdk//com.android.support:recyclerview-v7-25.0.0",
     ],
