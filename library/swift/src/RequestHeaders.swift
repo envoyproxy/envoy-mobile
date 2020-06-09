@@ -1,3 +1,4 @@
+// swiftlint:disable:force_unwrapping - Programmer error if properties are nil when accessed
 import Foundation
 
 /// Headers representing an outbound request.
