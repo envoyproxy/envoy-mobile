@@ -33,7 +33,7 @@ genrule(
     outs = ["envoy_mobile.zip"],
     cmd = "$(location //bazel:zipper) fc $@ $(SRCS)",
     stamp = True,
-    tools = ["@envoy_mobile//bazel:zipper"],
+    tools = ["//bazel:zipper"],
     visibility = ["//visibility:public"],
 )
 
