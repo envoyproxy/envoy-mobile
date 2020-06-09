@@ -26,6 +26,7 @@ void ExtensionRegistry::registerFactories() {
   // socket_interface_impl.h and immediately destroy.
   auto ptr = std::make_unique<Network::SocketInterfaceImpl>();
   ptr.reset(nullptr);
+  Envoy::Extensions::HttpFilters::Harness::forceRegisterHarnessFilterFactory();
 }
 
 } // namespace Envoy

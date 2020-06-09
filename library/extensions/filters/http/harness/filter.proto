@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package envoymobile.extensions.filters.http.harness;
+
+import "validate/validate.proto";
+
+message Harness {
+    string name = 1 [(validate.rules).string.min_bytes = 1];
+}
