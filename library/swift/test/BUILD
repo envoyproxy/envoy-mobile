@@ -10,7 +10,7 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
-    name = "grpc_active_stream_tests",
+    name = "grpc_stream_tests",
     srcs = [
         "GRPCStreamTests.swift",
         "MockEnvoyEngine.swift",
