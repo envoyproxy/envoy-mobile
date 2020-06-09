@@ -7,11 +7,11 @@ import Foundation
 /// Constructed via `StreamClient`, and used to assign response callbacks
 /// prior to starting an `ActiveStream` by calling `start()`.
 @objcMembers
-public final class InactiveStream: NSObject {
+public final class StreamPrototype: NSObject {
   private let engine: EnvoyEngine
   private let callbacks = StreamCallbacks()
 
-  /// Initialize a new instance of the inactive stream.
+  /// Initialize a new instance of the stream prototype.
   ///
   /// - parameter engine: Engine to use for starting active streams.
   required init(engine: EnvoyEngine) {
@@ -40,7 +40,7 @@ public final class InactiveStream: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnResponseHeaders(
-    closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void) -> InactiveStream
+    closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void) -> StreamPrototype
   {
     self.callbacks.onHeaders = closure
     return self
@@ -55,7 +55,7 @@ public final class InactiveStream: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnResponseData(
-    closure: @escaping (_ body: Data, _ endStream: Bool) -> Void) -> InactiveStream
+    closure: @escaping (_ body: Data, _ endStream: Bool) -> Void) -> StreamPrototype
   {
     self.callbacks.onData = closure
     return self
@@ -69,7 +69,7 @@ public final class InactiveStream: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnResponseTrailers(
-    closure: @escaping (_ trailers: ResponseTrailers) -> Void) -> InactiveStream
+    closure: @escaping (_ trailers: ResponseTrailers) -> Void) -> StreamPrototype
   {
     self.callbacks.onTrailers = closure
     return self
@@ -83,7 +83,7 @@ public final class InactiveStream: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnError(
-    closure: @escaping (_ error: EnvoyError) -> Void) -> InactiveStream
+    closure: @escaping (_ error: EnvoyError) -> Void) -> StreamPrototype
   {
     self.callbacks.onError = closure
     return self
@@ -97,7 +97,7 @@ public final class InactiveStream: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnCancel(
-    closure: @escaping () -> Void) -> InactiveStream
+    closure: @escaping () -> Void) -> StreamPrototype
   {
     self.callbacks.onCancel = closure
     return self

@@ -3,7 +3,7 @@ import Foundation
 
 /// A type representing a stream that is actively transferring data.
 ///
-/// Constructed using `InactiveStream`, and used to write to the network.
+/// Constructed using `StreamPrototype`, and used to write to the network.
 @objcMembers
 public final class ActiveStream: NSObject {
   private let underlyingStream: EnvoyHTTPStream

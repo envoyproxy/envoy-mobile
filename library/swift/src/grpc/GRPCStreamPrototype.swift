@@ -5,13 +5,13 @@ import Foundation
 /// Constructed via `GRPCClient`, and used to assign response callbacks
 /// prior to starting a `GRPCActiveStream` by calling `start()`.
 @objcMembers
-public final class GRPCInactiveStream: NSObject {
-  private let underlyingStream: InactiveStream
+public final class GRPCStreamPrototype: NSObject {
+  private let underlyingStream: StreamPrototype
 
   /// Initialize a new instance of the inactive gRPC stream.
   ///
   /// - parameter underlyingStream: The underlying stream to use.
-  required init(underlyingStream: InactiveStream) {
+  required init(underlyingStream: StreamPrototype) {
     self.underlyingStream = underlyingStream
     super.init()
   }
@@ -37,7 +37,7 @@ public final class GRPCInactiveStream: NSObject {
   @discardableResult
   public func setOnResponseHeaders(
     closure: @escaping (_ headers: ResponseHeaders, _ endStream: Bool) -> Void)
-    -> GRPCInactiveStream
+    -> GRPCStreamPrototype
   {
     self.underlyingStream.setOnResponseHeaders(closure: closure)
     return self
@@ -51,7 +51,7 @@ public final class GRPCInactiveStream: NSObject {
   @discardableResult
   public func setOnResponseMessage(_ closure:
     @escaping (_ message: Data) -> Void)
-    -> GRPCInactiveStream
+    -> GRPCStreamPrototype
   {
     var buffer = Data()
     var state = GRPCMessageProcessor.State.expectingCompressionFlag
@@ -76,7 +76,7 @@ public final class GRPCInactiveStream: NSObject {
   @discardableResult
   public func setOnResponseTrailers(_ closure:
     @escaping (_ trailers: ResponseTrailers) -> Void)
-    -> GRPCInactiveStream
+    -> GRPCStreamPrototype
   {
     self.underlyingStream.setOnResponseTrailers(closure: closure)
     return self
@@ -91,7 +91,7 @@ public final class GRPCInactiveStream: NSObject {
   @discardableResult
   public func setOnError(_ closure:
     @escaping (_ error: EnvoyError) -> Void)
-    -> GRPCInactiveStream
+    -> GRPCStreamPrototype
   {
     self.underlyingStream.setOnError(closure: closure)
     return self

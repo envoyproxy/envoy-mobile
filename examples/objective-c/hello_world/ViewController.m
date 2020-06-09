@@ -77,8 +77,8 @@ NSString *_REQUEST_SCHEME = @"https";
   RequestHeaders *headers = [builder build];
 
   __weak ViewController *weakSelf = self;
-  InactiveStream *inactiveStream = [self.client newStream];
-  [inactiveStream setOnResponseHeadersWithClosure:^(ResponseHeaders *headers, BOOL endStream) {
+  StreamPrototype *prototype = [self.client newStream];
+  [prototype setOnResponseHeadersWithClosure:^(ResponseHeaders *headers, BOOL endStream) {
     int statusCode = [[[headers valueForName:@":status"] firstObject] intValue];
     NSLog(@"Response status (%i): %i\n%@", requestID, statusCode, headers);
     NSString *body = [NSString stringWithFormat:@"Status: %i", statusCode];
@@ -87,15 +87,15 @@ NSString *_REQUEST_SCHEME = @"https";
                    identifier:requestID
                         error:nil];
   }];
-  [inactiveStream setOnResponseDataWithClosure:^(NSData *data, BOOL endStream) {
+  [prototype setOnResponseDataWithClosure:^(NSData *data, BOOL endStream) {
     NSLog(@"Response data (%i): %ld bytes", requestID, data.length);
   }];
-  [inactiveStream setOnErrorWithClosure:^(EnvoyError *error) {
+  [prototype setOnErrorWithClosure:^(EnvoyError *error) {
     // TODO: expose attemptCount. https://github.com/lyft/envoy-mobile/issues/823
     NSLog(@"Error (%i): Request failed: %@", requestID, error.message);
   }];
 
-  ActiveStream *activeStream = [inactiveStream startWithQueue:dispatch_get_main_queue()];
+  ActiveStream *activeStream = [prototype startWithQueue:dispatch_get_main_queue()];
   [activeStream sendHeaders:headers endStream:YES];
 }
 

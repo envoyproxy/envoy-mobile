@@ -17,7 +17,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return stream
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .start()
       .sendMessage(kMessage1)
 
@@ -32,7 +32,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return stream
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .start()
       .sendMessage(kMessage1)
 
@@ -47,7 +47,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return stream
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .start()
       .sendMessage(kMessage1)
 
@@ -64,7 +64,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return stream
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .start()
       .sendMessage(kMessage1)
 
@@ -82,7 +82,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return stream
     }
 
-    GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .start()
       .close()
 
@@ -101,7 +101,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .setOnResponseHeaders { headers, endStream in
         XCTAssertEqual(expectedHeaders, headers)
         XCTAssertTrue(endStream)
@@ -123,7 +123,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .setOnResponseTrailers { trailers in
         XCTAssertEqual(expectedTrailers, trailers)
         expectation.fulfill()
@@ -147,7 +147,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .setOnResponseMessage { message in
         XCTAssertEqual(kMessage1, message)
         expectation.fulfill()
@@ -185,7 +185,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .setOnResponseMessage { message in
         XCTAssertEqual(expectedMessages.removeFirst(), message)
         expectation.fulfill()
@@ -213,7 +213,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .setOnResponseMessage { message in
         XCTAssertTrue(message.isEmpty)
         expectation.fulfill()
@@ -244,7 +244,7 @@ final class GRPCActiveStreamTests: XCTestCase {
       return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
     }
 
-    _ = GRPCInactiveStream(underlyingStream: InactiveStream(engine: engine))
+    _ = GRPCStreamPrototype(underlyingStream: StreamPrototype(engine: engine))
       .setOnResponseMessage { message in
         XCTAssertEqual(expectedMessages.removeFirst(), message)
         expectation.fulfill()

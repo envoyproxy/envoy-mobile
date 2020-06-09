@@ -43,7 +43,7 @@ final class EnvoyClient: NSObject {
 }
 
 extension EnvoyClient: StreamClient {
-  func newStream() -> InactiveStream {
-    return InactiveStream(engine: self.engine)
+  func newStream() -> StreamPrototype {
+    return StreamPrototype(engine: self.engine)
   }
 }

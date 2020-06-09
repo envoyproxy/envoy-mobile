@@ -5,7 +5,7 @@ let kGRPCPrefixLength: Int = 5
 
 /// A type representing a gRPC stream that is actively transferring data.
 ///
-/// Constructed using `GRPCInactiveStream`, and used to write to the network.
+/// Constructed using `GRPCStreamPrototype`, and used to write to the network.
 @objcMembers
 public final class GRPCActiveStream: NSObject {
   private let underlyingStream: ActiveStream
