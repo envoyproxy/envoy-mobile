@@ -7,7 +7,6 @@ swift_static_framework(
     srcs = glob([
         "ActiveStream.swift",
         "EnvoyClient.swift",
-        "EnvoyClientBuilder.swift",
         "EnvoyError.swift",
         "Headers.swift",
         "HeadersBuilder.swift",
@@ -26,6 +25,7 @@ swift_static_framework(
         "RetryPolicyMapper.swift",
         "StreamCallbacks.swift",
         "StreamClient.swift",
+        "StreamClientBuilder.swift",
         "UpstreamHttpProtocol.swift",
         "filters/*.swift",
         "grpc/*.swift",
