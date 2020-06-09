@@ -95,8 +95,8 @@ NSString *_REQUEST_SCHEME = @"https";
     NSLog(@"Error (%i): Request failed: %@", requestID, error.message);
   }];
 
-  ActiveStream *activeStream = [prototype startWithQueue:dispatch_get_main_queue()];
-  [activeStream sendHeaders:headers endStream:YES];
+  Stream *stream = [prototype startWithQueue:dispatch_get_main_queue()];
+  [stream sendHeaders:headers endStream:YES];
 }
 
 - (void)addResponseBody:(NSString *)body

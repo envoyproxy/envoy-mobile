@@ -3,7 +3,7 @@ import Foundation
 /// A type representing a gRPC stream that has not yet been started.
 ///
 /// Constructed via `GRPCClient`, and used to assign response callbacks
-/// prior to starting a `GRPCActiveStream` by calling `start()`.
+/// prior to starting a `GRPCStream` by calling `start()`.
 @objcMembers
 public final class GRPCStreamPrototype: NSObject {
   private let underlyingStream: StreamPrototype
@@ -18,14 +18,14 @@ public final class GRPCStreamPrototype: NSObject {
 
   // MARK: - Public
 
-  /// Start a new gRPC active stream.
+  /// Start a new gRPC stream.
   ///
   /// - parameter queue: Queue on which to receive callback events.
   ///
-  /// - returns: The new gRPC active stream.
-  public func start(queue: DispatchQueue = .main) -> GRPCActiveStream {
-    let activeStream = self.underlyingStream.start(queue: queue)
-    return GRPCActiveStream(underlyingStream: activeStream)
+  /// - returns: The new gRPC stream.
+  public func start(queue: DispatchQueue = .main) -> GRPCStream {
+    let stream = self.underlyingStream.start(queue: queue)
+    return GRPCStream(underlyingStream: stream)
   }
 
   /// Specify a callback for when response headers are received by the stream.

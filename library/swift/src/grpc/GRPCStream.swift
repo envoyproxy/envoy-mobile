@@ -7,15 +7,15 @@ let kGRPCPrefixLength: Int = 5
 ///
 /// Constructed using `GRPCStreamPrototype`, and used to write to the network.
 @objcMembers
-public final class GRPCActiveStream: NSObject {
-  private let underlyingStream: ActiveStream
+public final class GRPCStream: NSObject {
+  private let underlyingStream: Stream
 
   // MARK: - Internal
 
-  /// Initialize a new instance of the active stream.
+  /// Initialize a new instance of the stream.
   ///
   /// - parameter underlyingStream: The underlying stream to use for sending data.
-  required init(underlyingStream: ActiveStream) {
+  required init(underlyingStream: Stream) {
     self.underlyingStream = underlyingStream
   }
 
@@ -28,7 +28,7 @@ public final class GRPCActiveStream: NSObject {
   ///
   /// - returns: This stream, for chaining syntax.
   @discardableResult
-  public func sendHeaders(_ headers: GRPCRequestHeaders, endStream: Bool) -> GRPCActiveStream {
+  public func sendHeaders(_ headers: GRPCRequestHeaders, endStream: Bool) -> GRPCStream {
     self.underlyingStream.sendHeaders(headers, endStream: endStream)
     return self
   }
@@ -39,7 +39,7 @@ public final class GRPCActiveStream: NSObject {
   ///
   /// - returns: This stream, for chaining syntax.
   @discardableResult
-  public func sendMessage(_ messageData: Data) -> GRPCActiveStream {
+  public func sendMessage(_ messageData: Data) -> GRPCStream {
     // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests
     // Length-Prefixed-Message = Compressed-Flag | Message-Length | Message
     // Compressed-Flag = 0 / 1, encoded as 1 byte unsigned integer

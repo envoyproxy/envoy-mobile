@@ -5,10 +5,10 @@ import Foundation
 ///
 /// Constructed using `StreamPrototype`, and used to write to the network.
 @objcMembers
-public final class ActiveStream: NSObject {
+public final class Stream: NSObject {
   private let underlyingStream: EnvoyHTTPStream
 
-  /// Initialize a new instance of the active stream.
+  /// Initialize a new instance of the stream.
   ///
   /// - parameter underlyingStream: Underlying stream that can be used to send request data.
   required init(underlyingStream: EnvoyHTTPStream) {
@@ -25,7 +25,7 @@ public final class ActiveStream: NSObject {
   ///
   /// - returns: This stream, for chaining syntax.
   @discardableResult
-  public func sendHeaders(_ headers: RequestHeaders, endStream: Bool) -> ActiveStream {
+  public func sendHeaders(_ headers: RequestHeaders, endStream: Bool) -> Stream {
     self.underlyingStream.sendHeaders(headers.headers, close: endStream)
     return self
   }
@@ -36,7 +36,7 @@ public final class ActiveStream: NSObject {
   ///
   /// - returns: This stream, for chaining syntax.
   @discardableResult
-  public func sendData(_ data: Data) -> ActiveStream {
+  public func sendData(_ data: Data) -> Stream {
     self.underlyingStream.send(data, close: false)
     return self
   }

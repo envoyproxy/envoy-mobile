@@ -6,7 +6,7 @@ import XCTest
 private let kMessage1 = Data([1, 2, 3, 4, 5])
 private let kMessage2 = Data([6, 7, 8, 9, 0, 1])
 
-final class GRPCActiveStreamTests: XCTestCase {
+final class GRPCStreamTests: XCTestCase {
   // MARK: - Request tests
 
   func testDataSizeIsFiveBytesGreaterThanMessageSize() {

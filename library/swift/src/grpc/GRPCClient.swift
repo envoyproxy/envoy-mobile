@@ -12,7 +12,7 @@ public final class GRPCClient: NSObject {
     self.streamClient = streamClient
   }
 
-  /// Create a new gRPC stream prototype which can be used to start active streams.
+  /// Create a new gRPC stream prototype which can be used to start streams.
   ///
   /// - returns: The new gRPC stream prototype.
   public func newGRPCStreamPrototype() -> GRPCStreamPrototype {

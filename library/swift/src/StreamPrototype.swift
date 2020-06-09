@@ -5,7 +5,7 @@ import Foundation
 /// A type representing a stream that has not yet been started.
 ///
 /// Constructed via `StreamClient`, and used to assign response callbacks
-/// prior to starting an `ActiveStream` by calling `start()`.
+/// prior to starting an `Stream` by calling `start()`.
 @objcMembers
 public final class StreamPrototype: NSObject {
   private let engine: EnvoyEngine
@@ -13,7 +13,7 @@ public final class StreamPrototype: NSObject {
 
   /// Initialize a new instance of the stream prototype.
   ///
-  /// - parameter engine: Engine to use for starting active streams.
+  /// - parameter engine: Engine to use for starting streams.
   required init(engine: EnvoyEngine) {
     self.engine = engine
     super.init()
@@ -21,15 +21,15 @@ public final class StreamPrototype: NSObject {
 
   // MARK: - Public
 
-  /// Start a new active stream.
+  /// Start a new stream.
   ///
   /// - parameter queue: Queue on which to receive callback events.
   ///
-  /// - returns: The new active stream.
-  public func start(queue: DispatchQueue = .main) -> ActiveStream {
+  /// - returns: The new stream.
+  public func start(queue: DispatchQueue = .main) -> Stream {
     let engineCallbacks = EnvoyHTTPCallbacks(callbacks: self.callbacks, queue: queue)
     let engineStream = self.engine.startStream(with: engineCallbacks)
-    return ActiveStream(underlyingStream: engineStream)
+    return Stream(underlyingStream: engineStream)
   }
 
   /// Specify a callback for when response headers are received by the stream.
