@@ -56,7 +56,7 @@ final class ViewController: UITableViewController {
       .build()
 
     client
-      .newStream()
+      .newStreamPrototype()
       .setOnResponseHeaders { [weak self] headers, _ in
         let statusCode = headers.httpStatus ?? -1
         let response = Response(id: requestID, body: "Status: \(statusCode)",

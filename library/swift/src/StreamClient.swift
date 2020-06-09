@@ -6,5 +6,5 @@ public protocol StreamClient: AnyObject {
   /// Create a new stream prototype which can be used to start active streams.
   ///
   /// - returns: The new stream prototype.
-  func newStream() -> StreamPrototype
+  func newStreamPrototype() -> StreamPrototype
 }
