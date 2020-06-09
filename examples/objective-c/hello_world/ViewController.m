@@ -77,7 +77,7 @@ NSString *_REQUEST_SCHEME = @"https";
   RequestHeaders *headers = [builder build];
 
   __weak ViewController *weakSelf = self;
-  StreamPrototype *prototype = [self.client newStream];
+  StreamPrototype *prototype = [self.client newStreamPrototype];
   [prototype setOnResponseHeadersWithClosure:^(ResponseHeaders *headers, BOOL endStream) {
     int statusCode = [[[headers valueForName:@":status"] firstObject] intValue];
     NSLog(@"Response status (%i): %i\n%@", requestID, statusCode, headers);
