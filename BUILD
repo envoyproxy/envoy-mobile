@@ -31,9 +31,9 @@ genrule(
         "//library/kotlin/src/io/envoyproxy/envoymobile:android_aar",
     ],
     outs = ["envoy_mobile.zip"],
-    cmd = "$(location @envoy_mobile//bazel:zipper) fc $@ $(SRCS)",
+    cmd = "$(location //bazel:zipper) fc $@ $(SRCS)",
     stamp = True,
-    tools = ["@envoy_mobile//bazel:zipper"],
+    tools = ["//bazel:zipper"],
     visibility = ["//visibility:public"],
 )
 
