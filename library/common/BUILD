@@ -18,12 +18,12 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":envoy_mobile_main_common_lib",
-        "@envoy//include/envoy/server:lifecycle_notifier_interface",
         "//library/common/buffer:utility_lib",
         "//library/common/extensions:registry",
         "//library/common/http:dispatcher_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
+        "@envoy//include/envoy/server:lifecycle_notifier_interface",
     ],
 )
 
