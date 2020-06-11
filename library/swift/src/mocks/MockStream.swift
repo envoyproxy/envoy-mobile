@@ -69,7 +69,7 @@ public final class MockStream: Stream {
     self.mockStream.callbacks.onTrailers(trailers.headers)
   }
 
-  /// Simulate the stream receiving a cancelation signal from Envoy.
+  /// Simulate the stream receiving a cancellation signal from Envoy.
   public func receiveCancel() {
     self.mockStream.callbacks.onCancel()
   }
