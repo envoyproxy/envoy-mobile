@@ -115,7 +115,7 @@ final class GRPCStreamTests: XCTestCase {
     _ = GRPCClient(streamClient: streamClient)
       .newGRPCStreamPrototype()
       .setOnResponseTrailers { trailers in
-        XCTAssertEqual(expectedTrailers, trailers)
+        XCTAssertEqual(GRPCResponseTrailers(headers: expectedTrailers.headers), trailers)
         expectation.fulfill()
       }
       .start()

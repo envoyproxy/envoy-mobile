@@ -10,6 +10,13 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
+    name = "grpc_response_trailers_builder_tests",
+    srcs = [
+        "GRPCResponseTrailersBuilderTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
     name = "grpc_stream_tests",
     srcs = [
         "GRPCStreamTests.swift",

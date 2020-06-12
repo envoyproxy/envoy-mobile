@@ -75,10 +75,10 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func setOnResponseTrailers(_ closure:
-    @escaping (_ trailers: ResponseTrailers) -> Void)
+    @escaping (_ trailers: GRPCResponseTrailers) -> Void)
     -> GRPCStreamPrototype
   {
-    self.underlyingStream.setOnResponseTrailers(closure: closure)
+    self.underlyingStream.setOnResponseTrailers { closure(GRPCResponseTrailers(headers: $0.headers)) }
     return self
   }
 

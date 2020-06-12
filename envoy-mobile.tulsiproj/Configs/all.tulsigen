@@ -11,6 +11,8 @@
     "//library/swift/src:ios_framework_archive",
     "//library/swift/test:grpc_request_headers_builder_tests",
     "//library/swift/test:grpc_request_headers_builder_tests_lib",
+    "//library/swift/test:grpc_response_trailers_builder_tests",
+    "//library/swift/test:grpc_response_trailers_builder_tests_lib",
     "//library/swift/test:grpc_stream_tests",
     "//library/swift/test:grpc_stream_tests_lib",
     "//library/swift/test:headers_builder_tests",
