@@ -72,24 +72,24 @@ filegroup(
 
 genrule(
     name = "kotlin_format",
-    outs = ["kotlin_format.txt"],
     srcs = ["//:editor_config"],
-    tools = ["@kotlin_formatter//file"],
+    outs = ["kotlin_format.txt"],
     cmd = """
     $(location @kotlin_formatter//file) --android "**/*.kt" \
         --reporter=plain --reporter=checkstyle,output=$@ \
         --editorconfig=$(location //:editor_config)
-    """
+    """,
+    tools = ["@kotlin_formatter//file"],
 )
 
 genrule(
     name = "kotlin_format_fix",
-    outs = ["kotlin_format_fix.txt"],
     srcs = ["//:editor_config"],
-    tools = ["@kotlin_formatter//file"],
+    outs = ["kotlin_format_fix.txt"],
     cmd = """
     $(location @kotlin_formatter//file) -F --android "**/*.kt" \
         --reporter=plain --reporter=checkstyle,output=$@ \
         --editorconfig=$(location //:editor_config)
-    """
+    """,
+    tools = ["@kotlin_formatter//file"],
 )
