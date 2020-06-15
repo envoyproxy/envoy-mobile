@@ -30,7 +30,7 @@ typedef std::shared_ptr<BridgingFilterConfig> BridgingFilterConfigSharedPtr;
  */
 class BridgingFilter final : public Http::PassThroughFilter {
 public:
-  BridgingFilterConfig(BridgingFilterConfigSharedPtr config);
+  BridgingFilter(BridgingFilterConfigSharedPtr config);
 
   // StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers, bool end_stream) override;
@@ -46,7 +46,8 @@ public:
   Http::FilterMetadataStatus encodeMetadata(Http::MetadataMap& metadata) override;
 
 private:
-  const envoy_http_filter platform_filter_;
+  // FIXME: this leaks
+  const envoy_http_filter* platform_filter_;
 };
 
 } // namespace PlatformExtension

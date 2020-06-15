@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 
+#include "common/common/assert.h"
+
 namespace Envoy {
 namespace Api {
 namespace External {

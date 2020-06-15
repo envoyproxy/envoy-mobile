@@ -35,7 +35,7 @@ BridgingFilterConfig::BridgingFilterConfig(
     : name_(proto_config.name()) {}
 
 BridgingFilter::BridgingFilter(BridgingFilterConfigSharedPtr config)
-    : platform_filter_(Api::External::retrieveApi(config->name()) {}
+    : platform_filter_(static_cast<envoy_http_filter*>(Api::External::retrieveApi(config->name()))) {}
 
 Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& headers,
                                                            bool end_stream) {
@@ -43,15 +43,16 @@ Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& 
   // Viable optimizations include:
   // 1) Only tracking modifications to the map at the bridging/platform layers and performing those modifications.
   // 2) Implementing a fully-bridged header map so that modifications actually occur on the underlying Envoy map.
-  envoy_headers incoming_headers = Utility::toBridgeHeaders(headers);
+  envoy_headers incoming_headers = Http::Utility::toBridgeHeaders(headers);
   envoy_headers* new_headers = &incoming_headers;
-  Http::FilterHeadersStatus status = mapStatus(platform_filter_.on_request_headers(&new_headers, end_stream, platform_filter_.context));
+  Http::FilterHeadersStatus status = mapStatus(platform_filter_->on_request_headers(&new_headers, end_stream, platform_filter_->context));
   if (&incoming_headers != new_headers) {
     headers.removePrefix(LowerCaseString()); // Remove all headers
     for (envoy_header_size_t i = 0; i < new_headers.length; i++) {
-      headers->addCopy(LowerCaseString(convertToString(new_headers.headers[i].key)),
-                       convertToString(new_headers.headers[i].value));
+      headers->addCopy(LowerCaseString(Http::Utility::convertToString(new_headers.headers[i].key)),
+                       Http::Utility::convertToString(new_headers.headers[i].value));
     }
+  }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(new_headers);
 
@@ -68,7 +69,7 @@ Http::FilterTrailersStatus BridgingFilter::decodeTrailers(Http::RequestTrailerMa
   return Http::FilterTrailersStatus::Continue;
 }
 
-Http::FilterMetadataStatus BridgingFilter::decodeMetadata(MetadataMap& /*metadata*/) {
+Http::FilterMetadataStatus BridgingFilter::decodeMetadata(Http::MetadataMap& /*metadata*/) {
   return Http::FilterMetadataStatus::Continue;
 }
 
@@ -91,7 +92,7 @@ Http::FilterTrailersStatus BridgingFilter::encodeTrailers(Http::ResponseTrailerM
   return Http::FilterTrailersStatus::Continue;
 }
 
-Http::FilterMetadataStatus BridgingFilter::encodeMetadata(MetadataMap& /*metadata*/) {
+Http::FilterMetadataStatus BridgingFilter::encodeMetadata(Http::MetadataMap& /*metadata*/) {
   return Http::FilterMetadataStatus::Continue;
 }
 
