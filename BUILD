@@ -53,16 +53,6 @@ genrule(
     stamp = True,
 )
 
-
-genrule(
-    name = "kotlin_format",
-    outs = ["report.txt"],
-    srcs = [],
-    tools = ["@kotlin_formatter//file"],
-    cmd = """
-    $(location @kotlin_formatter//file) --android -F ./**/*.kt --reporter=plain --reporter=checkstyle,output=$@
-    """
-)
 define_kt_toolchain(
     name = "kotlin_toolchain",
     jvm_target = "1.8",
@@ -72,4 +62,34 @@ filegroup(
     name = "kotlin_lint_config",
     srcs = [".kotlinlint.yml"],
     visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "editor_config",
+    srcs = [".editorconfig"],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "kotlin_format",
+    outs = ["kotlin_format.txt"],
+    srcs = ["//:editor_config"],
+    tools = ["@kotlin_formatter//file"],
+    cmd = """
+    $(location @kotlin_formatter//file) --android "**/*.kt" \
+        --reporter=plain --reporter=checkstyle,output=$@ \
+        --editorconfig=$(location //:editor_config)
+    """
+)
+
+genrule(
+    name = "kotlin_format_fix",
+    outs = ["kotlin_format_fix.txt"],
+    srcs = ["//:editor_config"],
+    tools = ["@kotlin_formatter//file"],
+    cmd = """
+    $(location @kotlin_formatter//file) -F --android "**/*.kt" \
+        --reporter=plain --reporter=checkstyle,output=$@ \
+        --editorconfig=$(location //:editor_config)
+    """
 )
