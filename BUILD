@@ -53,6 +53,16 @@ genrule(
     stamp = True,
 )
 
+
+genrule(
+    name = "kotlin_format",
+    outs = ["report.txt"],
+    srcs = [],
+    tools = ["@kotlin_formatter//file"],
+    cmd = """
+    $(location @kotlin_formatter//file) --android -F ./**/*.kt --reporter=plain --reporter=checkstyle,output=$@
+    """
+)
 define_kt_toolchain(
     name = "kotlin_toolchain",
     jvm_target = "1.8",
