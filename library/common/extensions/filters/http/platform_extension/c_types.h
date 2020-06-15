@@ -37,7 +37,7 @@ typedef envoy_filter_data_status_t (*envoy_filter_on_data_f)(envoy_data data, bo
 
 /**
  * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the
- * PlatformHarnessFilter
+ * BridgingFilter
  */
 typedef struct {
   envoy_filter_on_headers_f on_request_headers;

@@ -12,7 +12,7 @@ void registerApi(std::string name, void* api) {
   registry_[name] = api;
 }
 
-void* retrieveApi(Std::string name) {
+void* retrieveApi(std::string name) {
   void* api = registry_[name];
   ASSERT(api);
   return api;

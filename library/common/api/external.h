@@ -3,7 +3,7 @@
 #include <string>
 
 namespace Envoy {
-namespace Api
+namespace Api {
 namespace External {
 
 /**

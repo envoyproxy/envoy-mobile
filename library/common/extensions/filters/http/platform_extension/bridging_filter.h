@@ -4,14 +4,15 @@
 
 #include "extensions/filters/http/common/pass_through_filter.h"
 
-#include "library/common/extensions/filter/c_types.h"
+#include "library/common/extensions/filters/http/platform_extension/c_types.h"
+#include "library/common/extensions/filters/http/platform_extension/filter.pb.h"
 
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
 namespace PlatformExtension {
 
-class BridgingFilterConfig
+class BridgingFilterConfig {
 public:
   BridgingFilterConfig(const envoymobile::extensions::filters::http::platform_extension::Bridging& proto_config);
 
@@ -27,22 +28,22 @@ typedef std::shared_ptr<BridgingFilterConfig> BridgingFilterConfigSharedPtr;
 /**
  * Harness to bridge Envoy filter invocations up to the platform layer.
  */
-class BridgingFilter final : public PassThroughFilter {
+class BridgingFilter final : public Http::PassThroughFilter {
 public:
   BridgingFilterConfig(BridgingFilterConfigSharedPtr config);
 
   // StreamDecoderFilter
-  FilterHeadersStatus decodeHeaders(RequestHeaderMap& headers, bool end_stream) override;
-  FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
-  FilterTrailersStatus decodeTrailers(RequestTrailerMap& trailers) override;
-  FilterMetadataStatus decodeMetadata(MetadataMap& metadata) override;
+  Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers, bool end_stream) override;
+  Http::FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
+  Http::FilterTrailersStatus decodeTrailers(Http::RequestTrailerMap& trailers) override;
+  Http::FilterMetadataStatus decodeMetadata(Http::MetadataMap& metadata) override;
 
   // StreamEncoderFilter
-  FilterHeadersStatus encode100ContinueHeaders(ResponseHeaderMap& headers) override;
-  FilterHeadersStatus encodeHeaders(ResponseHeaderMap& headers, bool end_stream) override;
-  FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
-  FilterTrailersStatus encodeTrailers(ResponseTrailerMap& trailers) override;
-  FilterMetadataStatus encodeMetadata(MetadataMap& metadata) override;
+  Http::FilterHeadersStatus encode100ContinueHeaders(Http::ResponseHeaderMap& headers) override;
+  Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap& headers, bool end_stream) override;
+  Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
+  Http::FilterTrailersStatus encodeTrailers(Http::ResponseTrailerMap& trailers) override;
+  Http::FilterMetadataStatus encodeMetadata(Http::MetadataMap& metadata) override;
 
 private:
   const envoy_http_filter platform_filter_;
