@@ -25,8 +25,8 @@ class ResponseHeadersTest {
     @Test
     fun `adding HTTP status code sets the appropriate header`() {
         val headers = ResponseHeadersBuilder()
-                .addHttpStatus(200)
-                .build()
+            .addHttpStatus(200)
+            .build()
         assertThat(headers.value(":status")).containsExactly("200")
     }
 }

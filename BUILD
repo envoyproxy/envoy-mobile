@@ -63,3 +63,9 @@ filegroup(
     srcs = [".kotlinlint.yml"],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "editor_config",
+    srcs = [".editorconfig"],
+    visibility = ["//visibility:public"],
+)

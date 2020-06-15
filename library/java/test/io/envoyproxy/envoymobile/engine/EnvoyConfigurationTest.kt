@@ -1,9 +1,10 @@
 package io.envoyproxy.envoymobile.engine
 
-import org.junit.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 
-private const val TEST_CONFIG = """
+private const val TEST_CONFIG =
+    """
 mock_template:
 - name: mock
   stats_domain: {{ stats_domain }}
@@ -19,31 +20,29 @@ mock_template:
   virtual_clusters: {{ virtual_clusters }}
 """
 
-
 class EnvoyConfigurationTest {
 
-  @Test
-  fun `resolving with default configuration resolves with values`() {
-    val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3", "com.mydomain.myapp", "[test]");
+    @Test
+    fun `resolving with default configuration resolves with values`() {
+        val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3", "com.mydomain.myapp", "[test]")
 
-    val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG)
-    assertThat(resolvedTemplate).contains("stats_domain: stats.foo.com")
-    assertThat(resolvedTemplate).contains("connect_timeout: 123s")
-    assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
-    assertThat(resolvedTemplate).contains("base_interval: 345s")
-    assertThat(resolvedTemplate).contains("max_interval: 456s")
-    assertThat(resolvedTemplate).contains("stats_flush_interval: 567s")
-    assertThat(resolvedTemplate).contains("os: Android")
-    assertThat(resolvedTemplate).contains("app_version: v1.2.3")
-    assertThat(resolvedTemplate).contains("app_id: com.mydomain.myapp")
-    assertThat(resolvedTemplate).contains("virtual_clusters: [test]")
-  }
+        val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG)
+        assertThat(resolvedTemplate).contains("stats_domain: stats.foo.com")
+        assertThat(resolvedTemplate).contains("connect_timeout: 123s")
+        assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
+        assertThat(resolvedTemplate).contains("base_interval: 345s")
+        assertThat(resolvedTemplate).contains("max_interval: 456s")
+        assertThat(resolvedTemplate).contains("stats_flush_interval: 567s")
+        assertThat(resolvedTemplate).contains("os: Android")
+        assertThat(resolvedTemplate).contains("app_version: v1.2.3")
+        assertThat(resolvedTemplate).contains("app_id: com.mydomain.myapp")
+        assertThat(resolvedTemplate).contains("virtual_clusters: [test]")
+    }
 
+    @Test(expected = EnvoyConfiguration.ConfigurationException::class)
+    fun `resolve templates with invalid templates will throw on build`() {
+        val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3", "com.mydomain.myapp", "[test]")
 
-  @Test(expected = EnvoyConfiguration.ConfigurationException::class)
-  fun `resolve templates with invalid templates will throw on build`() {
-    val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3", "com.mydomain.myapp", "[test]")
-
-    envoyConfiguration.resolveTemplate("{{ }}")
-  }
+        envoyConfiguration.resolveTemplate("{{ }}")
+    }
 }

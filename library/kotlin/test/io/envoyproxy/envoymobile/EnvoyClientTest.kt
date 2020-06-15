@@ -12,185 +12,201 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
 class EnvoyClientTest {
-  private val engine = mock(EnvoyEngine::class.java)
-  private val stream = mock(EnvoyHTTPStream::class.java)
-  private val config = EnvoyConfiguration(
-    "stats.foo.com", 0, 0, 0, 0, 0,
-    "v1.2.3", "com.mydomain.myapp", "[test]"
-  )
-
-  @Test
-  fun `starting a stream sends headers`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
-
-    val expectedHeaders = mapOf(
-        "key_1" to listOf("value_a"),
-        ":method" to listOf("POST"),
-        ":scheme" to listOf("https"),
-        ":authority" to listOf("www.envoyproxy.io"),
-        ":path" to listOf("/test")
+    private val engine = mock(EnvoyEngine::class.java)
+    private val stream = mock(EnvoyHTTPStream::class.java)
+    private val config = EnvoyConfiguration(
+        "stats.foo.com", 0, 0, 0, 0, 0,
+        "v1.2.3", "com.mydomain.myapp", "[test]"
     )
-    envoy.start(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .setHeaders(mapOf("key_1" to listOf("value_a")))
-            .build(),
-        ResponseHandler(Executor {}))
 
-    verify(stream).sendHeaders(expectedHeaders, false)
-  }
+    @Test
+    fun `starting a stream sends headers`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-  @Test
-  fun `sending data on stream passes data to the underlying stream`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        val expectedHeaders = mapOf(
+            "key_1" to listOf("value_a"),
+            ":method" to listOf("POST"),
+            ":scheme" to listOf("https"),
+            ":authority" to listOf("www.envoyproxy.io"),
+            ":path" to listOf("/test")
+        )
+        envoy.start(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .setHeaders(mapOf("key_1" to listOf("value_a")))
+                .build(),
+            ResponseHandler(Executor {})
+        )
 
-    val emitter = envoy.start(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .build(),
-        ResponseHandler(Executor {}))
+        verify(stream).sendHeaders(expectedHeaders, false)
+    }
 
-    val data = ByteBuffer.allocate(0)
+    @Test
+    fun `sending data on stream passes data to the underlying stream`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-    emitter.sendData(data)
+        val emitter = envoy.start(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .build(),
+            ResponseHandler(Executor {})
+        )
 
-    verify(stream).sendData(data, false)
-  }
+        val data = ByteBuffer.allocate(0)
 
-  @Test
-  fun `closing stream with data sends empty data to the underlying stream`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        emitter.sendData(data)
 
-    val emitter = envoy.start(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .build(),
-        ResponseHandler(Executor {}))
+        verify(stream).sendData(data, false)
+    }
 
-    emitter.close(ByteBuffer.allocate(0))
+    @Test
+    fun `closing stream with data sends empty data to the underlying stream`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-    verify(stream).sendData(ByteBuffer.allocate(0), true)
-  }
+        val emitter = envoy.start(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .build(),
+            ResponseHandler(Executor {})
+        )
 
-  @Test
-  fun `closing stream with trailers sends trailers to the underlying stream `() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        emitter.close(ByteBuffer.allocate(0))
 
-    val trailers = mapOf("key_1" to listOf("value_a"))
-    val emitter = envoy.start(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .build(),
-        ResponseHandler(Executor {}))
+        verify(stream).sendData(ByteBuffer.allocate(0), true)
+    }
 
-    emitter.close(trailers)
+    @Test
+    fun `closing stream with trailers sends trailers to the underlying stream `() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-    verify(stream).sendTrailers(trailers)
-  }
+        val trailers = mapOf("key_1" to listOf("value_a"))
+        val emitter = envoy.start(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .build(),
+            ResponseHandler(Executor {})
+        )
 
-  @Test
-  fun `sending unary headers only request closes stream with headers`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        emitter.close(trailers)
 
-    val expectedHeaders = mapOf(
-        "key_1" to listOf("value_a"),
-        ":method" to listOf("POST"),
-        ":scheme" to listOf("https"),
-        ":authority" to listOf("www.envoyproxy.io"),
-        ":path" to listOf("/test")
-    )
-    envoy.send(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .setHeaders(mapOf("key_1" to listOf("value_a")))
-            .build(),
-        null,
-        null,
-        ResponseHandler(Executor {}))
+        verify(stream).sendTrailers(trailers)
+    }
 
-    verify(stream).sendHeaders(expectedHeaders, true)
-  }
+    @Test
+    fun `sending unary headers only request closes stream with headers`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-  @Test
-  fun `sending unary headers and data with no trailers closes stream with data`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        val expectedHeaders = mapOf(
+            "key_1" to listOf("value_a"),
+            ":method" to listOf("POST"),
+            ":scheme" to listOf("https"),
+            ":authority" to listOf("www.envoyproxy.io"),
+            ":path" to listOf("/test")
+        )
+        envoy.send(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .setHeaders(mapOf("key_1" to listOf("value_a")))
+                .build(),
+            null,
+            null,
+            ResponseHandler(Executor {})
+        )
 
-    val expectedBody = ByteBuffer.allocate(0)
-    envoy.send(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .build(),
-        expectedBody,
-        null,
-        ResponseHandler(Executor {}))
+        verify(stream).sendHeaders(expectedHeaders, true)
+    }
 
-    verify(stream).sendData(expectedBody, true)
-  }
+    @Test
+    fun `sending unary headers and data with no trailers closes stream with data`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-  @Test
-  fun `sending unary trailers closes stream with trailers`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        val expectedBody = ByteBuffer.allocate(0)
+        envoy.send(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .build(),
+            expectedBody,
+            null,
+            ResponseHandler(Executor {})
+        )
 
-    val expectedBody = ByteBuffer.allocate(0)
-    val expectedTrailers = mapOf("key_1" to listOf("value_a"))
-    envoy.send(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .build(),
-        expectedBody,
-        expectedTrailers,
-        ResponseHandler(Executor {}))
+        verify(stream).sendData(expectedBody, true)
+    }
 
-    verify(stream).sendData(expectedBody, false)
-    verify(stream).sendTrailers(expectedTrailers)
-  }
+    @Test
+    fun `sending unary trailers closes stream with trailers`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-  @Test
-  fun `cancelling stream cancels the underlying stream`() {
-    `when`(engine.startStream(any())).thenReturn(stream)
-    val envoy = Envoy(engine, config)
+        val expectedBody = ByteBuffer.allocate(0)
+        val expectedTrailers = mapOf("key_1" to listOf("value_a"))
+        envoy.send(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .build(),
+            expectedBody,
+            expectedTrailers,
+            ResponseHandler(Executor {})
+        )
 
-    val emitter = envoy.send(
-        RequestBuilder(
-            method = RequestMethod.POST,
-            scheme = "https",
-            authority = "www.envoyproxy.io",
-            path = "/test")
-            .build(),
-        ByteBuffer.allocate(0),
-        mapOf("key_1" to listOf("value_a")),
-        ResponseHandler(Executor {}))
+        verify(stream).sendData(expectedBody, false)
+        verify(stream).sendTrailers(expectedTrailers)
+    }
 
-    emitter.cancel()
+    @Test
+    fun `cancelling stream cancels the underlying stream`() {
+        `when`(engine.startStream(any())).thenReturn(stream)
+        val envoy = Envoy(engine, config)
 
-    verify(stream).cancel()
-  }
+        val emitter = envoy.send(
+            RequestBuilder(
+                method = RequestMethod.POST,
+                scheme = "https",
+                authority = "www.envoyproxy.io",
+                path = "/test"
+            )
+                .build(),
+            ByteBuffer.allocate(0),
+            mapOf("key_1" to listOf("value_a")),
+            ResponseHandler(Executor {})
+        )
+
+        emitter.cancel()
+
+        verify(stream).cancel()
+    }
 }

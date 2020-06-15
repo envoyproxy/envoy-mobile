@@ -18,15 +18,15 @@ data class Request internal constructor(
     val upstreamHttpProtocol: UpstreamHttpProtocol?
 ) {
 
-  /**
-   * Transforms this Request to the `RequestBuilder` for modification using the current properties.
-   *
-   * @return the builder.
-   */
-  fun toBuilder(): RequestBuilder {
-    return RequestBuilder(method, scheme, authority, path)
-        .setHeaders(headers)
-        .addRetryPolicy(retryPolicy)
-        .addUpstreamHttpProtocol(upstreamHttpProtocol)
-  }
+    /**
+     * Transforms this Request to the `RequestBuilder` for modification using the current properties.
+     *
+     * @return the builder.
+     */
+    fun toBuilder(): RequestBuilder {
+        return RequestBuilder(method, scheme, authority, path)
+            .setHeaders(headers)
+            .addRetryPolicy(retryPolicy)
+            .addUpstreamHttpProtocol(upstreamHttpProtocol)
+    }
 }

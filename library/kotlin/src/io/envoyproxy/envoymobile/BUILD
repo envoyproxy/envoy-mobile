@@ -76,3 +76,13 @@ detekt(
     build_upon_default_config = True,
     cfgs = ["//:kotlin_lint_config"],
 )
+
+genrule(
+    name = "kotlin_android_format",
+    outs = ["report.txt"],
+    srcs = ["//:editor_config"],
+    tools = ["@kotlin_formatter//file"],
+    cmd = """
+    $(location @kotlin_formatter//file) --android -F ./**/*.kt --reporter=plain --reporter=checkstyle,output=$@ --editorconfig=$<
+    """
+)

@@ -7,7 +7,7 @@ class AndroidEnvoyClientBuilder @JvmOverloads constructor (
     application: Application,
     baseConfiguration: BaseConfiguration = Standard()
 ) : EnvoyClientBuilder(baseConfiguration) {
-  init {
-    addEngineType { AndroidEngineImpl(application) }
-  }
+    init {
+        addEngineType { AndroidEngineImpl(application) }
+    }
 }
