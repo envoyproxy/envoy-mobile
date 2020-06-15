@@ -16,6 +16,7 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::StatSinks::MetricsService::forceRegisterMetricsServiceSinkFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
+  Envoy::Extensions::HttpFilters::PlatformExtension::forceRegisterBridgingFilterFactory();
 
   // TODO: add a "force initialize" function to the upstream code, or clean up the upstream code
   // in such a way that does not depend on the statically initialized variable.
@@ -26,7 +27,6 @@ void ExtensionRegistry::registerFactories() {
   // socket_interface_impl.h and immediately destroy.
   auto ptr = std::make_unique<Network::SocketInterfaceImpl>();
   ptr.reset(nullptr);
-  Envoy::Extensions::HttpFilters::Harness::forceRegisterHarnessFilterFactory();
 }
 
 } // namespace Envoy
