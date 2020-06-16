@@ -77,7 +77,6 @@ static_resources:
               inline_string: |
 )"
 #include "certificates.inc"
-
                               R"(
     upstream_connection_options: &upstream_opts
       tcp_keepalive:
