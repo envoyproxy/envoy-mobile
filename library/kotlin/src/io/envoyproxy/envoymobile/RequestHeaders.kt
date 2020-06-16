@@ -1,4 +1,3 @@
-
 package io.envoyproxy.envoymobile
 
 /*
@@ -50,7 +49,7 @@ class RequestHeaders : Headers {
    *
    * @return RequestHeadersBuilder, The new builder.
    */
-  fun toBuilder(): RequestHeadersBuilder {
+  fun toRequestHeadersBuilder(): RequestHeadersBuilder {
     return RequestHeadersBuilder(this.headers.mapValues { it.value.toMutableList() }.toMutableMap())
   }
 }

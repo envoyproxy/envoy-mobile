@@ -15,4 +15,13 @@ class ResponseHeaders : Headers {
    * HTTP status code received with the response.
    */
   val httpStatus: Int? by lazy { value(":status")?.first()?.toIntOrNull() }
+
+  /**
+   * Convert the headers back to a builder for mutation.
+   *
+   * @return ResponseHeadersBuilder, The new builder.
+   */
+  fun toResponseHeadersBuilder(): ResponseHeadersBuilder {
+    return ResponseHeadersBuilder(this.headers.mapValues { it.value.toMutableList() }.toMutableMap())
+  }
 }
