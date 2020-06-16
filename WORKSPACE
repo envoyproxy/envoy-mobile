@@ -13,6 +13,16 @@ local_repository(
     path = "envoy_build_config",
 )
 
+local_repository(
+    name = "envoy_mobile_bootstrap_config",
+    path = "envoy_mobile_bootstrap_config",
+)
+
+local_repository(
+    name = "extension_registry",
+    path = "extension_registry",
+)
+
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
 envoy_api_binding()
 

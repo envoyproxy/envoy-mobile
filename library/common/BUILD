@@ -8,8 +8,6 @@ envoy_package()
 envoy_cc_library(
     name = "envoy_main_interface_lib",
     srcs = [
-        "certificates.inc",
-        "config_template.cc",
         "engine.cc",
         "engine.h",
         "main_interface.cc",
@@ -19,11 +17,12 @@ envoy_cc_library(
     deps = [
         ":envoy_mobile_main_common_lib",
         "//library/common/buffer:utility_lib",
-        "//library/common/extensions:registry",
         "//library/common/http:dispatcher_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/server:lifecycle_notifier_interface",
+        "@envoy_mobile_bootstrap_config//:bootstrap_config",
+        "@extension_registry//:registry",
     ],
 )
 
