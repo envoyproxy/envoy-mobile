@@ -1,4 +1,4 @@
-#include "registry.h"
+#include "static_registry.h"
 
 #include "common/network/socket_interface_impl.h"
 

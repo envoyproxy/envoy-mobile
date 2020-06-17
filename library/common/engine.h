@@ -8,7 +8,7 @@
 #include "library/common/envoy_mobile_main_common.h"
 #include "library/common/http/dispatcher.h"
 #include "library/common/types/c_types.h"
-#include "registry.h"
+#include "static_registry.h"
 
 namespace Envoy {
 
