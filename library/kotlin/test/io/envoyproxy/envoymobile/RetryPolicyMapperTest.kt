@@ -66,7 +66,7 @@ class RetryPolicyMapperTest {
 
   @Test(expected = IllegalArgumentException::class)
   fun `throws error when per-retry timeout is larger than total timeout`() {
-    val retryPolicy = RetryPolicy(
+    RetryPolicy(
       maxRetryCount = 3,
       retryOn = listOf(RetryRule.STATUS_5XX),
       perRetryTimeoutMS = 2,

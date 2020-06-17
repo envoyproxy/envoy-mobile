@@ -1,6 +1,5 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
 import java.nio.ByteBuffer
 
 /**

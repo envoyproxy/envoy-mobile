@@ -8,7 +8,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 /**
  * Mock implementation of `EnvoyEngine`. Used internally for testing the bridging layer & mocking.
  */
-internal class MockEnvoyEngine: EnvoyEngine {
+internal class MockEnvoyEngine : EnvoyEngine {
   override fun runWithConfig(envoyConfiguration: EnvoyConfiguration?, logLevel: String?): Int {
     return 0
   }

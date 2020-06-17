@@ -46,7 +46,7 @@ class GRPCRequestHeadersBuilderTest {
   fun `uses http post`() {
     val headers = GRPCRequestHeadersBuilder("https", "envoyproxy.io", "/pb.api.v1.Foo/GetBar")
       .build()
-    assertThat(headers.method).isEqualTo(UpstreamHttpProtocol.HTTP2)
+    assertThat(headers.method).isEqualTo(RequestMethod.POST)
     assertThat(headers.value(":method")).containsExactly("POST")
   }
 
@@ -64,6 +64,6 @@ class GRPCRequestHeadersBuilderTest {
       .addtimeoutMs(200)
       .addtimeoutMs(null)
       .build()
-    assertThat(headers.value("grpc-timeout")).containsExactly("200m")
+    assertThat(headers.value("grpc-timeout")).isNull()
   }
 }

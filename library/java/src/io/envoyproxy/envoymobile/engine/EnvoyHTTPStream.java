@@ -12,10 +12,21 @@ public class EnvoyHTTPStream {
   private final long streamHandle;
   private final JvmCallbackContext callbacksContext;
 
+  /**
+   * Start the stream via the JNI library.
+   */
+  void start() {
+    JniLibrary.startStream(streamHandle, callbacksContext);
+  }
+
+  /**
+   * Initialize a new stream.
+   * @param streamHandle Underlying handle of the HTTP stream owned by an Envoy engine.
+   * @param callbacks The callbacks for the stream.
+   */
   public EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks) {
     this.streamHandle = streamHandle;
     callbacksContext = new JvmCallbackContext(callbacks);
-    JniLibrary.startStream(streamHandle, callbacksContext);
   }
 
   /**

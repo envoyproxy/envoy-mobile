@@ -7,10 +7,10 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
  * Envoy's implementation of `StreamClient`, buildable using `StreamClientBuilder`.
  */
 internal class EnvoyClient private constructor(
-  private val engine: EnvoyEngine,
-  private val envoyConfiguration: EnvoyConfiguration?,
-  private val configurationYAML: String?,
-  private val logLevel: LogLevel
+  internal val engine: EnvoyEngine,
+  internal val envoyConfiguration: EnvoyConfiguration?,
+  internal val configurationYAML: String?,
+  internal val logLevel: LogLevel
 ) : StreamClient {
   constructor(
     engine: EnvoyEngine,

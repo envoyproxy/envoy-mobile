@@ -1,6 +1,5 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import java.util.concurrent.Executor
 
 /**

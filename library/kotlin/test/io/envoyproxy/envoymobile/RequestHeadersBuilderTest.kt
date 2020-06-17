@@ -195,7 +195,7 @@ class RequestHeadersBuilderTest {
       .build()
     val headers2 = headers1.toRequestHeadersBuilder().build()
 
-    assertThat(headers1).isEqualTo(headers2)
+    assertThat(headers1.allHeaders()).isEqualTo(headers2.allHeaders())
   }
 
   @Test
@@ -206,28 +206,33 @@ class RequestHeadersBuilderTest {
       perRetryTimeoutMS = 9001
     )
 
-    val headers = RequestHeadersBuilder(retryPolicy.outboundHeaders())
+    val headers = RequestHeadersBuilder(
+      method = RequestMethod.POST, scheme = "https",
+      authority = "envoyproxy.io", path = "/mock"
+    )
+      .addRetryPolicy(retryPolicy)
       .build()
-    assertThat(retryPolicy).isEqualTo(RetryPolicy.from(headers))
+
+    assertThat(retryPolicy.outboundHeaders()).isEqualTo(RetryPolicy.from(headers)!!.outboundHeaders())
   }
 
   @Test
   fun `converting request method to string and back creates the same request method`() {
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.DELETE.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.DELETE.stringValue))
       .isEqualTo(RequestMethod.DELETE)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.GET.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.GET.stringValue))
       .isEqualTo(RequestMethod.GET)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.HEAD.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.HEAD.stringValue))
       .isEqualTo(RequestMethod.HEAD)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.OPTIONS.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.OPTIONS.stringValue))
       .isEqualTo(RequestMethod.OPTIONS)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.PATCH.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.PATCH.stringValue))
       .isEqualTo(RequestMethod.PATCH)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.POST.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.POST.stringValue))
       .isEqualTo(RequestMethod.POST)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.PUT.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.PUT.stringValue))
       .isEqualTo(RequestMethod.PUT)
-    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.TRACE.stringValue))
+    assertThat(RequestMethod.enumValue(RequestMethod.TRACE.stringValue))
       .isEqualTo(RequestMethod.TRACE)
   }
 
