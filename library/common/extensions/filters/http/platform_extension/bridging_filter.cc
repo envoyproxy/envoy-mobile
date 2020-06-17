@@ -47,9 +47,9 @@ Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& 
   envoy_headers* new_headers = &incoming_headers;
   Http::FilterHeadersStatus status = mapStatus(platform_filter_->on_request_headers(new_headers, end_stream, platform_filter_->context));
   if (&incoming_headers != new_headers) {
-    headers.removePrefix(LowerCaseString()); // Remove all headers
-    for (envoy_header_size_t i = 0; i < new_headers.length; i++) {
-      headers->addCopy(LowerCaseString(Http::Utility::convertToString(new_headers->headers[i].key)),
+    headers.removePrefix(Http::LowerCaseString()); // Remove all headers
+    for (envoy_header_size_t i = 0; i < new_headers->length; i++) {
+      headers.addCopy(Http::LowerCaseString(Http::Utility::convertToString(new_headers->headers[i].key)),
                        Http::Utility::convertToString(new_headers->headers[i].value));
     }
   }
