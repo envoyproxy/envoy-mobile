@@ -9,15 +9,23 @@ import org.junit.Before
 import org.junit.Test
 
 class GRPCStreamEmitterTest {
-  // TODO: Problems with nhaarman/mockito-kotlin https://github.com/lyft/envoy-mobile/issues/504
-  // This is a total hack to get something to work.
-  private lateinit var emitter: StreamEmitter
+  // TODO: Replace with nhaarman/mockito-kotlin https://github.com/lyft/envoy-mobile/issues/504
+  private lateinit var stream: Stream
+
+  @Test
+  fun `data size is five bytes greater than message size`() {
+    val sentData = ByteBuffer.allocate(0)
+
+  }
 
   private val dataOutputStream = ByteArrayOutputStream()
   private var isClosedCallWithEmptyData = false
 
   @Before
   fun setup() {
+    stream = object : Stream {
+      override fun
+    }
     emitter = object : StreamEmitter {
       override fun cancel() {
         throw UnsupportedOperationException("unexpected usage of mock emitter")

@@ -13,19 +13,9 @@ envoy_mobile_kt_test(
 )
 
 envoy_mobile_kt_test(
-    name = "grpc_response_handler_test",
+    name = "grpc_stream_test",
     srcs = [
-        "GRPCResponseHandlerTest.kt",
-    ],
-    deps = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
-    ],
-)
-
-envoy_mobile_kt_test(
-    name = "grpc_stream_emitter_test",
-    srcs = [
-        "GRPCStreamEmitterTest.kt",
+        "GRPCStreamTest.kt",
     ],
     deps = [
         "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",

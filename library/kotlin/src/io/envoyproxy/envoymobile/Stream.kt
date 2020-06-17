@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
  *
  * Constructed using `StreamPrototype`, and used to write to the network.
  */
-class Stream(
+open class Stream(
   private val underlyingStream: EnvoyHTTPStream
 ) {
   /**
@@ -18,7 +18,7 @@ class Stream(
    * @param endStream Whether this is a headers-only request.
    * @return This stream, for chaining syntax.
    */
-  fun sendHeaders(headers: RequestHeaders, endStream: Boolean): Stream {
+  open fun sendHeaders(headers: RequestHeaders, endStream: Boolean): Stream {
     underlyingStream.sendHeaders(headers.allHeaders(), endStream)
     return this
   }
@@ -29,7 +29,7 @@ class Stream(
    * @param data Data to send over the stream.
    * @return This stream, for chaining syntax.
    */
-  fun sendData(data: ByteBuffer): Stream {
+  open fun sendData(data: ByteBuffer): Stream {
     underlyingStream.sendData(data, false)
     return this
   }
@@ -39,7 +39,7 @@ class Stream(
    *
    * @param trailers Trailers with which to close the stream.
    */
-  fun close(trailers: RequestTrailers) {
+  open fun close(trailers: RequestTrailers) {
     underlyingStream.sendTrailers(trailers.allHeaders())
   }
 
@@ -48,14 +48,14 @@ class Stream(
    *
    * @param data Data with which to close the stream.
    */
-  fun close(data: ByteBuffer) {
+  open fun close(data: ByteBuffer) {
     underlyingStream.sendData(data, true)
   }
 
   /**
    * Cancel the stream.
    */
-  fun cancel() {
+  open fun cancel() {
     underlyingStream.cancel()
   }
 }

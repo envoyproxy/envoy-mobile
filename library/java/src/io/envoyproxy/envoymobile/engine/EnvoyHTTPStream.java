@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 public class EnvoyHTTPStream {
-
   private final long streamHandle;
   private final JvmCallbackContext callbacksContext;
 
-  EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks) {
+  public EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks) {
     this.streamHandle = streamHandle;
     callbacksContext = new JvmCallbackContext(callbacks);
     JniLibrary.startStream(streamHandle, callbacksContext);

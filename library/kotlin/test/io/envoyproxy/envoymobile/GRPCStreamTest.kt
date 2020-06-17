@@ -8,7 +8,8 @@ import java.util.concurrent.Executor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-class GRPCResponseHandlerTest {
+class GRPCStreamTest {
+  // Request tests
 
   @Test(timeout = 1000L)
   fun `headers and grpc status is passed to on headers`() {

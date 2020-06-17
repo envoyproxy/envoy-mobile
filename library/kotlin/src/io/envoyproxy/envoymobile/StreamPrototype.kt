@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 
@@ -10,16 +11,15 @@ import java.util.concurrent.Executor
  * Constructed via `StreamClient`, and used to assign response callbacks
  * prior to starting an `Stream` by calling `start()`.
  */
-class StreamPrototype(private val engine: EnvoyEngine) {
+open class StreamPrototype(private val engine: EnvoyEngine) {
   private var callbacks = StreamCallbacks()
 
   /**
    * @param executor Executor on which to receive callback events.
    * @return The new stream.
    */
-  fun start(executor: Executor): Stream {
-    val engineCallbacks = EnvoyHTTPCallbacksAdapter(executor, callbacks)
-    val engineStream = engine.startStream(engineCallbacks)
+  open fun start(executor: Executor): Stream {
+    val engineStream = engine.startStream(createCallbacks(executor))
     return Stream(engineStream)
   }
 
@@ -92,5 +92,15 @@ class StreamPrototype(private val engine: EnvoyEngine) {
   ): StreamPrototype {
     callbacks.onCancel = closure
     return this
+  }
+
+  /**
+   * Create engine callbacks using the provided queue.
+   *
+   * @param executor Executor on which to receive callback events.
+   * @return A new set of engine callbacks.
+   */
+  internal fun createCallbacks(executor: Executor): EnvoyHTTPCallbacksAdapter {
+    return EnvoyHTTPCallbacksAdapter(executor, callbacks)
   }
 }

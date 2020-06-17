@@ -60,6 +60,7 @@ envoy_mobile_kt_library(
         "UpstreamHttpProtocol.kt",
         "filters/*.kt",
         "grpc/*.kt",
+        "mocks/*.kt",
     ]),
     visibility = ["//visibility:public"],
     deps = [
