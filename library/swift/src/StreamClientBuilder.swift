@@ -21,6 +21,7 @@ public final class StreamClientBuilder: NSObject {
   private var statsFlushSeconds: UInt32 = 60
   private var appVersion: String = "unspecified"
   private var appId: String = "unspecified"
+  private var filterChain: [RequestFilter] = []
   private var virtualClusters: String = "[]"
 
   // MARK: - Public
@@ -107,6 +108,17 @@ public final class StreamClientBuilder: NSObject {
     return self
   }
 
+  /// Add HTTP filter chain for requests and responses (i.e. streams) managed by this client.
+  ///
+  /// - parameter filterChain: Filter chain to be invoked for streams.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addFilterChain(_ filterChain: [RequestFilter]) -> StreamClientBuilder {
+    self.filterChain = filterChain
+    return self
+  }
+
   /// Add the App Version of the App using this Envoy Client.
   ///
   /// - parameter appVersion: The version.
@@ -155,6 +167,7 @@ public final class StreamClientBuilder: NSObject {
         dnsRefreshSeconds: self.dnsRefreshSeconds,
         dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
         dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
+        filterChain: self.filterChain,
         statsFlushSeconds: self.statsFlushSeconds,
         appVersion: self.appVersion,
         appId: self.appId,

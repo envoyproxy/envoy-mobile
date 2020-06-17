@@ -8,7 +8,7 @@
  * Return codes for header filter invocations. See envoy/http/filter.h
  */
 typedef enum {
-  ENVOY_FILTER_HEADERS_STATUS_CONTINUE,
+  ENVOY_FILTER_HEADERS_STATUS_CONTINUE = 0,
   ENVOY_FILTER_HEADERS_STATUS_STOP_ITERATION,
   ENVOY_FILTER_HEADERS_STATUS_CONTINUE_AND_END_STREAM,
   ENVOY_FILTER_HEADERS_STATUS_STOP_ALL_ITERATION_AND_BUFFER,
@@ -18,7 +18,7 @@ typedef enum {
  * Return codes for data filter invocations. See envoy/http/filter.h
  */
 typedef enum {
-  ENVOY_FILTER_DATA_STATUS_CONTINUE,
+  ENVOY_FILTER_DATA_STATUS_CONTINUE = 0,
   ENVOY_FILTER_DATA_STATUS_STOP_ITERATION_AND_BUFFER,
   ENVOY_FILTER_DATA_STATUS_STOP_ITERATION_NO_BUFFER,
 } envoy_filter_data_status_t;
@@ -26,13 +26,13 @@ typedef enum {
 /**
  * Function signature for header filter invocations.
  */
-typedef envoy_filter_headers_status_t (*envoy_filter_on_headers_f)(envoy_headers headers,
+typedef envoy_filter_headers_status_t (*envoy_filter_on_headers_f)(envoy_headers* headers,
                                                                    bool end_stream, void* context);
 
 /**
  * Function signature for data filter invocations.
  */
-typedef envoy_filter_data_status_t (*envoy_filter_on_data_f)(envoy_data data, bool end_stream,
+typedef envoy_filter_data_status_t (*envoy_filter_on_data_f)(envoy_data* data, bool end_stream,
                                                              void* context);
 
 /**

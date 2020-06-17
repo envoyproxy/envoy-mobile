@@ -1,4 +1,13 @@
+@_implementationOnly import EnvoyEngine
 import Foundation
+
+extension EnvoyHTTPFilter {
+  /// Initializer
+  convenience init(filter: RequestFilter) {
+    self.init()
+    self.onRequestHeaders = { filter.onRequestHeaders(RequestHeaders(headers: $0), endStream: $1) }
+  }
+}
 
 /// Filter executed for outbound requests, providing the ability to observe and mutate streams.
 public protocol RequestFilter: Filter {
@@ -17,7 +26,7 @@ public protocol RequestFilter: Filter {
   ///
   /// - returns: The header status containing headers with which to continue or buffer.
   func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool)
-    -> FilterHeaderStatus<RequestHeaders>
+    -> UInt32
 
   /// Called any number of times whenever body data is sent.
   ///

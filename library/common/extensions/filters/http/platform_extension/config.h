@@ -1,7 +1,7 @@
 #include <string>
 
-#include "library/common/extensions/filters/http/platform_extension/filter.pb.h"
-#include "library/common/extensions/filters/http/platform_extension/filter.pb.validate.h"
+#include "library/common/extensions/filters/http/platform_extension/platform_extension.pb.h"
+#include "library/common/extensions/filters/http/platform_extension/platform_extension.pb.validate.h"
 
 #include "extensions/filters/http/common/factory_base.h"
 
