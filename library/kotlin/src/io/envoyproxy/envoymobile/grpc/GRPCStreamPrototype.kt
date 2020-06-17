@@ -31,7 +31,8 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseHeaders(
-    closure: (headers: ResponseHeaders, endStream: Boolean) -> Unit): GRPCStreamPrototype {
+    closure: (headers: ResponseHeaders, endStream: Boolean) -> Unit
+  ): GRPCStreamPrototype {
     underlyingStream.setOnResponseHeaders(closure)
     return this
   }
@@ -44,7 +45,8 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseMessage(
-    closure: (data: ByteBuffer) -> Unit): GRPCStreamPrototype {
+    closure: (data: ByteBuffer) -> Unit
+  ): GRPCStreamPrototype {
     val byteBufferedOutputStream = ByteArrayOutputStream()
     val processor = GRPCMessageProcessor()
     var processState: GRPCMessageProcessor.ProcessState = GRPCMessageProcessor.ProcessState.CompressionFlag
@@ -72,7 +74,8 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseTrailers(
-    closure: (trailers: ResponseTrailers) -> Unit): GRPCStreamPrototype {
+    closure: (trailers: ResponseTrailers) -> Unit
+  ): GRPCStreamPrototype {
     underlyingStream.setOnResponseTrailers(closure)
     return this
   }
@@ -85,7 +88,8 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError) -> Unit): GRPCStreamPrototype {
+    closure: (error: EnvoyError) -> Unit
+  ): GRPCStreamPrototype {
     underlyingStream.setOnError(closure)
     return this
   }
@@ -98,7 +102,8 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnCancel(
-    closure: () -> Unit): GRPCStreamPrototype {
+    closure: () -> Unit
+  ): GRPCStreamPrototype {
     underlyingStream.setOnCancel(closure)
     return this
   }

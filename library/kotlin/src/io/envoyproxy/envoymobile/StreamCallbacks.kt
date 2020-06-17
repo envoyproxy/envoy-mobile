@@ -11,25 +11,11 @@ import java.util.concurrent.Executor
  * `StreamCallbacks` are bridged through to `EnvoyHTTPCallbacks` to communicate with the engine.
  */
 internal class StreamCallbacks {
-  var onHeaders: ((
-    headers: ResponseHeaders,
-    endStream: Boolean
-  ) -> Unit)? = null
-
-  var onData: ((
-    data: ByteBuffer,
-    endStream: Boolean
-  ) -> Unit)? = null
-
-  var onTrailers: ((
-    trailers: ResponseTrailers
-  ) -> Unit)? = null
-
+  var onHeaders: ((headers: ResponseHeaders, endStream: Boolean) -> Unit)? = null
+  var onData: ((data: ByteBuffer, endStream: Boolean) -> Unit)? = null
+  var onTrailers: ((trailers: ResponseTrailers) -> Unit)? = null
   var onCancel: (() -> Unit)? = null
-
-  var onError: ((
-    error: EnvoyError
-  ) -> Unit)? = null
+  var onError: ((error: EnvoyError) -> Unit)? = null
 }
 
 /**

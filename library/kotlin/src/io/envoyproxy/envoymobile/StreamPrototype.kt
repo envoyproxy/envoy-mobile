@@ -31,7 +31,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseHeaders(
-    closure: (headers: ResponseHeaders, endStream: Boolean) -> Unit): StreamPrototype {
+    closure: (headers: ResponseHeaders, endStream: Boolean) -> Unit
+  ): StreamPrototype {
     callbacks.onHeaders = closure
     return this
   }
@@ -45,7 +46,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseData(
-    closure: (data: ByteBuffer, endStream: Boolean) -> Unit): StreamPrototype {
+    closure: (data: ByteBuffer, endStream: Boolean) -> Unit
+  ): StreamPrototype {
     callbacks.onData = closure
     return this
   }
@@ -58,7 +60,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseTrailers(
-    closure: (trailers: ResponseTrailers) -> Unit): StreamPrototype {
+    closure: (trailers: ResponseTrailers) -> Unit
+  ): StreamPrototype {
     callbacks.onTrailers = closure
     return this
   }
@@ -71,7 +74,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError) -> Unit): StreamPrototype {
+    closure: (error: EnvoyError) -> Unit
+  ): StreamPrototype {
     callbacks.onError = closure
     return this
   }
@@ -84,7 +88,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnCancel(
-    closure: () -> Unit): StreamPrototype {
+    closure: () -> Unit
+  ): StreamPrototype {
     callbacks.onCancel = closure
     return this
   }

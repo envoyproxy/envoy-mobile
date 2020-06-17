@@ -18,14 +18,16 @@ class GRPCRequestHeadersBuilder : HeadersBuilder {
    * @param authority The URL authority for the request (i.e., "api.foo.com").
    * @param path Path for the RPC (i.e., `/pb.api.v1.Foo/GetBar`).
    */
-  constructor(scheme: String, authority: String, path: String) : super(mutableMapOf<String, MutableList<String>>(
-    ":authority" to mutableListOf<String>(authority),
-    ":method" to mutableListOf<String>("POST"),
-    ":path" to mutableListOf<String>(path),
-    ":scheme" to mutableListOf<String>(scheme),
-    "content-type" to mutableListOf<String>("application/grpc"),
-    "x-envoy-mobile-upstream-protocol" to mutableListOf<String>(UpstreamHttpProtocol.HTTP2.stringValue)
-  ))
+  constructor(scheme: String, authority: String, path: String) : super(
+    mutableMapOf<String, MutableList<String>>(
+      ":authority" to mutableListOf<String>(authority),
+      ":method" to mutableListOf<String>("POST"),
+      ":path" to mutableListOf<String>(path),
+      ":scheme" to mutableListOf<String>(scheme),
+      "content-type" to mutableListOf<String>("application/grpc"),
+      "x-envoy-mobile-upstream-protocol" to mutableListOf<String>(UpstreamHttpProtocol.HTTP2.stringValue)
+    )
+  )
 
   /**
    * Add a specific timeout for the gRPC request. This will be sent in the `grpc-timeout` header.
