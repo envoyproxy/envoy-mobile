@@ -5,14 +5,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.Mockito.mock
 
-class EnvoyClientBuilderTest {
-  private lateinit var clientBuilder: EnvoyClientBuilder
-
+class StreamClientBuilderTest {
+  private lateinit var clientBuilder: StreamClientBuilder
   private var engine: EnvoyEngine = mock(EnvoyEngine::class.java)
 
   @Test
   fun `adding log level builder uses log level for running Envoy`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addLogLevel(LogLevel.DEBUG)
@@ -22,17 +21,17 @@ class EnvoyClientBuilderTest {
 
   @Test
   fun `specifying stats domain overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
-    clientBuilder.addStatsDomain("stats.foo.com")
+    clientBuilder.addStatsDomain("stats.envoyproxy.io")
     val envoy = clientBuilder.build()
-    assertThat(envoy.envoyConfiguration!!.statsDomain).isEqualTo("stats.foo.com")
+    assertThat(envoy.envoyConfiguration!!.statsDomain).isEqualTo("stats.envoyproxy.io")
   }
 
   @Test
   fun `specifying connection timeout overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addConnectTimeoutSeconds(1234)
@@ -42,7 +41,7 @@ class EnvoyClientBuilderTest {
 
   @Test
   fun `specifying DNS refresh overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addDNSRefreshSeconds(1234)
@@ -52,7 +51,7 @@ class EnvoyClientBuilderTest {
 
   @Test
   fun `specifying DNS failure refresh overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addDNSFailureRefreshSeconds(1234, 5678)
@@ -63,7 +62,7 @@ class EnvoyClientBuilderTest {
 
   @Test
   fun `specifying stats flush overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addStatsFlushSeconds(1234)
@@ -74,7 +73,7 @@ class EnvoyClientBuilderTest {
 
   @Test
   fun `specifying app version overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addAppVersion("v1.2.3")
@@ -85,18 +84,18 @@ class EnvoyClientBuilderTest {
 
   @Test
   fun `specifying app id overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
-    clientBuilder.addAppId("com.mydomain.myapp")
+    clientBuilder.addAppId("com.envoymobile.android")
     clientBuilder.build()
     val envoy = clientBuilder.build()
-    assertThat(envoy.envoyConfiguration!!.appId).isEqualTo("com.mydomain.myapp")
+    assertThat(envoy.envoyConfiguration!!.appId).isEqualTo("com.envoymobile.android")
   }
 
   @Test
   fun `specifying virtual clusters overrides default`() {
-    clientBuilder = EnvoyClientBuilder(Standard())
+    clientBuilder = StreamClientBuilder(Standard())
     clientBuilder.addEngineType { engine }
 
     clientBuilder.addVirtualClusters("[test]")

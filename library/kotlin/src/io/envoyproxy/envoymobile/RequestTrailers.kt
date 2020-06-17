@@ -18,6 +18,7 @@ class RequestTrailers : Headers {
    * @return RequestTrailersBuilder, The new builder.
    */
   fun toRequestTrailersBuilder(): RequestTrailersBuilder {
-    return RequestTrailersBuilder(this.headers.mapValues { it.value.toMutableList() }.toMutableMap())
+    return RequestTrailersBuilder(this.headers.mapValues { it.value.toMutableList() }
+      .toMutableMap())
   }
 }

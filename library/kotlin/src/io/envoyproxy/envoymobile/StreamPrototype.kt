@@ -26,7 +26,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
   /**
    * Specify a callback for when response headers are received by the stream.
    *
-   * @param closure Closure which will receive the headers and flag indicating if the stream is headers-only.
+   * @param closure Closure which will receive the headers and flag indicating if the stream
+   * is headers-only.
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseHeaders(
@@ -39,7 +40,8 @@ class StreamPrototype(private val engine: EnvoyEngine) {
    * Specify a callback for when a data frame is received by the stream.
    * If `endStream` is `true`, the stream is complete.
    *
-   * @param closure Closure which will receive the data and flag indicating whether this is the last data frame.
+   * @param closure Closure which will receive the data and flag indicating whether this
+   * is the last data frame.
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseData(

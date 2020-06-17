@@ -3,19 +3,9 @@ load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_kt_test")
 licenses(["notice"])  # Apache 2
 
 envoy_mobile_kt_test(
-    name = "request_builder_test",
+    name = "request_headers_builder_test",
     srcs = [
-        "RequestBuilderTest.kt",
-    ],
-    deps = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
-    ],
-)
-
-envoy_mobile_kt_test(
-    name = "request_test",
-    srcs = [
-        "RequestTest.kt",
+        "RequestHeadersBuilderTest.kt",
     ],
     deps = [
         "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
@@ -53,29 +43,9 @@ envoy_mobile_kt_test(
 )
 
 envoy_mobile_kt_test(
-    name = "envoy_client_builder_test",
+    name = "stream_client_builder_test",
     srcs = [
-        "EnvoyClientBuilderTest.kt",
-    ],
-    deps = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
-    ],
-)
-
-envoy_mobile_kt_test(
-    name = "response_handler_test",
-    srcs = [
-        "ResponseHandlerTest.kt",
-    ],
-    deps = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",
-    ],
-)
-
-envoy_mobile_kt_test(
-    name = "envoy_client_test",
-    srcs = [
-        "EnvoyClientTest.kt",
+        "StreamClientBuilderTest.kt",
     ],
     deps = [
         "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",

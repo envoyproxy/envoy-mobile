@@ -26,7 +26,7 @@ class ResponseHeadersBuilder : HeadersBuilder {
    * @return ResponseHeadersBuilder, This builder.
    */
   fun addHttpStatus(status: Int): ResponseHeadersBuilder {
-    set(":status", mutableListOf("$status"))
+    internalSet(":status", mutableListOf("$status"))
     return this
   }
 

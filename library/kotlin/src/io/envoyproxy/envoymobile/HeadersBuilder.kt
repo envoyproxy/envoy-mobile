@@ -24,7 +24,7 @@ open class HeadersBuilder {
    *
    * @return HeadersBuilder, This builder.
    */
-  fun add(name: String, value: String): HeadersBuilder {
+  open fun add(name: String, value: String): HeadersBuilder {
     if (isRestrictedHeader(name)) {
       return this
     }
@@ -40,7 +40,7 @@ open class HeadersBuilder {
    *
    * @return HeadersBuilder, This builder.
    */
-  fun set(name: String, value: MutableList<String>): HeadersBuilder {
+  open fun set(name: String, value: MutableList<String>): HeadersBuilder {
     if (isRestrictedHeader(name)) {
       return this
     }
@@ -55,7 +55,7 @@ open class HeadersBuilder {
    *
    * @return HeadersBuilder, This builder.
    */
-  fun remove(name: String): HeadersBuilder {
+  open fun remove(name: String): HeadersBuilder {
     if (isRestrictedHeader(name)) {
       return this
     }
@@ -71,7 +71,7 @@ open class HeadersBuilder {
    *
    * @return HeadersBuilder, This builder.
    */
-  fun internalSet(name: String, value: MutableList<String>): HeadersBuilder {
+  open fun internalSet(name: String, value: MutableList<String>): HeadersBuilder {
     headers[name] = value
     return this
   }
