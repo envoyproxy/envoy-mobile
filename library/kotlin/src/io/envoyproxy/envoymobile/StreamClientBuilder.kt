@@ -12,7 +12,7 @@ class Custom(val yaml: String) : BaseConfiguration()
 /**
  * Builder used for creating new instances of a `StreamClient`.
  */
-class StreamClientBuilder(
+open class StreamClientBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
   private var logLevel = LogLevel.INFO
@@ -167,7 +167,7 @@ class StreamClientBuilder(
    *
    * A new instance of this engine will be created when `build()` is called.
    */
-  internal fun addEngineType(engineType: () -> EnvoyEngine): StreamClientBuilder {
+  fun addEngineType(engineType: () -> EnvoyEngine): StreamClientBuilder {
     this.engineType = engineType
     return this
   }

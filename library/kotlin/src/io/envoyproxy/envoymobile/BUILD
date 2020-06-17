@@ -20,7 +20,7 @@ aar_with_jni(
 kt_android_library(
     name = "envoy_lib",
     srcs = [
-        "AndroidEnvoyClientBuilder.kt",
+        "AndroidStreamClientBuilder.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
