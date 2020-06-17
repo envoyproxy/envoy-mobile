@@ -52,6 +52,7 @@ final class GRPCRequestHeadersBuilderTests: XCTestCase {
                                             path: "/pb.api.v1.Foo/GetBar")
       .build()
     XCTAssertEqual(.post, headers.method)
+    XCTAssertEqual(["POST"], headers.value(forName: ":method"))
   }
 
   func testAddsTimeoutHeaderWhenSetToValue() {
