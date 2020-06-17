@@ -210,4 +210,32 @@ class RequestHeadersBuilderTest {
       .build()
     assertThat(retryPolicy).isEqualTo(RetryPolicy.from(headers))
   }
+
+  @Test
+  fun `converting request method to string and back creates the same request method`() {
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.DELETE.stringValue))
+      .isEqualTo(RequestMethod.DELETE)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.GET.stringValue))
+      .isEqualTo(RequestMethod.GET)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.HEAD.stringValue))
+      .isEqualTo(RequestMethod.HEAD)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.OPTIONS.stringValue))
+      .isEqualTo(RequestMethod.OPTIONS)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.PATCH.stringValue))
+      .isEqualTo(RequestMethod.PATCH)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.POST.stringValue))
+      .isEqualTo(RequestMethod.POST)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.PUT.stringValue))
+      .isEqualTo(RequestMethod.PUT)
+    assertThat(UpstreamHttpProtocol.enumValue(RequestMethod.TRACE.stringValue))
+      .isEqualTo(RequestMethod.TRACE)
+  }
+
+  @Test
+  fun `converting http protocol to string and back creates the same http protocol`() {
+    assertThat(UpstreamHttpProtocol.enumValue(UpstreamHttpProtocol.HTTP1.stringValue))
+      .isEqualTo(UpstreamHttpProtocol.HTTP1)
+    assertThat(UpstreamHttpProtocol.enumValue(UpstreamHttpProtocol.HTTP2.stringValue))
+      .isEqualTo(UpstreamHttpProtocol.HTTP2)
+  }
 }
