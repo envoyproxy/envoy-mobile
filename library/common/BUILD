@@ -21,8 +21,8 @@ envoy_cc_library(
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/server:lifecycle_notifier_interface",
-        "@envoy_mobile_bootstrap_config//:bootstrap_config",
         "@envoy_build_config//:static_registry",
+        "@envoy_mobile_bootstrap_config//:bootstrap_config",
     ],
 )
 
