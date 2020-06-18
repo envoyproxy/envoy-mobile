@@ -50,7 +50,7 @@ Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& 
   Http::FilterHeadersStatus status = mapStatus(
       platform_filter_->on_request_headers(new_headers, end_stream, platform_filter_->context));
   if (&incoming_headers != new_headers) {
-    headers.removePrefix(Http::LowerCaseString()); // Remove all headers
+    headers.removePrefix(Http::LowerCaseString("")); // Remove all headers
     for (envoy_header_size_t i = 0; i < new_headers->length; i++) {
       headers.addCopy(
           Http::LowerCaseString(Http::Utility::convertToString(new_headers->headers[i].key)),
@@ -59,6 +59,7 @@ Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& 
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(*new_headers);
+  return status;
 }
 
 Http::FilterDataStatus BridgingFilter::decodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
