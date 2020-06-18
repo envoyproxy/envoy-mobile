@@ -49,7 +49,9 @@ open class RequestHeaders : Headers {
    *
    * @return RequestHeadersBuilder, The new builder.
    */
-  fun toRequestHeadersBuilder(): RequestHeadersBuilder {
-    return RequestHeadersBuilder(this.headers.mapValues { it.value.toMutableList() }.toMutableMap())
-  }
+  fun toRequestHeadersBuilder() = RequestHeadersBuilder(
+    headers.mapValues {
+      it.value.toMutableList()
+    }.toMutableMap()
+  )
 }

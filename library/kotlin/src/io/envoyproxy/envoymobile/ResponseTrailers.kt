@@ -17,10 +17,9 @@ class ResponseTrailers : Headers {
    *
    * @return ResponseTrailersBuilder, The new builder.
    */
-  fun toResponseTrailersBuilder(): ResponseTrailersBuilder {
-    return ResponseTrailersBuilder(
-      this.headers.mapValues { it.value.toMutableList() }
-        .toMutableMap()
-    )
-  }
+  fun toResponseTrailersBuilder() = ResponseTrailersBuilder(
+    headers.mapValues {
+      it.value.toMutableList()
+    }.toMutableMap()
+  )
 }

@@ -16,7 +16,9 @@ class GRPCRequestHeaders : RequestHeaders {
    *
    * @return GRPCRequestHeadersBuilder, The new builder.
    */
-  fun toGRPCRequestHeadersBuilder(): GRPCRequestHeadersBuilder {
-    return GRPCRequestHeadersBuilder(this.headers.mapValues { it.value.toMutableList() }.toMutableMap())
-  }
+  fun toGRPCRequestHeadersBuilder() = GRPCRequestHeadersBuilder(
+    headers.mapValues {
+      it.value.toMutableList()
+    }.toMutableMap()
+  )
 }

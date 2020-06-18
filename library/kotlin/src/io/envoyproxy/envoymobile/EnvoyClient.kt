@@ -31,7 +31,5 @@ internal class EnvoyClient private constructor(
     }
   }
 
-  override fun newStreamPrototype(): StreamPrototype {
-    return StreamPrototype(engine)
-  }
+  override fun newStreamPrototype() = StreamPrototype(engine)
 }

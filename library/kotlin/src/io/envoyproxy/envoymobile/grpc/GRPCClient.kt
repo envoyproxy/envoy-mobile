@@ -16,8 +16,7 @@ class GRPCClient(
    *
    * @return The new gRPC stream prototype.
    */
-  fun newGRPCStreamPrototype(): GRPCStreamPrototype {
-    val prototype = streamClient.newStreamPrototype()
-    return GRPCStreamPrototype(prototype)
-  }
+  fun newGRPCStreamPrototype() = GRPCStreamPrototype(
+    streamClient.newStreamPrototype()
+  )
 }

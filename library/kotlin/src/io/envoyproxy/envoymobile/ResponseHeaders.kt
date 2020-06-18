@@ -21,10 +21,9 @@ class ResponseHeaders : Headers {
    *
    * @return ResponseHeadersBuilder, The new builder.
    */
-  fun toResponseHeadersBuilder(): ResponseHeadersBuilder {
-    return ResponseHeadersBuilder(
-      this.headers.mapValues { it.value.toMutableList() }
-        .toMutableMap()
-    )
-  }
+  fun toResponseHeadersBuilder() = ResponseHeadersBuilder(
+    headers.mapValues {
+      it.value.toMutableList()
+    }.toMutableMap()
+  )
 }
