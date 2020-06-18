@@ -5,6 +5,6 @@ EXTENSIONS = {
     "envoy.filters.network.http_connection_manager":    "//source/extensions/filters/network/http_connection_manager:config",
     "envoy.stat_sinks.metrics_service":                 "//source/extensions/stat_sinks/metrics_service:config",
     "envoy.transport_sockets.tls":                      "//source/extensions/transport_sockets/tls:config",
-    "envoymobile.filters.http.platform_extension":      "@root//library/common/extensions/filters/http/platform_extension:config",
+    "envoy.filters.http.platform_extension":            "@envoy_mobile//library/common/extensions/filters/http/platform_extension:config",
 }
 WINDOWS_EXTENSIONS = {}

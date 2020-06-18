@@ -5,8 +5,6 @@ licenses(["notice"])  # Apache 2
 
 package(default_visibility = ["//visibility:public"])
 
-envoy_package()
-
 api_proto_package()
 
 envoy_cc_library(

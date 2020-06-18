@@ -4,11 +4,6 @@ load("@envoy_mobile//bazel:envoy_mobile_repositories.bzl", "envoy_mobile_reposit
 envoy_mobile_repositories()
 
 local_repository(
-    name = "root",
-    path = "",
-)
-
-local_repository(
     name = "envoy",
     path = "envoy",
 )
