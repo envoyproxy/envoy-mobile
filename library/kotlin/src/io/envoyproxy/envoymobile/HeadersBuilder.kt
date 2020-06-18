@@ -71,7 +71,7 @@ open class HeadersBuilder {
    *
    * @return HeadersBuilder, This builder.
    */
-  open fun internalSet(name: String, value: MutableList<String>): HeadersBuilder {
+  internal open fun internalSet(name: String, value: MutableList<String>): HeadersBuilder {
     headers[name] = value
     return this
   }

@@ -9,11 +9,15 @@ import java.util.concurrent.Executor
  *
  * Constructed via `StreamClient`, and used to assign response callbacks
  * prior to starting an `Stream` by calling `start()`.
+ *
+ * @param engine Engine to use for starting streams.
  */
 open class StreamPrototype(private val engine: EnvoyEngine) {
-  private var callbacks = StreamCallbacks()
+  private val callbacks = StreamCallbacks()
 
   /**
+   * Start a new stream.
+   *
    * @param executor Executor on which to receive callback events.
    * @return The new stream.
    */
