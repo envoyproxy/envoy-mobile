@@ -87,7 +87,8 @@ final class GRPCStreamTests: XCTestCase {
 
   func testHeadersCallbackPassesHeaders() {
     let expectation = self.expectation(description: "Closure is called")
-    let expectedHeaders = ResponseHeaders(headers: ["grpc-status": ["1"], "x-other": ["foo", "bar"]])
+    let expectedHeaders = ResponseHeaders(
+      headers: ["grpc-status": ["1"], "x-other": ["foo", "bar"]])
 
     var stream: MockStream!
     let streamClient = MockStreamClient { stream = $0 }

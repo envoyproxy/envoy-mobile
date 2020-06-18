@@ -76,7 +76,9 @@ class MainActivity : Activity() {
     // Note: this request will use an h2 stream for the upstream request.
     // The Java example uses http/1.1. This is done on purpose to test both paths in end-to-end
     // tests in CI.
-    val requestHeaders = RequestHeadersBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
+    val requestHeaders = RequestHeadersBuilder(
+      RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
+    )
       .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
     var responseHeaders: ResponseHeaders? = null
