@@ -79,8 +79,10 @@ class RequestHeadersBuilder : HeadersBuilder {
    */
   fun addUpstreamHttpProtocol(upstreamHttpProtocol: UpstreamHttpProtocol):
     RequestHeadersBuilder {
-      internalSet("x-envoy-mobile-upstream-protocol",
-        mutableListOf(upstreamHttpProtocol.stringValue))
+      internalSet(
+        "x-envoy-mobile-upstream-protocol",
+        mutableListOf(upstreamHttpProtocol.stringValue)
+      )
       return this
     }
 

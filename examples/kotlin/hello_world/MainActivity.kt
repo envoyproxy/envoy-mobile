@@ -12,6 +12,8 @@ import io.envoyproxy.envoymobile.AndroidStreamClientBuilder
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.ResponseHeaders
+import io.envoyproxy.envoymobile.StreamClient
+import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
@@ -106,7 +108,6 @@ class MainActivity : Activity() {
         recyclerView.post { viewAdapter.add(Failure(msg)) }
       }
       .start(Executor { it.run() })
-      .sendHeaders(requestHeaders, false)
-      .close(RequestTrailersBuilder().build())
+      .sendHeaders(requestHeaders, true)
   }
 }

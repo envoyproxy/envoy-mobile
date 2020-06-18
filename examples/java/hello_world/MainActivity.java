@@ -12,7 +12,6 @@ import io.envoyproxy.envoymobile.AndroidStreamClientBuilder;
 import io.envoyproxy.envoymobile.RequestHeaders;
 import io.envoyproxy.envoymobile.RequestHeadersBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
-import io.envoyproxy.envoymobile.RequestTrailersBuilder;
 import io.envoyproxy.envoymobile.ResponseHeaders;
 import io.envoyproxy.envoymobile.StreamClient;
 import io.envoyproxy.envoymobile.shared.Failure;
@@ -103,7 +102,6 @@ public class MainActivity extends Activity {
           return Unit.INSTANCE;
         })
         .start(Runnable::run)
-        .sendHeaders(requestHeaders, false)
-        .close(new RequestTrailersBuilder().build());
+        .sendHeaders(requestHeaders, true);
   }
 }
