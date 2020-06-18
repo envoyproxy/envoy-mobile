@@ -10,9 +10,7 @@ namespace External {
 
 static std::unordered_map<std::string, void*> registry_{};
 
-void registerApi(std::string name, void* api) {
-  registry_[name] = api;
-}
+void registerApi(std::string name, void* api) { registry_[name] = api; }
 
 void* retrieveApi(std::string name) {
   void* api = registry_[name];

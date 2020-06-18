@@ -5,5 +5,5 @@ package envoymobile.extensions.filters.http.platform_extension;
 import "validate/validate.proto";
 
 message Bridging {
-    string name = 1 [(validate.rules).string.min_bytes = 1];
+  string name = 1 [(validate.rules).string.min_bytes = 1];
 }

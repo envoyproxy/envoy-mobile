@@ -3,8 +3,8 @@
 #include <atomic>
 #include <string>
 
-#include "library/common/engine.h"
 #include "library/common/api/external.h"
+#include "library/common/engine.h"
 #include "library/common/http/dispatcher.h"
 
 // NOLINT(namespace-envoy)

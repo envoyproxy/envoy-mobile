@@ -1,9 +1,9 @@
 #include <string>
 
+#include "extensions/filters/http/common/factory_base.h"
+
 #include "library/common/extensions/filters/http/platform_extension/filter.pb.h"
 #include "library/common/extensions/filters/http/platform_extension/filter.pb.validate.h"
-
-#include "extensions/filters/http/common/factory_base.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -14,7 +14,8 @@ namespace PlatformExtension {
  * Config registration for the decompressor filter. @see NamedHttpFilterConfigFactory.
  */
 class BridgingFilterFactory
-    : public Common::FactoryBase<envoymobile::extensions::filters::http::platform_extension::Bridging> {
+    : public Common::FactoryBase<
+          envoymobile::extensions::filters::http::platform_extension::Bridging> {
 public:
   BridgingFilterFactory() : FactoryBase("platform_extension") {}
 

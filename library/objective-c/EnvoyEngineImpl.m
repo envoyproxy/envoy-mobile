@@ -66,7 +66,8 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   return ret;
 }
 
-static uint32_t ios_http_filter_on_request_headers(envoy_headers *headers, bool end_stream, void *context) {
+static uint32_t ios_http_filter_on_request_headers(envoy_headers *headers, bool end_stream,
+                                                   void *context) {
   ios_http_filter_context *c = (ios_http_filter_context *)context;
   EnvoyMutableHeaders *platformHeaders = to_ios_mutable_headers(*headers);
   release_envoy_headers(*headers);
@@ -74,7 +75,6 @@ static uint32_t ios_http_filter_on_request_headers(envoy_headers *headers, bool 
   *headers = toNativeHeaders(platformHeaders);
   return 0; // Continue
 }
-
 
 @implementation EnvoyEngineImpl {
   envoy_engine_t _engineHandle;
