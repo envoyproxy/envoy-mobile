@@ -2,11 +2,11 @@ package io.envoyproxy.envoymobile
 
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.nio.ByteOrder
 
 class GRPCStreamTest {
   private val message1 = ByteBuffer.wrap(byteArrayOf(0x0, 0x1, 0x2, 0x3, 0x4, 0x5))
@@ -164,16 +164,20 @@ class GRPCStreamTest {
     val streamClient = MockStreamClient { stream = it }
 
     val firstMessage = byteArrayOf(0x1, 0x2, 0x3, 0x4, 0x5)
-    val firstMessageBuffer = ByteBuffer.wrap(byteArrayOf(
-      0x0, // Compression flag
-      0x0, 0x0, 0x0, 0x5 // Length bytes
-    ) + firstMessage)
+    val firstMessageBuffer = ByteBuffer.wrap(
+      byteArrayOf(
+        0x0, // Compression flag
+        0x0, 0x0, 0x0, 0x5 // Length bytes
+      ) + firstMessage
+    )
 
     val secondMessage = byteArrayOf(0x6, 0x7, 0x8, 0x9, 0x0, 0x1)
-    val secondMessageBufferPart1 = ByteBuffer.wrap(byteArrayOf(
-      0x0, // Compression flag
-      0x0, 0x0, 0x0, 0x6 // Length bytes
-    ) + secondMessage.sliceArray(0 until 2))
+    val secondMessageBufferPart1 = ByteBuffer.wrap(
+      byteArrayOf(
+        0x0, // Compression flag
+        0x0, 0x0, 0x0, 0x6 // Length bytes
+      ) + secondMessage.sliceArray(0 until 2)
+    )
     val secondMessageBufferPart2 = ByteBuffer.wrap(secondMessage.sliceArray(2 until secondMessage.count()))
 
     GRPCClient(streamClient)
@@ -208,10 +212,12 @@ class GRPCStreamTest {
       }
       .start(Executor {})
 
-    val emptyMessage = ByteBuffer.wrap(byteArrayOf(
-      0x0, // Compression flag
-      0x0, 0x0, 0x0, 0x0 // Length bytes
-    ))
+    val emptyMessage = ByteBuffer.wrap(
+      byteArrayOf(
+        0x0, // Compression flag
+        0x0, 0x0, 0x0, 0x0 // Length bytes
+      )
+    )
 
     stream?.receiveData(emptyMessage, false)
     countDownLatch.await()
@@ -223,16 +229,20 @@ class GRPCStreamTest {
     var stream: MockStream? = null
     val streamClient = MockStreamClient { stream = it }
 
-    val emptyMessageBuffer = ByteBuffer.wrap(byteArrayOf(
-      0x0, // Compression flag
-      0x0, 0x0, 0x0, 0x0 // Length bytes
-    ))
+    val emptyMessageBuffer = ByteBuffer.wrap(
+      byteArrayOf(
+        0x0, // Compression flag
+        0x0, 0x0, 0x0, 0x0 // Length bytes
+      )
+    )
 
     val secondMessage = byteArrayOf(0x6, 0x7, 0x8, 0x9, 0x0, 0x1)
-    val secondMessageBuffer = ByteBuffer.wrap(byteArrayOf(
-      0x0, // Compression flag
-      0x0, 0x0, 0x0, 0x6 // Length bytes
-    ) + secondMessage)
+    val secondMessageBuffer = ByteBuffer.wrap(
+      byteArrayOf(
+        0x0, // Compression flag
+        0x0, 0x0, 0x0, 0x6 // Length bytes
+      ) + secondMessage
+    )
 
     GRPCClient(streamClient)
       .newGRPCStreamPrototype()
