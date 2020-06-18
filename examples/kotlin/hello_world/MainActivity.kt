@@ -8,15 +8,16 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import io.envoyproxy.envoymobile.*
+import io.envoyproxy.envoymobile.AndroidStreamClientBuilder
+import io.envoyproxy.envoymobile.RequestHeadersBuilder
+import io.envoyproxy.envoymobile.RequestMethod
+import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
 import java.io.IOException
-import java.util.HashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val ENVOY_SERVER_HEADER = "server"

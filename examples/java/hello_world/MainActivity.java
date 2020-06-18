@@ -8,8 +8,13 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import io.envoyproxy.envoymobile.*;
-import io.envoyproxy.envoymobile.AndroidEnvoyClientBuilder;
+import io.envoyproxy.envoymobile.AndroidStreamClientBuilder;
+import io.envoyproxy.envoymobile.RequestHeaders;
+import io.envoyproxy.envoymobile.RequestHeadersBuilder;
+import io.envoyproxy.envoymobile.RequestMethod;
+import io.envoyproxy.envoymobile.RequestTrailersBuilder;
+import io.envoyproxy.envoymobile.ResponseHeaders;
+import io.envoyproxy.envoymobile.StreamClient;
 import io.envoyproxy.envoymobile.shared.Failure;
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
 import io.envoyproxy.envoymobile.shared.Success;
@@ -69,38 +74,36 @@ public class MainActivity extends Activity {
     // Note: this request will use an http/1.1 stream for the upstream request.
     // The Kotlin example uses h2. This is done on purpose to test both paths in
     // end-to-end tests in CI.
-    RequestHeaders requestHeaders =
-      new RequestHeadersBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
-        .build();
+    RequestHeaders requestHeaders = new RequestHeadersBuilder(RequestMethod.GET, REQUEST_SCHEME,
+                                                              REQUEST_AUTHORITY, REQUEST_PATH)
+                                        .build();
     AtomicReference<ResponseHeaders> responseHeaders = new AtomicReference<ResponseHeaders>();
-    streamClient
-      .newStreamPrototype()
-      .setOnResponseHeaders((headers, endStream) -> {
-        responseHeaders.set(headers);
-        Log.d("MainActivity", "successful response!");
-        return Unit.INSTANCE;
-      })
-      .setOnResponseData((buffer, endStream) -> {
-        Integer status = responseHeaders.get().getHttpStatus();
-        if (status == 200 && buffer.hasArray()) {
-          String serverHeaderField = responseHeaders.get().value(ENVOY_SERVER_HEADER).get(0);
-          String body = new String(buffer.array());
-          recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
-        } else {
-          recyclerView.post(()
-            -> viewAdapter.add(new Failure("failed with status " + status)));
-        }
-        return Unit.INSTANCE;
-      })
-      .setOnError((error) -> {
-        String msg = "failed with error after " + error.getAttemptCount() +
-          " attempts: " + error.getMessage();
-        Log.d("MainActivity", msg);
-        recyclerView.post(() -> viewAdapter.add(new Failure(msg)));
-        return Unit.INSTANCE;
-      })
-      .start()
-      .sendHeaders(requestHeaders, false)
-      .close(new RequestTrailersBuilder().build());
+    streamClient.newStreamPrototype()
+        .setOnResponseHeaders((headers, endStream) -> {
+          responseHeaders.set(headers);
+          Log.d("MainActivity", "successful response!");
+          return Unit.INSTANCE;
+        })
+        .setOnResponseData((buffer, endStream) -> {
+          Integer status = responseHeaders.get().getHttpStatus();
+          if (status == 200 && buffer.hasArray()) {
+            String serverHeaderField = responseHeaders.get().value(ENVOY_SERVER_HEADER).get(0);
+            String body = new String(buffer.array());
+            recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
+          } else {
+            recyclerView.post(() -> viewAdapter.add(new Failure("failed with status " + status)));
+          }
+          return Unit.INSTANCE;
+        })
+        .setOnError((error) -> {
+          String msg = "failed with error after " + error.getAttemptCount() +
+                       " attempts: " + error.getMessage();
+          Log.d("MainActivity", msg);
+          recyclerView.post(() -> viewAdapter.add(new Failure(msg)));
+          return Unit.INSTANCE;
+        })
+        .start(Runnable::run)
+        .sendHeaders(requestHeaders, false)
+        .close(new RequestTrailersBuilder().build());
   }
 }

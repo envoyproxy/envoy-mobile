@@ -15,9 +15,7 @@ public class EnvoyHTTPStream {
   /**
    * Start the stream via the JNI library.
    */
-  void start() {
-    JniLibrary.startStream(streamHandle, callbacksContext);
-  }
+  void start() { JniLibrary.startStream(streamHandle, callbacksContext); }
 
   /**
    * Initialize a new stream.
