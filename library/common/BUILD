@@ -8,6 +8,8 @@ envoy_package()
 envoy_cc_library(
     name = "envoy_main_interface_lib",
     srcs = [
+        "certificates.inc",
+        "config_template.cc",
         "engine.cc",
         "engine.h",
         "main_interface.cc",
@@ -22,7 +24,6 @@ envoy_cc_library(
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/server:lifecycle_notifier_interface",
         "@envoy_build_config//:static_registry",
-        "@envoy_mobile_bootstrap_config//:bootstrap_config",
     ],
 )
 

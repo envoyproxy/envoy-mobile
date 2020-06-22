@@ -109,8 +109,7 @@ Building Envoy Mobile with private Extensions
 ---------------------------------------------
 
 Similar to Envoy, Envoy Mobile has bazel targets that allows the library to be built as a git
-submodule in a consuming project. This setup enables creating private extensions, such as filters;
-and also allows wholesale replacement of the configuration template.
+submodule in a consuming project. This setup enables creating private extensions, such as filters.
 
 ~~~~~~~~~~
 Extensions
@@ -128,20 +127,4 @@ and include the following in the WORKSPACE file::
     name = "envoy_build_config",
     # Relative paths are also supported.
     path = "/somewhere/on/filesystem/envoy_build_config",
-  )
-
-~~~~~~~~~~~~~
-Configuration
-~~~~~~~~~~~~~
-
-Similarly, the bootstrap configuration can be replaced as it is defined as a ``local_repository``.
-The default is in `envoy_mobile_boostrap_config`.
-
-In order to override the configuration create an ``envoy_mobile_boostrap_config`` directory and
-include the following in the WORKSPACE file::
-
-  local_repository(
-    name = "envoy_mobile_bootstrap_config",
-    # Relative paths are also supported.
-    path = "/somewhere/on/filesystem/envoy_mobile_bootstrap_config",
   )
