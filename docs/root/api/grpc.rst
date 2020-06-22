@@ -42,7 +42,7 @@ Start and interact with a gRPC stream in **Kotlin**::
       }
       .setOnError { ... }
       .setOnCancel { ... }
-      .start(Executor { it.run() })
+      .start(Executors.newSingleThreadExecutor())
       .sendHeaders(headers, false)
       .sendMessage(...)
       ...
@@ -86,9 +86,9 @@ To create a ``GRPCClient``, simply :ref:`create a stream client <api_starting_en
 
 This client can then be used with the types outlined below for starting gRPC streams.
 
------------------------------
-``GRPCRequestHeadersBuilder``
------------------------------
+----------------------
+``GRPCRequestHeaders``
+----------------------
 
 Envoy Mobile provides a ``GRPCRequestHeadersBuilder`` which acts very similarly to the ``RequestHeadersBuilder``
 type. Upon calling ``build()``, it returns a ``GRPCRequestHeaders`` instance - a subclass of ``RequestHeaders``
@@ -114,7 +114,7 @@ To start a gRPC stream, first create an instance of ``GRPCRequestHeaders`` using
 ``GRPCStreamPrototype``
 -----------------------
 
-The ``GRPCStreamPrototype`` is used to configure gRPC streams prior to starting them by assigning callbacks
+A ``GRPCStreamPrototype`` is used to configure gRPC streams prior to starting them by assigning callbacks
 to be invoked when response data is received on the stream.
 
 Typically, consumers should listen to ``onMessage`` and use a protobuf library to deserialize
@@ -158,7 +158,7 @@ To create a ``GRPCStreamPrototype``, use an instance of ``GRPCClient``.
 ``GRPCStream``
 --------------
 
-Finally, the gRPC stream can be started by calling ``start()`` on a ``GRPCStreamPrototype``.
+gRPC streams are started by calling ``start()`` on a ``GRPCStreamPrototype``.
 
 Doing so returns a ``GRPCStream`` which allows the sender to interact with the stream.
 
@@ -180,7 +180,7 @@ stream.
     .newGRPCStreamPrototype()
     ...
   val stream = prototype
-    .start(Executor { it.run() })
+    .start(Executors.newSingleThreadExecutor())
     .sendHeaders(...)
     .sendMessage(...)
 
