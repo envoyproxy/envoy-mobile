@@ -25,7 +25,7 @@ in the later sections of this page for in-depth information on how each type is 
 
 Start and interact with a gRPC stream in **Kotlin**::
 
-  val headers = GRPCRequestHeadersBuilder("https", "envoyproxy.io", "/pb.api.v1.Foo/GetBar")
+  val headers = GRPCRequestHeadersBuilder(scheme = "https", authority = "envoyproxy.io", path = "/pb.api.v1.Foo/GetBar")
     .build()
 
   val streamClient = AndroidStreamClientBuilder(application).build()
