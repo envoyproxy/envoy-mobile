@@ -18,7 +18,7 @@ Start and interact with an HTTP stream in **Kotlin**::
 
   val streamClient = AndroidStreamClientBuilder(application).build()
 
-  val headers = RequestHeadersBuilder(RequestMethod.POST, "https", "api.envoyproxy.io", "/foo")
+  val headers = RequestHeadersBuilder(method = RequestMethod.POST, scheme = "https",  authority = "api.envoyproxy.io", path = "/foo")
     .build()
   val stream = streamClient
     .newStreamPrototype()
