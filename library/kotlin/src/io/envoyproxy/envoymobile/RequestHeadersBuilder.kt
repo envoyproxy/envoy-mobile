@@ -3,7 +3,7 @@ package io.envoyproxy.envoymobile
 /*
  * Builder used for constructing instances of RequestHeaders`.
  */
-class RequestHeadersBuilder: HeadersBuilder {
+class RequestHeadersBuilder : HeadersBuilder {
   /**
    * Initialize a new instance of the builder.
    *
@@ -12,12 +12,20 @@ class RequestHeadersBuilder: HeadersBuilder {
    * @param authority: The URL authority for the request (i.e., "api.foo.com").
    * @param path:      The URL path for the request (i.e., "/foo").
    */
-  constructor(method: RequestMethod, scheme: String = "https",
-              authority: String, path: String) :
-                super(mutableMapOf(":authority" to mutableListOf(authority),
-                                   ":method" to mutableListOf(method.stringValue),
-                                   ":path" to mutableListOf(path),
-                                   ":scheme" to mutableListOf(scheme)))
+  constructor(
+    method: RequestMethod,
+    scheme: String = "https",
+    authority: String,
+    path: String
+  ) :
+    super(
+      mutableMapOf(
+        ":authority" to mutableListOf(authority),
+        ":method" to mutableListOf(method.stringValue),
+        ":path" to mutableListOf(path),
+        ":scheme" to mutableListOf(scheme)
+      )
+    )
 
   /**
    * Instantiate a new builder. Used only by RequestHeaders to convert back to
@@ -26,6 +34,26 @@ class RequestHeadersBuilder: HeadersBuilder {
    * @param headers: The headers to start with.
    */
   internal constructor(headers: MutableMap<String, MutableList<String>>) : super(headers)
+
+  override fun add(name: String, value: String): RequestHeadersBuilder {
+    super.add(name, value)
+    return this
+  }
+
+  override fun set(name: String, value: MutableList<String>): RequestHeadersBuilder {
+    super.set(name, value)
+    return this
+  }
+
+  override fun remove(name: String): RequestHeadersBuilder {
+    super.remove(name)
+    return this
+  }
+
+  override fun internalSet(name: String, value: MutableList<String>): RequestHeadersBuilder {
+    super.internalSet(name, value)
+    return this
+  }
 
   /**
    * Add a retry policy to be used with this request.
@@ -36,7 +64,7 @@ class RequestHeadersBuilder: HeadersBuilder {
    */
   fun addRetryPolicy(retryPolicy: RetryPolicy): RequestHeadersBuilder {
     for ((name, value) in retryPolicy.outboundHeaders()) {
-      set(name, value.toMutableList())
+      internalSet(name, value.toMutableList())
     }
 
     return this
@@ -49,12 +77,14 @@ class RequestHeadersBuilder: HeadersBuilder {
    *
    * @return RequestHeadersBuilder, This builder.
    */
-  fun addUpstreamHttpProtocol(upstreamHttpProtocol: UpstreamHttpProtocol)
-   : RequestHeadersBuilder
-  {
-    set("x-envoy-mobile-upstream-protocol", mutableListOf(upstreamHttpProtocol.stringValue))
-    return this
-  }
+  fun addUpstreamHttpProtocol(upstreamHttpProtocol: UpstreamHttpProtocol):
+    RequestHeadersBuilder {
+      internalSet(
+        "x-envoy-mobile-upstream-protocol",
+        mutableListOf(upstreamHttpProtocol.stringValue)
+      )
+      return this
+    }
 
   /**
    * Build the request headers using the current builder.

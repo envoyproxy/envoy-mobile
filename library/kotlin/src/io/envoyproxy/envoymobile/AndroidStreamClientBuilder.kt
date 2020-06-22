@@ -3,10 +3,10 @@ package io.envoyproxy.envoymobile
 import android.app.Application
 import io.envoyproxy.envoymobile.engine.AndroidEngineImpl
 
-class AndroidEnvoyClientBuilder @JvmOverloads constructor (
-    application: Application,
-    baseConfiguration: BaseConfiguration = Standard()
-) : EnvoyClientBuilder(baseConfiguration) {
+class AndroidStreamClientBuilder @JvmOverloads constructor (
+  application: Application,
+  baseConfiguration: BaseConfiguration = Standard()
+) : StreamClientBuilder(baseConfiguration) {
   init {
     addEngineType { AndroidEngineImpl(application) }
   }

@@ -15,7 +15,7 @@ public class HeadersBuilder: NSObject {
   /// Append a value to the header name.
   ///
   /// - parameter name:  The header name.
-  /// - parameter value: Value the value associated to the header name.
+  /// - parameter value: The value associated to the header name.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -31,7 +31,7 @@ public class HeadersBuilder: NSObject {
   /// Replace all values at the provided name with a new set of header values.
   ///
   /// - parameter name: The header name.
-  /// - parameter value: Value the value associated to the header name.
+  /// - parameter value: The value associated to the header name.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -64,13 +64,20 @@ public class HeadersBuilder: NSObject {
   /// Allows for setting headers that are not publicly mutable (i.e., restricted headers).
   ///
   /// - parameter name: The header name.
-  /// - parameter value: Value the value associated to the header name.
+  /// - parameter value: The value associated to the header name.
   ///
   /// - returns: This builder.
   @discardableResult
   func internalSet(name: String, value: [String]) -> Self {
     self.headers[name] = value
     return self
+  }
+
+  // Only explicitly implemented to work around a swiftinterface issue in Swift 5.1. This can be
+  // removed once envoy is only built with Swift 5.2+
+  public override init() {
+    self.headers = [:]
+    super.init()
   }
 
   /// Initialize a new builder. Subclasses should provide their own public convenience initializers.

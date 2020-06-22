@@ -15,15 +15,16 @@ import java.lang.IllegalArgumentException
  * upstream response has been completely processed. Null or 0 may be specified to disable it.
  */
 data class RetryPolicy(
-    val maxRetryCount: Int,
-    val retryOn: List<RetryRule>,
-    val retryStatusCodes: List<Int> = emptyList(),
-    val perRetryTimeoutMS: Long? = null,
-    val totalUpstreamTimeoutMS: Long? = 15000
+  val maxRetryCount: Int,
+  val retryOn: List<RetryRule>,
+  val retryStatusCodes: List<Int> = emptyList(),
+  val perRetryTimeoutMS: Long? = null,
+  val totalUpstreamTimeoutMS: Long? = 15000
 ) {
   init {
     if (perRetryTimeoutMS != null && totalUpstreamTimeoutMS != null &&
-        perRetryTimeoutMS > totalUpstreamTimeoutMS && totalUpstreamTimeoutMS != 0L) {
+      perRetryTimeoutMS > totalUpstreamTimeoutMS && totalUpstreamTimeoutMS != 0L
+    ) {
       throw IllegalArgumentException("Per-retry timeout cannot be less than total timeout")
     }
   }
@@ -37,8 +38,8 @@ data class RetryPolicy(
     internal fun from(headers: RequestHeaders): RetryPolicy? {
       val maxRetries = headers.value("x-envoy-max-retries")?.first()?.toIntOrNull() ?: return null
 
-      return RetryPolicy(maxRetries,
-        // TODO: should we have ? after the map?
+      return RetryPolicy(
+        maxRetries,
         headers.value("x-envoy-retry-on")
           ?.map { retryOn -> RetryRule.enumValue(retryOn) }?.filterNotNull() ?: emptyList(),
         headers.value("x-envoy-retriable-status-codes")
@@ -66,7 +67,7 @@ enum class RetryRule(internal val stringValue: String) {
   companion object {
     internal fun enumValue(stringRepresentation: String): RetryRule? {
       return when (stringRepresentation) {
-        "status-5xx" -> STATUS_5XX
+        "5xx" -> STATUS_5XX
         "gateway-error" -> GATEWAY_ERROR
         "connect-failure" -> CONNECT_FAILURE
         "refused-stream" -> REFUSED_STREAM
