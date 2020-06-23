@@ -11,7 +11,6 @@ import android.util.Log
 import io.envoyproxy.envoymobile.AndroidStreamClientBuilder
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
-import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.StreamClient
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.shared.Failure
@@ -97,7 +96,8 @@ class MainActivity : Activity() {
         }
       }
       .setOnError { error ->
-        val message = "failed with error after ${error.attemptCount ?: -1} attempts: ${error.message}"
+        val attemptCount = error.attemptCount ?: -1
+        val message = "failed with error after $attemptCount attempts: ${error.message}"
         Log.d("MainActivity", message)
         recyclerView.post { viewAdapter.add(Failure(message)) }
       }
