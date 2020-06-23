@@ -78,11 +78,11 @@ public class MainActivity extends Activity {
                                         .build();
     streamClient.newStreamPrototype()
         .setOnResponseHeaders((responseHeaders, endStream) -> {
-          Integer status = responseHeaders.get().getHttpStatus();
+          Integer status = responseHeaders.getHttpStatus();
           String message = "received headers with status " + status;
           Log.d("MainActivity", message);
           if (status == 200) {
-            String serverHeaderField = responseHeaders.get().value(ENVOY_SERVER_HEADER).get(0);
+            String serverHeaderField = responseHeaders.value(ENVOY_SERVER_HEADER).get(0);
             recyclerView.post(() -> viewAdapter.add(new Success(message, serverHeaderField)));
           } else {
             recyclerView.post(() -> viewAdapter.add(new Failure(message)));
