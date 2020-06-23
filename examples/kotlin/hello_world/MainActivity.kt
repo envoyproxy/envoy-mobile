@@ -88,7 +88,7 @@ class MainActivity : Activity() {
         val status = responseHeaders.httpStatus ?: 0L
         val message = "received headers with status $status"
         Log.d("MainActivity", message)
-        if (status == 200 && buffer.hasArray()) {
+        if (status == 200) {
           val serverHeaderField = responseHeaders?.value(ENVOY_SERVER_HEADER)?.first() ?: ""
           recyclerView.post { viewAdapter.add(Success(message, serverHeaderField)) }
         } else {
