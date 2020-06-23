@@ -5,10 +5,10 @@
 #include "common/upstream/logical_dns_cluster.h"
 
 #include "absl/base/call_once.h"
+#include "extension_registry.h"
 #include "library/common/envoy_mobile_main_common.h"
 #include "library/common/http/dispatcher.h"
 #include "library/common/types/c_types.h"
-#include "extension_registry.h"
 
 namespace Envoy {
 
