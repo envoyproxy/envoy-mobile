@@ -5,11 +5,11 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
-    name = "static_registry",
+    name = "extension_registry",
     srcs = [
-        "static_registry.cc",
+        "extension_registry.cc",
     ],
-    hdrs = ["static_registry.h"],
+    hdrs = ["extension_registry.h"],
     repository = "@envoy",
     deps = [
         "@envoy//source/common/network:socket_lib",

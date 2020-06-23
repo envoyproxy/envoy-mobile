@@ -118,7 +118,7 @@ Extensions
 The top-level `envoy_build_config` directory allows Envoy Mobile to tap into Envoy's already
 existing `selective extensions system <https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#disabling-extensions>`_.
 Additionally, Envoy Mobile requires force registration
-of extensions in the static_registry.cc/h files due to static linking.
+of extensions in the extension_registry.cc/h files due to static linking.
 
 In order to override the extensions built into Envoy Mobile create an ``envoy_build_config`` directory
 and include the following in the WORKSPACE file::
