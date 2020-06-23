@@ -83,29 +83,23 @@ class MainActivity : Activity() {
     )
       .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
-    var responseHeaders: ResponseHeaders? = null
     streamClient
       .newStreamPrototype()
-      .setOnResponseHeaders { headers, _ ->
-        responseHeaders = headers
-      }
-      .setOnResponseData { buffer, _ ->
-        val status = responseHeaders?.httpStatus ?: 0L
+      .setOnResponseHeaders { responseHeaders, _ ->
+        val status = responseHeaders.httpStatus ?: 0L
+        val message = "received headers with status $status"
+        Log.d("MainActivity", message)
         if (status == 200 && buffer.hasArray()) {
           val serverHeaderField = responseHeaders?.value(ENVOY_SERVER_HEADER)?.first() ?: ""
-          val body = String(buffer.array())
-          Log.d("MainActivity", "successful response!")
-          recyclerView.post { viewAdapter.add(Success(body, serverHeaderField)) }
+          recyclerView.post { viewAdapter.add(Success(message, serverHeaderField)) }
         } else {
-          recyclerView.post {
-            viewAdapter.add(Failure("failed with status $status"))
-          }
+          recyclerView.post { viewAdapter.add(Failure(message)) }
         }
       }
       .setOnError { error ->
-        val msg = "failed with error after ${error.attemptCount ?: -1} attempts: ${error.message}"
-        Log.d("MainActivity", msg)
-        recyclerView.post { viewAdapter.add(Failure(msg)) }
+        val message = "failed with error after ${error.attemptCount ?: -1} attempts: ${error.message}"
+        Log.d("MainActivity", message)
+        recyclerView.post { viewAdapter.add(Failure(message)) }
       }
       .start(Executors.newSingleThreadExecutor())
       .sendHeaders(requestHeaders, true)
