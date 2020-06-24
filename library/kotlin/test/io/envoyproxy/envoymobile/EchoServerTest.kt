@@ -9,6 +9,7 @@ import java.net.URL
 import java.nio.ByteBuffer
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicReference
+import java.util.zip.GZIPInputStream
 
 class EchoServerTest {
 
@@ -36,46 +37,42 @@ class EchoServerTest {
     requestStream.write("hello_world".toByteArray(Charsets.UTF_8))
 
     val responseStream = openConnection.getInputStream()
-    val responseBody = responseStream.readBytes().toString(Charsets.UTF_8)
+    val responseBody = responseStream.readBytes()
 
-    assertThat(responseBody).isEqualTo("hello_world")
+    assertThat(ungzip(responseBody)).isEqualTo("hello_world")
   }
 
   @Test
   fun `envoy echo`() {
     val countDownLatch = CountDownLatch(1)
-    val client = EnvoyClientBuilder()
-        .build()
-    val request = RequestBuilder(RequestMethod.POST, "http", "localhost:$port", "/")
-        .build()
     val result = AtomicReference<String?>(null)
-    val emitter = client.send(
-        request,
-        ByteBuffer.wrap("hello_envoy".toByteArray(Charsets.UTF_8)),
-        null,
-        ResponseHandler(executor)
-            .onHeaders { headers, statusCode, endStream ->
-              println("on headers")
-            }
-            .onData { buffer, _ ->
-              result.set(buffer.array().toString(Charsets.UTF_8))
-              countDownLatch.countDown()
-            }
-            .onTrailers { trailers ->
-              println("")
-              countDownLatch.countDown()
-            }
-            .onError { error ->
-              println("")
-              countDownLatch.countDown()
-            }
-            .onCanceled {
-              println("")
-              countDownLatch.countDown()
-            }
-    )
+    val requestHeaders = RequestHeadersBuilder(RequestMethod.POST, "http", "0.0.0.0:$port", "/").build()
+    val client = StreamClientBuilder().addLogLevel(LogLevel.TRACE).build()
+    client.newStreamPrototype()
+      .setOnResponseHeaders { headers, endStream ->
+        countDownLatch.countDown()
+      }
+      .setOnResponseData { data, endStream ->
+        result.set(data.array().toString(Charsets.UTF_8))
+        countDownLatch.countDown()
+      }
+      .setOnResponseTrailers { trailers ->
+        countDownLatch.countDown()
+      }
+      .setOnError { error ->
+        countDownLatch.countDown()
+      }
+      .setOnCancel {
+        countDownLatch.countDown()
+      }
+      .start(Executors.newSingleThreadExecutor())
+      .sendHeaders(requestHeaders, false)
+      .close(ByteBuffer.wrap("hello_envoy".toByteArray(Charsets.UTF_8)))
 
-    countDownLatch.await(5, TimeUnit.SECONDS)
+    countDownLatch.await(15, TimeUnit.SECONDS)
     assertThat(result.get()).isEqualTo("hello_envoy")
   }
+
+  fun ungzip(content: ByteArray): String =
+    GZIPInputStream(content.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }
 }

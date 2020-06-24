@@ -3,7 +3,9 @@ package io.envoyproxy.envoymobile
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
+import java.io.ByteArrayOutputStream
 import java.net.InetSocketAddress
+import java.util.zip.GZIPOutputStream
 
 
 class EchoServer(
@@ -28,12 +30,18 @@ class EchoServer(
   override fun handle(httpExchange: HttpExchange?) {
     val exchange = httpExchange!!
     val requestInputStream = exchange.requestBody
-    val requestBody = requestInputStream.readBytes()
-
+    exchange.responseHeaders["content-encoding"] = "gzip"
     val responseOutputStream = exchange.responseBody
-    exchange.sendResponseHeaders(200, requestBody.size.toLong())
-    responseOutputStream.write(requestBody)
+    val responseBody =  gzip(requestInputStream.readBytes().toString(Charsets.UTF_8))
+    exchange.sendResponseHeaders(200, responseBody.size.toLong())
+    responseOutputStream.write(responseBody)
     responseOutputStream.close()
     requestInputStream.close()
   }
+}
+
+fun gzip(content: String): ByteArray {
+  val bos = ByteArrayOutputStream()
+  GZIPOutputStream(bos).bufferedWriter(Charsets.UTF_8).use { it.write(content) }
+  return bos.toByteArray()
 }
