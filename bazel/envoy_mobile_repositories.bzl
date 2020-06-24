@@ -56,13 +56,6 @@ def upstream_envoy_overrides():
     )
 
 def swift_repos():
-    http_file(
-        name = "xctestrunner",
-        executable = 1,
-        sha256 = "890faff3f6d5321712ffb7a09ba3614eabca93977221e86d058c7842fdbad6b6",
-        urls = ["https://github.com/google/xctestrunner/releases/download/0.2.13/ios_test_runner.par"],
-    )
-
     http_archive(
         name = "build_bazel_rules_apple",
         sha256 = "4300f45136dbe2edfa1ad38995760170a64006a5a14adfbe13c401668ec4c7da",
