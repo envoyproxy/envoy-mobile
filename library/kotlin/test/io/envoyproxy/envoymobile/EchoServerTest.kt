@@ -1,7 +1,6 @@
 package io.envoyproxy.envoymobile
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -13,8 +12,9 @@ import java.util.zip.GZIPInputStream
 
 class EchoServerTest {
 
-  private val port = 1234
-  private val server = EchoServer(port)
+  private val port = 8000
+  private val path = "/test"
+  private val server = EchoServer(port, path)
   private val executor = Executors.newSingleThreadExecutor()
 
   @Before
@@ -30,7 +30,7 @@ class EchoServerTest {
   @Test
   @Ignore
   fun `echo localhost`() {
-    val url = URL("http://0.0.0.0:$port/")
+    val url = URL("http://0.0.0.0:$port$path")
     val openConnection = url.openConnection()
     openConnection.doOutput = true
     val requestStream = openConnection.getOutputStream()
@@ -46,7 +46,7 @@ class EchoServerTest {
   fun `envoy echo`() {
     val countDownLatch = CountDownLatch(1)
     val result = AtomicReference<String?>(null)
-    val requestHeaders = RequestHeadersBuilder(RequestMethod.POST, "http", "0.0.0.0:$port", "/").build()
+    val requestHeaders = RequestHeadersBuilder(RequestMethod.POST, "http", "0.0.0.0:$port", path).build()
     val client = StreamClientBuilder().addLogLevel(LogLevel.TRACE).build()
     client.newStreamPrototype()
       .setOnResponseHeaders { headers, endStream ->
@@ -65,11 +65,11 @@ class EchoServerTest {
       .setOnCancel {
         countDownLatch.countDown()
       }
-      .start(Executors.newSingleThreadExecutor())
+      .start(executor)
       .sendHeaders(requestHeaders, false)
       .close(ByteBuffer.wrap("hello_envoy".toByteArray(Charsets.UTF_8)))
 
-    countDownLatch.await(15, TimeUnit.SECONDS)
+    countDownLatch.await(20, TimeUnit.SECONDS)
     assertThat(result.get()).isEqualTo("hello_envoy")
   }
 
