@@ -1,8 +1,8 @@
 package io.envoyproxy.envoymobile.shared
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 
 class ResponseRecyclerViewAdapter : RecyclerView.Adapter<ResponseViewHolder>() {
   private val data = mutableListOf<Response>()
