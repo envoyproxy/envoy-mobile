@@ -1,7 +1,9 @@
 #include "library/common/main_interface.h"
 
 #include <atomic>
+#include <string>
 
+#include "library/common/api/external.h"
 #include "library/common/engine.h"
 #include "library/common/http/dispatcher.h"
 
@@ -66,6 +68,11 @@ void flush_stats() {
   if (auto e = engine_.lock()) {
     e->flushStats();
   }
+}
+
+envoy_status_t register_platform_api(const char* name, void* api) {
+  Envoy::Api::External::registerApi(std::string(name), api);
+  return ENVOY_SUCCESS;
 }
 
 /**
