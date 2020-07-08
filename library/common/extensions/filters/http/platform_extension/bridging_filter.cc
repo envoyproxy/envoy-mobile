@@ -40,10 +40,14 @@ BridgingFilter::BridgingFilter(BridgingFilterConfigSharedPtr config)
     : platform_filter_(
           static_cast<envoy_http_filter*>(Api::External::retrieveApi(config->name()))) {}
 
-Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& headers,
-                                                        bool end_stream) {
+Http::FilterHeadersStatus BridgingFilter::onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers) {
+  // Allow nullptr to act as (optimized) no-op.
+  if (on_headers == nullptr) {
+    return Http::FilterHeadersStatus::Continue;
+  }
+
   envoy_headers in_headers = Http::Utility::toBridgeHeaders(headers);
-  envoy_filter_headers_status result = platform_filter_->on_request_headers(in_headers, end_stream, platform_filter_->context);
+  envoy_filter_headers_status result = on_headers(in_headers, end_stream, platform_filter_->context);
   Http::FilterHeadersStatus status = mapStatus(result.status);
   // Current platform implementations expose immutable headers, thus any modification necessitates a full copy.
   // If the returned pointer is identical, we assume no modification was made and elide the copy here.
@@ -58,6 +62,12 @@ Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& 
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(result.headers);
   return status;
+}
+
+Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& headers,
+                                                        bool end_stream) {
+  // Delegate to shared implementation for request and response path.
+  return onHeaders(headers, end_stream, platform_filter_->on_request_headers);
 }
 
 Http::FilterDataStatus BridgingFilter::decodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
@@ -79,22 +89,8 @@ BridgingFilter::encode100ContinueHeaders(Http::ResponseHeaderMap& /*headers*/) {
 
 Http::FilterHeadersStatus BridgingFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
                                                         bool end_stream) {
-  envoy_headers in_headers = Http::Utility::toBridgeHeaders(headers);
-  envoy_filter_headers_status result = platform_filter_->on_response_headers(in_headers, end_stream, platform_filter_->context);
-  Http::FilterHeadersStatus status = mapStatus(result.status);
-  // Current platform implementations expose immutable headers, thus any modification necessitates a full copy.
-  // If the returned pointer is identical, we assume no modification was made and elide the copy here.
-  if (in_headers.headers != result.headers.headers) {
-    headers.clear();
-    for (envoy_header_size_t i = 0; i < result.headers.length; i++) {
-      headers.addCopy(
-          Http::LowerCaseString(Http::Utility::convertToString(result.headers.headers[i].key)),
-          Http::Utility::convertToString(result.headers.headers[i].value));
-    }
-  }
-  // The C envoy_headers struct can be released now because the headers have been copied.
-  release_envoy_headers(result.headers);
-  return status;
+  // Delegate to shared implementation for request and response path.
+  return onHeaders(headers, end_stream, platform_filter_->on_response_headers);
 }
 
 Http::FilterDataStatus BridgingFilter::encodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
