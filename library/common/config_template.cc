@@ -63,6 +63,7 @@ static_resources:
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+              add_request_date_header: true
   clusters:
   - name: base
     connect_timeout: {{ connect_timeout_seconds }}s
