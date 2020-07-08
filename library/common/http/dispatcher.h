@@ -169,7 +169,7 @@ private:
     void readDisable(bool /*disable*/) override {}
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
-    void setFlushTimeout(std::chrono::milliseconds) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+    void setFlushTimeout(std::chrono::milliseconds) override {}
 
     void closeLocal(bool end_stream);
 
