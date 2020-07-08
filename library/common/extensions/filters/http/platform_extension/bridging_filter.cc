@@ -1,7 +1,5 @@
 #include "library/common/extensions/filters/http/platform_extension/bridging_filter.h"
 
-//#include <iostream>
-
 #include "envoy/server/filter_config.h"
 
 #include "common/common/assert.h"
@@ -27,7 +25,7 @@ Http::FilterHeadersStatus mapStatus(envoy_filter_headers_status_t status) {
   case ENVOY_FILTER_HEADERS_STATUS_STOP_ALL_ITERATION_AND_BUFFER:
     return Http::FilterHeadersStatus::StopAllIterationAndBuffer;
   default:
-    ASSERT(false, "unrecognized filter status from platform: {}");
+    ASSERT(false, fmt::format("unrecognized filter status from platform: {}", status));
     return Http::FilterHeadersStatus::Continue;
   }
 }

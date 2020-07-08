@@ -11,7 +11,7 @@ namespace HttpFilters {
 namespace PlatformExtension {
 
 /**
- * Config registration for the decompressor filter. @see NamedHttpFilterConfigFactory.
+ * Config registration for the bridging filter. @see NamedHttpFilterConfigFactory.
  */
 class BridgingFilterFactory
     : public Common::FactoryBase<
