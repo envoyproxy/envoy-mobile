@@ -56,7 +56,7 @@ def android_artifacts(name, android_library, manifest, archive_name, native_deps
     _sources_name, _javadocs_name = _create_sources_javadocs(name, android_library)
     _pom_name = _create_pom_xml(name, android_library)
     native.genrule(
-        name = name + "_artifacts",
+        name = name + "_with_artifacts",
         srcs = [
             _aar_output,
             _pom_name,

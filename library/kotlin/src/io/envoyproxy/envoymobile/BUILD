@@ -6,7 +6,7 @@ load("@rules_detekt//detekt:defs.bzl", "detekt")
 licenses(["notice"])  # Apache 2
 
 android_artifacts(
-    name = "envoy_android",
+    name = "envoy_aar",
     android_library = ":envoy_lib",
     archive_name = "envoy",
     manifest = "EnvoyManifest.xml",

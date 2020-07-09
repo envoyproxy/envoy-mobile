@@ -21,14 +21,14 @@ touch $@
 
 alias(
     name = "android_aar",
-    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_android",
+    actual = "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_aar",
     visibility = ["//visibility:public"],
 )
 
 genrule(
     name = "android_dist_ci",
     srcs = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_android_artifacts",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_aar_with_artifacts",
     ],
     outs = ["envoy_mobile.zip"],
     cmd = """
@@ -46,7 +46,7 @@ genrule(
 genrule(
     name = "android_dist",
     srcs = [
-        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_android",
+        "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_aar",
     ],
     outs = ["output_in_dist_directory"],
     cmd = """
