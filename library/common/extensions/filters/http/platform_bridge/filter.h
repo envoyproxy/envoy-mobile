@@ -17,10 +17,10 @@ public:
   PlatformBridgeFilterConfig(
       const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config);
 
-  const std::string& name() const { return name_; }
+  const envoy_http_filter* platform_filter() const { return platform_filter_; }
 
 private:
-  const std::string name_;
+  const envoy_http_filter* platform_filter_;
 };
 
 typedef std::shared_ptr<PlatformBridgeFilterConfig> PlatformBridgeFilterConfigSharedPtr;
@@ -49,9 +49,6 @@ public:
 
 private:
   Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers);
-
-  // TODO(goaway): This needs to be updated not to leak once multiple engines are supported.
-  // See https://github.com/lyft/envoy-mobile/issues/332
   const envoy_http_filter* platform_filter_;
 };
 

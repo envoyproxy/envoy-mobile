@@ -32,11 +32,11 @@ Http::FilterHeadersStatus mapStatus(envoy_filter_headers_status_t status) {
 
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
-    : name_(proto_config.name()) {}
+    : platform_filter_(
+          static_cast<envoy_http_filter*>(Api::External::retrieveApi(proto_config.name()))) {}
 
 PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config)
-    : platform_filter_(
-          static_cast<envoy_http_filter*>(Api::External::retrieveApi(config->name()))) {}
+    : platform_filter_(config->platform_filter()) {}
 
 Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers) {
   // Allow nullptr to act as (optimized) no-op.
