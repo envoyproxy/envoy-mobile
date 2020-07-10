@@ -7,7 +7,7 @@
 #include "library/common/engine.h"
 #include "library/common/http/dispatcher.h"
 
-#include "library/common/extensions/filters/http/platform_extension/c_types.h"
+#include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 
 // NOLINT(namespace-envoy)
 

@@ -4,18 +4,18 @@
 
 #include "extensions/filters/http/common/pass_through_filter.h"
 
-#include "library/common/extensions/filters/http/platform_extension/c_types.h"
-#include "library/common/extensions/filters/http/platform_extension/filter.pb.h"
+#include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/extensions/filters/http/platform_bridge/filter.pb.h"
 
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
-namespace PlatformExtension {
+namespace PlatformBridge {
 
-class BridgingFilterConfig {
+class PlatformBridgeFilterConfig {
 public:
-  BridgingFilterConfig(
-      const envoymobile::extensions::filters::http::platform_extension::Bridging& proto_config);
+  PlatformBridgeFilterConfig(
+      const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config);
 
   const std::string& name() const { return name_; }
 
@@ -23,14 +23,14 @@ private:
   const std::string name_;
 };
 
-typedef std::shared_ptr<BridgingFilterConfig> BridgingFilterConfigSharedPtr;
+typedef std::shared_ptr<PlatformBridgeFilterConfig> PlatformBridgeFilterConfigSharedPtr;
 
 /**
  * Harness to bridge Envoy filter invocations up to the platform layer.
  */
-class BridgingFilter final : public Http::PassThroughFilter {
+class PlatformBridgeFilter final : public Http::PassThroughFilter {
 public:
-  BridgingFilter(BridgingFilterConfigSharedPtr config);
+  PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config);
 
   // StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
@@ -55,7 +55,7 @@ private:
   const envoy_http_filter* platform_filter_;
 };
 
-} // namespace PlatformExtension
+} // namespace PlatformBridge
 } // namespace HttpFilters
 } // namespace Extensions
 } // namespace Envoy

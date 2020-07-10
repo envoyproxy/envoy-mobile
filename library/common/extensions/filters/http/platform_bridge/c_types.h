@@ -84,7 +84,7 @@ typedef envoy_filter_trailers_status (*envoy_filter_on_trailers_f)(envoy_headers
 
 /**
  * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the
- * BridgingFilter
+ * PlatformBridgeFilter
  */
 typedef struct {
   envoy_filter_on_headers_f on_request_headers;

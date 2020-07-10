@@ -12,7 +12,7 @@
 #include "extensions/transport_sockets/tls/config.h"
 #include "extensions/upstreams/http/generic/config.h"
 
-#include "library/common/extensions/filters/http/platform_extension/config.h"
+#include "library/common/extensions/filters/http/platform_bridge/config.h"
 
 namespace Envoy {
 class ExtensionRegistry {

@@ -1,4 +1,4 @@
-#include "library/common/extensions/filters/http/platform_extension/bridging_filter.h"
+#include "library/common/extensions/filters/http/platform_bridge/filter.h"
 
 #include "envoy/server/filter_config.h"
 
@@ -12,7 +12,7 @@
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
-namespace PlatformExtension {
+namespace PlatformBridge {
 
 Http::FilterHeadersStatus mapStatus(envoy_filter_headers_status_t status) {
   switch (status) {
@@ -30,15 +30,15 @@ Http::FilterHeadersStatus mapStatus(envoy_filter_headers_status_t status) {
   }
 }
 
-BridgingFilterConfig::BridgingFilterConfig(
-    const envoymobile::extensions::filters::http::platform_extension::Bridging& proto_config)
+PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
+    const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
     : name_(proto_config.name()) {}
 
-BridgingFilter::BridgingFilter(BridgingFilterConfigSharedPtr config)
+PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config)
     : platform_filter_(
           static_cast<envoy_http_filter*>(Api::External::retrieveApi(config->name()))) {}
 
-Http::FilterHeadersStatus BridgingFilter::onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers) {
+Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers) {
   // Allow nullptr to act as (optimized) no-op.
   if (on_headers == nullptr) {
     return Http::FilterHeadersStatus::Continue;
@@ -62,48 +62,48 @@ Http::FilterHeadersStatus BridgingFilter::onHeaders(Http::HeaderMap& headers, bo
   return status;
 }
 
-Http::FilterHeadersStatus BridgingFilter::decodeHeaders(Http::RequestHeaderMap& headers,
+Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeaderMap& headers,
                                                         bool end_stream) {
   // Delegate to shared implementation for request and response path.
   return onHeaders(headers, end_stream, platform_filter_->on_request_headers);
 }
 
-Http::FilterDataStatus BridgingFilter::decodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
+Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
   return Http::FilterDataStatus::Continue;
 }
 
-Http::FilterTrailersStatus BridgingFilter::decodeTrailers(Http::RequestTrailerMap& /*trailers*/) {
+Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& /*trailers*/) {
   return Http::FilterTrailersStatus::Continue;
 }
 
-Http::FilterMetadataStatus BridgingFilter::decodeMetadata(Http::MetadataMap& /*metadata*/) {
+Http::FilterMetadataStatus PlatformBridgeFilter::decodeMetadata(Http::MetadataMap& /*metadata*/) {
   return Http::FilterMetadataStatus::Continue;
 }
 
 Http::FilterHeadersStatus
-BridgingFilter::encode100ContinueHeaders(Http::ResponseHeaderMap& /*headers*/) {
+PlatformBridgeFilter::encode100ContinueHeaders(Http::ResponseHeaderMap& /*headers*/) {
   return Http::FilterHeadersStatus::Continue;
 }
 
-Http::FilterHeadersStatus BridgingFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
+Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
                                                         bool end_stream) {
   // Delegate to shared implementation for request and response path.
   return onHeaders(headers, end_stream, platform_filter_->on_response_headers);
 }
 
-Http::FilterDataStatus BridgingFilter::encodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
+Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
   return Http::FilterDataStatus::Continue;
 }
 
-Http::FilterTrailersStatus BridgingFilter::encodeTrailers(Http::ResponseTrailerMap& /*trailers*/) {
+Http::FilterTrailersStatus PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& /*trailers*/) {
   return Http::FilterTrailersStatus::Continue;
 }
 
-Http::FilterMetadataStatus BridgingFilter::encodeMetadata(Http::MetadataMap& /*metadata*/) {
+Http::FilterMetadataStatus PlatformBridgeFilter::encodeMetadata(Http::MetadataMap& /*metadata*/) {
   return Http::FilterMetadataStatus::Continue;
 }
 
-} // namespace PlatformExtension
+} // namespace PlatformBridge
 } // namespace HttpFilters
 } // namespace Extensions
 } // namespace Envoy

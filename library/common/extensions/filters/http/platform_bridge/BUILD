@@ -8,10 +8,10 @@ package(default_visibility = ["//visibility:public"])
 api_proto_package()
 
 envoy_cc_library(
-    name = "platform_bridging_filter_lib",
-    srcs = ["bridging_filter.cc"],
+    name = "platform_bridge_filter_lib",
+    srcs = ["filter.cc"],
     hdrs = [
-        "bridging_filter.h",
+        "filter.h",
         "c_types.h",
     ],
     repository = "@envoy",
@@ -33,7 +33,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":pkg_cc_proto",
-        ":platform_bridging_filter_lib",
+        ":platform_bridge_filter_lib",
         "@envoy//source/extensions/filters/http/common:factory_base_lib",
     ],
 )

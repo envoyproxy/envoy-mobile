@@ -32,9 +32,9 @@ static_resources:
                         base_interval: 0.25s
                         max_interval: 60s
         http_filters:
-          - name: envoy.filters.http.platform_extension
+          - name: envoy.filters.http.platform_bridge
             typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_extension.Bridging
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
               name: PlatformStub
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:
