@@ -51,7 +51,8 @@ Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& heade
   Http::FilterHeadersStatus status = mapStatus(result.status);
   // Current platform implementations expose immutable headers, thus any modification necessitates a
   // full copy. If the returned pointer is identical, we assume no modification was made and elide
-  // the copy here.
+  // the copy here. See also https://github.com/lyft/envoy-mobile/issues/949 for potential future
+  // optimization.
   if (in_headers.headers != result.headers.headers) {
     headers.clear();
     for (envoy_header_size_t i = 0; i < result.headers.length; i++) {
