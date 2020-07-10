@@ -5,9 +5,8 @@
 
 #include "library/common/api/external.h"
 #include "library/common/engine.h"
-#include "library/common/http/dispatcher.h"
-
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/http/dispatcher.h"
 
 // NOLINT(namespace-envoy)
 

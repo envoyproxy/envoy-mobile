@@ -1,4 +1,5 @@
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
+
 #include "library/common/extensions/filters/http/platform_bridge/filter.h"
 
 namespace Envoy {

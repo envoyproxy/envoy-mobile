@@ -11,8 +11,8 @@ envoy_cc_library(
     name = "platform_bridge_filter_lib",
     srcs = ["filter.cc"],
     hdrs = [
-        "filter.h",
         "c_types.h",
+        "filter.h",
     ],
     repository = "@envoy",
     deps = [

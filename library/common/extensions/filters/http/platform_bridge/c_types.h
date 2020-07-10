@@ -69,14 +69,13 @@ typedef envoy_filter_headers_status (*envoy_filter_on_headers_f)(envoy_headers h
  * Function signature for on-data filter invocations.
  */
 typedef envoy_filter_data_status (*envoy_filter_on_data_f)(envoy_data data, bool end_stream,
-                                                          void* context);
+                                                           void* context);
 
 /**
  * Function signature for on-trailers filter invocations.
  */
 typedef envoy_filter_trailers_status (*envoy_filter_on_trailers_f)(envoy_headers trailers,
-                                                                   bool end_stream,
-                                                                   void* context);
+                                                                   bool end_stream, void* context);
 
 #ifdef __cplusplus
 } // function pointers

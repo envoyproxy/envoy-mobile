@@ -48,7 +48,8 @@ public:
   Http::FilterMetadataStatus encodeMetadata(Http::MetadataMap& metadata) override;
 
 private:
-  Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers);
+  Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream,
+                                      envoy_filter_on_headers_f on_headers);
   const envoy_http_filter* platform_filter_;
 };
 

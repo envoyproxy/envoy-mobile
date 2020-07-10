@@ -38,17 +38,20 @@ PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
 PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config)
     : platform_filter_(config->platform_filter()) {}
 
-Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& headers, bool end_stream, envoy_filter_on_headers_f on_headers) {
+Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& headers, bool end_stream,
+                                                          envoy_filter_on_headers_f on_headers) {
   // Allow nullptr to act as (optimized) no-op.
   if (on_headers == nullptr) {
     return Http::FilterHeadersStatus::Continue;
   }
 
   envoy_headers in_headers = Http::Utility::toBridgeHeaders(headers);
-  envoy_filter_headers_status result = on_headers(in_headers, end_stream, platform_filter_->context);
+  envoy_filter_headers_status result =
+      on_headers(in_headers, end_stream, platform_filter_->context);
   Http::FilterHeadersStatus status = mapStatus(result.status);
-  // Current platform implementations expose immutable headers, thus any modification necessitates a full copy.
-  // If the returned pointer is identical, we assume no modification was made and elide the copy here.
+  // Current platform implementations expose immutable headers, thus any modification necessitates a
+  // full copy. If the returned pointer is identical, we assume no modification was made and elide
+  // the copy here.
   if (in_headers.headers != result.headers.headers) {
     headers.clear();
     for (envoy_header_size_t i = 0; i < result.headers.length; i++) {
@@ -63,16 +66,18 @@ Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& heade
 }
 
 Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeaderMap& headers,
-                                                        bool end_stream) {
+                                                              bool end_stream) {
   // Delegate to shared implementation for request and response path.
   return onHeaders(headers, end_stream, platform_filter_->on_request_headers);
 }
 
-Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
+Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& /*data*/,
+                                                        bool /*end_stream*/) {
   return Http::FilterDataStatus::Continue;
 }
 
-Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& /*trailers*/) {
+Http::FilterTrailersStatus
+PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& /*trailers*/) {
   return Http::FilterTrailersStatus::Continue;
 }
 
@@ -86,16 +91,18 @@ PlatformBridgeFilter::encode100ContinueHeaders(Http::ResponseHeaderMap& /*header
 }
 
 Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
-                                                        bool end_stream) {
+                                                              bool end_stream) {
   // Delegate to shared implementation for request and response path.
   return onHeaders(headers, end_stream, platform_filter_->on_response_headers);
 }
 
-Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& /*data*/, bool /*end_stream*/) {
+Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& /*data*/,
+                                                        bool /*end_stream*/) {
   return Http::FilterDataStatus::Continue;
 }
 
-Http::FilterTrailersStatus PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& /*trailers*/) {
+Http::FilterTrailersStatus
+PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& /*trailers*/) {
   return Http::FilterTrailersStatus::Continue;
 }
 
