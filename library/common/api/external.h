@@ -7,13 +7,12 @@ namespace Api {
 namespace External {
 
 /**
- * Register an external runtime API for usage (most likely in extensions).
- * NOTE: This is a proof of concept implementation and a HACK. Registration is NOT thread-safe.
+ * Register an external runtime API for usage (e.g. in extensions).
  */
 void registerApi(std::string name, void* api);
 
 /**
- * Retrieve an external runtime API for usage (most likely in extensions).
+ * Retrieve an external runtime API for usage (e.g. in extensions).
  */
 void* retrieveApi(std::string name);
 

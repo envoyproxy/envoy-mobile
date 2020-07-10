@@ -5,7 +5,7 @@
 // NOLINT(namespace-envoy)
 
 /**
- * Return codes for on-headers filter invocations. See envoy/http/filter.h
+ * Return codes for on-headers filter invocations. @see envoy/http/filter.h
  */
 typedef enum {
   ENVOY_FILTER_HEADERS_STATUS_CONTINUE = 0,
@@ -23,7 +23,7 @@ typedef struct {
 } envoy_filter_headers_status;
 
 /**
- * Return codes for on-data filter invocations. See envoy/http/filter.h
+ * Return codes for on-data filter invocations. @see envoy/http/filter.h
  */
 typedef enum {
   ENVOY_FILTER_DATA_STATUS_CONTINUE = 0,
@@ -40,7 +40,7 @@ typedef struct {
 } envoy_filter_data_status;
 
 /**
- * Return codes for on-trailers filter invocations. See envoy/http/filter.h
+ * Return codes for on-trailers filter invocations. @see envoy/http/filter.h
  */
 typedef enum {
   ENVOY_FILTER_TRAILERS_STATUS_CONTINUE = 0,
@@ -84,7 +84,7 @@ typedef envoy_filter_trailers_status (*envoy_filter_on_trailers_f)(envoy_headers
 
 /**
  * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the
- * PlatformBridgeFilter
+ * PlatformBridgeFilter.
  */
 typedef struct {
   envoy_filter_on_headers_f on_request_headers;
