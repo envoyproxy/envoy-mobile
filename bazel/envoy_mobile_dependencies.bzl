@@ -22,7 +22,7 @@ def kotlin_dependencies():
         artifacts = [
             # Kotlin
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
-            "androidx.recyclerview:recyclerview:1.0.0",
+            "androidx.recyclerview:recyclerview:1.1.0",
             # Test artifacts
             "org.assertj:assertj-core:3.9.0",
             "junit:junit:4.12",
