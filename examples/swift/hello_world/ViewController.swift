@@ -6,6 +6,32 @@ private let kRequestAuthority = "api.lyft.com"
 private let kRequestPath = "/ping"
 private let kRequestScheme = "https"
 
+struct ExampleFilter: RequestFilter {
+  let name = "PlatformExample"
+
+  func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool) -> FilterHeaderStatus<RequestHeaders> {
+    if headers.value(forName: "filter-test") != nil {
+      NSLog("Found new header!")
+      return .continue(headers)
+    }
+
+    NSLog("Adding new header!")
+    let builder = headers.toRequestHeadersBuilder()
+    builder.add(name: "filter-test", value: "1")
+    return .continue(builder.build())
+  }
+
+  func setRequestFilterCallbacks(_ callbacks: RequestFilterCallbacks) {}
+
+  func onRequestData(_ body: Data, endStream: Bool) -> FilterDataStatus {
+    return .continue(body)
+  }
+
+  func onRequestTrailers(_ trailers: RequestTrailers) -> FilterTrailerStatus<RequestTrailers> {
+    return .continue(trailers)
+  }
+}
+
 final class ViewController: UITableViewController {
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
@@ -15,7 +41,7 @@ final class ViewController: UITableViewController {
     super.viewDidLoad()
     do {
       NSLog("starting Envoy...")
-      self.client = try StreamClientBuilder().build()
+      self.client = try StreamClientBuilder().addFilter(ExampleFilter()).build()
     } catch let error {
       NSLog("starting Envoy failed: \(error)")
     }
