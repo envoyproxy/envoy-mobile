@@ -4,7 +4,7 @@ import Foundation
 /// To instantiate new instances, see `{Request|Response}HeadersBuilder`.
 @objcMembers
 public class Headers: NSObject {
-  public var headers: [String: [String]]
+  let headers: [String: [String]]
 
   /// Get the value for the provided header name.
   ///
