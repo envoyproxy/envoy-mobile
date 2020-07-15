@@ -33,7 +33,7 @@ Http::FilterHeadersStatus mapStatus(envoy_filter_headers_status_t status) {
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
     : platform_filter_(
-          static_cast<envoy_http_filter*>(Api::External::retrieveApi(proto_config.name()))) {}
+          static_cast<envoy_http_filter*>(Api::External::retrieveApi(proto_config.platform_filter_name()))) {}
 
 PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config)
     : platform_filter_(config->platform_filter()) {}
