@@ -135,7 +135,7 @@ typedef NSMutableDictionary<NSString *, NSArray<NSString *> *> EnvoyMutableHeade
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
-@property (nonatomic, strong) NSArray *httpFilters;
+@property (nonatomic, strong) NSArray<EnvoyHTTPFilter *> *httpFilters;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
@@ -149,7 +149,7 @@ typedef NSMutableDictionary<NSString *, NSArray<NSString *> *> EnvoyMutableHeade
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                        filterChain:(NSArray *)httpFilters
+                        filterChain:(NSArray<EnvoyHTTPFilter *> *)httpFilters
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
