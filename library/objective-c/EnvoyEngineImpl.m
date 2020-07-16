@@ -15,8 +15,7 @@ typedef struct {
   __unsafe_unretained EnvoyHTTPFilter *filter;
 } ios_http_filter_context;
 
-// TODO: factor out conversion
-// TODO: move impl
+// TODO(goaway): refactor and relocate translation
 static envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
   uint8_t *native_string = (uint8_t *)safe_malloc(sizeof(uint8_t) * length);
@@ -70,13 +69,39 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
 static envoy_filter_headers_status
 ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, void *context) {
   NSLog(@"*IN* ios_http_filter_on_request_headers");
-  // TODO: optimize unmodified case
+
+  // TODO(goaway): optimize unmodified case
   ios_http_filter_context *c = (ios_http_filter_context *)context;
+  if (c->filter.onRequestHeaders == nil) {
+    NSLog(@"no implementation; returning");
+    return (envoy_filter_headers_status){0, headers};
+  }
+
   EnvoyHeaders *platformHeaders = to_ios_headers(headers);
   release_envoy_headers(headers);
-  // TODO: use better solution for compound return
+  // TODO(goaway): consider better solution for compound return
   NSLog(@"*DISPATCH* objc:onRequestHeaders");
   NSArray *result = c->filter.onRequestHeaders(platformHeaders, end_stream);
+  return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
+                                       /*headers*/ toNativeHeaders(result[1])};
+}
+
+static envoy_filter_headers_status
+ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, void *context) {
+  NSLog(@"*IN* ios_http_filter_on_response_headers");
+
+  // TODO(goaway): optimize unmodified case
+  ios_http_filter_context *c = (ios_http_filter_context *)context;
+  if (c->filter.onResponseHeaders == nil) {
+    NSLog(@"no implementation; returning");
+    return (envoy_filter_headers_status){0, headers};
+  }
+
+  EnvoyHeaders *platformHeaders = to_ios_headers(headers);
+  release_envoy_headers(headers);
+  // TODO(goaway): consider better solution for compound return
+  NSLog(@"*DISPATCH* objc:onResponseHeaders");
+  NSArray *result = c->filter.onResponseHeaders(platformHeaders, end_stream);
   return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
                                        /*headers*/ toNativeHeaders(result[1])};
 }
@@ -101,7 +126,8 @@ ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, void 
 }
 
 - (int)registerFilter:(EnvoyHTTPFilter *)filter {
-  // TODO: Everything here leaks currently, but it's all be tied to the life of the engine.
+  // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
+  // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
   ios_http_filter_context *context = safe_malloc(sizeof(ios_http_filter_context));
   CFBridgingRetain(filter);
   context->filter = filter;
@@ -109,7 +135,7 @@ ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, void 
   // NSLog(@"api: %p, callback: %p, context: %p", api, ios_http_filter_on_request_headers, context);
   api->on_request_headers = ios_http_filter_on_request_headers;
   api->on_request_data = NULL;
-  api->on_response_headers = NULL;
+  api->on_response_headers = ios_http_filter_on_response_headers;
   api->on_response_data = NULL;
   api->context = context;
   register_platform_api(filter.name.UTF8String, api);
