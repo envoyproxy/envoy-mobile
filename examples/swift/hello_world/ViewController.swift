@@ -9,7 +9,9 @@ private let kRequestScheme = "https"
 struct PlatformDemoFilter: ResponseFilter {
   let name = "PlatformStub"
 
-  func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool) -> FilterHeaderStatus<ResponseHeaders> {
+  func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
+    -> FilterHeaderStatus<ResponseHeaders>
+  {
     NSLog("Adding new header!")
     let builder = headers.toResponseHeadersBuilder()
     builder.add(name: "filter-demo", value: "1")
