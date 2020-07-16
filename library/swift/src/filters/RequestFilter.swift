@@ -9,10 +9,10 @@ extension EnvoyHTTPFilter {
     self.onRequestHeaders = {
       let result = requestFilter.onRequestHeaders(RequestHeaders(headers: $0), endStream: $1)
       switch result {
-        case .continue(let headers):
-          return [0, headers.headers]
-        case .stopIteration(let headers):
-          return [1, headers.headers]
+      case .continue(let headers):
+        return [0, headers.headers]
+      case .stopIteration(let headers):
+        return [1, headers.headers]
       }
     }
   }
