@@ -3,11 +3,11 @@ import Foundation
 
 extension EnvoyHTTPFilter {
   /// Initializer
-  convenience init(filter: RequestFilter) {
+  convenience init(requestFilter: RequestFilter) {
     self.init()
-    self.name = "PlatformExample"
+    self.name = requestFilter.name
     self.onRequestHeaders = {
-      let result = filter.onRequestHeaders(RequestHeaders(headers: $0), endStream: $1)
+      let result = requestFilter.onRequestHeaders(RequestHeaders(headers: $0), endStream: $1)
       switch result {
         case .continue(let headers):
           return [0, headers.headers]

@@ -43,7 +43,7 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
     [headerValueList addObject:headerValue];
   }
   // Note: don't release because they may not be modified by the filter
-  //release_envoy_headers(headers);
+  // release_envoy_headers(headers);
   return headerDict;
 }
 
@@ -67,9 +67,8 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   return ret;
 }
 
-static envoy_filter_headers_status ios_http_filter_on_request_headers(envoy_headers headers,
-                                                                      bool end_stream,
-                                                                      void *context) {
+static envoy_filter_headers_status
+ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, void *context) {
   NSLog(@"*IN* ios_http_filter_on_request_headers");
   // TODO: optimize unmodified case
   ios_http_filter_context *c = (ios_http_filter_context *)context;
@@ -78,7 +77,8 @@ static envoy_filter_headers_status ios_http_filter_on_request_headers(envoy_head
   // TODO: use better solution for compound return
   NSLog(@"*DISPATCH* objc:onRequestHeaders");
   NSArray *result = c->filter.onRequestHeaders(platformHeaders, end_stream);
-  return (envoy_filter_headers_status){.status = [result[0] intValue], .headers = toNativeHeaders(result[1])};
+  return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
+                                       /*headers*/ toNativeHeaders(result[1])};
 }
 
 @implementation EnvoyEngineImpl {
@@ -106,7 +106,7 @@ static envoy_filter_headers_status ios_http_filter_on_request_headers(envoy_head
   CFBridgingRetain(filter);
   context->filter = filter;
   envoy_http_filter *api = safe_malloc(sizeof(envoy_http_filter));
-  //NSLog(@"api: %p, callback: %p, context: %p", api, ios_http_filter_on_request_headers, context);
+  // NSLog(@"api: %p, callback: %p, context: %p", api, ios_http_filter_on_request_headers, context);
   api->on_request_headers = ios_http_filter_on_request_headers;
   api->on_request_data = NULL;
   api->on_response_headers = NULL;

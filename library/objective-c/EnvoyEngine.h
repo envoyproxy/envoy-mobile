@@ -64,7 +64,9 @@ typedef NSMutableDictionary<NSString *, NSArray<NSString *> *> EnvoyMutableHeade
 
 @property (nonatomic, strong) NSString *name;
 
-@property (nonatomic, strong) NSArray *(^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, strong) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
+
+@property (nonatomic, strong) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
 @end
 

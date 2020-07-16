@@ -21,7 +21,7 @@ public final class StreamClientBuilder: NSObject {
   private var statsFlushSeconds: UInt32 = 60
   private var appVersion: String = "unspecified"
   private var appId: String = "unspecified"
-  private var filterChain: [RequestFilter] = []
+  private var filterChain: [EnvoyHTTPFilter] = []
   private var virtualClusters: String = "[]"
 
   // MARK: - Public
@@ -108,14 +108,25 @@ public final class StreamClientBuilder: NSObject {
     return self
   }
 
-  /// Add HTTP filter chain for requests and responses (i.e. streams) managed by this client.
+  /// Add HTTP filter for requests sent by this client.
   ///
-  /// - parameter filterChain: Filter chain to be invoked for streams.
+  /// - parameter filter: RequestFilter to be invoked for streams.
   ///
   /// - returns: This builder.
   @discardableResult
   public func addFilter(_ filter: RequestFilter) -> StreamClientBuilder {
-    self.filterChain.append(filter)
+    self.filterChain.append(EnvoyHTTPFilter(requestFilter: filter))
+    return self
+  }
+
+  /// Add HTTP filter for resonses received by this client.
+  ///
+  /// - parameter filter: RequestFilter to be invoked for streams.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addFilter(_ filter: ResponseFilter) -> StreamClientBuilder {
+    self.filterChain.append(EnvoyHTTPFilter(responseFilter: filter))
     return self
   }
 
@@ -167,7 +178,7 @@ public final class StreamClientBuilder: NSObject {
         dnsRefreshSeconds: self.dnsRefreshSeconds,
         dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
         dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
-        filterChain: self.filterChain.map { EnvoyHTTPFilter(filter: $0) },
+        filterChain: self.filterChain,
         statsFlushSeconds: self.statsFlushSeconds,
         appVersion: self.appVersion,
         appId: self.appId,
