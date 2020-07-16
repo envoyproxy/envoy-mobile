@@ -74,9 +74,9 @@ def swift_repos():
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "655bff6cd7ab989cceaa08b22956d775744c39aebaa3caa651a556590acec96c",
-        strip_prefix = "rules_swift-15d2b18ac7a71796984c4064fc0b570260969ac3",
-        url = "https://github.com/bazelbuild/rules_swift/archive/15d2b18ac7a71796984c4064fc0b570260969ac3.tar.gz",
+        sha256 = "e571fd8920dbca579b042ce8350e13639d10d3386a7fa2518956b25c7c70e758",
+        strip_prefix = "rules_swift-f868e5fcf89d1639b9c1593f920dae30e10cfc72",
+        url = "https://github.com/bazelbuild/rules_swift/archive/f868e5fcf89d1639b9c1593f920dae30e10cfc72.tar.gz",
     )
 
 def kotlin_repos():
