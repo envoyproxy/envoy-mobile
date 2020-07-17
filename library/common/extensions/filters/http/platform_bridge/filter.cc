@@ -49,10 +49,9 @@ Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& heade
   envoy_filter_headers_status result =
       on_headers(in_headers, end_stream, platform_filter_->context);
   Http::FilterHeadersStatus status = mapStatus(result.status);
-  // TODO(goaway): Current platform implementations expose immutable headers, thus any modification necessitates a
-  // full copy. Add 'modified' bit to determine when we can elide the copy.
-  // See also https://github.com/lyft/envoy-mobile/issues/949 for potential future
-  // optimization.
+  // TODO(goaway): Current platform implementations expose immutable headers, thus any modification
+  // necessitates a full copy. Add 'modified' bit to determine when we can elide the copy. See also
+  // https://github.com/lyft/envoy-mobile/issues/949 for potential future optimization.
   headers.clear();
   for (envoy_header_size_t i = 0; i < result.headers.length; i++) {
     headers.addCopy(
