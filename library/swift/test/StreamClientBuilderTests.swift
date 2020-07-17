@@ -196,7 +196,7 @@ final class StreamClientBuilderTests: XCTestCase {
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    fiterChain: [],
+                                    filterChain: [],
                                     statsFlushSeconds: 600,
                                     appVersion: "v1.2.3",
                                     appId: "com.envoymobile.ios",
