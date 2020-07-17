@@ -23,4 +23,3 @@ struct DemoFilter: ResponseFilter {
     return .continue(trailers)
   }
 }
-
