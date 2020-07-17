@@ -20,8 +20,7 @@ static envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
   uint8_t *native_string = (uint8_t *)safe_malloc(sizeof(uint8_t) * length);
   memcpy(native_string, s.UTF8String, length);
-  envoy_data ret = {length, native_string, free, native_string};
-  return ret;
+  return (envoy_data){length, native_string, free, native_string};
 }
 
 static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
@@ -62,8 +61,7 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
     }
   }
   // TODO: ASSERT(header_index == length);
-  envoy_headers ret = {length, header_array};
-  return ret;
+  return (envoy_headers){length, header_array};
 }
 
 static envoy_filter_headers_status
