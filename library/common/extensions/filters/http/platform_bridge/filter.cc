@@ -70,8 +70,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
   }
 
   envoy_data in_data = Buffer::Utility::toBridgeData(data);
-  envoy_filter_data_status result =
-      on_data(in_data, end_stream, platform_filter_->context);
+  envoy_filter_data_status result = on_data(in_data, end_stream, platform_filter_->context);
   Http::FilterDataStatus status = mapStatus(result.status);
   // Current platform implementations expose immutable data, thus any modification necessitates a
   // full copy. If the returned buffer is identical, we assume no modification was made and elide
@@ -91,8 +90,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeade
   return onHeaders(headers, end_stream, platform_filter_->on_request_headers);
 }
 
-Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data,
-                                                        bool end_stream) {
+Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
   return onData(data, end_stream, platform_filter_->on_request_data);
 }
@@ -117,8 +115,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
   return onHeaders(headers, end_stream, platform_filter_->on_response_headers);
 }
 
-Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data,
-                                                        bool end_stream) {
+Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
   return onData(data, end_stream, platform_filter_->on_response_data);
 }
