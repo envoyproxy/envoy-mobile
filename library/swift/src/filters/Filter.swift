@@ -14,8 +14,9 @@ extension EnvoyHTTPFilter {
     self.name = filter.name
 
     if let requestFilter = filter as? RequestFilter {
-      self.onRequestHeaders = {
-        let result = requestFilter.onRequestHeaders(RequestHeaders(headers: $0), endStream: $1)
+      self.onRequestHeaders = { envoyHeaders, endStream in
+        let result = requestFilter.onRequestHeaders(RequestHeaders(headers: envoyHeaders),
+                                                    endStream: endStream)
         switch result {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
@@ -26,8 +27,9 @@ extension EnvoyHTTPFilter {
     }
 
     if let responseFilter = filter as? ResponseFilter {
-      self.onResponseHeaders = {
-        let result = responseFilter.onResponseHeaders(ResponseHeaders(headers: $0), endStream: $1)
+      self.onResponseHeaders = { envoyHeaders, endStream in
+        let result = responseFilter.onResponseHeaders(ResponseHeaders(headers: envoyHeaders),
+                                                      endStream: endStream)
         switch result {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
