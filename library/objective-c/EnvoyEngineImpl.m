@@ -16,7 +16,7 @@ typedef struct {
 } ios_http_filter_context;
 
 // TODO(goaway): The mapping code below contains a great deal of duplication from
-// EnvoyHTTPStreamImpl.m, however retain/release semantics are slightly diffferent and need to be
+// EnvoyHTTPStreamImpl.m, however retain/release semantics are slightly different and need to be
 // reconciled before this can be factored into a generic set of utility functions.
 static envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
