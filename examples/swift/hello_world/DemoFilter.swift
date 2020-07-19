@@ -1,5 +1,5 @@
-import Foundation
 import Envoy
+import Foundation
 
 struct DemoFilter: ResponseFilter {
   // TODO(goaway): Update once dynamic registration is in place.
