@@ -60,6 +60,12 @@ typedef NSMutableDictionary<NSString *, NSArray<NSString *> *> EnvoyMutableHeade
 
 #pragma mark - EnvoyHTTPFilter
 
+/// Return codes for on-headers filter invocations. @see envoy/http/filter.h
+extern const int kEnvoyFilterHeadersStatusContinue;
+extern const int kEnvoyFilterHeadersStatusStopIteration;
+extern const int kEnvoyFilterHeadersStatusContinueAndEndStream;
+extern const int kEnvoyFilterHeadersStatusStopAllIterationAndBuffer;
+
 @interface EnvoyHTTPFilter : NSObject
 
 @property (nonatomic, strong) NSString *name;

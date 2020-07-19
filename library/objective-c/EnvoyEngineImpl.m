@@ -71,7 +71,8 @@ ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, void 
   // TODO(goaway): optimize unmodified case
   ios_http_filter_context *c = (ios_http_filter_context *)context;
   if (c->filter.onRequestHeaders == nil) {
-    return (envoy_filter_headers_status){/*status*/ 0, /*headers*/ headers};
+    return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
+                                         /*headers*/ headers};
   }
 
   EnvoyHeaders *platformHeaders = to_ios_headers(headers);
@@ -87,7 +88,8 @@ ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, void
   // TODO(goaway): optimize unmodified case
   ios_http_filter_context *c = (ios_http_filter_context *)context;
   if (c->filter.onResponseHeaders == nil) {
-    return (envoy_filter_headers_status){/*status*/ 0, /*headers*/ headers};
+    return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
+                                         /*headers*/ headers};
   }
 
   EnvoyHeaders *platformHeaders = to_ios_headers(headers);

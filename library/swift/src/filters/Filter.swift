@@ -18,9 +18,9 @@ extension EnvoyHTTPFilter {
         let result = requestFilter.onRequestHeaders(RequestHeaders(headers: $0), endStream: $1)
         switch result {
         case .continue(let headers):
-          return [0, headers.headers]
+          return [kEnvoyFilterHeadersStatusContinue, headers.headers]
         case .stopIteration(let headers):
-          return [1, headers.headers]
+          return [kEnvoyFilterHeadersStatusStopIteration, headers.headers]
         }
       }
     }
@@ -30,9 +30,9 @@ extension EnvoyHTTPFilter {
         let result = responseFilter.onResponseHeaders(ResponseHeaders(headers: $0), endStream: $1)
         switch result {
         case .continue(let headers):
-          return [0, headers.headers]
+          return [kEnvoyFilterHeadersStatusContinue, headers.headers]
         case .stopIteration(let headers):
-          return [1, headers.headers]
+          return [kEnvoyFilterHeadersStatusStopIteration, headers.headers]
         }
       }
     }
