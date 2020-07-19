@@ -1,28 +1,5 @@
-@_implementationOnly import EnvoyEngine
-import Foundation
-
-extension EnvoyHTTPFilter {
-  /// Initializer
-  convenience init(responseFilter: ResponseFilter) {
-    self.init()
-    self.name = responseFilter.name
-    self.onResponseHeaders = {
-      let result = responseFilter.onResponseHeaders(ResponseHeaders(headers: $0), endStream: $1)
-      switch result {
-      case .continue(let headers):
-        return [0, headers.headers]
-      case .stopIteration(let headers):
-        return [1, headers.headers]
-      }
-    }
-  }
-}
-
 /// Filter executed for inbound responses, providing the ability to observe and mutate streams.
 public protocol ResponseFilter: Filter {
-  /// A unique name for a filter implementation. Needed for extension registration.
-  var name: String { get }
-
   /// Called by the filter manager once to initialize the filter callbacks that the filter should
   /// use.
   ///

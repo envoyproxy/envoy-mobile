@@ -114,19 +114,8 @@ public final class StreamClientBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addFilter(_ filter: RequestFilter) -> StreamClientBuilder {
-    self.filterChain.append(EnvoyHTTPFilter(requestFilter: filter))
-    return self
-  }
-
-  /// Add HTTP filter for resonses received by this client.
-  ///
-  /// - parameter filter: RequestFilter to be invoked for streams.
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func addFilter(_ filter: ResponseFilter) -> StreamClientBuilder {
-    self.filterChain.append(EnvoyHTTPFilter(responseFilter: filter))
+  public func addFilter(_ filter: Filter) -> StreamClientBuilder {
+    self.filterChain.append(EnvoyHTTPFilter(filter: filter))
     return self
   }
 
