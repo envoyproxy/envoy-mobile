@@ -15,7 +15,9 @@ typedef struct {
   __unsafe_unretained EnvoyHTTPFilter *filter;
 } ios_http_filter_context;
 
-// TODO(goaway): refactor and relocate translation
+// TODO(goaway): The mapping code below contains a great deal of duplication from
+// EnvoyHTTPStreamImpl.m, however retain/release semantics are slightly diffferent and need to be
+// reconciled before this can be factored into a generic set of utility functions.
 static envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
   uint8_t *native_string = (uint8_t *)safe_malloc(sizeof(uint8_t) * length);
