@@ -8,7 +8,7 @@ public protocol Filter {
 }
 
 extension EnvoyHTTPFilter {
-  /// Initializer
+  /// Initialize an EnvoyHTTPFilter using the instance methods of a concrete Filter implementation.
   convenience init(filter: Filter) {
     self.init()
     self.name = filter.name
