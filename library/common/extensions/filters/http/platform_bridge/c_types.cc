@@ -20,4 +20,3 @@ const envoy_filter_data_status_t kEnvoyFilterDataStatusStopIterationAndBuffer =
     static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatusStopIterationAndBuffer);
 const envoy_filter_data_status_t kEnvoyFilterDataStatusStopIterationNoBuffer =
     static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatusStopIterationNoBuffer);
-
