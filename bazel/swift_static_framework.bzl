@@ -137,7 +137,7 @@ _swift_static_framework = rule(
             executable = True,
         ),
         _allowlist_function_transition = attr.label(
-            default = "@build_bazel_rules_apple//tools/allowlists/function_transition_allowlist",
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
         _zipper = attr.label(
             default = "@bazel_tools//tools/zip:zipper",
