@@ -40,7 +40,7 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
   transformed_headers.headers = headers;
 
   header_map.iterate(
-      [](const HeaderEntry& header, void* context) -> HeaderMap::Iterate {
+      [&transformed_headers](const HeaderEntry& header, void* context) -> HeaderMap::Iterate {
         envoy_headers* transformed_headers = static_cast<envoy_headers*>(context);
 
         const absl::string_view header_key = header.key().getStringView();
@@ -55,8 +55,7 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
         transformed_headers->length++;
 
         return HeaderMap::Iterate::Continue;
-      },
-      &transformed_headers);
+      });
   return transformed_headers;
 }
 
