@@ -15,20 +15,6 @@ namespace Extensions {
 namespace HttpFilters {
 namespace PlatformBridge {
 
-Http::FilterDataStatus mapStatus(envoy_filter_data_status_t status) {
-  switch (status) {
-  case ENVOY_FILTER_DATA_STATUS_CONTINUE:
-    return Http::FilterDataStatus::Continue;
-  case ENVOY_FILTER_DATA_STATUS_STOP_ITERATION_AND_BUFFER:
-    return Http::FilterDataStatus::StopIterationAndBuffer;
-  case ENVOY_FILTER_DATA_STATUS_STOP_ITERATION_NO_BUFFER:
-    return Http::FilterDataStatus::StopIterationNoBuffer;
-  default:
-    ASSERT(false, fmt::format("urecognized filter status from platform: {}", status));
-    return Http::FilterDataStatus::Continue;
-  }
-}
-
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
     : platform_filter_(static_cast<envoy_http_filter*>(
@@ -71,7 +57,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
 
   envoy_data in_data = Buffer::Utility::toBridgeData(data);
   envoy_filter_data_status result = on_data(in_data, end_stream, platform_filter_->context);
-  Http::FilterDataStatus status = mapStatus(result.status);
+  Http::FilterDataStatus status = static_cast<Http::FilterDataStatus>(result.status);
   // Current platform implementations expose immutable data, thus any modification necessitates a
   // full copy. If the returned buffer is identical, we assume no modification was made and elide
   // the copy here. See also https://github.com/lyft/envoy-mobile/issues/949 for potential future
