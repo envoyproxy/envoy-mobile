@@ -8,7 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 /// A mutable set of headers that may be passed to/from an Envoy stream.
-typedef NSMutableDictionary<NSString *, NSArray<NSString *> *> EnvoyMutableHeaders;
+typedef NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> EnvoyMutableHeaders;
 
 #pragma mark - EnvoyHTTPCallbacks
 
