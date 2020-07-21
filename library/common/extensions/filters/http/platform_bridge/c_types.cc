@@ -15,8 +15,8 @@ const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusStopAllIterationAnd
         Envoy::Http::FilterHeadersStatus::StopAllIterationAndBuffer);
 
 const envoy_filter_data_status_t kEnvoyFilterDataStatusContinue =
-    static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatusContinue);
+    static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatus::Continue);
 const envoy_filter_data_status_t kEnvoyFilterDataStatusStopIterationAndBuffer =
-    static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatusStopIterationAndBuffer);
+    static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatus::StopIterationAndBuffer);
 const envoy_filter_data_status_t kEnvoyFilterDataStatusStopIterationNoBuffer =
-    static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatusStopIterationNoBuffer);
+    static_cast<envoy_filter_data_status_t>(Envoy::Http::FilterDataStatus::StopIterationNoBuffer);
