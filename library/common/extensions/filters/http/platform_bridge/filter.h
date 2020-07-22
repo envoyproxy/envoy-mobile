@@ -32,6 +32,9 @@ class PlatformBridgeFilter final : public Http::PassThroughFilter {
 public:
   PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config);
 
+  // StreamFilterBase
+  void onDestroy() override;
+
   // StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
                                           bool end_stream) override;
@@ -52,7 +55,7 @@ private:
                                       envoy_filter_on_headers_f on_headers);
   Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream,
                                 envoy_filter_on_data_f on_data);
-  const envoy_http_filter* platform_filter_;
+  envoy_http_filter platform_filter_;
 };
 
 } // namespace PlatformBridge
