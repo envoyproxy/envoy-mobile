@@ -69,16 +69,13 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
   }
 
   envoy_data in_data = Buffer::Utility::toBridgeData(data);
-  envoy_filter_data_status result = on_data(in_data, end_stream, platform_filter_->context);
+  envoy_filter_data_status result = on_data(in_data, end_stream, platform_filter_.instance_context);
   Http::FilterDataStatus status = static_cast<Http::FilterDataStatus>(result.status);
-  // Current platform implementations expose immutable data, thus any modification necessitates a
-  // full copy. If the returned buffer is identical, we assume no modification was made and elide
-  // the copy here. See also https://github.com/lyft/envoy-mobile/issues/949 for potential future
-  // optimization.
-  if (in_data.bytes != result.data.bytes) {
-    data.drain(data.length());
-    data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
-  }
+  // TODO(goaway): Current platform implementations expose immutable data, thus any modification
+  // necessitates a full copy. Add 'modified' bit to determine when we can elide the copy. See also
+  // https://github.com/lyft/envoy-mobile/issues/949 for potential future optimization.
+  data.drain(data.length());
+  data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
 
   return status;
 }
@@ -91,7 +88,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeade
 
 Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
-  return onData(data, end_stream, platform_filter_->on_request_data);
+  return onData(data, end_stream, platform_filter_.on_request_data);
 }
 
 Http::FilterTrailersStatus
@@ -116,7 +113,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
 
 Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
-  return onData(data, end_stream, platform_filter_->on_response_data);
+  return onData(data, end_stream, platform_filter_.on_response_data);
 }
 
 Http::FilterTrailersStatus
