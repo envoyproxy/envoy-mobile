@@ -40,4 +40,5 @@ Additionally it can be installed as a commit hook with `pre-commit install`.
 - There's no directly supported way to universally share an enumeration across platforms. In order
 to provide some enforced consistency, we've adopted the convention of defining the enum at the
 lowest applicable layer (core/bridge) of the library, and then declaring public `extern const`
-values defined in terms of the enumeration, to be shared across bridge and platform code.
+values defined in terms of the enumeration, to be shared across bridge and platform code. See,
+for example: https://github.com/lyft/envoy-mobile/blob/main/library/common/types/c_types.h#L25
