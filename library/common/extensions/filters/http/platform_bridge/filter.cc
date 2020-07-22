@@ -28,7 +28,7 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
 }
 
 void PlatformBridgeFilter::onDestroy() {
-  ASSERT(platform_filter_.instance_context, "init_filter must be called initially");
+  ASSERT(platform_filter_.instance_context, "expected initialized filter context");
 
   platform_filter_.release_filter(platform_filter_.instance_context);
   platform_filter_.instance_context = nullptr;
@@ -36,7 +36,7 @@ void PlatformBridgeFilter::onDestroy() {
 
 Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& headers, bool end_stream,
                                                           envoy_filter_on_headers_f on_headers) {
-  ASSERT(platform_filter_.instance_context, "init_filter must be called initially");
+  ASSERT(platform_filter_.instance_context, "expected initialized filter context");
 
   // Allow nullptr to act as (optimized) no-op.
   if (on_headers == nullptr) {

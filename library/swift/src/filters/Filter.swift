@@ -10,19 +10,13 @@ public protocol Filter {
   init()
 }
 
-extension Filter {
-  static func create() -> EnvoyHTTPFilter {
-    return EnvoyHTTPFilter(filter: Self.init())
-  }
-}
-
 extension EnvoyHTTPFilterFactory {
   convenience init(filterType: Filter.Type) {
     self.init()
 
     self.filterName = filterType.name
     self.create = {
-      return filterType.create()
+      return EnvoyHTTPFilter(filter: filterType.init())
     }
   }
 }
