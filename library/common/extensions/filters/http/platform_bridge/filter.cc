@@ -99,16 +99,16 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
   return status;
 }
 
-Http::FilterTrailersStatus PlatformBridgeFilter::onTrailers(Http::HeaderMap& trailers,
-                                                          envoy_filter_on_trailers_f on_trailers) {
+Http::FilterTrailersStatus
+PlatformBridgeFilter::onTrailers(Http::HeaderMap& trailers,
+                                 envoy_filter_on_trailers_f on_trailers) {
   // Allow nullptr to act as no-op.
   if (on_trailers == nullptr) {
     return Http::FilterTrailersStatus::Continue;
   }
 
   envoy_headers in_trailers = Http::Utility::toBridgeHeaders(trailers);
-  envoy_filter_trailers_status result =
-      on_trailers(in_trailers, platform_filter_.instance_context);
+  envoy_filter_trailers_status result = on_trailers(in_trailers, platform_filter_.instance_context);
   Http::FilterTrailersStatus status = static_cast<Http::FilterTrailersStatus>(result.status);
   // TODO(goaway): Current platform implementations expose immutable trailers, thus any modification
   // necessitates a full copy. Add 'modified' bit to determine when we can elide the copy. See also
@@ -135,8 +135,7 @@ Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, 
   return onData(data, end_stream, platform_filter_.on_request_data);
 }
 
-Http::FilterTrailersStatus
-PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
+Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
   // Delegate to shared implementation for request and response path.
   return onTrailers(trailers, platform_filter_.on_request_trailers);
 }
