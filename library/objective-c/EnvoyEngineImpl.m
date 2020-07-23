@@ -14,11 +14,40 @@ static void ios_on_exit() {
 // TODO(goaway): The mapping code below contains a great deal of duplication from
 // EnvoyHTTPStreamImpl.m, however retain/release semantics are slightly different and need to be
 // reconciled before this can be factored into a generic set of utility functions.
+static envoy_data toNativeData(NSData *data) {
+  uint8_t *native_bytes = (uint8_t *)safe_malloc(sizeof(uint8_t) * data.length);
+  memcpy(native_bytes, data.bytes, data.length);
+  envoy_data ret = {data.length, native_bytes, free, native_bytes};
+  return ret;
+}
+
 static envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
   uint8_t *native_string = (uint8_t *)safe_malloc(sizeof(uint8_t) * length);
   memcpy(native_string, s.UTF8String, length);
   return (envoy_data){length, native_string, free, native_string};
+}
+
+static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
+  envoy_header_size_t length = 0;
+  for (NSString *headerKey in headers) {
+    length += [headers[headerKey] count];
+  }
+  envoy_header *header_array = (envoy_header *)safe_malloc(sizeof(envoy_header) * length);
+  envoy_header_size_t header_index = 0;
+  for (NSString *headerKey in headers) {
+    NSArray *headerList = headers[headerKey];
+    for (NSString *headerValue in headerList) {
+      envoy_header new_header = {toManagedNativeString(headerKey),
+                                 toManagedNativeString(headerValue)};
+      header_array[header_index++] = new_header;
+    }
+  }
+  return (envoy_headers){length, header_array};
+}
+static NSData *to_ios_data(envoy_data data) {
+  NSData *platformData = [NSData dataWithBytes:(void *)data.bytes length:data.length];
+  return platformData;
 }
 
 static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
@@ -41,25 +70,6 @@ static EnvoyHeaders *to_ios_headers(envoy_headers headers) {
   // TODO(goaway): consider solution that doesn't violate release convention
   // Note: We don't call release_envoy_headers because they may not be modified by the filter
   return headerDict;
-}
-
-static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
-  envoy_header_size_t length = 0;
-  for (NSString *headerKey in headers) {
-    length += [headers[headerKey] count];
-  }
-  envoy_header *header_array = (envoy_header *)safe_malloc(sizeof(envoy_header) * length);
-  envoy_header_size_t header_index = 0;
-  for (NSString *headerKey in headers) {
-    NSArray *headerList = headers[headerKey];
-    for (NSString *headerValue in headerList) {
-      envoy_header new_header = {toManagedNativeString(headerKey),
-                                 toManagedNativeString(headerValue)};
-      header_array[header_index++] = new_header;
-    }
-  }
-  // TODO: ASSERT(header_index == length);
-  return (envoy_headers){length, header_array};
 }
 
 static const void *ios_http_filter_init(const void *context) {
@@ -102,6 +112,67 @@ ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, cons
                                        /*headers*/ toNativeHeaders(result[1])};
 }
 
+static envoy_filter_data_status
+ios_http_filter_on_request_data(envoy_data data, bool end_stream, const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onRequestData == nil) {
+    return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
+                                      /*data*/ data};
+  }
+
+  NSData *platformData = to_ios_data(data);
+  data.release(data.context);
+  NSArray *result = filter.onRequestData(platformData, end_stream);
+  return (envoy_filter_data_status){/*status*/ [result[0] intValue],
+                                    /*data*/ toNativeData(result[1])};
+}
+ 
+static envoy_filter_data_status
+ios_http_filter_on_response_data(envoy_data data, bool end_stream, const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onResponseData == nil) {
+    return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
+                                      /*data*/ data};
+  }
+
+  NSData *platformData = to_ios_data(data);
+  data.release(data.context);
+  NSArray *result = filter.onResponseData(platformData, end_stream);
+  return (envoy_filter_data_status){/*status*/ [result[0] intValue],
+                                    /*data*/ toNativeData(result[1])};
+}
+
+static envoy_filter_trailers_status
+ios_http_filter_on_request_trailers(envoy_headers trailers, const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onRequestTrailers == nil) {
+    return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
+                                          /*trailers*/ trailers};
+  }
+
+  EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
+  release_envoy_headers(trailers);
+  NSArray *result = filter.onRequestTrailers(platformTrailers);
+  return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
+                                        /*trailers*/ toNativeHeaders(result[1])};
+}
+
+static envoy_filter_trailers_status
+ios_http_filter_on_response_trailers(envoy_headers trailers, const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onResponseTrailers == nil) {
+    return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
+                                          /*trailers*/ trailers};
+  }
+
+  EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
+  release_envoy_headers(trailers);
+  NSArray *result = filter.onResponseTrailers(platformTrailers);
+  return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
+                                        /*trailers*/ toNativeHeaders(result[1])};
+}
+
+
 static void ios_http_filter_release(const void *context) {
   CFRelease(context);
   return;
@@ -132,9 +203,11 @@ static void ios_http_filter_release(const void *context) {
   envoy_http_filter *api = safe_malloc(sizeof(envoy_http_filter));
   api->init_filter = ios_http_filter_init;
   api->on_request_headers = ios_http_filter_on_request_headers;
-  api->on_request_data = NULL;
+  api->on_request_data = ios_http_filter_on_request_data;
+  api->on_request_trailers = ios_http_filter_on_request_trailers;
   api->on_response_headers = ios_http_filter_on_response_headers;
-  api->on_response_data = NULL;
+  api->on_response_data = ios_http_filter_on_response_data;
+  api->on_response_trailers = ios_http_filter_on_response_trailers;
   api->release_filter = ios_http_filter_release;
   api->static_context = CFBridgingRetain(filterFactory);
   api->instance_context = NULL;
