@@ -35,4 +35,9 @@ public class AndroidEngineImpl implements EnvoyEngine {
     // application.registerActivityLifecycleCallbacks(monitor);
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
   }
+
+  @Override
+  public void incCounter(String name) {
+    envoyEngine.incCounter(name);
+  }
 }

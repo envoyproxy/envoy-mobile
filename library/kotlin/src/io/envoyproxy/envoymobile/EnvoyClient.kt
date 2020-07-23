@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile
 
+import io.envoyproxy.envoymobile.engine.AndroidJniLibrary
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 
@@ -32,4 +33,8 @@ internal class EnvoyClient private constructor(
   }
 
   override fun newStreamPrototype() = StreamPrototype(engine)
+
+  override fun incCounter(name: String) {
+    engine.incCounter(name)
+  }
 }

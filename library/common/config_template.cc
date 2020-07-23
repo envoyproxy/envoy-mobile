@@ -206,6 +206,9 @@ stats_config:
             regex: '^http.dispatcher.*'
         - safe_regex:
             google_re2: {}
+            regex: '^poc.*'
+        - safe_regex:
+            google_re2: {}
             regex: '^http.hcm.decompressor.*'
         - safe_regex:
             google_re2: {}

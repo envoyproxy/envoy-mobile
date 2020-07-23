@@ -36,6 +36,11 @@ public:
   Http::Dispatcher& httpDispatcher();
 
   /**
+   * Increment a counter with a given string name.
+   */
+  void incCounter(std::string counterName);
+
+  /**
    * Flush the stats sinks outside of a flushing interval.
    * Note: stats flushing may not be synchronous.
    * Therefore, this function may return prior to flushing taking place.

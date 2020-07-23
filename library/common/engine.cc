@@ -93,6 +93,18 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
+void Engine::incCounter(std::string name) {
+  if (server_) {
+    server_->dispatcher().post([this, name]() -> void {
+      std::string poc = "poc";
+      absl::string_view prefix{poc};
+      absl::string_view dynamic_name{name};
+      Stats::Utility::counterFromElements(
+        server_->serverFactoryContext().scope(), {prefix, dynamic_name}).inc();
+    });
+  }
+}
+
 void Engine::flushStats() {
   // The server will be null if the post-init callback has not been completed within run().
   // In this case, we can simply ignore the flush.
