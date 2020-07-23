@@ -62,7 +62,7 @@ static envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   return (envoy_headers){length, header_array};
 }
 
-static const void* ios_http_filter_init(const void *context) {
+static const void *ios_http_filter_init(const void *context) {
   EnvoyHTTPFilterFactory *filterFactory = (__bridge EnvoyHTTPFilterFactory *)context;
   EnvoyHTTPFilter *filter = filterFactory.create();
   return CFBridgingRetain(filter);

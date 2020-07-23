@@ -61,7 +61,7 @@ extern "C" { // function pointers
  * Function signature for filter factory. Implementations must return a instance_context
  * capable of dispatching envoy_http_filter calls (below) to a platform filter instance.
  */
-typedef const void* (*envoy_filter_init_f)(const void *context);
+typedef const void* (*envoy_filter_init_f)(const void* context);
 
 /**
  * Function signature for on-headers filter invocations.
@@ -85,7 +85,7 @@ typedef envoy_filter_trailers_status (*envoy_filter_on_trailers_f)(envoy_headers
 /**
  * Function signature to release a filter instance once the filter chain is finished with it.
  */
-typedef void (*envoy_filter_release_f)(const void *context);
+typedef void (*envoy_filter_release_f)(const void* context);
 
 #ifdef __cplusplus
 } // function pointers
