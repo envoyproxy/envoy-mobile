@@ -17,34 +17,37 @@ namespace PlatformBridge {
 
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
-    : platform_filter_(static_cast<envoy_http_filter*>(
+    : filter_name_(proto_config.platform_filter_name()),
+      platform_filter_(static_cast<envoy_http_filter*>(
           Api::External::retrieveApi(proto_config.platform_filter_name()))) {}
 
 PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config)
-    : platform_filter_(*config->platform_filter()) {
+    : filter_name_(config->filter_name()), platform_filter_(*config->platform_filter()) {
   // The initialization above sets platform_filter_ to a copy of the struct stored on the config.
   // In the typical case, this will represent a filter implementation that needs to be intantiated.
   // static_context will contain the necessary platform-specific mechanism to produce a filter
   // instance. instance_context will initially be null, but after initialization, set to the
   // context needed for actual filter invocations.
 
-  // We treat a null initializer as a static implementation.
+  // If init_filter is missing, zero out the rest of the struct for safety.
   if (platform_filter_.init_filter == nullptr) {
-    // Make static context available to invocations, in lieu of instatiated context.
-    platform_filter_.instance_context = platform_filter_.static_context;
+    ENVOY_LOG(debug, "platform bridge filter: missing initializer for {}", filter_name_);
+    platform_filter_ = {};
     return;
   }
 
   // Set the instance_context to the result of the initialization call. Cleanup will ultimately
   // occur during in the onDestroy() invocation below.
   platform_filter_.instance_context = platform_filter_.init_filter(platform_filter_.static_context);
-
-  ASSERT(platform_filter_.instance_context, "init_filter unsuccessful");
+  ASSERT(platform_filter_.instance_context,
+         fmt::format("init_filter unsuccessful for {}", filter_name_));
 }
 
 void PlatformBridgeFilter::onDestroy() {
-  // Allow nullptr to act as no-op. Also return if nothing was initialized.
-  if (platform_filter_.release_filter == nullptr || platform_filter_.init_filter == nullptr) {
+  // Allow nullptr as no-op only if nothing was initialized.
+  if (platform_filter_.release_filter == nullptr) {
+    ASSERT(!platform_filter_.instance_context,
+           fmt::format("release_filter required for {}", filter_name_));
     return;
   }
 
