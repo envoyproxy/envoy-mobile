@@ -100,7 +100,6 @@ extension EnvoyHTTPFilter {
           return [kEnvoyFilterTrailersStatusStopIteration, trailers.headers]
         }
       }
-
     }
   }
 }
