@@ -19,14 +19,14 @@ static inline envoy_data toManagedNativeString(NSString *s) {
 
 static inline envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   envoy_header_size_t length = 0;
-  for (id headerKey in headers) {
+  for (NSString *headerKey in headers) {
     length += [headers[headerKey] count];
   }
   envoy_header *header_array = (envoy_header *)safe_malloc(sizeof(envoy_header) * length);
   envoy_header_size_t header_index = 0;
   for (id headerKey in headers) {
     NSArray *headerList = headers[headerKey];
-    for (id headerValue in headerList) {
+    for (NSString *headerValue in headerList) {
       envoy_header new_header = {toManagedNativeString(headerKey),
                                  toManagedNativeString(headerValue)};
       header_array[header_index++] = new_header;
