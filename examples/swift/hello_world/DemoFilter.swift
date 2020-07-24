@@ -17,6 +17,7 @@ struct DemoFilter: ResponseFilter {
   func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks) {}
 
   func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus {
+    NSLog("Saw data chunk of length \(body.count)")
     return .continue(body)
   }
 
