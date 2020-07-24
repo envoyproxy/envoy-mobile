@@ -22,13 +22,31 @@ PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
 
 PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config)
     : platform_filter_(*config->platform_filter()) {
+  // The initialization above sets platform_filter_ to a copy of the struct stored on the config.
+  // In the typical case, this will represent a filter implementation that needs to be intantiated.
+  // static_context will contain the necessary platform-specific mechanism to produce a filter
+  // instance. instance_context will initially be null, but after initialization, set to the
+  // context needed for actual filter invocations.
+
+  // We treat a null initializer as a static implementation.
+  if (platform_filter_.init_filter == nullptr) {
+    // Make static context available to invocations, in lieu of instatiated context.
+    platform_filter_.instance_context = platform_filter_.static_context;
+    return;
+  }
+
+  // Set the instance_context to the result of the initialization call. Cleanup will ultimately
+  // occur during in the onDestroy() invocation below.
   platform_filter_.instance_context = platform_filter_.init_filter(platform_filter_.static_context);
 
   ASSERT(platform_filter_.instance_context, "init_filter unsuccessful");
 }
 
 void PlatformBridgeFilter::onDestroy() {
-  ASSERT(platform_filter_.instance_context, "expected initialized filter context");
+  // Allow nullptr to act as no-op. Also return if nothing was initialized.
+  if (platform_filter_.release_filter == nullptr || platform_filter_.init_filter == nullptr) {
+    return;
+  }
 
   platform_filter_.release_filter(platform_filter_.instance_context);
   platform_filter_.instance_context = nullptr;
@@ -36,9 +54,7 @@ void PlatformBridgeFilter::onDestroy() {
 
 Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& headers, bool end_stream,
                                                           envoy_filter_on_headers_f on_headers) {
-  ASSERT(platform_filter_.instance_context, "expected initialized filter context");
-
-  // Allow nullptr to act as (optimized) no-op.
+  // Allow nullptr to act as no-op.
   if (on_headers == nullptr) {
     return Http::FilterHeadersStatus::Continue;
   }
@@ -63,7 +79,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& heade
 
 Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool end_stream,
                                                     envoy_filter_on_data_f on_data) {
-  // Allow nullptr to act as (optimized) no-op.
+  // Allow nullptr to act as no-op.
   if (on_data == nullptr) {
     return Http::FilterDataStatus::Continue;
   }
