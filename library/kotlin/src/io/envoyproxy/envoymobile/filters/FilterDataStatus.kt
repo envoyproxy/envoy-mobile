@@ -43,5 +43,6 @@ sealed class FilterDataStatus {
    *
    * This may be called by filters which must parse a larger block of the incoming data before
    * continuing processing, and will handle their own buffering.
+   */
   class StopIterationNoBuffer : FilterDataStatus()
 }
