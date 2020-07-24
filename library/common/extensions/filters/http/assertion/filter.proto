@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package envoymobile.extensions.filters.http.assertion;
+
+import "envoy/config/tap/v3/common.proto";
+
+import "validate/validate.proto";
+
+message Assertion {
+  // The match configuration. If the configuration matches the data source being tapped, a tap will
+  // occur, with the result written to the configured output.
+  envoy.config.tap.v3.MatchPredicate match_config = 1 [(validate.rules).message = {required: true}];
+}
