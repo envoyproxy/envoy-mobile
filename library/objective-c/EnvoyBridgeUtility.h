@@ -66,5 +66,3 @@ static inline EnvoyHeaders *to_ios_headers(envoy_headers headers) {
   release_envoy_headers(headers);
   return headerDict;
 }
-
-

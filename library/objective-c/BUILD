@@ -27,8 +27,8 @@ objc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//library/common:envoy_main_interface_lib",
         ":envoy_objc_bridge_lib",
+        "//library/common:envoy_main_interface_lib",
     ],
 )
 

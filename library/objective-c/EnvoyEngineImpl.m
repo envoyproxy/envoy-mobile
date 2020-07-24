@@ -50,8 +50,8 @@ ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, cons
                                        /*headers*/ toNativeHeaders(result[1])};
 }
 
-static envoy_filter_data_status
-ios_http_filter_on_request_data(envoy_data data, bool end_stream, const void *context) {
+static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data, bool end_stream,
+                                                                const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onRequestData == nil) {
     return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
@@ -63,9 +63,9 @@ ios_http_filter_on_request_data(envoy_data data, bool end_stream, const void *co
   return (envoy_filter_data_status){/*status*/ [result[0] intValue],
                                     /*data*/ toNativeData(result[1])};
 }
- 
-static envoy_filter_data_status
-ios_http_filter_on_response_data(envoy_data data, bool end_stream, const void *context) {
+
+static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream,
+                                                                 const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onResponseData == nil) {
     return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
@@ -78,8 +78,8 @@ ios_http_filter_on_response_data(envoy_data data, bool end_stream, const void *c
                                     /*data*/ toNativeData(result[1])};
 }
 
-static envoy_filter_trailers_status
-ios_http_filter_on_request_trailers(envoy_headers trailers, const void *context) {
+static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers,
+                                                                        const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onRequestTrailers == nil) {
     return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
@@ -92,8 +92,8 @@ ios_http_filter_on_request_trailers(envoy_headers trailers, const void *context)
                                         /*trailers*/ toNativeHeaders(result[1])};
 }
 
-static envoy_filter_trailers_status
-ios_http_filter_on_response_trailers(envoy_headers trailers, const void *context) {
+static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_headers trailers,
+                                                                         const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onResponseTrailers == nil) {
     return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
