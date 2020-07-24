@@ -11,9 +11,6 @@ namespace Assertion {
 AssertionFilterConfig::AssertionFilterConfig(
     const envoymobile::extensions::filters::http::assertion::Assertion& proto_config) {
   Common::Tap::buildMatcher(proto_config.match_config(), matchers_);
-  statuses_ = Extensions::Common::Tap::Matcher::MatchStatusVector(matchers_.size());
-
-  rootMatcher().onNewStream(statuses_);
 }
 
 Extensions::Common::Tap::Matcher& AssertionFilterConfig::rootMatcher() const {
@@ -21,12 +18,16 @@ Extensions::Common::Tap::Matcher& AssertionFilterConfig::rootMatcher() const {
   return *matchers_[0];
 }
 
-AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config_(config) {}
+AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config_(config) {
+  statuses_ = Extensions::Common::Tap::Matcher::MatchStatusVector(config_->matchersSize());
+  config_->rootMatcher().onNewStream(statuses_);
+
+}
 
 Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers,
                                                          bool end_stream) {
-  config_->rootMatcher().onHttpRequestHeaders(headers, config_->statuses());
-  if (config_->rootMatcher().matchStatus(config_->statuses()).matches_) {
+  config_->rootMatcher().onHttpRequestHeaders(headers, statuses_);
+  if (config_->rootMatcher().matchStatus(statuses_).matches_) {
     if (end_stream) {
       decoder_callbacks_->sendLocalReply(Http::Code::OK,
                                          "Request Headers match configured expectations", nullptr,
@@ -43,8 +44,8 @@ Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap&
 }
 
 Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool end_stream) {
-  config_->rootMatcher().onRequestBody(data, config_->statuses());
-  if (config_->rootMatcher().matchStatus(config_->statuses()).matches_) {
+  config_->rootMatcher().onRequestBody(data, statuses_);
+  if (config_->rootMatcher().matchStatus(statuses_).matches_) {
     if (end_stream) {
       decoder_callbacks_->sendLocalReply(
           Http::Code::OK, "Request Body match configured expectations", nullptr, absl::nullopt, "");
@@ -60,8 +61,8 @@ Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool 
 }
 
 Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
-  config_->rootMatcher().onHttpRequestTrailers(trailers, config_->statuses());
-  if (config_->rootMatcher().matchStatus(config_->statuses()).matches_) {
+  config_->rootMatcher().onHttpRequestTrailers(trailers, statuses_);
+  if (config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::OK,
                                        "Request Trailers match configured expectations", nullptr,
                                        absl::nullopt, "");

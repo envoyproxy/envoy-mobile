@@ -18,11 +18,9 @@ public:
       const envoymobile::extensions::filters::http::assertion::Assertion& proto_config);
 
   Extensions::Common::Tap::Matcher& rootMatcher() const;
-  Extensions::Common::Tap::Matcher::MatchStatusVector& statuses() { return statuses_; }
-
+  size_t matchersSize() const { return matchers_.size(); }
 private:
   std::vector<Extensions::Common::Tap::MatcherPtr> matchers_;
-  Extensions::Common::Tap::Matcher::MatchStatusVector statuses_;
 };
 
 typedef std::shared_ptr<AssertionFilterConfig> AssertionFilterConfigSharedPtr;
@@ -42,6 +40,7 @@ public:
 
 private:
   const AssertionFilterConfigSharedPtr config_;
+    Extensions::Common::Tap::Matcher::MatchStatusVector statuses_;
 };
 
 } // namespace Assertion

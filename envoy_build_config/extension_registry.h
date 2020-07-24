@@ -13,6 +13,7 @@
 #include "extensions/upstreams/http/generic/config.h"
 
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
+#include "library/common/extensions/filters/http/assertion/config.h"
 
 namespace Envoy {
 class ExtensionRegistry {
