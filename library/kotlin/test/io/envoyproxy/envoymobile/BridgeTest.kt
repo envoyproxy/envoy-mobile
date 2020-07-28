@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.Mockito.mock
 import java.util.concurrent.Executors
+import java.util.concurrent.*
 
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
@@ -50,7 +51,7 @@ static_resources:
                 http_request_headers_match:
                   headers:
                     - name: ":authority"
-                      exact_match: not_my_name
+                      exact_match: api.lyft.com
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -59,6 +60,7 @@ static_resources:
 
     clientBuilder.addLogLevel(LogLevel.DEBUG)
     val streamClient = clientBuilder.build() as EnvoyClient
+    val countDownLatch = CountDownLatch(2)
 
     val requestHeaders = RequestHeadersBuilder(
       RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
@@ -70,9 +72,18 @@ static_resources:
       .setOnResponseHeaders { responseHeaders, _ ->
         val status = responseHeaders.httpStatus ?: 0L
         val message = "received headers with status $status"
-        assertThat(status).isEqualTo(200)
+                countDownLatch.countDown()
+
+      }
+      .setOnResponseData { data, endStream ->
+        countDownLatch.countDown()
       }
       .start(Executors.newSingleThreadExecutor())
       .sendHeaders(requestHeaders, true)
+
+    println("awaiting!!")
+    countDownLatch.await(20, TimeUnit.SECONDS)
+    println("done waiting!!")
+
   }
 }
