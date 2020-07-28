@@ -10,23 +10,13 @@ import java.util.Map;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 class JvmCallbackContext {
-  private enum FrameType {
-    NONE,
-    HEADERS,
-    METADATA,
-    TRAILERS,
-  }
-
   private final EnvoyHTTPCallbacks callbacks;
+  private final JvmBridgeUtility bridgeUtility;
 
-  // State-tracking for header accumulation
-  private Map<String, List<String>> headerAccumulator = null;
-  private FrameType pendingFrameType = FrameType.NONE;
-  private boolean pendingEndStream = false;
-  private long expectedHeaderLength = 0;
-  private long accumulatedHeaderLength = 0;
-
-  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) { this.callbacks = callbacks; }
+  public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) {
+    this.callbacks = callbacks;
+    bridgeUtility = new JvmBridgeUtility();
+  }
 
   /**
    * Initializes state for accumulating header pairs via passHeaders, ultimately
@@ -36,7 +26,16 @@ class JvmCallbackContext {
    * @param endStream, whether this header block is the final remote frame.
    */
   public void onHeaders(long length, boolean endStream) {
-    startAccumulation(FrameType.HEADERS, length, endStream);
+    final Map headers = bridgeUtility.retrieveHeaders();
+    // TODO(goaway): validate length
+
+    Runnable runnable = new Runnable() {
+      public void run() {
+        callbacks.onHeaders(headers, endStream);
+      }
+    };
+
+    callbacks.getExecutor().execute(runnable);
   }
 
   /**
@@ -45,7 +44,18 @@ class JvmCallbackContext {
    *
    * @param length, the total number of trailers included in this header block.
    */
-  public void onTrailers(long length) { startAccumulation(FrameType.TRAILERS, length, true); }
+  public void onTrailers(long length) {
+    final Map headers = bridgeUtility.retrieveHeaders();
+    // TODO(goaway): validate length
+
+    Runnable runnable = new Runnable() {
+      public void run() {
+        callbacks.onTrailers(headers);
+      }
+    };
+
+    callbacks.getExecutor().execute(runnable);
+  }
 
   /**
    * Allows pairs of strings to be passed across the JVM, reducing overall calls
@@ -56,57 +66,8 @@ class JvmCallbackContext {
    * @param endHeaders, indicates this is the last header pair for this header
    *                    block.
    */
-  public void passHeader(byte[] key, byte[] value, boolean endHeaders) {
-    String headerKey;
-    String headerValue;
-
-    try {
-      headerKey = new String(key, "UTF-8");
-      headerValue = new String(value, "UTF-8");
-    } catch (java.io.UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
-
-    List<String> values = headerAccumulator.get(headerKey);
-    if (values == null) {
-      values = new ArrayList(1);
-      headerAccumulator.put(headerKey, values);
-    }
-    values.add(headerValue);
-    accumulatedHeaderLength++;
-
-    if (!endHeaders) {
-      return;
-    }
-
-    // Received last header, so proceed with dispatch and cleanup
-    assert accumulatedHeaderLength == expectedHeaderLength;
-
-    final Map<String, List<String>> headers = headerAccumulator;
-    final FrameType frameType = pendingFrameType;
-    final boolean endStream = pendingEndStream;
-
-    Runnable runnable = new Runnable() {
-      public void run() {
-        switch (frameType) {
-        case HEADERS:
-          callbacks.onHeaders(headers, endStream);
-          break;
-        case METADATA:
-          break;
-        case TRAILERS:
-          callbacks.onTrailers(headers);
-          break;
-        case NONE:
-        default:
-          assert false : "missing header frame type";
-        }
-      }
-    };
-
-    callbacks.getExecutor().execute(runnable);
-
-    resetHeaderAccumulation();
+  public void passHeader(byte[] key, byte[] value, boolean start) {
+    bridgeUtility.passHeader(key, value, start);
   }
 
   /**

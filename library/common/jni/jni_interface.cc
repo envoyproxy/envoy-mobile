@@ -146,6 +146,7 @@ static JNIEnv* get_env() {
 static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context) {
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
+  pass_headers(env, headers, j_context);
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
   jmethodID jmid_onHeaders = env->GetMethodID(jcls_JvmCallbackContext, "onHeaders", "(JZ)V");
@@ -155,7 +156,6 @@ static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context
                       end_stream ? JNI_TRUE : JNI_FALSE);
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
-  pass_headers(env, headers, j_context);
 }
 
 static void jvm_on_data(envoy_data data, bool end_stream, void* context) {
@@ -192,6 +192,7 @@ static void jvm_on_trailers(envoy_headers trailers, void* context) {
 
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
+  pass_headers(env, trailers, j_context);
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
   jmethodID jmid_onTrailers = env->GetMethodID(jcls_JvmCallbackContext, "onTrailers", "(J)V");
@@ -200,7 +201,6 @@ static void jvm_on_trailers(envoy_headers trailers, void* context) {
   env->CallVoidMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
-  pass_headers(env, trailers, j_context);
 }
 
 static void jvm_on_error(envoy_error error, void* context) {
