@@ -70,6 +70,7 @@ def _install_locally(version, files):
         )
 
         shutil.copyfile(file, os.path.join(path, basename))
+        print("{file_name}\n{sha}\n".format(file_name=file, sha=_sha256(file)))
 
 
 def _urlopen_retried(request, max_retries=500, attempt=1, delay_sec=1):
