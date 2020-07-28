@@ -19,6 +19,7 @@ public:
 
   Extensions::Common::Tap::Matcher& rootMatcher() const;
   size_t matchersSize() const { return matchers_.size(); }
+
 private:
   std::vector<Extensions::Common::Tap::MatcherPtr> matchers_;
 };
@@ -40,7 +41,7 @@ public:
 
 private:
   const AssertionFilterConfigSharedPtr config_;
-    Extensions::Common::Tap::Matcher::MatchStatusVector statuses_;
+  Extensions::Common::Tap::Matcher::MatchStatusVector statuses_;
 };
 
 } // namespace Assertion
