@@ -146,7 +146,7 @@ To deploy Envoy Mobile's aar to your local maven repository, run the following c
     dist/sonatype_nexus_upload.py --files dist/envoy.aar dist/envoy-pom.xml --local
 
 
-The version deployed will be ``LOCAL-SNAPSHOT``. These artifacts will be
+The version deployed will be ``LOCAL-SNAPSHOT``. These artifacts can be found in your local maven directory (``~/.m2/repository/io/envoyproxy/envoymobile/envoy/LOCAL-SNAPSHOT/``)
 
 ~~~
 iOS
