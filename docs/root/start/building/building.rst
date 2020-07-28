@@ -137,13 +137,16 @@ Deploying Envoy Mobile Locally
 Android
 ~~~~~~~
 
-To deploy Envoy Mobile's aar to your local maven repository, run the following command:
-```
+To deploy Envoy Mobile's aar to your local maven repository, run the following commands::
 
-dist/sonatype_nexus_upload.py --files dist/envoy.aar dist/envoy_pom.xml --local
-```
+    # To build Envoy Mobile
+    bazelisk build android_dist --config=android --fat_apk_cpu=x86
 
-The version deployed will be `LOCAL-SNAPSHOT`. These artifacts will be
+    # To publish to local maven
+    dist/sonatype_nexus_upload.py --files dist/envoy.aar dist/envoy_pom.xml --local
+
+
+The version deployed will be ``LOCAL-SNAPSHOT``. These artifacts will be
 
 ~~~
 iOS
