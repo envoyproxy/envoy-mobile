@@ -35,7 +35,7 @@ envoy_cc_library(
     deps = [
         "@envoy//source/common/common:random_generator_lib",
         "@envoy//source/common/runtime:runtime_lib",
-        "@envoy//source/exe:main_common_lib",
+        "@envoy//source/exe:envoy_main_common_lib",
     ],
 )
 
