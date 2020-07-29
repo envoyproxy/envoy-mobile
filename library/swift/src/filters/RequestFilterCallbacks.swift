@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol RequestFilterCallbacks {
   /// Continue iterating through the filter chain with buffered headers and body data.
   ///
