@@ -44,7 +44,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":envoy_mobile_main_common_lib",
-        "@envoy//source/common/version:version_linkstamp",
+        "@envoy//source/exe:envoy_main_common_lib",
     ],
 )
 
