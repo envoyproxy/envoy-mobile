@@ -36,9 +36,9 @@ public:
   Http::Dispatcher& httpDispatcher();
 
   /**
-   * Increment a counter with a given string of elements.
+   * Increment a counter with a given string of elements and by the given count.
    */
-  void incCounter(std::string elemenets);
+  void recordCounter(std::string elemenets, uint64_t count);
 
   /**
    * Flush the stats sinks outside of a flushing interval.

@@ -8,15 +8,15 @@ import java.lang.ref.WeakReference
  *
  * Current the supported stat type is counter, and it can increment.
  */
-class Stat internal constructor(
+class Counter internal constructor(
         private val envoyEngine: WeakReference<EnvoyEngine>,
         private val elements: List<String>
 ) {
 
     /**
-     * Increment the stat.
+     * Increment the counter by the given count.
      */
-    fun incCounter() {
-        envoyEngine.get()?.incCounter(elements.joinToString(separator = "."))
+    fun increment(count: Int) {
+        envoyEngine.get()?.recordCounter(elements.joinToString(separator = "."), count)
     }
 }

@@ -92,9 +92,9 @@ envoy_engine_t init_engine();
 envoy_status_t set_preferred_network(envoy_network_t network);
 
 /**
- * Increment a counter with the given elements.
+ * Increment a counter with the given elements and by the given count.
  */
-void inc_counter(const char* elements);
+void record_counter(const char* elements, uint64_t count);
 
 /**
  * Flush the stats sinks outside of a flushing interval.

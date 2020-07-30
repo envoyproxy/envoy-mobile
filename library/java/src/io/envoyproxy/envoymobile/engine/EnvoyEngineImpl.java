@@ -58,12 +58,13 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   /**
-   * Increment a counter.
+   * Increment the counter with given count.
    *
    * @param elements Elements of the counter.
+   * @param count Count to increment the counter with.
    */
   @Override
-  public void incCounter(String elements) {
-    JniLibrary.incCounter(elements);
+  public void recordCounter(String elements, int count) {
+    JniLibrary.recordCounter(elements, count);
   }
 }

@@ -9,7 +9,7 @@ import java.lang.ref.WeakReference
 internal class StatsClientImpl constructor(private val envoyEngine: EnvoyEngine) : StatsClient {
 
     /**
-     * @return a {@link StatBuilder}
+     * @return a counter instantiated with the given elements.
      */
-    override fun statBuilder(): StatBuilder = StatBuilder(WeakReference(envoyEngine))
+    override fun getCounter(elements: List<String>): Counter = Counter(WeakReference(envoyEngine), elements)
 }

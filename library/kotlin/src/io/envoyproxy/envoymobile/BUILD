@@ -36,6 +36,7 @@ kt_android_library(
 envoy_mobile_kt_library(
     name = "envoy_interfaces_lib",
     srcs = glob([
+        "Counter.kt",
         "Engine.kt",
         "EngineBuilder.kt",
         "EngineImpl.kt",
@@ -54,8 +55,6 @@ envoy_mobile_kt_library(
         "ResponseTrailersBuilder.kt",
         "RetryPolicy.kt",
         "RetryPolicyMapper.kt",
-        "Stat.kt",
-        "StatBuilder.kt",
         "StatsClient.kt",
         "StatsClientImpl.kt",
         "Stream.kt",

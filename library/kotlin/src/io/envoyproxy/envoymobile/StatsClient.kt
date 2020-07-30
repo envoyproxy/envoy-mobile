@@ -6,7 +6,7 @@ package io.envoyproxy.envoymobile
 interface StatsClient {
 
     /**
-     * @return a {@link StatBuilder}
+     * @return a counter instantiated with the given elements.
      */
-    fun statBuilder(): StatBuilder
+    fun getCounter(elements: List<String>): Counter
 }
