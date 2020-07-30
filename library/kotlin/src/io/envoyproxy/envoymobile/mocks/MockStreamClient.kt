@@ -11,6 +11,4 @@ class MockStreamClient(var onStartStream: ((MockStream) -> Unit)?) : StreamClien
   override fun newStreamPrototype(): StreamPrototype {
     return MockStreamPrototype { onStartStream?.invoke(it) }
   }
-
-  override fun incCounter(name: String) {}
 }

@@ -80,8 +80,8 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIE
 extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_incCounter(JNIEnv* env,
                                                             jclass, // class
-                                                            jstring name) {
-  inc_counter(env->GetStringUTFChars(name, nullptr));
+                                                            jstring elements) {
+  inc_counter(env->GetStringUTFChars(elements, nullptr));
 }
 
 extern "C" JNIEXPORT void JNICALL

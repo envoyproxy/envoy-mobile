@@ -37,7 +37,7 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public void incCounter(String name) {
-    envoyEngine.incCounter(name);
+  public void incCounter(String elements) {
+    envoyEngine.incCounter(elements);
   }
 }

@@ -60,10 +60,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   /**
    * Increment a counter.
    *
-   * @param name The name of the counter.
+   * @param elements Elements of the counter.
    */
   @Override
-  public void incCounter(String name) {
-    JniLibrary.incCounter(name);
+  public void incCounter(String elements) {
+    JniLibrary.incCounter(elements);
   }
 }

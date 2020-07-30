@@ -1,19 +1,21 @@
 package io.envoyproxy.envoymobile
 
-class StatBuilder {
-    private val stat: Stat
-    private val engine: EnvoyClient
+import java.lang.ref.WeakReference
 
-    constructor(engine: EnvoyClient) {
-        stat = Stat(WeakReference(engine))
-    }
+import io.envoyproxy.envoymobile.engine.EnvoyEngine
 
-    fun withName(name: String): StatBuilder {
-        stat.statName = name
+/**
+ * A builder to build a {@link Stat}
+ */
+class StatBuilder constructor(private val envoyEngine: WeakReference<EnvoyEngine>) {
+    private lateinit var elements: List<String>
+
+    fun withElements(elements: List<String>): StatBuilder {
+        this.elements = elements
         return this
     }
 
     fun build(): Stat {
-        return stat
+        return Stat(envoyEngine, elements)
     }
 }

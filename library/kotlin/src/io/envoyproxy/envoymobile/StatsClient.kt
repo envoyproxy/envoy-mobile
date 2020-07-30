@@ -1,20 +1,12 @@
 package io.envoyproxy.envoymobile
 
 /**
- * Client used to create new stat.
+ * Client used to create new stats.
  */
-StatsClient() {
-
-    private engine: EnvoyClient
-
-    constructor(engine: EnvoyClient) {
-        this.engine = EnvoyClient
-    }
+interface StatsClient {
 
     /**
-     * Creates a new stat.
-     *
-     * @Return a {@link StatBuilder}
+     * @return a {@link StatBuilder}
      */
-    fun newStat(): StatBuilder = StatBuilder(engine)
+    fun statBuilder(): StatBuilder
 }

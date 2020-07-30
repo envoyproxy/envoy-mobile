@@ -93,14 +93,14 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-void Engine::incCounter(std::string name) {
+void Engine::incCounter(std::string elemenets) {
   if (server_) {
-    server_->dispatcher().post([this, name]() -> void {
-      std::string poc = "poc";
-      absl::string_view prefix{poc};
-      absl::string_view dynamic_name{name};
+    server_->dispatcher().post([this, elemenets]() -> void {
+      std::string client_stats = "client_stats";
+      absl::string_view prefix{client_stats};
+      absl::string_view dynamic_elements{elemenets};
       Stats::Utility::counterFromElements(
-        server_->serverFactoryContext().scope(), {prefix, dynamic_name}).inc();
+        server_->serverFactoryContext().scope(), {prefix, dynamic_elements}).inc();
     });
   }
 }

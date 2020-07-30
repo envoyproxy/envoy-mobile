@@ -20,7 +20,7 @@ android_artifacts(
 kt_android_library(
     name = "envoy_lib",
     srcs = [
-        "AndroidStreamClientBuilder.kt",
+        "AndroidEngineBuilder.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
@@ -36,7 +36,9 @@ kt_android_library(
 envoy_mobile_kt_library(
     name = "envoy_interfaces_lib",
     srcs = glob([
-        "EnvoyClient.kt",
+        "Engine.kt",
+        "EngineBuilder.kt",
+        "EngineImpl.kt",
         "EnvoyError.kt",
         "Headers.kt",
         "HeadersBuilder.kt",
@@ -52,10 +54,14 @@ envoy_mobile_kt_library(
         "ResponseTrailersBuilder.kt",
         "RetryPolicy.kt",
         "RetryPolicyMapper.kt",
+        "Stat.kt",
+        "StatBuilder.kt",
+        "StatsClient.kt",
+        "StatsClientImpl.kt",
         "Stream.kt",
-        "StreamClient.kt",
-        "StreamClientBuilder.kt",
         "StreamCallbacks.kt",
+        "StreamClient.kt",
+        "StreamClientImpl.kt",
         "StreamPrototype.kt",
         "UpstreamHttpProtocol.kt",
         "filters/*.kt",

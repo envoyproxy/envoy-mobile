@@ -143,5 +143,5 @@ class JniLibrary {
   /**
    * Increment a counter.
    */
-  protected static native void incCounter(String name);
+  protected static native void incCounter(String elements);
 }

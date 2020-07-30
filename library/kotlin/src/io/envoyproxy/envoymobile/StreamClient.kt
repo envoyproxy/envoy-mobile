@@ -10,6 +10,4 @@ interface StreamClient {
    * @return The new stream prototype.
    */
   fun newStreamPrototype(): StreamPrototype
-
-  fun incCounter(name: String)
 }

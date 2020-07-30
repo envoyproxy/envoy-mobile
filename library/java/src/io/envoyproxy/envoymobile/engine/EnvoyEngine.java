@@ -32,7 +32,7 @@ public interface EnvoyEngine {
   /**
    * Increment a counter.
    *
-   * @param name The name of the counter.
+   * @param elements Elements of the counter.
    */
-  void incCounter(String name);
+  void incCounter(String elements);
 }

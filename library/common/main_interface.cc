@@ -69,9 +69,9 @@ envoy_status_t set_preferred_network(envoy_network_t network) {
   return ENVOY_SUCCESS;
 }
 
-void inc_counter(const char* name) {
+void inc_counter(const char* elements) {
   if (auto e = engine_.lock()) {
-    e->incCounter(std::string(name));
+    e->incCounter(std::string(elements));
   }
 }
 
