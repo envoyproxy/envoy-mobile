@@ -39,20 +39,24 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
   transformed_headers.length = 0;
   transformed_headers.headers = headers;
 
-  header_map.iterate([&transformed_headers](const HeaderEntry& header) -> HeaderMap::Iterate {
-    const absl::string_view header_key = header.key().getStringView();
-    const absl::string_view header_value = header.value().getStringView();
+  header_map.iterate(
+      [](const HeaderEntry& header, void* context) -> HeaderMap::Iterate {
+        envoy_headers* transformed_headers = static_cast<envoy_headers*>(context);
 
-    envoy_data key =
-        copy_envoy_data(header_key.size(), reinterpret_cast<const uint8_t*>(header_key.data()));
-    envoy_data value =
-        copy_envoy_data(header_value.size(), reinterpret_cast<const uint8_t*>(header_value.data()));
+        const absl::string_view header_key = header.key().getStringView();
+        const absl::string_view header_value = header.value().getStringView();
 
-    transformed_headers.headers[transformed_headers.length] = {key, value};
-    transformed_headers.length++;
+        envoy_data key =
+            copy_envoy_data(header_key.size(), reinterpret_cast<const uint8_t*>(header_key.data()));
+        envoy_data value = copy_envoy_data(header_value.size(),
+                                           reinterpret_cast<const uint8_t*>(header_value.data()));
 
-    return HeaderMap::Iterate::Continue;
-  });
+        transformed_headers->headers[transformed_headers->length] = {key, value};
+        transformed_headers->length++;
+
+        return HeaderMap::Iterate::Continue;
+      },
+      &transformed_headers);
   return transformed_headers;
 }
 
