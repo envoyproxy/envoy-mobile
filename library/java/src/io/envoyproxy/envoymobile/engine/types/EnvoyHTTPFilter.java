@@ -21,7 +21,7 @@ public interface EnvoyHTTPFilter {
    * @param data,      the buffer of the data received.
    * @param endStream, whether the data is the last data frame.
    */
-  //public abstract List onRequestData(ByteBuffer data, boolean endStream);
+  // public abstract List onRequestData(ByteBuffer data, boolean endStream);
 
   /**
    * Called when all trailers get received on the async HTTP stream. Note that end
@@ -29,7 +29,7 @@ public interface EnvoyHTTPFilter {
    *
    * @param trailers, the trailers received.
    */
-  //public abstract void onRequestTrailers(Map<String, List<String>> trailers);
+  // public abstract void onRequestTrailers(Map<String, List<String>> trailers);
 
   /**
    * Called when all headers get received on the async HTTP stream.
@@ -46,7 +46,7 @@ public interface EnvoyHTTPFilter {
    * @param data,      the buffer of the data received.
    * @param endStream, whether the data is the last data frame.
    */
-  //public abstract void onResponseData(ByteBuffer data, boolean endStream);
+  // public abstract void onResponseData(ByteBuffer data, boolean endStream);
 
   /**
    * Called when all trailers get received on the async HTTP stream. Note that end
@@ -54,5 +54,5 @@ public interface EnvoyHTTPFilter {
    *
    * @param trailers, the trailers received.
    */
-  //public abstract void onResponseTrailers(Map<String, List<String>> trailers);
+  // public abstract void onResponseTrailers(Map<String, List<String>> trailers);
 }
