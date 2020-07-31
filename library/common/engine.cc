@@ -93,12 +93,12 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-void Engine::recordCounter(std::string elemenets, uint64_t count) {
+void Engine::recordCounter(std::string elements, uint64_t count) {
   if (server_) {
-    server_->dispatcher().post([this, elemenets, count]() -> void {
-      std::string client_stats = "client_stats";
-      absl::string_view prefix{client_stats};
-      absl::string_view dynamic_elements{elemenets};
+    server_->dispatcher().post([this, elements, count]() -> void {
+      std::string client = "client";
+      absl::string_view prefix{client};
+      absl::string_view dynamic_elements{elements};
       Stats::Utility::counterFromElements(
         server_->serverFactoryContext().scope(), {prefix, dynamic_elements}).add(count);
     });

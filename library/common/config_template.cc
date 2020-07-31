@@ -206,7 +206,7 @@ stats_config:
             regex: '^http.dispatcher.*'
         - safe_regex:
             google_re2: {}
-            regex: '^client_stats.*'
+            regex: '^client.*'
         - safe_regex:
             google_re2: {}
             regex: '^http.hcm.decompressor.*'

@@ -38,7 +38,7 @@ public:
   /**
    * Increment a counter with a given string of elements and by the given count.
    */
-  void recordCounter(std::string elemenets, uint64_t count);
+  void recordCounter(std::string elements, uint64_t count);
 
   /**
    * Flush the stats sinks outside of a flushing interval.
