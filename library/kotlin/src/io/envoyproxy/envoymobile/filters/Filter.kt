@@ -33,7 +33,7 @@ internal class EnvoyHTTPFilterAdapter(
     }
     return arrayOf(0, headers)
   }
-  
+
   override fun onResponseHeaders(headers: Map<String, List<String>>, endStream: Boolean): Array<Any> {
     (filter as? ResponseFilter)?.let { responseFilter ->
       val result = responseFilter.onResponseHeaders(ResponseHeaders(headers), endStream)
