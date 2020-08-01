@@ -237,6 +237,14 @@ extern const int kEnvoyFailure;
  */
 - (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks;
 
+/**
+ Increments counter with the given count.
+
+ @param elements Elements of the counter stat.
+ @param count Amount to add to the counter.
+ */
+- (void)recordCounter:(NSString *)elements, count:(UInt)count;
+
 @end
 
 #pragma mark - EnvoyEngineImpl

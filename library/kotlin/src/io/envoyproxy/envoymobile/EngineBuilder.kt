@@ -10,7 +10,7 @@ class Standard : BaseConfiguration()
 class Custom(val yaml: String) : BaseConfiguration()
 
 /**
- * Builder used for creating new instances of an `Engine`.
+ * Builder used for creating and running a new `Engine` instance.
  */
 open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
@@ -153,7 +153,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Builds a new instance of Envoy using the provided configurations.
+   * Builds and runs a new Engine instance with the provided configuration.
    *
    * @return A new instance of Envoy.
    */

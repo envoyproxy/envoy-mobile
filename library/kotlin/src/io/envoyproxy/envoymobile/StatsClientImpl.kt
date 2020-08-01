@@ -4,12 +4,11 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import java.lang.ref.WeakReference
 
 /**
- * Client used to create new stats.
+ * Envoy implementation of `StatsClient`.
  */
-internal class StatsClientImpl constructor(private val envoyEngine: EnvoyEngine) : StatsClient {
+internal class StatsClientImpl constructor(
+        internal val engine: EnvoyEngine
+) : StatsClient {
 
-    /**
-     * @return a counter instantiated with the given elements.
-     */
-    override fun getCounter(elements: List<String>): Counter = Counter(WeakReference(envoyEngine), elements)
+    override fun getCounter(elements: List<String>): Counter = Counter(WeakReference(engine), elements)
 }

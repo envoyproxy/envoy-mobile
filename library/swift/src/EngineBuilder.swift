@@ -1,9 +1,9 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// Builder used for creating new instances of a `StreamClient`.
+/// Builder used for creating and running a new Engine instance.
 @objcMembers
-public final class StreamClientBuilder: NSObject {
+public final class EngineBuilder: NSObject {
   private let base: BaseConfiguration
   private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var logLevel: LogLevel = .info
@@ -154,14 +154,14 @@ public final class StreamClientBuilder: NSObject {
     return self
   }
 
-  /// Builds a new instance of a `StreamClient` using the provided configurations.
+  /// Builds and runs a new `Engine` instance with the provided configuration.
   ///
-  /// - returns: A new instance of a `StreamClient`.
-  public func build() throws -> StreamClient {
+  /// - returns: A new instance of Envoy.
+  public func build() throws -> Engine {
     let engine = self.engineType.init()
     switch self.base {
     case .custom(let yaml):
-      return EnvoyClient(configYAML: yaml, logLevel: self.logLevel, engine: engine)
+      return EngineImpl(configYAML: yaml, logLevel: self.logLevel, engine: engine)
     case .standard:
       let config = EnvoyConfiguration(
         statsDomain: self.statsDomain,
@@ -174,7 +174,7 @@ public final class StreamClientBuilder: NSObject {
         appVersion: self.appVersion,
         appId: self.appId,
         virtualClusters: self.virtualClusters)
-      return EnvoyClient(config: config, logLevel: self.logLevel, engine: engine)
+      return EngineImpl(config: config, logLevel: self.logLevel, engine: engine)
     }
   }
 
