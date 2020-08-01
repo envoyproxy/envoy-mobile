@@ -14,7 +14,7 @@ envoy_cc_library(
         "engine.h",
         "main_interface.cc",
     ],
-    hdrs = ["main_interface.h", "jni_support.h"],
+    hdrs = ["main_interface.h"],
     repository = "@envoy",
     deps = [
         ":envoy_mobile_main_common_lib_stamped",
@@ -49,28 +49,11 @@ envoy_cc_library(
 )
 
 cc_binary(
-    name = "libenvoy_jni.so",
+    name = "java_libenvoy_jni.so",
     srcs = [
-        "android_support.cc",
         "jni_interface.cc",
     ],
     copts = ["-std=c++17"],
-    linkopts = [
-        "-lm",
-        "-llog",
-        "-Wl,-s",
-    ],
-    linkshared = True,
-    deps = [":envoy_main_interface_lib"],
-)
-
-cc_binary(
-    name = "java_libenvoy_jni.so",
-    srcs = [
-        "java_support.cc",
-        "jni_interface.cc",
-    ],
-    copts = ["-std=c++14"],
     linkopts = [
         "-lm",
     ],
