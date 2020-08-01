@@ -27,7 +27,7 @@ private:
 typedef std::shared_ptr<AssertionFilterConfig> AssertionFilterConfigSharedPtr;
 
 /**
- * Harness to bridge Envoy filter invocations up to the platform layer.
+ * Filter to assert expectations on HTTP requests.
  */
 class AssertionFilter final : public Http::PassThroughFilter {
 public:
