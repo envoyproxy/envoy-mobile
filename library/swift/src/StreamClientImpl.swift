@@ -1,7 +1,8 @@
+@_implementationOnly import EnvoyEngine
 import Foundation
 
 /// Envoy implementation of StreamClient.
-@ojcMembers
+@objcMembers
 final class StreamClientImpl: NSObject {
   private let engine: EnvoyEngine
 

@@ -243,7 +243,7 @@ extern const int kEnvoyFailure;
  @param elements Elements of the counter stat.
  @param count Amount to add to the counter.
  */
-- (void)recordCounter:(NSString *)elements, count:(UInt)count;
+- (void)recordCounter:(NSString *)elements count:(NSUInteger)count;
 
 @end
 

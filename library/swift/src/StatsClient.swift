@@ -4,6 +4,5 @@ import Foundation
 @objc
 public protocol StatsClient: AnyObject {
   /// - returns: A Counter based on the joined elements.
-  func getCounter(elements: [String]): Counter
-
+  func getCounter(elements: [String]) -> Counter
 }

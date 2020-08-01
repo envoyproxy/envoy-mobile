@@ -1,8 +1,9 @@
+@_implementationOnly import EnvoyEngine
 import Foundation
 
 /// Envoy implementation of StatsClient.
 @objcMembers
-final class StatsClient: NSObject {
+final class StatsClientImpl: NSObject {
   private let engine: EnvoyEngine
 
   init(engine: EnvoyEngine) {
@@ -13,6 +14,6 @@ final class StatsClient: NSObject {
 
 extension StatsClientImpl: StatsClient {
   func getCounter(elements: [String]) -> Counter {
-    return Counter(engine, elements)
+    return Counter(elements: elements, engine: self.engine)
   }
 }
