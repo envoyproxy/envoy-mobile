@@ -47,22 +47,3 @@ envoy_cc_library(
         "@envoy//source/exe:envoy_main_common_lib",
     ],
 )
-
-cc_binary(
-    name = "java_libenvoy_jni.so",
-    srcs = [
-        "jni_interface.cc",
-    ],
-    copts = ["-std=c++17"],
-    linkopts = [
-        "-lm",
-    ],
-    toolchains = ["@bazel_tools//tools/jdk:current_java_runtime",],
-    linkshared = True,
-    includes = [
-        "../../external/local_jdk/include",
-        "../../external/local_jdk/include/darwin",
-        "../../external/local_jdk/include/linux",
-    ],
-    deps = [":envoy_main_interface_lib"],
-)
