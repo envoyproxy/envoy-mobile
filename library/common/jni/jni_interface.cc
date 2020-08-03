@@ -1,17 +1,18 @@
-#include <string>
 #include <jni.h>
 
-#include "library/common/main_interface.h"
-#include "library/common/jni/jni_utility.h"
+#include <string>
 
-static JavaVM* static_jvm = nullptr;
+#include "library/common/jni/jni_utility.h"
+#include "library/common/main_interface.h"
+
+JavaVM* global_jvm = nullptr;
+const jint JNI_VERSION = JNI_VERSION_1_6;
 static JNIEnv* static_env = nullptr;
-const static jint JNI_VERSION = JNI_VERSION_1_6;
 
 // NOLINT(namespace-envoy)
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-  static_jvm = vm;
+  global_jvm = vm;
   if (vm->GetEnv((void**)&static_env, JNI_VERSION) != JNI_OK) {
     return -1;
   }
@@ -34,7 +35,7 @@ static void jvm_on_exit() {
   // needs to be detached is the engine thread.
   // This function is called from the context of the engine's
   // thread due to it being posted to the engine's event dispatcher.
-  static_jvm->DetachCurrentThread();
+  global_jvm->DetachCurrentThread();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
@@ -58,7 +59,7 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
-  return platform_setup(static_jvm, connectivity_manager);
+  return platform_setup(global_jvm, connectivity_manager);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -118,21 +119,6 @@ static void pass_headers(JNIEnv* env, envoy_headers headers, jobject j_context) 
   env->PopLocalFrame(nullptr);
   env->DeleteLocalRef(jcls_JvmCallbackContext);
   release_envoy_headers(headers);
-}
-
-// Platform callback implementation
-static JNIEnv* get_env() {
-  JNIEnv* env = nullptr;
-  int get_env_res = static_jvm->GetEnv((void**)&env, JNI_VERSION);
-  if (get_env_res == JNI_EDETACHED) {
-    jni_log("[Envoy]", "environment is JNI_EDETACHED");
-    // Note: the only thread that should need to be attached is Envoy's engine std::thread.
-    // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
-    // engine's std::thread, and that we detach it successfully.
-    static_jvm->AttachCurrentThread((void**)&env, nullptr);
-    static_jvm->GetEnv((void**)&env, JNI_VERSION);
-  }
-  return env;
 }
 
 static void jvm_on_headers(envoy_headers headers, bool end_stream, void* context) {

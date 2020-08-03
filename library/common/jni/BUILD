@@ -9,9 +9,9 @@ envoy_package()
 cc_binary(
     name = "libenvoy_jni.so",
     srcs = [
-        "jni_utility.h",
-        "jni_interface.cc",
         "android_utility.cc",
+        "jni_interface.cc",
+        "jni_utility.h",
     ],
     copts = ["-std=c++17"],
     linkopts = [
@@ -26,11 +26,11 @@ cc_binary(
 local_jar_cc_binary(
     name = "java_libenvoy_jni.so",
     srcs = [
-        "jni_utility.h",
+        "java_utility.cc",
         "jni_interface.cc",
-        "java_utility.cc"
+        "jni_utility.h",
     ],
-        includes = [
+    includes = [
         "../../../external/local_jdk/include",
         "../../../external/local_jdk/include/darwin",
         "../../../external/local_jdk/include/linux",
