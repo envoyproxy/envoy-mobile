@@ -114,8 +114,9 @@ public final class StreamClientBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addFilter<T: Filter>(_ factory: @escaping () -> T) -> StreamClientBuilder {
-    self.filterChain.append(EnvoyHTTPFilterFactory(factory: factory))
+  public func addFilter(_ filterName: String, factory: @escaping () -> Filter)
+      -> StreamClientBuilder {
+    self.filterChain.append(EnvoyHTTPFilterFactory(filterName: filterName, factory: factory))
     return self
   }
 
