@@ -21,7 +21,7 @@ public interface EnvoyHTTPFilter {
    * @param data,      the buffer of the data received.
    * @param endStream, whether the data is the last data frame.
    */
-  Object[]  onRequestData(ByteBuffer data, boolean endStream);
+  Object[] onRequestData(ByteBuffer data, boolean endStream);
 
   /**
    * Called when request trailers are sent on the HTTP stream.
