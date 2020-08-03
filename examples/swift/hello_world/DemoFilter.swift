@@ -2,7 +2,6 @@ import Envoy
 import Foundation
 
 struct DemoFilter: ResponseFilter {
-
   func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
     -> FilterHeadersStatus<ResponseHeaders>
   {
