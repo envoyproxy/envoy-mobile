@@ -30,4 +30,4 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: coverage.tar.gz
-          path: coveverage.tar.gz
+          path: coverage.tar.gz
