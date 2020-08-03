@@ -23,7 +23,7 @@ open class StreamClientBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
-  private var filterChain = ArrayList<FilterFactory>()
+  private var filterChain = mutableListOf<FilterFactory>()
   private var statsFlushSeconds = 60
   private var appVersion = "unspecified"
   private var appId = "unspecified"
