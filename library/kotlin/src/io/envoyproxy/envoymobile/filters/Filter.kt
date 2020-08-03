@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilter
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
+import java.nio.ByteBuffer
 
 /*
  * Interface representing a filter. See `RequestFilter` and `ResponseFilter` for more details.
@@ -43,5 +44,21 @@ internal class EnvoyHTTPFilterAdapter(
       }
     }
     return arrayOf(0, headers)
+  }
+
+  override fun onRequestData(data: ByteBuffer, endStream: Boolean): Array<Any> {
+    return arrayOf(0, data)
+  }
+
+  override fun onResponseData(data: ByteBuffer, endStream: Boolean): Array<Any> {
+    return arrayOf(0, data)
+  }
+
+  override fun onRequestTrailers(trailers: Map<String, List<String>>): Array<Any> {
+    return arrayOf(0, trailers)
+  }
+
+  override fun onResponseTrailers(trailers: Map<String, List<String>>): Array<Any> {
+    return arrayOf(0, trailers)
   }
 }

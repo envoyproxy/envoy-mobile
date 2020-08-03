@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface EnvoyHTTPFilter {
   /**
-   * Called when all headers get received on the async HTTP stream.
+   * Called when request headers are sent on the HTTP stream.
    *
    * @param headers,   the headers received.
    * @param endStream, whether the response is headers-only.
@@ -15,24 +15,23 @@ public interface EnvoyHTTPFilter {
   Object[] onRequestHeaders(Map<String, List<String>> headers, boolean endStream);
 
   /**
-   * Called when a data frame gets received on the async HTTP stream. This
-   * callback can be invoked multiple times if the data gets streamed.
+   * Called when a request data frame is sent on the HTTP stream. This
+   * callback can be invoked multiple times.
    *
    * @param data,      the buffer of the data received.
    * @param endStream, whether the data is the last data frame.
    */
-  // public abstract List onRequestData(ByteBuffer data, boolean endStream);
+  Object[]  onRequestData(ByteBuffer data, boolean endStream);
 
   /**
-   * Called when all trailers get received on the async HTTP stream. Note that end
-   * stream is implied when on_trailers is called.
+   * Called when request trailers are sent on the HTTP stream.
    *
    * @param trailers, the trailers received.
    */
-  // public abstract void onRequestTrailers(Map<String, List<String>> trailers);
+  Object[] onRequestTrailers(Map<String, List<String>> trailers);
 
   /**
-   * Called when all headers get received on the async HTTP stream.
+   * Called when response headers are received on the HTTP stream.
    *
    * @param headers,   the headers received.
    * @param endStream, whether the response is headers-only.
@@ -40,19 +39,18 @@ public interface EnvoyHTTPFilter {
   Object[] onResponseHeaders(Map<String, List<String>> headers, boolean endStream);
 
   /**
-   * Called when a data frame gets received on the async HTTP stream. This
-   * callback can be invoked multiple times if the data gets streamed.
+   * Called when a data frame is received on the HTTP stream. This
+   * callback can be invoked multiple times.
    *
    * @param data,      the buffer of the data received.
    * @param endStream, whether the data is the last data frame.
    */
-  // public abstract void onResponseData(ByteBuffer data, boolean endStream);
+  Object[] onResponseData(ByteBuffer data, boolean endStream);
 
   /**
-   * Called when all trailers get received on the async HTTP stream. Note that end
-   * stream is implied when on_trailers is called.
+   * Called when response trailers are received on the HTTP stream.
    *
    * @param trailers, the trailers received.
    */
-  // public abstract void onResponseTrailers(Map<String, List<String>> trailers);
+  Object[] onResponseTrailers(Map<String, List<String>> trailers);
 }
