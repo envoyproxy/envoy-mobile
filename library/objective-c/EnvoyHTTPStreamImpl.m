@@ -21,7 +21,7 @@ typedef struct {
 
 #pragma mark - C callbacks
 
-static void* ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
+static void *ios_on_headers(envoy_headers headers, bool end_stream, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
@@ -32,7 +32,7 @@ static void* ios_on_headers(envoy_headers headers, bool end_stream, void *contex
   return NULL;
 }
 
-static void* ios_on_data(envoy_data data, bool end_stream, void *context) {
+static void *ios_on_data(envoy_data data, bool end_stream, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
@@ -43,9 +43,9 @@ static void* ios_on_data(envoy_data data, bool end_stream, void *context) {
   return NULL;
 }
 
-static void* ios_on_metadata(envoy_headers metadata, void *context) { return NULL; }
+static void *ios_on_metadata(envoy_headers metadata, void *context) { return NULL; }
 
-static void* ios_on_trailers(envoy_headers trailers, void *context) {
+static void *ios_on_trailers(envoy_headers trailers, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
@@ -56,7 +56,7 @@ static void* ios_on_trailers(envoy_headers trailers, void *context) {
   return NULL;
 }
 
-static void* ios_on_complete(void *context) {
+static void *ios_on_complete(void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
@@ -68,7 +68,7 @@ static void* ios_on_complete(void *context) {
   return NULL;
 }
 
-static void* ios_on_cancel(void *context) {
+static void *ios_on_cancel(void *context) {
   // This call is atomically gated at the call-site and will only happen once. It may still fire
   // after a complete response or error callback, but no other callbacks for the stream will ever
   // fire AFTER the cancellation callback.
@@ -87,7 +87,7 @@ static void* ios_on_cancel(void *context) {
   return NULL;
 }
 
-static void* ios_on_error(envoy_error error, void *context) {
+static void *ios_on_error(envoy_error error, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;

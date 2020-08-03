@@ -71,7 +71,5 @@ class JvmBridgeUtility {
    * @param headerCount, the expected number of headers.
    * @return boolean, true if the expected number matches the accumulated count.
    */
-  boolean validateCount(long headerCount) {
-    return this.headerCount == headerCount;
-  }
+  boolean validateCount(long headerCount) { return this.headerCount == headerCount; }
 }

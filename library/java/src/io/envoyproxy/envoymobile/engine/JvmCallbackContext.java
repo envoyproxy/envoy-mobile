@@ -31,9 +31,7 @@ class JvmCallbackContext {
     final Map headers = bridgeUtility.retrieveHeaders();
 
     callbacks.getExecutor().execute(new Runnable() {
-      public void run() {
-        callbacks.onHeaders(headers, endStream);
-      }
+      public void run() { callbacks.onHeaders(headers, endStream); }
     });
 
     return null;
@@ -51,9 +49,7 @@ class JvmCallbackContext {
     final Map trailers = bridgeUtility.retrieveHeaders();
 
     callbacks.getExecutor().execute(new Runnable() {
-      public void run() {
-        callbacks.onTrailers(trailers);
-      }
+      public void run() { callbacks.onTrailers(trailers); }
     });
 
     return null;

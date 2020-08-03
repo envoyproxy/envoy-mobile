@@ -176,8 +176,8 @@ static void* jvm_on_data(envoy_data data, bool end_stream, void* context) {
   // Here '0' (for which there is no named constant) indicates we want to commit the changes back
   // to the JVM and free the c array, where applicable.
   env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
-  jobject result = env->CallObjectMethod(j_context, jmid_onData, j_data,
-                                         end_stream ? JNI_TRUE : JNI_FALSE);
+  jobject result =
+      env->CallObjectMethod(j_context, jmid_onData, j_data, end_stream ? JNI_TRUE : JNI_FALSE);
 
   data.release(data.context);
   env->DeleteLocalRef(j_data);
