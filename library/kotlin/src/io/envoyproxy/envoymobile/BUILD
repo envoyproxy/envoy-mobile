@@ -37,6 +37,7 @@ envoy_mobile_kt_library(
     name = "envoy_interfaces_lib",
     srcs = glob([
         "Counter.kt",
+        "Element.kt",
         "Engine.kt",
         "EngineBuilder.kt",
         "EngineImpl.kt",

@@ -10,13 +10,15 @@ import java.lang.ref.WeakReference
  */
 class Counter internal constructor(
         private val envoyEngine: WeakReference<EnvoyEngine>,
-        private val elements: List<String>
+        private val elements: List<Element>
 ) {
 
     /**
      * Increment the counter by the given count.
      */
     fun increment(count: Int) {
-        envoyEngine.get()?.recordCounter(elements.joinToString(separator = "."), count)
+        envoyEngine.get()?.recordCounter(
+            elements.joinToString(separator = ".") { it.element },
+            count)
     }
 }

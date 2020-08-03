@@ -10,5 +10,5 @@ internal class StatsClientImpl constructor(
         internal val engine: EnvoyEngine
 ) : StatsClient {
 
-    override fun getCounter(elements: List<String>): Counter = Counter(WeakReference(engine), elements)
+    override fun getCounter(vararg elements: Element): Counter = Counter(WeakReference(engine), elements.asList())
 }
