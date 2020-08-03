@@ -110,6 +110,7 @@ public final class StreamClientBuilder: NSObject {
 
   /// Add an HTTP filter factory used to construct filters for streams sent by this client.
   ///
+  /// - parameter filterName: Unique name for this filter required for registration.
   /// - parameter factory: Closure returning an instantiated filter. Called once per stream.
   ///
   /// - returns: This builder.
