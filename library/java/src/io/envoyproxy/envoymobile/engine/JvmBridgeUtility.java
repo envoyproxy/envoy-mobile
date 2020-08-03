@@ -10,24 +10,22 @@ import java.util.Map;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 /**
- * Class to assist with passing types from native code to the JNI. Currently supports
+ * Class to assist with passing types from native code over the JNI. Currently supports
  * HTTP headers.
  */
 class JvmBridgeUtility {
   // State-tracking for header accumulation
   private Map<String, List<String>> headerAccumulator = null;
-  private int headerCount = 0;
+  private long headerCount = 0;
 
   JvmBridgeUtility() {}
 
   /**
-   * Allows pairs of strings to be passed across the JVM, reducing overall calls
-   * (at the expense of some complexity).
+   * Receives pairs of strings passed via the JNI.
    *
    * @param key,        the name of the HTTP header.
    * @param value,      the value of the HTTP header.
-   * @param endHeaders, indicates this is the last header pair for this header
-   *                    block.
+   * @param start,      indicates this is the first header pair of the block.
    */
   void passHeader(byte[] key, byte[] value, boolean start) {
     if (start) {
@@ -43,7 +41,7 @@ class JvmBridgeUtility {
       headerKey = new String(key, "UTF-8");
       headerValue = new String(value, "UTF-8");
     } catch (java.io.UnsupportedEncodingException e) {
-      throw new Ru:wntimeException(e);
+      throw new RuntimeException(e);
     }
 
     List<String> values = headerAccumulator.get(headerKey);
@@ -52,13 +50,28 @@ class JvmBridgeUtility {
       headerAccumulator.put(headerKey, values);
     }
     values.add(headerValue);
-    headerCounth++;
+    headerCount++;
   }
 
+  /**
+   * Retrieves accumulated headers and resets state.
+   *
+   * @return Map, a map of header names to one or more values.
+   */
   Map<String, List<String>> retrieveHeaders() {
     Map headers = headerAccumulator;
     headerAccumulator = null;
     headerCount = 0;
     return headers;
+  }
+
+  /**
+   * May be called *prior* to retrieveHeaders to validate the quantity received.
+   *
+   * @param headerCount, the expected number of headers.
+   * @return boolean, true if the expected number matches the accumulated count.
+   */
+  boolean validateCount(long headerCount) {
+    return this.headerCount == headerCount;
   }
 }

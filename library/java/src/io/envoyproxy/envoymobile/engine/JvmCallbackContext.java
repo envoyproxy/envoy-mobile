@@ -10,12 +10,12 @@ import java.util.Map;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 class JvmCallbackContext {
-  private final EnvoyHTTPCallbacks callbacks;
   private final JvmBridgeUtility bridgeUtility;
+  private final EnvoyHTTPCallbacks callbacks;
 
   public JvmCallbackContext(EnvoyHTTPCallbacks callbacks) {
-    this.callbacks = callbacks;
     bridgeUtility = new JvmBridgeUtility();
+    this.callbacks = callbacks;
   }
 
   /**
@@ -25,17 +25,15 @@ class JvmCallbackContext {
    * @param length,    the total number of headers included in this header block.
    * @param endStream, whether this header block is the final remote frame.
    */
-  public void onHeaders(long length, boolean endStream) {
+  public void onHeaders(long headerCount, boolean endStream) {
+    assert bridgeUtility.validateCount(headerCount);
     final Map headers = bridgeUtility.retrieveHeaders();
-    // TODO(goaway): validate length
 
-    Runnable runnable = new Runnable() {
+    callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         callbacks.onHeaders(headers, endStream);
       }
-    };
-
-    callbacks.getExecutor().execute(runnable);
+    });
   }
 
   /**
@@ -44,30 +42,15 @@ class JvmCallbackContext {
    *
    * @param length, the total number of trailers included in this header block.
    */
-  public void onTrailers(long length) {
-    final Map headers = bridgeUtility.retrieveHeaders();
-    // TODO(goaway): validate length
+  public void onTrailers(long trailerCount, boolean endStream) {
+    assert bridgeUtility.validateCount(trailerCount);
+    final Map trailers = bridgeUtility.retrieveHeaders();
 
-    Runnable runnable = new Runnable() {
+    callbacks.getExecutor().execute(new Runnable() {
       public void run() {
-        callbacks.onTrailers(headers);
+        callbacks.onTrailers(trailers);
       }
-    };
-
-    callbacks.getExecutor().execute(runnable);
-  }
-
-  /**
-   * Allows pairs of strings to be passed across the JVM, reducing overall calls
-   * (at the expense of some complexity).
-   *
-   * @param key,        the name of the HTTP header.
-   * @param value,      the value of the HTTP header.
-   * @param endHeaders, indicates this is the last header pair for this header
-   *                    block.
-   */
-  public void passHeader(byte[] key, byte[] value, boolean start) {
-    bridgeUtility.passHeader(key, value, start);
+    });
   }
 
   /**
@@ -111,26 +94,5 @@ class JvmCallbackContext {
         callbacks.onCancel();
       }
     });
-  }
-
-  private void startAccumulation(FrameType type, long length, boolean endStream) {
-    assert headerAccumulator == null;
-    assert pendingFrameType == FrameType.NONE;
-    assert pendingEndStream == false;
-    assert expectedHeaderLength == 0;
-    assert accumulatedHeaderLength == 0;
-
-    headerAccumulator = new HashMap((int)length);
-    pendingFrameType = type;
-    expectedHeaderLength = length;
-    pendingEndStream = endStream;
-  }
-
-  private void resetHeaderAccumulation() {
-    headerAccumulator = null;
-    pendingFrameType = FrameType.NONE;
-    pendingEndStream = false;
-    expectedHeaderLength = 0;
-    accumulatedHeaderLength = 0;
   }
 }
