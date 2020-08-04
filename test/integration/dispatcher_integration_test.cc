@@ -129,7 +129,7 @@ TEST_P(DispatcherIntegrationTest, Basic) {
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void* {
-    ASSERT_FALSE(end_stream);
+    EXPECT_FALSE(end_stream);
     Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -138,9 +138,9 @@ TEST_P(DispatcherIntegrationTest, Basic) {
   };
   bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
     if (end_stream) {
-      ASSERT_EQ(Http::Utility::convertToString(c_data), "");
+      EXPECT_EQ(Http::Utility::convertToString(c_data), "");
     } else {
-      ASSERT_EQ(c_data.length, 10);
+      EXPECT_EQ(c_data.length, 10);
     }
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_data_calls++;
@@ -209,7 +209,7 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void* {
-    ASSERT_TRUE(end_stream);
+    EXPECT_TRUE(end_stream);
     Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "503");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -309,7 +309,7 @@ TEST_P(DispatcherIntegrationTest, RaceDoesNotCauseDoubleDeletion) {
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
                                    void* context) -> void* {
-    ASSERT_FALSE(end_stream);
+    EXPECT_FALSE(end_stream);
     Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -318,9 +318,9 @@ TEST_P(DispatcherIntegrationTest, RaceDoesNotCauseDoubleDeletion) {
   };
   bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
     if (end_stream) {
-      ASSERT_EQ(Http::Utility::convertToString(c_data), "");
+      EXPECT_EQ(Http::Utility::convertToString(c_data), "");
     } else {
-      ASSERT_EQ(c_data.length, 10);
+      EXPECT_EQ(c_data.length, 10);
     }
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_data_calls++;
