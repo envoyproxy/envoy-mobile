@@ -118,7 +118,7 @@ match_config:
       - string_match: match_me
 )EOF");
 
-  Buffer::InstancePtr body{new Buffer::OwnedImpl("dont_match_ma")};
+  Buffer::InstancePtr body{new Buffer::OwnedImpl("garbage")};
 
   EXPECT_CALL(decoder_callbacks_,
               sendLocalReply(Http::Code::BadRequest,

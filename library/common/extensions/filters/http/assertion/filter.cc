@@ -26,50 +26,52 @@ AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config
 Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers,
                                                          bool end_stream) {
   config_->rootMatcher().onHttpRequestHeaders(headers, statuses_);
-  if (config_->rootMatcher().matchStatus(statuses_).matches_) {
-    if (end_stream) {
-      decoder_callbacks_->sendLocalReply(Http::Code::OK,
-                                         "Request Headers match configured expectations", nullptr,
-                                         absl::nullopt, "");
-      return Http::FilterHeadersStatus::StopIteration;
-    }
-    return Http::FilterHeadersStatus::Continue;
+  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       "Request Headers do not match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterHeadersStatus::StopIteration;
   }
 
-  decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
-                                     "Request Headers do not match configured expectations",
-                                     nullptr, absl::nullopt, "");
-  return Http::FilterHeadersStatus::StopIteration;
+  if (end_stream) {
+    decoder_callbacks_->sendLocalReply(Http::Code::OK,
+                                       "Request Headers match configured expectations", nullptr,
+                                       absl::nullopt, "");
+    return Http::FilterHeadersStatus::StopIteration;
+  }
+
+  return Http::FilterHeadersStatus::Continue;
 }
 
 Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool end_stream) {
   config_->rootMatcher().onRequestBody(data, statuses_);
-  if (config_->rootMatcher().matchStatus(statuses_).matches_) {
-    if (end_stream) {
-      decoder_callbacks_->sendLocalReply(
-          Http::Code::OK, "Request Body match configured expectations", nullptr, absl::nullopt, "");
-      return Http::FilterDataStatus::StopIterationNoBuffer;
-    }
-    return Http::FilterDataStatus::Continue;
+  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       "Request Body does not match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterDataStatus::StopIterationNoBuffer;
   }
 
-  decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
-                                     "Request Body does not match configured expectations", nullptr,
-                                     absl::nullopt, "");
-  return Http::FilterDataStatus::StopIterationNoBuffer;
+  if (end_stream) {
+    decoder_callbacks_->sendLocalReply(Http::Code::OK, "Request Body match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterDataStatus::StopIterationNoBuffer;
+  }
+
+  return Http::FilterDataStatus::Continue;
 }
 
 Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
   config_->rootMatcher().onHttpRequestTrailers(trailers, statuses_);
-  if (config_->rootMatcher().matchStatus(statuses_).matches_) {
-    decoder_callbacks_->sendLocalReply(Http::Code::OK,
-                                       "Request Trailers match configured expectations", nullptr,
-                                       absl::nullopt, "");
-  } else {
+  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                        "Request Trailers do not match configured expectations",
                                        nullptr, absl::nullopt, "");
+    return Http::FilterTrailersStatus::StopIteration;
   }
+
+  decoder_callbacks_->sendLocalReply(
+      Http::Code::OK, "Request Trailers match configured expectations", nullptr, absl::nullopt, "");
   return Http::FilterTrailersStatus::StopIteration;
 }
 
