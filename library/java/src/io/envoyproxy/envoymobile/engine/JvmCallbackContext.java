@@ -34,7 +34,7 @@ class JvmCallbackContext {
    *
    * @param length,    the total number of headers included in this header block.
    * @param endStream, whether this header block is the final remote frame.
-   * @return Object,     not used for response callbacks.
+   * @return Object,   not used for response callbacks.
    */
   public Object onHeaders(long headerCount, boolean endStream) {
     assert bridgeUtility.validateCount(headerCount);
@@ -51,7 +51,7 @@ class JvmCallbackContext {
    * Invokes onTrailers callback using trailers passed via passHeaders.
    *
    * @param length, the total number of trailers included in this header block.
-   * @return Object,  not used for response callbacks.
+   * @return Object,not used for response callbacks.
    */
   public Object onTrailers(long trailerCount, boolean endStream) {
     assert bridgeUtility.validateCount(trailerCount);
@@ -69,7 +69,7 @@ class JvmCallbackContext {
    *
    * @param data,      chunk of body data from the HTTP response.
    * @param endStream, indicates this is the last remote frame of the stream.
-   * @return Object,     not used for response callbacks.
+   * @return Object,   not used for response callbacks.
    */
   public Object onData(byte[] data, boolean endStream) {
     callbacks.getExecutor().execute(new Runnable() {
@@ -88,7 +88,7 @@ class JvmCallbackContext {
    * @param errorCode,    the error code.
    * @param message,      the error message.
    * @param attemptCount, the number of times an operation was attempted before firing this error.
-   * @return Object,        not used for response callbacks.
+   * @return Object,      not used for response callbacks.
    */
   public Object onError(int errorCode, byte[] message, int attemptCount) {
     callbacks.getExecutor().execute(new Runnable() {

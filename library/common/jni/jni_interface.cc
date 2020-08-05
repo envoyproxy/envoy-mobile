@@ -91,7 +91,7 @@ static void pass_headers(JNIEnv* env, envoy_headers headers, jobject j_context) 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
   jmethodID jmid_passHeader = env->GetMethodID(jcls_JvmCallbackContext, "passHeader", "([B[BZ)V");
   env->PushLocalFrame(headers.length * 2);
-  jboolean start_headers  = JNI_TRUE;
+  jboolean start_headers = JNI_TRUE;
 
   for (envoy_header_size_t i = 0; i < headers.length; i++) {
     // Note this is just an initial implementation, and we will pass a more optimized structure in
@@ -152,7 +152,8 @@ static void* jvm_on_headers(envoy_headers headers, bool end_stream, void* contex
   pass_headers(env, headers, j_context);
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onHeaders = env->GetMethodID(jcls_JvmCallbackContext, "onHeaders", "(JZ)Ljava/lang/Object;");
+  jmethodID jmid_onHeaders =
+      env->GetMethodID(jcls_JvmCallbackContext, "onHeaders", "(JZ)Ljava/lang/Object;");
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
   jobject result = env->CallObjectMethod(j_context, jmid_onHeaders, (jlong)headers.length,
@@ -168,7 +169,8 @@ static void* jvm_on_data(envoy_data data, bool end_stream, void* context) {
   jobject j_context = static_cast<jobject>(context);
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onData = env->GetMethodID(jcls_JvmCallbackContext, "onData", "([BZ)Ljava/lang/Object;");
+  jmethodID jmid_onData =
+      env->GetMethodID(jcls_JvmCallbackContext, "onData", "([BZ)Ljava/lang/Object;");
 
   jbyteArray j_data = env->NewByteArray(data.length);
   // TODO: check if copied via isCopy.
@@ -202,7 +204,8 @@ static void* jvm_on_trailers(envoy_headers trailers, void* context) {
   pass_headers(env, trailers, j_context);
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onTrailers = env->GetMethodID(jcls_JvmCallbackContext, "onTrailers", "(J)Ljava/lang/Object;");
+  jmethodID jmid_onTrailers =
+      env->GetMethodID(jcls_JvmCallbackContext, "onTrailers", "(J)Ljava/lang/Object;");
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
   jobject result = env->CallObjectMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
@@ -217,7 +220,8 @@ static void* jvm_on_error(envoy_error error, void* context) {
   jobject j_context = static_cast<jobject>(context);
 
   jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onError = env->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI)Ljava/lang/Object;");
+  jmethodID jmid_onError =
+      env->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI)Ljava/lang/Object;");
 
   jbyteArray j_error_message = env->NewByteArray(error.message.length);
   // TODO: check if copied via isCopy.
@@ -252,7 +256,8 @@ static void* jvm_on_cancel(void* context) {
   jobject j_context = static_cast<jobject>(context);
 
   jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onCancel = env->GetMethodID(jcls_JvmObserverContext, "onCancel", "()Ljava/lang/Object;");
+  jmethodID jmid_onCancel =
+      env->GetMethodID(jcls_JvmObserverContext, "onCancel", "()Ljava/lang/Object;");
   jobject result = env->CallObjectMethod(j_context, jmid_onCancel);
 
   // No further callbacks happen on this context. Delete the reference held by native code.
