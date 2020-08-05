@@ -59,7 +59,7 @@ class JvmBridgeUtility {
    * @return Map, a map of header names to one or more values.
    */
   Map<String, List<String>> retrieveHeaders() {
-    Map headers = headerAccumulator;
+    final Map<String, List<String>> headers = headerAccumulator;
     headerAccumulator = null;
     headerCount = 0;
     return headers;
