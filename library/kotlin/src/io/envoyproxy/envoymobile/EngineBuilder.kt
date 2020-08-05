@@ -111,7 +111,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addFilter(filterName: String, factory: () -> Filter): StreamClientBuilder {
+  fun addFilter(filterName: String, factory: () -> Filter): EngineBuilder {
     this.filterChain.add(FilterFactory(filterName, factory))
     return this
   }
