@@ -13,7 +13,5 @@ class JvmFilterFactoryContext {
     this.filterFactory = filterFactory;
   }
 
-  JvmFilterContext create() {
-    return new JvmFilterContext(filterFactory.create());
-  }
+  JvmFilterContext create() { return new JvmFilterContext(filterFactory.create()); }
 }

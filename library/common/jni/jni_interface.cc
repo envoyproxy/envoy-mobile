@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "library/common/main_interface.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/main_interface.h"
 
 static JavaVM* static_jvm = nullptr;
 static JNIEnv* static_env = nullptr;
@@ -154,7 +154,8 @@ static JNIEnv* get_env() {
   return env;
 }
 
-static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_stream, void* context) {
+static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_stream,
+                            void* context) {
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   pass_headers(env, headers, j_context);
@@ -175,14 +176,18 @@ static void* jvm_on_response_headers(envoy_headers headers, bool end_stream, voi
   return jvm_on_headers("onResponseHeaders", headers, end_stream, context);
 }
 
-static envoy_filter_headers_status jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const void* context) {
-  jobject result = static_cast<jobject>(jvm_on_headers("onRequestHeaders", headers, end_stream, const_cast<void*>(context)));
+static envoy_filter_headers_status
+jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const void* context) {
+  jobject result = static_cast<jobject>(
+      jvm_on_headers("onRequestHeaders", headers, end_stream, const_cast<void*>(context)));
   return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
                                        /*headers*/ headers};
 }
 
-static envoy_filter_headers_status jvm_http_filter_on_response_headers(envoy_headers headers, bool end_stream, const void* context) {
-  jobject result = static_cast<jobject>(jvm_on_headers("onResponseHeaders", headers, end_stream, const_cast<void*>(context)));
+static envoy_filter_headers_status
+jvm_http_filter_on_response_headers(envoy_headers headers, bool end_stream, const void* context) {
+  jobject result = static_cast<jobject>(
+      jvm_on_headers("onResponseHeaders", headers, end_stream, const_cast<void*>(context)));
   return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
                                        /*headers*/ headers};
 }
@@ -218,14 +223,18 @@ static void* jvm_on_response_data(envoy_data data, bool end_stream, void* contex
   return jvm_on_data("onResponseData", data, end_stream, context);
 }
 
-static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data, bool end_stream, const void* context) {
-  jobject result = static_cast<jobject>(jvm_on_data("onRequestData", data, end_stream, const_cast<void*>(context)));
+static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data, bool end_stream,
+                                                                const void* context) {
+  jobject result = static_cast<jobject>(
+      jvm_on_data("onRequestData", data, end_stream, const_cast<void*>(context)));
   return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
                                     /*data*/ data};
 }
 
-static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data, bool end_stream, const void* context) {
-  jobject result = static_cast<jobject>(jvm_on_data("onResponseData", data, end_stream, const_cast<void*>(context)));
+static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data, bool end_stream,
+                                                                 const void* context) {
+  jobject result = static_cast<jobject>(
+      jvm_on_data("onResponseData", data, end_stream, const_cast<void*>(context)));
   return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
                                     /*data*/ data};
 }
@@ -258,14 +267,18 @@ static void* jvm_on_response_trailers(envoy_headers trailers, void* context) {
   return jvm_on_trailers("onResponseTrailers", trailers, context);
 }
 
-static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_headers trailers, const void* context) {
-  jobject result = static_cast<jobject>(jvm_on_trailers("onRequestTrailers", trailers, const_cast<void*>(context)));
+static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_headers trailers,
+                                                                        const void* context) {
+  jobject result = static_cast<jobject>(
+      jvm_on_trailers("onRequestTrailers", trailers, const_cast<void*>(context)));
   return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
                                         /*trailers*/ trailers};
 }
 
-static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_headers trailers, const void* context) {
-  jobject result = static_cast<jobject>(jvm_on_trailers("onResponseTrailers", trailers, const_cast<void*>(context)));
+static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_headers trailers,
+                                                                         const void* context) {
+  jobject result = static_cast<jobject>(
+      jvm_on_trailers("onResponseTrailers", trailers, const_cast<void*>(context)));
   return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
                                         /*trailers*/ trailers};
 }
@@ -330,8 +343,8 @@ static const void* jvm_http_filter_init(const void* context) {
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
 
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
-  jmethodID jmid_create =
-      env->GetMethodID(jcls_JvmFilterFactoryContext, "create", "()Lio/envoyproxy/envoymobile/engine/JvmFilterContext;");
+  jmethodID jmid_create = env->GetMethodID(jcls_JvmFilterFactoryContext, "create",
+                                           "()Lio/envoyproxy/envoymobile/engine/JvmFilterContext;");
 
   jobject j_filter = env->CallObjectMethod(j_context, jmid_create);
   jobject retained_filter = env->NewGlobalRef(j_filter);
@@ -417,9 +430,14 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 
   // TODO: To be truly safe we may need stronger guarantees of operation ordering on this ref.
   jobject retained_context = env->NewGlobalRef(j_context);
-  envoy_http_callbacks native_callbacks = {jvm_on_response_headers, jvm_on_response_data, jvm_on_metadata,
-                                           jvm_on_response_trailers, jvm_on_error, jvm_on_complete,
-                                           jvm_on_cancel, retained_context};
+  envoy_http_callbacks native_callbacks = {jvm_on_response_headers,
+                                           jvm_on_response_data,
+                                           jvm_on_metadata,
+                                           jvm_on_response_trailers,
+                                           jvm_on_error,
+                                           jvm_on_complete,
+                                           jvm_on_cancel,
+                                           retained_context};
   envoy_status_t result =
       start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks);
   if (result != ENVOY_SUCCESS) {
@@ -431,14 +449,16 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 
 // EnvoyHTTPFilter
 
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(
-    JNIEnv* env, jclass, jstring filter_name, jobject j_context) {
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* env, jclass,
+                                                                       jstring filter_name,
+                                                                       jobject j_context) {
 
   // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
   jobject retained_context = env->NewGlobalRef(j_context);
-  envoy_http_filter *api = (envoy_http_filter*)safe_malloc(sizeof(envoy_http_filter));
+  envoy_http_filter* api = (envoy_http_filter*)safe_malloc(sizeof(envoy_http_filter));
   api->init_filter = jvm_http_filter_init;
   api->on_request_headers = jvm_http_filter_on_request_headers;
   api->on_request_data = jvm_http_filter_on_request_data;
