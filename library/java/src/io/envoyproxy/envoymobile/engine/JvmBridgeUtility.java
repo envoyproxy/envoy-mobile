@@ -31,7 +31,7 @@ class JvmBridgeUtility {
     if (start) {
       assert headerAccumulator == null;
       assert headerCount == 0;
-      headerAccumulator = new HashMap();
+      headerAccumulator = new HashMap<>();
     }
 
     String headerKey;
