@@ -26,3 +26,4 @@ jobs:
           export CC=clang
           export CXX=clang++
           ./envoy/test/run_envoy_bazel_coverage.sh //test/...
+          cat bazel-out/k8-fastbuild/testlogs/test/common/envoy_mobile_main_common_test/test.log
