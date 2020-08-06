@@ -26,7 +26,7 @@ extension MockEnvoyEngine: EnvoyEngine {
     return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
   }
 
-  func recordCounter(_ elements: String, count: UInt) -> Void {
+  func recordCounter(_ elements: String, count: UInt) {
     MockEnvoyEngine.onRecordCounter?(elements, count)
   }
 }

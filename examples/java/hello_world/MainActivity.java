@@ -76,7 +76,8 @@ public class MainActivity extends Activity {
     RequestHeaders requestHeaders = new RequestHeadersBuilder(RequestMethod.GET, REQUEST_SCHEME,
                                                               REQUEST_AUTHORITY, REQUEST_PATH)
                                         .build();
-    engine.getStreamClient().newStreamPrototype()
+    engine.getStreamClient()
+        .newStreamPrototype()
         .setOnResponseHeaders((responseHeaders, endStream) -> {
           Integer status = responseHeaders.getHttpStatus();
           String message = "received headers with status " + status;
