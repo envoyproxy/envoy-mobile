@@ -7,8 +7,10 @@ import java.lang.ref.WeakReference
  * Envoy implementation of `StatsClient`.
  */
 internal class StatsClientImpl constructor(
-        internal val engine: EnvoyEngine
+  internal val engine: EnvoyEngine
 ) : StatsClient {
 
-    override fun getCounter(vararg elements: Element): Counter = Counter(WeakReference(engine), elements.asList())
+  override fun getCounter(vararg elements: Element): Counter {
+    return Counter(WeakReference(engine), elements.asList())
+  }
 }

@@ -63,9 +63,9 @@ envoy_mobile_kt_test(
 )
 
 envoy_mobile_kt_test(
-    name = "stream_client_builder_test",
+    name = "engine_builder_test",
     srcs = [
-        "StreamClientBuilderTest.kt",
+        "EngineBuilderTest.kt",
     ],
     deps = [
         "//library/kotlin/src/io/envoyproxy/envoymobile:envoy_interfaces_lib",

@@ -7,42 +7,42 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
  * An implementation of {@link Engine}.
  */
 class EngineImpl internal constructor(
-        engine: EnvoyEngine,
-        envoyConfiguration: EnvoyConfiguration?,
-        configurationYAML: String?,
-        logLevel: LogLevel
+  internal val envoyEngine: EnvoyEngine,
+  internal val envoyConfiguration: EnvoyConfiguration?,
+  internal val configurationYAML: String?,
+  internal val logLevel: LogLevel
 ) : Engine {
 
-    private val streamClient: StreamClient
-    private val statsClient: StatsClient
+  private val streamClient: StreamClient
+  private val statsClient: StatsClient
 
-    constructor(
-            engine: EnvoyEngine,
-            envoyConfiguration: EnvoyConfiguration,
-            logLevel: LogLevel = LogLevel.INFO
-    ) : this(engine, envoyConfiguration, null, logLevel)
+  constructor(
+    envoyEngine: EnvoyEngine,
+    envoyConfiguration: EnvoyConfiguration,
+    logLevel: LogLevel = LogLevel.INFO
+  ) : this(envoyEngine, envoyConfiguration, null, logLevel)
 
-    constructor(
-            engine: EnvoyEngine,
-            configurationYAML: String,
-            logLevel: LogLevel = LogLevel.INFO
-    ) : this(engine, null, configurationYAML, logLevel)
+  constructor(
+    envoyEngine: EnvoyEngine,
+    configurationYAML: String,
+    logLevel: LogLevel = LogLevel.INFO
+  ) : this(envoyEngine, null, configurationYAML, logLevel)
 
-    init {
-        streamClient = StreamClientImpl(engine)
-        statsClient = StatsClientImpl(engine)
-        if (envoyConfiguration == null) {
-            engine.runWithConfig(configurationYAML, logLevel.level)
-        } else {
-            engine.runWithConfig(envoyConfiguration, logLevel.level)
-        }
+  init {
+    streamClient = StreamClientImpl(envoyEngine)
+    statsClient = StatsClientImpl(envoyEngine)
+    if (envoyConfiguration == null) {
+      envoyEngine.runWithConfig(configurationYAML, logLevel.level)
+    } else {
+      envoyEngine.runWithConfig(envoyConfiguration, logLevel.level)
     }
+  }
 
-    override fun getStreamClient(): StreamClient {
-        return streamClient
-    }
+  override fun getStreamClient(): StreamClient {
+    return streamClient
+  }
 
-    override fun getStatsClient(): StatsClient {
-        return statsClient
-    }
+  override fun getStatsClient(): StatsClient {
+    return statsClient
+  }
 }

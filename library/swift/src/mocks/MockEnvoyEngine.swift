@@ -27,6 +27,6 @@ extension MockEnvoyEngine: EnvoyEngine {
   }
 
   func recordCounter(_ elements: String, count: UInt) -> Void {
-    MockEnvoyEngine.onRecordCounter?(elements, count) 
+    MockEnvoyEngine.onRecordCounter?(elements, count)
   }
 }

@@ -5,8 +5,8 @@ package io.envoyproxy.envoymobile
  */
 interface StatsClient {
 
-    /**
-     * @return A counter based on the joined elements.
-     */
-    fun getCounter(vararg elements: Element): Counter
+  /**
+   * @return A counter based on the joined elements.
+   */
+  fun getCounter(vararg elements: Element): Counter
 }
