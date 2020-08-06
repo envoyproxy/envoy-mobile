@@ -34,8 +34,8 @@
 
 - (nullable NSString *)resolveTemplate:(NSString *)templateYAML {
   NSString *filterConfigChain = [[NSString alloc] init];
+  NSString *filterTemplate = [[NSString alloc] initWithUTF8String:platform_filter_template];
   for (EnvoyHTTPFilterFactory *filterFactory in self.httpFilterFactories) {
-    NSString *filterTemplate = [[NSString alloc] initWithUTF8String:platform_filter_template];
     NSString *filterConfig =
         [filterTemplate stringByReplacingOccurrencesOfString:@"{{ platform_filter_name }}"
                                                   withString:filterFactory.filterName];
