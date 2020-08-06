@@ -37,8 +37,8 @@
   for (EnvoyHTTPFilterFactory *filterFactory in self.httpFilterFactories) {
     NSString *filterTemplate = [[NSString alloc] initWithUTF8String:platform_filter_template];
     NSString *filterConfig =
-      [filterTemplate stringByReplacingOccurrencesOfString:@"{{ platform_filter_name }}"
-                                                withString:filterFactory.filterName];
+        [filterTemplate stringByReplacingOccurrencesOfString:@"{{ platform_filter_name }}"
+                                                  withString:filterFactory.filterName];
     filterConfigChain = [filterConfigChain stringByAppendingString:filterConfig];
   }
 
