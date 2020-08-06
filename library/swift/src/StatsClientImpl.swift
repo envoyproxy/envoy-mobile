@@ -13,7 +13,7 @@ final class StatsClientImpl: NSObject {
 }
 
 extension StatsClientImpl: StatsClient {
-  func getCounter(elements: [String]) -> Counter {
+  func getCounter(elements: [Element]) -> Counter {
     return Counter(elements: elements, engine: self.engine)
   }
 }

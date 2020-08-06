@@ -1,13 +1,13 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-@objcMembers
+@objc
 public class Counter: NSObject {
-  private let elements: [String]
+  private let series: String
   private weak var engine: EnvoyEngine?
 
-  internal init(elements: [String], engine: EnvoyEngine) {
-    self.elements = elements
+  internal init(elements: [Element], engine: EnvoyEngine) {
+    self.series = elements.map{ $0.description }.joined(separator: ".")
     self.engine = engine
     super.init()
   }
@@ -17,6 +17,6 @@ public class Counter: NSObject {
       return
     }
 
-    engine.recordCounter(self.elements.joined(separator: "."), count: numericCast(count))
+    engine.recordCounter(self.series, count: numericCast(count))
   }
 }

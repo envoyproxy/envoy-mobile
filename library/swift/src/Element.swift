@@ -1,24 +1,19 @@
 import Foundation
 
+fileprivate let pattern = "^[A-Za-z_]+$"
+
 /// Element represents one dot-delimited component of a timeseries name.
-public class Element: ExpressibleByStringLiteral {
-  private static let pattern = "^[A-Za-z_]+$"
+@objc
+public final class Element: NSObject, ExpressibleByStringLiteral {
   private let value: String
 
-  init?(string value: String) {
+  public init(stringLiteral value: String) {
     guard value.range(of: pattern, options: .regularExpression) != nil else {
-      return nil
+      preconditionFailure("Element values must conform to the regex /^[A-Za-z_]+$/.")
     }
     self.value = value
   }
-}
 
-extension Element: ExpressibleByStringLiteral {
-  convenience init(stringLiteral value: String) {
-    self.init(string: value)! // Element values must conform to the regex /^[A-Za-z_]+$/.
-  }
-}
-
-extension Element: CustomStringConveritble {
-  public var description: String { return value }
+  // CustomStringConvertible
+  override public var description: String { return value }
 }

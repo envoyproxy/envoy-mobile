@@ -6,6 +6,7 @@ swift_static_framework(
     name = "ios_framework",
     srcs = glob([
         "Counter.swift",
+        "Element.swift",
         "Engine.swift",
         "EngineBuilder.swift",
         "EngineImpl.swift",
