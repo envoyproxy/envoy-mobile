@@ -2,7 +2,6 @@
 import Foundation
 
 /// Envoy implementation of StatsClient.
-@objcMembers
 final class StatsClientImpl: NSObject {
   private let engine: EnvoyEngine
 
@@ -13,7 +12,7 @@ final class StatsClientImpl: NSObject {
 }
 
 extension StatsClientImpl: StatsClient {
-  func getCounter(elements: [Element]) -> Counter {
+  func counter(elements: [Element]) -> Counter {
     return Counter(elements: elements, engine: self.engine)
   }
 }

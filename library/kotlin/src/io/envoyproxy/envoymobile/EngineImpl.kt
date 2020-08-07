@@ -38,11 +38,11 @@ class EngineImpl internal constructor(
     }
   }
 
-  override fun getStreamClient(): StreamClient {
+  override fun streamClient(): StreamClient {
     return streamClient
   }
 
-  override fun getStatsClient(): StatsClient {
+  override fun statsClient(): StatsClient {
     return statsClient
   }
 }

@@ -8,5 +8,5 @@ interface StatsClient {
   /**
    * @return A counter based on the joined elements.
    */
-  fun getCounter(vararg elements: Element): Counter
+  fun counter(vararg elements: Element): Counter
 }

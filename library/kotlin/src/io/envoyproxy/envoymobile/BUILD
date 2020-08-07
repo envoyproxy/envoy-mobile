@@ -36,8 +36,6 @@ kt_android_library(
 envoy_mobile_kt_library(
     name = "envoy_interfaces_lib",
     srcs = glob([
-        "Counter.kt",
-        "Element.kt",
         "Engine.kt",
         "EngineBuilder.kt",
         "EngineImpl.kt",
@@ -67,6 +65,7 @@ envoy_mobile_kt_library(
         "filters/*.kt",
         "grpc/*.kt",
         "mocks/*.kt",
+        "stat/*.kt",
     ]),
     visibility = ["//visibility:public"],
     deps = [

@@ -5,8 +5,8 @@ import Foundation
 @objcMembers
 final class EngineImpl: NSObject {
   private let engine: EnvoyEngine
-  private let statsClient: StatsClient
-  private let streamClient: StreamClient
+  private let sttsClient: StatsClient
+  private let strmClient: StreamClient
 
   private enum ConfigurationType {
     case yaml(String)
@@ -15,8 +15,8 @@ final class EngineImpl: NSObject {
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine) {
     self.engine = engine
-    self.statsClient = StatsClientImpl(engine: engine)
-    self.streamClient = StreamClientImpl(engine: engine)
+    self.sttsClient = StatsClientImpl(engine: engine)
+    self.strmClient = StreamClientImpl(engine: engine)
     super.init()
 
     switch configType {
@@ -47,11 +47,11 @@ final class EngineImpl: NSObject {
 }
 
 extension EngineImpl: Engine {
-  func getStatsClient() -> StatsClient {
-    return self.statsClient
+  func statsClient() -> StatsClient {
+    return self.sttsClient
   }
 
-  func getStreamClient() -> StreamClient {
-    return self.streamClient
+  func streamClient() -> StreamClient {
+    return self.strmClient
   }
 }

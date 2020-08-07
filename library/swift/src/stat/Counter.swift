@@ -1,6 +1,7 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
+/// A counter, and it can increment
 @objc
 public class Counter: NSObject {
   private let series: String
@@ -12,7 +13,7 @@ public class Counter: NSObject {
     super.init()
   }
 
-  func increment(count: Int) {
+  func increment(count: Int = 1) {
     guard let engine = self.engine else {
       return
     }

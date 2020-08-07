@@ -8,10 +8,10 @@ interface Engine {
   /**
    *  @return a {@link StreamClient} instance
    */
-  fun getStreamClient(): StreamClient
+  fun streamClient(): StreamClient
 
   /**
    *  @return a {@link StatsClient} instance
    */
-  fun getStatsClient(): StatsClient
+  fun statsClient(): StatsClient
 }

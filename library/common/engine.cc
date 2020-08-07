@@ -96,7 +96,7 @@ Engine::~Engine() {
 void Engine::recordCounter(std::string elements, uint64_t count) {
   if (server_) {
     server_->dispatcher().post([this, elements, count]() -> void {
-      std::string client = "client";
+      static const std::string client = "client";
       absl::string_view prefix{client};
       absl::string_view dynamic_elements{elements};
       Stats::Utility::counterFromElements(server_->serverFactoryContext().scope(),

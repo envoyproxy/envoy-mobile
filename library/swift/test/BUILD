@@ -52,9 +52,9 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
-    name = "stream_client_builder_tests",
+    name = "engine_builder_tests",
     srcs = [
-        "StreamClientBuilderTests.swift",
+        "EngineBuilderTests.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",

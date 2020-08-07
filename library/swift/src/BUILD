@@ -5,8 +5,6 @@ licenses(["notice"])  # Apache 2
 swift_static_framework(
     name = "ios_framework",
     srcs = glob([
-        "Counter.swift",
-        "Element.swift",
         "Engine.swift",
         "EngineBuilder.swift",
         "EngineImpl.swift",
@@ -36,6 +34,7 @@ swift_static_framework(
         "filters/*.swift",
         "grpc/*.swift",
         "mocks/*.swift",
+        "stat/*.swift",
     ]),
     module_name = "Envoy",
     private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
