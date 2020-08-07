@@ -13,7 +13,7 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-18.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v1
         with:
@@ -26,3 +26,7 @@ jobs:
           export CC=clang
           export CXX=clang++
           ./envoy/test/run_envoy_bazel_coverage.sh //test/...
+      - name: 'Failed on test'
+        if: ${{ failure() }}
+        run: |
+          cat bazel-out/k8-fastbuild/testlogs/test/common/envoy_mobile_main_common_test/test.log
