@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
+import java.util.UUID
 
 sealed class BaseConfiguration
 
@@ -106,7 +107,6 @@ open class EngineBuilder(
   /**
    * Add an HTTP filter factory used to create filters for streams sent by this client.
    *
-   * @param filterName: unique name identifying this filter in the chain.
    * @param factory closure returning an instantiated filter.
    *
    * @return this builder.
