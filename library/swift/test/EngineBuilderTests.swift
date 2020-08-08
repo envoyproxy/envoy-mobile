@@ -20,13 +20,9 @@ mock_template:
   virtual_clusters: {{ virtual_clusters }}
 """
 
-<<<<<<< HEAD:library/swift/test/EngineBuilderTests.swift
-final class EngineBuilderTests: XCTestCase {
-=======
 private struct TestFilter: Filter {}
 
-final class StreamClientBuilderTests: XCTestCase {
->>>>>>> main:library/swift/test/StreamClientBuilderTests.swift
+final class EngineBuilderTests: XCTestCase {
   override func tearDown() {
     super.tearDown()
     MockEnvoyEngine.onRunWithConfig = nil
@@ -109,7 +105,7 @@ final class StreamClientBuilderTests: XCTestCase {
       expectation.fulfill()
     }
 
-    _ = try StreamClientBuilder()
+    _ = try EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addFilter(factory: TestFilter.init)
       .build()
