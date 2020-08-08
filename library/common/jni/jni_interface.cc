@@ -55,6 +55,14 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
   return result;
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_filterTemplateString(JNIEnv* env,
+                                                                      jclass // class
+) {
+  jstring result = env->NewStringUTF(platform_filter_template);
+  return result;
+}
+
 // AndroidJniLibrary
 
 extern "C" JNIEXPORT jint JNICALL
