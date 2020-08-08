@@ -83,7 +83,7 @@ class MainActivity : Activity() {
       .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
     engine
-      .getStreamClient()
+      .streamClient()
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, _ ->
         val status = responseHeaders.httpStatus ?: 0L

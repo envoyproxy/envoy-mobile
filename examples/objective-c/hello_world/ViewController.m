@@ -41,7 +41,7 @@ NSString *_REQUEST_SCHEME = @"https";
     NSLog(@"starting Envoy failed: %@", error);
   } else {
     NSLog(@"started Envoy, beginning requests...");
-    self.client = [engine getStreamClient];
+    self.client = [engine streamClient];
     [self startRequests];
   }
 }
