@@ -13,6 +13,7 @@ import io.envoyproxy.envoymobile.Engine
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
+import io.envoyproxy.envoymobile.helloenvoykotlin.DemoFilter
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
@@ -37,6 +38,8 @@ class MainActivity : Activity() {
     setContentView(R.layout.activity_main)
 
     engine = AndroidEngineBuilder(application).build()
+      .addFilter({ DemoFilter() })
+      .build()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView
     recyclerView.layoutManager = LinearLayoutManager(this)

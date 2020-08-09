@@ -110,6 +110,15 @@ class JniLibrary {
    */
   protected static native int resetStream(long stream);
 
+  /**
+   * Register a factory for creating platform filter instances for each HTTP stream.
+   *
+   * @param filterName, unique name identifying this filter in the chain.
+   * @param context,    context containing logic necessary to invoke a new filter instance.
+   * @return int, the resulting status of the operation.
+   */
+  protected static native int registerFilterFactory(String filterName, JvmFilterFactoryContext context);
+
   // Native entry point
 
   /**
