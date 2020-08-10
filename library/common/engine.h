@@ -48,12 +48,12 @@ private:
   envoy_engine_callbacks callbacks_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
-  std::thread main_thread_;
   std::unique_ptr<Http::Dispatcher> http_dispatcher_;
   std::unique_ptr<MobileMainCommon> main_common_ GUARDED_BY(mutex_);
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
   Event::Dispatcher* event_dispatcher_;
+  std::thread main_thread_;
 };
 
 } // namespace Envoy
