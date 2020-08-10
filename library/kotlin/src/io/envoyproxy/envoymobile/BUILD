@@ -65,7 +65,7 @@ envoy_mobile_kt_library(
         "filters/*.kt",
         "grpc/*.kt",
         "mocks/*.kt",
-        "stat/*.kt",
+        "stats/*.kt",
     ]),
     visibility = ["//visibility:public"],
     deps = [
