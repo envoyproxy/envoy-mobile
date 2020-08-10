@@ -3,10 +3,10 @@ import Foundation
 
 /// Envoy Mobile Engine implementation.
 @objcMembers
-final class EngineImpl: NSObject {
+final class EngineImpl: NSObject, Engine {
   private let engine: EnvoyEngine
-  private let sttsClient: StatsClient
-  private let strmClient: StreamClient
+  let statsClient: StatsClient
+  let streamClient: StreamClient
 
   private enum ConfigurationType {
     case yaml(String)
@@ -15,8 +15,8 @@ final class EngineImpl: NSObject {
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine) {
     self.engine = engine
-    self.sttsClient = StatsClientImpl(engine: engine)
-    self.strmClient = StreamClientImpl(engine: engine)
+    self.statsClient = StatsClientImpl(engine: engine)
+    self.streamClient = StreamClientImpl(engine: engine)
     super.init()
 
     switch configType {
@@ -43,15 +43,5 @@ final class EngineImpl: NSObject {
   /// - parameter engine:     The underlying engine to use for starting Envoy.
   convenience init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine) {
     self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine)
-  }
-}
-
-extension EngineImpl: Engine {
-  func statsClient() -> StatsClient {
-    return self.sttsClient
-  }
-
-  func streamClient() -> StreamClient {
-    return self.strmClient
   }
 }
