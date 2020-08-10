@@ -22,7 +22,7 @@ jobs:
         run: ./ci/linux_ci_setup.sh
       - name: 'Run coverage'
         run: |
-          export PATH=/usr/lib/llvm-8/bin:$PATH
+          export PATH=/usr/lib/llvm-10/bin:$PATH
           export CC=clang
           export CXX=clang++
           ./envoy/test/run_envoy_bazel_coverage.sh //test/...
