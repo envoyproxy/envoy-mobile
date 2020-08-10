@@ -6,7 +6,7 @@ private let kPattern = "^[A-Za-z_]+$"
 /// Element values must conform to the regex /^[A-Za-z_]+$/.
 @objc
 public final class Element: NSObject, ExpressibleByStringLiteral {
-  private let value: String
+  internal let value: String
 
   public init(stringLiteral value: String) {
     guard value.range(of: kPattern, options: .regularExpression) != nil else {
@@ -14,7 +14,4 @@ public final class Element: NSObject, ExpressibleByStringLiteral {
     }
     self.value = value
   }
-
-  // CustomStringConvertible
-  public override var description: String { return value }
 }

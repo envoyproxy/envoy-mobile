@@ -8,7 +8,7 @@ public class Counter: NSObject {
   private weak var engine: EnvoyEngine?
 
   internal init(elements: [Element], engine: EnvoyEngine) {
-    self.series = elements.map{ $0.description }.joined(separator: ".")
+    self.series = elements.map{ $0.value }.joined(separator: ".")
     self.engine = engine
     super.init()
   }
