@@ -3,7 +3,7 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 
 /**
- * Envoy's implementation of `StreamClient`.
+ * Envoy implementation of `StreamClient`.
  */
 internal class StreamClientImpl constructor(
   internal val engine: EnvoyEngine

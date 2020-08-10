@@ -30,10 +30,10 @@ public interface EnvoyEngine {
   int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel);
 
   /**
-   * Increment the counter with given count.
+   * Increments a counter with the given count.
    *
-   * @param elements Elements of the counter.
-   * @param count Count to increment the counter with.
+   * @param elements Elements of the counter stat.
+   * @param count Amount to add to the counter.
    */
   void recordCounter(String elements, int count);
 }

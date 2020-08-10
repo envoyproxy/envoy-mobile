@@ -7,6 +7,6 @@ public protocol Engine: AnyObject {
   /// - returns: A StreamClient for opening and managing HTTP streams
   func streamClient() -> StreamClient
 
-  /// - returns: A StatsClient for recording timeseries metrics.
+  /// - returns: A StatsClient for recording time series metrics.
   func statsClient() -> StatsClient
 }

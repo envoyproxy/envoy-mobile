@@ -3,9 +3,9 @@ package io.envoyproxy.envoymobile
 import java.util.regex.Pattern
 
 /**
- * Element for stats.
+ * Element represents one dot-delimited component of a time series name.
  *
- * Element values must conform to the regex /^[A-Za-z_]+$/
+ * Element values must conform to the regex /^[A-Za-z_]+$/.
  */
 class Element(val element: String) {
   init {

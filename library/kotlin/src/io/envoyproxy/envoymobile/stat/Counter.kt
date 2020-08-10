@@ -4,7 +4,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import java.lang.ref.WeakReference
 
 /**
- * A Counter, and it can increment.
+ * A time series counter.
  */
 class Counter internal constructor(
   private val envoyEngine: WeakReference<EnvoyEngine>,

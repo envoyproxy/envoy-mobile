@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
 /**
- * Client used to record timeseries metrics.
+ * Client used to record time series metrics.
  */
 interface StatsClient {
 

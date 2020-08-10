@@ -58,10 +58,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   /**
-   * Increment the counter with given count.
+   * Increment a counter with the given count.
    *
-   * @param elements Elements of the counter.
-   * @param count Count to increment the counter with.
+   * @param elements Elements of the counter stat.
+   * @param count Amount to add to the counter.
    */
   @Override
   public void recordCounter(String elements, int count) {

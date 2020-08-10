@@ -1,7 +1,7 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// A counter, and it can increment
+/// A time series counter.
 @objc
 public class Counter: NSObject {
   private let series: String

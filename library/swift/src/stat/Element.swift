@@ -2,7 +2,7 @@ import Foundation
 
 private let kPattern = "^[A-Za-z_]+$"
 
-/// Element represents one dot-delimited component of a timeseries name.
+/// Element represents one dot-delimited component of a time series name.
 /// Element values must conform to the regex /^[A-Za-z_]+$/.
 @objc
 public final class Element: NSObject, ExpressibleByStringLiteral {

@@ -1,17 +1,18 @@
 package io.envoyproxy.envoymobile
 
 /**
- * The engine for downstream clients to integrate Envoy Mobile
+ * Engine represents a running instance of Envoy Mobile, and provides client interfaces that run on
+ * that instance.
  */
 interface Engine {
 
   /**
-   *  @return a {@link StreamClient} instance
+   *  @return a {@link StreamClient} for opening and managing HTTP streams.
    */
   fun streamClient(): StreamClient
 
   /**
-   *  @return a {@link StatsClient} instance
+   *  @return a {@link StatsClient} for recording time series metrics.
    */
   fun statsClient(): StatsClient
 }
