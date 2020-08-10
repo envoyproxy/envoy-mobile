@@ -10,8 +10,8 @@ final class StatsClientImplTests: XCTestCase {
   }
 
   func testCounterDelegatesToEngine() throws {
-    var actualSeries: String? = nil
-    var actualCount: UInt? = nil
+    var actualSeries: String?
+    var actualCount: UInt?
     MockEnvoyEngine.onRecordCounter = { series, count in
       actualSeries = series
       actualCount = count
@@ -25,8 +25,8 @@ final class StatsClientImplTests: XCTestCase {
   }
 
   func testCounterDelegatesToEngineWithCount() throws {
-    var actualSeries: String? = nil
-    var actualCount: UInt? = nil
+    var actualSeries: String?
+    var actualCount: UInt?
     MockEnvoyEngine.onRecordCounter = { series, count in
       actualSeries = series
       actualCount = count
