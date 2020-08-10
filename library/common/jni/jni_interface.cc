@@ -164,6 +164,7 @@ static JNIEnv* get_env() {
 
 static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_stream,
                             void* context) {
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   pass_headers(env, headers, j_context);
@@ -186,18 +187,20 @@ static void* jvm_on_response_headers(envoy_headers headers, bool end_stream, voi
 
 static envoy_filter_headers_status
 jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const void* context) {
+  envoy_headers return_headers = copy_envoy_headers(headers);
   jobject result = static_cast<jobject>(
       jvm_on_headers("onRequestHeaders", headers, end_stream, const_cast<void*>(context)));
   return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
-                                       /*headers*/ headers};
+                                       /*headers*/ return_headers};
 }
 
 static envoy_filter_headers_status
 jvm_http_filter_on_response_headers(envoy_headers headers, bool end_stream, const void* context) {
+  envoy_headers return_headers = copy_envoy_headers(headers);
   jobject result = static_cast<jobject>(
       jvm_on_headers("onResponseHeaders", headers, end_stream, const_cast<void*>(context)));
   return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
-                                       /*headers*/ headers};
+                                       /*headers*/ return_headers};
 }
 
 static void* jvm_on_data(const char* method, envoy_data data, bool end_stream, void* context) {
@@ -233,18 +236,20 @@ static void* jvm_on_response_data(envoy_data data, bool end_stream, void* contex
 
 static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data, bool end_stream,
                                                                 const void* context) {
+  envoy_data return_data = copy_envoy_data(data.length, data.bytes);
   jobject result = static_cast<jobject>(
       jvm_on_data("onRequestData", data, end_stream, const_cast<void*>(context)));
   return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
-                                    /*data*/ data};
+                                    /*data*/ return_data};
 }
 
 static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data, bool end_stream,
                                                                  const void* context) {
+  envoy_data return_data = copy_envoy_data(data.length, data.bytes);
   jobject result = static_cast<jobject>(
       jvm_on_data("onResponseData", data, end_stream, const_cast<void*>(context)));
   return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
-                                    /*data*/ data};
+                                    /*data*/ return_data};
 }
 
 static void* jvm_on_metadata(envoy_headers metadata, void* context) {
@@ -277,18 +282,20 @@ static void* jvm_on_response_trailers(envoy_headers trailers, void* context) {
 
 static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_headers trailers,
                                                                         const void* context) {
+  envoy_headers return_trailers = copy_envoy_headers(trailers);
   jobject result = static_cast<jobject>(
       jvm_on_trailers("onRequestTrailers", trailers, const_cast<void*>(context)));
   return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
-                                        /*trailers*/ trailers};
+                                        /*trailers*/ return_trailers};
 }
 
 static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_headers trailers,
                                                                          const void* context) {
+  envoy_headers return_trailers = copy_envoy_headers(trailers);
   jobject result = static_cast<jobject>(
       jvm_on_trailers("onResponseTrailers", trailers, const_cast<void*>(context)));
   return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
-                                        /*trailers*/ trailers};
+                                        /*trailers*/ return_trailers};
 }
 
 static void* jvm_on_error(envoy_error error, void* context) {
