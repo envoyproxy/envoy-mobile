@@ -60,3 +60,13 @@ envoy_mobile_swift_test(
         "//library/objective-c:envoy_engine_objc_lib",
     ],
 )
+
+envoy_mobile_swift_test(
+    name = "stats_client_impl_tests",
+    srcs = [
+        "StatsClientImplTests.swift",
+    ],
+    deps = [
+        "//library/objective-c:envoy_engine_objc_lib",
+    ],
+)
