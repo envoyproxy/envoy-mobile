@@ -2,18 +2,19 @@
 import Foundation
 
 /// A time series counter.
-@objc
+@objcMembers
 public class Counter: NSObject {
   private let series: String
   private weak var engine: EnvoyEngine?
 
-  internal init(elements: [Element], engine: EnvoyEngine) {
-    self.series = elements.map{ $0.value }.joined(separator: ".")
+  init(elements: [Element], engine: EnvoyEngine) {
+    self.series = elements.map { $0.value }.joined(separator: ".")
     self.engine = engine
     super.init()
   }
 
-  func increment(count: Int = 1) {
+  /// Increment the counter by the given count.
+  public func increment(count: Int = 1) {
     guard let engine = self.engine else {
       return
     }

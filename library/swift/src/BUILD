@@ -34,7 +34,7 @@ swift_static_framework(
         "filters/*.swift",
         "grpc/*.swift",
         "mocks/*.swift",
-        "stat/*.swift",
+        "stats/*.swift",
     ]),
     module_name = "Envoy",
     private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
