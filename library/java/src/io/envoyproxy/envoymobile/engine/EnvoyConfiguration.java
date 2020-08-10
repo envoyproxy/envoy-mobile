@@ -33,9 +33,8 @@ public class EnvoyConfiguration {
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            List<EnvoyHTTPFilterFactory> httpFilterFactories,
-                            int statsFlushSeconds, String appVersion, String appId,
-                            String virtualClusters) {
+                            List<EnvoyHTTPFilterFactory> httpFilterFactories, int statsFlushSeconds,
+                            String appVersion, String appId, String virtualClusters) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -61,7 +60,8 @@ public class EnvoyConfiguration {
     final StringBuilder filterConfigBuilder = new StringBuilder();
     final String filterTemplate = JniLibrary.filterTemplateString();
     for (EnvoyHTTPFilterFactory filterFactory : httpFilterFactories) {
-      String filterConfig = filterTemplate.replace("{{ platform_filter_name }}", filterFactory.getFilterName());
+      String filterConfig =
+          filterTemplate.replace("{{ platform_filter_name }}", filterFactory.getFilterName());
       filterConfigBuilder.append(filterConfig);
     }
     String filterConfigChain = filterConfigBuilder.toString();

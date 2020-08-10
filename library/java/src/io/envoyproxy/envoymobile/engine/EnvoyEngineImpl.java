@@ -56,7 +56,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpFilterFactories) {
-      JniLibrary.registerFilterFactory(filterFactory.getFilterName(), new JvmFilterFactoryContext(filterFactory));
+      JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
+                                       new JvmFilterFactoryContext(filterFactory));
     }
 
     return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString()), logLevel);

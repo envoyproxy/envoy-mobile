@@ -117,7 +117,8 @@ class JniLibrary {
    * @param context,    context containing logic necessary to invoke a new filter instance.
    * @return int, the resulting status of the operation.
    */
-  protected static native int registerFilterFactory(String filterName, JvmFilterFactoryContext context);
+  protected static native int registerFilterFactory(String filterName,
+                                                    JvmFilterFactoryContext context);
 
   // Native entry point
 
