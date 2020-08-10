@@ -6,8 +6,8 @@ on:
       - main
   pull_request:
     paths:
-      - 'library/common/**'
-      - 'test/**'
+      # - 'library/common/**'
+      # - 'test/**'
 
 jobs:
   coverage:
