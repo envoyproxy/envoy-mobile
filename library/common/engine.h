@@ -53,6 +53,8 @@ private:
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
   Event::Dispatcher* event_dispatcher_;
+  // main_thread_ should be destroyed first, hence it is the last member variable. Objects that
+  // instructions scheduled on the main_thread_ need to have a longer lifetime.
   std::thread main_thread_;
 };
 
