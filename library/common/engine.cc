@@ -83,13 +83,9 @@ Engine::~Engine() {
   }
   std::cerr << "~ENGINE 3" << std::endl;
 
-  if (state_ == State::Exited) {
-    return;
-  }
-
   // If we're not on the main thread, we need to be sure that MainCommon is finished being
   // constructed so we can dispatch shutdown.
-  {
+  if (state_ != State::Exited) {
       std::cerr << "~ENGINE 4" << std::endl;
 
     Thread::LockGuard lock(mutex_);
