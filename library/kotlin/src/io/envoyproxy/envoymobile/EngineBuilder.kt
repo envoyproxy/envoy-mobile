@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
+import java.util.UUID
 
 sealed class BaseConfiguration
 
@@ -110,7 +111,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addFilter(factory: () -> Filter): StreamClientBuilder {
+  fun addFilter(factory: () -> Filter): EngineBuilder {
     val filterName = UUID.randomUUID().toString()
     this.filterChain.add(FilterFactory(filterName, factory))
     return this
