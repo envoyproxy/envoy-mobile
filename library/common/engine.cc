@@ -95,7 +95,7 @@ Engine::~Engine() {
 }
 
 void Engine::recordCounter(std::string elements, uint64_t count) {
-  if (server_ && scope_) {
+  if (server_ && external_scope_) {
     server_->dispatcher().post([this, elements, count]() -> void {
       absl::string_view dynamic_elements{elements};
       Stats::Utility::counterFromElements(*external_scope_, {dynamic_elements}).add(count);
