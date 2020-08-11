@@ -6,7 +6,7 @@ namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
                std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks) {
+    : state_(State::Initializing), callbacks_(callbacks) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
@@ -51,17 +51,20 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           server_ = TS_UNCHECKED_READ(main_common_)->server();
-          auto api_listener = server_->listenerManager().apiListener()->get().http();
-          ASSERT(api_listener.has_value());
+          // auto api_listener = server_->listenerManager().apiListener()->get().http();
+          // ASSERT(api_listener.has_value());
           http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
-                                  api_listener.value());
+                                  nullptr);
+          state_ = State::Live;
         });
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
   bool run_success = TS_UNCHECKED_READ(main_common_)->run();
+  state_ = State::Exited;
 
   // Ensure destructors run on Envoy's main thread.
+  http_dispatcher_->exit();
   postinit_callback_handler_.reset();
   TS_UNCHECKED_READ(main_common_).reset();
 
@@ -72,26 +75,50 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
 }
 
 Engine::~Engine() {
+  std::cerr << "~ENGINE 1" << std::endl;
   // If we're already on the main thread, it should be safe to simply destruct.
   if (!main_thread_.joinable()) {
+      std::cerr << "~ENGINE 2" << std::endl;
+    return;
+  }
+  std::cerr << "~ENGINE 3" << std::endl;
+
+  if (state_ == State::Exited) {
     return;
   }
 
   // If we're not on the main thread, we need to be sure that MainCommon is finished being
   // constructed so we can dispatch shutdown.
   {
+      std::cerr << "~ENGINE 4" << std::endl;
+
     Thread::LockGuard lock(mutex_);
+      std::cerr << "~ENGINE 5" << std::endl;
+
     if (!main_common_) {
+        std::cerr << "~ENGINE 6" << std::endl;
+
       cv_.wait(mutex_);
     }
+      std::cerr << "~ENGINE 7" << std::endl;
+
     ASSERT(main_common_);
+  std::cerr << "~ENGINE 8" << std::endl;
 
     // Exit the event loop and finish up in Engine::run(...)
+      std::cerr << "~ENGINE 9" << std::endl;
+
     event_dispatcher_->exit();
+      std::cerr << "~ENGINE 10" << std::endl;
+
   } // _mutex
 
   // Now we wait for the main thread to wrap things up.
+    std::cerr << "~ENGINE 11" << std::endl;
+
   main_thread_.join();
+    std::cerr << "~ENGINE 12" << std::endl;
+
 }
 
 void Engine::flushStats() {

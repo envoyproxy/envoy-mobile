@@ -282,7 +282,7 @@ Dispatcher::Dispatcher(std::atomic<envoy_network_t>& preferred_network)
       address_(std::make_shared<Network::Address::SyntheticAddressImpl>()) {}
 
 void Dispatcher::ready(Event::Dispatcher& event_dispatcher, Stats::Scope& scope,
-                       ApiListener& api_listener) {
+                       ApiListener* api_listener) {
   Thread::LockGuard lock(ready_lock_);
 
   // Drain the init_queue_ into the event_dispatcher_.
@@ -294,7 +294,7 @@ void Dispatcher::ready(Event::Dispatcher& event_dispatcher, Stats::Scope& scope,
   // we rely on atomics instead of locks).
   stats_.emplace(generateStats(stats_prefix_, scope));
   event_dispatcher_ = &event_dispatcher;
-  api_listener_ = &api_listener;
+  api_listener_ = api_listener;
 }
 
 void Dispatcher::post(Event::PostCb callback) {
@@ -316,6 +316,11 @@ void Dispatcher::post(Event::PostCb callback) {
   // Otherwise, push the functor to the init_queue_ which will be drained once the
   // event_dispatcher_ is ready.
   init_queue_.push_back(callback);
+}
+
+void Dispatcher::exit() {
+  Thread::LockGuard lock(ready_lock_);
+  event_dispatcher_ = nullptr;
 }
 
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
