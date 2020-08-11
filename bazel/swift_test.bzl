@@ -8,7 +8,7 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 # - Sets default visibility and OS requirements
 #
 # Usage example:
-# load("//bazel:swift_test.bzl", "envoy_mobile_swift_test")
+# load("@envoy_mobile//bazel:swift_test.bzl", "envoy_mobile_swift_test")
 #
 # envoy_mobile_swift_test(
 #     name = "sample_test",
@@ -17,14 +17,14 @@ load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 #     ],
 # )
 #
-def envoy_mobile_swift_test(name, srcs):
+def envoy_mobile_swift_test(name, srcs, deps = []):
     test_lib_name = name + "_lib"
     swift_library(
         name = test_lib_name,
         srcs = srcs,
         deps = [
             "//library/swift/src:ios_framework_archive",
-        ],
+        ] + deps,
         linkopts = ["-lresolv.9"],
         visibility = ["//visibility:private"],
     )
@@ -32,5 +32,5 @@ def envoy_mobile_swift_test(name, srcs):
     ios_unit_test(
         name = name,
         deps = [test_lib_name],
-        minimum_os_version = "10.0",
+        minimum_os_version = "11.0",
     )

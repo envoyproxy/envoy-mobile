@@ -22,7 +22,16 @@ typedef intptr_t envoy_stream_t;
 /**
  * Result codes returned by all calls made to this interface.
  */
-typedef enum { ENVOY_SUCCESS, ENVOY_FAILURE } envoy_status_t;
+typedef enum {
+  ENVOY_SUCCESS = 0,
+  ENVOY_FAILURE = 1,
+} envoy_status_t;
+
+/**
+ * Equivalent constants to envoy_status_t, for contexts where the enum may not be usable.
+ */
+extern const int kEnvoySuccess;
+extern const int kEnvoyFailure;
 
 /**
  * Error code associated with terminal status of a HTTP stream.
@@ -104,6 +113,14 @@ extern "C" { // utility functions
 void* safe_malloc(size_t size);
 
 /**
+ * calloc wrapper that asserts that the returned pointer is valid. Otherwise, the program exits.
+ * @param count, the number of elements to be allocated.
+ * @param size, the size of elements in bytes.
+ * @return void*, pointer to the allocated memory.
+ */
+void* safe_calloc(size_t count, size_t size);
+
+/**
  * Helper function to free/release memory associated with underlying headers.
  * @param headers, envoy_headers to release.
  */
@@ -150,59 +167,66 @@ typedef struct {
 extern "C" { // function pointers
 #endif
 /**
- * Called when all headers get received on the async HTTP stream.
+ * Callback signature for headers on an HTTP stream.
  * @param headers, the headers received.
  * @param end_stream, whether the response is headers-only.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_headers_f)(envoy_headers headers, bool end_stream, void* context);
+typedef void* (*envoy_on_headers_f)(envoy_headers headers, bool end_stream, void* context);
 /**
- * Called when a data frame gets received on the async HTTP stream.
+ * Callback signature for data on an HTTP stream.
  * This callback can be invoked multiple times if the data gets streamed.
  * @param data, the data received.
  * @param end_stream, whether the data is the last data frame.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_data_f)(envoy_data data, bool end_stream, void* context);
+typedef void* (*envoy_on_data_f)(envoy_data data, bool end_stream, void* context);
 /**
- * Called when a metadata frame gets received on the async HTTP stream.
+ * Callback signature for metadata on an HTTP stream.
  * Note that metadata frames are prohibited from ending a stream.
  * @param metadata, the metadata received.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_metadata_f)(envoy_headers metadata, void* context);
+typedef void* (*envoy_on_metadata_f)(envoy_headers metadata, void* context);
 /**
- * Called when all trailers get received on the async HTTP stream.
+ * Callback signature for trailers on an HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers, the trailers received.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_trailers_f)(envoy_headers trailers, void* context);
+typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, void* context);
 /**
- * Called when the async HTTP stream has an error.
+ * Callback signature for errors with an HTTP stream.
  * @param envoy_error, the error received/caused by the async HTTP stream.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_error_f)(envoy_error error, void* context);
+typedef void* (*envoy_on_error_f)(envoy_error error, void* context);
 
 /**
- * Called when the async HTTP stream has completed without an error bi-directionally.
+ * Callback signature for when an HTTP stream bi-directionally completes without error.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_complete_f)(void* context);
+typedef void* (*envoy_on_complete_f)(void* context);
 
 /**
- * Called when the async HTTP stream has been cancelled by the client.
+ * Callback signature for when an HTTP stream is cancelled.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_cancel_f)(void* context);
+typedef void* (*envoy_on_cancel_f)(void* context);
 
 /**
  * Called when the envoy engine is exiting.

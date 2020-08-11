@@ -1,6 +1,13 @@
 /**
  * Templated default configuration
  */
+const char* platform_filter_template = R"(
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+              platform_filter_name: {{ platform_filter_name }}
+)";
+
 const char* config_template = R"(
 static_resources:
   listeners:
@@ -32,6 +39,11 @@ static_resources:
                         base_interval: 0.25s
                         max_interval: 60s
         http_filters:
+{{ platform_filter_chain }}
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+              platform_filter_name: PlatformStub
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
@@ -42,6 +54,24 @@ static_resources:
                 dns_failure_refresh_rate:
                   base_interval: {{ dns_failure_refresh_rate_seconds_base }}s
                   max_interval: {{ dns_failure_refresh_rate_seconds_max }}s
+          # TODO: make this configurable for users.
+          - name: envoy.filters.http.decompressor
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+              decompressor_library:
+                name: basic
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
+                  # Maximum window bits to allow for any stream to be decompressed. Optimally this
+                  # would be set to 0. According to the zlib manual this would allow the decompressor
+                  # to use the window bits in the zlib header to perform the decompression.
+                  # Unfortunately, the proto field constraint makes this impossible currently.
+                  window_bits: 15
+              request_direction_config:
+                common_config:
+                  enabled:
+                    default_value: false
+                    runtime_key: request_decompressor_enabled
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -64,6 +94,7 @@ static_resources:
               inline_string: |
 )"
 #include "certificates.inc"
+
                               R"(
     upstream_connection_options: &upstream_opts
       tcp_keepalive:
@@ -174,63 +205,22 @@ stats_config:
       patterns:
         - safe_regex:
             google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_cx_active'
+            regex: '^cluster\.[\w]+?\.upstream_cx_active'
         - safe_regex:
             google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_[1|2|3|4|5]xx'
+            regex: '^cluster\.[\w]+?\.upstream_rq_(?:[12345]xx|active|retry.*|time|total|unknown)'
         - safe_regex:
             google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_active'
+            regex: '^http.dispatcher.*'
         - safe_regex:
             google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_retry'
+            regex: '^http.hcm.decompressor.*'
         - safe_regex:
             google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_retry_limit_exceeded'
+            regex: '^http.hcm.downstream_rq_(?:[12345]xx|total|completed)'
         - safe_regex:
             google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_retry_overflow'
-        - safe_regex:
-            google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_retry_success'
-        - safe_regex:
-            google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_time'
-        - safe_regex:
-            google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_total'
-        - safe_regex:
-            google_re2: {}
-            regex: 'cluster\.[\w]+?\.upstream_rq_unknown'
-        - safe_regex:
-            google_re2: {}
-            regex: 'http.hcm.downstream_rq_[1|2|3|4|5]xx'
-        - exact: 'http.hcm.downstream_rq_total'
-        - exact: 'http.hcm.downstream_rq_completed'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_[1|2|3|4|5]xx'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_retry'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_retry_limit_exceeded'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_retry_overflow'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_retry_success'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_time'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_timeout'
-        - safe_regex:
-            google_re2: {}
-            regex: 'vhost.api.vcluster\.[\w]+?\.upstream_rq_total'
+            regex: '^vhost.api.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
 watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
@@ -239,4 +229,11 @@ node:
     app_id : {{ app_id }}
     app_version : {{ app_version }}
     os: {{ device_os }}
+# Needed due to warning in https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
+layered_runtime:
+  layers:
+    - name: static_layer_0
+      static_layer:
+        overload:
+          global_downstream_max_connections: 50000
 )";

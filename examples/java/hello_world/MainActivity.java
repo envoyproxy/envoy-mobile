@@ -4,27 +4,23 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import io.envoyproxy.envoymobile.AndroidEnvoyClientBuilder;
-import io.envoyproxy.envoymobile.Envoy;
-import io.envoyproxy.envoymobile.Request;
-import io.envoyproxy.envoymobile.RequestBuilder;
+import io.envoyproxy.envoymobile.AndroidStreamClientBuilder;
+import io.envoyproxy.envoymobile.RequestHeaders;
+import io.envoyproxy.envoymobile.RequestHeadersBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
-import io.envoyproxy.envoymobile.ResponseHandler;
+import io.envoyproxy.envoymobile.ResponseHeaders;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import io.envoyproxy.envoymobile.StreamClient;
 import io.envoyproxy.envoymobile.shared.Failure;
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
 import io.envoyproxy.envoymobile.shared.Success;
 import kotlin.Unit;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
@@ -33,7 +29,7 @@ public class MainActivity extends Activity {
   private static final String REQUEST_PATH = "/ping";
   private static final String REQUEST_SCHEME = "https";
 
-  private Envoy envoy;
+  private StreamClient streamClient;
   private RecyclerView recyclerView;
 
   private HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
@@ -44,9 +40,9 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    envoy = new AndroidEnvoyClientBuilder(getApplication()).build();
+    streamClient = new AndroidStreamClientBuilder(getApplication()).build();
 
-    recyclerView = findViewById(R.id.recycler_view);
+    recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     viewAdapter = new ResponseRecyclerViewAdapter();
@@ -76,41 +72,31 @@ public class MainActivity extends Activity {
   private void makeRequest() {
     // Note: this request will use an http/1.1 stream for the upstream request.
     // The Kotlin example uses h2. This is done on purpose to test both paths in
-    // end-to-end tests
-    // in CI.
-    Request request =
-        new RequestBuilder(RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH)
-            .build();
-    Map<String, List<String>> responseHeaders = new HashMap<>();
-    AtomicInteger responseStatus = new AtomicInteger();
-    ResponseHandler handler =
-        new ResponseHandler(Runnable::run)
-            .onHeaders((headers, status, endStream) -> {
-              responseHeaders.putAll(headers);
-              responseStatus.set(status);
-              Log.d("MainActivity", "successful response!");
-              return Unit.INSTANCE;
-            })
-            .onData((buffer, endStream) -> {
-              if (responseStatus.get() == 200 && buffer.hasArray()) {
-                String serverHeaderField = responseHeaders.get(ENVOY_SERVER_HEADER).get(0);
-                String body = new String(buffer.array());
-                recyclerView.post(() -> viewAdapter.add(new Success(body, serverHeaderField)));
-              } else {
-                recyclerView.post(()
-                                      -> viewAdapter.add(new Failure("failed with status " +
-                                                                     responseStatus.get())));
-              }
-              return Unit.INSTANCE;
-            })
-            .onError((error) -> {
-              String msg = "failed with error after " + error.getAttemptCount() +
+    // end-to-end tests in CI.
+    RequestHeaders requestHeaders = new RequestHeadersBuilder(RequestMethod.GET, REQUEST_SCHEME,
+                                                              REQUEST_AUTHORITY, REQUEST_PATH)
+                                        .build();
+    streamClient.newStreamPrototype()
+        .setOnResponseHeaders((responseHeaders, endStream) -> {
+          Integer status = responseHeaders.getHttpStatus();
+          String message = "received headers with status " + status;
+          Log.d("MainActivity", message);
+          if (status == 200) {
+            String serverHeaderField = responseHeaders.value(ENVOY_SERVER_HEADER).get(0);
+            recyclerView.post(() -> viewAdapter.add(new Success(message, serverHeaderField)));
+          } else {
+            recyclerView.post(() -> viewAdapter.add(new Failure(message)));
+          }
+          return Unit.INSTANCE;
+        })
+        .setOnError((error) -> {
+          String message = "failed with error after " + error.getAttemptCount() +
                            " attempts: " + error.getMessage();
-              Log.d("MainActivity", msg);
-              recyclerView.post(() -> viewAdapter.add(new Failure(msg)));
-              return Unit.INSTANCE;
-            });
-
-    envoy.send(request, null, null, handler);
+          Log.d("MainActivity", message);
+          recyclerView.post(() -> viewAdapter.add(new Failure(message)));
+          return Unit.INSTANCE;
+        })
+        .start(Executors.newSingleThreadExecutor())
+        .sendHeaders(requestHeaders, true);
   }
 }

@@ -1,64 +1,39 @@
+load("@envoy_mobile//bazel:swift_test.bzl", "envoy_mobile_swift_test")
+
 licenses(["notice"])  # Apache 2
 
-load("//bazel:swift_test.bzl", "envoy_mobile_swift_test")
-
 envoy_mobile_swift_test(
-    name = "envoy_client_tests",
+    name = "grpc_request_headers_builder_tests",
     srcs = [
-        "EnvoyClientTests.swift",
-        "MockEnvoyEngine.swift",
-        "MockEnvoyHTTPStream.swift",
+        "GRPCRequestHeadersBuilderTests.swift",
     ],
 )
 
 envoy_mobile_swift_test(
-    name = "envoy_client_builder_tests",
+    name = "grpc_stream_tests",
     srcs = [
-        "EnvoyClientBuilderTests.swift",
-        "MockEnvoyEngine.swift",
-        "MockEnvoyHTTPStream.swift",
+        "GRPCStreamTests.swift",
     ],
 )
 
 envoy_mobile_swift_test(
-    name = "grpc_request_builder_tests",
+    name = "headers_builder_tests",
     srcs = [
-        "GRPCRequestBuilderTests.swift",
+        "HeadersBuilderTests.swift",
     ],
 )
 
 envoy_mobile_swift_test(
-    name = "grpc_response_handler_tests",
+    name = "request_headers_builder_tests",
     srcs = [
-        "GRPCResponseHandlerTests.swift",
+        "RequestHeadersBuilderTests.swift",
     ],
 )
 
 envoy_mobile_swift_test(
-    name = "grpc_stream_emitter_tests",
+    name = "response_headers_tests",
     srcs = [
-        "GRPCStreamEmitterTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "request_builder_tests",
-    srcs = [
-        "RequestBuilderTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "request_mapper_tests",
-    srcs = [
-        "RequestMapperTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "response_handler_tests",
-    srcs = [
-        "ResponseHandlerTests.swift",
+        "ResponseHeadersTests.swift",
     ],
 )
 
@@ -73,5 +48,15 @@ envoy_mobile_swift_test(
     name = "retry_policy_mapper_tests",
     srcs = [
         "RetryPolicyMapperTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "stream_client_builder_tests",
+    srcs = [
+        "StreamClientBuilderTests.swift",
+    ],
+    deps = [
+        "//library/objective-c:envoy_engine_objc_lib",
     ],
 )

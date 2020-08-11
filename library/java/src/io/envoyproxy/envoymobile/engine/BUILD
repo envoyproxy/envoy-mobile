@@ -1,3 +1,6 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("@build_bazel_rules_android//android:rules.bzl", "android_library")
+
 licenses(["notice"])  # Apache 2
 
 android_library(
@@ -25,6 +28,7 @@ java_library(
         "EnvoyEngineImpl.java",
         "EnvoyHTTPStream.java",
         "JniLibrary.java",
+        "JvmBridgeUtility.java",
         "JvmCallbackContext.java",
     ],
     visibility = ["//visibility:public"],

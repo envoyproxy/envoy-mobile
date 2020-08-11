@@ -31,6 +31,34 @@ public enum RetryRule: Int, CaseIterable {
       return "reset"
     }
   }
+
+  /// Initialize the rule using a string value.
+  ///
+  /// - parameter stringValue: Case-insensitive rule value to use for initialization.
+  init?(stringValue: String) {
+    switch stringValue.lowercased() {
+    case "5xx":
+      self = .status5xx
+    case "gateway-error":
+      self = .gatewayError
+    case "connect-failure":
+      self = .connectFailure
+    case "refused-stream":
+      self = .refusedStream
+    case "retriable-4xx":
+      self = .retriable4xx
+    case "retriable-headers":
+      self = .retriableHeaders
+    case "reset":
+      self = .reset
+    // This is mapped to null because this string value is added to headers automatically
+    // in RetryPolicy.outboundHeaders()
+    case "retriable-status-codes":
+      return nil
+    default:
+      fatalError("invalid value '\(stringValue)'")
+    }
+  }
 }
 
 /// Specifies how a request may be retried, containing one or more rules.
@@ -46,7 +74,7 @@ public final class RetryPolicy: NSObject {
   /// Designated initializer.
   ///
   /// - parameter maxRetryCount:          Maximum number of retries that a request may be performed.
-  /// - parameter retryOn:                Whitelist of rules used for retrying.
+  /// - parameter retryOn:                Rules checked for retrying.
   /// - parameter retryStatusCodes:       Additional list of status codes that should be retried.
   /// - parameter perRetryTimeoutMS:      Timeout (in milliseconds) to apply to each retry. Must be
   ///                                     <= `totalUpstreamTimeoutMS` if it's a positive number.

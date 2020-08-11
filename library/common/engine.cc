@@ -4,29 +4,13 @@
 
 namespace Envoy {
 
-// As a server, Envoy's static factory registration happens when main is run. However, when compiled
-// as a library, there is no guarantee that such registration will happen before the names are
-// needed. The following calls ensure that registration happens before the entities are needed. Note
-// that as more registrations are needed, explicit initialization calls will need to be added here.
-static void registerFactories() {
-  Envoy::Extensions::Clusters::DynamicForwardProxy::forceRegisterClusterFactory();
-  Envoy::Extensions::HttpFilters::DynamicForwardProxy::
-      forceRegisterDynamicForwardProxyFilterFactory();
-  Envoy::Extensions::HttpFilters::RouterFilter::forceRegisterRouterFilterConfig();
-  Envoy::Extensions::NetworkFilters::HttpConnectionManager::
-      forceRegisterHttpConnectionManagerFilterConfigFactory();
-  Envoy::Extensions::StatSinks::MetricsService::forceRegisterMetricsServiceSinkFactory();
-  Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
-  Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
-}
-
 Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
                std::atomic<envoy_network_t>& preferred_network)
     : callbacks_(callbacks) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
-  registerFactories();
+  ExtensionRegistry::registerFactories();
 
   // Create the Http::Dispatcher first since it contains initial queueing logic.
   // TODO: consider centralizing initial queueing in this class.
@@ -44,7 +28,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
       char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"),   strdup(config.c_str()),
                             strdup("-l"),    strdup(log_level.c_str()), nullptr};
 
-      main_common_ = std::make_unique<Envoy::MainCommon>(5, envoy_argv);
+      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
       event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
@@ -66,11 +50,11 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     // as we did previously).
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          Server::Instance* server = TS_UNCHECKED_READ(main_common_)->server();
-          // auto api_listener = server->listenerManager().apiListener()->get().http();
-          // ASSERT(api_listener.has_value());
-          server_ = server;
-          http_dispatcher_->ready(server->dispatcher(), nullptr);
+          server_ = TS_UNCHECKED_READ(main_common_)->server();
+          auto api_listener = server_->listenerManager().apiListener()->get().http();
+          ASSERT(api_listener.has_value());
+          http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
+                                  api_listener.value());
         });
   } // mutex_
 
@@ -83,7 +67,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
 
   // The above call is blocking; at this point the event loop has exited.
   callbacks_.on_exit(callbacks_.context);
-  
+
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
 

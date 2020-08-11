@@ -31,8 +31,8 @@ Follow the Envoy instructions `here <https://github.com/envoyproxy/envoy/blob/ma
 Android requirements
 --------------------
 
-- Android SDK Platform 28
-- Android NDK 19.2.5345600
+- Android SDK Platform 29
+- Android NDK 21
 
 ----------------
 iOS requirements
@@ -103,3 +103,52 @@ If you use CocoaPods, you can add the following to your ``Podfile`` to use the l
 prebuilt Envoy Mobile framework.
 
 ``pod 'EnvoyMobile'``
+
+---------------------------------------------
+Building Envoy Mobile with private Extensions
+---------------------------------------------
+
+Similar to Envoy, Envoy Mobile has bazel targets that allows the library to be built as a git
+submodule in a consuming project. This setup enables creating private extensions, such as filters.
+
+~~~~~~~~~~
+Extensions
+~~~~~~~~~~
+
+The top-level `envoy_build_config` directory allows Envoy Mobile to tap into Envoy's already
+existing `selective extensions system <https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#disabling-extensions>`_.
+Additionally, Envoy Mobile requires force registration
+of extensions in the extension_registry.cc/h files due to static linking.
+
+In order to override the extensions built into Envoy Mobile create an ``envoy_build_config`` directory
+and include the following in the WORKSPACE file::
+
+  local_repository(
+    name = "envoy_build_config",
+    # Relative paths are also supported.
+    path = "/somewhere/on/filesystem/envoy_build_config",
+  )
+
+------------------------------
+Deploying Envoy Mobile Locally
+------------------------------
+
+~~~~~~~
+Android
+~~~~~~~
+
+To deploy Envoy Mobile's aar to your local maven repository, run the following commands::
+
+    # To build Envoy Mobile. --fat_apk_cpu takes in a list of architectures: [x86|armeabi-v7a|arm64-v8a].
+    bazelisk build android_dist --config=android --fat_apk_cpu=x86
+
+    # To publish to local maven.
+    dist/sonatype_nexus_upload.py --files dist/envoy.aar dist/envoy-pom.xml --local
+
+
+The version deployed will be ``LOCAL-SNAPSHOT``. These artifacts can be found in your local maven directory (``~/.m2/repository/io/envoyproxy/envoymobile/envoy/LOCAL-SNAPSHOT/``)
+
+~~~
+iOS
+~~~
+TODO :issue:`#980 <980>`

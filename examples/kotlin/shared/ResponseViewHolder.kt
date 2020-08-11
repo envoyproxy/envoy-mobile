@@ -1,8 +1,8 @@
 package io.envoyproxy.envoymobile.shared
 
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 
 class ResponseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   private val countTextView: TextView = itemView
@@ -15,20 +15,20 @@ class ResponseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   fun setResult(count: Int, response: Response) {
     countTextView.text = count.toString()
     response.fold(
-        { success ->
-          responseTextView.text = responseTextView.resources
-            .getString(R.string.title_string, success.title)
-          headerTextView.text = headerTextView.resources
-            .getString(R.string.header_string, success.header)
-          headerTextView.visibility = View.VISIBLE
-          itemView.setBackgroundResource(R.color.failed_color)
-        },
-        { failure ->
-          responseTextView.text = responseTextView.resources
-            .getString(R.string.title_string, failure.message)
-          headerTextView.visibility = View.GONE
-          itemView.setBackgroundResource(R.color.failed_color)
-        }
+      { success ->
+        responseTextView.text = responseTextView.resources
+          .getString(R.string.title_string, success.title)
+        headerTextView.text = headerTextView.resources
+          .getString(R.string.header_string, success.header)
+        headerTextView.visibility = View.VISIBLE
+        itemView.setBackgroundResource(R.color.success_color)
+      },
+      { failure ->
+        responseTextView.text = responseTextView.resources
+          .getString(R.string.title_string, failure.message)
+        headerTextView.visibility = View.GONE
+        itemView.setBackgroundResource(R.color.failed_color)
+      }
     )
   }
 }

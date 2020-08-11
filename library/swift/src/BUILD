@@ -1,35 +1,37 @@
-licenses(["notice"])  # Apache 2
+load("@envoy_mobile//bazel:swift_static_framework.bzl", "swift_static_framework")
 
-load("//bazel:swift_static_framework.bzl", "swift_static_framework")
+licenses(["notice"])  # Apache 2
 
 swift_static_framework(
     name = "ios_framework",
-    srcs = [
-        "Data+Extension.swift",
+    srcs = glob([
         "EnvoyClient.swift",
-        "EnvoyClientBuilder.swift",
         "EnvoyError.swift",
-        "EnvoyStreamEmitter.swift",
-        "GRPCClient.swift",
-        "GRPCRequestBuilder.swift",
-        "GRPCResponseHandler.swift",
-        "GRPCStreamEmitter.swift",
-        "HTTPClient.swift",
+        "Headers.swift",
+        "HeadersBuilder.swift",
         "LogLevel.swift",
-        "Request.swift",
-        "RequestBuilder.swift",
-        "RequestMapper.swift",
+        "RequestHeaders.swift",
+        "RequestHeadersBuilder.swift",
         "RequestMethod.swift",
-        "ResponseHandler.swift",
+        "RequestTrailers.swift",
+        "RequestTrailersBuilder.swift",
+        "ResponseHeaders.swift",
+        "ResponseHeadersBuilder.swift",
+        "ResponseTrailers.swift",
+        "ResponseTrailersBuilder.swift",
         "RetryPolicy.swift",
         "RetryPolicyMapper.swift",
-        "StreamEmitter.swift",
+        "Stream.swift",
+        "StreamCallbacks.swift",
+        "StreamClient.swift",
+        "StreamClientBuilder.swift",
+        "StreamPrototype.swift",
         "UpstreamHttpProtocol.swift",
-    ],
+        "filters/*.swift",
+        "grpc/*.swift",
+        "mocks/*.swift",
+    ]),
     module_name = "Envoy",
-    objc_includes = [
-        "//library/objective-c:EnvoyEngine.h",
-    ],
+    private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
     visibility = ["//visibility:public"],
-    deps = ["//library/objective-c:envoy_engine_objc_lib"],
 )

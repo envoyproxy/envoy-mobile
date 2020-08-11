@@ -9,6 +9,7 @@
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                        filterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
@@ -23,6 +24,7 @@
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
+  self.httpFilterFactories = httpFilterFactories;
   self.statsFlushSeconds = statsFlushSeconds;
   self.appVersion = appVersion;
   self.appId = appId;
@@ -31,7 +33,17 @@
 }
 
 - (nullable NSString *)resolveTemplate:(NSString *)templateYAML {
+  NSString *filterConfigChain = [[NSString alloc] init];
+  NSString *filterTemplate = [[NSString alloc] initWithUTF8String:platform_filter_template];
+  for (EnvoyHTTPFilterFactory *filterFactory in self.httpFilterFactories) {
+    NSString *filterConfig =
+        [filterTemplate stringByReplacingOccurrencesOfString:@"{{ platform_filter_name }}"
+                                                  withString:filterFactory.filterName];
+    filterConfigChain = [filterConfigChain stringByAppendingString:filterConfig];
+  }
+
   NSDictionary<NSString *, NSString *> *templateKeysToValues = @{
+    @"platform_filter_chain" : filterConfigChain,
     @"stats_domain" : self.statsDomain,
     @"connect_timeout_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],

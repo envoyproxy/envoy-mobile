@@ -7,6 +7,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
+/// A mutable set of headers that may be passed to/from an Envoy stream.
+typedef NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> EnvoyMutableHeaders;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -52,6 +55,49 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  * stream will be issued afterwards.
  */
 @property (nonatomic, strong) void (^onCancel)(void);
+
+@end
+
+#pragma mark - EnvoyHTTPFilter
+
+/// Return codes for on-headers filter invocations. @see envoy/http/filter.h
+extern const int kEnvoyFilterHeadersStatusContinue;
+extern const int kEnvoyFilterHeadersStatusStopIteration;
+extern const int kEnvoyFilterHeadersStatusContinueAndEndStream;
+extern const int kEnvoyFilterHeadersStatusStopAllIterationAndBuffer;
+
+/// Return codes for on-data filter invocations. @see envoy/http/filter.h
+extern const int kEnvoyFilterDataStatusContinue;
+extern const int kEnvoyFilterDataStatusStopIterationAndBuffer;
+extern const int kEnvoyFilterDataStatusStopIterationNoBuffer;
+
+/// Return codes for on-trailers filter invocations. @see envoy/http/filter.h
+extern const int kEnvoyFilterTrailersStatusContinue;
+extern const int kEnvoyFilterTrailersStatusStopIteration;
+
+@interface EnvoyHTTPFilter : NSObject
+
+@property (nonatomic, strong) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
+
+@property (nonatomic, strong) NSArray * (^onRequestData)(NSData *data, BOOL endStream);
+
+@property (nonatomic, strong) NSArray * (^onRequestTrailers)(EnvoyHeaders *trailers);
+
+@property (nonatomic, strong) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream);
+
+@property (nonatomic, strong) NSArray * (^onResponseData)(NSData *data, BOOL endStream);
+
+@property (nonatomic, strong) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
+
+@end
+
+#pragma mark - EnvoyHTTPFilterFactory
+
+@interface EnvoyHTTPFilterFactory : NSObject
+
+@property (nonatomic, strong) NSString *filterName;
+
+@property (nonatomic, strong) EnvoyHTTPFilter * (^create)();
 
 @end
 
@@ -122,6 +168,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
+@property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpFilterFactories;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
@@ -135,6 +182,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                        filterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
@@ -151,6 +199,10 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 @end
 
 #pragma mark - EnvoyEngine
+
+/// Return codes for Engine interface. @see /library/common/types/c_types.h
+extern const int kEnvoySuccess;
+extern const int kEnvoyFailure;
 
 /// Wrapper layer for calling into Envoy's C/++ API.
 @protocol EnvoyEngine

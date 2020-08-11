@@ -7,21 +7,22 @@ private let kRequestPath = "/ping"
 private let kRequestScheme = "https"
 
 final class ViewController: UITableViewController {
-  private var requestCount = 0
   private var results = [Result<Response, RequestError>]()
   private var timer: Timer?
-  private var envoy: EnvoyClient?
+  private var client: StreamClient?
 
   override func viewDidLoad() {
     super.viewDidLoad()
     do {
-      NSLog("Starting Envoy...")
-      self.envoy = try EnvoyClientBuilder().build()
+      NSLog("starting Envoy...")
+      self.client = try StreamClientBuilder()
+        .addFilter(factory: DemoFilter.init)
+        .build()
     } catch let error {
-      NSLog("Starting Envoy failed: \(error)")
+      NSLog("starting Envoy failed: \(error)")
     }
 
-    NSLog("Started Envoy, beginning requests...")
+    NSLog("started Envoy, beginning requests...")
     self.startRequests()
   }
 
@@ -38,33 +39,36 @@ final class ViewController: UITableViewController {
   }
 
   private func performRequest() {
-    guard let envoy = self.envoy else {
-      NSLog("Failed to start request - Envoy is not running")
+    guard let client = self.client else {
+      NSLog("failed to start request - Envoy is not running")
       return
     }
 
-    self.requestCount += 1
-    NSLog("Starting request to '\(kRequestPath)'")
+    NSLog("starting request to '\(kRequestPath)'")
 
-    let requestID = self.requestCount
     // Note: this request will use an h2 stream for the upstream request.
     // The Objective-C example uses http/1.1. This is done on purpose to test both paths in
     // end-to-end tests in CI.
-    let request = RequestBuilder(method: .get, scheme: kRequestScheme,
-                                 authority: kRequestAuthority,
-                                 path: kRequestPath)
-        .addUpstreamHttpProtocol(.http2)
-        .build()
-    let handler = ResponseHandler()
-      .onHeaders { [weak self] headers, statusCode, _ in
-        NSLog("Response status (\(requestID)): \(statusCode)\n\(headers)")
-        self?.add(result: .success(Response(id: requestID, body: "Status: \(statusCode)",
-                                            serverHeader: headers["server"]?.first ?? "")))
+    let headers = RequestHeadersBuilder(method: .get, scheme: kRequestScheme,
+                                        authority: kRequestAuthority, path: kRequestPath)
+      .addUpstreamHttpProtocol(.http2)
+      .build()
+
+    client
+      .newStreamPrototype()
+      .setOnResponseHeaders { [weak self] headers, _ in
+        let statusCode = headers.httpStatus ?? -1
+        var message = "received headers with status \(statusCode)"
+        if let filterDemoValue = headers.value(forName: "filter-demo")?.first {
+          message += " and filter-demo set to \(filterDemoValue)"
+        }
+
+        let response = Response(message: message,
+                                serverHeader: headers.value(forName: "server")?.first ?? "")
+        NSLog(message)
+        self?.add(result: .success(response))
       }
-      .onData { data, _ in
-        NSLog("Response data (\(requestID)): \(data.count) bytes")
-      }
-      .onError { [weak self] error in
+      .setOnError { [weak self] error in
         let message: String
         if let attemptCount = error.attemptCount {
           message = "failed within Envoy library after \(attemptCount) attempts: \(error.message)"
@@ -72,12 +76,11 @@ final class ViewController: UITableViewController {
           message = "failed within Envoy library: \(error.message)"
         }
 
-        NSLog("Error (\(requestID)): \(message)")
-        self?.add(result: .failure(RequestError(id: requestID,
-                                                message: message)))
+        NSLog(message)
+        self?.add(result: .failure(RequestError(message: message)))
       }
-
-    envoy.send(request, body: nil, trailers: nil, handler: handler)
+      .start()
+      .sendHeaders(headers, endStream: true)
   }
 
   private func add(result: Result<Response, RequestError>) {
@@ -104,7 +107,7 @@ final class ViewController: UITableViewController {
     let result = self.results[indexPath.row]
     switch result {
     case .success(let response):
-      cell.textLabel?.text = "[\(response.id)] \(response.body)"
+      cell.textLabel?.text = response.message
       cell.detailTextLabel?.text = "'server' header: \(response.serverHeader)"
 
       cell.textLabel?.textColor = .black
@@ -112,8 +115,8 @@ final class ViewController: UITableViewController {
       cell.contentView.backgroundColor = .white
 
     case .failure(let error):
-      cell.textLabel?.text = "[\(error.id)]"
-      cell.detailTextLabel?.text = error.message
+      cell.textLabel?.text = error.message
+      cell.detailTextLabel?.text = nil
 
       cell.textLabel?.textColor = .white
       cell.detailTextLabel?.textColor = .white

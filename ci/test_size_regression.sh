@@ -2,7 +2,7 @@
 
 # Checks the absolute size and the relative size increase of a file.
 
-MAX_SIZE=5500000 # 5.5MB
+MAX_SIZE=5700000 # 5.7MB
 MAX_PERC=1
 
 if [ `uname` == "Darwin" ]
@@ -15,7 +15,7 @@ else
 fi
 PERC=$(bc <<< "scale=2; ($SIZE2 - $SIZE1)/$SIZE1 * 100")
 
-echo "The new binary is $PERC % different in size compared to master."
+echo "The new binary is $PERC % different in size compared to main."
 echo "The new binary is $SIZE2 bytes."
 
 if [ $SIZE2 -gt $MAX_SIZE ]

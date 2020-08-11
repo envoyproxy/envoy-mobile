@@ -5,10 +5,21 @@
 
 #include "common/common/assert.h"
 
+const int kEnvoySuccess = ENVOY_SUCCESS;
+const int kEnvoyFailure = ENVOY_FAILURE;
+
 void* safe_malloc(size_t size) {
   void* ptr = malloc(size);
   if (size > 0) {
     RELEASE_ASSERT(ptr != nullptr, "malloc failure");
+  }
+  return ptr;
+}
+
+void* safe_calloc(size_t count, size_t size) {
+  void* ptr = calloc(count, size);
+  if (count > 0 && size > 0) {
+    RELEASE_ASSERT(ptr != nullptr, "calloc failure");
   }
   return ptr;
 }

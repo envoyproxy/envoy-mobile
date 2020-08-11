@@ -19,6 +19,11 @@ extern "C" { // functions
 extern const char* config_template;
 
 /**
+ * Template configuration used for dynamic creation of the platform-bridged filter chain.
+ */
+extern const char* platform_filter_template;
+
+/**
  * Initialize an underlying HTTP stream.
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.
@@ -98,6 +103,14 @@ envoy_status_t set_preferred_network(envoy_network_t network);
  * Therefore, this function may return prior to flushing taking place.
  */
 void flush_stats();
+
+/**
+ * Statically register APIs leveraging platform libraries.
+ * Warning: Must be completed before any calls to run_engine().
+ * @param name, identifier of the platform API
+ * @param api, type-erased c struct containing function pointers and context.
+ */
+envoy_status_t register_platform_api(const char* name, void* api);
 
 /**
  * External entry point for library.

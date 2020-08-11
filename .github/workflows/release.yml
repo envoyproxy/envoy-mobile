@@ -9,7 +9,7 @@ jobs:
   android_aar_sonatype_deploy:
     name: android_deploy
     runs-on: ubuntu-18.04
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v1
         with:
@@ -30,11 +30,11 @@ jobs:
 
           # Build and create the artifacts
           current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
-          bazel build \
+          bazelisk build \
             --config=release-android \
             --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a \
             --define=pom_version="${current_release_tag:1}" \
-            //:android_deploy
+            //:android_dist_ci
       - name: 'Configure gpg signing'
         env:
           GPG_KEY: ${{ secrets.gpg_key }}

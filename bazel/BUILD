@@ -1,7 +1,7 @@
-licenses(["notice"])  # Apache 2
-
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
+
+licenses(["notice"])  # Apache 2
 
 envoy_package()
 
@@ -19,3 +19,8 @@ kt_jvm_library(
 exports_files([
     "pom_template.xml",
 ])
+
+alias(
+    name = "zipper",
+    actual = "@bazel_tools//tools/zip:zipper",
+)

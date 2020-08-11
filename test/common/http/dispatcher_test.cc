@@ -2,6 +2,7 @@
 
 #include "common/buffer/buffer_impl.h"
 #include "common/http/context_impl.h"
+#include "common/stats/isolated_store_impl.h"
 
 #include "test/common/http/common.h"
 #include "test/mocks/buffer/mocks.h"
@@ -30,7 +31,7 @@ namespace Http {
 
 // Based on Http::Utility::toRequestHeaders() but only used for these tests.
 ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
-  ResponseHeaderMapPtr transformed_headers = std::make_unique<ResponseHeaderMapImpl>();
+  ResponseHeaderMapPtr transformed_headers = ResponseHeaderMapImpl::create();
   for (envoy_header_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(LowerCaseString(Utility::convertToString(headers.headers[i].key)),
                                  Utility::convertToString(headers.headers[i].value));
@@ -42,7 +43,7 @@ ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
 
 class DispatcherTest : public testing::Test {
 public:
-  void ready() { http_dispatcher_.ready(event_dispatcher_, &api_listener_); }
+  void ready() { http_dispatcher_.ready(event_dispatcher_, stats_store_, api_listener_); }
 
   typedef struct {
     uint32_t on_headers_calls;
@@ -60,6 +61,7 @@ public:
   envoy_http_callbacks bridge_callbacks_;
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
   Dispatcher http_dispatcher_{preferred_network_};
+  Stats::IsolatedStoreImpl stats_store_;
 };
 
 TEST_F(DispatcherTest, SetDestinationCluster) {
@@ -71,16 +73,18 @@ TEST_F(DispatcherTest, SetDestinationCluster) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Create a stream.
@@ -184,16 +188,18 @@ TEST_F(DispatcherTest, SetDestinationClusterUpstreamProtocol) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Create a stream.
@@ -316,16 +322,18 @@ TEST_F(DispatcherTest, Queueing) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -382,16 +390,18 @@ TEST_F(DispatcherTest, BasicStreamHeaders) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -443,16 +453,18 @@ TEST_F(DispatcherTest, BasicStreamData) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void {
-    ASSERT_TRUE(end_stream);
-    ASSERT_EQ(Http::Utility::convertToString(c_data), "response body");
+  bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
+    EXPECT_TRUE(end_stream);
+    EXPECT_EQ(Http::Utility::convertToString(c_data), "response body");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_data_calls++;
     c_data.release(c_data.context);
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build body data
@@ -504,16 +516,18 @@ TEST_F(DispatcherTest, BasicStreamTrailers) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_trailers = [](envoy_headers c_trailers, void* context) -> void {
+  bridge_callbacks.on_trailers = [](envoy_headers c_trailers, void* context) -> void* {
     ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
     EXPECT_EQ(response_trailers->get(LowerCaseString("x-test-trailer"))->value().getStringView(),
               "test_trailer");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_trailers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request trailers.
@@ -566,22 +580,25 @@ TEST_F(DispatcherTest, MultipleDataStream) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_FALSE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_FALSE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_data = [](envoy_data data, bool, void* context) -> void {
+  bridge_callbacks.on_data = [](envoy_data data, bool, void* context) -> void* {
     // TODO: assert end_stream and contents of c_data for multiple calls of on_data.
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_data_calls++;
     data.release(data.context);
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -667,16 +684,18 @@ TEST_F(DispatcherTest, MultipleStreams) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -715,16 +734,18 @@ TEST_F(DispatcherTest, MultipleStreams) {
   callbacks_called cc2 = {0, 0, 0, 0, 0, 0};
   bridge_callbacks2.context = &cc2;
   bridge_callbacks2.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                    void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                    void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     bool* on_headers_called2 = static_cast<bool*>(context);
     *on_headers_called2 = true;
+    return nullptr;
   };
-  bridge_callbacks2.on_complete = [](void* context) -> void {
+  bridge_callbacks2.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -785,11 +806,12 @@ TEST_F(DispatcherTest, EnvoyLocalReply) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
+    EXPECT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -843,11 +865,12 @@ TEST_F(DispatcherTest, EnvoyLocalReplyNon503) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_UNDEFINED_ERROR);
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_UNDEFINED_ERROR);
+    EXPECT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -901,13 +924,14 @@ TEST_F(DispatcherTest, EnvoyLocalReplyWithData) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
-    ASSERT_EQ(Http::Utility::convertToString(error.message), "error message");
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
+    EXPECT_EQ(Http::Utility::convertToString(error.message), "error message");
+    EXPECT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
     error.message.release(error.message.context);
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -965,11 +989,12 @@ TEST_F(DispatcherTest, EnvoyLocalReplyWithAttemptCount) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
-    ASSERT_EQ(error.attempt_count, 123);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
+    EXPECT_EQ(error.attempt_count, 123);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -1022,17 +1047,20 @@ TEST_F(DispatcherTest, ResetStreamLocal) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_error = [](envoy_error, void* context) -> void {
+  bridge_callbacks.on_error = [](envoy_error, void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   // Create a stream.
@@ -1075,29 +1103,33 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_FALSE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_FALSE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, -1);
     // This will use envoy_noop_release.
     error.message.release(error.message.context);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -1162,16 +1194,18 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Build a set of request headers.
@@ -1226,27 +1260,31 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   http_dispatcher_.synchronizer().enable();
@@ -1320,27 +1358,31 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   http_dispatcher_.synchronizer().enable();
@@ -1413,27 +1455,31 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   http_dispatcher_.synchronizer().enable();
@@ -1508,27 +1554,31 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRaceLocalWins) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, 0);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, 0);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   http_dispatcher_.synchronizer().enable();
@@ -1599,27 +1649,31 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   http_dispatcher_.synchronizer().enable();
@@ -1689,27 +1743,31 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void {
-    ASSERT_EQ(error.error_code, ENVOY_STREAM_RESET);
-    ASSERT_EQ(error.message.length, 0);
-    ASSERT_EQ(error.attempt_count, -1);
+  bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
+    EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
+    EXPECT_EQ(error.message.length, 0);
+    EXPECT_EQ(error.attempt_count, -1);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_cancel = [](void* context) -> void {
+  bridge_callbacks.on_cancel = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_cancel_calls++;
+    return nullptr;
   };
 
   http_dispatcher_.synchronizer().enable();
@@ -1780,16 +1838,18 @@ TEST_F(DispatcherTest, ResetWhenRemoteClosesBeforeLocal) {
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
   bridge_callbacks.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                   void* context) -> void {
-    ASSERT_TRUE(end_stream);
+                                   void* context) -> void* {
+    EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_headers_calls++;
+    return nullptr;
   };
-  bridge_callbacks.on_complete = [](void* context) -> void {
+  bridge_callbacks.on_complete = [](void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
+    return nullptr;
   };
 
   // Create a stream.
