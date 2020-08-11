@@ -49,7 +49,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
               dns_cache_config: &dns_cache_config
                 name: dynamic_forward_proxy_cache_config
-                dns_lookup_family: AUTO
+                dns_lookup_family: V4_ONLY
                 dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
                 dns_failure_refresh_rate:
                   base_interval: {{ dns_failure_refresh_rate_seconds_base }}s
