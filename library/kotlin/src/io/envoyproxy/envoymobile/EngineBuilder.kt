@@ -110,7 +110,8 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addFilter(filterName: String, factory: () -> Filter): EngineBuilder {
+  fun addFilter(factory: () -> Filter): StreamClientBuilder {
+    val filterName = UUID.randomUUID().toString()
     this.filterChain.add(FilterFactory(filterName, factory))
     return this
   }

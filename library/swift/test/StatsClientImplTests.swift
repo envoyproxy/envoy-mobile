@@ -9,7 +9,7 @@ final class StatsClientImplTests: XCTestCase {
     MockEnvoyEngine.onRecordCounter = nil
   }
 
-  func testCounterDelegatesToEngine() throws {
+  func testCounterDelegatesToEngine() {
     var actualSeries: String?
     var actualCount: UInt?
     MockEnvoyEngine.onRecordCounter = { series, count in
@@ -24,7 +24,7 @@ final class StatsClientImplTests: XCTestCase {
     XCTAssertEqual(actualCount, 1)
   }
 
-  func testCounterDelegatesToEngineWithCount() throws {
+  func testCounterDelegatesToEngineWithCount() {
     var actualSeries: String?
     var actualCount: UInt?
     MockEnvoyEngine.onRecordCounter = { series, count in
@@ -39,7 +39,7 @@ final class StatsClientImplTests: XCTestCase {
     XCTAssertEqual(actualCount, 5)
   }
 
-  func testCounterWeaklyHoldsEngine() throws {
+  func testCounterWeaklyHoldsEngine() {
     let mockEngine = MockEnvoyEngine()
     let statsClient = StatsClientImpl(engine: mockEngine)
     let counter = statsClient.counter(elements: ["test", "stat"])

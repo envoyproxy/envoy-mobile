@@ -6,10 +6,14 @@ import java.lang.ref.WeakReference
 /**
  * A time series counter.
  */
-class Counter internal constructor(
-  private val envoyEngine: WeakReference<EnvoyEngine>,
+class Counter {
+  private val envoyEngine: WeakReference<EnvoyEngine>
   private val elements: List<Element>
-) {
+
+  internal constructor(engine: EnvoyEngine, elements: List<Element>) {
+    this.envoyEngine = WeakReference<EnvoyEngine>(engine)
+    this.elements = elements
+  }
 
   /**
    * Increment the counter by the given count.
