@@ -231,7 +231,7 @@ typedef void* (*envoy_on_cancel_f)(void* context);
 /**
  * Called when the envoy engine is exiting.
  */
-typedef void (*envoy_on_exit_f)(void *context);
+typedef void (*envoy_on_exit_f)(void* context);
 
 #ifdef __cplusplus
 } // function pointers

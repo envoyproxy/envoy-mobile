@@ -1,7 +1,7 @@
+#include "absl/synchronization/notification.h"
 #include "gtest/gtest.h"
 #include "library/common/engine.h"
 #include "library/common/main_interface.h"
-#include "absl/synchronization/notification.h"
 
 namespace Envoy {
 
@@ -11,10 +11,11 @@ TEST_F(EngineTest, EarlyExit) {
   const std::string config = "admin: {}";
   const std::string level = "debug";
   absl::Notification done;
-  envoy_engine_callbacks cbs{[](void *context) -> void {
-    auto* done = static_cast<absl::Notification*>(context);
-    done->Notify();
-  }, &done};
+  envoy_engine_callbacks cbs{[](void* context) -> void {
+                               auto* done = static_cast<absl::Notification*>(context);
+                               done->Notify();
+                             },
+                             &done};
 
   run_engine(0, cbs, config.c_str(), level.c_str());
 
