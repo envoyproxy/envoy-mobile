@@ -69,52 +69,34 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
   TS_UNCHECKED_READ(main_common_).reset();
 
   // The above call is blocking; at this point the event loop has exited.
-  callbacks_.on_exit(callbacks_.context);
+  callbacks_.on_exit();
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
 
 Engine::~Engine() {
-  std::cerr << "~ENGINE 1" << std::endl;
   // If we're already on the main thread, it should be safe to simply destruct.
   if (!main_thread_.joinable()) {
-      std::cerr << "~ENGINE 2" << std::endl;
     return;
   }
-  std::cerr << "~ENGINE 3" << std::endl;
 
   // If we're not on the main thread, we need to be sure that MainCommon is finished being
   // constructed so we can dispatch shutdown.
   if (state_ != State::Exited) {
-      std::cerr << "~ENGINE 4" << std::endl;
-
     Thread::LockGuard lock(mutex_);
-      std::cerr << "~ENGINE 5" << std::endl;
 
     if (!main_common_) {
-        std::cerr << "~ENGINE 6" << std::endl;
-
       cv_.wait(mutex_);
     }
-      std::cerr << "~ENGINE 7" << std::endl;
 
     ASSERT(main_common_);
-  std::cerr << "~ENGINE 8" << std::endl;
 
     // Exit the event loop and finish up in Engine::run(...)
-      std::cerr << "~ENGINE 9" << std::endl;
-
     event_dispatcher_->exit();
-      std::cerr << "~ENGINE 10" << std::endl;
-
   } // _mutex
 
   // Now we wait for the main thread to wrap things up.
-    std::cerr << "~ENGINE 11" << std::endl;
-
   main_thread_.join();
-    std::cerr << "~ENGINE 12" << std::endl;
-
 }
 
 void Engine::flushStats() {

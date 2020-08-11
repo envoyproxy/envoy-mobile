@@ -301,17 +301,10 @@ void Dispatcher::post(Event::PostCb callback) {
   Thread::LockGuard lock(ready_lock_);
 
   // If the event_dispatcher_ is set, then post the functor directly to it.
-  ENVOY_LOG_MISC(error, "HERE");
   if (event_dispatcher_ != nullptr) {
-      ENVOY_LOG_MISC(error, "HERE2");
-
     event_dispatcher_->post(callback);
-      ENVOY_LOG_MISC(error, "HERE3");
-
     return;
   }
-    ENVOY_LOG_MISC(error, "HERE4");
-
 
   // Otherwise, push the functor to the init_queue_ which will be drained once the
   // event_dispatcher_ is ready.
