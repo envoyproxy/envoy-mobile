@@ -50,7 +50,7 @@ public:
 private:
   envoy_status_t run(std::string config, std::string log_level);
 
-  Stats::ScopePtr scope_;
+  Stats::ScopePtr external_scope_;
   envoy_engine_callbacks callbacks_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
