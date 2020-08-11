@@ -69,7 +69,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
   TS_UNCHECKED_READ(main_common_).reset();
 
   // The above call is blocking; at this point the event loop has exited.
-  callbacks_.on_exit();
+  callbacks_.on_exit(callbacks_.context);
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }

@@ -260,4 +260,5 @@ typedef struct {
  */
 typedef struct {
   envoy_on_exit_f on_exit;
+  void* context;
 } envoy_engine_callbacks;
