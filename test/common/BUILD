@@ -18,7 +18,7 @@ envoy_cc_test(
     srcs = ["engine_test.cc"],
     repository = "@envoy",
     deps = [
-        "//library/common:envoy_main_interface_lib",
+        "//library/common:envoy_main_interface_lib_no_stamp",
         "//library/common/types:c_types_lib",
     ],
 )
