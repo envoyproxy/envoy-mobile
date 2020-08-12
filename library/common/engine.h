@@ -42,17 +42,6 @@ public:
    */
   void flushStats();
 
-  void stopLoop() {
-    Thread::LockGuard lock(mutex_);
-    if (!main_common_) {
-      cv_.wait(mutex_);
-    }
-
-    ASSERT(event_dispatcher_ != nullptr);
-
-    event_dispatcher_->exit();
-  }
-
 private:
   enum class State {
     Initializing,

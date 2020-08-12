@@ -19,7 +19,7 @@ TEST_F(EngineTest, EarlyExit) {
 
   run_engine(0, cbs, config.c_str(), level.c_str());
 
-  stop_loop();
+  terminate_engine(0);
 
   ASSERT_TRUE(done.WaitForNotificationWithTimeout(absl::Seconds(1)));
 

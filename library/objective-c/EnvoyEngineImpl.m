@@ -165,7 +165,9 @@ static void ios_http_filter_release(const void *context) {
 
 - (int)runWithConfigYAML:(NSString *)configYAML logLevel:(NSString *)logLevel {
   // re-enable lifecycle-based stat flushing when https://github.com/lyft/envoy-mobile/issues/748
-  // gets fixed. [self startObservingLifecycleNotifications];
+  // gets fixed.
+  // Observe termination to destroy the engine.
+  [self startObservingLifecycleNotifications];
 
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
@@ -191,17 +193,13 @@ static void ios_http_filter_release(const void *context) {
   NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
   [notificationCenter addObserver:self
                          selector:@selector(lifecycleDidChangeWithNotification:)
-                             name:UIApplicationWillResignActiveNotification
-                           object:nil];
-  [notificationCenter addObserver:self
-                         selector:@selector(lifecycleDidChangeWithNotification:)
                              name:UIApplicationWillTerminateNotification
                            object:nil];
 }
 
 - (void)lifecycleDidChangeWithNotification:(NSNotification *)notification {
-  NSLog(@"[Envoy] triggering stats flush (%@)", notification.name);
-  flush_stats();
+  NSLog(@"[Envoy] terminating engine (%@)", notification.name);
+  terminate_engine();
 }
 
 @end

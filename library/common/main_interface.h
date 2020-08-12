@@ -123,7 +123,7 @@ envoy_status_t register_platform_api(const char* name, void* api);
 envoy_status_t run_engine(envoy_engine_t engine, envoy_engine_callbacks callbacks,
                           const char* config, const char* log_level);
 
-void stop_loop();
+void terminate_engine(envoy_engine_t engine);
 
 #ifdef __cplusplus
 } // functions
