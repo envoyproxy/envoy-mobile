@@ -100,6 +100,4 @@ envoy_status_t run_engine(envoy_engine_t, envoy_engine_callbacks callbacks, cons
   return ENVOY_SUCCESS;
 }
 
-void terminate_engine(envoy_engine_t) {
-  strong_engine_.reset();
-}
+void terminate_engine(envoy_engine_t) { strong_engine_.reset(); }
