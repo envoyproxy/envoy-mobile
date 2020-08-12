@@ -6,7 +6,7 @@ namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
                std::atomic<envoy_network_t>& preferred_network)
-    : state_(State::Initializing), callbacks_(callbacks) {
+    : callbacks_(callbacks) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
@@ -55,13 +55,11 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
           // ASSERT(api_listener.has_value());
           http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
                                   nullptr);
-          state_ = State::Live;
         });
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
   bool run_success = TS_UNCHECKED_READ(main_common_)->run();
-  state_ = State::Exited;
 
   // Ensure destructors run on Envoy's main thread.
   http_dispatcher_->exit();
@@ -82,7 +80,7 @@ Engine::~Engine() {
 
   // If we're not on the main thread, we need to be sure that MainCommon is finished being
   // constructed so we can dispatch shutdown.
-  if (state_ != State::Exited) {
+  {
     Thread::LockGuard lock(mutex_);
 
     if (!main_common_) {
