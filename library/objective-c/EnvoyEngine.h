@@ -7,9 +7,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
-/// A mutable set of headers that may be passed to/from an Envoy stream.
-typedef NSMutableDictionary<NSString *, NSMutableArray<NSString *> *> EnvoyMutableHeaders;
-
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -236,6 +233,14 @@ extern const int kEnvoyFailure;
  @param callbacks Handler for observing stream events.
  */
 - (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks;
+
+/**
+ Increments a counter with the given count.
+
+ @param elements Elements of the counter stat.
+ @param count Amount to add to the counter.
+ */
+- (void)recordCounter:(NSString *)elements count:(NSUInteger)count;
 
 @end
 
