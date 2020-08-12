@@ -11,9 +11,11 @@ import io.envoyproxy.envoymobile.ResponseFilterCallbacks
 import io.envoyproxy.envoymobile.ResponseTrailers
 import java.nio.ByteBuffer
 
-class DemoFilter() : ResponseFilter {
+class DemoFilter : ResponseFilter {
 
-  override fun setResponseFilterCallbacks(callbacks: ResponseFilterCallbacks) {}
+  override fun setResponseFilterCallbacks(callbacks: ResponseFilterCallbacks) {
+    // No-op
+  }
 
   override fun onResponseHeaders(headers: ResponseHeaders, endStream: Boolean):
     FilterHeadersStatus<ResponseHeaders> {
@@ -26,7 +28,8 @@ class DemoFilter() : ResponseFilter {
     return FilterDataStatus.Continue(body)
   }
 
-  override fun onResponseTrailers(trailers: ResponseTrailers): FilterTrailersStatus<ResponseTrailers> {
+  override fun onResponseTrailers(trailers: ResponseTrailers):
+    FilterTrailersStatus<ResponseTrailers> {
     Log.d("DemoFilter", "On trailers!")
     return FilterTrailersStatus.Continue(trailers)
   }
