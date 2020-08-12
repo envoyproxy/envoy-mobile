@@ -3,6 +3,7 @@
 #include <cerrno>
 
 #include "envoy/network/address.h"
+#include "common/network/socket_interface.h"
 
 namespace Envoy {
 namespace Network {
@@ -44,7 +45,7 @@ public:
     return Type::Ip;
   }
 
-  const std::string& socketInterface() const { return address_; }
+  const SocketInterface& socketInterface() const { return SocketInterfaceSingleton::get(); }
 
 private:
   const std::string address_{"synthetic"};
