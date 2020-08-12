@@ -13,11 +13,14 @@ class JvmBridgeUtilityTest {
     utility.passHeader("test-1".toByteArray(), "value-2".toByteArray(), false)
 
     val headers = utility.retrieveHeaders()
-    val expectedHeaders = mapOf("test-0" to listOf("value-0"),
-                                "test-1" to listOf("value-1", "value-2"))
+    val expectedHeaders = mapOf(
+      "test-0" to listOf("value-0"),
+      "test-1" to listOf("value-1", "value-2")
+    )
 
-    assertThat(headers).hasSize(2) // Two keys / header name
-                       .usingRecursiveComparison().isEqualTo(expectedHeaders)
+    assertThat(headers)
+      .hasSize(2) // Two keys / header name
+      .usingRecursiveComparison().isEqualTo(expectedHeaders)
   }
 
   @Test
