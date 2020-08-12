@@ -56,12 +56,11 @@ public class EnvoyConfiguration {
    * @throws ConfigurationException, when the template provided is not fully
    *                                 resolved.
    */
-  String resolveTemplate(String templateYAML) {
+  String resolveTemplate(final String templateYAML, final String filterTemplateYAML) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
-    final String filterTemplate = JniLibrary.filterTemplateString();
     for (EnvoyHTTPFilterFactory filterFactory : httpFilterFactories) {
       String filterConfig =
-          filterTemplate.replace("{{ platform_filter_name }}", filterFactory.getFilterName());
+          filterTemplateYAML.replace("{{ platform_filter_name }}", filterFactory.getFilterName());
       filterConfigBuilder.append(filterConfig);
     }
     String filterConfigChain = filterConfigBuilder.toString();

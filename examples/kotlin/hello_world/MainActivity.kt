@@ -37,7 +37,7 @@ class MainActivity : Activity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    engine = AndroidEngineBuilder(application).build()
+    engine = AndroidEngineBuilder(application)
       .addFilter { DemoFilter() }
       .build()
 
