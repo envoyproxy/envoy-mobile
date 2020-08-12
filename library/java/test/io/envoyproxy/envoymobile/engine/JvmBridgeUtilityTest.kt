@@ -21,7 +21,7 @@ class JvmBridgeUtilityTest {
   }
 
   @Test
-  fun `validateCount returns a boolean that comparison of the  number of header values in the map`() {
+  fun `validateCount checks if the expected number of header values in the map matches the actual`() {
     val utility = JvmBridgeUtility()
     utility.passHeader("test-0".toByteArray(), "value-0".toByteArray(), true)
     utility.passHeader("test-1".toByteArray(), "value-1".toByteArray(), false)
