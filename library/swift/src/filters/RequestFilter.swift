@@ -37,4 +37,12 @@ public protocol RequestFilter: Filter {
   ///
   /// - returns: The trailer status containing body with which to continue or buffer.
   func onRequestTrailers(_ trailers: RequestTrailers) -> FilterTrailersStatus<RequestTrailers>
+
+  /// Invoked explicitly in response to an asynchronous resume() callback when filter
+  /// iteration has been stopped.
+  /// 
+  /// @return: The resumption status including any previously held entities that remain
+  ///          to be forwarded.
+  /// 
+  func onResumeIteration() -> FilterResumeStatus<RequestHeaders, RequestTrailers>
 }

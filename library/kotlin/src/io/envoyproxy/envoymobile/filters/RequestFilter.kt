@@ -49,4 +49,13 @@ interface RequestFilter : Filter {
    * @return: The trailer status containing body with which to continue or buffer.
    */
   fun onRequestTrailers(trailers: RequestTrailers): FilterTrailersStatus<RequestTrailers>
+
+  /**
+   * Invoked explicitly in response to an asynchronous resume() callback when filter
+   * iteration has been stopped.
+   *
+   * @return: The resumption status including any previously held entities that remain
+   *          to be forwarded.
+   */
+  fun onResumeIteration(): FilterResumeStatus<RequestHeaders, RequestTrailers>
 }
