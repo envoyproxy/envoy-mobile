@@ -60,7 +60,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                        new JvmFilterFactoryContext(filterFactory));
     }
 
-    return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString(), JniLibrary.filterTemplateString()), logLevel);
+    return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString(),
+                                                            JniLibrary.filterTemplateString()),
+                         logLevel);
   }
 
   /**
