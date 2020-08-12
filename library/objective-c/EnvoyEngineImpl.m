@@ -199,7 +199,10 @@ static void ios_http_filter_release(const void *context) {
 
 - (void)lifecycleDidChangeWithNotification:(NSNotification *)notification {
   NSLog(@"[Envoy] terminating engine (%@)", notification.name);
-  terminate_engine();
+  // TODO: ensure this is called with the correct envoy_engine_t once multiple Engine objects can
+  // be allocated.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  terminate_engine(0);
 }
 
 @end
