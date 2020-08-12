@@ -29,7 +29,7 @@ sealed class FilterDataStatus {
    * This should be called by filters which must parse a larger block of the incoming data before
    * continuing processing.
    */
-  class StopIterationAndBuffer(val data: ByteBuffer) : FilterDataStatus()
+  class StopIterationAndBuffer : FilterDataStatus()
 
   /**
    * Do not iterate to any of the remaining filters in the chain, and do not internally buffer
@@ -45,4 +45,14 @@ sealed class FilterDataStatus {
    * continuing processing, and will handle their own buffering.
    */
   class StopIterationNoBuffer : FilterDataStatus()
+
+  /**
+   * Resume previously-stopped iteration, possibly forwarding headers, if iteration was previously
+   * stopped during an on*Headers invocation.
+   *
+   * It is an error to return ResumeIteration if iteration is not currently stopped, and it is
+   * an error to include headers if headers have already been forwarded to the next filter
+   * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
+   */
+  class ResumeIteration<T : Headers>(val headers: T?, val data: ByteBuffer) : FilterDataStatus()
 }
