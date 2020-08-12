@@ -21,7 +21,7 @@ public enum FilterDataStatus: Equatable {
   ///
   /// This should be called by filters which must parse a larger block of the incoming data before
   /// continuing processing.
-  case stopIterationAndBuffer(Data)
+  case stopIterationAndBuffer
 
   /// Do not iterate to any of the remaining filters in the chain, and do not internally buffer
   /// data.
