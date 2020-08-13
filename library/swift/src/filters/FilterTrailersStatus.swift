@@ -1,6 +1,7 @@
 /// Status returned by filters when transmitting or receiving trailers.
 @frozen
 public enum FilterTrailersStatus<T: Headers>: Equatable {
+  // TODO(goaway): use associated type constraints to enforce agreement between header types.
   /// Continue filter chain iteration, passing the provided trailers through.
   case `continue`(T)
 
@@ -18,5 +19,5 @@ public enum FilterTrailersStatus<T: Headers>: Equatable {
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
    */
-  case resumeIteration(T, withHeaders: Headers? = nil, withData: Data? = nil)
+  case resumeIteration(headers: Headers? = nil, data: Data? = nil, trailers: T)
 }

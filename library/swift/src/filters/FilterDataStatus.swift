@@ -44,5 +44,5 @@ public enum FilterDataStatus: Equatable {
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
    */
-  case resumeIteration(Data, withHeaders: Headers? = nil)
+  case resumeIteration(headers: Headers? = nil, data: Data)
 }

@@ -25,7 +25,7 @@ extension EnvoyHTTPFilter {
         switch result {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
-        case .stopIteration(let headers):
+        case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, headers.headers]
         }
       }
@@ -33,14 +33,11 @@ extension EnvoyHTTPFilter {
       self.onRequestData = { data, endStream in
         let result = requestFilter.onRequestData(data, endStream: endStream)
         switch result {
-        case .continue(let data):
+        case .continue(let data), .resumeIteration(let headers, let data):
           return [kEnvoyFilterDataStatusContinue, data]
-        case .stopIterationAndBuffer(let data):
+        case .stopIterationAndBuffer:
           return [kEnvoyFilterDataStatusStopIterationAndBuffer, data]
         case .stopIterationNoBuffer:
-          // TODO(goaway): this probably shouldn't return any associated data, but bridge code
-          // would need to be updated to handle nil. Alternatively, when an unmodified flag is
-          // added, that could suffice here, too.
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, data]
         }
       }
@@ -48,11 +45,10 @@ extension EnvoyHTTPFilter {
       self.onRequestTrailers = { envoyTrailers in
         let result = requestFilter.onRequestTrailers(RequestTrailers(headers: envoyTrailers))
         switch result {
-        case .continue(let trailers):
+        case .continue(let trailers), .resumeIteration(let headers, let data, let trailers):
           return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
-        case .stopIteration(let trailers):
+        case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, trailers.headers]
-        }
       }
     }
 
@@ -63,7 +59,7 @@ extension EnvoyHTTPFilter {
         switch result {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
-        case .stopIteration(let headers):
+        case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, headers.headers]
         }
       }
@@ -71,14 +67,11 @@ extension EnvoyHTTPFilter {
       self.onResponseData = { data, endStream in
         let result = responseFilter.onResponseData(data, endStream: endStream)
         switch result {
-        case .continue(let data):
+        case .continue(let data), .resumeIteration(let headers, let data):
           return [kEnvoyFilterDataStatusContinue, data]
-        case .stopIterationAndBuffer(let data):
+        case .stopIterationAndBuffer:
           return [kEnvoyFilterDataStatusStopIterationAndBuffer, data]
         case .stopIterationNoBuffer:
-          // TODO(goaway): this probably shouldn't return any associated data, but bridge code
-          // would need to be updated to handle nil. Alternatively, when an unmodified flag is
-          // added, that could suffice here, too.
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, data]
         }
       }
@@ -86,9 +79,9 @@ extension EnvoyHTTPFilter {
       self.onResponseTrailers = { envoyTrailers in
         let result = responseFilter.onResponseTrailers(ResponseTrailers(headers: envoyTrailers))
         switch result {
-        case .continue(let trailers):
+        case .continue(let trailers), .resumeIteration(let headers, let data, let trailers):
           return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
-        case .stopIteration(let trailers):
+        case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, trailers.headers]
         }
       }
