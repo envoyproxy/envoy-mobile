@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 /*
  * Status returned by filters when transmitting or receiving data.
  */
-sealed class FilterDataStatus {
+sealed class FilterDataStatus<T : Headers> {
   /**
    * Continue filter chain iteration. If headers have not yet been sent to the next filter, they
    * will be sent first via `onRequestHeaders()`/`onResponseHeaders()`.
@@ -14,7 +14,7 @@ sealed class FilterDataStatus {
    * before the entirety is sent to the next filter.
    * TODO: add param docs. name param in swift.
    */
-  class Continue(val data: ByteBuffer) : FilterDataStatus()
+  class Continue(val data: ByteBuffer) : FilterDataStatus<T>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain, and buffer body data for later
@@ -29,7 +29,7 @@ sealed class FilterDataStatus {
    * This should be called by filters which must parse a larger block of the incoming data before
    * continuing processing.
    */
-  class StopIterationAndBuffer : FilterDataStatus()
+  class StopIterationAndBuffer : FilterDataStatus<T>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain, and do not internally buffer
@@ -44,7 +44,7 @@ sealed class FilterDataStatus {
    * This may be called by filters which must parse a larger block of the incoming data before
    * continuing processing, and will handle their own buffering.
    */
-  class StopIterationNoBuffer : FilterDataStatus()
+  class StopIterationNoBuffer : FilterDataStatus<T>()
 
   /**
    * Resume previously-stopped iteration, possibly forwarding headers, if iteration was previously
@@ -54,5 +54,5 @@ sealed class FilterDataStatus {
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
    */
-  class ResumeIteration<T : Headers>(val headers: T?, val data: ByteBuffer) : FilterDataStatus()
+  class ResumeIteration<T : Headers>(val headers: T?, val data: ByteBuffer) : FilterDataStatus<T>()
 }
