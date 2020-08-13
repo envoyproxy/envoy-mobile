@@ -14,7 +14,7 @@ sealed class FilterDataStatus<T : Headers> {
    * before the entirety is sent to the next filter.
    * TODO: add param docs. name param in swift.
    */
-  class Continue(val data: ByteBuffer) : FilterDataStatus<T>()
+  class Continue<T : Headers>(val data: ByteBuffer) : FilterDataStatus<T>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain, and buffer body data for later
@@ -29,7 +29,7 @@ sealed class FilterDataStatus<T : Headers> {
    * This should be called by filters which must parse a larger block of the incoming data before
    * continuing processing.
    */
-  class StopIterationAndBuffer : FilterDataStatus<T>()
+  class StopIterationAndBuffer<T : Headers> : FilterDataStatus<T>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain, and do not internally buffer
@@ -44,7 +44,7 @@ sealed class FilterDataStatus<T : Headers> {
    * This may be called by filters which must parse a larger block of the incoming data before
    * continuing processing, and will handle their own buffering.
    */
-  class StopIterationNoBuffer : FilterDataStatus<T>()
+  class StopIterationNoBuffer<T : Headers> : FilterDataStatus<T>()
 
   /**
    * Resume previously-stopped iteration, possibly forwarding headers, if iteration was previously

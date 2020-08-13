@@ -16,5 +16,5 @@ sealed class FilterHeadersStatus<T : Headers> {
    * `continueRequest()`/`continueResponse()` MUST occur when continued filter iteration is
    * desired.
    */
-  class StopIteration : FilterHeadersStatus<T>()
+  class StopIteration<T : Headers> : FilterHeadersStatus<T>()
 }
