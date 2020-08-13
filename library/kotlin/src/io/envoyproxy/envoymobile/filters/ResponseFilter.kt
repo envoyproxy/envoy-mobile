@@ -7,14 +7,6 @@ import java.nio.ByteBuffer
  */
 interface ResponseFilter : Filter {
   /**
-   * Called by the filter manager once to initialize the filter callbacks that the filter should
-   * use.
-   *
-   * @param callbacks: The callbacks for this filter to use to interact with the chain.
-   */
-  fun setResponseFilterCallbacks(callbacks: ResponseFilterCallbacks)
-
-  /**
    * Called once when the response is initiated.
    *
    * Filters may mutate or delay the response headers.
@@ -49,15 +41,6 @@ interface ResponseFilter : Filter {
    * @return: The trailer status containing body with which to continue or buffer.
    */
   fun onResponseTrailers(trailers: ResponseTrailers): FilterTrailersStatus<ResponseTrailers>
-
-  /**
-   * Invoked explicitly in response to an asynchronous resume() callback when filter
-   * iteration has been stopped.
-   *
-   * @return: The resumption status including any previously held entities that remain
-   *          to be forwarded.
-   */
-  fun onResumeIteration(): FilterResumeStatus<ResponseHeaders, ResponseTrailers>
 
   /**
    * Called at most once when an error within Envoy occurs.
