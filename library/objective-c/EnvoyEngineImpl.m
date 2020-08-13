@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-static void ios_on_exit() {
+static void ios_on_exit(void *) {
   // Currently nothing needs to happen in iOS on exit. Just log.
   NSLog(@"[Envoy] library is exiting");
 }
@@ -172,7 +172,7 @@ static void ios_http_filter_release(const void *context) {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    envoy_engine_callbacks native_callbacks = {ios_on_exit};
+    envoy_engine_callbacks native_callbacks = {ios_on_exit, NULL};
     return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
                            logLevel.UTF8String);
   } @catch (NSException *exception) {
