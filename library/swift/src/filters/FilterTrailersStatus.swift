@@ -1,3 +1,5 @@
+import Foundation
+
 /// Status returned by filters when transmitting or receiving trailers.
 @frozen
 public enum FilterTrailersStatus<T: Headers, U: Headers>: Equatable {

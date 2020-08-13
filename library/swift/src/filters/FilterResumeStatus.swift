@@ -1,3 +1,5 @@
+import Foundation
+
 /// Status returned by filters after resuming iteration asynchronously.
 @frozen
 public enum FilterResumeStatus<T: Headers, U: Headers>: Equatable {
