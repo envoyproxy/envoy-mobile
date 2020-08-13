@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import java.nio.ByteBuffer
+
 /*
  * Status returned by filters when transmitting or receiving trailers.
  */
@@ -12,6 +14,8 @@ sealed class FilterTrailersStatus<T : Headers, U : Headers> {
   /**
    * Do not iterate to any of the remaining filters in the chain with trailers.
    *
+   * Because trailers are by definition the last HTTP entity of a request or response, only
+   * asynchronous filters support resumption after returning StopIteration from on*Trailers.
    * Calling `continueRequest()`/`continueResponse()` MUST occur when continued filter iteration
    * is desired.
    */

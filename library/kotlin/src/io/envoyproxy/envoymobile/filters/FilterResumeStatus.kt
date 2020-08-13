@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import java.nio.ByteBuffer
+
 /*
  * Status returned by filters when transmitting or receiving trailers.
  */
