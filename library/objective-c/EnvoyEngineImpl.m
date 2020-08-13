@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-static void ios_on_exit(void *) {
+static void ios_on_exit(void *context) {
   // Currently nothing needs to happen in iOS on exit. Just log.
   NSLog(@"[Envoy] library is exiting");
 }
