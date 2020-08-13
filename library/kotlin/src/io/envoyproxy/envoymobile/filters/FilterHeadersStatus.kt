@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
 /*
- * Status returned by filters when transmitting or receiving headers.
+ * Status to be returned by filters when transmitting or receiving headers.
  */
 sealed class FilterHeadersStatus<T : Headers> {
   /**

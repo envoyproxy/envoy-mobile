@@ -3,7 +3,7 @@ package io.envoyproxy.envoymobile
 import java.nio.ByteBuffer
 
 /*
- * Status returned by filters when transmitting or receiving data.
+ * Status to be returned by filters when transmitting or receiving data.
  */
 sealed class FilterDataStatus<T : Headers> {
   /**
@@ -47,8 +47,8 @@ sealed class FilterDataStatus<T : Headers> {
   class StopIterationNoBuffer<T : Headers> : FilterDataStatus<T>()
 
   /**
-   * Resume previously-stopped iteration, possibly forwarding headers, if iteration was previously
-   * stopped during an on*Headers invocation.
+   * Resume previously-stopped iteration, possibly forwarding headers if iteration was stopped
+   * during an on*Headers invocation.
    *
    * It is an error to return ResumeIteration if iteration is not currently stopped, and it is
    * an error to include headers if headers have already been forwarded to the next filter
