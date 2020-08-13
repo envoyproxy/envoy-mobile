@@ -29,7 +29,7 @@ interface ResponseFilter : Filter {
    *
    * @return: The data status containing body with which to continue or buffer.
    */
-  fun onResponseData(body: ByteBuffer, endStream: Boolean): FilterDataStatus
+  fun onResponseData(body: ByteBuffer, endStream: Boolean): FilterDataStatus<ResponseHeaders>
 
   /**
    * Called at most once when the response is closed from the server with trailers.
@@ -40,7 +40,7 @@ interface ResponseFilter : Filter {
    *
    * @return: The trailer status containing body with which to continue or buffer.
    */
-  fun onResponseTrailers(trailers: ResponseTrailers): FilterTrailersStatus<ResponseTrailers>
+  fun onResponseTrailers(trailers: ResponseTrailers): FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
 
   /**
    * Called at most once when an error within Envoy occurs.
