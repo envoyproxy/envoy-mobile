@@ -6,8 +6,8 @@ public enum FilterHeadersStatus<T: Headers>: Equatable {
 
   /// Do not iterate to any of the remaining filters in the chain with headers.
   ///
-  /// Returning `continue` from `onRequestData()`/`onResponseData()` or calling
-  /// `continueRequest()`/`continueResponse()` MUST occur when continued filter iteration is
+  /// Returning `continue` or `resumeIteration` from another filter invocation or calling
+  /// `resumeRequest()`/`resumeResponse()` MUST occur when continued filter iteration is
   /// desired.
   case stopIteration
 }

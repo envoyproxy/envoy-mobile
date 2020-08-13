@@ -15,8 +15,8 @@ public enum FilterDataStatus<T: Headers>: Equatable {
   ///
   /// This filter will continue to be called with new chunks of data.
   ///
-  /// Returning `continue` from `onRequestData()`/`onResponseData()` or calling
-  /// `continueRequest()`/`continueResponse()` MUST be called when continued filter iteration is
+  /// Returning `continue` or `resumeIteration from another filter invocation or calling
+  /// `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
   /// desired.
   ///
   /// This should be called by filters which must parse a larger block of the incoming data before

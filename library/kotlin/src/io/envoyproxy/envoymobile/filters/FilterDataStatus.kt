@@ -37,8 +37,8 @@ sealed class FilterDataStatus<T : Headers> {
    *
    * This filter will continue to be called with new chunks of data.
    *
-   * Returning `Continue` from `onRequestData()`/`onResponseData()` or calling
-   * `continueRequest()`/`continueResponse()` MUST be called when continued filter iteration is
+   * Returning `Continue` or `ResumeIteration from another filter invocation or calling
+   * `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
    * desired.
    *
    * This may be called by filters which must parse a larger block of the incoming data before

@@ -16,7 +16,7 @@ sealed class FilterTrailersStatus<T : Headers, U : Headers> {
    *
    * Because trailers are by definition the last HTTP entity of a request or response, only
    * asynchronous filters support resumption after returning StopIteration from on*Trailers.
-   * Calling `continueRequest()`/`continueResponse()` MUST occur when continued filter iteration
+   * Calling `resumeRequest()`/`resumeResponse()` MUST occur if continued filter iteration
    * is desired.
    */
   class StopIteration<T : Headers, U : Headers> : FilterTrailersStatus<T, U>()
