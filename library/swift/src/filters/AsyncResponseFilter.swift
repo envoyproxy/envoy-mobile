@@ -6,7 +6,12 @@ public protocol AsyncResponseFilter: ResponseFilter {
   /// iteration has been stopped.
   ///
   /// - return: The resumption status including any HTTP entities that will be forwarded.
-  func onResumeResponse(headers: ResponseHeaders?, data: Data?, trailers: ResponseTrailers?, endStream: Bool) -> FilterResumeStatus<ResponseHeaders, ResponseTrailers>
+  func onResumeResponse(
+    headers: ResponseHeaders?,
+    data: Data?,
+    trailers: ResponseTrailers?,
+    endStream: Bool
+  ) -> FilterResumeStatus<ResponseHeaders, ResponseTrailers>
 
   /// Called by the filter manager once to initialize the filter callbacks that the filter should
   /// use.

@@ -7,7 +7,12 @@ public protocol AsyncRequestFilter: RequestFilter {
   /// of any stream state that has not yet been forwarded along the filter chain.
   ///
   /// - return: The resumption status including any HTTP entities that will be forwarded.
-  func onResumeRequest(headers: RequestHeaders?, data: Data?, trailers: RequestTrailers?, endStream: Bool) -> FilterResumeStatus<RequestHeaders, RequestTrailers>
+  func onResumeRequest(
+    headers: RequestHeaders?,
+    data: Data?,
+    trailers: RequestTrailers?,
+    endStream: Bool
+  ) -> FilterResumeStatus<RequestHeaders, RequestTrailers>
 
   /// Called by the filter manager once to initialize the filter callbacks that the filter should
   /// use.

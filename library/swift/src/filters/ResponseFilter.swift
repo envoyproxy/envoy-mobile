@@ -30,7 +30,8 @@ public protocol ResponseFilter: Filter {
   /// - parameter trailers: The outbound trailers.
   ///
   /// - returns: The trailer status containing body with which to continue or buffer.
-  func onResponseTrailers(_ trailers: ResponseTrailers) -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
+  func onResponseTrailers(_ trailers: ResponseTrailers)
+    -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
 
   /// Called at most once when an error within Envoy occurs.
   ///

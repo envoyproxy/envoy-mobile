@@ -26,29 +26,34 @@ extension EnvoyHTTPFilter {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
         case .stopIteration:
-          return [kEnvoyFilterHeadersStatusStopIteration, headers.headers]
+          return [kEnvoyFilterHeadersStatusStopIteration, envoyHeaders]
         }
       }
 
       self.onRequestData = { data, endStream in
         let result = requestFilter.onRequestData(data, endStream: endStream)
         switch result {
-        case .continue(let data), .resumeIteration(let headers, let data):
+        case .continue(let data):
           return [kEnvoyFilterDataStatusContinue, data]
         case .stopIterationAndBuffer:
           return [kEnvoyFilterDataStatusStopIterationAndBuffer, data]
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, data]
+        case .resumeIteration(let headers, let data):
+          return [kEnvoyFilterDataStatusContinue, data]
         }
       }
 
       self.onRequestTrailers = { envoyTrailers in
         let result = requestFilter.onRequestTrailers(RequestTrailers(headers: envoyTrailers))
         switch result {
-        case .continue(let trailers), .resumeIteration(let headers, let data, let trailers):
+        case .continue(let trailers):
           return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
         case .stopIteration:
-          return [kEnvoyFilterTrailersStatusStopIteration, trailers.headers]
+          return [kEnvoyFilterTrailersStatusStopIteration, envoyTrailers]
+        case .resumeIteration(let headers, let data, let trailers):
+          return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
+        }
       }
     }
 
@@ -60,29 +65,33 @@ extension EnvoyHTTPFilter {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
         case .stopIteration:
-          return [kEnvoyFilterHeadersStatusStopIteration, headers.headers]
+          return [kEnvoyFilterHeadersStatusStopIteration, envoyHeaders]
         }
       }
 
       self.onResponseData = { data, endStream in
         let result = responseFilter.onResponseData(data, endStream: endStream)
         switch result {
-        case .continue(let data), .resumeIteration(let headers, let data):
+        case .continue(let data):
           return [kEnvoyFilterDataStatusContinue, data]
         case .stopIterationAndBuffer:
           return [kEnvoyFilterDataStatusStopIterationAndBuffer, data]
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, data]
+        case .resumeIteration(let headers, let data):
+          return [kEnvoyFilterDataStatusContinue, data]
         }
       }
 
       self.onResponseTrailers = { envoyTrailers in
         let result = responseFilter.onResponseTrailers(ResponseTrailers(headers: envoyTrailers))
         switch result {
-        case .continue(let trailers), .resumeIteration(let headers, let data, let trailers):
+        case .continue(let trailers):
           return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
         case .stopIteration:
-          return [kEnvoyFilterTrailersStatusStopIteration, trailers.headers]
+          return [kEnvoyFilterTrailersStatusStopIteration, envoyTrailers]
+        case .resumeIteration(let headers, let data, let trailers):
+          return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
         }
       }
     }
