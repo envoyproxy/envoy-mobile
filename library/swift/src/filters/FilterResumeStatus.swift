@@ -1,6 +1,6 @@
 /// Status returned by filters after resuming iteration asynchronously.
 @frozen
-public enum FilterResumeStatus<T: Headers, U: Trailers>: Equatable {
+public enum FilterResumeStatus<T: Headers, U: Headers>: Equatable {
   /**
    * Resume previously-stopped iteration, possibly forwarding headers and data, if iteration was
    * previously stopped during an on*Headers or on*Data invocation.

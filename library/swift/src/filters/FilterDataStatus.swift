@@ -2,7 +2,7 @@ import Foundation
 
 /// Status returned by filters when transmitting or receiving data.
 @frozen
-public enum FilterDataStatus: Equatable {
+public enum FilterDataStatus<T: Headers>: Equatable {
   /// Continue filter chain iteration. If headers have not yet been sent to the next filter, they
   /// will be sent first via `onRequestHeaders()`/`onResponseHeaders()`.
   ///
@@ -44,5 +44,5 @@ public enum FilterDataStatus: Equatable {
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
    */
-  case resumeIteration(headers: Headers? = nil, data: Data)
+  case resumeIteration(headers: T? = nil, data: Data)
 }

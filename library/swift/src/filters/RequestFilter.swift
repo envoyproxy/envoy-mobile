@@ -21,7 +21,7 @@ public protocol RequestFilter: Filter {
   /// - parameter endStream: Whether this is the last data frame.
   ///
   /// - returns: The data status containing body with which to continue or buffer.
-  func onRequestData(_ body: Data, endStream: Bool) -> FilterDataStatus
+  func onRequestData(_ body: Data, endStream: Bool) -> FilterDataStatus<RequestHeaders>
 
   /// Called at most once when the request is closed from the client with trailers.
   ///
@@ -30,5 +30,5 @@ public protocol RequestFilter: Filter {
   /// - parameter trailers: The outbound trailers.
   ///
   /// - returns: The trailer status containing body with which to continue or buffer.
-  func onRequestTrailers(_ trailers: RequestTrailers) -> FilterTrailersStatus<RequestTrailers>
+  func onRequestTrailers(_ trailers: RequestTrailers) -> FilterTrailersStatus<RequestHeaders, RequestTrailers>
 }

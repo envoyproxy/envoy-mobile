@@ -9,5 +9,5 @@ public enum FilterHeadersStatus<T: Headers>: Equatable {
   /// Returning `continue` from `onRequestData()`/`onResponseData()` or calling
   /// `continueRequest()`/`continueResponse()` MUST occur when continued filter iteration is
   /// desired.
-  case stopIteration(T)
+  case stopIteration
 }
