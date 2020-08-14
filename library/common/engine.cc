@@ -94,7 +94,7 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-void Engine::recordCounter(std::string elements, uint64_t count) {
+void Engine::recordCounter(const std::string& elements, uint64_t count) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, count]() -> void {
       Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(elements)})
