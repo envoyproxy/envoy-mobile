@@ -9,7 +9,7 @@ sealed class FilterTrailersStatus<T : Headers, U : Headers> {
   /**
    * Continue filter chain iteration, passing the provided trailers through.
    */
-  class Continue<T : Headers, U : Headers>(val trailers: T) : FilterTrailersStatus<T, U>()
+  class Continue<T : Headers, U : Headers>(val trailers: U) : FilterTrailersStatus<T, U>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain with trailers.
