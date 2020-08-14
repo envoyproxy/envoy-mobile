@@ -26,19 +26,42 @@ class JvmBridgeUtilityTest {
   @Test
   fun `validateCount checks if the expected number of header values in the map matches the actual`() {
     val utility = JvmBridgeUtility()
+    assertThat(utility.validateCount(1)).isFalse()
+
+    utility.passHeader("test-0".toByteArray(), "value-0".toByteArray(), true)
+    assertThat(utility.validateCount(1)).isTrue()
+
+    utility.passHeader("test-1".toByteArray(), "value-1".toByteArray(), false)
+    assertThat(utility.validateCount(2)).isTrue()
+
+    utility.passHeader("test-1".toByteArray(), "value-2".toByteArray(), false)
+    assertThat(utility.validateCount(3)).isTrue()
+
+    assertThat(utility.validateCount(4)).isFalse()
+  }
+
+
+  @Test
+  fun `retrieveHeaders resets internal state`() {
+    val utility = JvmBridgeUtility()
     utility.passHeader("test-0".toByteArray(), "value-0".toByteArray(), true)
     utility.passHeader("test-1".toByteArray(), "value-1".toByteArray(), false)
     utility.passHeader("test-1".toByteArray(), "value-2".toByteArray(), false)
-
-    assertThat(utility.validateCount(2)).isFalse()
     assertThat(utility.validateCount(3)).isTrue()
-    assertThat(utility.validateCount(4)).isFalse()
 
-    // Resets accumulator
     val headers = utility.retrieveHeaders()
-
-    assertThat(utility.validateCount(3)).isFalse()
     assertThat(utility.validateCount(0)).isTrue()
+
+    utility.passHeader("test-2".toByteArray(), "value-3".toByteArray(), true)
+
+    val nextHeaders = utility.retrieveHeaders()
+    val expectedHeaders = mapOf(
+      "test-2" to listOf("value-3")
+    )
+
+    assertThat(nextHeaders)
+      .hasSize(1) // One key / header name
+      .usingRecursiveComparison().isEqualTo(expectedHeaders)
   }
 
   @Test(expected = AssertionError::class)
