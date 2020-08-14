@@ -13,13 +13,14 @@ struct DemoFilter: ResponseFilter {
 
   func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks) {}
 
-  func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus {
+  func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
     // TODO(goaway): Can remove this when we have better integration coverage in place.
     NSLog("Saw data chunk of length \(body.count)")
     return .continue(body)
   }
 
-  func onResponseTrailers(_ trailers: ResponseTrailers) -> FilterTrailersStatus<ResponseTrailers> {
+  func onResponseTrailers(_ trailers: ResponseTrailers)
+      -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
     return .continue(trailers)
   }
 

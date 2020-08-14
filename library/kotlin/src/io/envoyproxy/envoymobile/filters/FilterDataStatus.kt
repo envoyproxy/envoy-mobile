@@ -10,17 +10,16 @@ sealed class FilterDataStatus<T : Headers> {
    * Continue filter chain iteration. If headers have not yet been sent to the next filter, they
    * will be sent first via `onRequestHeaders()`/`onResponseHeaders()`.
    *
-   * If data has previously been buffered, the data returned will be added to the buffer
-   * before the entirety is sent to the next filter.
-   * TODO: add param docs. name param in swift.
+   * @param data: The (potentially-modified) data to be forwarded along the filter chain.
    */
   class Continue<T : Headers>(val data: ByteBuffer) : FilterDataStatus<T>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain, and buffer body data for later
-   * dispatching. The data returned here will be added to the buffer.
+   * dispatching. The data passed to this invocation will be buffered internally.
    *
-   * This filter will continue to be called with new chunks of data.
+   * `onData` will continue to be called with any new chunks of data appended to all data that has
+   * been buffered so far.
    *
    * Returning `Continue` from `onRequestData()`/`onResponseData()` or calling
    * `continueRequest()`/`continueResponse()` MUST be called when continued filter iteration is
@@ -35,7 +34,7 @@ sealed class FilterDataStatus<T : Headers> {
    * Do not iterate to any of the remaining filters in the chain, and do not internally buffer
    * data.
    *
-   * This filter will continue to be called with new chunks of data.
+   * `onData` will continue to be called with new chunks of data.
    *
    * Returning `Continue` or `ResumeIteration from another filter invocation or calling
    * `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
