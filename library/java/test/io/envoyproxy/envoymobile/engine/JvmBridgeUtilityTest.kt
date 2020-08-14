@@ -40,7 +40,6 @@ class JvmBridgeUtilityTest {
     assertThat(utility.validateCount(4)).isFalse()
   }
 
-
   @Test
   fun `retrieveHeaders resets internal state`() {
     val utility = JvmBridgeUtility()
