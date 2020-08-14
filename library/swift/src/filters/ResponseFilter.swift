@@ -25,7 +25,7 @@ public protocol ResponseFilter: Filter {
 
   /// Called at most once when the response is closed from the server with trailers.
   ///
-  /// Filters may mutate or delay the trailers.
+  /// Filters may mutate or delay the trailers. Note trailers imply the stream has ended.
   ///
   /// - parameter trailers: The outbound trailers.
   ///

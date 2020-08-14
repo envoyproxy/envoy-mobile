@@ -34,7 +34,7 @@ interface RequestFilter : Filter {
   /**
    * Called at most once when the request is closed from the client with trailers.
    *
-   * Filters may mutate or delay the trailers.
+   * Filters may mutate or delay the trailers. Note trailers imply the stream has ended.
    *
    * @param trailers: The outbound trailers.
    *
