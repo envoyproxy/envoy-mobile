@@ -30,9 +30,17 @@ java_library(
         "JniLibrary.java",
         "JvmBridgeUtility.java",
         "JvmCallbackContext.java",
+        "JvmFilterContext.java",
+        "JvmFilterFactoryContext.java",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//library/java/src/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
     ],
+)
+
+filegroup(
+    name = "envoy_base_engine_lib_srcs",
+    srcs = ["JvmBridgeUtility.java"],
+    visibility = ["//visibility:public"],
 )
