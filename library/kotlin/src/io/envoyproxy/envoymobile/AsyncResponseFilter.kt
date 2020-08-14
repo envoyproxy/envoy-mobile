@@ -10,7 +10,7 @@ interface AsyncResponseFilter : ResponseFilter {
    *
    * @param callbacks: The callbacks for this filter to use to interact with the chain.
    */
-   fun setResponseFilterCallbacks(callbacks: ResponseFilterCallbacks)
+  fun setResponseFilterCallbacks(callbacks: ResponseFilterCallbacks)
 
   /**
    * Invoked explicitly in response to an asynchronous resumeResponse() callback when filter
@@ -22,15 +22,15 @@ interface AsyncResponseFilter : ResponseFilter {
    *
    * @param headers: Headers, if `StopIteration` was returned from `onResponseHeaders`.
    * @param data: Any data that has been buffered where `StopIterationAndBuffer` was returned.
-   * @param trailers: Trailers, if `StopIteration` was returned from `onReponseTrailers`. 
+   * @param trailers: Trailers, if `StopIteration` was returned from `onReponseTrailers`.
    * @param endStream: True, if the stream ended with the previous (and thus, last) invocation.
    *
    * @return: The resumption status including any HTTP entities that will be forwarded.
    */
   fun onResumeResponse(
     headers: ResponseHeaders?,
-    data: ByteBuffer?
-    trailrs: ResponseTrailers?
+    data: ByteBuffer?,
+    trailrs: ResponseTrailers?,
     endStream: Boolean
   ): FilterResumeStatus<ResponseHeaders, ResponseTrailers>
 }

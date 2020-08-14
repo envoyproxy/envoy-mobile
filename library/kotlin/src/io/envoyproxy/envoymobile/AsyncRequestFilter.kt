@@ -10,7 +10,7 @@ interface AsyncRequestFilter : RequestFilter {
    *
    * @param callbacks: The callbacks for this filter to use to interact with the chain.
    */
-   fun setRequestFilterCallbacks(callbacks: RequestFilterCallbacks)
+  fun setRequestFilterCallbacks(callbacks: RequestFilterCallbacks)
 
   /**
    * Invoked explicitly in response to an asynchronous resumeRequest() callback when filter
@@ -29,8 +29,8 @@ interface AsyncRequestFilter : RequestFilter {
    */
   fun onResumeRequest(
     headers: RequestHeaders?,
-    data: ByteBuffer?
-    trailrs: RequestTrailers?
+    data: ByteBuffer?,
+    trailrs: RequestTrailers?,
     endStream: Boolean
   ): FilterResumeStatus<RequestHeaders, RequestTrailers>
 }
