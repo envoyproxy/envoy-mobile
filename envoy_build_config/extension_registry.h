@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/upstream/logical_dns_cluster.h"
+#include "common/upstream/static_cluster.h"
 
 #include "extensions/clusters/dynamic_forward_proxy/cluster.h"
 #include "extensions/compression/gzip/decompressor/config.h"

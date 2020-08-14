@@ -14,6 +14,7 @@ envoy_cc_library(
     deps = [
         "@envoy//source/common/network:socket_lib",
         "@envoy//source/common/upstream:logical_dns_cluster_lib",
+        "@envoy//source/common/upstream:static_cluster_lib",
         "@envoy//source/extensions/clusters/dynamic_forward_proxy:cluster",
         "@envoy//source/extensions/compression/gzip/decompressor:config",
         "@envoy//source/extensions/filters/http/decompressor:config",
