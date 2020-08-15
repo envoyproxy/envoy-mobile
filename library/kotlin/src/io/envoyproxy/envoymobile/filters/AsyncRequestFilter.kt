@@ -13,7 +13,7 @@ interface AsyncRequestFilter : RequestFilter {
   fun setRequestFilterCallbacks(callbacks: RequestFilterCallbacks)
 
   /**
-   * Invoked explicitly in response to an asynchronous resumeRequest() callback when filter
+   * Invoked explicitly in response to an asynchronous `resumeRequest()` callback when filter
    * iteration has been stopped. The parameters passed to this invocation will be a snapshot
    * of any stream state that has not yet been forwarded along the filter chain.
    *

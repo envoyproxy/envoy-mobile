@@ -28,7 +28,7 @@ public enum FilterDataStatus<T: Headers>: Equatable {
   ///
   /// `onData` will continue to be called with new chunks of data.
   ///
-  /// Returning `resumeIteration` from anotherFilterInvocation or calling
+  /// Returning `resumeIteration` from another filter invocation or calling
   /// `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
   /// desired.
   ///

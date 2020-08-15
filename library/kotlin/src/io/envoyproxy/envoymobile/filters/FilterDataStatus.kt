@@ -36,7 +36,7 @@ sealed class FilterDataStatus<T : Headers> {
    *
    * `onData` will continue to be called with new chunks of data.
    *
-   * Returning `Continue` or `ResumeIteration from another filter invocation or calling
+   * Returning `ResumeIteration` from another filter invocation or calling
    * `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
    * desired.
    *
