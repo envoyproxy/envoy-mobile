@@ -6,7 +6,6 @@ import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
 import io.envoyproxy.envoymobile.ResponseFilter
-import io.envoyproxy.envoymobile.ResponseFilterCallbacks
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
 import java.nio.ByteBuffer
@@ -22,7 +21,7 @@ class DemoFilter : ResponseFilter {
     FilterDataStatus<ResponseHeaders> {
       Log.d("DemoFilter", "On data!")
       return FilterDataStatus.Continue(body)
-  }
+    }
 
   override fun onResponseTrailers(trailers: ResponseTrailers):
     FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
