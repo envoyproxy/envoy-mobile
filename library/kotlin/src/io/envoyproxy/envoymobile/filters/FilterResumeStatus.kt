@@ -16,7 +16,7 @@ sealed class FilterResumeStatus<T : Headers, U : Headers> {
    * an error to include data or trailers if `endStream` was previously set or if trailers have
    * already been forwarded.
    *
-   * @param headers: Headers to be forwarded (if needed). 
+   * @param headers: Headers to be forwarded (if needed).
    * @param data: Data to be forwarded (if needed).
    * @param trailers: Trailers to be forwarded (if needed).
    */

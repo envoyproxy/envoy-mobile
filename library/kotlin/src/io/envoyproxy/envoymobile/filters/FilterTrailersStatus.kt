@@ -31,7 +31,7 @@ sealed class FilterTrailersStatus<T : Headers, U : Headers> {
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
    *
-   * @param headers: Headers to be forwarded (if needed). 
+   * @param headers: Headers to be forwarded (if needed).
    * @param data: Data to be forwarded (if needed).
    * @param trailers: Trailers to be forwarded.
    */
