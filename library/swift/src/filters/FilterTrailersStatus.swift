@@ -11,7 +11,7 @@ public enum FilterTrailersStatus<T: Headers, U: Headers>: Equatable {
   /// Do not iterate to any of the remaining filters in the chain with trailers.
   ///
   /// Because trailers are by definition the last HTTP entity of a request or response, only
-  /// asynchronous filters support resumption after returning `StopIteration` from on*Trailers.
+  /// asynchronous filters support resumption after returning `stopIteration` from on*Trailers.
   /// Calling `resumeRequest()`/`resumeResponse()` MUST occur if continued filter iteration
   /// is desired.
   case stopIteration
