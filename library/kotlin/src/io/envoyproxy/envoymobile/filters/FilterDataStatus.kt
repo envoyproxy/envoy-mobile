@@ -21,8 +21,8 @@ sealed class FilterDataStatus<T : Headers> {
    * `onData` will continue to be called with any new chunks of data appended to all data that has
    * been buffered so far.
    *
-   * Returning `Continue` from `onRequestData()`/`onResponseData()` or calling
-   * `continueRequest()`/`continueResponse()` MUST be called when continued filter iteration is
+   * Returning `ResumeIteration` from another filter invocation or calling
+   * `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
    * desired.
    *
    * This should be called by filters which must parse a larger block of the incoming data before
@@ -49,9 +49,12 @@ sealed class FilterDataStatus<T : Headers> {
    * Resume previously-stopped iteration, possibly forwarding headers if iteration was stopped
    * during an on*Headers invocation.
    *
-   * It is an error to return ResumeIteration if iteration is not currently stopped, and it is
+   * It is an error to return `ResumeIteration` if iteration is not currently stopped, and it is
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
+   *
+   * @param headers: Headers to be forwarded (if needed).
+   * @param data: Data to be forwarded.
    */
   class ResumeIteration<T : Headers>(val headers: T?, val data: ByteBuffer) : FilterDataStatus<T>()
 }

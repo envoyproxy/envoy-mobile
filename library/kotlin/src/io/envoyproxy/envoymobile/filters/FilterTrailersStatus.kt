@@ -8,6 +8,8 @@ import java.nio.ByteBuffer
 sealed class FilterTrailersStatus<T : Headers, U : Headers> {
   /**
    * Continue filter chain iteration, passing the provided trailers through.
+   *
+   * @param trailers: The (potentially-modified) trailers to be forwarded along the filter chain.
    */
   class Continue<T : Headers, U : Headers>(val trailers: U) : FilterTrailersStatus<T, U>()
 
@@ -28,6 +30,10 @@ sealed class FilterTrailersStatus<T : Headers, U : Headers> {
    * It is an error to return ResumeIteration if iteration is not currently stopped, and it is
    * an error to include headers if headers have already been forwarded to the next filter
    * (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
+   *
+   * @param headers: Headers to be forwarded (if needed). 
+   * @param data: Data to be forwarded (if needed).
+   * @param trailers: Trailers to be forwarded.
    */
   class ResumeIteration<T : Headers, U : Headers>(
     val headers: T?,

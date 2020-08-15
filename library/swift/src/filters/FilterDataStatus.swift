@@ -15,7 +15,7 @@ public enum FilterDataStatus<T: Headers>: Equatable {
   /// `onData` will continue to be called with any new chunks of data appended to all data that has
   /// been buffered so far.
   ///
-  /// Returning `continue` or `resumeIteration from another filter invocation or calling
+  /// Returning `resumeIteration from another filter invocation or calling
   /// `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
   /// desired.
   ///
@@ -28,8 +28,8 @@ public enum FilterDataStatus<T: Headers>: Equatable {
   ///
   /// `onData` will continue to be called with new chunks of data.
   ///
-  /// Returning `continue` from `onRequestData()`/`onResponseData()` or calling
-  /// `continueRequest()`/`continueResponse()` MUST be called when continued filter iteration is
+  /// Returning `resumeIteration` from anotherFilterInvocation or calling
+  /// `resumeRequest()`/`resumeResponse()` MUST be called when continued filter iteration is
   /// desired.
   ///
   /// This may be called by filters which must parse a larger block of the incoming data before
@@ -42,5 +42,8 @@ public enum FilterDataStatus<T: Headers>: Equatable {
   /// It is an error to return `resumeIteration` if iteration is not currently stopped, and it is
   /// an error to include headers if headers have already been forwarded to the next filter
   /// (i.e. iteration was stopped during an on*Data invocation instead of on*Headers).
+  ///
+  /// - param headers: Headers to be forwarded (if needed).
+  /// - param data: Data to be forwarded.
   case resumeIteration(headers: T? = nil, data: Data)
 }

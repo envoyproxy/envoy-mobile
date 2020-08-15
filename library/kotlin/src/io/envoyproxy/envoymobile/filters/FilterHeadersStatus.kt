@@ -6,13 +6,15 @@ package io.envoyproxy.envoymobile
 sealed class FilterHeadersStatus<T : Headers> {
   /**
    * Continue filter chain iteration, passing the provided headers through.
+   *
+   * @param headers: The (potentially-modified) headers to be forwarded along the filter chain.
    */
   class Continue<T : Headers>(val headers: T) : FilterHeadersStatus<T>()
 
   /**
    * Do not iterate to any of the remaining filters in the chain with headers.
    *
-   * Returning `Continue` or `ResumeIteration from another filter invocation or calling
+   * Returning `ResumeIteration` from another filter invocation or calling
    * `resumeRequest()`/`resumeResponse()` MUST occur when continued filter iteration is
    * desired.
    */
