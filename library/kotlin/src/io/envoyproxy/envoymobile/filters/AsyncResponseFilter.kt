@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import java.nio.ByteBuffer
+
 /*
  * ResponseFilter supporting asynchronous resumption.
  */
