@@ -14,7 +14,7 @@ class DemoFilter : ResponseFilter {
   override fun onResponseHeaders(headers: ResponseHeaders, endStream: Boolean):
     FilterHeadersStatus<ResponseHeaders> {
       Log.d("DemoFilter", "On headers!")
-      val builder = headers.toResponseHeadersBuilder();
+      val builder = headers.toResponseHeadersBuilder()
       builder.add("filter-demo", "1")
       return FilterHeadersStatus.Continue(builder.build())
     }
