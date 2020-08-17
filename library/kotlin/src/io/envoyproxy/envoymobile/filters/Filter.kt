@@ -76,9 +76,9 @@ internal class EnvoyHTTPFilterAdapter(
     (filter as? RequestFilter)?.let { requestFilter ->
       val result = requestFilter.onRequestTrailers(RequestTrailers(trailers))
       return when (result) {
-        is FilterTrailersStatus.Continue<*,*> -> arrayOf(result.status, result.trailers.headers)
-        is FilterTrailersStatus.StopIteration<*,*> -> arrayOf(result.status, trailers)
-        is FilterTrailersStatus.ResumeIteration<*,*> -> arrayOf(result.status, result.trailers!!.headers)
+        is FilterTrailersStatus.Continue<*, *> -> arrayOf(result.status, result.trailers.headers)
+        is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, trailers)
+        is FilterTrailersStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.trailers!!.headers)
       }
     }
     return arrayOf(0, trailers)
@@ -88,9 +88,9 @@ internal class EnvoyHTTPFilterAdapter(
     (filter as? ResponseFilter)?.let { responseFilter ->
       val result = responseFilter.onResponseTrailers(ResponseTrailers(trailers))
       return when (result) {
-        is FilterTrailersStatus.Continue<*,*> -> arrayOf(result.status, result.trailers.headers)
-        is FilterTrailersStatus.StopIteration<*,*> -> arrayOf(result.status, trailers)
-        is FilterTrailersStatus.ResumeIteration<*,*> -> arrayOf(result.status, result.trailers!!.headers)
+        is FilterTrailersStatus.Continue<*, *> -> arrayOf(result.status, result.trailers.headers)
+        is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, trailers)
+        is FilterTrailersStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.trailers!!.headers)
       }
     }
     return arrayOf(0, trailers)

@@ -275,7 +275,7 @@ jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const
   jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   return (envoy_filter_headers_status){/*status*/ unbox_integer(env, status),
-                                        /*headers*/ to_native_headers(env, j_headers)};
+                                       /*headers*/ to_native_headers(env, j_headers)};
 }
 
 static envoy_filter_headers_status
@@ -288,7 +288,7 @@ jvm_http_filter_on_response_headers(envoy_headers headers, bool end_stream, cons
   jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   return (envoy_filter_headers_status){/*status*/ unbox_integer(env, status),
-                                        /*headers*/ to_native_headers(env, j_headers)};
+                                       /*headers*/ to_native_headers(env, j_headers)};
 }
 
 static void* jvm_on_data(const char* method, envoy_data data, bool end_stream, void* context) {
