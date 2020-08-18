@@ -26,7 +26,7 @@ NSString *_REQUEST_SCHEME = @"https";
 - (instancetype)init {
   self = [super init];
   if (self) {
-    self.filteredHeaders = @[@"server", @"filter-demo", @"x-envoy-upstream-service-time"];
+    self.filteredHeaders = @[ @"server", @"filter-demo", @"x-envoy-upstream-service-time" ];
     self.results = [NSMutableArray new];
     self.tableView.allowsSelection = NO;
     [self startEnvoy];
@@ -84,7 +84,7 @@ NSString *_REQUEST_SCHEME = @"https";
 
     NSMutableString *headerMessage = [NSMutableString new];
     for (NSString *name in headers.allHeaders) {
-      if ([self.filteredHeaders containsObject: name]) {
+      if ([self.filteredHeaders containsObject:name]) {
         NSArray<NSString *> *values = headers.allHeaders[name];
         NSString *joined = [values componentsJoinedByString:@", "];
         NSString *pair = [NSString stringWithFormat:@"%@: %@\n", name, joined];
@@ -94,9 +94,7 @@ NSString *_REQUEST_SCHEME = @"https";
 
     NSLog(@"%@", message);
 
-    [weakSelf addResponseMessage:message
-                   headerMessage:headerMessage
-                           error:nil];
+    [weakSelf addResponseMessage:message headerMessage:headerMessage error:nil];
   }];
   [prototype setOnErrorWithClosure:^(EnvoyError *error) {
     // TODO: expose attemptCount. https://github.com/lyft/envoy-mobile/issues/823

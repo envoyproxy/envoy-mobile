@@ -62,12 +62,10 @@ final class ViewController: UITableViewController {
         let statusCode = headers.httpStatus ?? -1
         let message = "received headers with status \(statusCode)"
 
-        var headerMessage = ""
-        headers.allHeaders().forEach { name, value in
-          if kFilteredHeaders.contains(name) {
-            headerMessage += "\(name): \(value.joined(separator: ", "))\n"
-          }
-        }
+        let headerMessage = headers.allHeaders()
+          .filter { kFilteredHeaders.contains($0.key) }
+          .map { "\($0.key): \($0.value.joined(separator: ", "))" }
+          .joined(separator: "\n")
 
         NSLog(message)
         if let filterDemoValue = headers.value(forName: "filter-demo")?.first {
