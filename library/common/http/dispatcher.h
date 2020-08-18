@@ -2,6 +2,7 @@
 
 #include "envoy/buffer/buffer.h"
 #include "envoy/event/dispatcher.h"
+#include "envoy/event/schedulable_cb.h"
 #include "envoy/http/api_listener.h"
 #include "envoy/http/codec.h"
 #include "envoy/http/header_map.h"
@@ -265,6 +266,7 @@ private:
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
   Thread::ThreadSynchronizer synchronizer_;
+  std::vector<Event::SchedulableCallbackPtr> deferred_deleted_stream_cbs_;
 };
 
 } // namespace Http

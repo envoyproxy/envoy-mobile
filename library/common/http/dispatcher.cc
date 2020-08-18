@@ -517,9 +517,21 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   // TODO: currently upstream Envoy does not have a deferred delete version for shared_ptr. This
   // means that instead of efficiently queuing the deletes for one event in the event loop, all
   // deletes here get queued up as individual posts.
-  TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {
+  // Recently it was documented in libevent_scheduler.h that:
+  // "there are no ordering guarantees when mixing the mechanisms below... [for example] it is
+  //  unsafe to assume that calling post followed by deferredDelete will result in the post
+  //  callback being invoked before the deferredDelete".
+  // Therefore, because this code relies on the DirectStream living at least as long as the
+  // underlying HCM's ActiveStream the deferred deletion of the DirectStream needs to be scheduled
+  // for the next iteration of the event loop.
+  // TODO: a more secure mechanism would rely on explicit calls from the HCM when: a) deferred
+  // deletion of the ActiveStream was scheduled and when b) the ActiveStream's destructor ran.
+  auto cb = TS_UNCHECKED_READ(event_dispatcher_)->createSchedulableCallback([direct_stream]() -> void {
     ENVOY_LOG(debug, "[S{}] deferred deletion of stream", direct_stream->stream_handle_);
   });
+  cb->scheduleCallbackNextIteration();
+  deferred_deleted_stream_cbs_.push_back(std::move(cb));
+
   // However, the entry in the map should not exist after cleanup.
   // Hence why it is synchronously erased from the streams map.
   Thread::ReleasableLockGuard lock(streams_lock_);
