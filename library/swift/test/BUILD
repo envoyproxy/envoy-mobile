@@ -3,6 +3,17 @@ load("@envoy_mobile//bazel:swift_test.bzl", "envoy_mobile_swift_test")
 licenses(["notice"])  # Apache 2
 
 envoy_mobile_swift_test(
+    name = "bridge_test",
+    srcs = [
+        "BridgeTests.swift",
+        "DemoFilter.swift",
+    ],
+    deps = [
+        "//library/objective-c:envoy_engine_objc_lib",
+    ],
+)
+
+envoy_mobile_swift_test(
     name = "engine_builder_tests",
     srcs = [
         "EngineBuilderTests.swift",
