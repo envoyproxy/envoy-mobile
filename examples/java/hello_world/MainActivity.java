@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
   private static final String REQUEST_PATH = "/ping";
   private static final String REQUEST_SCHEME = "https";
   private static final List<String> FILTERED_HEADERS =
-    Arrays.asList("server", "filter-demo", "x-envoy-upstream-service-time");
+      Arrays.asList("server", "filter-demo", "x-envoy-upstream-service-time");
 
   private Engine engine;
   private RecyclerView recyclerView;
