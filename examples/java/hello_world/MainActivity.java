@@ -22,8 +22,10 @@ import kotlin.Unit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends Activity {
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
@@ -31,8 +33,11 @@ public class MainActivity extends Activity {
   private static final String REQUEST_AUTHORITY = "api.lyft.com";
   private static final String REQUEST_PATH = "/ping";
   private static final String REQUEST_SCHEME = "https";
-  private static final List<String> FILTERED_HEADERS =
-      Arrays.asList("server", "filter-demo", "x-envoy-upstream-service-time");
+  private static final Set<String> FILTERED_HEADERS = new HashSet<String>() {{
+    add("server");
+    add("filter-demo");
+    add("x-envoy-upstream-service-time");
+  }};
 
   private Engine engine;
   private RecyclerView recyclerView;
