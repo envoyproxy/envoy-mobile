@@ -1,27 +1,24 @@
 #include "library/common/jni/jni_utility.h"
-#include "library/common/jni/jni_version.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "library/common/jni/jni_version.h"
 
 // NOLINT(namespace-envoy)
 
 static JavaVM* static_jvm = nullptr;
 
-void set_vm(JavaVM* vm) {
-  static_jvm = vm;
-}
+void set_vm(JavaVM* vm) { static_jvm = vm; }
 
-JavaVM* get_vm() {
-  return static_jvm;
-}
+JavaVM* get_vm() { return static_jvm; }
 
 JNIEnv* get_env() {
   JNIEnv* env = nullptr;
   int get_env_res = static_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION);
   if (get_env_res == JNI_EDETACHED) {
     // TODO(goway): fix logging
-    //log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "environment is JNI_EDETACHED");
+    // log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "environment is JNI_EDETACHED");
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
     // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
     // engine's std::thread, and that we detach it successfully.
@@ -31,9 +28,7 @@ JNIEnv* get_env() {
   return env;
 }
 
-void jvm_detach_thread() {
-  static_jvm->DetachCurrentThread();
-}
+void jvm_detach_thread() { static_jvm->DetachCurrentThread(); }
 
 void jni_delete_global_ref(void* context) {
   JNIEnv* env = get_env();
@@ -86,7 +81,8 @@ envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
   // Note that headers is a flattened array of key/value pairs.
   // Therefore, the length of the native header array is n envoy_data or n/2 envoy_header.
   envoy_header_size_t length = env->GetArrayLength(headers);
-  envoy_header* header_array = static_cast<envoy_header*>(safe_malloc(sizeof(envoy_header) * length / 2));
+  envoy_header* header_array =
+      static_cast<envoy_header*>(safe_malloc(sizeof(envoy_header) * length / 2));
 
   for (envoy_header_size_t i = 0; i < length; i += 2) {
     // Copy native byte array for header key
