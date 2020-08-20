@@ -4,9 +4,13 @@
 
 // NOLINT(namespace-envoy)
 
-set_vm(JavaVM* vm);
+void set_vm(JavaVM* vm);
+
+JavaVM* get_vm();
 
 JNIEnv* get_env();
+
+void jvm_detach_thread();
 
 void jni_delete_global_ref(void* context);
 

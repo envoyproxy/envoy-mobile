@@ -13,7 +13,7 @@
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
   JNIEnv* env = nullptr;
-  if (vm->GetEnv((void**)&static_env, JNI_VERSION) != JNI_OK) {
+  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION) != JNI_OK) {
     return -1;
   }
 
@@ -36,7 +36,7 @@ static void jvm_on_exit() {
   // needs to be detached is the engine thread.
   // This function is called from the context of the engine's
   // thread due to it being posted to the engine's event dispatcher.
-  static_jvm->DetachCurrentThread();
+  jvm_detach_thread();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
@@ -72,7 +72,7 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
   // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
   // More information can be found at:
   // https://c-ares.haxx.se/ares_library_init_android.html
-  ares_library_init_jvm(static_jvm);
+  ares_library_init_jvm(get_vm());
 
   return ares_library_init_android(connectivity_manager);
 }
