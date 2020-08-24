@@ -218,13 +218,12 @@ private:
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;
 
-  // Used to deferDelete the ref count of the DirectStream owned by streams_ while still maintaining
-  // a container of DirectStreamSharedPtr.
-  // Using deferDelete is important due to the necessary ordering of ActiveStream deletion w.r.t
-  // DirectStream deletion; the former needs to be destroyed first. Using post to defer delete
-  // the DirectStream provides no ordering guarantee per envoy/source/common/event/libevent.h
-  // Maintaining a container of DirectStreamSharedPtr is important because Dispatcher::resetStream
-  // is initiated by a platform thread.
+  // Used to deferredDelete the ref count of the DirectStream owned by streams_ while still
+  // maintaining a container of DirectStreamSharedPtr. Using deferDelete is important due to the
+  // necessary ordering of ActiveStream deletion w.r.t DirectStream deletion; the former needs to be
+  // destroyed first. Using post to defer delete the DirectStream provides no ordering guarantee per
+  // envoy/source/common/event/libevent.h Maintaining a container of DirectStreamSharedPtr is
+  // important because Dispatcher::resetStream is initiated by a platform thread.
   struct DirectStreamWrapper : public Event::DeferredDeletable {
   public:
     DirectStreamWrapper(DirectStreamSharedPtr stream) : stream_(stream) {}
