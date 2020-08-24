@@ -517,7 +517,7 @@ void Dispatcher::cleanup(envoy_stream_t stream_handle) {
   // TODO: currently upstream Envoy does not have a deferred delete version for shared_ptr. This
   // means that instead of efficiently queuing the deletes for one event in the event loop, all
   // deletes here get queued up as individual posts.
-  TS_UNCHECKED_READ(event_dispatcher_)->post([direct_stream]() -> void {
+  TS_UNCHECKED_READ(event_dispatcher_)->postNextIteration([direct_stream]() -> void {
     ENVOY_LOG(debug, "[S{}] deferred deletion of stream", direct_stream->stream_handle_);
   });
   // However, the entry in the map should not exist after cleanup.
