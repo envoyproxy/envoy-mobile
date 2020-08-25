@@ -226,6 +226,7 @@ private:
   // important because Dispatcher::resetStream is initiated by a platform thread.
   struct DirectStreamWrapper : public Event::DeferredDeletable {
     DirectStreamWrapper(DirectStreamSharedPtr stream) : stream_(stream) {}
+
   private:
     const DirectStreamSharedPtr stream_;
   };
