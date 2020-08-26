@@ -8,24 +8,24 @@
 // NOLINT(namespace-envoy)
 
 static JavaVM* static_jvm = nullptr;
+static thread_local JNIEnv* local_env = nullptr;
 
 void set_vm(JavaVM* vm) { static_jvm = vm; }
 
 JavaVM* get_vm() { return static_jvm; }
 
 JNIEnv* get_env() {
-  JNIEnv* env = nullptr;
-  int get_env_res = static_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION);
-  if (get_env_res == JNI_EDETACHED) {
-    // TODO(goway): fix logging
-    // log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "environment is JNI_EDETACHED");
+  if (local_env) { return local_env; }
+
+  jint result = static_jvm->GetEnv(reinterpret_cast<void**>(&local_env), JNI_VERSION);
+  if (result == JNI_EDETACHED) {
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
-    // TODO: harden this piece of code to make sure that we are only needing to attach Envoy
-    // engine's std::thread, and that we detach it successfully.
-    static_jvm->AttachCurrentThread(&env, nullptr);
-    static_jvm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION);
+    JavaVMAttachArgs args = { JNI_VERSION, "EnvoyMain", NULL };
+    result = static_jvm->AttachCurrentThread(reinterpret_cast<void**>(&local_env), &args);
   }
-  return env;
+  // TODO(goaway): add assertions and uncomment
+  //ASSERT(result == JNI_OK);
+  return local_env;
 }
 
 void jvm_detach_thread() { static_jvm->DetachCurrentThread(); }
