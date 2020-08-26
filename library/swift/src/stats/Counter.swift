@@ -3,7 +3,7 @@ import Foundation
 
 /// A time series counter.
 @objcMembers
-public class Counter: NSObject {
+open public class Counter: NSObject {
   private let series: String
   private weak var engine: EnvoyEngine?
 
