@@ -4,7 +4,7 @@ import XCTest
 
 final class CounterTests: XCTestCase {
     func testConvenientMethodDelegatesToTheMainMethod() {
-        struct MockCounterImpl: Counter {
+        class MockCounterImpl: Counter {
             var wasIncremented = false
             func increment(count: Int) {
                 self.wasIncremented = true
