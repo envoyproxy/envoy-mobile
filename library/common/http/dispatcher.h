@@ -187,7 +187,7 @@ private:
     bool destroyed() const { return destroyed_; }
 
     const envoy_stream_t stream_handle_;
-    std::atomic<bool> closed_{};
+    bool closed_{};
     bool local_closed_{};
     bool hcm_stream_pending_destroy_{};
 

@@ -261,10 +261,11 @@ void Dispatcher::DirectStream::closeLocal(bool end_stream) {
 
 bool Dispatcher::DirectStream::dispatchable(bool close) {
   if (close) {
-    // Set closed to true and return true if not previously closed.
-    return !closed_.exchange(close);
+    bool previous = closed;
+    closed = true;
+    return !previous;
   }
-  return !closed_.load();
+  return !closed;
 }
 
 Dispatcher::Dispatcher(std::atomic<envoy_network_t>& preferred_network)
