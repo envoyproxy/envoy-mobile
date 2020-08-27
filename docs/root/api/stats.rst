@@ -1,11 +1,11 @@
 .. _api_stats:
 
 Stats
-=========================
+=====
 
-----------------
+---------------
 ``StatsClient``
-----------------
+---------------
 
 To use Envoy Mobile's stats function, obtain an instance of ``StatsClient`` from ``Engine`` (refer to :ref:`api_starting_envoy` for building an engine instance), and store the stats client to create ``Counter`` instances.
 

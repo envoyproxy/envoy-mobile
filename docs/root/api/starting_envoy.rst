@@ -29,9 +29,9 @@ After the stream client is obtain, it should be stored and used to start network
     .build()
     .streamClient()
 
------------------------
+-----------------
 ``EngineBuilder``
------------------------
+-----------------
 
 This type is used to configure an instance of ``Engine`` before finally
 creating the engine using ``.build()``.
