@@ -4,14 +4,14 @@ import XCTest
 final class CounterTests: XCTestCase {
     func testConvenientMethodDelegatesToTheMainMethod() {
         class MockCounterImpl: Counter {
-            var wasIncremented = false
+            var count: Int?
             func increment(count: Int) {
-                self.wasIncremented = true
+                self.count = count
             }
         }
 
         let counter = MockCounterImpl()
         counter.increment()
-        XCTAssertTrue(counter.wasIncremented)
+        XCTAssertEqual(1, counter.count)
     }
 }
