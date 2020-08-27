@@ -1,5 +1,4 @@
 import Envoy
-import Foundation
 import XCTest
 
 final class CounterTests: XCTestCase {
