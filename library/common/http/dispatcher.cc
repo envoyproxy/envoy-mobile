@@ -429,18 +429,6 @@ envoy_status_t Dispatcher::cancelStream(envoy_stream_t stream) {
       //
       // StreamResetReason::RemoteReset is used as the platform code that issues the
       // cancellation is considered the remote.
-      //
-      // This call is guarded by hcm_stream_pending_destroy_ to protect against the
-      // following race condition:
-      //   1. resetStream executes first on a platform thread, getting through the dispatch
-      //   guard and posting this lambda.
-      //   2. The event dispatcher's thread executes a terminal encoding or a reset in the
-      //   Http::ConnectionManager, thus calling deferredDelete on the ActiveStream.
-      //   3. The event dispatcher's thread executes this post body, thus calling
-      //   runResetCallbacks, which ends up calling deferredDelete (for a second time!) on the
-      //   ActiveStream.
-      // This protection makes sure that Envoy Mobile's Http::Dispatcher::DirectStream knows
-      // synchronously when the ActiveStream is deferredDelete'd for the first time.
       if (!direct_stream->hcm_stream_pending_destroy_) {
         direct_stream->hcm_stream_pending_destroy_ = true;
         direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
