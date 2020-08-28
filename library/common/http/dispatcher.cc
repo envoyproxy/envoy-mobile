@@ -231,8 +231,6 @@ Dispatcher::DirectStream::DirectStream(envoy_stream_t stream_handle, Dispatcher&
 
 Dispatcher::DirectStream::~DirectStream() {
   ENVOY_LOG(debug, "[S{}] destroy stream", stream_handle_);
-  // TODO: delete once https://github.com/lyft/envoy-mobile/issues/1016 is fixed.
-  destroyed_ = true;
 }
 
 void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
@@ -416,8 +414,6 @@ envoy_status_t Dispatcher::cancelStream(envoy_stream_t stream) {
   post([this, stream]() -> void {
     Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
     if (direct_stream) {
-      Dispatcher::checkGarbage(direct_stream.get());
-
       // Testing hook.
       synchronizer_.syncPoint("dispatch_on_cancel");
 
