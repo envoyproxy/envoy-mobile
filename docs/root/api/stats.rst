@@ -24,7 +24,7 @@ Store the counter instance, and call the ``increment`` method to increment the c
 The count argument of ``increment`` is defauled with value 1.
 
 **Example**::
-  
+
   // Increment the counter by 1
   // Kotlin, Swift
   counter.increment()
