@@ -179,7 +179,7 @@ private:
      *
      * When param `close` is false, this function returns `true` while the stream
      * remains open and false once it's closed. When param `close` is true, this
-     * function returns `true` exactly once, iff the stream is still open, and
+     * function returns `true` exactly once, if the stream is still open, and
      * subsequently always returns false.
      *
      * @param close, whether the DirectStream should close if it has not closed before.
