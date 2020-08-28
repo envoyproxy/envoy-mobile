@@ -179,6 +179,11 @@ private:
      * Return whether a callback should be allowed to continue with execution.
      * This ensures at most one 'terminal' callback is issued for any given stream.
      *
+     * When param `close` is false, this function returns `true` while the stream
+     * remains open and false once it's closed. When param `close` is true, this
+     * function returns `true` exactly once, iff the stream is still open, and
+     * subsequently always returns false.
+     *
      * @param close, whether the DirectStream should close if it has not closed before.
      * @return bool, whether callbacks on this stream are dispatchable or not.
      */

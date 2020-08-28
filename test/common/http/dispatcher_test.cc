@@ -1043,7 +1043,7 @@ TEST_F(DispatcherTest, ResetStreamLocal) {
 
   Event::PostCb reset_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   // The callback happens synchronously outside of the reset_stream_post_cb().
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
@@ -1094,11 +1094,11 @@ TEST_F(DispatcherTest, DoubleResetStreamLocal) {
 
   Event::PostCb reset_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
   // Success because the stream has not been deleted.
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   // But the callback won't happen because the stream is no longer dispatchable.
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
@@ -1149,7 +1149,7 @@ TEST_F(DispatcherTest, DoubleResetStreamLocalEnvoyFailure) {
 
   Event::PostCb reset_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
@@ -1157,8 +1157,8 @@ TEST_F(DispatcherTest, DoubleResetStreamLocalEnvoyFailure) {
   reset_stream_post_cb();
 
   // The second cancel should end in failure synchronously because the stream is cleaned up from the
-  // dispatcher's container synchronously in the posted resetStream code.
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_FAILURE);
+  // dispatcher's container synchronously in the posted cancelStream code.
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_FAILURE);
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
   ASSERT_EQ(cc.on_error_calls, 0);
@@ -1315,7 +1315,7 @@ TEST_F(DispatcherTest, StreamResetAfterOnComplete) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 
   // Cancellation should have no effect as the stream should have already been cleaned up.
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_FAILURE);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_FAILURE);
 }
 
 TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
@@ -1396,7 +1396,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRaceLocalWins) {
   // reset the stream from the client side. This should succeed.
   Event::PostCb reset_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   // The callback happens synchronously outside of the reset_stream_post_cb().
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
@@ -1484,7 +1484,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWinsDeletesStream) {
   std::thread t1([&] {
     // This should fail synchronously because remote cleaned up the stream before the local reset
     // ran getStream.
-    ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_FAILURE);
+    ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_FAILURE);
   });
   // Wait until the thread is actually waiting.
   http_dispatcher_.synchronizer().barrierOn("getStream_on_cancel");
@@ -1578,7 +1578,7 @@ TEST_F(DispatcherTest, ResetStreamLocalHeadersRemoteRemoteWins) {
   std::thread t1([&] {
     // This should succeed because the stream was still present. However, the assertion at the end
     // of the test shows that the callback was not fired.
-    ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+    ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   });
   // Wait until the thread is actually waiting.
   http_dispatcher_.synchronizer().barrierOn("dispatch_on_cancel");
@@ -1679,7 +1679,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRaceLocalWins) {
   // Now local reset the stream. This will go through.
   Event::PostCb reset_stream_post_cb;
   EXPECT_CALL(event_dispatcher_, post(_)).WillOnce(SaveArg<0>(&reset_stream_post_cb));
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   // The callback happens synchronously outside of the reset_stream_post_cb().
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
@@ -1766,7 +1766,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWinsDeletesStream) {
   std::thread t1([&] {
     // This should fail synchronously because remote cleaned up the stream before the local reset
     // ran getStream.
-    ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_FAILURE);
+    ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_FAILURE);
   });
   // Wait until the thread is actually waiting.
   http_dispatcher_.synchronizer().barrierOn("getStream_on_cancel");
@@ -1857,7 +1857,7 @@ TEST_F(DispatcherTest, ResetStreamLocalResetRemoteRemoteWins) {
   std::thread t1([&] {
     // This should succeed because the stream was still present. However, the assertion at the end
     // of the test shows that the callback was not fired.
-    ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+    ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   });
   // Wait until the thread is actually waiting.
   http_dispatcher_.synchronizer().barrierOn("dispatch_on_cancel");

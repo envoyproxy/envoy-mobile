@@ -352,7 +352,7 @@ TEST_P(DispatcherIntegrationTest, RaceDoesNotCauseDoubleDeletion) {
   ASSERT_EQ(cc.on_data_calls, 1);
   ASSERT_EQ(cc.on_complete_calls, 0);
 
-  ASSERT_EQ(http_dispatcher_.resetStream(stream), ENVOY_SUCCESS);
+  ASSERT_EQ(http_dispatcher_.cancelStream(stream), ENVOY_SUCCESS);
   ASSERT_EQ(cc.on_cancel_calls, 1);
 
   http_dispatcher_.synchronizer().signal("dispatch_encode_final_data");
