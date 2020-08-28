@@ -417,23 +417,28 @@ envoy_status_t Dispatcher::cancelStream(envoy_stream_t stream) {
     Dispatcher::DirectStreamSharedPtr direct_stream = getStream(stream);
     if (direct_stream) {
       Dispatcher::checkGarbage(direct_stream.get());
+
+      // Testing hook.
+      synchronizer_.syncPoint("dispatch_on_cancel");
+
       if (direct_stream->dispatchable(true)) {
         direct_stream->callbacks_->onCancel();
+
+        // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
+        // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream
+        // only needs to be as long as that deferred delete. Therefore, we synchronously call
+        // cleanup here which will defer delete the DirectStream, which by definition will be
+        // scheduled **after** the HCM's defer delete as they are scheduled on the same dispatcher
+        // context.
+        //
+        // StreamResetReason::RemoteReset is used as the platform code that issues the
+        // cancellation is considered the remote.
+        if (!direct_stream->hcm_stream_pending_destroy_) {
+          direct_stream->hcm_stream_pending_destroy_ = true;
+          direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+        }
+        cleanup(direct_stream->stream_handle_);
       }
-      // This interaction is important. The runResetCallbacks call synchronously causes Envoy to
-      // defer delete the HCM's ActiveStream. That means that the lifetime of the DirectStream
-      // only needs to be as long as that deferred delete. Therefore, we synchronously call
-      // cleanup here which will defer delete the DirectStream, which by definition will be
-      // scheduled **after** the HCM's defer delete as they are scheduled on the same dispatcher
-      // context.
-      //
-      // StreamResetReason::RemoteReset is used as the platform code that issues the
-      // cancellation is considered the remote.
-      if (!direct_stream->hcm_stream_pending_destroy_) {
-        direct_stream->hcm_stream_pending_destroy_ = true;
-        direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
-      }
-      cleanup(direct_stream->stream_handle_);
     }
   });
   return ENVOY_SUCCESS;
