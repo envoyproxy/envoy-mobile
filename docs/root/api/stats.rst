@@ -31,7 +31,7 @@ The count argument of ``increment`` is defauled with value 1.
 
   // Increment the counter by 5
   // Kotlin
-  counter.increment(count = 5)
+  counter.increment(5)
 
   // Increment the counter by 5
   // Swift
