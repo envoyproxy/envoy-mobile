@@ -346,7 +346,7 @@ static const void* jvm_http_filter_init(const void* context) {
   jobject j_filter = env->CallObjectMethod(j_context, jmid_create);
   __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "j_filter: %p", j_filter);
   jobject retained_filter = env->NewGlobalRef(j_filter);
-  env->DeleteLocalRef(jcls_JvmObserverContext);
+  env->DeleteLocalRef(jcls_JvmFilterFactoryContext);
   return retained_filter;
 }
 
