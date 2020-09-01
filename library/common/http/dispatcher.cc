@@ -49,10 +49,14 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
   // make this possible, but nothing expedient. For the immediate term this is our only real
   // option. See https://github.com/lyft/envoy-mobile/issues/460
 
-  // Missing EnvoyUpstreamServiceTime implies this is a local reply, which we always treat
-  // as a stream error.
-  if (headers.get(Headers::get().EnvoyUpstreamServiceTime) == nullptr) {
-    mapLocalHeadersToError(headers, end_stream);
+  // Error path: missing EnvoyUpstreamServiceTime implies this is a local reply, which we treat as
+  // a stream error.
+  if (!success_ && headers.get(Headers::get().EnvoyUpstreamServiceTime) == nullptr) {
+    ENVOY_LOG(debug, "[S{}] intercepted local response", direct_stream_.stream_handle_);
+    mapLocalResponseToError(headers, end_stream);
+    if (end_stream) {
+      onReset();
+    }
     return;
   }
 
@@ -71,7 +75,7 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
   }
 }
 
-void Dispatcher::DirectStreamCallbacks::mapLocalHeadersToError(const ResponseHeaderMap& headers,
+void Dispatcher::DirectStreamCallbacks::mapLocalResponseToError(const ResponseHeaderMap& headers,
                                                                bool end_stream) {
   // Deal with a local response based on the HTTP status code received. Envoy Mobile treats
   // successful local responses as actual success. Envoy Mobile surfaces non-200 local responses as
@@ -100,26 +104,6 @@ void Dispatcher::DirectStreamCallbacks::mapLocalHeadersToError(const ResponseHea
     error_attempt_count_ = attempt_count;
   }
 
-  ENVOY_LOG(debug, "[S{}] intercepted local response", direct_stream_.stream_handle_);
-  if (end_stream) {
-    // If the stream is not locally closed, the HCM will fire resetStream subsequently. However, we will see
-    // that the stream is already gone from the streams_ map, and direct Envoy to runResetCallbacks() without
-    // redundantly calling on onReset().
-    // @see Dispatcher::DirectStreamCallbacks::resetStream.
-    onReset();
-  }
-}
-
-void Dispatcher::DirectStreamCallbacks::mapLocalDataToError(Buffer::Instance& data, bool end_stream) {
-  ASSERT(end_stream, "local response has to end the stream with a single data frame. If Envoy changes "
-                     "this expectation, this code needs to be updated.");
-
-  error_message_ = Buffer::Utility::toBridgeData(data);
-  // If the stream is not locally closed, the HCM will fire resetStream subsequently. However, we will see
-  // that the stream is already gone from the streams_ map, and direct Envoy to runResetCallbacks() without
-  // redundantly calling on onReset().
-  // @see Dispatcher::DirectStreamCallbacks::resetStream.
-  onReset();
 }
 
 void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
@@ -133,7 +117,10 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
 
   // Error path.
   if (error_code_.has_value()) {
-    mapLocalDataToError(data, end_stream);
+    ASSERT(end_stream, "local response has to end the stream with a single data frame. If Envoy changes "
+                       "this expectation, this code needs to be updated.");
+    error_message_ = Buffer::Utility::toBridgeData(data);
+    onReset();
     return;
   }
 
