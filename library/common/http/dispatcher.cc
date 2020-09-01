@@ -65,18 +65,17 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
   // Testing hook.
   http_dispatcher_.synchronizer_.syncPoint("dispatch_encode_headers");
 
-  ENVOY_LOG(debug,
-            "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
+  ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
-                                 bridge_callbacks_.context);
+                               bridge_callbacks_.context);
   if (end_stream) {
     onComplete();
   }
 }
 
 void Dispatcher::DirectStreamCallbacks::mapLocalResponseToError(const ResponseHeaderMap& headers,
-                                                               bool end_stream) {
+                                                                bool end_stream) {
   // Deal with a local response based on the HTTP status code received. Envoy Mobile treats
   // successful local responses as actual success. Envoy Mobile surfaces non-200 local responses as
   // errors via callbacks rather than an HTTP response. This is inline with behaviour of other
@@ -103,7 +102,6 @@ void Dispatcher::DirectStreamCallbacks::mapLocalResponseToError(const ResponseHe
       absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count)) {
     error_attempt_count_ = attempt_count;
   }
-
 }
 
 void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
@@ -117,8 +115,9 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
 
   // Error path.
   if (error_code_.has_value()) {
-    ASSERT(end_stream, "local response has to end the stream with a single data frame. If Envoy changes "
-                       "this expectation, this code needs to be updated.");
+    ASSERT(end_stream,
+           "local response has to end the stream with a single data frame. If Envoy changes "
+           "this expectation, this code needs to be updated.");
     error_message_ = Buffer::Utility::toBridgeData(data);
     onReset();
     return;
@@ -161,8 +160,7 @@ void Dispatcher::DirectStreamCallbacks::closeStream() {
 }
 
 void Dispatcher::DirectStreamCallbacks::onComplete() {
-  ENVOY_LOG(debug, "[S{}] complete stream (success={})", direct_stream_.stream_handle_,
-            success_);
+  ENVOY_LOG(debug, "[S{}] complete stream (success={})", direct_stream_.stream_handle_, success_);
   if (success_) {
     http_dispatcher_.stats().stream_success_.inc();
   } else {
@@ -212,10 +210,10 @@ void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
 
     // The Http::ConnectionManager does not destroy the stream in doEndStream() when it calls
     // resetStream on the response_encoder_'s Stream. It is up to the response_encoder_ to
-    // runResetCallbacks in order to have the Http::ConnectionManager call doDeferredStreamDestroy in
-    // ConnectionManagerImpl::ActiveStream::onResetStream.
+    // runResetCallbacks in order to have the Http::ConnectionManager call doDeferredStreamDestroy
+    // in ConnectionManagerImpl::ActiveStream::onResetStream.
     // TODO: explore an upstream fix to get the HCM to clean up ActiveStream itself.
-    //runResetCallbacks(reason);
+    // runResetCallbacks(reason);
     return;
   }
   parent_.removeStream(stream_handle_);
@@ -373,12 +371,12 @@ envoy_status_t Dispatcher::cancelStream(envoy_stream_t stream) {
       synchronizer_.syncPoint("dispatch_on_cancel");
       direct_stream->callbacks_->onCancel();
 
-      // The runResetCallbacks call synchronously causes Envoy to defer delete the HCM's ActiveStream.
-      // We have some concern that this could potentially race a terminal callback scheduled on the same
-      // iteration of the event loop. If we see violations in the callback assertions
-      // checking stream presence, this is a likely potential culprit. However, it's plausible that
-      // upstream guards will protect us here, given that Envoy allows streams to be reset from a wide
-      // variety of contexts without apparent issue.
+      // The runResetCallbacks call synchronously causes Envoy to defer delete the HCM's
+      // ActiveStream. We have some concern that this could potentially race a terminal callback
+      // scheduled on the same iteration of the event loop. If we see violations in the callback
+      // assertions checking stream presence, this is a likely potential culprit. However, it's
+      // plausible that upstream guards will protect us here, given that Envoy allows streams to be
+      // reset from a wide variety of contexts without apparent issue.
       direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
     }
   });
