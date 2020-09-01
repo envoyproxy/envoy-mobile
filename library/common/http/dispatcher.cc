@@ -53,7 +53,7 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
   // a stream error.
   if (!success_ && headers.get(Headers::get().EnvoyUpstreamServiceTime) == nullptr) {
     ENVOY_LOG(debug, "[S{}] intercepted local response", direct_stream_.stream_handle_);
-    mapLocalResponseToError(headers, end_stream);
+    mapLocalResponseToError(headers);
     if (end_stream) {
       onReset();
     }
@@ -74,8 +74,7 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
   }
 }
 
-void Dispatcher::DirectStreamCallbacks::mapLocalResponseToError(const ResponseHeaderMap& headers,
-                                                                bool end_stream) {
+void Dispatcher::DirectStreamCallbacks::mapLocalResponseToError(const ResponseHeaderMap& headers) {
   // Deal with a local response based on the HTTP status code received. Envoy Mobile treats
   // successful local responses as actual success. Envoy Mobile surfaces non-200 local responses as
   // errors via callbacks rather than an HTTP response. This is inline with behaviour of other

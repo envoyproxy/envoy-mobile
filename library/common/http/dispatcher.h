@@ -123,7 +123,7 @@ private:
     void onComplete();
     void onCancel();
     void onReset();
-    void mapLocalResponseToError(const ResponseHeaderMap& headers, bool end_stream);
+    void mapLocalResponseToError(const ResponseHeaderMap& headers);
 
     // ResponseEncoder
     void encodeHeaders(const ResponseHeaderMap& headers, bool end_stream) override;
