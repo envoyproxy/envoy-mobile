@@ -76,11 +76,8 @@ void Dispatcher::DirectStreamCallbacks::mapLocalHeadersToError(const ResponseHea
   // mobile networking libraries.
   switch (Utility::getResponseStatus(headers)) {
   case 200: {
-    if (direct_stream_.dispatchable(end_stream)) {
-      bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
-                                   bridge_callbacks_.context);
-      closeRemote(end_stream);
-    }
+    bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
+                                 bridge_callbacks_.context);
     return;
   }
   case 503:
@@ -122,7 +119,7 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
 
-  ASSERT(http_dispatcher.getStream(direct_stream_.stream_handle_));
+  ASSERT(http_dispatcher_.getStream(direct_stream_.stream_handle_));
   if (end_stream) {
     closeStream();
   }
@@ -151,7 +148,7 @@ void Dispatcher::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap&
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
 
-  ASSERT(http_dispatcher.getStream(direct_stream_.stream_handle_));
+  ASSERT(http_dispatcher_.getStream(direct_stream_.stream_handle_));
   closeStream(); // Trailers always indicate the end of the stream.
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
@@ -194,15 +191,8 @@ void Dispatcher::DirectStreamCallbacks::onReset() {
   // Testing hook.
   http_dispatcher_.synchronizer_.syncPoint("dispatch_on_error");
 
-  // direct_stream_ will not be a dangling reference even in the case that closeRemote cleaned up
-  // because in that case this reset is happening synchronously, with the encoding call that called
-  // closeRemote, in the Envoy Main thread. Hence DirectStream destruction which is posted on the
-  // Envoy Main thread's event loop will strictly happen after this direct_stream_ reference is
-  // used. @see Dispatcher::DirectStreamCallbacks::closeRemote() for more details.
   ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
             direct_stream_.stream_handle_);
-  // Only count the on error if it is dispatchable. Otherwise, the onReset was caused due to a
-  // client side cancel via Dispatcher::DirectStream::resetStream().
   http_dispatcher_.stats().stream_failure_.inc();
   bridge_callbacks_.on_error({code, message, attempt_count}, bridge_callbacks_.context);
 }
@@ -221,10 +211,10 @@ Dispatcher::DirectStream::~DirectStream() {
 }
 
 void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
-  if (!http_dispatcher_.getStream(direct_stream_.stream_handle_)) {
+  if (!parent_.getStream(stream_handle_)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
     // while still open locally. In this case the stream will already have been removed from
-    // our map due to the remote closure.
+    // our streams_ map due to the remote closure.
 
     // The Http::ConnectionManager does not destroy the stream in doEndStream() when it calls
     // resetStream on the response_encoder_'s Stream. It is up to the response_encoder_ to
@@ -234,7 +224,7 @@ void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
     runResetCallbacks(reason);
     return;
   }
-  http_dispatcher_.removeStream(direct_stream_.stream_handle_);
+  parent_.removeStream(stream_handle_);
   callbacks_->onReset();
 }
 

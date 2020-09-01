@@ -122,6 +122,8 @@ private:
     void onReset();
     void onCancel();
     void closeStream();
+    void mapLocalHeadersToError(const ResponseHeaderMap& headers, bool end_stream);
+    void mapLocalDataToError(Buffer::Instance& data, bool end_stream);
 
     // ResponseEncoder
     void encodeHeaders(const ResponseHeaderMap& headers, bool end_stream) override;
@@ -129,8 +131,8 @@ private:
     void encodeTrailers(const ResponseTrailerMap& trailers) override;
     Stream& getStream() override { return direct_stream_; }
     Http1StreamEncoderOptionsOptRef http1StreamEncoderOptions() override { return absl::nullopt; }
-    // TODO: implement
     void encode100ContinueHeaders(const ResponseHeaderMap&) override {
+      // TODO(goaway): implement
       NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
     }
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
@@ -205,7 +207,7 @@ private:
    */
   void post(Event::PostCb callback);
   DirectStreamSharedPtr getStream(envoy_stream_t stream_handle);
-  void cleanup(envoy_stream_t stream_handle);
+  void removeStream(envoy_stream_t stream_handle);
   void setDestinationCluster(HeaderMap& headers);
 
   Thread::MutexBasicLockable ready_lock_;
