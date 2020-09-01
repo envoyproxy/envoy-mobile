@@ -81,15 +81,6 @@ void Dispatcher::DirectStreamCallbacks::mapLocalResponseToError(const ResponseHe
   // errors via callbacks rather than an HTTP response. This is inline with behaviour of other
   // mobile networking libraries.
   switch (Utility::getResponseStatus(headers)) {
-  case 200: {
-    // Resume normal handling for non-error local replies.
-    bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
-                                 bridge_callbacks_.context);
-    if (end_stream) {
-      onComplete();
-    }
-    return;
-  }
   case 503:
     error_code_ = ENVOY_CONNECTION_FAILURE;
     break;
@@ -202,18 +193,14 @@ Dispatcher::DirectStream::~DirectStream() {
 }
 
 void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
+  // This seems in line with other codec implementations, and so the assumption is that this is in
+  // line with upstream expectations.
+    // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
   runResetCallbacks(reason);
   if (!parent_.getStream(stream_handle_)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
     // while still open locally. In this case the stream will already have been removed from
     // our streams_ map due to the remote closure.
-
-    // The Http::ConnectionManager does not destroy the stream in doEndStream() when it calls
-    // resetStream on the response_encoder_'s Stream. It is up to the response_encoder_ to
-    // runResetCallbacks in order to have the Http::ConnectionManager call doDeferredStreamDestroy
-    // in ConnectionManagerImpl::ActiveStream::onResetStream.
-    // TODO: explore an upstream fix to get the HCM to clean up ActiveStream itself.
-    // runResetCallbacks(reason);
     return;
   }
   parent_.removeStream(stream_handle_);
