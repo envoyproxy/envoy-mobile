@@ -119,9 +119,10 @@ private:
     DirectStreamCallbacks(DirectStream& direct_stream, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
 
-    void onReset();
-    void onCancel();
     void closeStream();
+    void onComplete();
+    void onCancel();
+    void onReset();
     void mapLocalHeadersToError(const ResponseHeaderMap& headers, bool end_stream);
     void mapLocalDataToError(Buffer::Instance& data, bool end_stream);
 

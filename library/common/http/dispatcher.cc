@@ -66,6 +66,9 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
             direct_stream_.stream_handle_, end_stream, headers);
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
                                  bridge_callbacks_.context);
+  if (end_stream) {
+    onComplete();
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::mapLocalHeadersToError(const ResponseHeaderMap& headers,
@@ -76,8 +79,12 @@ void Dispatcher::DirectStreamCallbacks::mapLocalHeadersToError(const ResponseHea
   // mobile networking libraries.
   switch (Utility::getResponseStatus(headers)) {
   case 200: {
+    // Resume normal handling for non-error local replies.
     bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
                                  bridge_callbacks_.context);
+    if (end_stream) {
+      onComplete();
+    }
     return;
   }
   case 503:
@@ -142,6 +149,9 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
             direct_stream_.stream_handle_, data.length(), end_stream);
   bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
                             bridge_callbacks_.context);
+  if (end_stream) {
+    onComplete();
+  }
 }
 
 void Dispatcher::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& trailers) {
@@ -154,12 +164,16 @@ void Dispatcher::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap&
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
+  onComplete();
 }
 
 void Dispatcher::DirectStreamCallbacks::closeStream() {
   // Envoy itself does not currently allow half-open streams where the local half is open
-  // but the remote half is closed. Therefore, we fire the on_complete callback
-  // to the platform layer whenever remote closes.
+  // but the remote half is closed. Note that if local is open, Envoy will reset the stream.
+  http_dispatcher_.removeStream(direct_stream_.stream_handle_);
+}
+
+void Dispatcher::DirectStreamCallbacks::onComplete() {
   ENVOY_LOG(debug, "[S{}] complete stream (success={})", direct_stream_.stream_handle_,
             success_);
   if (success_) {
@@ -168,14 +182,6 @@ void Dispatcher::DirectStreamCallbacks::closeStream() {
     http_dispatcher_.stats().stream_failure_.inc();
   }
   bridge_callbacks_.on_complete(bridge_callbacks_.context);
-  // Likewise removeStream happens whenever remote closes even though
-  // local might be open. Note that if local is open Envoy will reset the stream. Calling removeStream
-  // here is fine because the stream reset will come through synchronously in the same thread as
-  // this closeRemote code. Because DirectStream deletion is deferred, the deletion will happen
-  // necessarily after the reset occurs. Thus Dispatcher::DirectStreamCallbacks::onReset will
-  // **not** have a dangling reference.
-  ENVOY_LOG(debug, "[S{}] scheduling removeStream", direct_stream_.stream_handle_);
-  http_dispatcher_.removeStream(direct_stream_.stream_handle_);
 }
 
 void Dispatcher::DirectStreamCallbacks::onReset() {
@@ -211,6 +217,7 @@ Dispatcher::DirectStream::~DirectStream() {
 }
 
 void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
+  runResetCallbacks(reason);
   if (!parent_.getStream(stream_handle_)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
     // while still open locally. In this case the stream will already have been removed from
@@ -221,7 +228,7 @@ void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
     // runResetCallbacks in order to have the Http::ConnectionManager call doDeferredStreamDestroy in
     // ConnectionManagerImpl::ActiveStream::onResetStream.
     // TODO: explore an upstream fix to get the HCM to clean up ActiveStream itself.
-    runResetCallbacks(reason);
+    //runResetCallbacks(reason);
     return;
   }
   parent_.removeStream(stream_handle_);
