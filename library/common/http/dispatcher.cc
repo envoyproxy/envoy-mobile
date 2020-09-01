@@ -195,7 +195,7 @@ Dispatcher::DirectStream::~DirectStream() {
 void Dispatcher::DirectStream::resetStream(StreamResetReason reason) {
   // This seems in line with other codec implementations, and so the assumption is that this is in
   // line with upstream expectations.
-    // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
+  // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
   runResetCallbacks(reason);
   if (!parent_.getStream(stream_handle_)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
