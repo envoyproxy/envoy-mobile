@@ -1,6 +1,7 @@
 #pragma once
 
 #include "envoy/buffer/buffer.h"
+#include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/http/api_listener.h"
 #include "envoy/http/codec.h"
@@ -97,7 +98,7 @@ public:
    * @param stream, the stream to reset.
    * @return envoy_status_t, the resulting status of the operation.
    */
-  envoy_status_t resetStream(envoy_stream_t stream);
+  envoy_status_t cancelStream(envoy_stream_t stream);
 
   const DispatcherStats& stats() const;
 
@@ -119,18 +120,20 @@ private:
     DirectStreamCallbacks(DirectStream& direct_stream, envoy_http_callbacks bridge_callbacks,
                           Dispatcher& http_dispatcher);
 
-    void onReset();
+    void closeStream();
+    void onComplete();
     void onCancel();
-    void closeRemote(bool end_stream);
+    void onReset();
+    void mapLocalResponseToError(const ResponseHeaderMap& headers);
 
     // ResponseEncoder
     void encodeHeaders(const ResponseHeaderMap& headers, bool end_stream) override;
     void encodeData(Buffer::Instance& data, bool end_stream) override;
     void encodeTrailers(const ResponseTrailerMap& trailers) override;
-    Stream& getStream() override;
+    Stream& getStream() override { return direct_stream_; }
     Http1StreamEncoderOptionsOptRef http1StreamEncoderOptions() override { return absl::nullopt; }
-    // TODO: implement
     void encode100ContinueHeaders(const ResponseHeaderMap&) override {
+      // TODO(goaway): implement
       NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
     }
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
@@ -142,7 +145,7 @@ private:
     absl::optional<envoy_error_code_t> error_code_;
     absl::optional<envoy_data> error_message_;
     absl::optional<int32_t> error_attempt_count_;
-    bool observed_success_{};
+    bool success_{};
   };
 
   using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
@@ -171,37 +174,7 @@ private:
     // Not applicable
     void setFlushTimeout(std::chrono::milliseconds) override {}
 
-    void closeLocal(bool end_stream);
-
-    /**
-     * Return whether a callback should be allowed to continue with execution.
-     * This ensures at most one 'terminal' callback is issued for any given stream.
-     *
-     * @param close, whether the DirectStream should close if it has not closed before.
-     * @return bool, whether callbacks on this stream are dispatchable or not.
-     */
-    bool dispatchable(bool close);
-
     const envoy_stream_t stream_handle_;
-    // https://github.com/lyft/envoy-mobile/pull/616 moved stream cancellation (and its atomic
-    // state) from the platform layer to the core layer, here. This change was made to solidify two
-    // platform-level implementations into one implementation in the core layer. Moreover, it
-    // allowed Envoy Mobile to have test coverage where it didn't before.
-
-    // However, it introduced a subtle race between Dispatcher::resetStream's onCancel and any of
-    // encodeHeaders/Data's callbacks that are _not_ terminal. The race happens because the two
-    // callbacks are being enqueued onto the same dispatch queue/ran on the same executor by two
-    // different threading contexts _after_ the atomic check of the closed_ state happens. This
-    // means that they could be serialized in either order; whereas we want to guarantee that _no_
-    // callback will be executed after onCancel fires in the application. The lock protects the
-    // critical region between the call to dispatchable, and after the call that dispatches the
-    // appropriate callback. There should not be much lock contention because most calls will happen
-    // from the single-threaded context of the Envoy Main thread (encodeHeaders/Data). Alternative
-    // solutions will be considered in: https://github.com/lyft/envoy-mobile/issues/647
-    Thread::MutexBasicLockable dispatch_lock_;
-    std::atomic<bool> closed_{};
-    bool local_closed_{};
-    bool hcm_stream_pending_destroy_{};
 
     // Used to issue outgoing HTTP stream operations.
     RequestDecoder* request_decoder_;
@@ -212,6 +185,20 @@ private:
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;
 
+  // Used to deferredDelete the ref count of the DirectStream owned by streams_ while still
+  // maintaining a container of DirectStreamSharedPtr. Using deferredDelete is important due to the
+  // necessary ordering of ActiveStream deletion w.r.t DirectStream deletion; the former needs to be
+  // destroyed first. Using post to defer delete the DirectStream provides no ordering guarantee per
+  // envoy/source/common/event/libevent.h Maintaining a container of DirectStreamSharedPtr is
+  // important because Dispatcher::resetStream is initiated by a platform thread.
+  struct DirectStreamWrapper : public Event::DeferredDeletable {
+    DirectStreamWrapper(DirectStreamSharedPtr stream) : stream_(stream) {}
+
+  private:
+    const DirectStreamSharedPtr stream_;
+  };
+  using DirectStreamWrapperPtr = std::unique_ptr<DirectStreamWrapper>;
+
   static DispatcherStats generateStats(const std::string& prefix, Stats::Scope& scope) {
     return DispatcherStats{ALL_HTTP_DISPATCHER_STATS(POOL_COUNTER_PREFIX(scope, prefix))};
   }
@@ -221,7 +208,7 @@ private:
    */
   void post(Event::PostCb callback);
   DirectStreamSharedPtr getStream(envoy_stream_t stream_handle);
-  void cleanup(envoy_stream_t stream_handle);
+  void removeStream(envoy_stream_t stream_handle);
   void setDestinationCluster(HeaderMap& headers);
 
   Thread::MutexBasicLockable ready_lock_;
@@ -237,18 +224,7 @@ private:
   // Related issue: https://github.com/lyft/envoy-mobile/issues/720
   const std::string stats_prefix_;
   absl::optional<DispatcherStats> stats_ GUARDED_BY(ready_lock_){};
-  // absl::flat_hash_map is not safe for concurrent access. Thus a cross-thread, concurrent find
-  // in cancellation (which happens in a platform thread) with an erase (which always happens in the
-  // Envoy Main thread) is not safe.
-  // TODO: implement a lock-free access scheme here.
-  // https://github.com/lyft/envoy-mobile/issues/647
-  Thread::MutexBasicLockable streams_lock_;
-  // streams_ holds shared_ptr in order to allow cancellation to happen synchronously even though
-  // DirectStream cleanup happens asynchronously. This is also done to keep the scope of the
-  // streams_lock_ small to make it easier to remove; one could easily use the lock in the
-  // Dispatcher::resetStream to avoid using shared_ptrs.
-  // @see Dispatcher::resetStream.
-  absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> streams_ GUARDED_BY(streams_lock_);
+  absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;

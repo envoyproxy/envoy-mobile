@@ -32,11 +32,11 @@ class JvmCallbackContext {
   /**
    * Invokes onHeaders callback using headers passed via passHeaders.
    *
-   * @param length,    the total number of headers included in this header block.
-   * @param endStream, whether this header block is the final remote frame.
-   * @return Object,   not used for response callbacks.
+   * @param headerCount, the total number of headers included in this header block.
+   * @param endStream,   whether this header block is the final remote frame.
+   * @return Object,     not used for response callbacks.
    */
-  public Object onHeaders(long headerCount, boolean endStream) {
+  public Object onResponseHeaders(long headerCount, boolean endStream) {
     assert bridgeUtility.validateCount(headerCount);
     final Map headers = bridgeUtility.retrieveHeaders();
 
@@ -50,10 +50,10 @@ class JvmCallbackContext {
   /**
    * Invokes onTrailers callback using trailers passed via passHeaders.
    *
-   * @param length, the total number of trailers included in this header block.
-   * @return Object,not used for response callbacks.
+   * @param trailerCount, the total number of trailers included in this header block.
+   * @return Object,      not used for response callbacks.
    */
-  public Object onTrailers(long trailerCount, boolean endStream) {
+  public Object onResponseTrailers(long trailerCount) {
     assert bridgeUtility.validateCount(trailerCount);
     final Map trailers = bridgeUtility.retrieveHeaders();
 
@@ -71,7 +71,7 @@ class JvmCallbackContext {
    * @param endStream, indicates this is the last remote frame of the stream.
    * @return Object,   not used for response callbacks.
    */
-  public Object onData(byte[] data, boolean endStream) {
+  public Object onResponseData(byte[] data, boolean endStream) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);

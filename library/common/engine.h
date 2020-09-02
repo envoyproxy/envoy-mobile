@@ -36,6 +36,13 @@ public:
   Http::Dispatcher& httpDispatcher();
 
   /**
+   * Increment a counter with a given string of elements and by the given count.
+   * @param elements, joined elements of the timeseries.
+   * @param count, amount to add to the counter.
+   */
+  void recordCounter(const std::string& elements, uint64_t count);
+
+  /**
    * Flush the stats sinks outside of a flushing interval.
    * Note: stats flushing may not be synchronous.
    * Therefore, this function may return prior to flushing taking place.
@@ -45,15 +52,18 @@ public:
 private:
   envoy_status_t run(std::string config, std::string log_level);
 
+  Stats::ScopePtr client_scope_;
   envoy_engine_callbacks callbacks_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
-  std::thread main_thread_;
   std::unique_ptr<Http::Dispatcher> http_dispatcher_;
   std::unique_ptr<MobileMainCommon> main_common_ GUARDED_BY(mutex_);
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
   Event::Dispatcher* event_dispatcher_;
+  // main_thread_ should be destroyed first, hence it is the last member variable. Objects that
+  // instructions scheduled on the main_thread_ need to have a longer lifetime.
+  std::thread main_thread_;
 };
 
 } // namespace Envoy

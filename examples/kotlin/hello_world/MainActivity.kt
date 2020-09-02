@@ -8,10 +8,10 @@ import android.util.Log
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.envoyproxy.envoymobile.AndroidStreamClientBuilder
+import io.envoyproxy.envoymobile.AndroidEngineBuilder
+import io.envoyproxy.envoymobile.Engine
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
-import io.envoyproxy.envoymobile.StreamClient
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
@@ -21,22 +21,24 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
-private const val ENVOY_SERVER_HEADER = "server"
 private const val REQUEST_AUTHORITY = "api.lyft.com"
 private const val REQUEST_PATH = "/ping"
 private const val REQUEST_SCHEME = "https"
+private val FILTERED_HEADERS = setOf("server", "filter-demo", "x-envoy-upstream-service-time")
 
 class MainActivity : Activity() {
   private val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
   private lateinit var recyclerView: RecyclerView
   private lateinit var viewAdapter: ResponseRecyclerViewAdapter
-  private lateinit var streamClient: StreamClient
+  private lateinit var engine: Engine
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    streamClient = AndroidStreamClientBuilder(application).build()
+    engine = AndroidEngineBuilder(application)
+      .addFilter { DemoFilter() }
+      .build()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView
     recyclerView.layoutManager = LinearLayoutManager(this)
@@ -82,15 +84,28 @@ class MainActivity : Activity() {
     )
       .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
-    streamClient
+    engine
+      .streamClient()
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, _ ->
         val status = responseHeaders.httpStatus ?: 0L
         val message = "received headers with status $status"
+
+        val sb = StringBuilder()
+        for ((name, value) in responseHeaders.headers) {
+          if (name in FILTERED_HEADERS) {
+            sb.append(name).append(": ").append(value.joinToString()).append("\n")
+          }
+        }
+        val headerText = sb.toString()
+
         Log.d("MainActivity", message)
+        responseHeaders.value("filter-demo")?.first()?.let { filterDemoValue ->
+          Log.d("MainActivity", "filter-demo: $filterDemoValue")
+        }
+
         if (status == 200) {
-          val serverHeaderField = responseHeaders?.value(ENVOY_SERVER_HEADER)?.first() ?: ""
-          recyclerView.post { viewAdapter.add(Success(message, serverHeaderField)) }
+          recyclerView.post { viewAdapter.add(Success(message, headerText)) }
         } else {
           recyclerView.post { viewAdapter.add(Failure(message)) }
         }

@@ -5,7 +5,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
-import io.envoyproxy.envoymobile.AndroidStreamClientBuilder;
+import io.envoyproxy.envoymobile.AndroidEngineBuilder;
+import io.envoyproxy.envoymobile.Engine;
 import io.envoyproxy.envoymobile.RequestHeaders;
 import io.envoyproxy.envoymobile.RequestHeadersBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
@@ -13,7 +14,6 @@ import io.envoyproxy.envoymobile.ResponseHeaders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import io.envoyproxy.envoymobile.StreamClient;
 import io.envoyproxy.envoymobile.shared.Failure;
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter;
 import io.envoyproxy.envoymobile.shared.Success;
@@ -21,6 +21,11 @@ import kotlin.Unit;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends Activity {
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
@@ -28,8 +33,15 @@ public class MainActivity extends Activity {
   private static final String REQUEST_AUTHORITY = "api.lyft.com";
   private static final String REQUEST_PATH = "/ping";
   private static final String REQUEST_SCHEME = "https";
+  private static final Set<String> FILTERED_HEADERS = new HashSet<String>() {
+    {
+      add("server");
+      add("filter-demo");
+      add("x-envoy-upstream-service-time");
+    }
+  };
 
-  private StreamClient streamClient;
+  private Engine engine;
   private RecyclerView recyclerView;
 
   private HandlerThread thread = new HandlerThread(REQUEST_HANDLER_THREAD_NAME);
@@ -40,7 +52,7 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    streamClient = new AndroidStreamClientBuilder(getApplication()).build();
+    engine = new AndroidEngineBuilder(getApplication()).build();
 
     recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -76,14 +88,25 @@ public class MainActivity extends Activity {
     RequestHeaders requestHeaders = new RequestHeadersBuilder(RequestMethod.GET, REQUEST_SCHEME,
                                                               REQUEST_AUTHORITY, REQUEST_PATH)
                                         .build();
-    streamClient.newStreamPrototype()
+    engine.streamClient()
+        .newStreamPrototype()
         .setOnResponseHeaders((responseHeaders, endStream) -> {
           Integer status = responseHeaders.getHttpStatus();
           String message = "received headers with status " + status;
+
+          StringBuilder sb = new StringBuilder();
+          for (Map.Entry<String, List<String>> entry : responseHeaders.getHeaders().entrySet()) {
+            String name = entry.getKey();
+            if (FILTERED_HEADERS.contains(name)) {
+              sb.append(name).append(": ").append(String.join(", ", entry.getValue())).append("\n");
+            }
+          }
+          String headerText = sb.toString();
+
           Log.d("MainActivity", message);
           if (status == 200) {
             String serverHeaderField = responseHeaders.value(ENVOY_SERVER_HEADER).get(0);
-            recyclerView.post(() -> viewAdapter.add(new Success(message, serverHeaderField)));
+            recyclerView.post(() -> viewAdapter.add(new Success(message, headerText)));
           } else {
             recyclerView.post(() -> viewAdapter.add(new Failure(message)));
           }

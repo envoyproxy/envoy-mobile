@@ -50,7 +50,7 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
   if (auto e = engine_.lock()) {
-    return e->httpDispatcher().resetStream(stream);
+    return e->httpDispatcher().cancelStream(stream);
   }
   return ENVOY_FAILURE;
 }
@@ -68,6 +68,12 @@ envoy_engine_t init_engine() {
 envoy_status_t set_preferred_network(envoy_network_t network) {
   preferred_network_.store(network);
   return ENVOY_SUCCESS;
+}
+
+void record_counter(const char* elements, uint64_t count) {
+  if (auto e = engine_.lock()) {
+    e->recordCounter(std::string(elements), count);
+  }
 }
 
 void flush_stats() {

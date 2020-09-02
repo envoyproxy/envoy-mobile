@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import java.util.UUID
 
 sealed class BaseConfiguration
@@ -11,9 +12,9 @@ class Standard : BaseConfiguration()
 class Custom(val yaml: String) : BaseConfiguration()
 
 /**
- * Builder used for creating new instances of a `StreamClient`.
+ * Builder used for creating and running a new `Engine` instance.
  */
-open class StreamClientBuilder(
+open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
   private var logLevel = LogLevel.INFO
@@ -24,7 +25,7 @@ open class StreamClientBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
-  private var filterChain = mutableListOf<FilterFactory>()
+  private var filterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var statsFlushSeconds = 60
   private var appVersion = "unspecified"
   private var appId = "unspecified"
@@ -37,7 +38,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addLogLevel(logLevel: LogLevel): StreamClientBuilder {
+  fun addLogLevel(logLevel: LogLevel): EngineBuilder {
     this.logLevel = logLevel
     return this
   }
@@ -49,7 +50,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addStatsDomain(statsDomain: String): StreamClientBuilder {
+  fun addStatsDomain(statsDomain: String): EngineBuilder {
     this.statsDomain = statsDomain
     return this
   }
@@ -61,7 +62,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addConnectTimeoutSeconds(connectTimeoutSeconds: Int): StreamClientBuilder {
+  fun addConnectTimeoutSeconds(connectTimeoutSeconds: Int): EngineBuilder {
     this.connectTimeoutSeconds = connectTimeoutSeconds
     return this
   }
@@ -73,7 +74,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): StreamClientBuilder {
+  fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): EngineBuilder {
     this.dnsRefreshSeconds = dnsRefreshSeconds
     return this
   }
@@ -86,7 +87,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addDNSFailureRefreshSeconds(base: Int, max: Int): StreamClientBuilder {
+  fun addDNSFailureRefreshSeconds(base: Int, max: Int): EngineBuilder {
     this.dnsFailureRefreshSecondsBase = base
     this.dnsFailureRefreshSecondsMax = max
     return this
@@ -99,7 +100,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addStatsFlushSeconds(statsFlushSeconds: Int): StreamClientBuilder {
+  fun addStatsFlushSeconds(statsFlushSeconds: Int): EngineBuilder {
     this.statsFlushSeconds = statsFlushSeconds
     return this
   }
@@ -111,7 +112,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addFilter(factory: () -> Filter): StreamClientBuilder {
+  fun addFilter(factory: () -> Filter): EngineBuilder {
     val filterName = UUID.randomUUID().toString()
     this.filterChain.add(FilterFactory(filterName, factory))
     return this
@@ -124,7 +125,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addAppVersion(appVersion: String): StreamClientBuilder {
+  fun addAppVersion(appVersion: String): EngineBuilder {
     this.appVersion = appVersion
     return this
   }
@@ -136,7 +137,7 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addAppId(appId: String): StreamClientBuilder {
+  fun addAppId(appId: String): EngineBuilder {
     this.appId = appId
     return this
   }
@@ -148,28 +149,28 @@ open class StreamClientBuilder(
    *
    * @return this builder.
    */
-  fun addVirtualClusters(virtualClusters: String): StreamClientBuilder {
+  fun addVirtualClusters(virtualClusters: String): EngineBuilder {
     this.virtualClusters = virtualClusters
     return this
   }
 
   /**
-   * Builds a new instance of Envoy using the provided configurations.
+   * Builds and runs a new Engine instance with the provided configuration.
    *
    * @return A new instance of Envoy.
    */
-  fun build(): StreamClient {
+  fun build(): Engine {
     return when (configuration) {
       is Custom -> {
-        return EnvoyClient(engineType(), configuration.yaml, logLevel)
+        EngineImpl(engineType(), configuration.yaml, logLevel)
       }
       is Standard -> {
-        EnvoyClient(
+        EngineImpl(
           engineType(),
           EnvoyConfiguration(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            statsFlushSeconds, appVersion, appId, virtualClusters
+            filterChain, statsFlushSeconds, appVersion, appId, virtualClusters
           ),
           logLevel
         )
@@ -182,7 +183,7 @@ open class StreamClientBuilder(
    *
    * A new instance of this engine will be created when `build()` is called.
    */
-  fun addEngineType(engineType: () -> EnvoyEngine): StreamClientBuilder {
+  fun addEngineType(engineType: () -> EnvoyEngine): EngineBuilder {
     this.engineType = engineType
     return this
   }
