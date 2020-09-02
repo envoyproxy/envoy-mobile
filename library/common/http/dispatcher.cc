@@ -240,11 +240,6 @@ void Dispatcher::post(Event::PostCb callback) {
   init_queue_.push_back(callback);
 }
 
-void Dispatcher::exit() {
-  Thread::LockGuard lock(ready_lock_);
-  event_dispatcher_ = nullptr;
-}
-
 envoy_status_t Dispatcher::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks) {
   post([this, new_stream_handle, bridge_callbacks]() -> void {
