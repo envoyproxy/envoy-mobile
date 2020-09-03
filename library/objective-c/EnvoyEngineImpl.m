@@ -201,7 +201,7 @@ static void ios_http_filter_release(const void *context) {
 }
 
 - (void)terminateNotification:(NSNotification *)notification {
-  NSLog(@"[Envoy %d] terminating engine (%@)", _engineHandle, notification.name);
+  NSLog(@"[Envoy %ld] terminating engine (%@)", _engineHandle, notification.name);
   terminate_engine(_engineHandle);
 }
 
