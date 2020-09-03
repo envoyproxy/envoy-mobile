@@ -67,8 +67,9 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
   // The above call is blocking; at this point the event loop has exited.
 
   // Ensure destructors run on Envoy's main thread.
-  postinit_callback_handler_.reset();
-  TS_UNCHECKED_READ(main_common_).reset();
+  postinit_callback_handler_.reset(nullptr);
+  client_scope_.reset(nullptr);
+  TS_UNCHECKED_READ(main_common_).reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
 
