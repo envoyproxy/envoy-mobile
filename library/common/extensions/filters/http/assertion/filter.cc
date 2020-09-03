@@ -23,8 +23,7 @@ AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config
   config_->rootMatcher().onNewStream(statuses_);
 }
 
-Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers,
-                                                         bool) {
+Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers, bool) {
   config_->rootMatcher().onHttpRequestHeaders(headers, statuses_);
   if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
