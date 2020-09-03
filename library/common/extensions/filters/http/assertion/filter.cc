@@ -133,6 +133,49 @@ Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerM
   return Http::FilterTrailersStatus::Continue;
 }
 
+Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap& headers, bool end_stream) {
+  config_->rootMatcher().onHttpResponseHeaders(headers, statuses_);
+  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       "Request Headers do not match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterHeadersStatus::StopIteration;
+  }
+
+  if (!end_stream) {
+    return Http::FilterHeadersStatus::StopIteration;
+  }
+
+  return Http::FilterHeadersStatus::Continue;
+}
+
+Http::FilterDataStatus AssertionFilter::encodeData(Buffer::Instance& data, bool end_stream) {
+  config_->rootMatcher().onResponseBody(data, statuses_);
+  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       "Request Body does not match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterDataStatus::StopIterationNoBuffer;
+  }
+
+  if (!end_stream) {
+    return Http::FilterDataStatus::StopIterationAndBuffer;
+  }
+
+  return Http::FilterDataStatus::Continue;
+}
+
+Http::FilterTrailersStatus AssertionFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
+  config_->rootMatcher().onHttpResponseTrailers(trailers, statuses_);
+  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       "Request Trailers do not match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterTrailersStatus::StopIteration;
+  }
+
+  return Http::FilterTrailersStatus::Continue;
+}
 } // namespace Assertion
 } // namespace HttpFilters
 } // namespace Extensions
