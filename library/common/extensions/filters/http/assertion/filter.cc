@@ -24,7 +24,7 @@ AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config
 }
 
 Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers,
-                                                         bool end_stream) {
+                                                         bool) {
   config_->rootMatcher().onHttpRequestHeaders(headers, statuses_);
   if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
@@ -33,27 +33,14 @@ Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap&
     return Http::FilterHeadersStatus::StopIteration;
   }
 
-  if (end_stream) {
-    decoder_callbacks_->sendLocalReply(Http::Code::OK,
-                                       "Request Headers match configured expectations", nullptr,
-                                       absl::nullopt, "");
-    return Http::FilterHeadersStatus::StopIteration;
-  }
-
   return Http::FilterHeadersStatus::Continue;
 }
 
-Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool end_stream) {
+Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool) {
   config_->rootMatcher().onRequestBody(data, statuses_);
   if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                        "Request Body does not match configured expectations",
-                                       nullptr, absl::nullopt, "");
-    return Http::FilterDataStatus::StopIterationNoBuffer;
-  }
-
-  if (end_stream) {
-    decoder_callbacks_->sendLocalReply(Http::Code::OK, "Request Body match configured expectations",
                                        nullptr, absl::nullopt, "");
     return Http::FilterDataStatus::StopIterationNoBuffer;
   }
@@ -70,9 +57,7 @@ Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerM
     return Http::FilterTrailersStatus::StopIteration;
   }
 
-  decoder_callbacks_->sendLocalReply(
-      Http::Code::OK, "Request Trailers match configured expectations", nullptr, absl::nullopt, "");
-  return Http::FilterTrailersStatus::StopIteration;
+  return Http::FilterTrailersStatus::Continue;
 }
 
 } // namespace Assertion

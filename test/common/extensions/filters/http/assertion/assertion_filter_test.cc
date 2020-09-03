@@ -42,10 +42,7 @@ match_config:
 
   Http::TestRequestHeaderMapImpl request_headers{{":authority", "test.code"}};
 
-  EXPECT_CALL(
-      decoder_callbacks_,
-      sendLocalReply(Http::Code::OK, "Request Headers match configured expectations", _, _, ""));
-  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration,
+  EXPECT_EQ(Http::FilterHeadersStatus::Continue,
             filter_->decodeHeaders(request_headers, true));
 }
 
@@ -91,10 +88,7 @@ match_config:
 
   Buffer::InstancePtr body{new Buffer::OwnedImpl("match_me")};
 
-  EXPECT_CALL(
-      decoder_callbacks_,
-      sendLocalReply(Http::Code::OK, "Request Body match configured expectations", _, _, ""));
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(*body, true));
+  EXPECT_EQ(Http::FilterDataStatus::Continue, filter_->decodeData(*body, true));
 }
 
 TEST_F(AssertionFilterTest, DataMatch) {
@@ -137,10 +131,7 @@ match_config:
 
   Http::TestRequestTrailerMapImpl request_trailers{{"test-trailer", "test.code"}};
 
-  EXPECT_CALL(
-      decoder_callbacks_,
-      sendLocalReply(Http::Code::OK, "Request Trailers match configured expectations", _, _, ""));
-  EXPECT_EQ(Http::FilterTrailersStatus::StopIteration, filter_->decodeTrailers(request_trailers));
+  EXPECT_EQ(Http::FilterTrailersStatus::Continue, filter_->decodeTrailers(request_trailers));
 }
 
 TEST_F(AssertionFilterTest, TrailersNoMatch) {
