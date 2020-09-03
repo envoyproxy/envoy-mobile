@@ -133,7 +133,8 @@ Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerM
   return Http::FilterTrailersStatus::Continue;
 }
 
-Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap& headers, bool end_stream) {
+Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
+                                                         bool end_stream) {
   config_->rootMatcher().onHttpResponseHeaders(headers, statuses_);
   if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
