@@ -75,7 +75,7 @@ final class BridgeTests: XCTestCase {
       .streamClient
 
     let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",
-                                        authority: "example.com", path: "/test")
+                                               authority: "example.com", path: "/test")
       .addUpstreamHttpProtocol(.http2)
       .build()
     client
@@ -84,8 +84,8 @@ final class BridgeTests: XCTestCase {
         let status = responseHeaders.httpStatus ?? -1
          XCTAssertEqual(200, status)
       }
-      .setOnResponseData { data, endStream in
-        NSLog("received data")
+      .setOnResponseData { _, endStream in
+        XCTAssertTrue(endStream)
         cond.signal()
       }
       .start(queue: q)
