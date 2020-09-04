@@ -28,6 +28,10 @@ final class BridgeTests: XCTestCase {
   }
 
   func testInitial() throws {
+    // swiftlint:disable:next line_length
+    let apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    // swiftlint:disable:next line_length
+    let assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
     let config =
     """
     static_resources:
@@ -40,7 +44,7 @@ final class BridgeTests: XCTestCase {
             port_value: 10000
         api_listener:
           api_listener:
-            "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+            "@type": \(apiListenerType)
             stat_prefix: hcm
             route_config:
               name: api_router
@@ -56,7 +60,7 @@ final class BridgeTests: XCTestCase {
             http_filters:
               - name: envoy.filters.http.assertion
                 typed_config:
-                  "@type": type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion
+                  "@type": \(assertionFilterType)
                   match_config:
                     http_request_headers_match:
                       headers:
