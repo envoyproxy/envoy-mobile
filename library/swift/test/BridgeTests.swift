@@ -66,7 +66,8 @@ final class BridgeTests: XCTestCase {
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
-    let sem = DispatchSemaphore(value: -1)
+    let cond = NSCondition()
+    let q = DispatchQueue(label: "test.envoymobile")
     let client = try EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .addFilter(factory: DemoFilter.init)
@@ -81,19 +82,15 @@ final class BridgeTests: XCTestCase {
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, _ in
         let status = responseHeaders.httpStatus ?? -1
-        let message = "received headers with status \(status)"
-        print(message)
-                sem.signal()
-
+         XCTAssertEqual(200, status)
       }
       .setOnResponseData { data, endStream in
-        sem.signal()
+        NSLog("received data")
+        cond.signal()
       }
-      .start()
+      .start(queue: q)
       .sendHeaders(requestHeaders, endStream: true)
 
-    print("awaiting!!")
-    sem.wait()
-    print("done waiting!!")
+    cond.wait()
   }
 }
