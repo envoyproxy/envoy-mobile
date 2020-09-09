@@ -1,5 +1,6 @@
 #include "library/common/extensions/filters/http/assertion/filter.h"
 
+#include "common/http/header_map_impl.h"
 #include "envoy/http/codes.h"
 #include "envoy/server/filter_config.h"
 
@@ -23,7 +24,7 @@ AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config
   config_->rootMatcher().onNewStream(statuses_);
 }
 
-Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers, bool) {
+Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers, bool end_stream) {
   config_->rootMatcher().onHttpRequestHeaders(headers, statuses_);
   if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
@@ -32,10 +33,30 @@ Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap&
     return Http::FilterHeadersStatus::StopIteration;
   }
 
+  if (end_stream) {
+    Buffer::OwnedImpl empty_buffer;
+    config_->rootMatcher().onRequestBody(empty_buffer, statuses_);
+    if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+      decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                         "Request Body does not match configured expectations",
+                                         nullptr, absl::nullopt, "");
+      return Http::FilterHeadersStatus::StopIteration;
+    }
+
+    auto empty_trailers = Http::RequestTrailerMapImpl::create();
+    config_->rootMatcher().onHttpRequestTrailers(*empty_trailers, statuses_);
+    if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+      decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                         "Request Trailers do not match configured expectations",
+                                         nullptr, absl::nullopt, "");
+      return Http::FilterHeadersStatus::StopIteration;
+    }
+  }
+
   return Http::FilterHeadersStatus::Continue;
 }
 
-Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool) {
+Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool end_stream) {
   config_->rootMatcher().onRequestBody(data, statuses_);
   if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
@@ -44,6 +65,16 @@ Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool)
     return Http::FilterDataStatus::StopIterationNoBuffer;
   }
 
+  if (end_stream) {
+    auto empty_trailers = Http::RequestTrailerMapImpl::create();
+    config_->rootMatcher().onHttpRequestTrailers(*empty_trailers, statuses_);
+    if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+      decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                         "Request Trailers do not match configured expectations",
+                                         nullptr, absl::nullopt, "");
+      return Http::FilterDataStatus::StopIterationNoBuffer;
+    }
+  }
   return Http::FilterDataStatus::Continue;
 }
 
