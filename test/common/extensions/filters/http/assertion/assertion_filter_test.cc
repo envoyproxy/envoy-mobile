@@ -42,8 +42,7 @@ match_config:
 
   Http::TestRequestHeaderMapImpl request_headers{{":authority", "test.code"}};
 
-  EXPECT_EQ(Http::FilterHeadersStatus::Continue,
-            filter_->decodeHeaders(request_headers, true));
+  EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->decodeHeaders(request_headers, true));
 }
 
 TEST_F(AssertionFilterTest, HeadersMatch) {
