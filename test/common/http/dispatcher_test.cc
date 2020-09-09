@@ -1191,7 +1191,7 @@ TEST_F(DispatcherTest, RemoteResetAfterStreamStart) {
   // Expect that when a reset is received, the Http::Dispatcher::DirectStream fires
   // runResetCallbacks. The Http::ConnectionManager depends on the Http::Dispatcher::DirectStream
   // firing this tight loop to let the Http::ConnectionManager clean up its stream state.
-  EXPECT_CALL(callbacks, onResetStream(StreamResetReason::RemoteReset, _));
+  EXPECT_CALL(callbacks, onErrorStream(StreamResetReason::RemoteReset, _));
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, deferredDelete_(_)).Times(1);
   response_encoder_->getStream().resetStream(StreamResetReason::RemoteReset);
