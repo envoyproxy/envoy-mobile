@@ -99,6 +99,7 @@ Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool 
                                          nullptr, absl::nullopt, "");
       return Http::FilterDataStatus::StopIterationNoBuffer;
     }
+
     // Because a stream only contains a single set of headers or trailers, if either fail to
     // satisfy assertions, might_change_status_ will be false. Therefore if matches_ is still
     // unsatisfied here, it must be because of body data.
@@ -121,6 +122,7 @@ Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerM
                                        nullptr, absl::nullopt, "");
     return Http::FilterTrailersStatus::StopIteration;
   }
+
   // Because a stream only contains a single set of headers or trailers, if either fail to
   // satisfy assertions, might_change_status_ will be false. Therefore if matches_ is still
   // unsatisfied here, it must be because of body data.
@@ -136,8 +138,8 @@ Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerM
 Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
                                                          bool end_stream) {
   config_->rootMatcher().onHttpResponseHeaders(headers, statuses_);
-  auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
-  if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
+  auto& match_status = config_->rootMatcher().matchStatus(statuses_);
+  if (!match_status.matches_ && !match_status.might_change_status_) {
     decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                        "Response Headers do not match configured expectations",
                                        nullptr, absl::nullopt, "");
@@ -145,16 +147,18 @@ Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap
   }
 
   if (end_stream) {
+    // Check if there are unsatisfied assertions about stream data.
     Buffer::OwnedImpl empty_buffer;
     config_->rootMatcher().onResponseBody(empty_buffer, statuses_);
-    auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
-    if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
+    auto& match_status = config_->rootMatcher().matchStatus(statuses_);
+    if (!match_status.matches_ && !match_status.might_change_status_) {
       decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                          "Response Body does not match configured expectations",
                                          nullptr, absl::nullopt, "");
       return Http::FilterHeadersStatus::StopIteration;
     }
 
+    // Check of there are unsatisfied assertions about stream trailers.
     auto empty_trailers = Http::ResponseTrailerMapImpl::create();
     config_->rootMatcher().onHttpResponseTrailers(*empty_trailers, statuses_);
     auto& finalMatchStatus = config_->rootMatcher().matchStatus(statuses_);
@@ -164,6 +168,10 @@ Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap
                                          nullptr, absl::nullopt, "");
       return Http::FilterHeadersStatus::StopIteration;
     }
+
+    // Because a stream only contains a single set of headers or trailers, if either fail to
+    // satisfy assertions, might_change_status_ will be false. Therefore if matches_ is still
+    // unsatisfied here, it must be because of body data.
     if (!finalMatchStatus.matches_) {
       decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                          "Response Body does not match configured expectations",
@@ -177,8 +185,8 @@ Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap
 
 Http::FilterDataStatus AssertionFilter::encodeData(Buffer::Instance& data, bool end_stream) {
   config_->rootMatcher().onResponseBody(data, statuses_);
-  auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
-  if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
+  auto& match_status = config_->rootMatcher().matchStatus(statuses_);
+  if (!match_status.matches_ && !match_status.might_change_status_) {
     decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                        "Response Body does not match configured expectations",
                                        nullptr, absl::nullopt, "");
@@ -186,16 +194,21 @@ Http::FilterDataStatus AssertionFilter::encodeData(Buffer::Instance& data, bool 
   }
 
   if (end_stream) {
+    // Check of there are unsatisfied assertions about stream trailers.
     auto empty_trailers = Http::ResponseTrailerMapImpl::create();
     config_->rootMatcher().onHttpResponseTrailers(*empty_trailers, statuses_);
-    auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
-    if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
+    auto& match_status = config_->rootMatcher().matchStatus(statuses_);
+    if (!match_status.matches_ && !match_status.might_change_status_) {
       decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                          "Response Trailers do not match configured expectations",
                                          nullptr, absl::nullopt, "");
       return Http::FilterDataStatus::StopIterationNoBuffer;
     }
-    if (!matchStatus.matches_) {
+
+    // Because a stream only contains a single set of headers or trailers, if either fail to
+    // satisfy assertions, might_change_status_ will be false. Therefore if matches_ is still
+    // unsatisfied here, it must be because of body data.
+    if (!match_status.matches_) {
       decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                          "Response Body does not match configured expectations",
                                          nullptr, absl::nullopt, "");
@@ -207,14 +220,18 @@ Http::FilterDataStatus AssertionFilter::encodeData(Buffer::Instance& data, bool 
 
 Http::FilterTrailersStatus AssertionFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
   config_->rootMatcher().onHttpResponseTrailers(trailers, statuses_);
-  auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
-  if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
+  auto& match_status = config_->rootMatcher().matchStatus(statuses_);
+  if (!match_status.matches_ && !match_status.might_change_status_) {
     decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                        "Response Trailers do not match configured expectations",
                                        nullptr, absl::nullopt, "");
     return Http::FilterTrailersStatus::StopIteration;
   }
-  if (!matchStatus.matches_) {
+
+  // Because a stream only contains a single set of headers or trailers, if either fail to
+  // satisfy assertions, might_change_status_ will be false. Therefore if matches_ is still
+  // unsatisfied here, it must be because of body data.
+  if (!match_status.matches_) {
     decoder_callbacks_->sendLocalReply(Http::Code::InternalServerError,
                                        "Response Body does not match configured expectations",
                                        nullptr, absl::nullopt, "");
