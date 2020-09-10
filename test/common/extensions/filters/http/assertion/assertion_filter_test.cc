@@ -461,12 +461,9 @@ match_config:
   EXPECT_CALL(decoder_callbacks_,
               sendLocalReply(Http::Code::InternalServerError,
                              "Response Body does not match configured expectations", _, _, ""));
-  EXPECT_EQ(Http::FilterHeadersStatus::Continue,
-            filter_->encodeHeaders(response_headers, false));
-  EXPECT_EQ(Http::FilterDataStatus::Continue,
-            filter_->encodeData(*body, false));
-  EXPECT_EQ(Http::FilterTrailersStatus::StopIteration,
-            filter_->encodeTrailers(response_trailers));
+  EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->encodeHeaders(response_headers, false));
+  EXPECT_EQ(Http::FilterDataStatus::Continue, filter_->encodeData(*body, false));
+  EXPECT_EQ(Http::FilterTrailersStatus::StopIteration, filter_->encodeTrailers(response_trailers));
 }
 
 TEST_F(AssertionFilterTest, ResponseTrailersMatch) {
