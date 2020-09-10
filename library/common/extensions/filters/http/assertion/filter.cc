@@ -1,9 +1,9 @@
 #include "library/common/extensions/filters/http/assertion/filter.h"
 
-#include "common/http/header_map_impl.h"
-
 #include "envoy/http/codes.h"
 #include "envoy/server/filter_config.h"
+
+#include "common/http/header_map_impl.h"
 
 namespace Envoy {
 namespace Extensions {
