@@ -158,7 +158,7 @@ Http::FilterHeadersStatus AssertionFilter::encodeHeaders(Http::ResponseHeaderMap
       return Http::FilterHeadersStatus::StopIteration;
     }
 
-    // Check of there are unsatisfied assertions about stream trailers.
+    // Check if there are unsatisfied assertions about stream trailers.
     auto empty_trailers = Http::ResponseTrailerMapImpl::create();
     config_->rootMatcher().onHttpResponseTrailers(*empty_trailers, statuses_);
     auto& finalMatchStatus = config_->rootMatcher().matchStatus(statuses_);
@@ -194,7 +194,7 @@ Http::FilterDataStatus AssertionFilter::encodeData(Buffer::Instance& data, bool 
   }
 
   if (end_stream) {
-    // Check of there are unsatisfied assertions about stream trailers.
+    // Check if there are unsatisfied assertions about stream trailers.
     auto empty_trailers = Http::ResponseTrailerMapImpl::create();
     config_->rootMatcher().onHttpResponseTrailers(*empty_trailers, statuses_);
     auto& match_status = config_->rootMatcher().matchStatus(statuses_);

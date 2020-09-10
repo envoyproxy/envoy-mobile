@@ -263,8 +263,6 @@ match_config:
   EXPECT_EQ(Http::FilterTrailersStatus::StopIteration, filter_->decodeTrailers(request_trailers));
 }
 
-// DIVIDE
-
 TEST_F(AssertionFilterTest, ResponseHeadersMatchWithEndStream) {
   setUpFilter(R"EOF(
 match_config:
