@@ -122,9 +122,15 @@ match_config:
 TEST_F(AssertionFilterTest, DataMissing) {
   setUpFilter(R"EOF(
 match_config:
-  http_request_generic_body_match:
-    patterns:
-      - string_match: match_me
+  and_match:
+    rules:
+    - http_request_headers_match:
+        headers:
+          - name: ":authority"
+            exact_match: test.code
+    - http_request_generic_body_match:
+        patterns:
+        - string_match: match_me
 )EOF");
 
   Http::TestRequestHeaderMapImpl request_headers{{":authority", "test.code"}};
@@ -132,7 +138,8 @@ match_config:
   EXPECT_CALL(decoder_callbacks_,
               sendLocalReply(Http::Code::BadRequest,
                              "Request Body does not match configured expectations", _, _, ""));
-  EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->decodeHeaders(request_headers, true));
+  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration,
+            filter_->decodeHeaders(request_headers, true));
 }
 
 TEST_F(AssertionFilterTest, TrailersMatch) {

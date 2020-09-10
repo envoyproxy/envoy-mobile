@@ -24,9 +24,11 @@ AssertionFilter::AssertionFilter(AssertionFilterConfigSharedPtr config) : config
   config_->rootMatcher().onNewStream(statuses_);
 }
 
-Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers, bool end_stream) {
+Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap& headers,
+                                                         bool end_stream) {
   config_->rootMatcher().onHttpRequestHeaders(headers, statuses_);
-  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+  auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
+  if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                        "Request Headers do not match configured expectations",
                                        nullptr, absl::nullopt, "");
@@ -36,7 +38,8 @@ Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap&
   if (end_stream) {
     Buffer::OwnedImpl empty_buffer;
     config_->rootMatcher().onRequestBody(empty_buffer, statuses_);
-    if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
+    if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
       decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                          "Request Body does not match configured expectations",
                                          nullptr, absl::nullopt, "");
@@ -45,9 +48,16 @@ Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap&
 
     auto empty_trailers = Http::RequestTrailerMapImpl::create();
     config_->rootMatcher().onHttpRequestTrailers(*empty_trailers, statuses_);
-    if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    auto& finalMatchStatus = config_->rootMatcher().matchStatus(statuses_);
+    if (!finalMatchStatus.matches_ && !finalMatchStatus.might_change_status_) {
       decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                          "Request Trailers do not match configured expectations",
+                                         nullptr, absl::nullopt, "");
+      return Http::FilterHeadersStatus::StopIteration;
+    }
+    if (!finalMatchStatus.matches_) {
+      decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                         "Request Body does not match configured expectations",
                                          nullptr, absl::nullopt, "");
       return Http::FilterHeadersStatus::StopIteration;
     }
@@ -58,7 +68,8 @@ Http::FilterHeadersStatus AssertionFilter::decodeHeaders(Http::RequestHeaderMap&
 
 Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool end_stream) {
   config_->rootMatcher().onRequestBody(data, statuses_);
-  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+  auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
+  if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                        "Request Body does not match configured expectations",
                                        nullptr, absl::nullopt, "");
@@ -68,9 +79,16 @@ Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool 
   if (end_stream) {
     auto empty_trailers = Http::RequestTrailerMapImpl::create();
     config_->rootMatcher().onHttpRequestTrailers(*empty_trailers, statuses_);
-    if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+    auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
+    if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
       decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                          "Request Trailers do not match configured expectations",
+                                         nullptr, absl::nullopt, "");
+      return Http::FilterDataStatus::StopIterationNoBuffer;
+    }
+    if (!matchStatus.matches_) {
+      decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                         "Request Body does not match configured expectations",
                                          nullptr, absl::nullopt, "");
       return Http::FilterDataStatus::StopIterationNoBuffer;
     }
@@ -80,13 +98,19 @@ Http::FilterDataStatus AssertionFilter::decodeData(Buffer::Instance& data, bool 
 
 Http::FilterTrailersStatus AssertionFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
   config_->rootMatcher().onHttpRequestTrailers(trailers, statuses_);
-  if (!config_->rootMatcher().matchStatus(statuses_).matches_) {
+  auto& matchStatus = config_->rootMatcher().matchStatus(statuses_);
+  if (!matchStatus.matches_ && !matchStatus.might_change_status_) {
     decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                        "Request Trailers do not match configured expectations",
                                        nullptr, absl::nullopt, "");
     return Http::FilterTrailersStatus::StopIteration;
   }
-
+  if (!matchStatus.matches_) {
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       "Request Body does not match configured expectations",
+                                       nullptr, absl::nullopt, "");
+    return Http::FilterTrailersStatus::StopIteration;
+  }
   return Http::FilterTrailersStatus::Continue;
 }
 
