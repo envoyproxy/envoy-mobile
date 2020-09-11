@@ -47,16 +47,16 @@ public:
 
 TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestHeaders) {
   envoy_http_filter platform_filter;
-  filter_invocations i = {0, 0, 0, 0, 0, 0, 0, 0};
-  platform_filter.static_context = &i;
+  filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0};
+  platform_filter.static_context = &invocations;
   platform_filter.init_filter = [](const void* context) -> const void* {
-    filter_invocations* i = static_cast<filter_invocations*>(const_cast<void*>(context));
-    i->init_filter_calls++;
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->init_filter_calls++;
     return context;
   };
   platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
                                           const void* context) -> envoy_filter_headers_status {
-    filter_invocations* i = static_cast<filter_invocations*>(const_cast<void*>(context));
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
     EXPECT_EQ(std::string(reinterpret_cast<const char*>(c_headers.headers[0].key.bytes),
                           c_headers.headers[0].key.length),
@@ -65,7 +65,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestHeaders) {
                           c_headers.headers[0].value.length),
               "test.code");
     EXPECT_TRUE(end_stream);
-    i->on_request_headers_calls++;
+    invocations->on_request_headers_calls++;
     return {kEnvoyFilterHeadersStatusContinue, c_headers};
   };
 
@@ -73,12 +73,12 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestHeaders) {
 platform_filter_name: BasicContinueOnRequestHeaders
 )EOF",
               &platform_filter);
-  EXPECT_EQ(i.init_filter_calls, 1);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
 
   Http::TestRequestHeaderMapImpl request_headers{{":authority", "test.code"}};
 
   EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->decodeHeaders(request_headers, true));
-  EXPECT_EQ(i.on_request_headers_calls, 1);
+  EXPECT_EQ(invocations.on_request_headers_calls, 1);
 }
 
 } // namespace
