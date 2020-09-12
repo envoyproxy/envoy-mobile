@@ -1,5 +1,7 @@
 #include "library/common/engine.h"
 
+#include <chrono>
+
 #include "common/common/lock_guard.h"
 
 namespace Envoy {
@@ -51,14 +53,23 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
     // When we improve synchronous failure handling and/or move to dynamic forwarding, we only need
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
+    int64_t start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::system_clock::now().time_since_epoch())
+                             .count();
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
-        Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
+        Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this, start_time]() -> void {
           server_ = TS_UNCHECKED_READ(main_common_)->server();
           client_scope_ = server_->serverFactoryContext().scope().createScope("client.");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
           http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
                                   api_listener.value());
+
+          int64_t time_since_start = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                         std::chrono::system_clock::now().time_since_epoch())
+                                         .count() -
+                                     start_time;
+          callbacks_.on_init_complete(time_since_start, callbacks_.context);
         });
   } // mutex_
 

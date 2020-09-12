@@ -41,7 +41,7 @@ static void jvm_on_exit(void*) {
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
-  envoy_engine_callbacks native_callbacks = {jvm_on_exit, nullptr};
+  envoy_engine_callbacks native_callbacks = {jvm_on_exit, nullptr, nullptr};
   return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }
