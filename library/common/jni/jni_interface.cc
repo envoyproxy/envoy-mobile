@@ -360,6 +360,7 @@ static void* jvm_on_error(envoy_error error, void* context) {
   env->DeleteGlobalRef(j_context);
   env->DeleteLocalRef(jcls_JvmObserverContext);
   env->DeleteLocalRef(j_error_message);
+
   return result;
 }
 
