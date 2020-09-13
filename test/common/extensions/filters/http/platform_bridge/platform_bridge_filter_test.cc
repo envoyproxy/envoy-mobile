@@ -122,7 +122,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestTrailers) {
     return context;
   };
   platform_filter.on_request_trailers = [](envoy_headers c_trailers,
-                                          const void* context) -> envoy_filter_trailers_status {
+                                           const void* context) -> envoy_filter_trailers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_trailers.length, 1);
     EXPECT_EQ(std::string(reinterpret_cast<const char*>(c_trailers.headers[0].key.bytes),
@@ -159,7 +159,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseHeaders) {
     return context;
   };
   platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
-                                          const void* context) -> envoy_filter_headers_status {
+                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
     EXPECT_EQ(std::string(reinterpret_cast<const char*>(c_headers.headers[0].key.bytes),
@@ -195,7 +195,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseData) {
     return context;
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
-                                       const void* context) -> envoy_filter_data_status {
+                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(std::string(reinterpret_cast<const char*>(c_data.bytes), c_data.length),
               "response body");
@@ -226,7 +226,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseTrailers) {
     return context;
   };
   platform_filter.on_response_trailers = [](envoy_headers c_trailers,
-                                          const void* context) -> envoy_filter_trailers_status {
+                                            const void* context) -> envoy_filter_trailers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_trailers.length, 1);
     EXPECT_EQ(std::string(reinterpret_cast<const char*>(c_trailers.headers[0].key.bytes),
