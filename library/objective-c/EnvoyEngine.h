@@ -219,7 +219,7 @@ extern const int kEnvoyFailure;
  */
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
-     onSetupComplete:(void (^)())onSetupComplete;
+     onSetupComplete:(nullable void (^)())onSetupComplete;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.
@@ -231,7 +231,7 @@ extern const int kEnvoyFailure;
  */
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
-         onSetupComplete:(void (^)())onSetupComplete;
+         onSetupComplete:(nullable void (^)())onSetupComplete;
 
 /**
  Opens a new HTTP stream attached to this engine.
@@ -255,7 +255,7 @@ extern const int kEnvoyFailure;
 // Concrete implementation of the `EnvoyEngine` interface.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
-@property (nonatomic, copy) void (^onSetupComplete)();
+@property (nonatomic, copy, nullable) void (^onSetupComplete)();
 
 @end
 

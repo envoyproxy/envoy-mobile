@@ -7,14 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
+static void ios_on_setup_complete(void *context) {
+  EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
+  if (engineImpl.onSetupComplete) {
+    engineImpl.onSetupComplete();
+  }
+}
+
 static void ios_on_exit(void *context) {
   // Currently nothing needs to happen in iOS on exit. Just log.
   NSLog(@"[Envoy] library is exiting");
-}
-
-static void ios_on_setup_complete(void *context) {
-  EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  engineImpl.onSetupComplete();
 }
 
 static const void *ios_http_filter_init(const void *context) {
@@ -156,7 +158,7 @@ static void ios_http_filter_release(const void *context) {
 
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
-     onSetupComplete:(void (^)())onSetupComplete {
+     onSetupComplete:(nullable void (^)())onSetupComplete {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -172,7 +174,7 @@ static void ios_http_filter_release(const void *context) {
 
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
-         onSetupComplete:(void (^)())onSetupComplete {
+         onSetupComplete:(nullable void (^)())onSetupComplete {
   self.onSetupComplete = onSetupComplete;
   [self startObservingLifecycleNotifications];
 

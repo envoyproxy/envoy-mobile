@@ -14,7 +14,7 @@ final class EngineImpl: NSObject {
   }
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine,
-               onSetupComplete: @escaping () -> Void)
+               onSetupComplete: (() -> Void)?)
   {
     self.engine = engine
     self.statsClientImpl = StatsClientImpl(engine: engine)
@@ -39,7 +39,7 @@ final class EngineImpl: NSObject {
   /// - parameter onSetupComplete: Closure called when the engine finishes its async
   ///                              initialization/startup.
   convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   onSetupComplete: @escaping () -> Void)
+                   onSetupComplete: (() -> Void)?)
   {
     self.init(configType: .typed(config), logLevel: logLevel, engine: engine,
               onSetupComplete: onSetupComplete)
@@ -53,7 +53,7 @@ final class EngineImpl: NSObject {
   /// - parameter onSetupComplete: Closure called when the engine finishes its async
   ///                              initialization/startup.
   convenience init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   onSetupComplete: @escaping () -> Void)
+                   onSetupComplete: (() -> Void)?)
   {
     self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine,
               onSetupComplete: onSetupComplete)

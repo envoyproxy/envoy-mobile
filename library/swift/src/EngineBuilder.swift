@@ -23,7 +23,7 @@ public final class EngineBuilder: NSObject {
   private var appId: String = "unspecified"
   private var filterChain: [EnvoyHTTPFilterFactory] = []
   private var virtualClusters: String = "[]"
-  private var onSetupComplete: () -> Void = {}
+  private var onSetupComplete: (() -> Void)?
 
   // MARK: - Public
 
@@ -129,6 +129,17 @@ public final class EngineBuilder: NSObject {
   @discardableResult
   public func onSetupComplete(closure: @escaping () -> Void) -> EngineBuilder {
     self.onSetupComplete = closure
+    return self
+  }
+
+  /// Add the App Version of the App using this Envoy Client.
+  ///
+  /// - parameter appVersion: The version.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addAppVersion(_ appVersion: String) -> EngineBuilder {
+    self.appVersion = appVersion
     return self
   }
 
