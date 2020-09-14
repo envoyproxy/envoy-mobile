@@ -30,6 +30,18 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
   return init_engine();
 }
 
+static void jvm_on_setup_complete(void* context) {
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_setup_complete");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(context);
+  jclass jcls_JvmOnSetupContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onSetup =
+    env->GetMethodID(jcls_JvmOnSetupContext, "invoke", "()V");
+
+  env->CallVoidMethod(j_context, jmid_onSetup);
+}
+
 static void jvm_on_exit(void*) {
   __android_log_write(ANDROID_LOG_INFO, "[Envoy]", "library is exiting");
   // Note that this is not dispatched because the thread that
@@ -40,8 +52,9 @@ static void jvm_on_exit(void*) {
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
-    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
-  envoy_engine_callbacks native_callbacks = {jvm_on_exit, nullptr, nullptr};
+    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level, jobject context) {
+
+  envoy_engine_callbacks native_callbacks = {jvm_on_exit, jvm_on_setup_complete, context};
   return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }

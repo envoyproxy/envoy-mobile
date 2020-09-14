@@ -137,7 +137,7 @@ class JniLibrary {
    * @param logLevel, the logging level to run envoy with.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel);
+  protected static native int runEngine(long engine, String config, String logLevel, OnSetupComplete onSetupComplete);
 
   // Other native methods
 
@@ -163,4 +163,8 @@ class JniLibrary {
    *         filter platform filter configuration.
    */
   public static native String filterTemplateString();
+
+  public interface OnSetupComplete {
+    void invoke();
+  }
 }

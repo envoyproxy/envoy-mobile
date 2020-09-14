@@ -39,7 +39,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int runWithConfig(String configurationYAML, String logLevel) {
     try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel);
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, () -> {
+        throw new RuntimeException("~~~~~~~~ this worked");
+      });
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;
