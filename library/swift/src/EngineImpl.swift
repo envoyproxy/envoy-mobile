@@ -14,7 +14,7 @@ final class EngineImpl: NSObject {
   }
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine,
-               onPostInitComplete: @escaping (Int64) -> Void)
+               onSetupComplete: @escaping () -> Void)
   {
     self.engine = engine
     self.statsClientImpl = StatsClientImpl(engine: engine)
@@ -24,39 +24,39 @@ final class EngineImpl: NSObject {
     switch configType {
     case .yaml(let configYAML):
       self.engine.run(withConfigYAML: configYAML, logLevel: logLevel.stringValue,
-                      onPostInitComplete: onPostInitComplete)
+                      onSetupComplete: onSetupComplete)
     case .typed(let config):
       self.engine.run(withConfig: config, logLevel: logLevel.stringValue,
-                      onPostInitComplete: onPostInitComplete)
+                      onSetupComplete: onSetupComplete)
     }
   }
 
   /// Initialize a new Envoy instance using a typed configuration.
   ///
-  /// - parameter config:             Configuration to use for starting Envoy.
-  /// - parameter logLevel:           Log level to use for this instance.
-  /// - parameter engine:             The underlying engine to use for starting Envoy.
-  /// - parameter onPostInitComplete: Closure called when the engine finishes its async
-  ///                                 initialization/startup.
+  /// - parameter config:          Configuration to use for starting Envoy.
+  /// - parameter logLevel:        Log level to use for this instance.
+  /// - parameter engine:          The underlying engine to use for starting Envoy.
+  /// - parameter onSetupComplete: Closure called when the engine finishes its async
+  ///                              initialization/startup.
   convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   onPostInitComplete: @escaping (Int64) -> Void)
+                   onSetupComplete: @escaping () -> Void)
   {
     self.init(configType: .typed(config), logLevel: logLevel, engine: engine,
-              onPostInitComplete: onPostInitComplete)
+              onSetupComplete: onSetupComplete)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter configYAML:         Configuration yaml to use for starting Envoy.
-  /// - parameter logLevel:           Log level to use for this instance.
-  /// - parameter engine:             The underlying engine to use for starting Envoy.
-  /// - parameter onPostInitComplete: Closure called when the engine finishes its async
-  ///                                 initialization/startup.
+  /// - parameter configYAML:      Configuration yaml to use for starting Envoy.
+  /// - parameter logLevel:        Log level to use for this instance.
+  /// - parameter engine:          The underlying engine to use for starting Envoy.
+  /// - parameter onSetupComplete: Closure called when the engine finishes its async
+  ///                              initialization/startup.
   convenience init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   onPostInitComplete: @escaping (Int64) -> Void)
+                   onSetupComplete: @escaping () -> Void)
   {
     self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine,
-              onPostInitComplete: onPostInitComplete)
+              onSetupComplete: onSetupComplete)
   }
 }
 

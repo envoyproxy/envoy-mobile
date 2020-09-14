@@ -12,11 +12,9 @@ static void ios_on_exit(void *context) {
   NSLog(@"[Envoy] library is exiting");
 }
 
-static void ios_on_init_complete(long long duration_ms, void *context) {
+static void ios_on_setup_complete(void *context) {
   EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  if (engineImpl.onPostInitComplete) {
-    engineImpl.onPostInitComplete(duration_ms);
-  }
+  engineImpl.onSetupComplete();
 }
 
 static const void *ios_http_filter_init(const void *context) {
@@ -157,8 +155,8 @@ static void ios_http_filter_release(const void *context) {
 }
 
 - (int)runWithConfig:(EnvoyConfiguration *)config
-              logLevel:(NSString *)logLevel
-    onPostInitComplete:(void (^)(long long))onPostInitComplete {
+            logLevel:(NSString *)logLevel
+     onSetupComplete:(void (^)())onSetupComplete {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -169,21 +167,19 @@ static void ios_http_filter_release(const void *context) {
     [self registerFilterFactory:filterFactory];
   }
 
-  return [self runWithConfigYAML:resolvedYAML
-                        logLevel:logLevel
-              onPostInitComplete:onPostInitComplete];
+  return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onSetupComplete:onSetupComplete];
 }
 
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
-      onPostInitComplete:(void (^)(long long))onPostInitComplete {
-  self.onPostInitComplete = onPostInitComplete;
+         onSetupComplete:(void (^)())onSetupComplete {
+  self.onSetupComplete = onSetupComplete;
   [self startObservingLifecycleNotifications];
 
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    envoy_engine_callbacks native_callbacks = {ios_on_exit, ios_on_init_complete,
+    envoy_engine_callbacks native_callbacks = {ios_on_exit, ios_on_setup_complete,
                                                (__bridge void *)(self)};
     return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
                            logLevel.UTF8String);

@@ -235,11 +235,10 @@ typedef void (*envoy_on_exit_f)(void* context);
 
 /**
  * Called when the envoy has finished its async setup and returned post-init callbacks.
- * @param duration_ms, the number of milliseconds it took for the setup to complete.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  */
-typedef void (*envoy_on_init_complete_f)(int64_t duration_ms, void* context);
+typedef void (*envoy_on_setup_complete_f)(void* context);
 
 #ifdef __cplusplus
 } // function pointers
@@ -265,7 +264,7 @@ typedef struct {
  */
 typedef struct {
   envoy_on_exit_f on_exit;
-  envoy_on_init_complete_f on_init_complete;
+  envoy_on_setup_complete_f on_setup_complete;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
 } envoy_engine_callbacks;

@@ -23,7 +23,7 @@ public final class EngineBuilder: NSObject {
   private var appId: String = "unspecified"
   private var filterChain: [EnvoyHTTPFilterFactory] = []
   private var virtualClusters: String = "[]"
-  private var onPostInitComplete: (Int64) -> Void = { _ in }
+  private var onSetupComplete: () -> Void = {}
 
   // MARK: - Public
 
@@ -122,14 +122,13 @@ public final class EngineBuilder: NSObject {
   }
 
   /// Set a closure that will be called when the engine finishes its async initialization/startup.
-  /// Includes the time, in milliseconds, that startup took to complete.
   ///
   /// - parameter closure: The closure to be called.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func onPostInitComplete(closure: @escaping (Int64) -> Void) -> EngineBuilder {
-    self.onPostInitComplete = closure
+  public func onSetupComplete(closure: @escaping () -> Void) -> EngineBuilder {
+    self.onSetupComplete = closure
     return self
   }
 
@@ -163,7 +162,7 @@ public final class EngineBuilder: NSObject {
     switch self.base {
     case .custom(let yaml):
       return EngineImpl(configYAML: yaml, logLevel: self.logLevel, engine: engine,
-                        onPostInitComplete: self.onPostInitComplete)
+                        onSetupComplete: self.onSetupComplete)
     case .standard:
       let config = EnvoyConfiguration(
         statsDomain: self.statsDomain,
@@ -177,7 +176,7 @@ public final class EngineBuilder: NSObject {
         appId: self.appId,
         virtualClusters: self.virtualClusters)
       return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
-                        onPostInitComplete: self.onPostInitComplete)
+                        onSetupComplete: self.onSetupComplete)
     }
   }
 
