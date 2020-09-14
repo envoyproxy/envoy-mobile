@@ -10,7 +10,7 @@ jobs:
   macdist:
     name: mac_dist
     runs-on: macOS-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v1
         with:
@@ -49,7 +49,7 @@ jobs:
       - name: 'Run swift app'
         run: bazelisk run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
       - name: 'Wait for simulator to start & perform requests'
-        run: sleep 180
+        run: sleep 300
       # Print out the log in case the liveliness check fails.
       # This allows the author to decide if the failure is a flake or a real problem.
       - name: 'Cat log'
@@ -91,7 +91,7 @@ jobs:
   swifttests:
     name: swift_tests
     runs-on: macOS-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v1
         with:

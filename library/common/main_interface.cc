@@ -10,6 +10,7 @@
 
 // NOLINT(namespace-envoy)
 
+static std::shared_ptr<Envoy::Engine> strong_engine_;
 static std::weak_ptr<Envoy::Engine> engine_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
 static std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
@@ -49,7 +50,7 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
   if (auto e = engine_.lock()) {
-    return e->httpDispatcher().resetStream(stream);
+    return e->httpDispatcher().cancelStream(stream);
   }
   return ENVOY_FAILURE;
 }
@@ -57,16 +58,18 @@ envoy_status_t reset_stream(envoy_stream_t stream) {
 envoy_engine_t init_engine() {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-
-  // Register stub implementation of a platform filter (hardcoded in configuration).
-  register_platform_api("PlatformStub", safe_calloc(1, sizeof(envoy_http_filter)));
-
   return 1;
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
   preferred_network_.store(network);
   return ENVOY_SUCCESS;
+}
+
+void record_counter(const char* elements, uint64_t count) {
+  if (auto e = engine_.lock()) {
+    e->recordCounter(std::string(elements), count);
+  }
 }
 
 void flush_stats() {
@@ -89,12 +92,14 @@ envoy_status_t run_engine(envoy_engine_t, envoy_engine_callbacks callbacks, cons
   // https://github.com/lyft/envoy-mobile/issues/332
 
   // The shared pointer created here will keep the engine alive until static destruction occurs.
-  static auto strong_ref =
+  strong_engine_ =
       std::make_shared<Envoy::Engine>(callbacks, config, log_level, preferred_network_);
 
   // The weak pointer we actually expose allows calling threads to atomically check if the engine
   // still exists and acquire a shared pointer to it - ensuring the engine persists at least for
   // the duration of the call.
-  engine_ = strong_ref;
+  engine_ = strong_engine_;
   return ENVOY_SUCCESS;
 }
+
+void terminate_engine(envoy_engine_t) { strong_engine_.reset(); }

@@ -2,7 +2,7 @@
 
 #include "envoy/http/filter.h"
 
-#include "extensions/common/tap/tap_matcher.h"
+#include "extensions/common/matcher/matcher.h"
 #include "extensions/filters/http/common/pass_through_filter.h"
 
 #include "library/common/extensions/filters/http/assertion/filter.pb.h"
@@ -17,11 +17,11 @@ public:
   AssertionFilterConfig(
       const envoymobile::extensions::filters::http::assertion::Assertion& proto_config);
 
-  Extensions::Common::Tap::Matcher& rootMatcher() const;
+  Extensions::Common::Matcher::Matcher& rootMatcher() const;
   size_t matchersSize() const { return matchers_.size(); }
 
 private:
-  std::vector<Extensions::Common::Tap::MatcherPtr> matchers_;
+  std::vector<Extensions::Common::Matcher::MatcherPtr> matchers_;
 };
 
 typedef std::shared_ptr<AssertionFilterConfig> AssertionFilterConfigSharedPtr;
@@ -39,9 +39,15 @@ public:
   Http::FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
   Http::FilterTrailersStatus decodeTrailers(Http::RequestTrailerMap& trailers) override;
 
+  // StreamEncoderFilter
+  Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap& headers,
+                                          bool end_stream) override;
+  Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
+  Http::FilterTrailersStatus encodeTrailers(Http::ResponseTrailerMap& trailers) override;
+
 private:
   const AssertionFilterConfigSharedPtr config_;
-  Extensions::Common::Tap::Matcher::MatchStatusVector statuses_;
+  Extensions::Common::Matcher::Matcher::MatchStatusVector statuses_;
 };
 
 } // namespace Assertion

@@ -1,10 +1,12 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// Envoy's implementation of `StreamClient`, buildable using `StreamClientBuilder`.
+/// Envoy Mobile Engine implementation.
 @objcMembers
-final class EnvoyClient: NSObject {
+final class EngineImpl: NSObject {
   private let engine: EnvoyEngine
+  private let statsClientImpl: StatsClientImpl
+  private let streamClientImpl: StreamClientImpl
 
   private enum ConfigurationType {
     case yaml(String)
@@ -13,6 +15,8 @@ final class EnvoyClient: NSObject {
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine) {
     self.engine = engine
+    self.statsClientImpl = StatsClientImpl(engine: engine)
+    self.streamClientImpl = StreamClientImpl(engine: engine)
     super.init()
 
     switch configType {
@@ -42,8 +46,12 @@ final class EnvoyClient: NSObject {
   }
 }
 
-extension EnvoyClient: StreamClient {
-  func newStreamPrototype() -> StreamPrototype {
-    return StreamPrototype(engine: self.engine)
+extension EngineImpl: Engine {
+  func streamClient() -> StreamClient {
+    return self.streamClientImpl
+  }
+
+  func statsClient() -> StatsClient {
+    return self.statsClientImpl
   }
 }

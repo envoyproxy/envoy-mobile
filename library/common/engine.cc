@@ -21,17 +21,21 @@ Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char*
   main_thread_ = std::thread(&Engine::run, this, std::string(config), std::string(log_level));
 }
 
-envoy_status_t Engine::run(std::string config, std::string log_level) {
+envoy_status_t Engine::run(const std::string config, const std::string log_level) {
   {
     Thread::LockGuard lock(mutex_);
     try {
-      char* envoy_argv[] = {strdup("envoy"), strdup("--config-yaml"),   strdup(config.c_str()),
-                            strdup("-l"),    strdup(log_level.c_str()), nullptr};
+      const std::string name = "envoy";
+      const std::string config_flag = "--config-yaml";
+      const std::string log_flag = "-l";
+      const char* envoy_argv[] = {name.c_str(),     config_flag.c_str(), config.c_str(),
+                                  log_flag.c_str(), log_level.c_str(),   nullptr};
 
       main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
       event_dispatcher_ = &main_common_->server()->dispatcher();
-      cv_.notifyOne();
+      cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
+      std::cerr << e.what() << std::endl;
       return ENVOY_FAILURE;
     } catch (const Envoy::MalformedArgvException& e) {
       std::cerr << e.what() << std::endl;
@@ -50,6 +54,7 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           server_ = TS_UNCHECKED_READ(main_common_)->server();
+          client_scope_ = server_->serverFactoryContext().scope().createScope("client.");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
           http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
@@ -59,13 +64,14 @@ envoy_status_t Engine::run(std::string config, std::string log_level) {
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
   bool run_success = TS_UNCHECKED_READ(main_common_)->run();
-
   // The above call is blocking; at this point the event loop has exited.
-  callbacks_.on_exit();
 
   // Ensure destructors run on Envoy's main thread.
-  postinit_callback_handler_.reset();
-  TS_UNCHECKED_READ(main_common_).reset();
+  postinit_callback_handler_.reset(nullptr);
+  client_scope_.reset(nullptr);
+  TS_UNCHECKED_READ(main_common_).reset(nullptr);
+
+  callbacks_.on_exit(callbacks_.context);
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
@@ -80,9 +86,11 @@ Engine::~Engine() {
   // constructed so we can dispatch shutdown.
   {
     Thread::LockGuard lock(mutex_);
+
     if (!main_common_) {
       cv_.wait(mutex_);
     }
+
     ASSERT(main_common_);
 
     // Exit the event loop and finish up in Engine::run(...)
@@ -91,6 +99,15 @@ Engine::~Engine() {
 
   // Now we wait for the main thread to wrap things up.
   main_thread_.join();
+}
+
+void Engine::recordCounter(const std::string& elements, uint64_t count) {
+  if (server_ && client_scope_) {
+    server_->dispatcher().post([this, elements, count]() -> void {
+      Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(elements)})
+          .add(count);
+    });
+  }
 }
 
 void Engine::flushStats() {
