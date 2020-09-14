@@ -135,9 +135,6 @@ static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_
                                          end_stream ? JNI_TRUE : JNI_FALSE);
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
-  if (end_stream) {
-    env->DeleteGlobalRef(j_context);
-  }
 
   return result;
 }
@@ -210,9 +207,6 @@ static void* jvm_on_data(const char* method, envoy_data data, bool end_stream, v
   data.release(data.context);
   env->DeleteLocalRef(j_data);
   env->DeleteLocalRef(jcls_JvmCallbackContext);
-  if (end_stream) {
-    env->DeleteGlobalRef(j_context);
-  }
 
   return result;
 }
@@ -282,7 +276,6 @@ static void* jvm_on_trailers(const char* method, envoy_headers trailers, void* c
   jobject result = env->CallObjectMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
-  env->DeleteGlobalRef(j_context);
 
   return result;
 }
