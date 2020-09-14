@@ -165,6 +165,6 @@ class JniLibrary {
   public static native String filterTemplateString();
 
   public interface OnSetupComplete {
-    void invoke();
+    Object invoke();
   }
 }

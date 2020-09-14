@@ -41,6 +41,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     try {
       return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, () -> {
         throw new RuntimeException("~~~~~~~~ this worked");
+//        return null;
       });
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.

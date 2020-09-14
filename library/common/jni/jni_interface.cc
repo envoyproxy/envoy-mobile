@@ -37,7 +37,7 @@ static void jvm_on_setup_complete(void* context) {
   jobject j_context = static_cast<jobject>(context);
   jclass jcls_JvmOnSetupContext = env->GetObjectClass(j_context);
   jmethodID jmid_onSetup =
-    env->GetMethodID(jcls_JvmOnSetupContext, "invoke", "()V");
+    env->GetMethodID(jcls_JvmOnSetupContext, "invoke", "()Ljava/lang/Object;");
 
   env->CallVoidMethod(j_context, jmid_onSetup);
 }
