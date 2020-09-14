@@ -60,7 +60,7 @@ final class ViewController: UITableViewController {
       .newStreamPrototype()
       .setOnResponseHeaders { [weak self] headers, _ in
         let statusCode = headers.httpStatus ?? -1
-        let message = "received headers with status \(statusCode)"
+        let message = "200, but not the expected string"
 
         let headerMessage = headers.allHeaders()
           .filter { kFilteredHeaders.contains($0.key) }
