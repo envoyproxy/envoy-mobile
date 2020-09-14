@@ -117,7 +117,7 @@ static void pass_headers(JNIEnv* env, envoy_headers headers, jobject j_context) 
 
 // Platform callback implementation
 // These methods call jvm methods which means the local references created will not be
-// released automatically. Manual book keeping is required for these methods.
+// released automatically. Manual bookkeeping is required for these methods.
 
 static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_stream,
                             void* context) {
