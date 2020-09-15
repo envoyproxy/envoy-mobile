@@ -2,7 +2,6 @@ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
-import io.envoyproxy.envoymobile.engine.types.EnvoyEngineOnSetupComplete
 
 /**
  * An implementation of {@link Engine}.
