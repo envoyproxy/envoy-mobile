@@ -89,7 +89,7 @@ TEST_F(PlatformBridgeFilterTest, PartialNullImplementation) {
   };
   noop_filter->release_filter = [](const void* context) -> void {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    invocations->init_filter_calls++;
+    invocations->release_filter_calls++;
   }
   setUpFilter("platform_filter_name: PartialNullImplementation\n", noop_filter);
   EXPECT_EQ(invocations.init_filter_calls, 1);
