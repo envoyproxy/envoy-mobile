@@ -27,8 +27,8 @@ TEST_F(EngineTest, EarlyExit) {
   envoy_engine_callbacks cbs{[](void* context) -> void {
                                auto* done = static_cast<absl::Notification*>(context);
                                done->Notify();
-                             },
-                             &done};
+                             } /*on_exit*/,
+                             nullptr /*on_setup_complete*/, &done /*context*/};
 
   run_engine(0, cbs, config.c_str(), level.c_str());
 
