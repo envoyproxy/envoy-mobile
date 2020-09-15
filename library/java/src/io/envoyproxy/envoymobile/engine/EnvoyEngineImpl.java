@@ -43,7 +43,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int runWithConfig(String configurationYAML, String logLevel,
                            EnvoyEngineOnSetupComplete onSetupComplete) {
-    this.onSetupComplete = () -> onSetupComplete;
+    this.onSetupComplete = onSetupComplete;
     try {
       return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel,
                                   this.onSetupComplete);
