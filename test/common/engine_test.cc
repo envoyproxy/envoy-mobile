@@ -31,14 +31,14 @@ TEST_F(EngineTest, EarlyExit) {
 
   engine_test_context test_context{};
   envoy_engine_callbacks callbacks{[](void* context) -> void {
-                                     auto* exit = static_cast<engine_test_context*>(context);
-                                     exit->on_exit_.Notify();
-                                   } /*on_exit*/,
-                                   [](void* context) -> void {
                                      auto* setup_complete =
                                          static_cast<engine_test_context*>(context);
                                      setup_complete->on_setup_complete_.Notify();
                                    } /*on_setup_complete*/,
+                                   [](void* context) -> void {
+                                     auto* exit = static_cast<engine_test_context*>(context);
+                                     exit->on_exit_.Notify();
+                                   } /*on_exit*/,
                                    &test_context /*context*/};
 
   run_engine(0, callbacks, config.c_str(), level.c_str());

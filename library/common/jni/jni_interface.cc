@@ -56,7 +56,7 @@ static void jvm_on_exit(void*) {
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level, jobject context) {
   jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
-  envoy_engine_callbacks native_callbacks = {jvm_on_exit, jvm_on_setup_complete, retained_context};
+  envoy_engine_callbacks native_callbacks = {jvm_on_setup_complete, jvm_on_exit, retained_context};
   return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }

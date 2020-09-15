@@ -284,8 +284,8 @@ typedef struct {
  * Interface that can handle engine callbacks.
  */
 typedef struct {
-  envoy_on_exit_f on_exit;
   envoy_on_setup_complete_f on_setup_complete;
+  envoy_on_exit_f on_exit;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
 } envoy_engine_callbacks;

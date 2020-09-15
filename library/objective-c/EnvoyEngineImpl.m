@@ -181,7 +181,7 @@ static void ios_http_filter_release(const void *context) {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    envoy_engine_callbacks native_callbacks = {ios_on_exit, ios_on_setup_complete,
+    envoy_engine_callbacks native_callbacks = {ios_on_setup_complete, ios_on_exit,
                                                (__bridge void *)(self)};
     return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
                            logLevel.UTF8String);
