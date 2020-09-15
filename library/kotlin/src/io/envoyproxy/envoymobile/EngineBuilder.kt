@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
+import io.envoyproxy.envoymobile.engine.types.EnvoyEngineOnSetupComplete
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import java.util.UUID
 
@@ -19,6 +20,7 @@ open class EngineBuilder(
 ) {
   private var logLevel = LogLevel.INFO
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
+  private var onSetupComplete: (() -> Unit)? = null
 
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30
@@ -119,6 +121,18 @@ open class EngineBuilder(
   }
 
   /**
+   * Set a closure that will be called when the engine finishes its async initialization/startup.
+   *
+   * @param closure the closure to be called.
+   *
+   * @return this builder.
+   */
+  fun setOnSetupComplete(closure: () -> Unit): EngineBuilder {
+    this.onSetupComplete = closure
+    return this
+  }
+
+  /**
    * Add the App Version of the App using this Envoy Client.
    *
    * @param appVersion the version.
@@ -162,7 +176,7 @@ open class EngineBuilder(
   fun build(): Engine {
     return when (configuration) {
       is Custom -> {
-        EngineImpl(engineType(), configuration.yaml, logLevel)
+        EngineImpl(engineType(), configuration.yaml, logLevel, onSetupComplete)
       }
       is Standard -> {
         EngineImpl(
@@ -172,7 +186,7 @@ open class EngineBuilder(
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             filterChain, statsFlushSeconds, appVersion, appId, virtualClusters
           ),
-          logLevel
+          logLevel, onSetupComplete
         )
       }
     }

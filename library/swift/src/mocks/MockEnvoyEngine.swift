@@ -16,7 +16,6 @@ extension MockEnvoyEngine: EnvoyEngine {
            onSetupComplete: (() -> Void)?) -> Int32
   {
     MockEnvoyEngine.onRunWithConfig?(config, logLevel)
-    onSetupComplete?()
     return kEnvoySuccess
   }
 
@@ -24,7 +23,6 @@ extension MockEnvoyEngine: EnvoyEngine {
            onSetupComplete: (() -> Void)?) -> Int32
   {
     MockEnvoyEngine.onRunWithYAML?(configYAML, logLevel)
-    onSetupComplete?()
     return kEnvoySuccess
   }
 

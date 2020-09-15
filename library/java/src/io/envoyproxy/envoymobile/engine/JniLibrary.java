@@ -139,7 +139,8 @@ class JniLibrary {
    * @param onSetupComplete, called when the engine finishes its async initialization/startup.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel, EnvoyEngineOnSetupComplete onSetupComplete);
+  protected static native int runEngine(long engine, String config, String logLevel,
+                                        EnvoyEngineOnSetupComplete onSetupComplete);
 
   // Other native methods
 
