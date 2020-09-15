@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyEngineOnSetupComplete;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 import java.nio.ByteBuffer;
@@ -132,12 +133,13 @@ class JniLibrary {
   /**
    * External entry point for library.
    *
-   * @param engine,   the engine to run.
-   * @param config,   the configuration blob to run envoy with.
-   * @param logLevel, the logging level to run envoy with.
+   * @param engine,          the engine to run.
+   * @param config,          the configuration blob to run envoy with.
+   * @param logLevel,        the logging level to run envoy with.
+   * @param onSetupComplete, called when the engine finishes its async initialization/startup.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel, OnSetupComplete onSetupComplete);
+  protected static native int runEngine(long engine, String config, String logLevel, EnvoyEngineOnSetupComplete onSetupComplete);
 
   // Other native methods
 
@@ -163,8 +165,4 @@ class JniLibrary {
    *         filter platform filter configuration.
    */
   public static native String filterTemplateString();
-
-  public interface OnSetupComplete {
-    Object invoke();
-  }
 }

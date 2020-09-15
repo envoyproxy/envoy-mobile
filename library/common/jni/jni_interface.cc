@@ -37,7 +37,7 @@ static void jvm_on_setup_complete(void* context) {
   jobject j_context = static_cast<jobject>(context);
   jclass jcls_JvmOnSetupCompleteContext = env->GetObjectClass(j_context);
   jmethodID jmid_onSetup =
-    env->GetMethodID(jcls_JvmOnSetupCompleteContext, "invoke", "()Ljava/lang/Object;");
+    env->GetMethodID(jcls_JvmOnSetupCompleteContext, "invokeOnSetupComplete", "()Ljava/lang/Object;");
   env->CallObjectMethod(j_context, jmid_onSetup);
 
   env->DeleteLocalRef(jcls_JvmOnSetupCompleteContext);

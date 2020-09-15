@@ -11,7 +11,7 @@
     native <methods>;
 }
 
--keep, includedescriptorclasses class io.envoyproxy.envoymobile.engine.EnvoyEngineImpl {
+-keep, includedescriptorclasses class io.envoyproxy.envoymobile.engine.types.EnvoyEngineOnSetupComplete {
    <methods>;
 }
 
