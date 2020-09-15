@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
 
     engine = new AndroidEngineBuilder(getApplication())
                  .setOnSetupComplete(
-                     () -> {Log.d("MainActivity", "Envoy async internal setup completed")})
+                     () -> { Log.d("MainActivity", "Envoy async internal setup completed"); })
                  .build();
 
     recyclerView = (RecyclerView)findViewById(R.id.recycler_view);
