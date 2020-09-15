@@ -49,3 +49,4 @@ public class AndroidJniLibrary {
    * @return The resulting status of the operation.
    */
   protected static native int setPreferredNetwork(int network);
+}
