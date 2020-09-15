@@ -32,14 +32,16 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 
 static void jvm_on_setup_complete(void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_setup_complete");
+
   JNIEnv* env = get_env();
-
   jobject j_context = static_cast<jobject>(context);
-  jclass jcls_JvmOnSetupContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmOnSetupCompleteContext = env->GetObjectClass(j_context);
   jmethodID jmid_onSetup =
-    env->GetMethodID(jcls_JvmOnSetupContext, "invoke", "()Ljava/lang/Object;");
+    env->GetMethodID(jcls_JvmOnSetupCompleteContext, "invoke", "()Ljava/lang/Object;");
+  env->CallObjectMethod(j_context, jmid_onSetup);
 
-  env->CallVoidMethod(j_context, jmid_onSetup);
+  env->DeleteLocalRef(jcls_JvmOnSetupCompleteContext);
+  env->DeleteGlobalRef(j_context);
 }
 
 static void jvm_on_exit(void*) {
@@ -53,8 +55,8 @@ static void jvm_on_exit(void*) {
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level, jobject context) {
-
-  envoy_engine_callbacks native_callbacks = {jvm_on_exit, jvm_on_setup_complete, context};
+  jobject retained_context = env->NewGlobalRef(context);
+  envoy_engine_callbacks native_callbacks = {jvm_on_exit, jvm_on_setup_complete, retained_context};
   return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }

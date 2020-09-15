@@ -2,9 +2,10 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
+import io.envoyproxy.envoymobile.engine.JniLibrary;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
-public class EnvoyEngineImpl implements EnvoyEngine {
+public class EnvoyEngineImpl implements EnvoyEngine, JniLibrary.OnSetupComplete  {
   // TODO(goaway): enforce agreement values in /library/common/types/c_types.h.
   private static final int ENVOY_SUCCESS = 0;
   private static final int ENVOY_FAILURE = 1;
@@ -39,10 +40,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int runWithConfig(String configurationYAML, String logLevel) {
     try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, () -> {
-        throw new RuntimeException("~~~~~~~~ this worked");
-//        return null;
-      });
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, this);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;
@@ -77,5 +75,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public void recordCounter(String elements, int count) {
     JniLibrary.recordCounter(elements, count);
+  }
+
+  @Override
+  public Object invoke() {
+    throw new RuntimeException("~~~~~~~~ this worked");
   }
 }
