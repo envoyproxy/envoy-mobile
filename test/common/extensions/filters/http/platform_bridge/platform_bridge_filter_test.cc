@@ -200,10 +200,14 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferOnRequestData) {
 
   Buffer::OwnedImpl decoding_buffer;
   EXPECT_CALL(decoder_callbacks_, decodingBuffer()).Times(3).WillRepeatedly(Return(&decoding_buffer));
-  EXPECT_CALL(decoder_callbacks_, addDecodedData(_, _)).Times(2)
-      .WillRepeatedly(Invoke([&](Buffer::Instance& data, bool) -> void {
-        decoding_buffer.add(data);
+  EXPECT_CALL(decoder_callbacks_, modifyDecodingBuffer(_)).Times(3)
+      .WillRepeatedly(Invoke([&](std::function<void(Buffer::Instance&)> callback) -> void {
+        callback(decoding_buffer);
       }));
+  //EXPECT_CALL(decoder_callbacks_, addDecodedData(_, _)).Times(2)
+  //    .WillRepeatedly(Invoke([&](Buffer::Instance& data, bool) -> void {
+  //      decoding_buffer.add(data);
+  //    }));
 
   setUpFilter(R"EOF(
 platform_filter_name: StopAndBufferOnRequestData

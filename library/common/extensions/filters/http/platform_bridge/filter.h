@@ -58,6 +58,7 @@ private:
   Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream,
                                       envoy_filter_on_headers_f on_headers);
   Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream,
+                                Buffer::Instance* internal_buffer,
                                 envoy_filter_on_data_f on_data);
   Http::FilterTrailersStatus onTrailers(Http::HeaderMap& trailers,
                                         envoy_filter_on_trailers_f on_trailers);

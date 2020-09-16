@@ -82,6 +82,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::onHeaders(Http::HeaderMap& heade
 }
 
 Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool end_stream,
+                                                    Buffer::Instance* internal_buffer,
                                                     envoy_filter_on_data_f on_data) {
   // Allow nullptr to act as no-op.
   if (on_data == nullptr) {
@@ -90,12 +91,10 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
 
   envoy_data in_data;
 
-  const Buffer::Instance* decoding_buffer = decoder_callbacks_->decodingBuffer();
-  if (iteration_mode_ == IterationMode::Stopped && decoding_buffer && decoding_buffer->length() > 0) {
+  if (iteration_mode_ == IterationMode::Stopped && internal_buffer && internal_buffer->length() > 0) {
     // Pre-emptively buffer data to present aggregate to platform.
-    // NEW BEHAVIOR: STOP ITERATION NO BUFFER WILL DROP THE BUFFER
-    decoder_callbacks_->addDecodedData(data, true);
-    in_data = Buffer::Utility::copyToBridgeData(*decoding_buffer);
+    internal_buffer->move(data);
+    in_data = Buffer::Utility::copyToBridgeData(*internal_buffer);
   } else {
     in_data = Buffer::Utility::copyToBridgeData(data);
   }
@@ -119,9 +118,9 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     break;
   case Http::FilterDataStatus::StopIterationNoBuffer:
     // In this context all previously buffered data can/should be dropped.
-    decoder_callbacks_->modifyDecodingBuffer([](Buffer::Instance& mutable_buffer) {
-      mutable_buffer.drain(mutable_buffer.length());
-    });
+    if (internal_buffer) {
+      internal_buffer->drain(internal_buffer->length());
+    }
     iteration_mode_ = IterationMode::Stopped;
     break;
   default:
@@ -172,7 +171,14 @@ Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeade
 
 Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
-  return onData(data, end_stream, platform_filter_.on_request_data);
+  Buffer::Instance* internal_buffer = nullptr;
+  if (decoder_callbacks_->decodingBuffer()) {
+    decoder_callbacks_->modifyDecodingBuffer([&internal_buffer](Buffer::Instance& mutable_buffer) {
+      internal_buffer = &mutable_buffer;
+    });
+  }
+
+  return onData(data, end_stream, internal_buffer, platform_filter_.on_request_data);
 }
 
 Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
@@ -188,7 +194,14 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
 
 Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
-  return onData(data, end_stream, platform_filter_.on_response_data);
+  Buffer::Instance* internal_buffer = nullptr;
+  if (encoder_callbacks_->encodingBuffer()) {
+    encoder_callbacks_->modifyEncodingBuffer([&internal_buffer](Buffer::Instance& mutable_buffer) {
+      internal_buffer = &mutable_buffer;
+    });
+  }
+
+  return onData(data, end_stream, internal_buffer, platform_filter_.on_response_data);
 }
 
 Http::FilterTrailersStatus
