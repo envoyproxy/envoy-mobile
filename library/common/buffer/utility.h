@@ -22,6 +22,13 @@ Buffer::InstancePtr toInternalData(envoy_data data);
  */
 envoy_data toBridgeData(Buffer::Instance&);
 
+/**
+ * Copy from Buffer::Instance to envoy_data.
+ * @param data, the Buffer::Instance to transform.
+ * @return envoy_data, the 1:1 transformation of the Buffer::Instance param.
+ */
+envoy_data copyToBridgeData(const Buffer::Instance&);
+
 } // namespace Utility
 } // namespace Buffer
 } // namespace Envoy

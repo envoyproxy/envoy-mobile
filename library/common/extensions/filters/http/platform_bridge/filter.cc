@@ -41,6 +41,7 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
   platform_filter_.instance_context = platform_filter_.init_filter(platform_filter_.static_context);
   ASSERT(platform_filter_.instance_context,
          fmt::format("init_filter unsuccessful for {}", filter_name_));
+  iteration_mode_ = IterationMode::Ongoing;
 }
 
 void PlatformBridgeFilter::onDestroy() {
@@ -87,14 +88,53 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     return Http::FilterDataStatus::Continue;
   }
 
-  envoy_data in_data = Buffer::Utility::toBridgeData(data);
+  envoy_data in_data;
+
+  const Buffer::Instance* decoding_buffer = decoder_callbacks_->decodingBuffer();
+  if (iteration_mode_ == IterationMode::Stopped && decoding_buffer && decoding_buffer->length() > 0) {
+    // Pre-emptively buffer data to present aggregate to platform.
+    // NEW BEHAVIOR: STOP ITERATION NO BUFFER WILL DROP THE BUFFER
+    decoder_callbacks_->addDecodedData(data, true);
+    in_data = Buffer::Utility::copyToBridgeData(*decoding_buffer);
+  } else {
+    in_data = Buffer::Utility::copyToBridgeData(data);
+  }
+
   envoy_filter_data_status result = on_data(in_data, end_stream, platform_filter_.instance_context);
   Http::FilterDataStatus status = static_cast<Http::FilterDataStatus>(result.status);
+  switch (status) {
+  case Http::FilterDataStatus::Continue:
+    if (iteration_mode_ == IterationMode::Stopped) {
+      // Error: iteration must be Resumed first.
+    }
+    break;
+  case Http::FilterDataStatus::StopIterationAndBuffer:
+    if (iteration_mode_ == IterationMode::Stopped) {
+      // Data has already have been buffered.
+      status = Http::FilterDataStatus::StopIterationNoBuffer;
+    } else {
+      // Data will be buffered on return.
+      iteration_mode_ = IterationMode::Stopped;
+    }
+    break;
+  case Http::FilterDataStatus::StopIterationNoBuffer:
+    // In this context all previously buffered data can/should be dropped.
+    decoder_callbacks_->modifyDecodingBuffer([](Buffer::Instance& mutable_buffer) {
+      mutable_buffer.drain(mutable_buffer.length());
+    });
+    iteration_mode_ = IterationMode::Stopped;
+    break;
+  default:
+    PANIC("unsupported status for platform filters");
+  }
+
   // TODO(goaway): Current platform implementations expose immutable data, thus any modification
   // necessitates a full copy. Add 'modified' bit to determine when we can elide the copy. See also
   // https://github.com/lyft/envoy-mobile/issues/949 for potential future optimization.
-  data.drain(data.length());
-  data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+  if (iteration_mode_ == IterationMode::Ongoing) {
+    data.drain(data.length());
+    data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+  }
 
   return status;
 }

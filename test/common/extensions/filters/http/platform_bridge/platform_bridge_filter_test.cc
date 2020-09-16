@@ -180,6 +180,87 @@ platform_filter_name: BasicContinueOnRequestData
   EXPECT_EQ(invocations.on_request_data_calls, 1);
 }
 
+TEST_F(PlatformBridgeFilterTest, StopAndBufferOnRequestData) {
+  envoy_http_filter platform_filter;
+  filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0};
+  platform_filter.static_context = &invocations;
+  platform_filter.init_filter = [](const void* context) -> const void* {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->init_filter_calls++;
+    return context;
+  };
+  platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
+                                       const void* context) -> envoy_filter_data_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    std::string expected_data[3] = { "A", "AB", "ABC" };
+    EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
+    EXPECT_FALSE(end_stream);
+    return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata};
+  };
+
+  Buffer::OwnedImpl decoding_buffer;
+  EXPECT_CALL(decoder_callbacks_, decodingBuffer()).Times(3).WillRepeatedly(Return(&decoding_buffer));
+  EXPECT_CALL(decoder_callbacks_, addDecodedData(_, _)).Times(2)
+      .WillRepeatedly(Invoke([&](Buffer::Instance& data, bool) -> void {
+        decoding_buffer.add(data);
+      }));
+
+  setUpFilter(R"EOF(
+platform_filter_name: StopAndBufferOnRequestData
+)EOF",
+              &platform_filter);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
+
+  Buffer::OwnedImpl first_chunk = Buffer::OwnedImpl("A");
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationAndBuffer, filter_->decodeData(first_chunk, false));
+  EXPECT_EQ(invocations.on_request_data_calls, 1);
+
+  Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(second_chunk, false));
+  EXPECT_EQ(invocations.on_request_data_calls, 2);
+
+  Buffer::OwnedImpl third_chunk = Buffer::OwnedImpl("C");
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(third_chunk, false));
+  EXPECT_EQ(invocations.on_request_data_calls, 3);
+}
+
+TEST_F(PlatformBridgeFilterTest, StopNoBufferOnRequestData) {
+  envoy_http_filter platform_filter;
+  filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0};
+  platform_filter.static_context = &invocations;
+  platform_filter.init_filter = [](const void* context) -> const void* {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->init_filter_calls++;
+    return context;
+  };
+  platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
+                                       const void* context) -> envoy_filter_data_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    std::string expected_data[3] = { "A", "B", "C" };
+    EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
+    EXPECT_FALSE(end_stream);
+    return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata};
+  };
+
+  setUpFilter(R"EOF(
+platform_filter_name: StopNoBufferOnRequestData
+)EOF",
+              &platform_filter);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
+
+  Buffer::OwnedImpl first_chunk = Buffer::OwnedImpl("A");
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(first_chunk, false));
+  EXPECT_EQ(invocations.on_request_data_calls, 1);
+
+  Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(second_chunk, false));
+  EXPECT_EQ(invocations.on_request_data_calls, 2);
+
+  Buffer::OwnedImpl third_chunk = Buffer::OwnedImpl("C");
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(third_chunk, false));
+  EXPECT_EQ(invocations.on_request_data_calls, 3);
+}
+
 TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestTrailers) {
   envoy_http_filter platform_filter;
   filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0};
