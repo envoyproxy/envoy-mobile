@@ -1,8 +1,8 @@
 package io.envoyproxy.envoymobile.engine;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
+import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
