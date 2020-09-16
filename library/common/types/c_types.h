@@ -259,7 +259,7 @@ typedef void (*envoy_on_exit_f)(void* context);
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  */
-typedef void (*envoy_on_setup_complete_f)(void* context);
+typedef void (*envoy_on_engine_running_f)(void* context);
 
 #ifdef __cplusplus
 } // function pointers
@@ -284,7 +284,7 @@ typedef struct {
  * Interface that can handle engine callbacks.
  */
 typedef struct {
-  envoy_on_setup_complete_f on_setup_complete;
+  envoy_on_engine_running_f on_engine_running;
   envoy_on_exit_f on_exit;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;

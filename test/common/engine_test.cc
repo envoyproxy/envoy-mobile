@@ -8,7 +8,7 @@ namespace Envoy {
 class EngineTest : public testing::Test {};
 
 typedef struct {
-  absl::Notification on_setup_complete_;
+  absl::Notification on_engine_running_;
   absl::Notification on_exit_;
 } engine_test_context;
 
@@ -31,10 +31,10 @@ TEST_F(EngineTest, EarlyExit) {
 
   engine_test_context test_context{};
   envoy_engine_callbacks callbacks{[](void* context) -> void {
-                                     auto* setup_complete =
+                                     auto* engine_running =
                                          static_cast<engine_test_context*>(context);
-                                     setup_complete->on_setup_complete_.Notify();
-                                   } /*on_setup_complete*/,
+                                     engine_running->on_engine_running_.Notify();
+                                   } /*on_engine_running*/,
                                    [](void* context) -> void {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit_.Notify();
@@ -42,7 +42,7 @@ TEST_F(EngineTest, EarlyExit) {
                                    &test_context /*context*/};
 
   run_engine(0, callbacks, config.c_str(), level.c_str());
-  ASSERT_TRUE(test_context.on_setup_complete_.WaitForNotificationWithTimeout(absl::Seconds(3)));
+  ASSERT_TRUE(test_context.on_engine_running_.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   terminate_engine(0);
   ASSERT_TRUE(test_context.on_exit_.WaitForNotificationWithTimeout(absl::Seconds(3)));
