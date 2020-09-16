@@ -120,7 +120,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Set a closure that will be called when the engine finishes its async startup and begins running.
+   * Set a closure to be called when the engine finishes its async startup and begins running.
    *
    * @param closure the closure to be called.
    *

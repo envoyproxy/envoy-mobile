@@ -121,7 +121,7 @@ public final class EngineBuilder: NSObject {
     return self
   }
 
-  /// Set a closure that will be called when the engine finishes its async startup and begins running.
+  /// Set a closure to be called when the engine finishes its async startup and begins running.
   ///
   /// - parameter closure: The closure to be called.
   ///
