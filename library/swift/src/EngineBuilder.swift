@@ -23,7 +23,7 @@ public final class EngineBuilder: NSObject {
   private var appId: String = "unspecified"
   private var filterChain: [EnvoyHTTPFilterFactory] = []
   private var virtualClusters: String = "[]"
-  private var onSetupComplete: (() -> Void)?
+  private var onEngineRunning: (() -> Void)?
 
   // MARK: - Public
 
@@ -127,8 +127,8 @@ public final class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func setOnSetupComplete(closure: @escaping () -> Void) -> EngineBuilder {
-    self.onSetupComplete = closure
+  public func setonEngineRunning(closure: @escaping () -> Void) -> EngineBuilder {
+    self.onEngineRunning = closure
     return self
   }
 
@@ -173,7 +173,7 @@ public final class EngineBuilder: NSObject {
     switch self.base {
     case .custom(let yaml):
       return EngineImpl(configYAML: yaml, logLevel: self.logLevel, engine: engine,
-                        onSetupComplete: self.onSetupComplete)
+                        onEngineRunning: self.onEngineRunning)
     case .standard:
       let config = EnvoyConfiguration(
         statsDomain: self.statsDomain,
@@ -187,7 +187,7 @@ public final class EngineBuilder: NSObject {
         appId: self.appId,
         virtualClusters: self.virtualClusters)
       return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
-                        onSetupComplete: self.onSetupComplete)
+                        onEngineRunning: self.onEngineRunning)
     }
   }
 

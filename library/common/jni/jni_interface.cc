@@ -35,12 +35,12 @@ static void jvm_on_setup_complete(void* context) {
 
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
-  jclass jcls_JvmOnSetupCompleteContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onSetupComplete = env->GetMethodID(
-      jcls_JvmOnSetupCompleteContext, "invokeOnSetupComplete", "()Ljava/lang/Object;");
-  env->CallObjectMethod(j_context, jmid_onSetupComplete);
+  jclass jcls_JvmonEngineRunningContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onEngineRunning = env->GetMethodID(
+      jcls_JvmonEngineRunningContext, "invokeonEngineRunning", "()Ljava/lang/Object;");
+  env->CallObjectMethod(j_context, jmid_onEngineRunning);
 
-  env->DeleteLocalRef(jcls_JvmOnSetupCompleteContext);
+  env->DeleteLocalRef(jcls_JvmonEngineRunningContext);
   env->DeleteGlobalRef(j_context);
 }
 

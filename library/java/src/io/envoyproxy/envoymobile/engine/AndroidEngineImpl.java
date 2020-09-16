@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import android.app.Application;
-import io.envoyproxy.envoymobile.engine.types.EnvoyEngineOnSetupComplete;
+import io.envoyproxy.envoymobile.engine.types.EnvoyEngineonEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 /* Android-specific implementation of the `EnvoyEngine` interface. */
@@ -23,20 +23,20 @@ public class AndroidEngineImpl implements EnvoyEngine {
 
   @Override
   public int runWithConfig(String configurationYAML, String logLevel,
-                           EnvoyEngineOnSetupComplete onSetupComplete) {
+                           EnvoyEngineonEngineRunning onEngineRunning) {
     // re-enable lifecycle-based stat flushing when https://github.com/lyft/envoy-mobile/issues/748
     // gets fixed. AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
     // application.registerActivityLifecycleCallbacks(monitor);
-    return envoyEngine.runWithConfig(configurationYAML, logLevel, onSetupComplete);
+    return envoyEngine.runWithConfig(configurationYAML, logLevel, onEngineRunning);
   }
 
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
-                           EnvoyEngineOnSetupComplete onSetupComplete) {
+                           EnvoyEngineonEngineRunning onEngineRunning) {
     // re-enable lifecycle-based stat flushing when https://github.com/lyft/envoy-mobile/issues/748
     // gets fixed. AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
     // application.registerActivityLifecycleCallbacks(monitor);
-    return envoyEngine.runWithConfig(envoyConfiguration, logLevel, onSetupComplete);
+    return envoyEngine.runWithConfig(envoyConfiguration, logLevel, onEngineRunning);
   }
 
   @Override

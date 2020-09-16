@@ -185,7 +185,7 @@ This functionality is used for stat segmentation.
   builder.addVirtualClusters("[{\"name\":\"vcluster\",\"headers\":[{\"name\":\":path\",\"exact_match\":\"/v1/vcluster\"}]}]")
 
 ~~~~~~~~~~~~~~~~~~~~~~
-``setOnSetupComplete``
+``setonEngineRunning``
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Specify a closure to be called once Envoy's engine finishes its async initialization/startup.
@@ -198,10 +198,10 @@ will be queued automatically, and this function is typically used purely for obs
 **Example**::
 
   // Kotlin
-  builder.setOnSetupComplete { /*do something*/ }
+  builder.setonEngineRunning { /*do something*/ }
 
   // Swift
-  builder.setOnSetupComplete { /*do something*/ }
+  builder.setonEngineRunning { /*do something*/ }
 
 ----------------------
 Advanced configuration

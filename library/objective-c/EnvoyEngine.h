@@ -214,24 +214,24 @@ extern const int kEnvoyFailure;
 
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onSetupComplete Closure called when the engine finishes its async initialization/startup.
+ @param onEngineRunning Closure called when the engine finishes its async initialization/startup.
  @return A status indicating if the action was successful.
  */
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
-     onSetupComplete:(nullable void (^)())onSetupComplete;
+     onEngineRunning:(nullable void (^)())onEngineRunning;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.
 
  @param configYAML The configuration yaml with which to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onSetupComplete Closure called when the engine finishes its async initialization/startup.
+ @param onEngineRunning Closure called when the engine finishes its async initialization/startup.
  @return A status indicating if the action was successful.
  */
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
-         onSetupComplete:(nullable void (^)())onSetupComplete;
+         onEngineRunning:(nullable void (^)())onEngineRunning;
 
 /**
  Opens a new HTTP stream attached to this engine.
@@ -255,7 +255,7 @@ extern const int kEnvoyFailure;
 // Concrete implementation of the `EnvoyEngine` interface.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
-@property (nonatomic, copy, nullable) void (^onSetupComplete)();
+@property (nonatomic, copy, nullable) void (^onEngineRunning)();
 
 @end
 

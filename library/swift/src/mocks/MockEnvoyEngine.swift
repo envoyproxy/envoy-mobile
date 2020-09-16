@@ -13,14 +13,14 @@ final class MockEnvoyEngine: NSObject {
 
 extension MockEnvoyEngine: EnvoyEngine {
   func run(withConfig config: EnvoyConfiguration, logLevel: String,
-           onSetupComplete: (() -> Void)?) -> Int32
+           onEngineRunning: (() -> Void)?) -> Int32
   {
     MockEnvoyEngine.onRunWithConfig?(config, logLevel)
     return kEnvoySuccess
   }
 
   func run(withConfigYAML configYAML: String, logLevel: String,
-           onSetupComplete: (() -> Void)?) -> Int32
+           onEngineRunning: (() -> Void)?) -> Int32
   {
     MockEnvoyEngine.onRunWithYAML?(configYAML, logLevel)
     return kEnvoySuccess

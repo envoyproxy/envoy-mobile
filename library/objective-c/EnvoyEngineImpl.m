@@ -9,8 +9,8 @@
 
 static void ios_on_setup_complete(void *context) {
   EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  if (engineImpl.onSetupComplete) {
-    engineImpl.onSetupComplete();
+  if (engineImpl.onEngineRunning) {
+    engineImpl.onEngineRunning();
   }
 }
 
@@ -158,7 +158,7 @@ static void ios_http_filter_release(const void *context) {
 
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
-     onSetupComplete:(nullable void (^)())onSetupComplete {
+     onEngineRunning:(nullable void (^)())onEngineRunning {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -169,13 +169,13 @@ static void ios_http_filter_release(const void *context) {
     [self registerFilterFactory:filterFactory];
   }
 
-  return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onSetupComplete:onSetupComplete];
+  return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
 }
 
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
-         onSetupComplete:(nullable void (^)())onSetupComplete {
-  self.onSetupComplete = onSetupComplete;
+         onEngineRunning:(nullable void (^)())onEngineRunning {
+  self.onEngineRunning = onEngineRunning;
   [self startObservingLifecycleNotifications];
 
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.

@@ -19,7 +19,7 @@ open class EngineBuilder(
 ) {
   private var logLevel = LogLevel.INFO
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
-  private var onSetupComplete: (() -> Unit)? = null
+  private var onEngineRunning: (() -> Unit)? = null
 
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30
@@ -126,8 +126,8 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun setOnSetupComplete(closure: () -> Unit): EngineBuilder {
-    this.onSetupComplete = closure
+  fun setonEngineRunning(closure: () -> Unit): EngineBuilder {
+    this.onEngineRunning = closure
     return this
   }
 
@@ -175,7 +175,7 @@ open class EngineBuilder(
   fun build(): Engine {
     return when (configuration) {
       is Custom -> {
-        EngineImpl(engineType(), configuration.yaml, logLevel, onSetupComplete)
+        EngineImpl(engineType(), configuration.yaml, logLevel, onEngineRunning)
       }
       is Standard -> {
         EngineImpl(
@@ -185,7 +185,7 @@ open class EngineBuilder(
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             filterChain, statsFlushSeconds, appVersion, appId, virtualClusters
           ),
-          logLevel, onSetupComplete
+          logLevel, onEngineRunning
         )
       }
     }

@@ -11,7 +11,7 @@ class EngineImpl internal constructor(
   internal val envoyConfiguration: EnvoyConfiguration?,
   internal val configurationYAML: String?,
   internal val logLevel: LogLevel,
-  internal val onSetupComplete: (() -> Unit)?
+  internal val onEngineRunning: (() -> Unit)?
 ) : Engine {
 
   private val streamClient: StreamClient
@@ -21,23 +21,23 @@ class EngineImpl internal constructor(
     envoyEngine: EnvoyEngine,
     envoyConfiguration: EnvoyConfiguration,
     logLevel: LogLevel = LogLevel.INFO,
-    onSetupComplete: (() -> Unit)?
-  ) : this(envoyEngine, envoyConfiguration, null, logLevel, onSetupComplete)
+    onEngineRunning: (() -> Unit)?
+  ) : this(envoyEngine, envoyConfiguration, null, logLevel, onEngineRunning)
 
   constructor(
     envoyEngine: EnvoyEngine,
     configurationYAML: String,
     logLevel: LogLevel = LogLevel.INFO,
-    onSetupComplete: (() -> Unit)?
-  ) : this(envoyEngine, null, configurationYAML, logLevel, onSetupComplete)
+    onEngineRunning: (() -> Unit)?
+  ) : this(envoyEngine, null, configurationYAML, logLevel, onEngineRunning)
 
   init {
     streamClient = StreamClientImpl(envoyEngine)
     statsClient = StatsClientImpl(envoyEngine)
     if (envoyConfiguration == null) {
-      envoyEngine.runWithConfig(configurationYAML, logLevel.level, onSetupComplete)
+      envoyEngine.runWithConfig(configurationYAML, logLevel.level, onEngineRunning)
     } else {
-      envoyEngine.runWithConfig(envoyConfiguration, logLevel.level, onSetupComplete)
+      envoyEngine.runWithConfig(envoyConfiguration, logLevel.level, onEngineRunning)
     }
   }
 
