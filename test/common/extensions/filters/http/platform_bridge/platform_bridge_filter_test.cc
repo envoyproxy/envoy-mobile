@@ -213,14 +213,18 @@ platform_filter_name: StopAndBufferOnRequestData
 
   Buffer::OwnedImpl first_chunk = Buffer::OwnedImpl("A");
   EXPECT_EQ(Http::FilterDataStatus::StopIterationAndBuffer, filter_->decodeData(first_chunk, false));
+  // Since the return code can't be handled in a unit test, manually update the buffer here.
+  decoding_buffer.add(first_chunk);
   EXPECT_EQ(invocations.on_request_data_calls, 1);
 
   Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
   EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(second_chunk, false));
+  // Manual update not required, because once iteration is stopped, data is added directly.
   EXPECT_EQ(invocations.on_request_data_calls, 2);
 
   Buffer::OwnedImpl third_chunk = Buffer::OwnedImpl("C");
   EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(third_chunk, false));
+  // Manual update not required, because once iteration is stopped, data is added directly.
   EXPECT_EQ(invocations.on_request_data_calls, 3);
 }
 
