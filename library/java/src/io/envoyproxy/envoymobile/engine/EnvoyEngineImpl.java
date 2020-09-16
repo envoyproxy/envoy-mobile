@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyEngineonEngineRunning;
+import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 
@@ -11,7 +11,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   private static final int ENVOY_FAILURE = 1;
 
   private final long engineHandle;
-  private EnvoyEngineonEngineRunning onEngineRunning = () -> { return null; };
+  private EnvoyOnEngineRunning onEngineRunning = () -> { return null; };
 
   public EnvoyEngineImpl() {
     JniLibrary.load();
@@ -37,12 +37,12 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    *
    * @param configurationYAML The configuration yaml with which to start Envoy.
    * @param logLevel           The log level to use when starting Envoy.
-   * @param onEngineRunning    Called when the engine finishes its async initialization/startup.
+   * @param onEngineRunning    Called when the engine finishes its async startup and begins running.
    * @return A status indicating if the action was successful.
    */
   @Override
   public int runWithConfig(String configurationYAML, String logLevel,
-                           EnvoyEngineonEngineRunning onEngineRunning) {
+                           EnvoyOnEngineRunning onEngineRunning) {
     this.onEngineRunning = onEngineRunning;
     try {
       return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel,
@@ -58,12 +58,12 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    *
    * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param logLevel           The log level to use when starting Envoy.
-   * @param onEngineRunning    Called when the engine finishes its async initialization/startup.
+   * @param onEngineRunning    Called when the engine finishes its async startup and begins running.
    * @return int A status indicating if the action was successful.
    */
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
-                           EnvoyEngineonEngineRunning onEngineRunning) {
+                           EnvoyOnEngineRunning onEngineRunning) {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
                                        new JvmFilterFactoryContext(filterFactory));

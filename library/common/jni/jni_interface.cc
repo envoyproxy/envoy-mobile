@@ -37,7 +37,7 @@ static void jvm_on_engine_running(void* context) {
   jobject j_context = static_cast<jobject>(context);
   jclass jcls_JvmonEngineRunningContext = env->GetObjectClass(j_context);
   jmethodID jmid_onEngineRunning = env->GetMethodID(
-      jcls_JvmonEngineRunningContext, "invokeonEngineRunning", "()Ljava/lang/Object;");
+      jcls_JvmonEngineRunningContext, "invokeOnEngineRunning", "()Ljava/lang/Object;");
   env->CallObjectMethod(j_context, jmid_onEngineRunning);
 
   env->DeleteLocalRef(jcls_JvmonEngineRunningContext);

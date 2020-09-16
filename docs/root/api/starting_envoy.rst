@@ -188,7 +188,7 @@ This functionality is used for stat segmentation.
 ``setonEngineRunning``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Specify a closure to be called once Envoy's engine finishes its async initialization/startup.
+Specify a closure to be called once Envoy's engine finishes its async startup and begins running.
 
 When Envoy is instantiated, its initializer returns before all of its internal configuration
 completes. This interface provides the ability to observe when Envoy has completed its setup and is

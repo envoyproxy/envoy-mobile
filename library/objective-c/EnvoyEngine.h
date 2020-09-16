@@ -214,7 +214,8 @@ extern const int kEnvoyFailure;
 
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onEngineRunning Closure called when the engine finishes its async initialization/startup.
+ @param onEngineRunning Closure called when the engine finishes its async startup and begins
+ running.
  @return A status indicating if the action was successful.
  */
 - (int)runWithConfig:(EnvoyConfiguration *)config
@@ -226,7 +227,8 @@ extern const int kEnvoyFailure;
 
  @param configYAML The configuration yaml with which to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onEngineRunning Closure called when the engine finishes its async initialization/startup.
+ @param onEngineRunning Closure called when the engine finishes its async startup and begins
+ running.
  @return A status indicating if the action was successful.
  */
 - (int)runWithConfigYAML:(NSString *)configYAML
