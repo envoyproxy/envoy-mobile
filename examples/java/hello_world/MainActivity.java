@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
     setContentView(R.layout.activity_main);
 
     engine = new AndroidEngineBuilder(getApplication())
-                 .setonEngineRunning(() -> {
+                 .setOnEngineRunning(() -> {
                    Log.d("MainActivity", "Envoy async internal setup completed");
                    return null;
                  })

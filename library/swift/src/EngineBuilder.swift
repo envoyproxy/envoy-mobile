@@ -127,7 +127,7 @@ public final class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func setonEngineRunning(closure: @escaping () -> Void) -> EngineBuilder {
+  public func setOnEngineRunning(closure: @escaping () -> Void) -> EngineBuilder {
     self.onEngineRunning = closure
     return self
   }

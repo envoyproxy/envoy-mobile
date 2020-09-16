@@ -38,7 +38,7 @@ class MainActivity : Activity() {
 
     engine = AndroidEngineBuilder(application)
       .addFilter { DemoFilter() }
-      .setonEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
+      .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView

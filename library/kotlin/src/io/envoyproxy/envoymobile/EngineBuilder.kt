@@ -126,7 +126,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun setonEngineRunning(closure: () -> Unit): EngineBuilder {
+  fun setOnEngineRunning(closure: () -> Unit): EngineBuilder {
     this.onEngineRunning = closure
     return this
   }
