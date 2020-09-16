@@ -192,15 +192,18 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferOnRequestData) {
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[3] = { "A", "AB", "ABC" };
+    std::string expected_data[3] = {"A", "AB", "ABC"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
     EXPECT_FALSE(end_stream);
     return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata};
   };
 
   Buffer::OwnedImpl decoding_buffer;
-  EXPECT_CALL(decoder_callbacks_, decodingBuffer()).Times(3).WillRepeatedly(Return(&decoding_buffer));
-  EXPECT_CALL(decoder_callbacks_, modifyDecodingBuffer(_)).Times(3)
+  EXPECT_CALL(decoder_callbacks_, decodingBuffer())
+      .Times(3)
+      .WillRepeatedly(Return(&decoding_buffer));
+  EXPECT_CALL(decoder_callbacks_, modifyDecodingBuffer(_))
+      .Times(3)
       .WillRepeatedly(Invoke([&](std::function<void(Buffer::Instance&)> callback) -> void {
         callback(decoding_buffer);
       }));
@@ -212,13 +215,15 @@ platform_filter_name: StopAndBufferOnRequestData
   EXPECT_EQ(invocations.init_filter_calls, 1);
 
   Buffer::OwnedImpl first_chunk = Buffer::OwnedImpl("A");
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationAndBuffer, filter_->decodeData(first_chunk, false));
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationAndBuffer,
+            filter_->decodeData(first_chunk, false));
   // Since the return code can't be handled in a unit test, manually update the buffer here.
   decoding_buffer.move(first_chunk);
   EXPECT_EQ(invocations.on_request_data_calls, 1);
 
   Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(second_chunk, false));
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer,
+            filter_->decodeData(second_chunk, false));
   // Manual update not required, because once iteration is stopped, data is added directly.
   EXPECT_EQ(invocations.on_request_data_calls, 2);
 
@@ -240,7 +245,7 @@ TEST_F(PlatformBridgeFilterTest, StopNoBufferOnRequestData) {
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[3] = { "A", "B", "C" };
+    std::string expected_data[3] = {"A", "B", "C"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
     EXPECT_FALSE(end_stream);
     return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata};
@@ -257,7 +262,8 @@ platform_filter_name: StopNoBufferOnRequestData
   EXPECT_EQ(invocations.on_request_data_calls, 1);
 
   Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(second_chunk, false));
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer,
+            filter_->decodeData(second_chunk, false));
   EXPECT_EQ(invocations.on_request_data_calls, 2);
 
   Buffer::OwnedImpl third_chunk = Buffer::OwnedImpl("C");
@@ -370,17 +376,20 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferOnResponseData) {
     return context;
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
-                                       const void* context) -> envoy_filter_data_status {
+                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[3] = { "A", "AB", "ABC" };
+    std::string expected_data[3] = {"A", "AB", "ABC"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls++]);
     EXPECT_FALSE(end_stream);
     return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata};
   };
 
   Buffer::OwnedImpl encoding_buffer;
-  EXPECT_CALL(encoder_callbacks_, encodingBuffer()).Times(3).WillRepeatedly(Return(&encoding_buffer));
-  EXPECT_CALL(encoder_callbacks_, modifyEncodingBuffer(_)).Times(3)
+  EXPECT_CALL(encoder_callbacks_, encodingBuffer())
+      .Times(3)
+      .WillRepeatedly(Return(&encoding_buffer));
+  EXPECT_CALL(encoder_callbacks_, modifyEncodingBuffer(_))
+      .Times(3)
       .WillRepeatedly(Invoke([&](std::function<void(Buffer::Instance&)> callback) -> void {
         callback(encoding_buffer);
       }));
@@ -392,13 +401,15 @@ platform_filter_name: StopAndBufferOnResponseData
   EXPECT_EQ(invocations.init_filter_calls, 1);
 
   Buffer::OwnedImpl first_chunk = Buffer::OwnedImpl("A");
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationAndBuffer, filter_->encodeData(first_chunk, false));
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationAndBuffer,
+            filter_->encodeData(first_chunk, false));
   // Since the return code can't be handled in a unit test, manually update the buffer here.
   encoding_buffer.move(first_chunk);
   EXPECT_EQ(invocations.on_response_data_calls, 1);
 
   Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->encodeData(second_chunk, false));
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer,
+            filter_->encodeData(second_chunk, false));
   // Manual update not required, because once iteration is stopped, data is added directly.
   EXPECT_EQ(invocations.on_response_data_calls, 2);
 
@@ -418,9 +429,9 @@ TEST_F(PlatformBridgeFilterTest, StopNoBufferOnResponseData) {
     return context;
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
-                                       const void* context) -> envoy_filter_data_status {
+                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[3] = { "A", "B", "C" };
+    std::string expected_data[3] = {"A", "B", "C"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls++]);
     EXPECT_FALSE(end_stream);
     return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata};
@@ -437,7 +448,8 @@ platform_filter_name: StopNoBufferOnResponseData
   EXPECT_EQ(invocations.on_response_data_calls, 1);
 
   Buffer::OwnedImpl second_chunk = Buffer::OwnedImpl("B");
-  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->encodeData(second_chunk, false));
+  EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer,
+            filter_->encodeData(second_chunk, false));
   EXPECT_EQ(invocations.on_response_data_calls, 2);
 
   Buffer::OwnedImpl third_chunk = Buffer::OwnedImpl("C");

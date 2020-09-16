@@ -91,7 +91,8 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
 
   envoy_data in_data;
 
-  if (iteration_mode_ == IterationMode::Stopped && internal_buffer && internal_buffer->length() > 0) {
+  if (iteration_mode_ == IterationMode::Stopped && internal_buffer &&
+      internal_buffer->length() > 0) {
     // Pre-emptively buffer data to present aggregate to platform.
     internal_buffer->move(data);
     in_data = Buffer::Utility::copyToBridgeData(*internal_buffer);
