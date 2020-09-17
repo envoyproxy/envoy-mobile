@@ -32,5 +32,6 @@ extension MockEnvoyEngine: EnvoyEngine {
 
   func recordCounter(_ elements: String, count: UInt) {
     MockEnvoyEngine.onRecordCounter?(elements, count)
+    return kEnvoySuccess
   }
 }

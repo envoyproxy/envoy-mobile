@@ -156,7 +156,7 @@ class JniLibrary {
   /**
    * Increment a counter.
    */
-  protected static native void recordCounter(String elements, int count);
+  protected static native int recordCounter(String elements, int count);
 
   /**
    * Provides a configuration template that may be used for building platform

@@ -15,8 +15,8 @@ internal class CounterImpl : Counter {
     this.elements = elements
   }
 
-  override fun increment(count: Int) {
-    envoyEngine.get()?.recordCounter(
+  override fun increment(count: Int): Int {
+    return envoyEngine.get()?.recordCounter(
       elements.joinToString(separator = ".") { it.element }, count
     )
   }

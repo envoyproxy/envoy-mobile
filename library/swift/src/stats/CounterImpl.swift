@@ -14,11 +14,11 @@ class CounterImpl: NSObject, Counter {
   }
 
   /// Increment the counter by the given count.
-  func increment(count: Int) {
+  func increment(count: Int): Int{
     guard let engine = self.engine else {
       return
     }
 
-    engine.recordCounter(self.series, count: numericCast(count))
+    return engine.recordCounter(self.series, count: numericCast(count))
   }
 }

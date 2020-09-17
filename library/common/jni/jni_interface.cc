@@ -77,11 +77,11 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_filterTemplateString(JNIEnv* en
   return result;
 }
 
-extern "C" JNIEXPORT void JNICALL
+extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounter(JNIEnv* env,
                                                                jclass, // class
                                                                jstring elements, jint count) {
-  record_counter(env->GetStringUTFChars(elements, nullptr), count);
+  return record_counter(env->GetStringUTFChars(elements, nullptr), count);
 }
 
 // JvmCallbackContext
