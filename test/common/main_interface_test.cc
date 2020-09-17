@@ -8,6 +8,11 @@
 
 namespace Envoy {
 
+typedef struct {
+  absl::Notification on_engine_running;
+  absl::Notification on_exit;
+} engine_test_context;
+
 class MainInterfaceTest : public testing::Test {};
 
 TEST_F(MainInterfaceTest, BasicStream) {
@@ -19,6 +24,8 @@ TEST_F(MainInterfaceTest, BasicStream) {
       "prefix\":\"hcm\",\"route_config\":{\"name\":\"api_router\",\"virtual_hosts\":[{\"name\":"
       "\"api\",\"include_attempt_count_in_response\":true,\"domains\":[\"*\"],\"routes\":[{"
       "\"match\":{\"prefix\":\"/"
+      // This config has the buffer filter which allows the test to exercise all of the send_*
+      // methods, and a direct response, which allows for simple stream completion.
       "\"},\"direct_response\":{\"status\":\"200\"}}]}]},\"http_filters\":[{\"name\":\"buffer\","
       "\"typed_config\":{\"@type\":\"type.googleapis.com/"
       "envoy.extensions.filters.http.buffer.v3.Buffer\", \"max_request_bytes\": \"65000\"}}, "
@@ -27,28 +34,36 @@ TEST_F(MainInterfaceTest, BasicStream) {
       "\"name\":\"static_layer_0\",\"static_layer\":{\"overload\":{\"global_downstream_max_"
       "connections\":50000}}}]}}";
   const std::string level = "debug";
-  absl::Notification exit;
+  engine_test_context engine_cbs_context{};
   envoy_engine_callbacks engine_cbs{[](void* context) -> void {
-                                      auto* exit = static_cast<absl::Notification*>(context);
-                                      exit->Notify();
-                                    },
-                                    &exit};
+                                      auto* engine_running =
+                                          static_cast<engine_test_context*>(context);
+                                      engine_running->on_engine_running.Notify();
+                                    } /*on_engine_running*/,
+                                    [](void* context) -> void {
+                                      auto* exit = static_cast<engine_test_context*>(context);
+                                      exit->on_exit.Notify();
+                                    } /*on_exit*/,
+                                    &engine_cbs_context /*context*/};
   run_engine(0, engine_cbs, config.c_str(), level.c_str());
+
+  ASSERT_TRUE(
+      engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
   absl::Notification on_complete_notification;
   envoy_http_callbacks stream_cbs{[](envoy_headers, bool, void*) -> void* { return nullptr; },
-                                  nullptr,
-                                  nullptr,
-                                  nullptr,
-                                  nullptr,
+                                  nullptr /* on_headers */,
+                                  nullptr /* on_data */,
+                                  nullptr /* on_metadata */,
+                                  nullptr /* on_trailers */,
                                   [](void* context) -> void* {
                                     auto* on_complete_notification =
                                         static_cast<absl::Notification*>(context);
                                     on_complete_notification->Notify();
                                     return nullptr;
-                                  },
-                                  nullptr,
-                                  &on_complete_notification};
+                                  } /* on_complete */,
+                                  nullptr /* on_cancel */,
+                                  &on_complete_notification /* context */};
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
@@ -71,10 +86,12 @@ TEST_F(MainInterfaceTest, BasicStream) {
 
   terminate_engine(0);
 
-  ASSERT_TRUE(exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
+  ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
 
 TEST_F(MainInterfaceTest, ResetStream) {
+  // This config is the mininimal envoy mobile config that allows for running the engine.
+  // There is nothing functional about the config, as the created stream is immidiately reset.
   const std::string config =
       "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\","
       "\"address\":{\"socket_address\":{\"protocol\":\"TCP\",\"address\":\"0.0.0.0\",\"port_"
@@ -90,28 +107,36 @@ TEST_F(MainInterfaceTest, ResetStream) {
       "\"name\":\"static_layer_0\",\"static_layer\":{\"overload\":{\"global_downstream_max_"
       "connections\":50000}}}]}}";
   const std::string level = "debug";
-  absl::Notification exit;
+  engine_test_context engine_cbs_context{};
   envoy_engine_callbacks engine_cbs{[](void* context) -> void {
-                                      auto* exit = static_cast<absl::Notification*>(context);
-                                      exit->Notify();
-                                    },
-                                    &exit};
+                                      auto* engine_running =
+                                          static_cast<engine_test_context*>(context);
+                                      engine_running->on_engine_running.Notify();
+                                    } /*on_engine_running*/,
+                                    [](void* context) -> void {
+                                      auto* exit = static_cast<engine_test_context*>(context);
+                                      exit->on_exit.Notify();
+                                    } /*on_exit*/,
+                                    &engine_cbs_context /*context*/};
   run_engine(0, engine_cbs, config.c_str(), level.c_str());
+
+  ASSERT_TRUE(
+      engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
   absl::Notification on_cancel_notification;
   envoy_http_callbacks stream_cbs{[](envoy_headers, bool, void*) -> void* { return nullptr; },
-                                  nullptr,
-                                  nullptr,
-                                  nullptr,
-                                  nullptr,
-                                  nullptr,
+                                  nullptr /* on_headers */,
+                                  nullptr /* on_data */,
+                                  nullptr /* on_metadata */,
+                                  nullptr /* on_trailers */,
+                                  nullptr /* on_complete */,
                                   [](void* context) -> void* {
                                     auto* on_cancel_notification =
                                         static_cast<absl::Notification*>(context);
                                     on_cancel_notification->Notify();
                                     return nullptr;
-                                  },
-                                  &on_cancel_notification};
+                                  } /* on_cancel */,
+                                  &on_cancel_notification /* context */};
 
   envoy_stream_t stream = init_stream(0);
 
@@ -123,6 +148,6 @@ TEST_F(MainInterfaceTest, ResetStream) {
 
   terminate_engine(0);
 
-  ASSERT_TRUE(exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
+  ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
 } // namespace Envoy
