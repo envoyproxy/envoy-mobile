@@ -1,11 +1,11 @@
 #include "test/mocks/http/mocks.h"
-#include "test/test_common/utility.h"
 #include "test/mocks/server/factory_context.h"
+#include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
+#include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/assertion/filter.h"
 #include "library/common/extensions/filters/http/assertion/filter.pb.h"
-#include "library/common/extensions/filters/http/assertion/config.h"
 
 using testing::ByMove;
 using testing::Return;
@@ -501,7 +501,7 @@ TEST(AssertionFilterFactoryTest, Config) {
   AssertionFilterFactory factory;
   NiceMock<Server::Configuration::MockFactoryContext> context;
 
-    envoymobile::extensions::filters::http::assertion::Assertion proto_config =
+  envoymobile::extensions::filters::http::assertion::Assertion proto_config =
       *dynamic_cast<envoymobile::extensions::filters::http::assertion::Assertion*>(
           factory.createEmptyConfigProto().get());
 
@@ -516,7 +516,7 @@ match_config:
   TestUtility::loadFromYamlAndValidate(config_str, proto_config);
 
   Http::FilterFactoryCb cb = factory.createFilterFactoryFromProto(proto_config, "test", context);
-    Http::MockFilterChainFactoryCallbacks filter_callbacks;
+  Http::MockFilterChainFactoryCallbacks filter_callbacks;
   EXPECT_CALL(filter_callbacks, addStreamFilter(_));
   cb(filter_callbacks);
 }
