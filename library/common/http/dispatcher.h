@@ -172,14 +172,16 @@ private:
     const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override {
       return parent_.address_;
     }
-    absl::string_view responseDetails() override { return details_; }
+    absl::string_view responseDetails() override { return response_details_; }
     // TODO: https://github.com/lyft/envoy-mobile/issues/825
     void readDisable(bool /*disable*/) override {}
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
     void setFlushTimeout(std::chrono::milliseconds) override {}
 
-    void setDetails(absl::string_view details) { details_ = details; }
+    void setResponseDetails(absl::string_view response_details) {
+      response_details_ = response_details;
+    }
 
     const envoy_stream_t stream_handle_;
 
@@ -189,7 +191,7 @@ private:
     DirectStreamCallbacksPtr callbacks_;
     Dispatcher& parent_;
     // Response details used by the connection manager.
-    absl::string_view details_;
+    absl::string_view response_details_;
   };
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;

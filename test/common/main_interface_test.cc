@@ -13,6 +13,19 @@ typedef struct {
   absl::Notification on_exit;
 } engine_test_context;
 
+// Based on Http::Utility::toRequestHeaders() but only used for these tests.
+Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
+  Http::ResponseHeaderMapPtr transformed_headers = Http::ResponseHeaderMapImpl::create();
+  for (envoy_header_size_t i = 0; i < headers.length; i++) {
+    transformed_headers->addCopy(
+        Http::LowerCaseString(Http::Utility::convertToString(headers.headers[i].key)),
+        Http::Utility::convertToString(headers.headers[i].value));
+  }
+  // The C envoy_headers struct can be released now because the headers have been copied.
+  release_envoy_headers(headers);
+  return transformed_headers;
+}
+
 TEST(MainInterfaceTest, BasicStream) {
   const std::string config =
       "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\", "
@@ -49,19 +62,24 @@ TEST(MainInterfaceTest, BasicStream) {
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
   absl::Notification on_complete_notification;
-  envoy_http_callbacks stream_cbs{[](envoy_headers, bool, void*) -> void* { return nullptr; },
-                                  nullptr /* on_headers */,
-                                  nullptr /* on_data */,
-                                  nullptr /* on_metadata */,
-                                  nullptr /* on_trailers */,
-                                  [](void* context) -> void* {
-                                    auto* on_complete_notification =
-                                        static_cast<absl::Notification*>(context);
-                                    on_complete_notification->Notify();
-                                    return nullptr;
-                                  } /* on_complete */,
-                                  nullptr /* on_cancel */,
-                                  &on_complete_notification /* context */};
+  envoy_http_callbacks stream_cbs{
+      [](envoy_headers c_headers, bool end_stream, void*) -> void* {
+        auto response_headers = toResponseHeaders(c_headers);
+        EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
+        EXPECT_TRUE(end_stream);
+        return nullptr;
+      } /* on_headers */,
+      nullptr /* on_data */,
+      nullptr /* on_metadata */,
+      nullptr /* on_trailers */,
+      nullptr /* on_error */,
+      [](void* context) -> void* {
+        auto* on_complete_notification = static_cast<absl::Notification*>(context);
+        on_complete_notification->Notify();
+        return nullptr;
+      } /* on_complete */,
+      nullptr /* on_cancel */,
+      &on_complete_notification /* context */};
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
@@ -122,14 +140,10 @@ TEST(MainInterfaceTest, SendMetadata) {
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
-  envoy_http_callbacks stream_cbs{[](envoy_headers, bool, void*) -> void* { return nullptr; },
-                                  nullptr /* on_headers */,
-                                  nullptr /* on_data */,
-                                  nullptr /* on_metadata */,
-                                  nullptr /* on_trailers */,
-                                  nullptr /* on_complete */,
-                                  nullptr /* on_cancel */,
-                                  nullptr /* context */};
+  envoy_http_callbacks stream_cbs{nullptr /* on_headers */,  nullptr /* on_data */,
+                                  nullptr /* on_metadata */, nullptr /* on_trailers */,
+                                  nullptr /* on_error */,    nullptr /* on_complete */,
+                                  nullptr /* on_cancel */,   nullptr /* context */};
 
   envoy_stream_t stream = init_stream(0);
 
@@ -177,11 +191,11 @@ TEST(MainInterfaceTest, ResetStream) {
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
   absl::Notification on_cancel_notification;
-  envoy_http_callbacks stream_cbs{[](envoy_headers, bool, void*) -> void* { return nullptr; },
-                                  nullptr /* on_headers */,
+  envoy_http_callbacks stream_cbs{nullptr /* on_headers */,
                                   nullptr /* on_data */,
                                   nullptr /* on_metadata */,
                                   nullptr /* on_trailers */,
+                                  nullptr /* on_error */,
                                   nullptr /* on_complete */,
                                   [](void* context) -> void* {
                                     auto* on_cancel_notification =
