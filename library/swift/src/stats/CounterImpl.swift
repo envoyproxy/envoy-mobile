@@ -14,9 +14,9 @@ class CounterImpl: NSObject, Counter {
   }
 
   /// Increment the counter by the given count.
-  func increment(count: Int): Int{
+  func increment(count: Int) -> Int32 {
     guard let engine = self.engine else {
-      return
+      return kEnvoyFailure
     }
 
     return engine.recordCounter(self.series, count: numericCast(count))

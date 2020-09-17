@@ -79,10 +79,10 @@ TEST_F(EngineTest, RecordCounter) {
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
                                    &test_context /*context*/};
-  EXPECT_EQ(ENVOY_FAILURE, record_counter("counter", 1));
+  EXPECT_EQ(ENVOY_FAILURE, record_counter(0, "counter", 1));
   run_engine(0, callbacks, config.c_str(), level.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  EXPECT_EQ(ENVOY_SUCCESS, record_counter("counter", 1));
+  EXPECT_EQ(ENVOY_SUCCESS, record_counter(0, "counter", 1));
 
   terminate_engine(0);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));

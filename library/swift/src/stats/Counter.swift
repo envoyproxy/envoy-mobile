@@ -4,12 +4,14 @@ import Foundation
 @objc
 public protocol Counter: AnyObject {
   /// Increment the counter by the given count.
-  func increment(count: Int)
+  /// - returns: A status indicating if the action was successful.
+  func increment(count: Int) -> Int32
 }
 
 extension Counter {
   /// Increment the counter by 1.
-  public func increment() {
+  /// - returns: A status indicating if the action was successful.
+  public func increment() -> Int32{
     self.increment(count: 1)
   }
 }
