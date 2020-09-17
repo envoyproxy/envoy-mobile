@@ -13,9 +13,7 @@ typedef struct {
   absl::Notification on_exit;
 } engine_test_context;
 
-class MainInterfaceTest : public testing::Test {};
-
-TEST_F(MainInterfaceTest, BasicStream) {
+TEST(MainInterfaceTest, BasicStream) {
   const std::string config =
       "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\", "
       "\"address\":{\"socket_address\":{\"protocol\":\"TCP\",\"address\":\"0.0.0.0\",\"port_"
@@ -89,7 +87,7 @@ TEST_F(MainInterfaceTest, BasicStream) {
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
 
-TEST_F(MainInterfaceTest, SendMetadata) {
+TEST(MainInterfaceTest, SendMetadata) {
   // This config is the mininimal envoy mobile config that allows for running the engine.
   // There is nothing functional about the config, as the created stream is only used for
   // send_metadata.
@@ -144,7 +142,7 @@ TEST_F(MainInterfaceTest, SendMetadata) {
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
 
-TEST_F(MainInterfaceTest, ResetStream) {
+TEST(MainInterfaceTest, ResetStream) {
   // This config is the mininimal envoy mobile config that allows for running the engine.
   // There is nothing functional about the config, as the created stream is immediately reset.
   const std::string config =
@@ -204,5 +202,9 @@ TEST_F(MainInterfaceTest, ResetStream) {
   terminate_engine(0);
 
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
+}
+
+TEST(MainInterfaceTest, PreferredNetwork) {
+  EXPECT_EQ(ENVOY_SUCCESS, set_preferred_network(ENVOY_NET_WLAN));
 }
 } // namespace Envoy
