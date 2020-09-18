@@ -25,7 +25,7 @@ TEST(SyntheticAddressImplTest, Accessors) {
   ASSERT_EQ(address.envoyInternalAddress(), nullptr);
   ASSERT_EQ(address.sockAddr(), nullptr);
   ASSERT_EQ(address.sockAddrLen(), 0);
-  address.socketInterface();
+  ASSERT_TRUE(&address.socketInterface() == &SocketInterfaceSingleton::get());
 }
 
 TEST(SyntheticAddressImplTest, Type) {
