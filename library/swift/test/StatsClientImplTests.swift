@@ -1,5 +1,5 @@
 @testable import Envoy
-import EnvoyEngine
+@testable import EnvoyEngine
 import Foundation
 import XCTest
 
@@ -19,7 +19,7 @@ final class StatsClientImplTests: XCTestCase {
     let mockEngine = MockEnvoyEngine()
     let statsClient = StatsClientImpl(engine: mockEngine)
     let counter = statsClient.counter(elements: ["test", "stat"])
-    XCTAssertEqual(counter.increment(), 0)
+    XCTAssertEqual(counter.increment(), kEnvoySuccess)
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualCount, 1)
   }
@@ -34,7 +34,7 @@ final class StatsClientImplTests: XCTestCase {
     let mockEngine = MockEnvoyEngine()
     let statsClient = StatsClientImpl(engine: mockEngine)
     let counter = statsClient.counter(elements: ["test", "stat"])
-    XCTAssertEqual(counter.increment(count: 5), 0)
+    XCTAssertEqual(counter.increment(count: 5), kEnvoySuccess)
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualCount, 5)
   }
