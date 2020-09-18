@@ -108,7 +108,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
       // When platform filter iteration is Stopped, Resume must be used to start iterating again.
       // TODO(goaway): decide on the means to surface/handle errors here. Options include:
       // - crashing
-      // - creating an eror response for this stream
+      // - creating an error response for this stream
       // - letting Envoy handle any invalid resulting state via its own guards
     }
     break;
