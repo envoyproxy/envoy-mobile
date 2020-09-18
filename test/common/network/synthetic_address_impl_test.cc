@@ -22,8 +22,10 @@ TEST(SyntheticAddressImplTest, Accessors) {
   SyntheticAddressImpl address;
   ASSERT_EQ(address.ip(), nullptr);
   ASSERT_EQ(address.pipe(), nullptr);
+  ASSERT_EQ(address.envoyInternalAddress(), nullptr);
   ASSERT_EQ(address.sockAddr(), nullptr);
   ASSERT_EQ(address.sockAddrLen(), 0);
+  address.socketInterface();
 }
 
 TEST(SyntheticAddressImplTest, Type) {
