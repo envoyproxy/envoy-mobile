@@ -195,6 +195,7 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferOnRequestData) {
     std::string expected_data[3] = {"A", "AB", "ABC"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
     EXPECT_FALSE(end_stream);
+    c_data.release(c_data.context);
     return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata};
   };
 
@@ -248,6 +249,7 @@ TEST_F(PlatformBridgeFilterTest, StopNoBufferOnRequestData) {
     std::string expected_data[3] = {"A", "B", "C"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
     EXPECT_FALSE(end_stream);
+    c_data.release(c_data.context);
     return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata};
   };
 
