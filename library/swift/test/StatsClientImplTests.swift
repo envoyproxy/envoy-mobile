@@ -19,7 +19,7 @@ final class StatsClientImplTests: XCTestCase {
     let mockEngine = MockEnvoyEngine()
     let statsClient = StatsClientImpl(engine: mockEngine)
     let counter = statsClient.counter(elements: ["test", "stat"])
-    counter.increment()
+    XCTAssertEqual(counter.increment(), 0)
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualCount, 1)
   }
@@ -34,7 +34,7 @@ final class StatsClientImplTests: XCTestCase {
     let mockEngine = MockEnvoyEngine()
     let statsClient = StatsClientImpl(engine: mockEngine)
     let counter = statsClient.counter(elements: ["test", "stat"])
-    counter.increment(count: 5)
+    XCTAssertEqual(counter.increment(count: 5), 0)
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualCount, 5)
   }
