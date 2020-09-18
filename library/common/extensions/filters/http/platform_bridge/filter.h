@@ -29,7 +29,7 @@ private:
 
 typedef std::shared_ptr<PlatformBridgeFilterConfig> PlatformBridgeFilterConfigSharedPtr;
 
-enum class IterationMode { Ongoing, Stopped };
+enum class IterationState { Ongoing, Stopped };
 
 /**
  * Harness to bridge Envoy filter invocations up to the platform layer.
@@ -62,7 +62,7 @@ private:
   Http::FilterTrailersStatus onTrailers(Http::HeaderMap& trailers,
                                         envoy_filter_on_trailers_f on_trailers);
   const std::string filter_name_;
-  IterationMode iteration_mode_;
+  IterationState iteration_state_;
   envoy_http_filter platform_filter_;
 };
 

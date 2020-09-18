@@ -41,7 +41,7 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
   platform_filter_.instance_context = platform_filter_.init_filter(platform_filter_.static_context);
   ASSERT(platform_filter_.instance_context,
          fmt::format("init_filter unsuccessful for {}", filter_name_));
-  iteration_mode_ = IterationMode::Ongoing;
+  iteration_state_ = IterationState::Ongoing;
 }
 
 void PlatformBridgeFilter::onDestroy() {
@@ -91,7 +91,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
 
   envoy_data in_data;
 
-  if (iteration_mode_ == IterationMode::Stopped && internal_buffer &&
+  if (iteration_state_ == IterationState::Stopped && internal_buffer &&
       internal_buffer->length() > 0) {
     // Pre-emptively buffer data to present aggregate to platform.
     internal_buffer->move(data);
@@ -104,17 +104,17 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
   Http::FilterDataStatus status = static_cast<Http::FilterDataStatus>(result.status);
   switch (status) {
   case Http::FilterDataStatus::Continue:
-    if (iteration_mode_ == IterationMode::Stopped) {
+    if (iteration_state_ == IterationState::Stopped) {
       // Error: iteration must be Resumed first.
     }
     break;
   case Http::FilterDataStatus::StopIterationAndBuffer:
-    if (iteration_mode_ == IterationMode::Stopped) {
+    if (iteration_state_ == IterationState::Stopped) {
       // Data has already have been buffered.
       status = Http::FilterDataStatus::StopIterationNoBuffer;
     } else {
       // Data will be buffered on return.
-      iteration_mode_ = IterationMode::Stopped;
+      iteration_state_ = IterationState::Stopped;
     }
     break;
   case Http::FilterDataStatus::StopIterationNoBuffer:
@@ -122,7 +122,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     if (internal_buffer) {
       internal_buffer->drain(internal_buffer->length());
     }
-    iteration_mode_ = IterationMode::Stopped;
+    iteration_state_ = IterationState::Stopped;
     break;
   default:
     PANIC("unsupported status for platform filters");
@@ -131,7 +131,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
   // TODO(goaway): Current platform implementations expose immutable data, thus any modification
   // necessitates a full copy. Add 'modified' bit to determine when we can elide the copy. See also
   // https://github.com/lyft/envoy-mobile/issues/949 for potential future optimization.
-  if (iteration_mode_ == IterationMode::Ongoing) {
+  if (iteration_state_ == IterationState::Ongoing) {
     data.drain(data.length());
     data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
   }
