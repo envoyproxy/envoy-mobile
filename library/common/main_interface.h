@@ -28,7 +28,7 @@ extern const char* platform_filter_template;
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.
  */
-envoy_stream_t init_stream(envoy_engine_t);
+envoy_stream_t init_stream(envoy_engine_t engine);
 
 /**
  * Open an underlying HTTP stream. Note: Streams must be started before other other interaction can
@@ -37,7 +37,7 @@ envoy_stream_t init_stream(envoy_engine_t);
  * @param callbacks, the callbacks that will run the stream callbacks.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_status_t start_stream(envoy_stream_t, envoy_http_callbacks callbacks);
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks);
 
 /**
  * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
@@ -106,6 +106,7 @@ void record_counter(const char* elements, uint64_t count);
  * Warning: Must be completed before any calls to run_engine().
  * @param name, identifier of the platform API
  * @param api, type-erased c struct containing function pointers and context.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t register_platform_api(const char* name, void* api);
 
