@@ -5,14 +5,13 @@ final class CounterTests: XCTestCase {
     func testConvenientMethodDelegatesToTheMainMethod() {
         class MockCounterImpl: Counter {
             var count: Int?
-            func increment(count: Int) -> Int32 {
+            func increment(count: Int) {
                 self.count = count
-                return 0
             }
         }
 
         let counter = MockCounterImpl()
-        XCTAssertEqual(0, counter.increment())
+        counter.increment()
         XCTAssertEqual(1, counter.count)
     }
 }

@@ -50,7 +50,7 @@ TEST_F(EngineTest, EarlyExit) {
   start_stream(0, {});
 }
 
-// Move to main_interface_test
+// TODO: move to main_interface_test.
 TEST_F(EngineTest, RecordCounter) {
   const std::string config =
       "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\","

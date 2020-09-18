@@ -14,11 +14,12 @@ class CounterImpl: NSObject, Counter {
   }
 
   /// Increment the counter by the given count.
-  func increment(count: Int) -> Int32 {
+  /// TODO: raise error to platform if the operation is not successful.
+  func increment(count: Int) {
     guard let engine = self.engine else {
-      return kEnvoyFailure
+      return
     }
 
-    return engine.recordCounter(self.series, count: numericCast(count))
+    engine.recordCounter(self.series, count: numericCast(count))
   }
 }
