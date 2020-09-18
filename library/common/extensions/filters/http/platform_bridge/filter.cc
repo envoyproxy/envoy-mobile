@@ -105,12 +105,16 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
   switch (status) {
   case Http::FilterDataStatus::Continue:
     if (iteration_state_ == IterationState::Stopped) {
-      // Error: iteration must be Resumed first.
+      // When platform filter iteration is Stopped, Resume must be used to start iterating again.
+      // TODO(goaway): decide on the means to surface/handle errors here. Options include:
+      // - crashing
+      // - creating an eror response for this stream
+      // - letting Envoy handle any invalid resulting state via its own guards
     }
     break;
   case Http::FilterDataStatus::StopIterationAndBuffer:
     if (iteration_state_ == IterationState::Stopped) {
-      // Data has already have been buffered.
+      // Data will already have been buffered (above).
       status = Http::FilterDataStatus::StopIterationNoBuffer;
     } else {
       // Data will be buffered on return.
@@ -118,7 +122,13 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     }
     break;
   case Http::FilterDataStatus::StopIterationNoBuffer:
-    // In this context all previously buffered data can/should be dropped.
+    // In this context all previously buffered data can/should be dropped. If no data has been
+    // buffered, this is a no-op. If data was previously buffered, the most likely case is
+    // that a filter has decided to handle generating a response itself and no longer needs it.
+    // We opt for making this assumption since it's otherwise ambiguous how we should handle
+    // buffering when switching between the two stopped states, and since data can be arbitrarily
+    // interleaved, it's unclear that there's any legitimate case to support any more complex
+    // behavior.
     if (internal_buffer) {
       internal_buffer->drain(internal_buffer->length());
     }
