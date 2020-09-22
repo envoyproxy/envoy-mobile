@@ -34,17 +34,18 @@ build:ios --define=manual_stamp=manual_stamp
 # Default flags for builds targeting Android
 build:android --define=logger=android
 
-# ASAN config runnable on MacOS
+# Locally-runnable ASAN config for MacOS & Linux with standard dev environment
+# See also:
 # https://github.com/bazelbuild/bazel/issues/6932
-build:asan --strip=never
-build:asan --copt -Wno-macro-redefined # ASAN sets _FORTIFY_SOURCE=0
-build:asan --copt -DADDRESS_SANITIZER
-build:asan --copt -D_LIBCPP_HAS_NO_ASAN
-build:asan --copt -g
-build:asan --copt -fno-omit-frame-pointer
-build:asan --copt -fno-optimize-sibling-calls
-build:asan --copt -fsanitize=address
-build:asan --linkopt -fsanitize=address
+build:asan-dev --strip=never
+build:asan-dev --copt -Wno-macro-redefined # ASAN sets _FORTIFY_SOURCE=0
+build:asan-dev --copt -DADDRESS_SANITIZER
+build:asan-dev --copt -D_LIBCPP_HAS_NO_ASAN
+build:asan-dev --copt -g
+build:asan-dev --copt -fno-omit-frame-pointer
+build:asan-dev --copt -fno-optimize-sibling-calls
+build:asan-dev --copt -fsanitize=address
+build:asan-dev --linkopt -fsanitize=address
 
 # Exclude debug info from the release binary since it makes it too large to fit
 # into a zip file. This shouldn't affect crash reports.
