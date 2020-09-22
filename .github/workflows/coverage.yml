@@ -25,7 +25,7 @@ jobs:
           export PATH=/usr/lib/llvm-10/bin:$PATH
           export CC=clang
           export CXX=clang++
-          export VALIDATE_COVERAGE=false
+          export COVERAGE_THRESHOLD=95
           ./envoy/test/run_envoy_bazel_coverage.sh //test/...
           tar -czvf coverage.tar.gz generated/coverage
       - uses: actions/upload-artifact@v1
