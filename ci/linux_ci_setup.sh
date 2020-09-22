@@ -21,7 +21,7 @@ sudo apt-get install -y wget software-properties-common make cmake git \
   unzip bc libtool ninja-build automake zip time lcov \
   apt-transport-https
 
-# clang 8.
+# clang 10
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
 sudo apt-get update
