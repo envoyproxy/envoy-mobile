@@ -60,172 +60,173 @@ static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data,
                                                                 const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onRequestData == nil) {
-    return (envoy_filter_data_status) { /*status*/
-      kEnvoyFilterDataStatusContinue,
-          /*data*/ data,
-          /*extra_headers*/ envoy_noheaders;
-    }
-
-    NSData *platformData = to_ios_data(data);
-    NSArray *result = filter.onRequestData(platformData, end_stream);
-    return (envoy_filter_data_status){/*status*/ [result[0] intValue],
-                                      /*data*/ toNativeData(result[1]),
-                                      /*extra_headers*/ toNativeHeaders(result[2])};
+    return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
+                                      /*data*/ data,
+                                      /*extra_headers*/ envoy_noheaders};
   }
 
-  static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream,
-                                                                   const void *context) {
-    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-    if (filter.onResponseData == nil) {
-      return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
-                                        /*data*/ data,
-                                        /*extra_headers*/ envoy_noheaders};
-    }
+  NSData *platformData = to_ios_data(data);
+  NSArray *result = filter.onRequestData(platformData, end_stream);
+  return (envoy_filter_data_status){/*status*/ [result[0] intValue],
+                                    /*data*/ toNativeData(result[1]),
+                                    /*extra_headers*/ toNativeHeaders(result[2])};
+}
 
-    NSData *platformData = to_ios_data(data);
-    NSArray *result = filter.onResponseData(platformData, end_stream);
-    return (envoy_filter_data_status){/*status*/ [result[0] intValue],
-                                      /*data*/ toNativeData(result[1]),
-                                      /*extra_headers*/ toNativeHeaders(result[2])};
+static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream,
+                                                                 const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onResponseData == nil) {
+    return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
+                                      /*data*/ data,
+                                      /*extra_headers*/ envoy_noheaders};
   }
 
-  static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers,
-                                                                          const void *context) {
-    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-    if (filter.onRequestTrailers == nil) {
-      return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
-                                            /*trailers*/ trailers,
-                                            /*extra_headers*/ envoy_noheaders,
-                                            /*extra_trailers*/ envoy_nodata};
-    }
+  NSData *platformData = to_ios_data(data);
+  NSArray *result = filter.onResponseData(platformData, end_stream);
+  return (envoy_filter_data_status){/*status*/ [result[0] intValue],
+                                    /*data*/ toNativeData(result[1]),
+                                    /*extra_headers*/ toNativeHeaders(result[2])};
+}
 
-    EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
-    NSArray *result = filter.onRequestTrailers(platformTrailers);
-    return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
-                                          /*trailers*/ toNativeHeaders(result[1]),
-                                          /*extra_headers*/ toNativeHeaders(result[2]),
-                                          /*extra_data*/ toNativeData(result[3])};
+static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers,
+                                                                        const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onRequestTrailers == nil) {
+    return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
+                                          /*trailers*/ trailers,
+                                          /*extra_headers*/ envoy_noheaders,
+                                          /*extra_trailers*/ envoy_nodata};
   }
 
-  static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_headers trailers,
-                                                                           const void *context) {
-    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-    if (filter.onResponseTrailers == nil) {
-      return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
-                                            /*trailers*/ trailers,
-                                            /*extra_headers*/ envoy_noheaders,
-                                            /*extra_data*/ envoy_nodata};
-    }
+  EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
+  NSArray *result = filter.onRequestTrailers(platformTrailers);
+  return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
+                                        /*trailers*/ toNativeHeaders(result[1]),
+                                        /*extra_headers*/ toNativeHeaders(result[2]),
+                                        /*extra_data*/ toNativeData(result[3])};
+}
 
-    EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
-    NSArray *result = filter.onResponseTrailers(platformTrailers);
-    return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
-                                          /*trailers*/ toNativeHeaders(result[1]),
-                                          /*extra_headers*/ toNativeHeaders(result[2]),
-                                          /*extra_data*/ toNativeData(result[3])};
+static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_headers trailers,
+                                                                         const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onResponseTrailers == nil) {
+    return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
+                                          /*trailers*/ trailers,
+                                          /*extra_headers*/ envoy_noheaders,
+                                          /*extra_data*/ envoy_nodata};
   }
 
-  static void ios_http_filter_release(const void *context) {
-    CFRelease(context);
-    return;
+  EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
+  NSArray *result = filter.onResponseTrailers(platformTrailers);
+  return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
+                                        /*trailers*/ toNativeHeaders(result[1]),
+                                        /*extra_headers*/ toNativeHeaders(result[2]),
+                                        /*extra_data*/ toNativeData(result[3])};
+}
+
+static void ios_http_filter_release(const void *context) {
+  CFRelease(context);
+  return;
+}
+
+@implementation EnvoyEngineImpl {
+  envoy_engine_t _engineHandle;
+}
+
+- (instancetype)init {
+  self = [super init];
+  if (!self) {
+    return nil;
   }
 
-  @implementation EnvoyEngineImpl {
-    envoy_engine_t _engineHandle;
+  _engineHandle = init_engine();
+  [EnvoyNetworkMonitor startReachabilityIfNeeded];
+  return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (int)registerFilterFactory:(EnvoyHTTPFilterFactory *)filterFactory {
+  // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
+  // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
+  envoy_http_filter *api = safe_malloc(sizeof(envoy_http_filter));
+  api->init_filter = ios_http_filter_init;
+  api->on_request_headers = ios_http_filter_on_request_headers;
+  api->on_request_data = ios_http_filter_on_request_data;
+  api->on_request_trailers = ios_http_filter_on_request_trailers;
+  api->on_response_headers = ios_http_filter_on_response_headers;
+  api->on_response_data = ios_http_filter_on_response_data;
+  api->on_response_trailers = ios_http_filter_on_response_trailers;
+  api->release_filter = ios_http_filter_release;
+  api->static_context = CFBridgingRetain(filterFactory);
+  api->instance_context = NULL;
+
+  register_platform_api(filterFactory.filterName.UTF8String, api);
+  return kEnvoySuccess;
+}
+
+- (int)runWithConfig:(EnvoyConfiguration *)config
+            logLevel:(NSString *)logLevel
+     onEngineRunning:(nullable void (^)())onEngineRunning {
+  NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
+  NSString *resolvedYAML = [config resolveTemplate:templateYAML];
+  if (resolvedYAML == nil) {
+    return kEnvoyFailure;
   }
 
-  -(instancetype)init {
-    self = [super init];
-    if (!self) {
-      return nil;
-    }
-
-    _engineHandle = init_engine();
-    [EnvoyNetworkMonitor startReachabilityIfNeeded];
-    return self;
+  for (EnvoyHTTPFilterFactory *filterFactory in config.httpFilterFactories) {
+    [self registerFilterFactory:filterFactory];
   }
 
-  -(void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+  return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
+}
+
+- (int)runWithConfigYAML:(NSString *)configYAML
+                logLevel:(NSString *)logLevel
+         onEngineRunning:(nullable void (^)())onEngineRunning {
+  self.onEngineRunning = onEngineRunning;
+  [self startObservingLifecycleNotifications];
+
+  // Envoy exceptions will only be caught here when compiled for 64-bit arches.
+  // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
+  @try {
+    envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit,
+                                               (__bridge void *)(self)};
+    return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
+                           logLevel.UTF8String);
+  } @catch (NSException *exception) {
+    NSLog(@"[Envoy] exception caught: %@", exception);
+    [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyError" object:self];
+    return kEnvoyFailure;
   }
+}
 
-  -(int)registerFilterFactory : (EnvoyHTTPFilterFactory *)filterFactory {
-    // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
-    // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
-    envoy_http_filter *api = safe_malloc(sizeof(envoy_http_filter));
-    api->init_filter = ios_http_filter_init;
-    api->on_request_headers = ios_http_filter_on_request_headers;
-    api->on_request_data = ios_http_filter_on_request_data;
-    api->on_request_trailers = ios_http_filter_on_request_trailers;
-    api->on_response_headers = ios_http_filter_on_response_headers;
-    api->on_response_data = ios_http_filter_on_response_data;
-    api->on_response_trailers = ios_http_filter_on_response_trailers;
-    api->release_filter = ios_http_filter_release;
-    api->static_context = CFBridgingRetain(filterFactory);
-    api->instance_context = NULL;
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks {
+  return [[EnvoyHTTPStreamImpl alloc] initWithHandle:init_stream(_engineHandle)
+                                           callbacks:callbacks];
+}
 
-    register_platform_api(filterFactory.filterName.UTF8String, api);
-    return kEnvoySuccess;
-  }
-
-  -(int)runWithConfig : (EnvoyConfiguration *)config logLevel : (NSString *)logLevel onEngineRunning
-      : (nullable void (^)())onEngineRunning {
-    NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
-    NSString *resolvedYAML = [config resolveTemplate:templateYAML];
-    if (resolvedYAML == nil) {
-      return kEnvoyFailure;
-    }
-
-    for (EnvoyHTTPFilterFactory *filterFactory in config.httpFilterFactories) {
-      [self registerFilterFactory:filterFactory];
-    }
-
-    return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
-  }
-
-  -(int)runWithConfigYAML : (NSString *)configYAML logLevel : (NSString *)logLevel onEngineRunning
-      : (nullable void (^)())onEngineRunning {
-    self.onEngineRunning = onEngineRunning;
-    [self startObservingLifecycleNotifications];
-
-    // Envoy exceptions will only be caught here when compiled for 64-bit arches.
-    // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
-    @try {
-      envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit,
-                                                 (__bridge void *)(self)};
-      return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
-                             logLevel.UTF8String);
-    } @catch (NSException *exception) {
-      NSLog(@"[Envoy] exception caught: %@", exception);
-      [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyError" object:self];
-      return kEnvoyFailure;
-    }
-  }
-
-  -(id<EnvoyHTTPStream>)startStreamWithCallbacks : (EnvoyHTTPCallbacks *)callbacks {
-    return [[EnvoyHTTPStreamImpl alloc] initWithHandle:init_stream(_engineHandle)
-                                             callbacks:callbacks];
-  }
-
-  -(int)recordCounter : (NSString *)elements count : (NSUInteger)count {
-    return record_counter(_engineHandle, elements.UTF8String, count);
-  }
+- (int)recordCounter:(NSString *)elements count:(NSUInteger)count {
+  return record_counter(_engineHandle, elements.UTF8String, count);
+}
 
 #pragma mark - Private
 
-  -(void)startObservingLifecycleNotifications {
-    // re-enable lifecycle-based stat flushing when https://github.com/lyft/envoy-mobile/issues/748
-    // gets fixed.
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter addObserver:self
-                           selector:@selector(terminateNotification:)
-                               name:UIApplicationWillTerminateNotification
-                             object:nil];
-  }
+- (void)startObservingLifecycleNotifications {
+  // re-enable lifecycle-based stat flushing when https://github.com/lyft/envoy-mobile/issues/748
+  // gets fixed.
+  NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+  [notificationCenter addObserver:self
+                         selector:@selector(terminateNotification:)
+                             name:UIApplicationWillTerminateNotification
+                           object:nil];
+}
 
-  -(void)terminateNotification : (NSNotification *)notification {
-    NSLog(@"[Envoy %ld] terminating engine (%@)", _engineHandle, notification.name);
-    terminate_engine(_engineHandle);
-  }
+- (void)terminateNotification:(NSNotification *)notification {
+  NSLog(@"[Envoy %ld] terminating engine (%@)", _engineHandle, notification.name);
+  terminate_engine(_engineHandle);
+}
 
-  @end
+@end
