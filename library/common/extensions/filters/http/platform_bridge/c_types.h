@@ -5,6 +5,16 @@
 // NOLINT(namespace-envoy)
 
 /**
+ * Convenience constant indicating no changes to data.
+ */
+extern const envoy_data envoy_unaltered_data;
+
+/**
+ * Convenience constant indicating no changes to headers.
+ */
+extern const envoy_headers envoy_unaltered_headers;
+
+/**
  * Return codes for on-headers filter invocations. @see envoy/http/filter.h
  */
 typedef int envoy_filter_headers_status_t;
@@ -37,7 +47,7 @@ extern const envoy_filter_data_status_t kEnvoyFilterDataStatusResumeIteration;
 typedef struct {
   envoy_filter_data_status_t status;
   envoy_data data;
-  envoy_headers extra_headers;
+  envoy_headers* extra_headers;
 } envoy_filter_data_status;
 
 /**
@@ -54,8 +64,8 @@ extern const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusResumeIter
 typedef struct {
   envoy_filter_trailers_status_t status;
   envoy_headers trailers;
-  envoy_headers extra_headers;
-  envoy_data extra_data;
+  envoy_headers* extra_headers;
+  envoy_data* extra_data;
 } envoy_filter_trailers_status;
 
 #ifdef __cplusplus

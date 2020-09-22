@@ -1,7 +1,7 @@
 // NOLINT(namespace-envoy)
-#include "library/common/extensions/filters/http/platform_bridge/c_types.h"
-
 #include "envoy/http/filter.h"
+
+#include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 
 const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusContinue =
     static_cast<envoy_filter_headers_status_t>(Envoy::Http::FilterHeadersStatus::Continue);
@@ -42,5 +42,5 @@ const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusContinue =
 const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusStopIteration =
     static_cast<envoy_filter_trailers_status_t>(Envoy::Http::FilterTrailersStatus::StopIteration);
 // See comment above.
-extern const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusResumeIteration =
+const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusResumeIteration =
     kEnvoyFilterTrailersStatusContinue - 1;

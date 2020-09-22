@@ -24,7 +24,7 @@ internal class FilterFactory(
 internal class EnvoyHTTPFilterAdapter(
   private val filter: Filter
 ) : EnvoyHTTPFilter {
-  override fun onRequestHeaders(headers: Map<String, List<String>>, endStream: Boolean): Array<Any> {
+  override fun onRequestHeaders(headers: Map<String, List<String>>, endStream: Boolean): Array<Any?> {
     (filter as? RequestFilter)?.let { requestFilter ->
       val result = requestFilter.onRequestHeaders(RequestHeaders(headers), endStream)
       return when (result) {
@@ -35,7 +35,7 @@ internal class EnvoyHTTPFilterAdapter(
     return arrayOf(0, headers)
   }
 
-  override fun onResponseHeaders(headers: Map<String, List<String>>, endStream: Boolean): Array<Any> {
+  override fun onResponseHeaders(headers: Map<String, List<String>>, endStream: Boolean): Array<Any?> {
     (filter as? ResponseFilter)?.let { responseFilter ->
       val result = responseFilter.onResponseHeaders(ResponseHeaders(headers), endStream)
       return when (result) {
@@ -46,7 +46,7 @@ internal class EnvoyHTTPFilterAdapter(
     return arrayOf(0, headers)
   }
 
-  override fun onRequestData(data: ByteBuffer, endStream: Boolean): Array<Any> {
+  override fun onRequestData(data: ByteBuffer, endStream: Boolean): Array<Any?> {
     (filter as? RequestFilter)?.let { requestFilter ->
       val result = requestFilter.onRequestData(data, endStream)
       return when (result) {
@@ -59,7 +59,7 @@ internal class EnvoyHTTPFilterAdapter(
     return arrayOf(0, data)
   }
 
-  override fun onResponseData(data: ByteBuffer, endStream: Boolean): Array<Any> {
+  override fun onResponseData(data: ByteBuffer, endStream: Boolean): Array<Any?> {
     (filter as? ResponseFilter)?.let { responseFilter ->
       val result = responseFilter.onResponseData(data, endStream)
       return when (result) {
@@ -72,7 +72,7 @@ internal class EnvoyHTTPFilterAdapter(
     return arrayOf(0, data)
   }
 
-  override fun onRequestTrailers(trailers: Map<String, List<String>>): Array<Any> {
+  override fun onRequestTrailers(trailers: Map<String, List<String>>): Array<Any?> {
     (filter as? RequestFilter)?.let { requestFilter ->
       val result = requestFilter.onRequestTrailers(RequestTrailers(trailers))
       return when (result) {
@@ -84,14 +84,13 @@ internal class EnvoyHTTPFilterAdapter(
     return arrayOf(0, trailers)
   }
 
-  override fun onResponseTrailers(trailers: Map<String, List<String>>): Array<Any> {
+  override fun onResponseTrailers(trailers: Map<String, List<String>>): Array<Any?> {
     (filter as? ResponseFilter)?.let { responseFilter ->
       val result = responseFilter.onResponseTrailers(ResponseTrailers(trailers))
       return when (result) {
         is FilterTrailersStatus.Continue<*, *> -> arrayOf(result.status, result.trailers.headers)
         is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, trailers)
         is FilterTrailersStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.headers?.headers, result.data, result.trailers.headers)
-
       }
     }
     return arrayOf(0, trailers)

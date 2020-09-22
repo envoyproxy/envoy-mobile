@@ -165,7 +165,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestData) {
     EXPECT_EQ(to_string(c_data), "request body");
     EXPECT_TRUE(end_stream);
     invocations->on_request_data_calls++;
-    return {kEnvoyFilterDataStatusContinue, c_data};
+    return {kEnvoyFilterDataStatusContinue, c_data, nullptr};
   };
 
   setUpFilter(R"EOF(
@@ -196,7 +196,7 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferOnRequestData) {
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
     EXPECT_FALSE(end_stream);
     c_data.release(c_data.context);
-    return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata};
+    return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr};
   };
 
   Buffer::OwnedImpl decoding_buffer;
@@ -250,7 +250,7 @@ TEST_F(PlatformBridgeFilterTest, StopNoBufferOnRequestData) {
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls++]);
     EXPECT_FALSE(end_stream);
     c_data.release(c_data.context);
-    return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata};
+    return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata, nullptr};
   };
 
   setUpFilter(R"EOF(
@@ -289,7 +289,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestTrailers) {
     EXPECT_EQ(to_string(c_trailers.headers[0].key), "x-test-trailer");
     EXPECT_EQ(to_string(c_trailers.headers[0].value), "test trailer");
     invocations->on_request_trailers_calls++;
-    return {kEnvoyFilterTrailersStatusContinue, c_trailers};
+    return {kEnvoyFilterTrailersStatusContinue, c_trailers, nullptr, nullptr};
   };
 
   setUpFilter(R"EOF(
@@ -353,7 +353,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseData) {
     EXPECT_EQ(to_string(c_data), "response body");
     EXPECT_TRUE(end_stream);
     invocations->on_response_data_calls++;
-    return {kEnvoyFilterDataStatusContinue, c_data};
+    return {kEnvoyFilterDataStatusContinue, c_data, nullptr};
   };
 
   setUpFilter(R"EOF(
@@ -384,7 +384,7 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferOnResponseData) {
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls++]);
     EXPECT_FALSE(end_stream);
     c_data.release(c_data.context);
-    return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata};
+    return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr};
   };
 
   Buffer::OwnedImpl encoding_buffer;
@@ -438,7 +438,7 @@ TEST_F(PlatformBridgeFilterTest, StopNoBufferOnResponseData) {
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls++]);
     EXPECT_FALSE(end_stream);
     c_data.release(c_data.context);
-    return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata};
+    return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata, nullptr};
   };
 
   setUpFilter(R"EOF(
@@ -477,7 +477,7 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseTrailers) {
     EXPECT_EQ(to_string(c_trailers.headers[0].key), "x-test-trailer");
     EXPECT_EQ(to_string(c_trailers.headers[0].value), "test trailer");
     invocations->on_response_trailers_calls++;
-    return {kEnvoyFilterTrailersStatusContinue, c_trailers};
+    return {kEnvoyFilterTrailersStatusContinue, c_trailers, nullptr, nullptr};
   };
 
   setUpFilter(R"EOF(

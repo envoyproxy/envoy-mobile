@@ -55,19 +55,23 @@ public:
   Http::FilterTrailersStatus encodeTrailers(Http::ResponseTrailerMap& trailers) override;
 
 private:
+  static void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers);
   Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream,
                                       envoy_filter_on_headers_f on_headers);
   Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream,
-                                Buffer::Instance* internal_buffer, envoy_filter_on_data_f on_data);
+                                Buffer::Instance* internal_buffer,
+                                Http::HeaderMap** pending_headers, envoy_filter_on_data_f on_data);
   Http::FilterTrailersStatus onTrailers(Http::HeaderMap& trailers,
+                                        Buffer::Instance* internal_buffer,
+                                        Http::HeaderMap** pending_headers,
                                         envoy_filter_on_trailers_f on_trailers);
   const std::string filter_name_;
   IterationState iteration_state_;
   envoy_http_filter platform_filter_;
-  Http::RequestHeaderMap* pending_request_headers_{};
-  Http::ResponseHeaderMap* pending_response_headers_{};
-  Http::RequestTrailerMap* pending_request_trailers_{};
-  Http::ResponseTrialerMap* pending_response_trailers_{};
+  Http::HeaderMap* pending_request_headers_{};
+  Http::HeaderMap* pending_response_headers_{};
+  Http::HeaderMap* pending_request_trailers_{};
+  Http::HeaderMap* pending_response_trailers_{};
 };
 
 } // namespace PlatformBridge
