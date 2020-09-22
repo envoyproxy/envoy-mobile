@@ -177,7 +177,21 @@ PlatformBridgeFilter::onTrailers(Http::HeaderMap& trailers,
 Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeaderMap& headers,
                                                               bool end_stream) {
   // Delegate to shared implementation for request and response path.
-  return onHeaders(headers, end_stream, platform_filter_.on_request_headers);
+  auto status = onHeaders(headers, end_stream, platform_filter_.on_request_headers);
+  if (status == Http::FilterHeadersStatus::StopIteration) {
+    pending_request_headers_ = &headers;
+  }
+  return status;
+}
+
+Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
+                                                              bool end_stream) {
+  // Delegate to shared implementation for request and response path.
+  auto status = onHeaders(headers, end_stream, platform_filter_.on_response_headers);
+  if (status == Http::FilterHeadersStatus::StopIteration) {
+    pending_response_headers_ = &headers;
+  }
+  return status;
 }
 
 Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, bool end_stream) {
@@ -192,17 +206,6 @@ Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, 
   return onData(data, end_stream, internal_buffer, platform_filter_.on_request_data);
 }
 
-Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
-  // Delegate to shared implementation for request and response path.
-  return onTrailers(trailers, platform_filter_.on_request_trailers);
-}
-
-Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
-                                                              bool end_stream) {
-  // Delegate to shared implementation for request and response path.
-  return onHeaders(headers, end_stream, platform_filter_.on_response_headers);
-}
-
 Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, bool end_stream) {
   // Delegate to shared implementation for request and response path.
   Buffer::Instance* internal_buffer = nullptr;
@@ -215,10 +218,23 @@ Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, 
   return onData(data, end_stream, internal_buffer, platform_filter_.on_response_data);
 }
 
+Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
+  // Delegate to shared implementation for request and response path.
+  auto status = onTrailers(trailers, platform_filter_.on_request_trailers);
+  if (status == Http::FilterTrailersStatus::StopIteration) {
+    pending_request_trailers_ = &trailers;
+  }
+  return status;
+}
+
 Http::FilterTrailersStatus
 PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
   // Delegate to shared implementation for request and response path.
-  return onTrailers(trailers, platform_filter_.on_response_trailers);
+  auto status = onTrailers(trailers, platform_filter_.on_response_trailers);
+  if (status == Http::FilterTrailersStatus::StopIteration) {
+    pending_response_trailers_ = &trailers;
+  }
+  return status;
 }
 
 } // namespace PlatformBridge

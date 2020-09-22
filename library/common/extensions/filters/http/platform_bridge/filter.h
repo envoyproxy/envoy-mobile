@@ -64,6 +64,10 @@ private:
   const std::string filter_name_;
   IterationState iteration_state_;
   envoy_http_filter platform_filter_;
+  Http::RequestHeaderMap* pending_request_headers_{};
+  Http::ResponseHeaderMap* pending_response_headers_{};
+  Http::RequestTrailerMap* pending_request_trailers_{};
+  Http::ResponseTrialerMap* pending_response_trailers_{};
 };
 
 } // namespace PlatformBridge
