@@ -75,6 +75,33 @@ envoy_status_t record_counter(envoy_engine_t, const char* elements, uint64_t cou
   return ENVOY_FAILURE;
 }
 
+envoy_status_t set_gauge(envoy_engine_t, const char* elements, uint64_t value) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine_.lock()) {
+    return e->setGauge(std::string(elements), value);
+  }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t add_to_gauge(envoy_engine_t, const char* elements, uint64_t amount) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine_.lock()) {
+    return e->addToGauge(std::string(elements), amount);
+  }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t sub_from_gauge(envoy_engine_t, const char* elements, uint64_t amount) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine_.lock()) {
+    return e->subFromGauge(std::string(elements), amount);
+  }
+  return ENVOY_FAILURE;
+}
+
 envoy_status_t register_platform_api(const char* name, void* api) {
   Envoy::Api::External::registerApi(std::string(name), api);
   return ENVOY_SUCCESS;
