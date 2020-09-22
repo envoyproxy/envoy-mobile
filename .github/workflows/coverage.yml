@@ -13,7 +13,7 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-18.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v1
         with:
