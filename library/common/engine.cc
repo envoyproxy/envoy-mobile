@@ -118,7 +118,8 @@ envoy_status_t Engine::recordCounter(const std::string& elements, uint64_t count
 envoy_status_t Engine::setGauge(const std::string& elements, uint64_t value) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, value]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)}, Stats::Gauge::ImportMode::NeverImport)
+      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
+                                        Stats::Gauge::ImportMode::NeverImport)
           .set(value);
     });
     return ENVOY_SUCCESS;
@@ -129,7 +130,8 @@ envoy_status_t Engine::setGauge(const std::string& elements, uint64_t value) {
 envoy_status_t Engine::addToGauge(const std::string& elements, uint64_t amount) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, amount]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)}, Stats::Gauge::ImportMode::NeverImport)
+      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
+                                        Stats::Gauge::ImportMode::NeverImport)
           .add(amount);
     });
     return ENVOY_SUCCESS;
@@ -140,7 +142,8 @@ envoy_status_t Engine::addToGauge(const std::string& elements, uint64_t amount) 
 envoy_status_t Engine::subFromGauge(const std::string& elements, uint64_t amount) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, amount]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)}, Stats::Gauge::ImportMode::NeverImport)
+      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
+                                        Stats::Gauge::ImportMode::NeverImport)
           .sub(amount);
     });
     return ENVOY_SUCCESS;
