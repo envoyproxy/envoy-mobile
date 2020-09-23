@@ -52,7 +52,10 @@ extension EnvoyHTTPFilter {
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, envoyTrailers]
         case .resumeIteration(let headers, let data, let trailers):
-          return [kEnvoyFilterTrailersStatusResumeIteration, headers?.headers as Any, data as Any, trailers.headers]
+          return [kEnvoyFilterTrailersStatusResumeIteration,
+                  headers?.headers as Any,
+                  data as Any,
+                  trailers.headers]
         }
       }
     }
@@ -91,7 +94,10 @@ extension EnvoyHTTPFilter {
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, envoyTrailers]
         case .resumeIteration(let headers, let data, let trailers):
-          return [kEnvoyFilterTrailersStatusResumeIteration, headers?.headers as Any, data as Any, trailers.headers]
+          return [kEnvoyFilterTrailersStatusResumeIteration,
+                  headers?.headers as Any,
+                  data as Any,
+                  trailers.headers]
         }
       }
     }
