@@ -40,7 +40,7 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, data]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusContinue, headers?.headers, data]
+          return [kEnvoyFilterDataStatusResumeIteration, headers?.headers as Any, data]
         }
       }
 
@@ -52,7 +52,7 @@ extension EnvoyHTTPFilter {
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, envoyTrailers]
         case .resumeIteration(let headers, let data, let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, headers?.headers, data, trailers.headers]
+          return [kEnvoyFilterTrailersStatusResumeIteration, headers?.headers as Any, data as Any, trailers.headers]
         }
       }
     }
@@ -79,7 +79,7 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, data]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusContinue, headers?.headers, data]
+          return [kEnvoyFilterDataStatusResumeIteration, headers?.headers as Any, data]
         }
       }
 
@@ -91,7 +91,7 @@ extension EnvoyHTTPFilter {
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, envoyTrailers]
         case .resumeIteration(let headers, let data, let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, headers?.headers, data, trailers.headers]
+          return [kEnvoyFilterTrailersStatusResumeIteration, headers?.headers as Any, data as Any, trailers.headers]
         }
       }
     }

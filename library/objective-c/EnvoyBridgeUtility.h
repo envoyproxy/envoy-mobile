@@ -13,6 +13,16 @@ static inline envoy_data toNativeData(NSData *data) {
   return ret;
 }
 
+static inline envoy_data * toNativeDataPtr(NSData *data) {
+  if (data == nil) {
+    return nil;
+  }
+
+  envoy_data *ret = (envoy_data *)safe_malloc(sizeof(envoy_data));
+  *ret = toNativeData(data);
+  return ret;
+}
+
 static inline envoy_data toManagedNativeString(NSString *s) {
   size_t length = s.length;
   uint8_t *native_string = (uint8_t *)safe_malloc(sizeof(uint8_t) * length);
@@ -42,6 +52,16 @@ static inline envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   }
   // TODO: ASSERT(header_index == length);
   envoy_headers ret = {length, header_array};
+  return ret;
+}
+
+static inline envoy_headers * toNativeHeadersPtr(EnvoyHeaders *headers) {
+  if (headers == nil) {
+    return NULL;
+  }
+
+  envoy_headers *ret = (envoy_headers *)safe_malloc(sizeof(envoy_headers));
+  *ret = toNativeHeaders(headers);
   return ret;
 }
 
