@@ -13,7 +13,7 @@ static inline envoy_data toNativeData(NSData *data) {
   return ret;
 }
 
-static inline envoy_data * toNativeDataPtr(NSData *data) {
+static inline envoy_data *toNativeDataPtr(NSData *data) {
   if (data == nil) {
     return nil;
   }
@@ -55,7 +55,7 @@ static inline envoy_headers toNativeHeaders(EnvoyHeaders *headers) {
   return ret;
 }
 
-static inline envoy_headers * toNativeHeadersPtr(EnvoyHeaders *headers) {
+static inline envoy_headers *toNativeHeadersPtr(EnvoyHeaders *headers) {
   if (headers == nil) {
     return NULL;
   }
