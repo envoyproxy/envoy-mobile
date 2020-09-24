@@ -135,9 +135,9 @@ TEST(MainInterfaceTest, SendMetadata) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  
-  // There is nothing functional about the config used to run the engine, as the created stream is only used for
-  // send_metadata.
+
+  // There is nothing functional about the config used to run the engine, as the created stream is
+  // only used for send_metadata.
   run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
@@ -171,8 +171,9 @@ TEST(MainInterfaceTest, ResetStream) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  
-  // There is nothing functional about the config used to run the engine, as the created stream is immediately reset.
+
+  // There is nothing functional about the config used to run the engine, as the created stream is
+  // immediately reset.
   run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
@@ -241,7 +242,7 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  
+
   // Using the minimal envoy mobile config that allows for running the engine.
   run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
