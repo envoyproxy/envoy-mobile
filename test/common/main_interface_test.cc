@@ -14,9 +14,7 @@ typedef struct {
 } engine_test_context;
 
 // This config is the minimal envoy mobile config that allows for running the engine.
-// There is nothing functional about the config, as the created stream is only used for
-// send_metadata.
-const std::string CONFIG =
+const std::string MINIMAL_NOOP_CONFIG =
     "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\","
     "\"address\":{\"socket_address\":{\"protocol\":\"TCP\",\"address\":\"0.0.0.0\",\"port_"
     "value\":10000}},\"api_listener\":{\"api_listener\":{\"@type\":\"type.googleapis.com/"
@@ -137,7 +135,10 @@ TEST(MainInterfaceTest, SendMetadata) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  run_engine(0, engine_cbs, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  
+  // There is nothing functional about the config used to run the engine, as the created stream is only used for
+  // send_metadata.
+  run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -170,7 +171,9 @@ TEST(MainInterfaceTest, ResetStream) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  run_engine(0, engine_cbs, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  
+  // There is nothing functional about the config used to run the engine, as the created stream is immediately reset.
+  run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -238,7 +241,9 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  run_engine(0, engine_cbs, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  
+  // Using the minimal envoy mobile config that allows for running the engine.
+  run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -273,7 +278,7 @@ TEST(EngineTest, RecordCounter) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_counter(0, "counter", 1));
-  run_engine(0, callbacks, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   EXPECT_EQ(ENVOY_SUCCESS, record_counter(0, "counter", 1));
 
@@ -294,7 +299,7 @@ TEST(EngineTest, SetGauge) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, set_gauge(0, "gauge", 1));
-  run_engine(0, callbacks, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
@@ -318,7 +323,7 @@ TEST(EngineTest, AddToGauge) {
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, add_to_gauge(0, "gauge", 30));
 
-  run_engine(0, callbacks, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   EXPECT_EQ(ENVOY_SUCCESS, add_to_gauge(0, "gauge", 30));
@@ -341,7 +346,7 @@ TEST(EngineTest, SubFromGauge) {
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, sub_from_gauge(0, "gauge", 30));
 
-  run_engine(0, callbacks, CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   add_to_gauge(0, "gauge", 30);
