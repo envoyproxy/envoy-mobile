@@ -47,21 +47,21 @@ public:
    * @param elements, joined elements of the timeseries.
    * @param value, value to set to the gauge.
    */
-  envoy_status_t setGauge(const std::string& elements, uint64_t value);
+  envoy_status_t recordGaugeSet(const std::string& elements, uint64_t value);
 
   /**
    * Add to the gauge with the given string of elements and by the given amount.
    * @param elements, joined elements of the timeseries.
    * @param amount, amount to add to the gauge.
    */
-  envoy_status_t addToGauge(const std::string& elements, uint64_t amount);
+  envoy_status_t recordGaugeAdd(const std::string& elements, uint64_t amount);
 
   /**
    * Subtract from the gauge with the given string of elements and by the given amount.
    * @param elements, joined elements of the timeseries.
    * @param amount, amount to subtract from the gauge.
    */
-  envoy_status_t subFromGauge(const std::string& elements, uint64_t amount);
+  envoy_status_t recordGaugeSub(const std::string& elements, uint64_t amount);
 
 private:
   envoy_status_t run(std::string config, std::string log_level);

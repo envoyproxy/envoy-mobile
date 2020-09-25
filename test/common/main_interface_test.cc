@@ -299,12 +299,12 @@ TEST(EngineTest, SetGauge) {
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
                                    &test_context /*context*/};
-  EXPECT_EQ(ENVOY_FAILURE, set_gauge(0, "gauge", 1));
+  EXPECT_EQ(ENVOY_FAILURE, record_gauge_set(0, "gauge", 1));
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  EXPECT_EQ(ENVOY_SUCCESS, set_gauge(0, "gauge", 1));
+  EXPECT_EQ(ENVOY_SUCCESS, record_gauge_set(0, "gauge", 1));
 
   terminate_engine(0);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
@@ -322,12 +322,12 @@ TEST(EngineTest, AddToGauge) {
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
                                    &test_context /*context*/};
-  EXPECT_EQ(ENVOY_FAILURE, add_to_gauge(0, "gauge", 30));
+  EXPECT_EQ(ENVOY_FAILURE, record_gauge_add(0, "gauge", 30));
 
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  EXPECT_EQ(ENVOY_SUCCESS, add_to_gauge(0, "gauge", 30));
+  EXPECT_EQ(ENVOY_SUCCESS, record_gauge_add(0, "gauge", 30));
 
   terminate_engine(0);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
@@ -345,14 +345,14 @@ TEST(EngineTest, SubFromGauge) {
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
                                    &test_context /*context*/};
-  EXPECT_EQ(ENVOY_FAILURE, sub_from_gauge(0, "gauge", 30));
+  EXPECT_EQ(ENVOY_FAILURE, record_gauge_sub(0, "gauge", 30));
 
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  add_to_gauge(0, "gauge", 30);
+  record_gauge_add(0, "gauge", 30);
 
-  EXPECT_EQ(ENVOY_SUCCESS, sub_from_gauge(0, "gauge", 30));
+  EXPECT_EQ(ENVOY_SUCCESS, record_gauge_sub(0, "gauge", 30));
 
   terminate_engine(0);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));

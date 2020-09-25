@@ -115,7 +115,7 @@ envoy_status_t Engine::recordCounter(const std::string& elements, uint64_t count
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::setGauge(const std::string& elements, uint64_t value) {
+envoy_status_t Engine::recordGaugeSet(const std::string& elements, uint64_t value) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, value]() -> void {
       Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
@@ -127,7 +127,7 @@ envoy_status_t Engine::setGauge(const std::string& elements, uint64_t value) {
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::addToGauge(const std::string& elements, uint64_t amount) {
+envoy_status_t Engine::recordGaugeAdd(const std::string& elements, uint64_t amount) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, amount]() -> void {
       Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
@@ -139,7 +139,7 @@ envoy_status_t Engine::addToGauge(const std::string& elements, uint64_t amount) 
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::subFromGauge(const std::string& elements, uint64_t amount) {
+envoy_status_t Engine::recordGaugeSub(const std::string& elements, uint64_t amount) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, amount]() -> void {
       Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},

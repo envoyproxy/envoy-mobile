@@ -110,7 +110,7 @@ envoy_status_t record_counter(envoy_engine_t engine, const char* elements, uint6
  * @param elements, the string that identifies the gauge to set value with.
  * @param value, the value to set to the gauge.
  */
-envoy_status_t set_gauge(envoy_engine_t engine, const char* elements, uint64_t value);
+envoy_status_t record_gauge_set(envoy_engine_t engine, const char* elements, uint64_t value);
 
 /**
  * Add the gauge with the given string of elements and by the given amount.
@@ -118,7 +118,7 @@ envoy_status_t set_gauge(envoy_engine_t engine, const char* elements, uint64_t v
  * @param elements, the string that identifies the gauge to add to.
  * @param amount, the amount to add to the gauge.
  */
-envoy_status_t add_to_gauge(envoy_engine_t engine, const char* elements, uint64_t amount);
+envoy_status_t record_gauge_add(envoy_engine_t engine, const char* elements, uint64_t amount);
 
 /**
  * Subtract from the gauge with the given string of elements and by the given amount.
@@ -126,7 +126,7 @@ envoy_status_t add_to_gauge(envoy_engine_t engine, const char* elements, uint64_
  * @param elements, the string that identifies the gauge to subtract from.
  * @param amount, amount to subtract from the gauge.
  */
-envoy_status_t sub_from_gauge(envoy_engine_t engine, const char* elements, uint64_t amount);
+envoy_status_t record_gauge_sub(envoy_engine_t engine, const char* elements, uint64_t amount);
 /**
  * Statically register APIs leveraging platform libraries.
  * Warning: Must be completed before any calls to run_engine().
