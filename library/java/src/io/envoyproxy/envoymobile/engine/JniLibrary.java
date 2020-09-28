@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
+import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -132,12 +133,14 @@ class JniLibrary {
   /**
    * External entry point for library.
    *
-   * @param engine,   the engine to run.
-   * @param config,   the configuration blob to run envoy with.
-   * @param logLevel, the logging level to run envoy with.
+   * @param engine,          the engine to run.
+   * @param config,          the configuration blob to run envoy with.
+   * @param logLevel,        the logging level to run envoy with.
+   * @param onEngineRunning, called when the engine finishes its async startup and begins running.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel);
+  protected static native int runEngine(long engine, String config, String logLevel,
+                                        EnvoyOnEngineRunning onEngineRunning);
 
   // Other native methods
 
@@ -151,9 +154,14 @@ class JniLibrary {
   public static native String templateString();
 
   /**
-   * Increment a counter.
+   * Increment a counter with the given count.
+   *
+   * @param engine,  handle to the engine that owns the counter.
+   * @param elements Elements of the counter stat.
+   * @param count Amount to add to the counter.
+   * @return A status indicating if the action was successful.
    */
-  protected static native void recordCounter(String elements, int count);
+  protected static native int recordCounter(long engine, String elements, int count);
 
   /**
    * Provides a configuration template that may be used for building platform

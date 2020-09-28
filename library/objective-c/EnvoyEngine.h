@@ -22,7 +22,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
  */
-@property (nonatomic, strong) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
@@ -30,19 +30,19 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  * @param data the data received.
  * @param endStream whether the data is the last data frame.
  */
-@property (nonatomic, strong) void (^onData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) void (^onData)(NSData *data, BOOL endStream);
 
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
  */
-@property (nonatomic, strong) void (^onTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) void (^onTrailers)(EnvoyHeaders *trailers);
 
 /**
  * Called when the async HTTP stream has an error.
  */
-@property (nonatomic, strong) void (^onError)
+@property (nonatomic, copy) void (^onError)
     (uint64_t errorCode, NSString *message, int32_t attemptCount);
 
 /**
@@ -51,7 +51,7 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
  * response is already complete. It will fire no more than once, and no other callbacks for the
  * stream will be issued afterwards.
  */
-@property (nonatomic, strong) void (^onCancel)(void);
+@property (nonatomic, copy) void (^onCancel)(void);
 
 @end
 
@@ -74,17 +74,17 @@ extern const int kEnvoyFilterTrailersStatusStopIteration;
 
 @interface EnvoyHTTPFilter : NSObject
 
-@property (nonatomic, strong) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
-@property (nonatomic, strong) NSArray * (^onRequestData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onRequestData)(NSData *data, BOOL endStream);
 
-@property (nonatomic, strong) NSArray * (^onRequestTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) NSArray * (^onRequestTrailers)(EnvoyHeaders *trailers);
 
-@property (nonatomic, strong) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
-@property (nonatomic, strong) NSArray * (^onResponseData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResponseData)(NSData *data, BOOL endStream);
 
-@property (nonatomic, strong) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
 
 @end
 
@@ -94,7 +94,7 @@ extern const int kEnvoyFilterTrailersStatusStopIteration;
 
 @property (nonatomic, strong) NSString *filterName;
 
-@property (nonatomic, strong) EnvoyHTTPFilter * (^create)();
+@property (nonatomic, copy) EnvoyHTTPFilter * (^create)();
 
 @end
 
@@ -214,18 +214,26 @@ extern const int kEnvoyFailure;
 
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
+ @param onEngineRunning Closure called when the engine finishes its async startup and begins
+ running.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel;
+- (int)runWithConfig:(EnvoyConfiguration *)config
+            logLevel:(NSString *)logLevel
+     onEngineRunning:(nullable void (^)())onEngineRunning;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.
 
  @param configYAML The configuration yaml with which to start Envoy.
  @param logLevel The log level to use when starting Envoy.
+ @param onEngineRunning Closure called when the engine finishes its async startup and begins
+ running.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfigYAML:(NSString *)configYAML logLevel:(NSString *)logLevel;
+- (int)runWithConfigYAML:(NSString *)configYAML
+                logLevel:(NSString *)logLevel
+         onEngineRunning:(nullable void (^)())onEngineRunning;
 
 /**
  Opens a new HTTP stream attached to this engine.
@@ -239,8 +247,9 @@ extern const int kEnvoyFailure;
 
  @param elements Elements of the counter stat.
  @param count Amount to add to the counter.
+ @return A status indicating if the action was successful.
  */
-- (void)recordCounter:(NSString *)elements count:(NSUInteger)count;
+- (int)recordCounter:(NSString *)elements count:(NSUInteger)count;
 
 @end
 
@@ -248,6 +257,8 @@ extern const int kEnvoyFailure;
 
 // Concrete implementation of the `EnvoyEngine` interface.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
+
+@property (nonatomic, copy, nullable) void (^onEngineRunning)();
 
 @end
 

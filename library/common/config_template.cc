@@ -40,10 +40,6 @@ static_resources:
                         max_interval: 60s
         http_filters:
 {{ platform_filter_chain }}
-          - name: envoy.filters.http.platform_bridge
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
-              platform_filter_name: PlatformStub
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
@@ -60,7 +56,7 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
               decompressor_library:
-                name: basic
+                name: gzip
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
                   # Maximum window bits to allow for any stream to be decompressed. Optimally this

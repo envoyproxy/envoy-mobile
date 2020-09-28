@@ -40,14 +40,28 @@ public:
    * @param elements, joined elements of the timeseries.
    * @param count, amount to add to the counter.
    */
-  void recordCounter(const std::string& elements, uint64_t count);
+  envoy_status_t recordCounter(const std::string& elements, uint64_t count);
 
   /**
-   * Flush the stats sinks outside of a flushing interval.
-   * Note: stats flushing may not be synchronous.
-   * Therefore, this function may return prior to flushing taking place.
+   * Set a gauge of a given string of elements with the given value.
+   * @param elements, joined elements of the timeseries.
+   * @param value, value to set to the gauge.
    */
-  void flushStats();
+  envoy_status_t recordGaugeSet(const std::string& elements, uint64_t value);
+
+  /**
+   * Add to the gauge with the given string of elements and by the given amount.
+   * @param elements, joined elements of the timeseries.
+   * @param amount, amount to add to the gauge.
+   */
+  envoy_status_t recordGaugeAdd(const std::string& elements, uint64_t amount);
+
+  /**
+   * Subtract from the gauge with the given string of elements and by the given amount.
+   * @param elements, joined elements of the timeseries.
+   * @param amount, amount to subtract from the gauge.
+   */
+  envoy_status_t recordGaugeSub(const std::string& elements, uint64_t amount);
 
 private:
   envoy_status_t run(std::string config, std::string log_level);

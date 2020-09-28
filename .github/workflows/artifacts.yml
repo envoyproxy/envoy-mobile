@@ -20,7 +20,7 @@ jobs:
         run: ./ci/linux_ci_setup.sh
       - name: 'Build envoy.aar distributable'
         run: |
-          export PATH=/usr/lib/llvm-8/bin:$PATH
+          export PATH=/usr/lib/llvm-10/bin:$PATH
           export CC=clang
           export CXX=clang++
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           name: envoy_android_aar_sources
-          path: dist/envoy_aar_sources.zip
+          path: bazel-bin/envoy_mobile.zip
   main_ios_dist:
     name: main_ios_dist
     runs-on: macOS-latest

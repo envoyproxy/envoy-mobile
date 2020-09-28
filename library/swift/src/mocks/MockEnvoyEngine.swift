@@ -12,12 +12,16 @@ final class MockEnvoyEngine: NSObject {
 }
 
 extension MockEnvoyEngine: EnvoyEngine {
-  func run(withConfig config: EnvoyConfiguration, logLevel: String) -> Int32 {
+  func run(withConfig config: EnvoyConfiguration, logLevel: String,
+           onEngineRunning: (() -> Void)?) -> Int32
+  {
     MockEnvoyEngine.onRunWithConfig?(config, logLevel)
     return kEnvoySuccess
   }
 
-  func run(withConfigYAML configYAML: String, logLevel: String) -> Int32 {
+  func run(withConfigYAML configYAML: String, logLevel: String,
+           onEngineRunning: (() -> Void)?) -> Int32
+  {
     MockEnvoyEngine.onRunWithYAML?(configYAML, logLevel)
     return kEnvoySuccess
   }
@@ -26,7 +30,8 @@ extension MockEnvoyEngine: EnvoyEngine {
     return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
   }
 
-  func recordCounter(_ elements: String, count: UInt) {
+  func recordCounter(_ elements: String, count: UInt) -> Int32 {
     MockEnvoyEngine.onRecordCounter?(elements, count)
+    return kEnvoySuccess
   }
 }

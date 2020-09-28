@@ -58,10 +58,6 @@ envoy_status_t reset_stream(envoy_stream_t stream) {
 envoy_engine_t init_engine() {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-
-  // Register stub implementation of a platform filter (hardcoded in configuration).
-  register_platform_api("PlatformStub", safe_calloc(1, sizeof(envoy_http_filter)));
-
   return 1;
 }
 
@@ -70,16 +66,40 @@ envoy_status_t set_preferred_network(envoy_network_t network) {
   return ENVOY_SUCCESS;
 }
 
-void record_counter(const char* elements, uint64_t count) {
+envoy_status_t record_counter(envoy_engine_t, const char* elements, uint64_t count) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine_.lock()) {
-    e->recordCounter(std::string(elements), count);
+    return e->recordCounter(std::string(elements), count);
   }
+  return ENVOY_FAILURE;
 }
 
-void flush_stats() {
+envoy_status_t record_gauge_set(envoy_engine_t, const char* elements, uint64_t value) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine_.lock()) {
-    e->flushStats();
+    return e->recordGaugeSet(std::string(elements), value);
   }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t record_gauge_add(envoy_engine_t, const char* elements, uint64_t amount) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine_.lock()) {
+    return e->recordGaugeAdd(std::string(elements), amount);
+  }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, uint64_t amount) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine_.lock()) {
+    return e->recordGaugeSub(std::string(elements), amount);
+  }
+  return ENVOY_FAILURE;
 }
 
 envoy_status_t register_platform_api(const char* name, void* api) {

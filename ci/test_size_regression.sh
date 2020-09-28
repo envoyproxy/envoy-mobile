@@ -2,7 +2,7 @@
 
 # Checks the absolute size and the relative size increase of a file.
 
-MAX_SIZE=5700000 # 5.7MB
+MAX_SIZE=6000000 # 6MB
 MAX_PERC=1
 
 if [ `uname` == "Darwin" ]

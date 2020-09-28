@@ -11,7 +11,7 @@ Starting an instance of Envoy Mobile is done by building the ``Engine`` instance
 
 To obtain a ``StatsClient``, call ``streamClient()`` on the ``Engine`` instance (see below).
 
-After the stream client is obtain, it should be stored and used to start network requests/streams.
+After the stream client is obtained, it should be stored and used to start network requests/streams.
 
 **Kotlin example**::
 
@@ -183,6 +183,25 @@ This functionality is used for stat segmentation.
 
   // Swift
   builder.addVirtualClusters("[{\"name\":\"vcluster\",\"headers\":[{\"name\":\":path\",\"exact_match\":\"/v1/vcluster\"}]}]")
+
+~~~~~~~~~~~~~~~~~~~~~~
+``setOnEngineRunning``
+~~~~~~~~~~~~~~~~~~~~~~
+
+Specify a closure to be called once Envoy's engine finishes its async startup and begins running.
+
+When Envoy is instantiated, its initializer returns before all of its internal configuration
+completes. This interface provides the ability to observe when Envoy has completed its setup and is
+ready to start dispatching requests. Any requests sent through Envoy before this setup completes
+will be queued automatically, and this function is typically used purely for observability.
+
+**Example**::
+
+  // Kotlin
+  builder.setOnEngineRunning { /*do something*/ }
+
+  // Swift
+  builder.setOnEngineRunning { /*do something*/ }
 
 ----------------------
 Advanced configuration

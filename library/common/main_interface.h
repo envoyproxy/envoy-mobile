@@ -28,7 +28,7 @@ extern const char* platform_filter_template;
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.
  */
-envoy_stream_t init_stream(envoy_engine_t);
+envoy_stream_t init_stream(envoy_engine_t engine);
 
 /**
  * Open an underlying HTTP stream. Note: Streams must be started before other other interaction can
@@ -37,7 +37,7 @@ envoy_stream_t init_stream(envoy_engine_t);
  * @param callbacks, the callbacks that will run the stream callbacks.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_status_t start_stream(envoy_stream_t, envoy_http_callbacks callbacks);
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks);
 
 /**
  * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
@@ -98,22 +98,41 @@ envoy_status_t set_preferred_network(envoy_network_t network);
 
 /**
  * Increment a counter with the given elements and by the given count.
+ * @param engine, the engine that owns the counter.
+ * @param elements, the string that identifies the counter to increment.
+ * @param count, the count to increment by.
  */
-void record_counter(const char* elements, uint64_t count);
+envoy_status_t record_counter(envoy_engine_t engine, const char* elements, uint64_t count);
 
 /**
- * Flush the stats sinks outside of a flushing interval.
- * Note: flushing before the engine has started will result in a no-op.
- * Note: stats flushing may not be synchronous.
- * Therefore, this function may return prior to flushing taking place.
+ * Set a gauge of a given string of elements with the given value.
+ * @param engine, the engine that owns the gauge.
+ * @param elements, the string that identifies the gauge to set value with.
+ * @param value, the value to set to the gauge.
  */
-void flush_stats();
+envoy_status_t record_gauge_set(envoy_engine_t engine, const char* elements, uint64_t value);
 
+/**
+ * Add the gauge with the given string of elements and by the given amount.
+ * @param engine, the engine that owns the gauge.
+ * @param elements, the string that identifies the gauge to add to.
+ * @param amount, the amount to add to the gauge.
+ */
+envoy_status_t record_gauge_add(envoy_engine_t engine, const char* elements, uint64_t amount);
+
+/**
+ * Subtract from the gauge with the given string of elements and by the given amount.
+ * @param engine, the engine that owns the gauge.
+ * @param elements, the string that identifies the gauge to subtract from.
+ * @param amount, amount to subtract from the gauge.
+ */
+envoy_status_t record_gauge_sub(envoy_engine_t engine, const char* elements, uint64_t amount);
 /**
  * Statically register APIs leveraging platform libraries.
  * Warning: Must be completed before any calls to run_engine().
  * @param name, identifier of the platform API
  * @param api, type-erased c struct containing function pointers and context.
+ * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t register_platform_api(const char* name, void* api);
 

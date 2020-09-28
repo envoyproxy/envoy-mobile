@@ -59,6 +59,9 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
           ASSERT(api_listener.has_value());
           http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
                                   api_listener.value());
+          if (callbacks_.on_engine_running != nullptr) {
+            callbacks_.on_engine_running(callbacks_.context);
+          }
         });
   } // mutex_
 
@@ -101,23 +104,51 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-void Engine::recordCounter(const std::string& elements, uint64_t count) {
+envoy_status_t Engine::recordCounter(const std::string& elements, uint64_t count) {
   if (server_ && client_scope_) {
     server_->dispatcher().post([this, elements, count]() -> void {
       Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(elements)})
           .add(count);
     });
+    return ENVOY_SUCCESS;
   }
+  return ENVOY_FAILURE;
 }
 
-void Engine::flushStats() {
-  // The server will be null if the post-init callback has not been completed within run().
-  // In this case, we can simply ignore the flush.
-  if (server_) {
-    // Stats must be flushed from the main thread.
-    // Dispatching should be moved after https://github.com/lyft/envoy-mobile/issues/720
-    server_->dispatcher().post([this]() -> void { server_->flushStats(); });
+envoy_status_t Engine::recordGaugeSet(const std::string& elements, uint64_t value) {
+  if (server_ && client_scope_) {
+    server_->dispatcher().post([this, elements, value]() -> void {
+      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
+                                        Stats::Gauge::ImportMode::NeverImport)
+          .set(value);
+    });
+    return ENVOY_SUCCESS;
   }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t Engine::recordGaugeAdd(const std::string& elements, uint64_t amount) {
+  if (server_ && client_scope_) {
+    server_->dispatcher().post([this, elements, amount]() -> void {
+      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
+                                        Stats::Gauge::ImportMode::NeverImport)
+          .add(amount);
+    });
+    return ENVOY_SUCCESS;
+  }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t Engine::recordGaugeSub(const std::string& elements, uint64_t amount) {
+  if (server_ && client_scope_) {
+    server_->dispatcher().post([this, elements, amount]() -> void {
+      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(elements)},
+                                        Stats::Gauge::ImportMode::NeverImport)
+          .sub(amount);
+    });
+    return ENVOY_SUCCESS;
+  }
+  return ENVOY_FAILURE;
 }
 
 Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
