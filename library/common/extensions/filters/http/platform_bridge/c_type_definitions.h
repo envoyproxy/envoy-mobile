@@ -44,3 +44,6 @@ const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusStopIteration =
 // See comment above.
 const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusResumeIteration =
     kEnvoyFilterTrailersStatusContinue - 1;
+
+const envoy_filter_resume_status_t kEnvoyFilterAsyncResumeStatusContinue = 0;
+const envoy_filter_resume_status_t kEnvoyFilterAsyncResumeStatusStopIteration = 1;

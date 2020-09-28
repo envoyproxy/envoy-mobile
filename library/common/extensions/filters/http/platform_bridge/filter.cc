@@ -2,6 +2,7 @@
 
 #include "envoy/server/filter_config.h"
 
+#include "common/buffer/buffer_impl.h"
 #include "common/common/assert.h"
 #include "common/common/utility.h"
 
@@ -314,6 +315,99 @@ PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
     pending_response_trailers_ = &trailers;
   }
   return status;
+}
+
+void PlatformBridgeFilter::onResumeDecoding() {
+  Buffer::Instance* internal_buffer = nullptr;
+  if (decoder_callbacks_->decodingBuffer()) {
+    decoder_callbacks_->modifyDecodingBuffer([&internal_buffer](Buffer::Instance& mutable_buffer) {
+      internal_buffer = &mutable_buffer;
+    });
+  }
+
+  envoy_headers* pending_headers = nullptr;
+  envoy_data* pending_data = nullptr;
+  envoy_headers* pending_trailers = nullptr;
+  if (pending_request_headers_) {
+    *pending_headers = Http::Utility::toBridgeHeaders(*pending_request_headers_);
+  }
+  if (internal_buffer) {
+    *pending_data = Buffer::Utility::copyToBridgeData(*internal_buffer);
+  }
+  if (pending_request_trailers_) {
+    *pending_trailers = Http::Utility::toBridgeHeaders(*pending_request_trailers_);
+  }
+
+  envoy_filter_resume_status result = platform_filter_.on_resume_request(pending_headers, pending_data, pending_trailers, platform_filter_.instance_context);
+  if (result.status == kEnvoyFilterAsyncResumeStatusStopIteration) {
+    return;
+  }
+  if (pending_request_headers_) {
+    PlatformBridgeFilter::replaceHeaders(*pending_request_headers_, *result.pending_headers);
+    pending_request_headers_ = nullptr;
+    free(result.pending_headers);
+  }
+  if (internal_buffer) {
+    internal_buffer->drain(internal_buffer->length());
+    internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    free(result.pending_data);
+  } else if (result.pending_data) {
+    Buffer::OwnedImpl inject_data;
+    inject_data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    decoder_callbacks_->addDecodedData(inject_data, false);
+    free(result.pending_data);
+  }
+  if (pending_request_trailers_) {
+    PlatformBridgeFilter::replaceHeaders(*pending_request_trailers_, *result.pending_trailers);
+    pending_request_trailers_ = nullptr;
+    free(result.pending_trailers);
+  }
+  decoder_callbacks_->continueDecoding();
+}
+
+void PlatformBridgeFilter::onResumeEncoding() {
+  Buffer::Instance* internal_buffer = nullptr;
+  if (encoder_callbacks_->encodingBuffer()) {
+    encoder_callbacks_->modifyEncodingBuffer([&internal_buffer](Buffer::Instance& mutable_buffer) {
+      internal_buffer = &mutable_buffer;
+    });
+  }
+
+  envoy_headers* pending_headers = nullptr;
+  envoy_data* pending_data = nullptr;
+  envoy_headers* pending_trailers = nullptr;
+  if (pending_response_headers_) {
+    *pending_headers = Http::Utility::toBridgeHeaders(*pending_response_headers_);
+  }
+  if (internal_buffer) {
+    *pending_data = Buffer::Utility::copyToBridgeData(*internal_buffer);
+  }
+  if (pending_response_trailers_) {
+    *pending_trailers = Http::Utility::toBridgeHeaders(*pending_response_trailers_);
+  }
+
+  envoy_filter_resume_status result = platform_filter_.on_resume_response(pending_headers, pending_data, pending_trailers, platform_filter_.instance_context);
+  if (pending_response_headers_) {
+    PlatformBridgeFilter::replaceHeaders(*pending_response_headers_, *result.pending_headers);
+    pending_response_headers_ = nullptr;
+    free(result.pending_headers);
+  }
+  if (internal_buffer) {
+    internal_buffer->drain(internal_buffer->length());
+    internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    free(result.pending_data);
+  } else if (result.pending_data) {
+    Buffer::OwnedImpl inject_data;
+    inject_data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    encoder_callbacks_->addEncodedData(inject_data, false);
+    free(result.pending_data);
+  }
+  if (pending_response_trailers_) {
+    PlatformBridgeFilter::replaceHeaders(*pending_response_trailers_, *result.pending_trailers);
+    pending_response_trailers_ = nullptr;
+    free(result.pending_trailers);
+  }
+  encoder_callbacks_->continueEncoding();
 }
 
 } // namespace PlatformBridge
