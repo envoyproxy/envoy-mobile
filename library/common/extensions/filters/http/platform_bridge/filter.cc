@@ -105,7 +105,7 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
 
   envoy_data in_data;
   bool already_buffering = iteration_state_ == IterationState::Stopped && internal_buffer &&
-    internal_buffer->length() > 0;
+                           internal_buffer->length() > 0;
 
   if (already_buffering) {
     // Pre-emptively buffer data to present aggregate to platform.
