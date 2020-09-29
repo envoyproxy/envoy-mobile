@@ -146,15 +146,21 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     iteration_state_ = IterationState::Stopped;
     return Http::FilterDataStatus::StopIterationNoBuffer;
 
+  // Resume previously-stopped iteration, possibly forwarding headers if iteration was stopped
+  // during an on*Headers invocation.
   case kEnvoyFilterDataStatusResumeIteration:
     RELEASE_ASSERT(iteration_state_ == IterationState::Stopped,
                    "invalid filter state: ResumeIteration may only be used when filter iteration "
                    "is stopped");
-    if (result.extra_headers) {
-      PlatformBridgeFilter::replaceHeaders(**pending_headers, *result.extra_headers);
+    // Update pending henders before resuming iteration, if needed.
+    if (result.pending_headers) {
+      PlatformBridgeFilter::replaceHeaders(**pending_headers, *result.pending_headers);
       *pending_headers = nullptr;
-      free(result.extra_headers);
+      free(result.pending_headers);
     }
+    // We've already moved data into the internal buffer and presented it to the platform. Replace
+    // the internal buffer with any modifications returned by the platform filter prior to
+    // resumption.
     internal_buffer->drain(internal_buffer->length());
     internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
     return Http::FilterDataStatus::Continue;
@@ -190,20 +196,26 @@ PlatformBridgeFilter::onTrailers(Http::HeaderMap& trailers, Buffer::Instance* in
     iteration_state_ = IterationState::Stopped;
     return Http::FilterTrailersStatus::StopIteration;
 
+  // Resume previously-stopped iteration, possibly forwarding headers and data if iteration was
+  // stopped during an on*Headers or on*Data invocation.
   case kEnvoyFilterTrailersStatusResumeIteration:
     RELEASE_ASSERT(iteration_state_ == IterationState::Stopped,
                    "invalid filter state: ResumeIteration may only be used when filter iteration "
                    "is stopped");
-    if (result.extra_headers) {
-      PlatformBridgeFilter::replaceHeaders(**pending_headers, *result.extra_headers);
+    // Update pending henders before resuming iteration, if needed.
+    if (result.pending_headers) {
+      PlatformBridgeFilter::replaceHeaders(**pending_headers, *result.pending_headers);
       *pending_headers = nullptr;
-      free(result.extra_headers);
+      free(result.pending_headers);
     }
-    if (result.extra_data) {
+    // We've already moved data into the internal buffer and presented it to the platform. Replace
+    // the internal buffer with any modifications returned by the platform filter prior to
+    // resumption.
+    if (result.pending_data) {
       internal_buffer->drain(internal_buffer->length());
       internal_buffer->addBufferFragment(
-          *Buffer::BridgeFragment::createBridgeFragment(*result.extra_data));
-      free(result.extra_data);
+          *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+      free(result.pending_data);
     }
     PlatformBridgeFilter::replaceHeaders(trailers, result.trailers);
     return Http::FilterTrailersStatus::Continue;

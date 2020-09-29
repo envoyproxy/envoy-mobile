@@ -47,7 +47,7 @@ extern const envoy_filter_data_status_t kEnvoyFilterDataStatusResumeIteration;
 typedef struct {
   envoy_filter_data_status_t status;
   envoy_data data;
-  envoy_headers* extra_headers;
+  envoy_headers* pending_headers;
 } envoy_filter_data_status;
 
 /**
@@ -64,8 +64,8 @@ extern const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusResumeIter
 typedef struct {
   envoy_filter_trailers_status_t status;
   envoy_headers trailers;
-  envoy_headers* extra_headers;
-  envoy_data* extra_data;
+  envoy_headers* pending_headers;
+  envoy_data* pending_data;
 } envoy_filter_trailers_status;
 
 #ifdef __cplusplus
