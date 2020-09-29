@@ -22,6 +22,8 @@ extern const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusContinue;
 extern const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusStopIteration;
 extern const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusContinueAndEndStream;
 extern const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusStopAllIterationAndBuffer;
+// Note this return status is unique to platform filters and used only to resume iteration after
+// it has been previously stopped.
 extern const envoy_filter_headers_status_t kEnvoyFilterHeadersStatusResumeIteration;
 
 /**
@@ -39,6 +41,8 @@ typedef int envoy_filter_data_status_t;
 extern const envoy_filter_data_status_t kEnvoyFilterDataStatusContinue;
 extern const envoy_filter_data_status_t kEnvoyFilterDataStatusStopIterationAndBuffer;
 extern const envoy_filter_data_status_t kEnvoyFilterDataStatusStopIterationNoBuffer;
+// Note this return status is unique to platform filters and used only to resume iteration after
+// it has been previously stopped.
 extern const envoy_filter_data_status_t kEnvoyFilterDataStatusResumeIteration;
 
 /**
@@ -56,6 +60,8 @@ typedef struct {
 typedef int envoy_filter_trailers_status_t;
 extern const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusContinue;
 extern const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusStopIteration;
+// Note this return status is unique to platform filters and used only to resume iteration after
+// it has been previously stopped.
 extern const envoy_filter_trailers_status_t kEnvoyFilterTrailersStatusResumeIteration;
 
 /**

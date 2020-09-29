@@ -33,6 +33,17 @@ enum class IterationState { Ongoing, Stopped };
 
 /**
  * Harness to bridge Envoy filter invocations up to the platform layer.
+ *
+ * This filter enables filter implementations to be written in high-level platform-specific
+ * languages and run within the Envoy filter chain. To mirror platform API conventions, the
+ * semantic structure of platform filters differs slightly from Envoy filters. Platform
+ * filter invocations (on-headers, on-data, etc.) receive *immutable* entities as parameters
+ * and are expected to return compound results that include both the filter status, as well
+ * as any desired modifications to the HTTP entity. Additionally, when platform filters
+ * stop iteration, they _must_ use a new ResumeIteration status to resume iteration
+ * at a later point. The Continue status is only valid if iteration is already ongoing.
+ *
+ * For more information on implementing platform filters, see the docs.
  */
 class PlatformBridgeFilter final : public Http::PassThroughFilter,
                                    Logger::Loggable<Logger::Id::filter> {
