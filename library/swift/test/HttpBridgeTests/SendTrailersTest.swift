@@ -62,10 +62,7 @@ final class SendTrailersTests: XCTestCase {
                                                authority: "example.com", path: "/test")
       .addUpstreamHttpProtocol(.http2)
       .build()
-    guard let body = "match_me".data(using: .utf8) else {
-      XCTFail("unable to build body")
-      return
-    }
+    let body = try XCTUnwrap("match_me".data(using: .utf8))
     let requestTrailers = RequestTrailersBuilder()
       .add(name: "test-trailer", value: "test.code")
       .build()

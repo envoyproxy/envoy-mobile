@@ -61,10 +61,7 @@ final class SendDataTests: XCTestCase {
                                                authority: "example.com", path: "/test")
       .addUpstreamHttpProtocol(.http2)
       .build()
-    guard let body = "match_me".data(using: .utf8) else {
-      XCTFail("unable to build body")
-      return
-    }
+    let body = try XCTUnwrap("match_me".data(using: .utf8))
 
     client
       .newStreamPrototype()
