@@ -163,7 +163,8 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     // resumption.
     if (internal_buffer) {
       internal_buffer->drain(internal_buffer->length());
-      internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+      internal_buffer->addBufferFragment(
+          *Buffer::BridgeFragment::createBridgeFragment(result.data));
     } else {
       data.drain(data.length());
       data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
