@@ -49,7 +49,6 @@ final class ReceiveDataTests: XCTestCase {
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
-    let expectation = self.expectation(description: "Run called with expected data")
     let client = try EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .addFilter(factory: DemoFilter.init)
@@ -60,19 +59,24 @@ final class ReceiveDataTests: XCTestCase {
                                                authority: "example.com", path: "/test")
       .addUpstreamHttpProtocol(.http2)
       .build()
+
+    let headersExpectation = self.expectation(description: "Run called with expected headers")
+    let dataExpectation = self.expectation(description: "Run called with expected data")
+
     client
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, _ in
          XCTAssertEqual(200, responseHeaders.httpStatus)
+         headersExpectation.fulfill()
       }
       .setOnResponseData { data, _ in
         let responseBody = String(data: data, encoding: .utf8)
         XCTAssertEqual("response_body", responseBody)
-        expectation.fulfill()
+        dataExpectation.fulfill()
       }
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [headersExpectation, dataExpectation], timeout: 1), .completed)
   }
 }
