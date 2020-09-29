@@ -8,4 +8,4 @@ multiple engine support (https://github.com/lyft/envoy-mobile/issues/332) lands,
 tests can be collapsed to the same suite/target.
 
 TODO: setOnTrailers is not tested as the neither the direct_response pathway, nor the router
-allow sending trailers programatically. Add tests once possible.
+allow sending trailers programmatically. Add tests once possible.
