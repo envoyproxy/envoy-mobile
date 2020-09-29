@@ -117,9 +117,8 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
 
   switch (result.status) {
   case kEnvoyFilterDataStatusContinue:
-    if (iteration_state_ == IterationState::Stopped) {
-      PANIC("invalid filter state: filter iteration must be resumed with ResumeIteration");
-    }
+    RELEASE_ASSERT(iteration_state_ != IterationState::Stopped,
+                   "invalid filter state: filter iteration must be resumed with ResumeIteration");
     data.drain(data.length());
     data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
     return Http::FilterDataStatus::Continue;
@@ -148,10 +147,9 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     return Http::FilterDataStatus::StopIterationNoBuffer;
 
   case kEnvoyFilterDataStatusResumeIteration:
-    if (iteration_state_ != IterationState::Stopped) {
-      PANIC("invalid filter state: ResumeIteration  may only be used when filter iteration is "
-            "stopped");
-    }
+    RELEASE_ASSERT(iteration_state_ == IterationState::Stopped,
+                   "invalid filter state: ResumeIteration may only be used when filter iteration "
+                   "is stopped");
     if (result.extra_headers) {
       PlatformBridgeFilter::replaceHeaders(**pending_headers, *result.extra_headers);
       *pending_headers = nullptr;
@@ -182,10 +180,9 @@ PlatformBridgeFilter::onTrailers(Http::HeaderMap& trailers, Buffer::Instance* in
 
   switch (result.status) {
   case kEnvoyFilterTrailersStatusContinue:
-    if (iteration_state_ == IterationState::Stopped) {
-      PANIC("invalid filter state: ResumeIteration  may only be used when filter iteration is "
-            "stopped");
-    }
+    RELEASE_ASSERT(iteration_state_ != IterationState::Stopped,
+                   "invalid filter state: ResumeIteration may only be used when filter iteration "
+                   "is stopped");
     PlatformBridgeFilter::replaceHeaders(trailers, result.trailers);
     return Http::FilterTrailersStatus::Continue;
 
@@ -194,10 +191,9 @@ PlatformBridgeFilter::onTrailers(Http::HeaderMap& trailers, Buffer::Instance* in
     return Http::FilterTrailersStatus::StopIteration;
 
   case kEnvoyFilterTrailersStatusResumeIteration:
-    if (iteration_state_ != IterationState::Stopped) {
-      PANIC("invalid filter state: ResumeIteration  may only be used when filter iteration is "
-            "stopped");
-    }
+    RELEASE_ASSERT(iteration_state_ == IterationState::Stopped,
+                   "invalid filter state: ResumeIteration may only be used when filter iteration "
+                   "is stopped");
     if (result.extra_headers) {
       PlatformBridgeFilter::replaceHeaders(**pending_headers, *result.extra_headers);
       *pending_headers = nullptr;
