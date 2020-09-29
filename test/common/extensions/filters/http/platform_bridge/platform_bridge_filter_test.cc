@@ -20,6 +20,28 @@ std::string to_string(envoy_data data) {
   return std::string(reinterpret_cast<const char*>(data.bytes), data.length);
 }
 
+envoy_data make_envoy_data(const std::string& s) {
+  return copy_envoy_data(s.size(), reinterpret_cast<const uint8_t*>(s.c_str()));
+}
+
+envoy_headers make_envoy_headers(std::vector<std::pair<std::string, std::string>> pairs) {
+  envoy_header* headers =
+      static_cast<envoy_header*>(safe_malloc(sizeof(envoy_header) * pairs.size()));
+  envoy_headers new_headers;
+  new_headers.length = 0;
+  new_headers.headers = headers;
+
+  for (const auto& pair : pairs) {
+    envoy_data key = make_envoy_data(pair.first);
+    envoy_data value = make_envoy_data(pair.second);
+
+    new_headers.headers[new_headers.length] = {key, value};
+    new_headers.length++;
+  }
+
+  return new_headers;
+}
+
 class PlatformBridgeFilterTest : public testing::Test {
 public:
   void setUpFilter(std::string&& yaml, envoy_http_filter* platform_filter) {
@@ -149,6 +171,56 @@ platform_filter_name: BasicContinueOnRequestHeaders
 
   EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->decodeHeaders(request_headers, true));
   EXPECT_EQ(invocations.on_request_headers_calls, 1);
+}
+
+TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnData) {
+  envoy_http_filter platform_filter;
+  filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0};
+  platform_filter.static_context = &invocations;
+  platform_filter.init_filter = [](const void* context) -> const void* {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->init_filter_calls++;
+    return context;
+  };
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          const void* context) -> envoy_filter_headers_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    EXPECT_EQ(c_headers.length, 1);
+    EXPECT_EQ(to_string(c_headers.headers[0].key), ":authority");
+    EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
+    EXPECT_FALSE(end_stream);
+    invocations->on_request_headers_calls++;
+    return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
+  };
+  platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
+                                       const void* context) -> envoy_filter_data_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    EXPECT_EQ(to_string(c_data), "request body");
+    EXPECT_TRUE(end_stream);
+    invocations->on_request_data_calls++;
+    envoy_headers* modified_headers = static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
+    *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"content-length", "12"}});
+    return {kEnvoyFilterDataStatusResumeIteration, c_data, modified_headers};
+  };
+
+  setUpFilter(R"EOF(
+platform_filter_name: StopOnRequestHeadersThenResumeOnData
+)EOF",
+              &platform_filter);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
+
+  Http::TestRequestHeaderMapImpl request_headers{{":authority", "test.code"}};
+
+  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration, filter_->decodeHeaders(request_headers, false));
+  EXPECT_EQ(invocations.on_request_headers_calls, 1);
+
+  Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
+
+  EXPECT_EQ(Http::FilterDataStatus::Continue, filter_->decodeData(request_data, true));
+  EXPECT_EQ(invocations.on_request_data_calls, 1);
+
+  EXPECT_TRUE(request_headers.get(Http::LowerCaseString("content-length")));
+  EXPECT_EQ(request_headers.get(Http::LowerCaseString("content-length"))->value().getStringView(), "12");
 }
 
 TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestData) {
@@ -398,6 +470,56 @@ platform_filter_name: BasicContinueOnResponseHeaders
 
   EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->encodeHeaders(response_headers, true));
   EXPECT_EQ(invocations.on_response_headers_calls, 1);
+}
+
+TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnData) {
+  envoy_http_filter platform_filter;
+  filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0};
+  platform_filter.static_context = &invocations;
+  platform_filter.init_filter = [](const void* context) -> const void* {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->init_filter_calls++;
+    return context;
+  };
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                          const void* context) -> envoy_filter_headers_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    EXPECT_EQ(c_headers.length, 1);
+    EXPECT_EQ(to_string(c_headers.headers[0].key), ":status");
+    EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
+    EXPECT_FALSE(end_stream);
+    invocations->on_response_headers_calls++;
+    return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
+  };
+  platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
+                                       const void* context) -> envoy_filter_data_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    EXPECT_EQ(to_string(c_data), "response body");
+    EXPECT_TRUE(end_stream);
+    invocations->on_response_data_calls++;
+    envoy_headers* modified_headers = static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
+    *modified_headers = make_envoy_headers({{":status", "test.code"}, {"content-length", "13"}});
+    return {kEnvoyFilterDataStatusResumeIteration, c_data, modified_headers};
+  };
+
+  setUpFilter(R"EOF(
+platform_filter_name: StopOnResponseHeadersThenResumeOnData
+)EOF",
+              &platform_filter);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
+
+  Http::TestResponseHeaderMapImpl response_headers{{":status", "test.code"}};
+
+  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration, filter_->encodeHeaders(response_headers, false));
+  EXPECT_EQ(invocations.on_response_headers_calls, 1);
+
+  Buffer::OwnedImpl response_data = Buffer::OwnedImpl("response body");
+
+  EXPECT_EQ(Http::FilterDataStatus::Continue, filter_->encodeData(response_data, true));
+  EXPECT_EQ(invocations.on_response_data_calls, 1);
+
+  EXPECT_TRUE(response_headers.get(Http::LowerCaseString("content-length")));
+  EXPECT_EQ(response_headers.get(Http::LowerCaseString("content-length"))->value().getStringView(), "13");
 }
 
 TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseData) {

@@ -161,8 +161,13 @@ Http::FilterDataStatus PlatformBridgeFilter::onData(Buffer::Instance& data, bool
     // We've already moved data into the internal buffer and presented it to the platform. Replace
     // the internal buffer with any modifications returned by the platform filter prior to
     // resumption.
-    internal_buffer->drain(internal_buffer->length());
-    internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+    if (internal_buffer) {
+      internal_buffer->drain(internal_buffer->length());
+      internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+    } else {
+      data.drain(data.length());
+      data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+    }
     return Http::FilterDataStatus::Continue;
 
   default:
