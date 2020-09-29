@@ -73,6 +73,6 @@ final class SendDataTests: XCTestCase {
       .sendHeaders(requestHeaders, endStream: false)
       .close(data: body)
 
-    self.waitForExpectations(timeout: 1)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
   }
 }

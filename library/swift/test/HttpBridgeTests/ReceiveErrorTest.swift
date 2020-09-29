@@ -59,11 +59,13 @@ final class ReceiveErrorTests: XCTestCase {
       .build()
     client
       .newStreamPrototype()
+      // The unmatched expecation will cause a local reply which gets translated in Envoy Mobile to
+      // an error.
       .setOnError { _ in
          expectation.fulfill()
       }
       .start()
       .sendHeaders(requestHeaders, endStream: true)
-    self.waitForExpectations(timeout: 1)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
   }
 }

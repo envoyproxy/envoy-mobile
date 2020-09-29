@@ -78,6 +78,6 @@ final class SendTrailersTests: XCTestCase {
       .sendData(body)
       .close(trailers: requestTrailers)
 
-    self.waitForExpectations(timeout: 1)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
   }
 }

@@ -66,13 +66,13 @@ final class ReceiveDataTests: XCTestCase {
          XCTAssertEqual(200, responseHeaders.httpStatus)
       }
       .setOnResponseData { data, _ in
-        let responseBody = String(decoding: data, as: UTF8.self)
+        let responseBody = String(data: data, encoding: .utf8)
         XCTAssertEqual("response_body", responseBody)
         expectation.fulfill()
       }
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    self.waitForExpectations(timeout: 1)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
   }
 }

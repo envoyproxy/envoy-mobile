@@ -52,6 +52,6 @@ final class CancelStreamTests: XCTestCase {
       .start()
       .cancel()
 
-    self.waitForExpectations(timeout: 1)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
   }
 }
