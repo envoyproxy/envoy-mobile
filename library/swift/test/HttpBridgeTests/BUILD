@@ -16,8 +16,8 @@ envoy_mobile_swift_test(
 envoy_mobile_swift_test(
     name = "receive_data_test",
     srcs = [
-        "ReceiveDataTest.swift",
         "DemoFilter.swift",
+        "ReceiveDataTest.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",
@@ -27,8 +27,8 @@ envoy_mobile_swift_test(
 envoy_mobile_swift_test(
     name = "receive_error_test",
     srcs = [
-        "ReceiveErrorTest.swift",
         "DemoFilter.swift",
+        "ReceiveErrorTest.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",
@@ -38,8 +38,8 @@ envoy_mobile_swift_test(
 envoy_mobile_swift_test(
     name = "send_data_test",
     srcs = [
-        "SendDataTest.swift",
         "DemoFilter.swift",
+        "SendDataTest.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",
@@ -49,8 +49,8 @@ envoy_mobile_swift_test(
 envoy_mobile_swift_test(
     name = "send_headers_test",
     srcs = [
-        "SendHeadersTest.swift",
         "DemoFilter.swift",
+        "SendHeadersTest.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",
@@ -60,8 +60,8 @@ envoy_mobile_swift_test(
 envoy_mobile_swift_test(
     name = "send_trailers_test",
     srcs = [
-        "SendTrailersTest.swift",
         "DemoFilter.swift",
+        "SendTrailersTest.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",
