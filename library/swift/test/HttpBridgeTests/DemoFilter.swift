@@ -11,8 +11,6 @@ struct DemoFilter: ResponseFilter {
     return .continue(headers: builder.build())
   }
 
-  func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks) {}
-
   func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
     // TODO(goaway): Can remove this when we have better integration coverage in place.
     NSLog("Saw data chunk of length \(body.count)")
