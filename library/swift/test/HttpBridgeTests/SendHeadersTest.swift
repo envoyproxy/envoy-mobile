@@ -48,7 +48,6 @@ final class SendHeadersTests: XCTestCase {
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
     let expectation = self.expectation(description: "Run called with expected http status")
-    let q = DispatchQueue(label: "test.envoymobile")
     let client = try EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .addFilter(factory: DemoFilter.init)
@@ -65,7 +64,7 @@ final class SendHeadersTests: XCTestCase {
          XCTAssertEqual(200, responseHeaders.httpStatus)
          expectation.fulfill()
       }
-      .start(queue: q)
+      .start()
       .sendHeaders(requestHeaders, endStream: true)
 
     self.waitForExpectations(timeout: 1)

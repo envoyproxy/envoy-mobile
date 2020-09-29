@@ -47,7 +47,6 @@ final class ReceiveErrorTests: XCTestCase {
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
     let expectation = self.expectation(description: "Run called with expected error")
-    let q = DispatchQueue(label: "test.envoymobile")
     let client = try EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .addFilter(factory: DemoFilter.init)
@@ -63,7 +62,7 @@ final class ReceiveErrorTests: XCTestCase {
       .setOnError { _ in
          expectation.fulfill()
       }
-      .start(queue: q)
+      .start()
       .sendHeaders(requestHeaders, endStream: true)
     self.waitForExpectations(timeout: 1)
   }
