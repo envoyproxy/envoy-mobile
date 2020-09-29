@@ -15,7 +15,7 @@ static inline envoy_data toNativeData(NSData *data) {
 
 static inline envoy_data *toNativeDataPtr(NSData *data) {
   if (data == nil) {
-    return nil;
+    return NULL;
   }
 
   envoy_data *ret = (envoy_data *)safe_malloc(sizeof(envoy_data));
