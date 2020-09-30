@@ -77,7 +77,8 @@ final class ReceiveDataTests: XCTestCase {
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    XCTAssertEqual(XCTWaiter.wait(for: [headersExpectation, dataExpectation], timeout: 1),
+    XCTAssertEqual(XCTWaiter.wait(for: [headersExpectation, dataExpectation], timeout: 1,
+                                  enforceOrder: true),
                    .completed)
   }
 }
