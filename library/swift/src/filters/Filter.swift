@@ -105,5 +105,50 @@ extension EnvoyHTTPFilter {
         }
       }
     }
+
+    if let asyncRequestFilter = filter as? AsyncRequestFilter {
+      self.setRequestFilterCallbacks = { callbacks in
+        asyncRequestFilter.setRequstFilterCallbacks(callbacks)
+      }
+
+      self.onResumeRequest = { envoyHeaders, data, envoyTrailers, endStream in
+        let result = asyncRequestFilter.onResumeRequest(
+          headers: envoyHeaders.flatMap(RequestHeaders.init),
+          data: data,
+          trailers: envoyTrailers.flatMap(RequestTrailers.init),
+          endStream: endStream)
+        switch result {
+        case .resumeIteration(let headers, let data, let trailers):
+          return [
+            kEnvoyFilterResumeStatusResumeIteration,
+            headers?.headers as Any,
+            data as Any,
+            trailers?.headers as Any,
+          ]
+        }
+      }
+
+    if let asyncResponseFilter = filter as? AsyncResponseFilter {
+      self.setResponseFilterCallbacks = { callbacks in
+        asyncResponseFilter.setRequstFilterCallbacks(callbacks)
+      }
+
+      self.onResumeResponse = { envoyHeaders, data, envoyTrailers, endStream in
+        let result = asyncResponseFilter.onResumeResponse(
+          headers: envoyHeaders.flatMap(ResponseHeaders.init),
+          data: data,
+          trailers: envoyTrailers.flatMap(ResponseTrailers.init),
+          endStream: endStream)
+        switch result {
+        case .resumeIteration(let headers, let data, let trailers):
+          return [
+            kEnvoyFilterResumeStatusResumeIteration,
+            headers?.headers as Any,
+            data as Any,
+            trailers?.headers as Any,
+          ]
+        }
+      }
+    }
   }
 }

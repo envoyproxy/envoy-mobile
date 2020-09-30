@@ -74,6 +74,11 @@ extern const int kEnvoyFilterTrailersStatusContinue;
 extern const int kEnvoyFilterTrailersStatusStopIteration;
 extern const int kEnvoyFilterTrailersStatusResumeIteration;
 
+/// Return codes for on-resume filter invocations. These are unique to platform filters,
+/// and used exclusively after an asynchronous request to resume iteration via callbacks.
+extern const int kEnvoyFilterResumeStatusStopIteration;
+extern const int kEnvoyFilterResumeStatusResumeIteration;
+
 @interface EnvoyHTTPFilter : NSObject
 
 @property (nonatomic, copy) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
@@ -87,6 +92,14 @@ extern const int kEnvoyFilterTrailersStatusResumeIteration;
 @property (nonatomic, copy) NSArray * (^onResponseData)(NSData *data, BOOL endStream);
 
 @property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
+
+@property (nonatomic, copy) void (^setRequestFilterCallbacks)(EnvoyRequestFilterCallbacks *callbacks);
+
+@property (nonatomic, copy) NSArray * (^onResumeRequest)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers);
+
+@property (nonatomic, copy) void (^setResponseFilterCallbacks)(EnvoyResponseFilterCallbacks *callbacks);
+
+@property (nonatomic, copy) NSArray * (^onResumeResponse)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers);
 
 @end
 
