@@ -190,6 +190,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnData) {
     EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
     EXPECT_FALSE(end_stream);
     invocations->on_request_headers_calls++;
+    release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
@@ -387,6 +388,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnData)
     EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
     EXPECT_FALSE(end_stream);
     invocations->on_request_headers_calls++;
+    release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
@@ -541,6 +543,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnTrail
     EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
     EXPECT_FALSE(end_stream);
     invocations->on_request_headers_calls++;
+    release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
@@ -672,6 +675,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnData) {
     EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
     EXPECT_FALSE(end_stream);
     invocations->on_response_headers_calls++;
+    release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
@@ -869,6 +873,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnData
     EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
     EXPECT_FALSE(end_stream);
     invocations->on_response_headers_calls++;
+    release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
@@ -1023,6 +1028,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnTrai
     EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
     EXPECT_FALSE(end_stream);
     invocations->on_response_headers_calls++;
+    release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
