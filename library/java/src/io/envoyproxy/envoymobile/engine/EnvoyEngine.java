@@ -51,7 +51,7 @@ public interface EnvoyEngine {
    * @param value Value to set to the gauge.
    * @return A status indicating if the action was successful.
    */
-  int recordGaugeSet(String elements, int vaule);
+  int recordGaugeSet(String elements, int value);
 
   /**
    * Add the gauge with the given string of elements and by the given amount.

@@ -2,7 +2,7 @@ package io.envoyproxy.envoymobile
 
 /** A time series gauge. */
 interface Gauge {
-  
+
   /** Set the gauge by the given value. */
   fun set(value: Int)
 

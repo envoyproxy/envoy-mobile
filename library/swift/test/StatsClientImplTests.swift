@@ -95,5 +95,4 @@ final class StatsClientImplTests: XCTestCase {
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualAmount, 5)
   }
-
 }
