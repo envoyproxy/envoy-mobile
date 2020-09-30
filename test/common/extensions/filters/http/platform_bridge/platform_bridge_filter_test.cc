@@ -418,7 +418,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnData)
       envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
       envoy_headers* modified_headers =
           static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-      *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"content-length", "1"}});
+      *modified_headers =
+          make_envoy_headers({{":authority", "test.code"}, {"content-length", "1"}});
 
       return_status.status = kEnvoyFilterDataStatusResumeIteration;
       return_status.data = final_data;
