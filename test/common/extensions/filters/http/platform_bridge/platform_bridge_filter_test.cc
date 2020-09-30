@@ -323,21 +323,29 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferThenResumeOnRequestData) {
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[2] = {"A", "AB"};
+    envoy_filter_data_status return_status;
 
-    Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
-    envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
+    if (invocations->on_request_data_calls == 0) {
+      EXPECT_EQ(to_string(c_data), "A");
+      EXPECT_FALSE(end_stream);
 
-    envoy_filter_data_status return_status[2] = {
-        {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr},
-        {kEnvoyFilterDataStatusResumeIteration, final_data, nullptr},
-    };
+      return_status.status = kEnvoyFilterDataStatusStopIterationAndBuffer;
+      return_status.data = envoy_nodata;
+      return_status.pending_headers = nullptr;
+    } else {
+      EXPECT_EQ(to_string(c_data), "AB");
+      EXPECT_FALSE(end_stream);
+      Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
+      envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
 
-    EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls]);
-    EXPECT_FALSE(end_stream);
+      return_status.status = kEnvoyFilterDataStatusResumeIteration;
+      return_status.data = final_data;
+      return_status.pending_headers = nullptr;
+    }
+
+    invocations->on_request_data_calls++;
     c_data.release(c_data.context);
-
-    return return_status[invocations->on_request_data_calls++];
+    return return_status;
   };
 
   Buffer::OwnedImpl decoding_buffer;
@@ -394,24 +402,32 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnData)
   platform_filter.on_request_data = [](envoy_data c_data, bool end_stream,
                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[2] = {"A", "AB"};
+    envoy_filter_data_status return_status;
 
-    Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
-    envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
-    envoy_headers* modified_headers =
-        static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"content-length", "1"}});
+    if (invocations->on_request_data_calls == 0) {
+      EXPECT_EQ(to_string(c_data), "A");
+      EXPECT_FALSE(end_stream);
 
-    envoy_filter_data_status return_status[2] = {
-        {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr},
-        {kEnvoyFilterDataStatusResumeIteration, final_data, modified_headers},
-    };
+      return_status.status = kEnvoyFilterDataStatusStopIterationAndBuffer;
+      return_status.data = envoy_nodata;
+      return_status.pending_headers = nullptr;
+    } else {
+      EXPECT_EQ(to_string(c_data), "AB");
+      EXPECT_TRUE(end_stream);
+      Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
+      envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
+      envoy_headers* modified_headers =
+          static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
+      *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"content-length", "1"}});
 
-    EXPECT_EQ(to_string(c_data), expected_data[invocations->on_request_data_calls]);
-    EXPECT_EQ(end_stream, invocations->on_request_data_calls == 1); // true on second call
+      return_status.status = kEnvoyFilterDataStatusResumeIteration;
+      return_status.data = final_data;
+      return_status.pending_headers = modified_headers;
+    }
+
+    invocations->on_request_data_calls++;
     c_data.release(c_data.context);
-
-    return return_status[invocations->on_request_data_calls++];
+    return return_status;
   };
 
   Buffer::OwnedImpl decoding_buffer;
@@ -808,21 +824,29 @@ TEST_F(PlatformBridgeFilterTest, StopAndBufferThenResumeOnResponseData) {
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
                                         const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[2] = {"A", "AB"};
+    envoy_filter_data_status return_status;
 
-    Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
-    envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
+    if (invocations->on_response_data_calls == 0) {
+      EXPECT_EQ(to_string(c_data), "A");
+      EXPECT_FALSE(end_stream);
 
-    envoy_filter_data_status return_status[2] = {
-        {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr},
-        {kEnvoyFilterDataStatusResumeIteration, final_data, nullptr},
-    };
+      return_status.status = kEnvoyFilterDataStatusStopIterationAndBuffer;
+      return_status.data = envoy_nodata;
+      return_status.pending_headers = nullptr;
+    } else {
+      EXPECT_EQ(to_string(c_data), "AB");
+      EXPECT_FALSE(end_stream);
+      Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
+      envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
 
-    EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls]);
-    EXPECT_FALSE(end_stream);
+      return_status.status = kEnvoyFilterDataStatusResumeIteration;
+      return_status.data = final_data;
+      return_status.pending_headers = nullptr;
+    }
+
+    invocations->on_response_data_calls++;
     c_data.release(c_data.context);
-
-    return return_status[invocations->on_response_data_calls++];
+    return return_status;
   };
 
   Buffer::OwnedImpl encoding_buffer;
@@ -879,24 +903,32 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnData
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
                                         const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
-    std::string expected_data[2] = {"A", "AB"};
+    envoy_filter_data_status return_status;
 
-    Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
-    envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
-    envoy_headers* modified_headers =
-        static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_headers = make_envoy_headers({{":status", "test.code"}, {"content-length", "1"}});
+    if (invocations->on_response_data_calls == 0) {
+      EXPECT_EQ(to_string(c_data), "A");
+      EXPECT_FALSE(end_stream);
 
-    envoy_filter_data_status return_status[2] = {
-        {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr},
-        {kEnvoyFilterDataStatusResumeIteration, final_data, modified_headers},
-    };
+      return_status.status = kEnvoyFilterDataStatusStopIterationAndBuffer;
+      return_status.data = envoy_nodata;
+      return_status.pending_headers = nullptr;
+    } else {
+      EXPECT_EQ(to_string(c_data), "AB");
+      EXPECT_TRUE(end_stream);
+      Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
+      envoy_data final_data = Buffer::Utility::toBridgeData(final_buffer);
+      envoy_headers* modified_headers =
+          static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
+      *modified_headers = make_envoy_headers({{":status", "test.code"}, {"content-length", "1"}});
 
-    EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls]);
-    EXPECT_EQ(end_stream, invocations->on_response_data_calls == 1); // true on second call
+      return_status.status = kEnvoyFilterDataStatusResumeIteration;
+      return_status.data = final_data;
+      return_status.pending_headers = modified_headers;
+    }
+
+    invocations->on_response_data_calls++;
     c_data.release(c_data.context);
-
-    return return_status[invocations->on_response_data_calls++];
+    return return_status;
   };
 
   Buffer::OwnedImpl encoding_buffer;
