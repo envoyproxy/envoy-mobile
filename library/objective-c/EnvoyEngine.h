@@ -79,6 +79,9 @@ extern const int kEnvoyFilterTrailersStatusResumeIteration;
 extern const int kEnvoyFilterResumeStatusStopIteration;
 extern const int kEnvoyFilterResumeStatusResumeIteration;
 
+@class EnvoyRequestFilterCallbacks;
+@class EnvoyResponseFilterCallbacks;
+
 @interface EnvoyHTTPFilter : NSObject
 
 @property (nonatomic, copy) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
@@ -95,11 +98,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @property (nonatomic, copy) void (^setRequestFilterCallbacks)(EnvoyRequestFilterCallbacks *callbacks);
 
-@property (nonatomic, copy) NSArray * (^onResumeRequest)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers);
+@property (nonatomic, copy) NSArray * (^onResumeRequest)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers, BOOL endStream);
 
 @property (nonatomic, copy) void (^setResponseFilterCallbacks)(EnvoyResponseFilterCallbacks *callbacks);
 
-@property (nonatomic, copy) NSArray * (^onResumeResponse)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers);
+@property (nonatomic, copy) NSArray * (^onResumeResponse)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers, BOOL endStream);
 
 @end
 
@@ -110,6 +113,22 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *filterName;
 
 @property (nonatomic, copy) EnvoyHTTPFilter * (^create)();
+
+@end
+
+#pragma mark - EnvoyRequestFilterCallbacks
+
+@interface EnvoyRequestFilterCallbacks : NSObject
+
+- (void)resumeRequest;
+
+@end
+
+#pragma mark - EnvoyResponseFilterCallbacks
+
+@interface EnvoyResponseFilterCallbacks : NSObject
+
+- (void)resumeResponse;
 
 @end
 

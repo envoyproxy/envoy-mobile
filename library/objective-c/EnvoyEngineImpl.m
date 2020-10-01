@@ -157,15 +157,16 @@ static envoy_filter_resume_status ios_http_filter_on_resume_request(envoy_header
                                         /*pending_headers*/ headers,
                                         /*pending_data*/ data,
                                         /*pending_trailers*/ trailers};
+  }
 
-  EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(headers) : nil;
-  NSData *pendingData = data ? to_ios_data(data) : nil;
-  EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(trailers) : nil;
+  EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
+  NSData *pendingData = data ? to_ios_data(*data) : nil;
+  EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
   NSArray *result = filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers, end_stream);
   return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
                                       /*pending_headers*/ toNativeHeadersPtr(result[1]),
                                       /*pending_data*/ toNativeDataPtr(result[2]),
-                                      /*pending_trailers*/ toNativeTrailersPtr(result[3])};
+                                      /*pending_trailers*/ toNativeHeadersPtr(result[3])};
 }
 
 static void ios_http_filter_release(const void *context) {
