@@ -91,7 +91,7 @@ static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data
   envoy_headers *pending_headers = toNativeHeadersPtr(result.count == 3 ? result[2] : nil);
   return (envoy_filter_data_status){/*status*/ [result[0] intValue],
                                     /*data*/ toNativeData(result[1]),
-                                    /*pending_headers*/ pending_headers;
+                                    /*pending_headers*/ pending_headers};
 }
 
 static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers,
