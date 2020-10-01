@@ -168,7 +168,7 @@ class JniLibrary {
    *
    * @param engine,  handle to the engine that owns the gauge.
    * @param elements Elements of the gauge stat.
-   * @param value Amount to set to the gauge.
+   * @param value Value to set to the gauge.
    * @return A status indicating if the action was successful.
    */
   protected static native int recordGaugeSet(long engine, String elements, int value);

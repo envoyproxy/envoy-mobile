@@ -90,7 +90,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * Set a gauge of a given string of elements with the given value.
    *
    * @param elements Elements of the gauge stat.
-   * @param value Amount to set to the gauge.
+   * @param value Value to set to the gauge.
    * @return A status indicating if the action was successful.
    */
   @Override
