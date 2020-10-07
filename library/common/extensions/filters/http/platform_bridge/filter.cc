@@ -268,7 +268,7 @@ Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, 
   }
 
   auto status = onData(data, end_stream, internal_buffer, &pending_request_headers_,
-                platform_filter_.on_request_data);
+                       platform_filter_.on_request_data);
   request_complete_ = end_stream;
   return status;
 }
@@ -283,7 +283,7 @@ Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, 
   }
 
   auto status = onData(data, end_stream, internal_buffer, &pending_response_headers_,
-                platform_filter_.on_response_data);
+                       platform_filter_.on_response_data);
   response_complete_ = end_stream;
   return status;
 }
@@ -346,7 +346,9 @@ void PlatformBridgeFilter::onResumeDecoding() {
     *pending_trailers = Http::Utility::toBridgeHeaders(*pending_request_trailers_);
   }
 
-  envoy_filter_resume_status result = platform_filter_.on_resume_request(pending_headers, pending_data, pending_trailers, request_complete_, platform_filter_.instance_context);
+  envoy_filter_resume_status result =
+      platform_filter_.on_resume_request(pending_headers, pending_data, pending_trailers,
+                                         request_complete_, platform_filter_.instance_context);
   if (result.status == kEnvoyFilterAsyncResumeStatusStopIteration) {
     return;
   }
@@ -357,11 +359,13 @@ void PlatformBridgeFilter::onResumeDecoding() {
   }
   if (internal_buffer) {
     internal_buffer->drain(internal_buffer->length());
-    internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    internal_buffer->addBufferFragment(
+        *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
     free(result.pending_data);
   } else if (result.pending_data) {
     Buffer::OwnedImpl inject_data;
-    inject_data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    inject_data.addBufferFragment(
+        *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
     decoder_callbacks_->addDecodedData(inject_data, false);
     free(result.pending_data);
   }
@@ -394,7 +398,9 @@ void PlatformBridgeFilter::onResumeEncoding() {
     *pending_trailers = Http::Utility::toBridgeHeaders(*pending_response_trailers_);
   }
 
-  envoy_filter_resume_status result = platform_filter_.on_resume_response(pending_headers, pending_data, pending_trailers, response_complete_, platform_filter_.instance_context);
+  envoy_filter_resume_status result =
+      platform_filter_.on_resume_response(pending_headers, pending_data, pending_trailers,
+                                          response_complete_, platform_filter_.instance_context);
   if (pending_response_headers_) {
     PlatformBridgeFilter::replaceHeaders(*pending_response_headers_, *result.pending_headers);
     pending_response_headers_ = nullptr;
@@ -402,11 +408,13 @@ void PlatformBridgeFilter::onResumeEncoding() {
   }
   if (internal_buffer) {
     internal_buffer->drain(internal_buffer->length());
-    internal_buffer->addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    internal_buffer->addBufferFragment(
+        *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
     free(result.pending_data);
   } else if (result.pending_data) {
     Buffer::OwnedImpl inject_data;
-    inject_data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    inject_data.addBufferFragment(
+        *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
     encoder_callbacks_->addEncodedData(inject_data, false);
     free(result.pending_data);
   }

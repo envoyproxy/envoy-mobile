@@ -145,12 +145,12 @@ typedef struct {
   envoy_filter_resume_f resume_iteration;
 } envoy_http_filter_callbacks;
 
-typedef void (*envoy_filter_set_callbacks_f)(envoy_http_filter_callbacks callbacks, const void* context);
+typedef void (*envoy_filter_set_callbacks_f)(envoy_http_filter_callbacks callbacks,
+                                             const void* context);
 
 #ifdef __cplusplus
 } // function pointers
 #endif
-
 
 /**
  * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the

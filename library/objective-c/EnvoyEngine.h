@@ -99,13 +99,19 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
 
-@property (nonatomic, copy) void (^setRequestFilterCallbacks)(id<EnvoyHTTPFilterCallbacks> callbacks);
+@property (nonatomic, copy) void (^setRequestFilterCallbacks)
+    (id<EnvoyHTTPFilterCallbacks> callbacks);
 
-@property (nonatomic, copy) NSArray * (^onResumeRequest)(EnvoyHeaders * _Nullable headers, NSData * _Nullable data, EnvoyHeaders * _Nullable trailers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResumeRequest)
+    (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
+     BOOL endStream);
 
-@property (nonatomic, copy) void (^setResponseFilterCallbacks)(id<EnvoyHTTPFilterCallbacks> callbacks);
+@property (nonatomic, copy) void (^setResponseFilterCallbacks)
+    (id<EnvoyHTTPFilterCallbacks> callbacks);
 
-@property (nonatomic, copy) NSArray * (^onResumeResponse)(EnvoyHeaders * _Nullable headers, NSData * _Nullable data, EnvoyHeaders * _Nullable trailers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResumeResponse)
+    (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
+     BOOL endStream);
 
 @end
 

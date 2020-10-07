@@ -146,11 +146,9 @@ static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_h
                                         /*pending_data*/ pending_data};
 }
 
-static envoy_filter_resume_status ios_http_filter_on_resume_request(envoy_headers *headers,
-                                                                    envoy_data *data,
-                                                                    envoy_headers *trailers,
-                                                                    bool end_stream,
-                                                                    const void *context) {
+static envoy_filter_resume_status
+ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envoy_headers *trailers,
+                                  bool end_stream, const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onResumeRequest == nil) {
     return (envoy_filter_resume_status){/*status*/ kEnvoyFilterResumeStatusResumeIteration,
@@ -162,18 +160,17 @@ static envoy_filter_resume_status ios_http_filter_on_resume_request(envoy_header
   EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
   NSData *pendingData = data ? to_ios_data(*data) : nil;
   EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
-  NSArray *result = filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers, end_stream);
+  NSArray *result =
+      filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers, end_stream);
   return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
                                       /*pending_headers*/ toNativeHeadersPtr(result[1]),
                                       /*pending_data*/ toNativeDataPtr(result[2]),
                                       /*pending_trailers*/ toNativeHeadersPtr(result[3])};
 }
 
-static envoy_filter_resume_status ios_http_filter_on_resume_response(envoy_headers *headers,
-                                                                    envoy_data *data,
-                                                                    envoy_headers *trailers,
-                                                                    bool end_stream,
-                                                                    const void *context) {
+static envoy_filter_resume_status
+ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
+                                   envoy_headers *trailers, bool end_stream, const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onResumeResponse == nil) {
     return (envoy_filter_resume_status){/*status*/ kEnvoyFilterResumeStatusResumeIteration,
@@ -185,18 +182,21 @@ static envoy_filter_resume_status ios_http_filter_on_resume_response(envoy_heade
   EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
   NSData *pendingData = data ? to_ios_data(*data) : nil;
   EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
-  NSArray *result = filter.onResumeResponse(pendingHeaders, pendingData, pendingTrailers, end_stream);
+  NSArray *result =
+      filter.onResumeResponse(pendingHeaders, pendingData, pendingTrailers, end_stream);
   return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
                                       /*pending_headers*/ toNativeHeadersPtr(result[1]),
                                       /*pending_data*/ toNativeDataPtr(result[2]),
                                       /*pending_trailers*/ toNativeHeadersPtr(result[3])};
 }
 
-static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks, const void* context) {
+static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
+                                                  const void *context) {
   // TODO(goaway): implement me
 }
 
-static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks, const void* context) {
+static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks,
+                                                   const void *context) {
   // TODO(goaway): implement me
 }
 
