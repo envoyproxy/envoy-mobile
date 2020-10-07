@@ -131,27 +131,26 @@ typedef envoy_filter_trailers_status (*envoy_filter_on_trailers_f)(envoy_headers
 typedef envoy_filter_resume_status (*envoy_filter_on_resume_f)(envoy_headers* headers,
                                                                envoy_data* data,
                                                                envoy_headers* trailers,
+                                                               bool end_stream,
                                                                const void* context);
-
-typedef void (*envoy_filter_resume_f)(const void* context);
-
 
 /**
  * Function signature to release a filter instance once the filter chain is finished with it.
  */
 typedef void (*envoy_filter_release_f)(const void* context);
 
+typedef void (*envoy_filter_resume_f)(const void* context);
+
+typedef struct {
+  envoy_filter_resume_f resume_iteration;
+} envoy_http_filter_callbacks;
+
+typedef void (*envoy_filter_set_callbacks_f)(envoy_http_filter_callbacks callbacks, const void* context);
+
 #ifdef __cplusplus
 } // function pointers
 #endif
 
-typedef struct {
-  envoy_filter_resume_f resume_request;
-} envoy_http_filter_request_callbacks;
-
-typedef struct {
-  envoy_filter_resume_f resume_response;
-} envoy_http_filter_response_callbacks;
 
 /**
  * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the
@@ -165,7 +164,9 @@ typedef struct {
   envoy_filter_on_headers_f on_response_headers;
   envoy_filter_on_data_f on_response_data;
   envoy_filter_on_trailers_f on_response_trailers;
+  envoy_filter_set_callbacks_f set_request_callbacks;
   envoy_filter_on_resume_f on_resume_request;
+  envoy_filter_set_callbacks_f set_response_callbacks;
   envoy_filter_on_resume_f on_resume_response;
   envoy_filter_release_f release_filter;
   const void* static_context;

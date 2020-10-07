@@ -79,8 +79,11 @@ extern const int kEnvoyFilterTrailersStatusResumeIteration;
 extern const int kEnvoyFilterResumeStatusStopIteration;
 extern const int kEnvoyFilterResumeStatusResumeIteration;
 
-@class EnvoyRequestFilterCallbacks;
-@class EnvoyResponseFilterCallbacks;
+@protocol EnvoyHTTPFilterCallbacks
+
+- (void)resumeIteration;
+
+@end
 
 @interface EnvoyHTTPFilter : NSObject
 
@@ -96,13 +99,13 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
 
-@property (nonatomic, copy) void (^setRequestFilterCallbacks)(EnvoyRequestFilterCallbacks *callbacks);
+@property (nonatomic, copy) void (^setRequestFilterCallbacks)(id<EnvoyHTTPFilterCallbacks> callbacks);
 
-@property (nonatomic, copy) NSArray * (^onResumeRequest)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResumeRequest)(EnvoyHeaders * _Nullable headers, NSData * _Nullable data, EnvoyHeaders * _Nullable trailers, BOOL endStream);
 
-@property (nonatomic, copy) void (^setResponseFilterCallbacks)(EnvoyResponseFilterCallbacks *callbacks);
+@property (nonatomic, copy) void (^setResponseFilterCallbacks)(id<EnvoyHTTPFilterCallbacks> callbacks);
 
-@property (nonatomic, copy) NSArray * (^onResumeResponse)(EnvoyHeaders *headers, NSData *data, EnvoyHeaders *trailers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResumeResponse)(EnvoyHeaders * _Nullable headers, NSData * _Nullable data, EnvoyHeaders * _Nullable trailers, BOOL endStream);
 
 @end
 
@@ -116,19 +119,10 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
-#pragma mark - EnvoyRequestFilterCallbacks
+#pragma mark - EnvoyHTTPFilterCallbacksImpl
 
-@interface EnvoyRequestFilterCallbacks : NSObject
-
-- (void)resumeRequest;
-
-@end
-
-#pragma mark - EnvoyResponseFilterCallbacks
-
-@interface EnvoyResponseFilterCallbacks : NSObject
-
-- (void)resumeResponse;
+// Concrete implementation of the `EnvoyHTTPFilterCallbacks` protocol.
+@interface EnvoyHTTPFilterCallbacksImpl : NSObject <EnvoyHTTPFilterCallbacks>
 
 @end
 

@@ -243,6 +243,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::decodeHeaders(Http::RequestHeade
   if (status == Http::FilterHeadersStatus::StopIteration) {
     pending_request_headers_ = &headers;
   }
+  request_complete_ = end_stream;
   return status;
 }
 
@@ -253,6 +254,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
   if (status == Http::FilterHeadersStatus::StopIteration) {
     pending_response_headers_ = &headers;
   }
+  response_complete_ = end_stream;
   return status;
 }
 
@@ -265,8 +267,10 @@ Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, 
     });
   }
 
-  return onData(data, end_stream, internal_buffer, &pending_request_headers_,
+  auto status = onData(data, end_stream, internal_buffer, &pending_request_headers_,
                 platform_filter_.on_request_data);
+  request_complete_ = end_stream;
+  return status;
 }
 
 Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, bool end_stream) {
@@ -278,8 +282,10 @@ Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, 
     });
   }
 
-  return onData(data, end_stream, internal_buffer, &pending_response_headers_,
+  auto status = onData(data, end_stream, internal_buffer, &pending_response_headers_,
                 platform_filter_.on_response_data);
+  response_complete_ = end_stream;
+  return status;
 }
 
 Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTrailerMap& trailers) {
@@ -296,6 +302,7 @@ Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTra
   if (status == Http::FilterTrailersStatus::StopIteration) {
     pending_request_trailers_ = &trailers;
   }
+  request_complete_ = true;
   return status;
 }
 
@@ -314,6 +321,7 @@ PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
   if (status == Http::FilterTrailersStatus::StopIteration) {
     pending_response_trailers_ = &trailers;
   }
+  response_complete_ = true;
   return status;
 }
 
@@ -338,7 +346,7 @@ void PlatformBridgeFilter::onResumeDecoding() {
     *pending_trailers = Http::Utility::toBridgeHeaders(*pending_request_trailers_);
   }
 
-  envoy_filter_resume_status result = platform_filter_.on_resume_request(pending_headers, pending_data, pending_trailers, platform_filter_.instance_context);
+  envoy_filter_resume_status result = platform_filter_.on_resume_request(pending_headers, pending_data, pending_trailers, request_complete_, platform_filter_.instance_context);
   if (result.status == kEnvoyFilterAsyncResumeStatusStopIteration) {
     return;
   }
@@ -386,7 +394,7 @@ void PlatformBridgeFilter::onResumeEncoding() {
     *pending_trailers = Http::Utility::toBridgeHeaders(*pending_response_trailers_);
   }
 
-  envoy_filter_resume_status result = platform_filter_.on_resume_response(pending_headers, pending_data, pending_trailers, platform_filter_.instance_context);
+  envoy_filter_resume_status result = platform_filter_.on_resume_response(pending_headers, pending_data, pending_trailers, response_complete_, platform_filter_.instance_context);
   if (pending_response_headers_) {
     PlatformBridgeFilter::replaceHeaders(*pending_response_headers_, *result.pending_headers);
     pending_response_headers_ = nullptr;

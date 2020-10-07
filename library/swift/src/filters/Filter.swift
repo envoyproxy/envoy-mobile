@@ -107,8 +107,8 @@ extension EnvoyHTTPFilter {
     }
 
     if let asyncRequestFilter = filter as? AsyncRequestFilter {
-      self.setRequestFilterCallbacks = { callbacks in
-        asyncRequestFilter.setRequstFilterCallbacks(callbacks)
+      self.setRequestFilterCallbacks = { envoyCallbacks in
+        asyncRequestFilter.setRequestFilterCallbacks(RequestFilterCallbacksImpl(callbacks: envoyCallbacks))
       }
 
       self.onResumeRequest = { envoyHeaders, data, envoyTrailers, endStream in
@@ -127,10 +127,11 @@ extension EnvoyHTTPFilter {
           ]
         }
       }
+    }
 
     if let asyncResponseFilter = filter as? AsyncResponseFilter {
-      self.setResponseFilterCallbacks = { callbacks in
-        asyncResponseFilter.setRequstFilterCallbacks(callbacks)
+      self.setResponseFilterCallbacks = { envoyCallbacks in
+        asyncResponseFilter.setResponseFilterCallbacks(ResponseFilterCallbacksImpl(callbacks: envoyCallbacks))
       }
 
       self.onResumeResponse = { envoyHeaders, data, envoyTrailers, endStream in

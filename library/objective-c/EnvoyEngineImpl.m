@@ -192,10 +192,12 @@ static envoy_filter_resume_status ios_http_filter_on_resume_response(envoy_heade
                                       /*pending_trailers*/ toNativeHeadersPtr(result[3])};
 }
 
-static void ios_http_filter_set_request_filter_callbacks(envoy_http_filter_request_callbacks callbacks) {
+static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks, const void* context) {
+  // TODO(goaway): implement me
 }
 
-static void ios_http_filter_set_response_filter_callbacks(envoy_http_filter_response_callbacks callbacks) {
+static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks, const void* context) {
+  // TODO(goaway): implement me
 }
 
 static void ios_http_filter_release(const void *context) {
@@ -233,9 +235,9 @@ static void ios_http_filter_release(const void *context) {
   api->on_response_headers = ios_http_filter_on_response_headers;
   api->on_response_data = ios_http_filter_on_response_data;
   api->on_response_trailers = ios_http_filter_on_response_trailers;
-  api->set_request_filter_callbacks = ios_http_filter_set_request_filter_callbacks;
+  api->set_request_callbacks = ios_http_filter_set_request_callbacks;
   api->on_resume_request = ios_http_filter_on_resume_request;
-  api->set_response_filter_callbacks = ios_http_filter_set_response_filter_callbacks;
+  api->set_response_callbacks = ios_http_filter_set_response_callbacks;
   api->on_resume_response = ios_http_filter_on_resume_response;
   api->release_filter = ios_http_filter_release;
   api->static_context = CFBridgingRetain(filterFactory);

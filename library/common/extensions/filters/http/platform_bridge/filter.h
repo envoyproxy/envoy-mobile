@@ -95,6 +95,8 @@ private:
   Http::HeaderMap* pending_response_headers_{};
   Http::HeaderMap* pending_request_trailers_{};
   Http::HeaderMap* pending_response_trailers_{};
+  bool request_complete_{};
+  bool response_complete_{};
 };
 
 } // namespace PlatformBridge
