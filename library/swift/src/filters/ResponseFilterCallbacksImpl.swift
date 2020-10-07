@@ -2,7 +2,7 @@
 import Foundation
 
 /// Envoy implementation of ResponseFilterCallbacks
-final class ResponseFilterCallbacksImpl : NSObject {
+final class ResponseFilterCallbacksImpl: NSObject {
   private let callbacks: EnvoyHTTPFilterCallbacks
 
   init(callbacks: EnvoyHTTPFilterCallbacks) {
