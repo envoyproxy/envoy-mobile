@@ -349,7 +349,7 @@ void PlatformBridgeFilter::onResumeDecoding() {
   envoy_filter_resume_status result =
       platform_filter_.on_resume_request(pending_headers, pending_data, pending_trailers,
                                          request_complete_, platform_filter_.instance_context);
-  if (result.status == kEnvoyFilterAsyncResumeStatusStopIteration) {
+  if (result.status == kEnvoyFilterResumeStatusStopIteration) {
     return;
   }
   if (pending_request_headers_) {

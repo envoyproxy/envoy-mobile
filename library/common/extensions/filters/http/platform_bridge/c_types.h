@@ -80,8 +80,8 @@ typedef struct {
  * upon asynchronous resumption of filter iteration.
  */
 typedef int envoy_filter_resume_status_t;
-extern const envoy_filter_resume_status_t kEnvoyFilterAsyncResumeStatusContinue;
-extern const envoy_filter_resume_status_t kEnvoyFilterAsyncResumeStatusStopIteration;
+extern const envoy_filter_resume_status_t kEnvoyFilterResumeStatusStopIteration;
+extern const envoy_filter_resume_status_t kEnvoyFilterResumeStatusResumeIteration;
 
 /**
  * Compound return type for on-resume filter invocations. It is a filter state
