@@ -371,7 +371,7 @@ void PlatformBridgeFilter::onResumeDecoding() {
     Buffer::OwnedImpl inject_data;
     inject_data.addBufferFragment(
         *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
-    decoder_callbacks_->addDecodedData(inject_data, false);
+    decoder_callbacks_->addDecodedData(inject_data, /* watermark */ false);
     free(result.pending_data);
   }
   if (pending_request_trailers_) {
@@ -426,7 +426,7 @@ void PlatformBridgeFilter::onResumeEncoding() {
     Buffer::OwnedImpl inject_data;
     inject_data.addBufferFragment(
         *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
-    encoder_callbacks_->addEncodedData(inject_data, false);
+    encoder_callbacks_->addEncodedData(inject_data, /* watermark */ false);
     free(result.pending_data);
   }
   if (pending_response_trailers_) {
