@@ -391,16 +391,16 @@ void PlatformBridgeFilter::onResumeEncoding() {
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
   envoy_headers* pending_trailers = nullptr;
-  if (pending_request_headers_) {
-    envoy_headers bridged = Http::Utility::toBridgeHeaders(*pending_request_headers_);
+  if (pending_response_headers_) {
+    envoy_headers bridged = Http::Utility::toBridgeHeaders(*pending_response_headers_);
     pending_headers = &bridged;
   }
   if (internal_buffer) {
     envoy_data bridged = Buffer::Utility::copyToBridgeData(*internal_buffer);
     pending_data = &bridged; 
   }
-  if (pending_request_trailers_) {
-    envoy_headers bridged = Http::Utility::toBridgeHeaders(*pending_request_trailers_);
+  if (pending_response_trailers_) {
+    envoy_headers bridged = Http::Utility::toBridgeHeaders(*pending_response_trailers_);
     pending_trailers = &bridged;
   }
 

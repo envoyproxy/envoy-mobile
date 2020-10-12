@@ -66,7 +66,7 @@ public:
     unsigned int set_request_callbacks_calls;
     unsigned int on_resume_request_calls;
     unsigned int set_response_callbacks_calls;
-    unsigned int on_resume_response;
+    unsigned int on_resume_response_calls;
     unsigned int release_filter_calls;
   } filter_invocations;
 
@@ -789,6 +789,64 @@ platform_filter_name: StopOnResponseHeadersThenResumeOnData
   EXPECT_TRUE(response_headers.get(Http::LowerCaseString("content-length")));
   EXPECT_EQ(response_headers.get(Http::LowerCaseString("content-length"))->value().getStringView(),
             "13");
+}
+
+TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnResumeEncoding) {
+  envoy_http_filter platform_filter;
+  filter_invocations invocations = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  platform_filter.static_context = &invocations;
+  platform_filter.init_filter = [](const void* context) -> const void* {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->init_filter_calls++;
+    return context;
+  };
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                          const void* context) -> envoy_filter_headers_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    EXPECT_EQ(c_headers.length, 1);
+    EXPECT_EQ(to_string(c_headers.headers[0].key), ":status");
+    EXPECT_EQ(to_string(c_headers.headers[0].value), "test.code");
+    EXPECT_FALSE(end_stream);
+    invocations->on_response_headers_calls++;
+    release_envoy_headers(c_headers);
+    return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
+  };
+  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers, bool end_stream,
+                                       const void* context) -> envoy_filter_resume_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    EXPECT_EQ(pending_headers->length, 1);
+    EXPECT_EQ(to_string(pending_headers->headers[0].key), ":status");
+    EXPECT_EQ(to_string(pending_headers->headers[0].value), "test.code");
+    EXPECT_EQ(pending_data, nullptr);
+    EXPECT_EQ(pending_trailers, nullptr);
+    EXPECT_FALSE(end_stream);
+    invocations->on_resume_response_calls++;
+    envoy_headers* modified_headers =
+        static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
+    *modified_headers = make_envoy_headers({{":status", "test.code"}, {"x-async-resumed", "Very Yes"}});
+    release_envoy_headers(*pending_headers);
+    return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, nullptr, nullptr};
+  };
+
+  setUpFilter(R"EOF(
+platform_filter_name: StopOnResponseHeadersThenResumeOnResumeEncoding
+)EOF",
+              &platform_filter);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
+
+  Http::TestResponseHeaderMapImpl response_headers{{":status", "test.code"}};
+
+  EXPECT_EQ(Http::FilterHeadersStatus::StopIteration,
+            filter_->encodeHeaders(response_headers, false));
+  EXPECT_EQ(invocations.on_response_headers_calls, 1);
+
+  EXPECT_CALL(encoder_callbacks_, continueEncoding()).Times(1);
+  filter_->onResumeEncoding();
+  EXPECT_EQ(invocations.on_resume_response_calls, 1);
+
+  EXPECT_TRUE(response_headers.get(Http::LowerCaseString("x-async-resumed")));
+  EXPECT_EQ(response_headers.get(Http::LowerCaseString("x-async-resumed"))->value().getStringView(),
+            "Very Yes");
 }
 
 TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseData) {
