@@ -342,7 +342,7 @@ void PlatformBridgeFilter::onResumeDecoding() {
   }
   if (internal_buffer) {
     envoy_data bridged = Buffer::Utility::copyToBridgeData(*internal_buffer);
-    pending_data = &bridged; 
+    pending_data = &bridged;
   }
   if (pending_request_trailers_) {
     envoy_headers bridged = Http::Utility::toBridgeHeaders(*pending_request_trailers_);
@@ -397,7 +397,7 @@ void PlatformBridgeFilter::onResumeEncoding() {
   }
   if (internal_buffer) {
     envoy_data bridged = Buffer::Utility::copyToBridgeData(*internal_buffer);
-    pending_data = &bridged; 
+    pending_data = &bridged;
   }
   if (pending_response_trailers_) {
     envoy_headers bridged = Http::Utility::toBridgeHeaders(*pending_response_trailers_);

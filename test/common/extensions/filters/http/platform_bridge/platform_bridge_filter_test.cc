@@ -251,8 +251,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecoding)
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers, bool end_stream,
-                                       const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
+                                         envoy_headers* pending_trailers, bool end_stream,
+                                         const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(to_string(pending_headers->headers[0].key), ":authority");
@@ -263,7 +264,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecoding)
     invocations->on_resume_request_calls++;
     envoy_headers* modified_headers =
         static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"x-async-resumed", "Very Yes"}});
+    *modified_headers =
+        make_envoy_headers({{":authority", "test.code"}, {"x-async-resumed", "Very Yes"}});
     release_envoy_headers(*pending_headers);
     return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, nullptr, nullptr};
   };
@@ -801,7 +803,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnResumeEncoding
     return context;
   };
   platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
-                                          const void* context) -> envoy_filter_headers_status {
+                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
     EXPECT_EQ(to_string(c_headers.headers[0].key), ":status");
@@ -811,8 +813,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnResumeEncoding
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers, bool end_stream,
-                                       const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data,
+                                          envoy_headers* pending_trailers, bool end_stream,
+                                          const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(to_string(pending_headers->headers[0].key), ":status");
@@ -823,7 +826,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnResumeEncoding
     invocations->on_resume_response_calls++;
     envoy_headers* modified_headers =
         static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_headers = make_envoy_headers({{":status", "test.code"}, {"x-async-resumed", "Very Yes"}});
+    *modified_headers =
+        make_envoy_headers({{":status", "test.code"}, {"x-async-resumed", "Very Yes"}});
     release_envoy_headers(*pending_headers);
     return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, nullptr, nullptr};
   };
