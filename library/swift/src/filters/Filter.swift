@@ -115,9 +115,9 @@ extension EnvoyHTTPFilter {
 
       self.onResumeRequest = { envoyHeaders, data, envoyTrailers, endStream in
         let result = asyncRequestFilter.onResumeRequest(
-          headers: envoyHeaders.flatMap(RequestHeaders.init),
+          headers: envoyHeaders.map(RequestHeaders.init),
           data: data,
-          trailers: envoyTrailers.flatMap(RequestTrailers.init),
+          trailers: envoyTrailers.map(RequestTrailers.init),
           endStream: endStream)
         switch result {
         case .resumeIteration(let headers, let data, let trailers):
@@ -140,9 +140,9 @@ extension EnvoyHTTPFilter {
 
       self.onResumeResponse = { envoyHeaders, data, envoyTrailers, endStream in
         let result = asyncResponseFilter.onResumeResponse(
-          headers: envoyHeaders.flatMap(ResponseHeaders.init),
+          headers: envoyHeaders.map(ResponseHeaders.init),
           data: data,
-          trailers: envoyTrailers.flatMap(ResponseTrailers.init),
+          trailers: envoyTrailers.map(ResponseTrailers.init),
           endStream: endStream)
         switch result {
         case .resumeIteration(let headers, let data, let trailers):
