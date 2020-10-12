@@ -90,21 +90,50 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @interface EnvoyHTTPFilter : NSObject
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - EnvoyHeaders *, forward headers
 @property (nonatomic, copy) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - NSData *, forward data
+/// 2 - EnvoyHeaders *, optional pending headers
 @property (nonatomic, copy) NSArray * (^onRequestData)(NSData *data, BOOL endStream);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - EnvoyHeaders *, forward trailers
+/// 2 - EnvoyHeaders *, optional pending headers
+/// 3 - NSData *, optional pending data
 @property (nonatomic, copy) NSArray * (^onRequestTrailers)(EnvoyHeaders *trailers);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - EnvoyHeaders *, forward headers
 @property (nonatomic, copy) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - NSData *, forward data
+/// 2 - EnvoyHeaders *, optional pending headers
 @property (nonatomic, copy) NSArray * (^onResponseData)(NSData *data, BOOL endStream);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - EnvoyHeaders *, forward trailers
+/// 2 - EnvoyHeaders *, optional pending headers
+/// 3 - NSData *, optional pending data
 @property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
 
 @property (nonatomic, copy) void (^setRequestFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - EnvoyHeaders *, optional pending headers
+/// 2 - NSData *, optional pending data
+/// 3 - EnvoyHeaders *, optional pending trailers
 @property (nonatomic, copy) NSArray * (^onResumeRequest)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
      BOOL endStream);
@@ -112,6 +141,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, copy) void (^setResponseFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
 
+/// Returns tuple of:
+/// 0 - NSNumber *,filter status
+/// 1 - EnvoyHeaders *, optional pending headers
+/// 2 - NSData *, optional pending data
+/// 3 - EnvoyHeaders *, optional pending trailers
 @property (nonatomic, copy) NSArray * (^onResumeResponse)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
      BOOL endStream);
