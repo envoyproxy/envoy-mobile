@@ -6,8 +6,8 @@ on:
       - main
   pull_request:
     paths:
-      # - 'library/common/**'
-      # - 'test/**'
+      - 'library/common/**'
+      - 'test/**'
 
 jobs:
   coverage:
@@ -26,7 +26,7 @@ jobs:
           export PATH=/usr/lib/llvm-10/bin:$PATH
           export CC=clang
           export CXX=clang++
-          export COVERAGE_THRESHOLD=97
+          export COVERAGE_THRESHOLD=95
           ./envoy/test/run_envoy_bazel_coverage.sh //test/...
       - name: 'package coverage'
         run: |
