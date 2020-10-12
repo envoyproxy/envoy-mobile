@@ -2,8 +2,7 @@
 
 #pragma mark - EnvoyHTTPFilterCallbacksImpl
 
-@implementation EnvoyHTTPFilterCallbacks {
-}
+@implementation EnvoyHTTPFilterCallbacks
 
 - (instancetype)init {
   self = [super init];
