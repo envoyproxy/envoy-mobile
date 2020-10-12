@@ -79,8 +79,11 @@ extern const int kEnvoyFilterTrailersStatusResumeIteration;
 extern const int kEnvoyFilterResumeStatusStopIteration;
 extern const int kEnvoyFilterResumeStatusResumeIteration;
 
+/// Callbacks for asynchronous interaction with the filter.
 @protocol EnvoyHTTPFilterCallbacks
 
+/// Resume filter iteration asynchronously. This will result in an on-resume invocation of the
+/// filter.
 - (void)resumeIteration;
 
 @end
