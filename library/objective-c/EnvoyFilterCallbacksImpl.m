@@ -14,7 +14,7 @@
 }
 
 - (void)resumeIteration {
-  NSLog(@"async resume");
+  // TODO(goaway): implement me!
 }
 
 @end
