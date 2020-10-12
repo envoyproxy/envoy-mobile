@@ -28,6 +28,8 @@ jobs:
           export CXX=clang++
           export COVERAGE_THRESHOLD=97
           ./envoy/test/run_envoy_bazel_coverage.sh //test/...
+      - name: 'package coverage'
+        run: |
           tar -czvf coverage.tar.gz generated/coverage
       - uses: actions/upload-artifact@v1
         with:
