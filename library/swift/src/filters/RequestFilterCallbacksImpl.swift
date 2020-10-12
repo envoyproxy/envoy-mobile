@@ -13,6 +13,6 @@ final class RequestFilterCallbacksImpl: NSObject {
 
 extension RequestFilterCallbacksImpl: RequestFilterCallbacks {
   func resumeRequest() {
-    callbacks.resumeIteration()
+    self.callbacks.resumeIteration()
   }
 }
