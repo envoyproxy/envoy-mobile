@@ -745,8 +745,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnResum
     invocations->on_request_trailers_calls++;
     return {kEnvoyFilterTrailersStatusStopIteration, envoy_noheaders, nullptr, nullptr};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers, bool end_stream,
-                                           const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
+                                         envoy_headers* pending_trailers, bool end_stream,
+                                         const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(to_string(pending_headers->headers[0].key), ":authority");
@@ -768,11 +769,13 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnResum
     pending_data->release(pending_data->context);
     envoy_headers* modified_trailers =
         static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_trailers = make_envoy_headers({{"x-test-trailer", "test trailer"}, {"x-async-resumed", "yes"}});
+    *modified_trailers =
+        make_envoy_headers({{"x-test-trailer", "test trailer"}, {"x-async-resumed", "yes"}});
     release_envoy_headers(*pending_trailers);
 
     invocations->on_resume_request_calls++;
-    return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, modified_data, modified_trailers};
+    return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, modified_data,
+            modified_trailers};
   };
 
   Buffer::OwnedImpl decoding_buffer;
@@ -1405,7 +1408,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     return context;
   };
   platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
-                                          const void* context) -> envoy_filter_headers_status {
+                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
     EXPECT_EQ(to_string(c_headers.headers[0].key), ":status");
@@ -1416,7 +1419,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
-                                       const void* context) -> envoy_filter_data_status {
+                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     std::string expected_data[2] = {"A", "AB"};
     EXPECT_EQ(to_string(c_data), expected_data[invocations->on_response_data_calls]);
@@ -1426,7 +1429,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr};
   };
   platform_filter.on_response_trailers = [](envoy_headers c_trailers,
-                                           const void* context) -> envoy_filter_trailers_status {
+                                            const void* context) -> envoy_filter_trailers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_trailers.length, 1);
     EXPECT_EQ(to_string(c_trailers.headers[0].key), "x-test-trailer");
@@ -1435,8 +1438,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     invocations->on_response_trailers_calls++;
     return {kEnvoyFilterTrailersStatusStopIteration, envoy_noheaders, nullptr, nullptr};
   };
-  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers, bool end_stream,
-                                           const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data,
+                                          envoy_headers* pending_trailers, bool end_stream,
+                                          const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(to_string(pending_headers->headers[0].key), ":status");
@@ -1458,11 +1462,13 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     pending_data->release(pending_data->context);
     envoy_headers* modified_trailers =
         static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_trailers = make_envoy_headers({{"x-test-trailer", "test trailer"}, {"x-async-resumed", "yes"}});
+    *modified_trailers =
+        make_envoy_headers({{"x-test-trailer", "test trailer"}, {"x-async-resumed", "yes"}});
     release_envoy_headers(*pending_trailers);
 
     invocations->on_resume_response_calls++;
-    return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, modified_data, modified_trailers};
+    return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, modified_data,
+            modified_trailers};
   };
 
   Buffer::OwnedImpl encoding_buffer;
@@ -1520,8 +1526,9 @@ platform_filter_name: StopOnResponseHeadersThenBufferThenResumeOnResumeEncoding
 
   // Pending trailers have been updated with value from ResumeIteration.
   EXPECT_TRUE(response_trailers.get(Http::LowerCaseString("x-async-resumed")));
-  EXPECT_EQ(response_trailers.get(Http::LowerCaseString("x-async-resumed"))->value().getStringView(),
-            "yes");
+  EXPECT_EQ(
+      response_trailers.get(Http::LowerCaseString("x-async-resumed"))->value().getStringView(),
+      "yes");
 }
 
 } // namespace
