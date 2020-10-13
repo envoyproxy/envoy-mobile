@@ -1,4 +1,5 @@
 #include "test/mocks/http/mocks.h"
+#include "test/mocks/server/factory_context.h"
 #include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
@@ -50,7 +51,7 @@ public:
     Api::External::registerApi(config.platform_filter_name(), platform_filter);
 
     config_ = std::make_shared<PlatformBridgeFilterConfig>(config);
-    filter_ = std::make_unique<PlatformBridgeFilter>(config_);
+    filter_ = std::make_shared<PlatformBridgeFilter>(config_, context_);
     filter_->setDecoderFilterCallbacks(decoder_callbacks_);
     filter_->setEncoderFilterCallbacks(encoder_callbacks_);
   }

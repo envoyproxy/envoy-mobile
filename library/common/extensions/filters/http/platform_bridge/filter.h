@@ -46,9 +46,18 @@ enum class IterationState { Ongoing, Stopped };
  * For more information on implementing platform filters, see the docs.
  */
 class PlatformBridgeFilter final : public Http::PassThroughFilter,
-                                   Logger::Loggable<Logger::Id::filter> {
+                                   public Logger::Loggable<Logger::Id::filter>,
+                                   public std::enable_shared_from_this<PlatformBridgeFilter> {
 public:
-  PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config);
+  PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config, Event::Dispatcher& dispatcher);
+
+  // Asynchronously trigger resumption of filter iteration, if applicable.
+  // This is a no-op if filter iteration is already ongoing.
+  void resumeDecoding();
+
+  // Asynchronously trigger resumption of filter iteration, if applicable.
+  // This is a no-op if filter iteration is already ongoing.
+  void resumeEncoding();
 
   // Scheduled on the dispatcher when resumeRequest is called from platform
   // filter callbacks. Provides a snapshot of pending request state to the
@@ -88,16 +97,22 @@ private:
                                         Buffer::Instance* internal_buffer,
                                         Http::HeaderMap** pending_headers,
                                         envoy_filter_on_trailers_f on_trailers);
-  const std::string filter_name_;
-  IterationState iteration_state_;
-  envoy_http_filter platform_filter_;
+  Event::Dispatcher& dispatcher_;
   Http::HeaderMap* pending_request_headers_{};
   Http::HeaderMap* pending_response_headers_{};
   Http::HeaderMap* pending_request_trailers_{};
   Http::HeaderMap* pending_response_trailers_{};
+  IterationState iteration_state_;
+  const std::string filter_name_;
+  envoy_http_filter platform_filter_;
+  envoy_http_filter_callbacks platform_request_callbacks_{};
+  envoy_http_filter_callbacks platform_response_callbacks_{};
   bool request_complete_{};
   bool response_complete_{};
 };
+
+using PlatformBridgeFilterSharedPtr = std::shared_ptr<PlatformBridgeFilter>;
+using PlatformBridgeFilterWeakPtr = std::weak_ptr<PlatformBridgeFilter>;
 
 } // namespace PlatformBridge
 } // namespace HttpFilters
