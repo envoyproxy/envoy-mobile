@@ -139,8 +139,14 @@ typedef envoy_filter_resume_status (*envoy_filter_on_resume_f)(envoy_headers* he
  */
 typedef void (*envoy_filter_release_f)(const void* context);
 
+/**
+ * Function signature for asynchronous filter callback to resume filter iteration.
+ */
 typedef void (*envoy_filter_resume_f)(const void* context);
 
+/**
+ * Raw datatype containing asynchronous callbacks for platform HTTP filters.
+ */
 typedef struct {
   envoy_filter_resume_f resume_iteration;
 } envoy_http_filter_callbacks;
@@ -153,7 +159,7 @@ typedef void (*envoy_filter_set_callbacks_f)(envoy_http_filter_callbacks callbac
 #endif
 
 /**
- * Raw datatype containing dispatch functions for a platform-native HTTP filter. Leveraged by the
+ * Raw datatype containing dispatch functions for a platform HTTP filter. Leveraged by the
  * PlatformBridgeFilter.
  */
 typedef struct {
