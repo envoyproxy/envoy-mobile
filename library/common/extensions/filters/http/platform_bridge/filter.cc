@@ -18,19 +18,22 @@ namespace HttpFilters {
 namespace PlatformBridge {
 
 static void envoy_filter_release_callbacks(const void* context) {
-  PlatformBridgeFilterWeakPtr* weak_filter = static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
+  PlatformBridgeFilterWeakPtr* weak_filter =
+      static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
   delete weak_filter;
 }
 
 static void envoy_filter_callback_resume_decoding(const void* context) {
-  PlatformBridgeFilterWeakPtr* weak_filter = static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
+  PlatformBridgeFilterWeakPtr* weak_filter =
+      static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
   if (auto filter = weak_filter->lock()) {
     filter->resumeDecoding();
   }
 }
 
 static void envoy_filter_callback_resume_encoding(const void* context) {
-  PlatformBridgeFilterWeakPtr* weak_filter = static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
+  PlatformBridgeFilterWeakPtr* weak_filter =
+      static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
   if (auto filter = weak_filter->lock()) {
     filter->resumeEncoding();
   }
@@ -69,15 +72,19 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
   if (platform_filter_.set_request_callbacks) {
     platform_request_callbacks_.resume_iteration = envoy_filter_callback_resume_decoding;
     platform_request_callbacks_.release_callbacks = envoy_filter_release_callbacks;
-    platform_request_callbacks_.callback_context = new PlatformBridgeFilterWeakPtr{weak_from_this()};
-    platform_filter_.set_request_callbacks(platform_request_callbacks_, platform_filter_.instance_context);
+    platform_request_callbacks_.callback_context =
+        new PlatformBridgeFilterWeakPtr{weak_from_this()};
+    platform_filter_.set_request_callbacks(platform_request_callbacks_,
+                                           platform_filter_.instance_context);
   }
 
   if (platform_filter_.set_response_callbacks) {
     platform_response_callbacks_.resume_iteration = envoy_filter_callback_resume_encoding;
     platform_response_callbacks_.release_callbacks = envoy_filter_release_callbacks;
-    platform_response_callbacks_.callback_context = new PlatformBridgeFilterWeakPtr{weak_from_this()};
-    platform_filter_.set_response_callbacks(platform_response_callbacks_, platform_filter_.instance_context);
+    platform_response_callbacks_.callback_context =
+        new PlatformBridgeFilterWeakPtr{weak_from_this()};
+    platform_filter_.set_response_callbacks(platform_response_callbacks_,
+                                            platform_filter_.instance_context);
   }
 }
 
