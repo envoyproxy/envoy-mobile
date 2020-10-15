@@ -192,12 +192,26 @@ ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
 
 static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
                                                   const void *context) {
-  // TODO(goaway): implement me
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.setRequestFilterCallbacks == nil) {
+    return;
+  }
+
+  EnvoyHTTPFilterCallbacksImpl *requestFilterCallbacks =
+      [[EnvoyHTTPFilterCallbacksImpl alloc] initWithCallbacks:callbacks];
+  filter.setRequestFilterCallbacks(requestFilterCallbacks);
 }
 
 static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks,
                                                    const void *context) {
-  // TODO(goaway): implement me
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.setResponseFilterCallbacks == nil) {
+    return;
+  }
+
+  EnvoyHTTPFilterCallbacksImpl *responseFilterCallbacks =
+      [[EnvoyHTTPFilterCallbacksImpl alloc] initWithCallbacks:callbacks];
+  filter.setResponseFilterCallbacks(responseFilterCallbacks);
 }
 
 static void ios_http_filter_release(const void *context) {

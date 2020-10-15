@@ -1,5 +1,5 @@
+#include "test/mocks/event/mocks.h"
 #include "test/mocks/http/mocks.h"
-#include "test/mocks/server/factory_context.h"
 #include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
@@ -51,7 +51,7 @@ public:
     Api::External::registerApi(config.platform_filter_name(), platform_filter);
 
     config_ = std::make_shared<PlatformBridgeFilterConfig>(config);
-    filter_ = std::make_shared<PlatformBridgeFilter>(config_, context_);
+    filter_ = std::make_shared<PlatformBridgeFilter>(config_, dispatcher_);
     filter_->setDecoderFilterCallbacks(decoder_callbacks_);
     filter_->setEncoderFilterCallbacks(encoder_callbacks_);
   }
@@ -71,8 +71,9 @@ public:
     unsigned int release_filter_calls;
   } filter_invocations;
 
-  PlatformBridgeFilterConfigSharedPtr config_{};
-  std::unique_ptr<PlatformBridgeFilter> filter_{};
+  PlatformBridgeFilterConfigSharedPtr config_;
+  PlatformBridgeFilterSharedPtr filter_;
+  NiceMock<Event::MockDispatcher> dispatcher_;
   NiceMock<Http::MockStreamDecoderFilterCallbacks> decoder_callbacks_;
   NiceMock<Http::MockStreamEncoderFilterCallbacks> encoder_callbacks_;
 };
