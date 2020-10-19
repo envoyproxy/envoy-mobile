@@ -10,6 +10,7 @@
 
 using testing::ByMove;
 using testing::Return;
+using testing::SaveArg;
 
 namespace Envoy {
 namespace Extensions {
@@ -284,8 +285,11 @@ platform_filter_name: StopOnRequestHeadersThenResumeOnResumeDecoding
             filter_->decodeHeaders(request_headers, false));
   EXPECT_EQ(invocations.on_request_headers_calls, 1);
 
+  Event::PostCb resume_post_cb;
+  EXPECT_CALL(dispatcher_, post(_)).WillOnce(SaveArg<0>(&resume_post_cb));
   EXPECT_CALL(decoder_callbacks_, continueDecoding()).Times(1);
-  filter_->onResumeDecoding();
+  filter_->resumeDecoding();
+  resume_post_cb();
   EXPECT_EQ(invocations.on_resume_request_calls, 1);
 
   EXPECT_TRUE(request_headers.get(Http::LowerCaseString("x-async-resumed")));
@@ -821,8 +825,11 @@ platform_filter_name: StopOnRequestHeadersThenBufferThenResumeOnResumeDecoding
   EXPECT_EQ(Http::FilterTrailersStatus::StopIteration, filter_->decodeTrailers(request_trailers));
   EXPECT_EQ(invocations.on_request_trailers_calls, 1);
 
+  Event::PostCb resume_post_cb;
+  EXPECT_CALL(dispatcher_, post(_)).WillOnce(SaveArg<0>(&resume_post_cb));
   EXPECT_CALL(decoder_callbacks_, continueDecoding()).Times(1);
-  filter_->onResumeDecoding();
+  filter_->resumeDecoding();
+  resume_post_cb();
   EXPECT_EQ(invocations.on_resume_request_calls, 1);
 
   // Pending headers have been updated with the value from ResumeIteration.
@@ -978,8 +985,11 @@ platform_filter_name: StopOnResponseHeadersThenResumeOnResumeEncoding
             filter_->encodeHeaders(response_headers, false));
   EXPECT_EQ(invocations.on_response_headers_calls, 1);
 
+  Event::PostCb resume_post_cb;
+  EXPECT_CALL(dispatcher_, post(_)).WillOnce(SaveArg<0>(&resume_post_cb));
   EXPECT_CALL(encoder_callbacks_, continueEncoding()).Times(1);
-  filter_->onResumeEncoding();
+  filter_->resumeEncoding();
+  resume_post_cb();
   EXPECT_EQ(invocations.on_resume_response_calls, 1);
 
   EXPECT_TRUE(response_headers.get(Http::LowerCaseString("x-async-resumed")));
@@ -1514,8 +1524,11 @@ platform_filter_name: StopOnResponseHeadersThenBufferThenResumeOnResumeEncoding
   EXPECT_EQ(Http::FilterTrailersStatus::StopIteration, filter_->encodeTrailers(response_trailers));
   EXPECT_EQ(invocations.on_response_trailers_calls, 1);
 
+  Event::PostCb resume_post_cb;
+  EXPECT_CALL(dispatcher_, post(_)).WillOnce(SaveArg<0>(&resume_post_cb));
   EXPECT_CALL(encoder_callbacks_, continueEncoding()).Times(1);
-  filter_->onResumeEncoding();
+  filter_->resumeEncoding();
+  resume_post_cb();
   EXPECT_EQ(invocations.on_resume_response_calls, 1);
 
   // Pending headers have been updated with the value from ResumeIteration.
