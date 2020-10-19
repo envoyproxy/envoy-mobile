@@ -376,7 +376,7 @@ void PlatformBridgeFilter::resumeDecoding() {
   // reference that now holds the filter does not retain the dispatcher. In the future we should
   // make this safer by, e.g.:
   // 1) adding support to Envoy for (optionally) retaining the dispatcher, or
-  // 2) retaining the engine to transitively retain the dispatcher via Envoy's ownwership graph, or
+  // 2) retaining the engine to transitively retain the dispatcher via Envoy's ownership graph, or
   // 3) dispatching via a safe intermediary
   // Relevant: https://github.com/lyft/envoy-mobile/issues/332
   dispatcher_.post([weak_self]() -> void {
