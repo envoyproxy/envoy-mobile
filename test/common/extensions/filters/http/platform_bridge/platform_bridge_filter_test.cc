@@ -328,10 +328,9 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeDecodingIsNoopAfterPreviousResume) {
     *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"content-length", "12"}});
     return {kEnvoyFilterDataStatusResumeIteration, c_data, modified_headers};
   };
-  platform_filter.on_resume_request = [](envoy_headers*, envoy_data*,
-                                         envoy_headers*, bool,
+  platform_filter.on_resume_request = [](envoy_headers*, envoy_data*, envoy_headers*, bool,
                                          const void*) -> envoy_filter_resume_status {
-    ADD_FAILURE() << "on_resume_request should not get called when iteration is already ongoing."; 
+    ADD_FAILURE() << "on_resume_request should not get called when iteration is already ongoing.";
     return {kEnvoyFilterResumeStatusResumeIteration, nullptr, nullptr, nullptr};
   };
 
@@ -1074,7 +1073,7 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterPreviousResume) {
     return context;
   };
   platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
-                                          const void* context) -> envoy_filter_headers_status {
+                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
     EXPECT_EQ(to_string(c_headers.headers[0].key), ":status");
@@ -1085,7 +1084,7 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterPreviousResume) {
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
   platform_filter.on_response_data = [](envoy_data c_data, bool end_stream,
-                                       const void* context) -> envoy_filter_data_status {
+                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(to_string(c_data), "response body");
     EXPECT_TRUE(end_stream);
@@ -1095,10 +1094,9 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterPreviousResume) {
     *modified_headers = make_envoy_headers({{":status", "test.code"}, {"content-length", "13"}});
     return {kEnvoyFilterDataStatusResumeIteration, c_data, modified_headers};
   };
-  platform_filter.on_resume_response = [](envoy_headers*, envoy_data*,
-                                         envoy_headers*, bool,
-                                         const void*) -> envoy_filter_resume_status {
-    ADD_FAILURE() << "on_resume_response should not get called when iteration is already ongoing."; 
+  platform_filter.on_resume_response = [](envoy_headers*, envoy_data*, envoy_headers*, bool,
+                                          const void*) -> envoy_filter_resume_status {
+    ADD_FAILURE() << "on_resume_response should not get called when iteration is already ongoing.";
     return {kEnvoyFilterResumeStatusResumeIteration, nullptr, nullptr, nullptr};
   };
 
