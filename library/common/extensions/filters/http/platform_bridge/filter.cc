@@ -72,6 +72,7 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
   if (platform_filter_.set_request_callbacks) {
     platform_request_callbacks_.resume_iteration = envoy_filter_callback_resume_decoding;
     platform_request_callbacks_.release_callbacks = envoy_filter_release_callbacks;
+    // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
     platform_request_callbacks_.callback_context =
         new PlatformBridgeFilterWeakPtr{weak_from_this()};
     platform_filter_.set_request_callbacks(platform_request_callbacks_,
@@ -371,6 +372,13 @@ PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
 
 void PlatformBridgeFilter::resumeDecoding() {
   auto weak_self = weak_from_this();
+  // TODO(goaway): There's a potential shutdown race here, due to the fact that the shared
+  // reference that now holds the filter does not retain the dispatcher. In the future we should
+  // make this safer by, e.g.:
+  // 1) adding support to Envoy for (optionally) retaining the dispatcher, or
+  // 2) retaining the engine to transitively retain the dispatcher via Envoy's ownwership graph, or
+  // 3) dispatching via a safe intermediary
+  // Relevant: https://github.com/lyft/envoy-mobile/issues/332
   dispatcher_.post([weak_self]() -> void {
     if (auto self = weak_self.lock()) {
       self->onResumeDecoding();
