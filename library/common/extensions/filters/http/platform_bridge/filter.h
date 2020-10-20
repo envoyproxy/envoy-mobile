@@ -59,18 +59,6 @@ public:
   // This is a no-op if filter iteration is already ongoing.
   void resumeEncoding();
 
-  // Scheduled on the dispatcher when resumeRequest is called from platform
-  // filter callbacks. Provides a snapshot of pending request state to the
-  // platform filter, and consumes invocation results to modify pending HTTP
-  // entities before resuming decoding.
-  void onResumeDecoding();
-
-  // Scheduled on the dispatcher when resumeResponse is called from platform
-  // filter callbacks. Provides a snapshot of pending response state to the
-  // platform filter, and consumes invocation results to modify pending HTTP
-  // entities before resuming encoding.
-  void onResumeEncoding();
-
   // StreamFilterBase
   void onDestroy() override;
 
@@ -88,15 +76,31 @@ public:
 
 private:
   static void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers);
+
   Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream,
                                       envoy_filter_on_headers_f on_headers);
+
   Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream,
                                 Buffer::Instance* internal_buffer,
                                 Http::HeaderMap** pending_headers, envoy_filter_on_data_f on_data);
+
   Http::FilterTrailersStatus onTrailers(Http::HeaderMap& trailers,
                                         Buffer::Instance* internal_buffer,
                                         Http::HeaderMap** pending_headers,
                                         envoy_filter_on_trailers_f on_trailers);
+
+  // Scheduled on the dispatcher when resumeRequest is called from platform
+  // filter callbacks. Provides a snapshot of pending request state to the
+  // platform filter, and consumes invocation results to modify pending HTTP
+  // entities before resuming decoding.
+  void onResumeDecoding();
+
+  // Scheduled on the dispatcher when resumeResponse is called from platform
+  // filter callbacks. Provides a snapshot of pending response state to the
+  // platform filter, and consumes invocation results to modify pending HTTP
+  // entities before resuming encoding.
+  void onResumeEncoding();
+
   Event::Dispatcher& dispatcher_;
   Http::HeaderMap* pending_request_headers_{};
   Http::HeaderMap* pending_response_headers_{};
