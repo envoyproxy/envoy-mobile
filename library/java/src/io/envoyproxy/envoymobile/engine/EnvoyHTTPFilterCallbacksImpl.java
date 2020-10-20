@@ -32,7 +32,7 @@ final class EnvoyHTTPFilterCallbacksImpl implements EnvoyHTTPFilterCallbacks, En
   /**
    * @param callbackHandle, native handle for callback execution.
    * @param object, pass this object so that the JNI retains it, preventing it from potentially
-   *                being concurently garbage-collected while the native call is executing.
+   *                being concurrently garbage-collected while the native call is executing.
    */
   private native void callResumeIteration(long callbackHandle, EnvoyHTTPFilterCallbacksImpl object);
 
