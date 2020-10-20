@@ -15,12 +15,12 @@ import io.envoyproxy.envoymobile.engine.EnvoyNativeResourceWrapper;
 public enum EnvoyNativeResourceRegistry {
   SINGLETON;
 
-  private ReferenceQueue
-      refQueue; // References are automatically enqueued when the gc flags them as unreachable.
-  private Set refMaintainer; // Maintains references in the object graph while we wait for them to
-                             // be enqueued.
-  private RefQueueThread
-      refQueueThread; // Blocks on the reference queue and calls the releaser of queued references.
+  // References are automatically enqueued when the gc flags them as unreachable.
+  private ReferenceQueue refQueue;
+  // Maintains references in the object graph while we wait for them to be enqueued.
+  private Set refMaintainer;
+  // Blocks on the reference queue and calls the releaser of queued references.
+  private RefQueueThread refQueueThread;
 
   private class RefQueueThread extends Thread {
     public void run() {
@@ -58,6 +58,10 @@ public enum EnvoyNativeResourceRegistry {
   /**
    * Register an EnvoyNativeResourceWrapper to schedule cleanup of its native resources when the
    * Java object is flagged for collection by the garbage collector.
+   *
+   * @param owner,        The object that has retained the native resource.
+   * @param nativeHandle, An opaque identifier for the native resource.
+   * @param releaser,     A lambda that makes the native call to release the resouce.
    */
   public void register(EnvoyNativeResourceWrapper owner, long nativeHandle,
                        EnvoyNativeResourceReleaser releaser) {
@@ -65,6 +69,14 @@ public enum EnvoyNativeResourceRegistry {
     refMaintainer.add(ref);
   }
 
+  /**
+   * Register an EnvoyNativeResourceWrapper to schedule cleanup of its native resources when the
+   * Java object is flagged for collection by the garbage collector.
+   *
+   * @param owner,        The object that has retained the native resource.
+   * @param nativeHandle, An opaque identifier for the native resource.
+   * @param releaser,     A lambda that makes the native call to release the resouce.
+   */
   public static void globalRegister(EnvoyNativeResourceWrapper owner, long nativeHandle,
                                     EnvoyNativeResourceReleaser releaser) {
     SINGLETON.register(owner, nativeHandle, releaser);
