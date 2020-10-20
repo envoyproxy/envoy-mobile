@@ -61,7 +61,7 @@ public enum EnvoyNativeResourceRegistry {
    *
    * @param owner,        The object that has retained the native resource.
    * @param nativeHandle, An opaque identifier for the native resource.
-   * @param releaser,     A lambda that makes the native call to release the resouce.
+   * @param releaser,     A lambda that makes the native call to release the resource.
    */
   public void register(EnvoyNativeResourceWrapper owner, long nativeHandle,
                        EnvoyNativeResourceReleaser releaser) {
@@ -75,7 +75,7 @@ public enum EnvoyNativeResourceRegistry {
    *
    * @param owner,        The object that has retained the native resource.
    * @param nativeHandle, An opaque identifier for the native resource.
-   * @param releaser,     A lambda that makes the native call to release the resouce.
+   * @param releaser,     A lambda that makes the native call to release the resource.
    */
   public static void globalRegister(EnvoyNativeResourceWrapper owner, long nativeHandle,
                                     EnvoyNativeResourceReleaser releaser) {
