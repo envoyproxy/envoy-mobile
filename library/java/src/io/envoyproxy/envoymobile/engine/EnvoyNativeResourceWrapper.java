@@ -1,4 +1,3 @@
 package io.envoyproxy.envoymobile.engine;
 
-interface EnvoyNativeResourceWrapper {
-}
+interface EnvoyNativeResourceWrapper {}

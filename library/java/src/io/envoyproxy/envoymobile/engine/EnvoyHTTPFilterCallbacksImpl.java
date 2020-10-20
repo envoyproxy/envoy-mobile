@@ -3,7 +3,8 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.EnvoyNativeResourceReleaser;
 import io.envoyproxy.envoymobile.engine.EnvoyNativeResourceWrapper;
 
-final class EnvoyHTTPFilterCallbacksImpl implements EnvoyHTTPFilterCallbacks, EnvoyNativeResourceWrapper {
+final class EnvoyHTTPFilterCallbacksImpl
+    implements EnvoyHTTPFilterCallbacks, EnvoyNativeResourceWrapper {
 
   private static final EnvoyNativeResourceReleaser releaseCallbacks = (long handle) -> {
     callReleaseCallbacks(handle);
@@ -15,19 +16,15 @@ final class EnvoyHTTPFilterCallbacksImpl implements EnvoyHTTPFilterCallbacks, En
    * @param callbackHandle, native handle for callback execution. This must be eventually passed to
                             `callReleaseCallbacks` to release underlying memory.
    */
-  EnvoyHTTPFilterCallbacksImpl(long callbackHandle) {
-    this.callbackHandle = callbackHandle;
-  }
+  EnvoyHTTPFilterCallbacksImpl(long callbackHandle) { this.callbackHandle = callbackHandle; }
 
   static EnvoyHTTPFilterCallbacksImpl create(long callbackHandle) {
-    final EnvoyHTTPFilterCallbacksImpl object = new EnvoyHTTPFilterCallbacksImpl (callbackHandle);
+    final EnvoyHTTPFilterCallbacksImpl object = new EnvoyHTTPFilterCallbacksImpl(callbackHandle);
     EnvoyNativeResourceRegistry.globalRegister(object, callbackHandle, releaseCallbacks);
     return object;
   }
 
-  public void resumeIteration() {
-    callResumeIteration(callbackHandle, this);
-  }
+  public void resumeIteration() { callResumeIteration(callbackHandle, this); }
 
   /**
    * @param callbackHandle, native handle for callback execution.
