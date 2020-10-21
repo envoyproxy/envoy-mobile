@@ -106,7 +106,7 @@ extension EnvoyHTTPFilter {
       }
     }
 
-    if let asyncRequestFilter = filter as? AsyncRequestFilter {
+    if var asyncRequestFilter = filter as? AsyncRequestFilter {
       self.setRequestFilterCallbacks = { envoyCallbacks in
         asyncRequestFilter.setRequestFilterCallbacks(
           RequestFilterCallbacksImpl(callbacks: envoyCallbacks)
@@ -131,7 +131,7 @@ extension EnvoyHTTPFilter {
       }
     }
 
-    if let asyncResponseFilter = filter as? AsyncResponseFilter {
+    if var asyncResponseFilter = filter as? AsyncResponseFilter {
       self.setResponseFilterCallbacks = { envoyCallbacks in
         asyncResponseFilter.setResponseFilterCallbacks(
           ResponseFilterCallbacksImpl(callbacks: envoyCallbacks)
