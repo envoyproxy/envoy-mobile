@@ -354,8 +354,9 @@ platform_filter_name: AsyncResumeDecodingIsNoopAfterPreviousResume
   EXPECT_EQ(invocations.on_request_data_calls, 1);
 
   EXPECT_FALSE(request_headers.get(Http::LowerCaseString("content-length")).empty());
-  EXPECT_EQ(request_headers.get(Http::LowerCaseString("content-length"))[0]->value().getStringView(),
-            "12");
+  EXPECT_EQ(
+      request_headers.get(Http::LowerCaseString("content-length"))[0]->value().getStringView(),
+      "12");
 
   Event::PostCb resume_post_cb;
   EXPECT_CALL(dispatcher_, post(_)).WillOnce(SaveArg<0>(&resume_post_cb));
@@ -1126,8 +1127,9 @@ platform_filter_name: AsyncResumeEncodingIsNoopAfterPreviousResume
   EXPECT_EQ(invocations.on_response_data_calls, 1);
 
   EXPECT_FALSE(response_headers.get(Http::LowerCaseString("content-length")).empty());
-  EXPECT_EQ(response_headers.get(Http::LowerCaseString("content-length"))[0]->value().getStringView(),
-            "13");
+  EXPECT_EQ(
+      response_headers.get(Http::LowerCaseString("content-length"))[0]->value().getStringView(),
+      "13");
 
   Event::PostCb resume_post_cb;
   EXPECT_CALL(dispatcher_, post(_)).WillOnce(SaveArg<0>(&resume_post_cb));
