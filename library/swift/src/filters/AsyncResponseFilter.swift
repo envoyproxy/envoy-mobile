@@ -6,7 +6,7 @@ public protocol AsyncResponseFilter: ResponseFilter {
   /// use.
   ///
   /// - parameter callbacks: The callbacks for this filter to use to interact with the chain.
-  func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks)
+  mutating func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks)
 
   /// Invoked explicitly in response to an asynchronous `resumeResponse()` callback when filter
   /// iteration has been stopped. The parameters passed to this invocation will be a snapshot
