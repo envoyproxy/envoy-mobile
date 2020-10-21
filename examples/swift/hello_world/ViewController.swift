@@ -2,7 +2,7 @@ import Envoy
 import UIKit
 
 private let kCellID = "cell-id"
-private let kRequestAuthority = "api.lyft.com"
+private let kRequestAuthority = "8.8.8.8"
 private let kRequestPath = "/ping"
 private let kRequestScheme = "https"
 private let kFilteredHeaders = ["server", "filter-demo", "x-envoy-upstream-service-time"]

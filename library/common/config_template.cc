@@ -15,7 +15,7 @@ static_resources:
     address:
       socket_address:
         protocol: TCP
-        address: 0.0.0.0
+        address: 8.8.8.8
         port_value: 10000
     api_listener:
       api_listener:

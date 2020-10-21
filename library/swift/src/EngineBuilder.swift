@@ -13,7 +13,7 @@ public final class EngineBuilder: NSObject {
     case custom(String)
   }
 
-  private var statsDomain: String = "0.0.0.0"
+  private var statsDomain: String = "8.8.8.8"
   private var connectTimeoutSeconds: UInt32 = 30
   private var dnsRefreshSeconds: UInt32 = 60
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
@@ -172,7 +172,7 @@ public final class EngineBuilder: NSObject {
     let engine = self.engineType.init()
     switch self.base {
     case .custom(let yaml):
-      return EngineImpl(configYAML: yaml, logLevel: self.logLevel, engine: engine,
+      return EngineImpl(configYAML: yaml, logLevel: .debug, engine: engine,
                         onEngineRunning: self.onEngineRunning)
     case .standard:
       let config = EnvoyConfiguration(
@@ -186,7 +186,7 @@ public final class EngineBuilder: NSObject {
         appVersion: self.appVersion,
         appId: self.appId,
         virtualClusters: self.virtualClusters)
-      return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
+      return EngineImpl(config: config, logLevel: .debug, engine: engine,
                         onEngineRunning: self.onEngineRunning)
     }
   }
