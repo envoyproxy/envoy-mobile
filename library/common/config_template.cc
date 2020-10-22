@@ -236,7 +236,4 @@ layered_runtime:
       static_layer:
         overload:
           global_downstream_max_connections: 50000
-        envoy:
-          restart_features:
-            use_apple_api_for_dns_lookups: false
 )";
