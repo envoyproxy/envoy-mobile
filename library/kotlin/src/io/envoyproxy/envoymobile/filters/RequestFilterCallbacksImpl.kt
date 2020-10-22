@@ -10,6 +10,6 @@ internal class RequestFilterCallbacksImpl constructor(
 ) : RequestFilterCallbacks {
 
   override fun resumeRequest() {
-    callbacks.resumeIteration();
+    callbacks.resumeIteration()
   }
 }

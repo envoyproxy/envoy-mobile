@@ -10,6 +10,6 @@ internal class ResponseFilterCallbacksImpl constructor(
 ) : ResponseFilterCallbacks {
 
   override fun resumeResponse() {
-    callbacks.resumeIteration();
+    callbacks.resumeIteration()
   }
 }

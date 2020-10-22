@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilter
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import java.nio.ByteBuffer
 
@@ -109,7 +109,8 @@ internal class EnvoyHTTPFilterAdapter(
         headers?.let(::RequestHeaders),
         data,
         trailers?.let(::RequestTrailers),
-        endStream)
+        endStream
+      )
       return when (result) {
         is FilterResumeStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.headers?.headers, result.data, result.trailers?.headers)
       }
@@ -129,7 +130,8 @@ internal class EnvoyHTTPFilterAdapter(
         headers?.let(::ResponseHeaders),
         data,
         trailers?.let(::ResponseTrailers),
-        endStream)
+        endStream
+      )
       return when (result) {
         is FilterResumeStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.headers?.headers, result.data, result.trailers?.headers)
       }
