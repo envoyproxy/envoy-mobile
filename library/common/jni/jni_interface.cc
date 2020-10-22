@@ -380,6 +380,8 @@ static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks ca
   jmethodID jmid_setRequestFilterCallbacks =
       env->GetMethodID(jcls_JvmCallbackContext, "setRequestFilterCallbacks", "(J)V");
   env->CallVoidMethod(j_context, jmid_setRequestFilterCallbacks, callback_handle);
+
+  env->DeleteLocalRef(jcls_JvmCallbackContext);
 }
 
 static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks,
@@ -399,6 +401,8 @@ static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
   jmethodID jmid_setResponseFilterCallbacks =
       env->GetMethodID(jcls_JvmCallbackContext, "setResponseFilterCallbacks", "(J)V");
   env->CallVoidMethod(j_context, jmid_setResponseFilterCallbacks, callback_handle);
+
+  env->DeleteLocalRef(jcls_JvmCallbackContext);
 }
 
 static envoy_filter_resume_status
