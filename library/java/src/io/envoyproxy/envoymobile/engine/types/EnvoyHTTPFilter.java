@@ -68,14 +68,15 @@ public interface EnvoyHTTPFilter {
    * @param data,     pending data that has not yet been forwarded along the filter chain.
    * @param trailers, pending trailers that have not yet been forwarded along the filter chain.
    */
-  Object[] onResumeRequest(Map<String, List<String>> headers, ByteBuffer data, Map<String, List<String>> trailers, boolean endStream);
+  Object[] onResumeRequest(Map<String, List<String>> headers, ByteBuffer data,
+                           Map<String, List<String>> trailers, boolean endStream);
 
   /**
    * Provides asynchronous callbacks to implementations that elect to use them.
    *
    * @param callbacks, thread-safe internal callbacks that enable asynchronous filter interaction.
    */
- void setResponseFilterCallbacks(EnvoyHTTPFilterCallbacks callbacks);
+  void setResponseFilterCallbacks(EnvoyHTTPFilterCallbacks callbacks);
 
   /**
    * Called when response filter iteration has been asynchronsouly resumed via callback.
@@ -84,6 +85,6 @@ public interface EnvoyHTTPFilter {
    * @param data,     pending data that has not yet been forwarded along the filter chain.
    * @param trailers, pending trailers that have not yet been forwarded along the filter chain.
    */
-  Object[] onResumeResponse(Map<String, List<String>> headers, ByteBuffer data, Map<String, List<String>> trailers, boolean endStream);
-
+  Object[] onResumeResponse(Map<String, List<String>> headers, ByteBuffer data,
+                            Map<String, List<String>> trailers, boolean endStream);
 }

@@ -117,9 +117,10 @@ class JvmFilterContext {
   }
 
   /**
-   * 
+   *
    */
-  public Object onResumeRequest(long headerCount, byte[] data, long trailerCount, boolean endStream) {
+  public Object onResumeRequest(long headerCount, byte[] data, long trailerCount,
+                                boolean endStream) {
     // Headers are optional in this call, and a negative length indicates omission.
     Map<String, List<String>> headers = null;
     if (headerCount >= 0) {
@@ -139,7 +140,8 @@ class JvmFilterContext {
   /**
    *
    */
-  public Object onResumeResponse(long headerCount, byte[] data, long trailerCount, boolean endStream) {
+  public Object onResumeResponse(long headerCount, byte[] data, long trailerCount,
+                                 boolean endStream) {
     // Headers are optional in this call, and a negative length indicates omission.
     Map<String, List<String>> headers = null;
     if (headerCount >= 0) {

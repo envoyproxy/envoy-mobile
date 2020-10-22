@@ -363,7 +363,8 @@ static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_h
                                         /*trailers*/ native_headers};
 }
 
-static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks, const void* context) {
+static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
+                                                  const void* context) {
 
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_http_filter_set_request_callbacks");
 
@@ -371,7 +372,8 @@ static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks ca
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
 
-  envoy_http_filter_callbacks* on_heap_callbacks = static_cast<envoy_http_filter_callbacks*>(safe_malloc(sizeof(envoy_http_filter_callbacks)));
+  envoy_http_filter_callbacks* on_heap_callbacks =
+      static_cast<envoy_http_filter_callbacks*>(safe_malloc(sizeof(envoy_http_filter_callbacks)));
   *on_heap_callbacks = callbacks;
   jlong callback_handle = reinterpret_cast<jlong>(on_heap_callbacks);
 
@@ -380,7 +382,8 @@ static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks ca
   env->CallVoidMethod(j_context, jmid_setRequestFilterCallbacks, callback_handle);
 }
 
-static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks, const void* context) {
+static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks,
+                                                   const void* context) {
 
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_http_filter_set_response_callbacks");
 
@@ -388,7 +391,8 @@ static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
 
-  envoy_http_filter_callbacks* on_heap_callbacks = static_cast<envoy_http_filter_callbacks*>(safe_malloc(sizeof(envoy_http_filter_callbacks)));
+  envoy_http_filter_callbacks* on_heap_callbacks =
+      static_cast<envoy_http_filter_callbacks*>(safe_malloc(sizeof(envoy_http_filter_callbacks)));
   *on_heap_callbacks = callbacks;
   jlong callback_handle = reinterpret_cast<jlong>(on_heap_callbacks);
 
@@ -398,8 +402,8 @@ static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
 }
 
 static envoy_filter_resume_status
-jvm_http_filter_on_resume(const char* method, envoy_headers *headers, envoy_data *data,
-                          envoy_headers *trailers, bool end_stream, const void* context) {
+jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data* data,
+                          envoy_headers* trailers, bool end_stream, const void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_resume");
 
   JNIEnv* env = get_env();
@@ -432,7 +436,8 @@ jvm_http_filter_on_resume(const char* method, envoy_headers *headers, envoy_data
       env->GetMethodID(jcls_JvmCallbackContext, method, "(J)Ljava/lang/Object;");
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
-  jobjectArray result = static_cast<jobjectArray>(env->CallObjectMethod(j_context, jmid_onResume, headers_length, j_in_data, trailers_length));
+  jobjectArray result = static_cast<jobjectArray>(
+      env->CallObjectMethod(j_context, jmid_onResume, headers_length, j_in_data, trailers_length));
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
 
@@ -459,20 +464,20 @@ jvm_http_filter_on_resume(const char* method, envoy_headers *headers, envoy_data
 }
 
 static envoy_filter_resume_status
-jvm_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envoy_headers *trailers,
-                                  bool end_stream, const void *context) {
+jvm_http_filter_on_resume_request(envoy_headers* headers, envoy_data* data, envoy_headers* trailers,
+                                  bool end_stream, const void* context) {
   return jvm_http_filter_on_resume("onResumeRequest", headers, data, trailers, end_stream, context);
 }
 
 static envoy_filter_resume_status
-jvm_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data, envoy_headers *trailers,
-                                  bool end_stream, const void *context) {
-  return jvm_http_filter_on_resume("onResumeResponse", headers, data, trailers, end_stream, context);
+jvm_http_filter_on_resume_response(envoy_headers* headers, envoy_data* data,
+                                   envoy_headers* trailers, bool end_stream, const void* context) {
+  return jvm_http_filter_on_resume("onResumeResponse", headers, data, trailers, end_stream,
+                                   context);
 }
 
 static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
-                                                  const void *context) {
-}
+                                                  const void* context) {}
 
 static void* jvm_on_error(envoy_error error, void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_error");
@@ -626,7 +631,8 @@ Java_io_envoyproxy_envoymobile_engine_EnvoyHTTPFilterCallbacksImpl_callResumeIte
   // Context is only passed here to ensure it's not inadvertently gc'd during execution of this
   // function. To be extra safe, do an explicit retain with a GlobalRef.
   jobject retained_context = env->NewGlobalRef(j_context);
-  envoy_http_filter_callbacks* callbacks = reinterpret_cast<envoy_http_filter_callbacks*>(callback_handle);
+  envoy_http_filter_callbacks* callbacks =
+      reinterpret_cast<envoy_http_filter_callbacks*>(callback_handle);
   callbacks->resume_iteration(callbacks->callback_context);
   env->DeleteGlobalRef(retained_context);
 }
@@ -635,7 +641,8 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_EnvoyHTTPFilterCallbacksImpl_callReleaseCallbacks(
     JNIEnv* env, jclass, jlong callback_handle) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "callReleaseCallbacks");
-  envoy_http_filter_callbacks* callbacks = reinterpret_cast<envoy_http_filter_callbacks*>(callback_handle);
+  envoy_http_filter_callbacks* callbacks =
+      reinterpret_cast<envoy_http_filter_callbacks*>(callback_handle);
   callbacks->release_callbacks(callbacks->callback_context);
   free(callbacks);
 }
