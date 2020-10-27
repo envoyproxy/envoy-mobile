@@ -1,11 +1,11 @@
 import Envoy
 import Foundation
 
-class AsyncDemoFilter: AsyncResponseFilter {
-  private var internalCallbacks: ResponseFilterCallbacks?
-  private lazy var callbacks: ResponseFilterCallbacks = {
-    internalCallbacks! //swiftlint:disable:this force_unwrapping
-  }()
+/// Example of a more complex HTTP filter that pauses processing on the response filter chain,
+/// buffers until the response is commplete, then asynchronously triggers filter chain resumption
+/// while setting a new header. Also demonstrates safety of re-entrancy of async callbacks.
+final class AsyncDemoFilter: AsyncResponseFilter {
+  private var callbacks: ResponseFilterCallbacks!
 
   func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
     -> FilterHeadersStatus<ResponseHeaders>
@@ -14,6 +14,8 @@ class AsyncDemoFilter: AsyncResponseFilter {
   }
 
   func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
+    // If this is the end of the stream, asynchronously resume response processing via callback.
+    // Note this call is re-entrant (but legal and safe).
     if endStream {
       callbacks.resumeResponse()
     }
@@ -23,12 +25,14 @@ class AsyncDemoFilter: AsyncResponseFilter {
   func onResponseTrailers(
     _ trailers: ResponseTrailers
   ) -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+    // Trailers imply end of stream, so asynchronously resume response processing via callback.
+    // Note this call is re-entrant (but legal and safe).
     callbacks.resumeResponse()
     return .stopIteration
   }
 
   func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks) {
-    self.internalCallbacks = callbacks
+    self.callbacks = callbacks
   }
 
   func onResumeResponse(
@@ -38,11 +42,11 @@ class AsyncDemoFilter: AsyncResponseFilter {
     endStream: Bool
   ) -> FilterResumeStatus<ResponseHeaders, ResponseTrailers> {
     guard let headers = headers else {
-      // Iteration stopped on headers, so headers must be present.
+      // Iteration was stopped on headers, so headers must be present.
       fatalError("Filter behavior violation!")
     }
     let builder = headers.toResponseHeadersBuilder()
-    builder.add(name: "async-filter-demo", value: "1")
+      .add(name: "async-filter-demo", value: "1")
     return .resumeIteration(headers: builder.build(), data: data, trailers: trailers)
   }
 
