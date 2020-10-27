@@ -70,7 +70,8 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
   iteration_state_ = IterationState::Ongoing;
 }
 
-void PlatformBridgeFilter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) {
+void PlatformBridgeFilter::setDecoderFilterCallbacks(
+    Http::StreamDecoderFilterCallbacks& callbacks) {
   decoder_callbacks_ = &callbacks;
 
   if (platform_filter_.set_request_callbacks) {
@@ -84,7 +85,8 @@ void PlatformBridgeFilter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCa
   }
 }
 
-void PlatformBridgeFilter::setEncoderFilterCallbacks(Http::StreamEncoderFilterCallbacks& callbacks) {
+void PlatformBridgeFilter::setEncoderFilterCallbacks(
+    Http::StreamEncoderFilterCallbacks& callbacks) {
   encoder_callbacks_ = &callbacks;
 
   if (platform_filter_.set_response_callbacks) {
