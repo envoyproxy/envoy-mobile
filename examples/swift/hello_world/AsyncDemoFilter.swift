@@ -2,7 +2,7 @@ import Envoy
 import Foundation
 
 /// Example of a more complex HTTP filter that pauses processing on the response filter chain,
-/// buffers until the response is commplete, then asynchronously triggers filter chain resumption
+/// buffers until the response is complete, then asynchronously triggers filter chain resumption
 /// while setting a new header. Also demonstrates safety of re-entrancy of async callbacks.
 final class AsyncDemoFilter: AsyncResponseFilter {
   private var callbacks: ResponseFilterCallbacks!
