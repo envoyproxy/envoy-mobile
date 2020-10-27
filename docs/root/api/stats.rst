@@ -28,7 +28,7 @@ Store the counter instance, or the gauge instance if you are working with gauge.
 ``Counter``
 -----------
 
-A ``Counter`` can increament, call the ``increment`` method to increment the counter wherever it applies.
+A ``Counter`` can increment, call the ``increment`` method to increment the counter wherever it applies.
 
 The count argument of ``increment`` is defaulted with a value of ``1``.
 
