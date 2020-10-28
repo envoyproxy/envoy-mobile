@@ -259,9 +259,17 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_data("onRequestData", data, end_stream, const_cast<void*>(context)));
+  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+
+  envoy_headers* pending_headers = nullptr;
+  if (size == 3) {
+    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+    pending_headers = to_native_headers_ptr(env, j_headers);
+    env->DeleteLocalRef(j_headers);
+  }
 
   int unboxed_status = unbox_integer(env, status);
   envoy_data native_data = buffer_to_native_data(env, j_data);
@@ -271,7 +279,8 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
   env->DeleteLocalRef(j_data);
 
   return (envoy_filter_data_status){/*status*/ unboxed_status,
-                                    /*data*/ native_data};
+                                    /*data*/ native_data,
+                                    /*pending_headers*/ pending_headers};
 }
 
 static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data, bool end_stream,
@@ -279,9 +288,17 @@ static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_data("onResponseData", data, end_stream, const_cast<void*>(context)));
+  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+
+  envoy_headers* pending_headers = nullptr;
+  if (size == 3) {
+    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+    pending_headers = to_native_headers_ptr(env, j_headers);
+    env->DeleteLocalRef(j_headers);
+  }
 
   int unboxed_status = unbox_integer(env, status);
   envoy_data native_data = buffer_to_native_data(env, j_data);
@@ -291,7 +308,8 @@ static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data
   env->DeleteLocalRef(j_data);
 
   return (envoy_filter_data_status){/*status*/ unboxed_status,
-                                    /*data*/ native_data};
+                                    /*data*/ native_data,
+                                    /*pending_headers*/ pending_headers};
 }
 
 static void* jvm_on_metadata(envoy_headers metadata, void* context) {
@@ -328,19 +346,34 @@ static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_he
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_trailers("onRequestTrailers", trailers, const_cast<void*>(context)));
+  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   int unboxed_status = unbox_integer(env, status);
-  envoy_headers native_headers = to_native_headers(env, j_trailers);
+  envoy_headers native_trailers = to_native_headers(env, j_trailers);
+
+  envoy_headers* pending_headers = nullptr;
+  envoy_data* pending_data = nullptr;
+  if (size == 4) {
+    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
+    pending_headers = to_native_headers_ptr(env, j_headers);
+    env->DeleteLocalRef(j_headers);
+
+    jobject j_data = static_cast<jobject>(env->GetObjectArrayElement(result, 3));
+    pending_data = buffer_to_native_data_ptr(env, j_data);
+    env->DeleteLocalRef(j_data);
+  }
 
   env->DeleteLocalRef(result);
   env->DeleteLocalRef(status);
   env->DeleteLocalRef(j_trailers);
 
   return (envoy_filter_trailers_status){/*status*/ unboxed_status,
-                                        /*trailers*/ native_headers};
+                                        /*trailers*/ native_trailers,
+                                        /*pending_headers*/ pending_headers,
+                                        /*pending_data*/ pending_data};
 }
 
 static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_headers trailers,
@@ -348,19 +381,34 @@ static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_h
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_trailers("onResponseTrailers", trailers, const_cast<void*>(context)));
+  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   int unboxed_status = unbox_integer(env, status);
-  envoy_headers native_headers = to_native_headers(env, j_trailers);
+  envoy_headers native_trailers = to_native_headers(env, j_trailers);
+
+  envoy_headers* pending_headers = nullptr;
+  envoy_data* pending_data = nullptr;
+  if (size == 4) {
+    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
+    pending_headers = to_native_headers_ptr(env, j_headers);
+    env->DeleteLocalRef(j_headers);
+
+    jobject j_data = static_cast<jobject>(env->GetObjectArrayElement(result, 3));
+    pending_data = buffer_to_native_data_ptr(env, j_data);
+    env->DeleteLocalRef(j_data);
+  }
 
   env->DeleteLocalRef(result);
   env->DeleteLocalRef(status);
   env->DeleteLocalRef(j_trailers);
 
   return (envoy_filter_trailers_status){/*status*/ unboxed_status,
-                                        /*trailers*/ native_headers};
+                                        /*trailers*/ native_trailers,
+                                        /*pending_headers*/ pending_headers,
+                                        /*pending_data*/ pending_data};
 }
 
 static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
