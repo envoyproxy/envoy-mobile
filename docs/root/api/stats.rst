@@ -7,12 +7,12 @@ Stats
 ``StatsClient``
 ---------------
 
-Envoy Mobile's stats function currently supports two type of stats: ``Counter`` and ``Gauge``.
+Envoy Mobile's stats functionality currently supports two type of stats: ``Counter`` and ``Gauge``.
 
 To use Envoy Mobile's stats function, obtain an instance of ``StatsClient`` from ``Engine``
 (refer to :ref:`api_starting_envoy` for building an engine instance), and store the stats client to
 create ``Counter`` or ``Gauge`` instances. The following code examples show how to create
-a ``Counter``, and it's similar in the way a ``Gauge`` is created.
+a ``Counter``, and the same approach is used to create a ``Gauge``.
 
 **Kotlin example**::
 
