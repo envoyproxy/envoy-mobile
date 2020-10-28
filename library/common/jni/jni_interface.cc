@@ -265,8 +265,9 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   envoy_headers* pending_headers = nullptr;
+  // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (size == 3) {
-    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
   }
@@ -294,8 +295,9 @@ static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   envoy_headers* pending_headers = nullptr;
+  // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (size == 3) {
-    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
   }
@@ -356,6 +358,7 @@ static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_he
 
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
+  // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (size == 4) {
     jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
@@ -391,6 +394,7 @@ static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_h
 
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
+  // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (size == 4) {
     jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
