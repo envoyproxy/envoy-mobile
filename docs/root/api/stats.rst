@@ -9,7 +9,10 @@ Stats
 
 Envoy Mobile's stats function currently supports two type of stats: ``Counter`` and ``Gauge``.
 
-To use Envoy Mobile's stats function, obtain an instance of ``StatsClient`` from ``Engine`` (refer to :ref:`api_starting_envoy` for building an engine instance), and store the stats client to create ``Counter`` or ``Gauge`` instances. The following code examples show how to create a ``Counter``, and it's similar in the way a ``Gauge`` is created.
+To use Envoy Mobile's stats function, obtain an instance of ``StatsClient`` from ``Engine``
+(refer to :ref:`api_starting_envoy` for building an engine instance), and store the stats client to
+create ``Counter`` or ``Gauge`` instances. The following code examples show how to create
+a ``Counter``, and it's similar in the way a ``Gauge`` is created.
 
 **Kotlin example**::
 
@@ -20,15 +23,18 @@ To use Envoy Mobile's stats function, obtain an instance of ``StatsClient`` from
   statsClient.counter(elements: ["foo", "bar"])
 
 
-The ``counter`` method from stats client takes a variable number of elements and returns a ``Counter`` instance, the elements are used to form a dot(.) delimited string, this string serves as the identifier of the counter. The string formed from the example code above is ``foo.bar``.
+The ``counter`` method from the stats client takes a variable number of elements and returns a
+``Counter`` instance. The elements provided are used to form a dot(``.``) delimited string that
+serves as the identifier of the counter. The string formed from the example code above is
+``foo.bar``.
 
-Store the counter instance, or the gauge instance if you are working with gauge.
+Store the instance of the counter or gauge, then use it to increment as necessary.
 
 -----------
 ``Counter``
 -----------
 
-A ``Counter`` can increment, call the ``increment`` method to increment the counter wherever it applies.
+A ``Counter`` can be incremented by calling the ``increment()`` method when applicable.
 
 The count argument of ``increment`` is defaulted with a value of ``1``.
 
@@ -49,7 +55,7 @@ The count argument of ``increment`` is defaulted with a value of ``1``.
 ---------
 ``Gauge``
 ---------
-A ``Gauge`` can be set with a value, added an amount to or subtracted an amount from.
+The value of a ``Gauge`` can be incremented, decremented, or reassigned.
 
 **Example**::
 
