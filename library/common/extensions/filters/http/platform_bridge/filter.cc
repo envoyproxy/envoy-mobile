@@ -58,7 +58,7 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
 
   // If init_filter is missing, zero out the rest of the struct for safety.
   if (platform_filter_.init_filter == nullptr) {
-    ENVOY_LOG(trace, "PlatformBridgeFilter({}): missing initializer", filter_name_);
+    ENVOY_LOG(debug, "PlatformBridgeFilter({}): missing initializer", filter_name_);
     platform_filter_ = {};
     return;
   }
