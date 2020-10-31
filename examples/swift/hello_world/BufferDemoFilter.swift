@@ -6,7 +6,7 @@ import Foundation
 /// header.
 final class BufferDemoFilter: ResponseFilter {
   private var headers: ResponseHeaders!
-  private var body: Data!
+  private var body: Data?
 
   func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
     -> FilterHeadersStatus<ResponseHeaders>
@@ -23,7 +23,7 @@ final class BufferDemoFilter: ResponseFilter {
     if endStream {
       let builder = self.headers.toResponseHeadersBuilder()
         .add(name: "buffer-filter-demo", value: "1")
-      return .resumeIteration(headers: builder.build(), data: self.body)
+      return .resumeIteration(headers: builder.build(), data: data)
     }
     return .stopIterationAndBuffer
   }
