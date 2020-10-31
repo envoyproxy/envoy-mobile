@@ -263,6 +263,9 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
   jobject status = env->GetObjectArrayElement(result, 0);
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
+  int unboxed_status = unbox_integer(env, status);
+  envoy_data native_data = buffer_to_native_data(env, j_data);
+
   envoy_headers* pending_headers = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (unboxed_status == kEnvoyFilterDataStatusResumeIteration) {
@@ -270,9 +273,6 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
   }
-
-  int unboxed_status = unbox_integer(env, status);
-  envoy_data native_data = buffer_to_native_data(env, j_data);
 
   env->DeleteLocalRef(result);
   env->DeleteLocalRef(status);
@@ -292,6 +292,9 @@ static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data
   jobject status = env->GetObjectArrayElement(result, 0);
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
+  int unboxed_status = unbox_integer(env, status);
+  envoy_data native_data = buffer_to_native_data(env, j_data);
+
   envoy_headers* pending_headers = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (unboxed_status == kEnvoyFilterDataStatusResumeIteration) {
@@ -299,9 +302,6 @@ static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
   }
-
-  int unboxed_status = unbox_integer(env, status);
-  envoy_data native_data = buffer_to_native_data(env, j_data);
 
   env->DeleteLocalRef(result);
   env->DeleteLocalRef(status);
