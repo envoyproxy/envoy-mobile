@@ -22,7 +22,7 @@ final class BufferDemoFilter: ResponseFilter {
     // If this is the end of the stream, resume processing of the (now fully-buffered) response.
     if endStream {
       let builder = self.headers.toResponseHeadersBuilder()
-        .add(name: "buffer-filter-demo", value: "1") 
+        .add(name: "buffer-filter-demo", value: "1")
       return .resumeIteration(headers: builder.build(), data: self.body)
     }
     return .stopIterationAndBuffer
