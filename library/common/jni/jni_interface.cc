@@ -259,14 +259,13 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_data("onRequestData", data, end_stream, const_cast<void*>(context)));
-  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   envoy_headers* pending_headers = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
-  if (size == 3) {
+  if (unboxed_status == kEnvoyFilterDataStatusResumeIteration) {
     jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
@@ -289,14 +288,13 @@ static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_data("onResponseData", data, end_stream, const_cast<void*>(context)));
-  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
 
   envoy_headers* pending_headers = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
-  if (size == 3) {
+  if (unboxed_status == kEnvoyFilterDataStatusResumeIteration) {
     jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
@@ -348,7 +346,6 @@ static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_he
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_trailers("onRequestTrailers", trailers, const_cast<void*>(context)));
-  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
@@ -359,7 +356,7 @@ static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_he
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
-  if (size == 4) {
+  if (unboxed_status == kEnvoyFilterTrailersStatusResumeIteration) {
     jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
@@ -384,7 +381,6 @@ static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_h
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_trailers("onResponseTrailers", trailers, const_cast<void*>(context)));
-  jsize size = env->GetArrayLength(result);
 
   jobject status = env->GetObjectArrayElement(result, 0);
   jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
@@ -395,7 +391,7 @@ static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_h
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
-  if (size == 4) {
+  if (unboxed_status == kEnvoyFilterTrailersStatusResumeIteration) {
     jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
     pending_headers = to_native_headers_ptr(env, j_headers);
     env->DeleteLocalRef(j_headers);
