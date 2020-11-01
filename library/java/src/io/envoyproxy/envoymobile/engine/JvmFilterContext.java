@@ -134,7 +134,8 @@ class JvmFilterContext {
       assert trailerUtility.validateCount(trailerCount);
       trailers = trailerUtility.retrieveHeaders();
     }
-    return toJniFilterResumeStatus(filter.onResumeRequest(headers, dataBuffer, trailers, endStream));
+    return toJniFilterResumeStatus(
+        filter.onResumeRequest(headers, dataBuffer, trailers, endStream));
   }
 
   /**
@@ -155,7 +156,8 @@ class JvmFilterContext {
       assert trailerUtility.validateCount(trailerCount);
       trailers = trailerUtility.retrieveHeaders();
     }
-    return toJniFilterResumeStatus(filter.onResumeResponse(headers, dataBuffer, trailers, endStream));
+    return toJniFilterResumeStatus(
+        filter.onResumeResponse(headers, dataBuffer, trailers, endStream));
   }
 
   /**
