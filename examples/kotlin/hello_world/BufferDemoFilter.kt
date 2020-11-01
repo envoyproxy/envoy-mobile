@@ -1,6 +1,5 @@
 package io.envoyproxy.envoymobile.helloenvoykotlin
 
-import android.util.Log
 import io.envoyproxy.envoymobile.EnvoyError
 import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
@@ -52,9 +51,11 @@ class BufferDemoFilter : ResponseFilter {
     return FilterTrailersStatus.ResumeIteration(builder.build(), this.body, trailers)
   }
 
+  @Suppress("EmptyFunctionBlock")
   override fun onError(error: EnvoyError) {
   }
 
+  @Suppress("EmptyFunctionBlock")
   override fun onCancel() {
   }
 }
