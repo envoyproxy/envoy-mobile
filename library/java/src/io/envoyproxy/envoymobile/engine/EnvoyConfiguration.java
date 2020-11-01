@@ -19,7 +19,7 @@ public class EnvoyConfiguration {
   public final String appId;
   public final String virtualClusters;
 
-  private static final Pattern KEY_PATTERN = Pattern.compile("{{ (.+) }}");
+  private static final Pattern KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
   /**
    * Create a new instance of the configuration.
@@ -93,7 +93,7 @@ public class EnvoyConfiguration {
 
   static class ConfigurationException extends RuntimeException {
     ConfigurationException(String unresolvedKey) {
-      super(unresolvedKey != null ? "Unresolved template key: " + unresolvedKey : "butts");
+      super("Unresolved template key: " + unresolvedKey);
     }
   }
 }
