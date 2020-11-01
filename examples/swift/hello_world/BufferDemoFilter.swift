@@ -31,8 +31,10 @@ final class BufferDemoFilter: ResponseFilter {
   func onResponseTrailers(
     _ trailers: ResponseTrailers
   ) -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+    let builder = self.headers.toResponseHeadersBuilder()
+      .add(name: "buffer-filter-demo", value: "1")
     // Trailers imply end of stream; resume processing of the (now fully-buffered) response.
-    return .resumeIteration(data: self.body, trailers: trailers)
+    return .resumeIteration(headers: builder.build(), data: self.body, trailers: trailers)
   }
 
   func onError(_ error: EnvoyError) {}
