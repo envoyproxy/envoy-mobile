@@ -19,7 +19,7 @@ public class EnvoyConfiguration {
   public final String appId;
   public final String virtualClusters;
 
-  private static final Pattern KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
+  private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
   /**
    * Create a new instance of the configuration.
@@ -84,7 +84,7 @@ public class EnvoyConfiguration {
             .replace("{{ app_id }}", appId)
             .replace("{{ virtual_clusters }}", virtualClusters);
 
-    final Matcher unresolvedKeys = KEY_PATTERN.matcher(resolvedConfiguration);
+    final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);
     if (unresolvedKeys.find()) {
       throw new ConfigurationException(unresolvedKeys.group(1));
     }
