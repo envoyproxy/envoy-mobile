@@ -109,13 +109,17 @@ open class EngineBuilder(
   /**
    * Add an HTTP filter factory used to create filters for streams sent by this client.
    *
+   * @param name Custom name to use for this filter factory. Useful for having
+   *             more meaningful trace logs, but not required. Should be unique
+   *             per factory registered.
    * @param factory closure returning an instantiated filter.
    *
    * @return this builder.
    */
-  fun addFilter(factory: () -> Filter): EngineBuilder {
-    val filterName = UUID.randomUUID().toString()
-    this.filterChain.add(FilterFactory(filterName, factory))
+  fun addFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
+    EngineBuilder
+  {
+    this.filterChain.add(FilterFactory(name, factory))
     return this
   }
 
