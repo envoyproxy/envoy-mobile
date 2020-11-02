@@ -24,7 +24,12 @@ private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val REQUEST_AUTHORITY = "api.lyft.com"
 private const val REQUEST_PATH = "/ping"
 private const val REQUEST_SCHEME = "https"
-private val FILTERED_HEADERS = setOf("server", "filter-demo", "buffer-filter-demo", "x-envoy-upstream-service-time")
+private val FILTERED_HEADERS = setOf(
+  "server",
+  "filter-demo",
+  "buffer-filter-demo",
+  "x-envoy-upstream-service-time"
+)
 
 class MainActivity : Activity() {
   private val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
