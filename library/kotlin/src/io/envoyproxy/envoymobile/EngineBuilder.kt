@@ -117,11 +117,10 @@ open class EngineBuilder(
    * @return this builder.
    */
   fun addFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
-    EngineBuilder
-  {
-    this.filterChain.add(FilterFactory(name, factory))
-    return this
-  }
+    EngineBuilder {
+      this.filterChain.add(FilterFactory(name, factory))
+      return this
+    }
 
   /**
    * Set a closure to be called when the engine finishes its async startup and begins running.
