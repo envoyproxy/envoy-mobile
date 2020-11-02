@@ -7,10 +7,14 @@ import Foundation
 final class BufferDemoFilter: ResponseFilter {
   private var headers: ResponseHeaders!
   private var body: Data?
+  private var didReceiveRequestHeaders = false
 
   func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
     -> FilterHeadersStatus<ResponseHeaders>
   {
+    if !self.didReceiveRequestHeaders {
+      fatalError("Received response headers without request headers")
+    }
     self.headers = headers
     return .stopIteration
   }
@@ -40,4 +44,23 @@ final class BufferDemoFilter: ResponseFilter {
   func onError(_ error: EnvoyError) {}
 
   func onCancel() {}
+}
+
+extension BufferDemoFilter: RequestFilter {
+    public func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool)
+        -> FilterHeadersStatus<RequestHeaders>
+    {
+        self.didReceiveRequestHeaders = true
+        return .continue(headers: headers)
+    }
+
+    public func onRequestData(_ body: Data, endStream: Bool) -> FilterDataStatus<RequestHeaders> {
+        return .continue(data: body)
+    }
+
+    public func onRequestTrailers(_ trailers: RequestTrailers)
+        -> FilterTrailersStatus<RequestHeaders, RequestTrailers>
+    {
+        return .continue(trailers: trailers)
+    }
 }
