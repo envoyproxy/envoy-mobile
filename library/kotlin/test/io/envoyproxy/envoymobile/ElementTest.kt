@@ -12,7 +12,7 @@ class ElementTest {
 
   @Test(expected = IllegalArgumentException::class)
   fun `throw exception when element name is rejected`() {
-    // Should just work
+    // Should throw exception
     Element("foo9")
   }
 }
