@@ -10,14 +10,13 @@ import java.util.regex.Pattern
 
 class Element(val element: String) {
   init {
-    if (!Pattern.compile(ELEMENT_REGEX).matcher(element).matches()) {
-      throw IllegalArgumentException(
+    require(ELEMENT_PATTERN.matcher(element).matches()) {
         "Element values must conform to the regex $ELEMENT_REGEX"
-      )
     }
   }
 
   companion object {
     private const val ELEMENT_REGEX = "^[A-Za-z_]+$"
+    private val ELEMENT_PATTERN = Pattern.compile(ELEMENT_REGEX)
   }
 }
