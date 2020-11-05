@@ -11,7 +11,7 @@ import java.util.regex.Pattern
 class Element(val element: String) {
   init {
     require(ELEMENT_PATTERN.matcher(element).matches()) {
-        "Element values must conform to the regex $ELEMENT_REGEX"
+      "Element values must conform to the regex $ELEMENT_REGEX"
     }
   }
 

@@ -6,13 +6,13 @@ class ElementTest {
 
   @Test
   fun `creates new element as expected`() {
-      // Should just work
-      Element("foo")
+    // Should just work
+    Element("foo")
   }
 
   @Test(expected = IllegalArgumentException::class)
   fun `throw exception when element name is rejected`() {
-      // Should just work
-      Element("foo9")
+    // Should just work
+    Element("foo9")
   }
 }
