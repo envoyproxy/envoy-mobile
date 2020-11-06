@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import android.app.Application;
+import android.util.Log;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
@@ -11,9 +12,22 @@ public class AndroidEngineImpl implements EnvoyEngine {
 
   public AndroidEngineImpl(Application application) {
     this.application = application;
-    this.envoyEngine = new EnvoyEngineImpl();
+    long jniStart = System.currentTimeMillis();
+    JniLibrary.load();
+    long jniEnd = System.currentTimeMillis();
+    long handle = JniLibrary.initEngine();
+    long engineInitEnd = System.currentTimeMillis();
+    this.envoyEngine = new EnvoyEngineImpl(handle);
+    long envoyEngineImplEnd = System.currentTimeMillis();
     AndroidJniLibrary.load(application.getBaseContext());
+    long androidJniLoad = System.currentTimeMillis();
     AndroidNetworkMonitor.load(application.getBaseContext());
+    long androidNetworkMonitorLoad = System.currentTimeMillis();
+    Log.d("AndroidEngineImpl","~~~ jniStart " + (jniEnd - jniStart));
+    Log.d("AndroidEngineImpl","~~~ engineInitEnd " + (engineInitEnd - jniEnd));
+    Log.d("AndroidEngineImpl","~~~ envoyEngineImplEnd " + (envoyEngineImplEnd - engineInitEnd));
+    Log.d("AndroidEngineImpl","~~~ androidJniLoad " + (androidJniLoad - envoyEngineImplEnd));
+    Log.d("AndroidEngineImpl","~~~ androidNetworkMonitorLoad " + (androidNetworkMonitorLoad - androidJniLoad));
   }
 
   @Override

@@ -18,6 +18,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     this.engineHandle = JniLibrary.initEngine();
   }
 
+  public EnvoyEngineImpl(long engineHandle) {
+    this.engineHandle = engineHandle;
+  }
+
   /**
    * Creates a new stream with the provided callbacks.
    *

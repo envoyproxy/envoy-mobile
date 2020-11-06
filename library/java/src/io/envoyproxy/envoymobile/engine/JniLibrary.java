@@ -18,17 +18,17 @@ class JniLibrary {
 
   // Load and initialize Envoy and its dependencies, but only once.
   public static void load() {
-    if (loader != null) {
-      return;
-    }
-
-    synchronized (JavaLoader.class) {
-      if (loader != null) {
-        return;
-      }
-
+//    if (loader != null) {
+//      return;
+//    }
+//
+//    synchronized (JavaLoader.class) {
+//      if (loader != null) {
+//        return;
+//      }
+//
       loader = new JavaLoader();
-    }
+//    }
   }
 
   // Private helper class used by the load method to ensure the native library and
