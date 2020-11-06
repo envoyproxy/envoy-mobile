@@ -8,9 +8,9 @@ import java.util.regex.Pattern
  * Element values must conform to the [Element.ELEMENT_REGEX].
  */
 
-class Element(val element: String) {
+class Element(internal val value: String) {
   init {
-    require(ELEMENT_PATTERN.matcher(element).matches()) {
+    require(ELEMENT_PATTERN.matcher(value).matches()) {
       "Element values must conform to the regex $ELEMENT_REGEX"
     }
   }
