@@ -133,11 +133,11 @@ public class MainActivity extends Activity {
   }
 
   private void recordStats() {
-    final Counter counter = engine.statsClient().counter(
-      new Element("foo"), new Element("bar"), new Element("counter"));
+    final Counter counter = engine.statsClient().counter(new Element("foo"), new Element("bar"),
+                                                         new Element("counter"));
 
-    final Gauge gauge = engine.statsClient().gauge(
-      new Element("foo"), new Element("bar"), new Element("gauge"));
+    final Gauge gauge =
+        engine.statsClient().gauge(new Element("foo"), new Element("bar"), new Element("gauge"));
 
     counter.increment(1);
     counter.increment(5);

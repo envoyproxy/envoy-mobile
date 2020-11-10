@@ -107,11 +107,16 @@ final class ViewController: UITableViewController {
   }
 
   private func sendStats() {
-    let counter = statsClient!.counter(elements: ["foo", "bar", "counter"])
+    guard let statsClient = self.statsClient else {
+      NSLog("failed to send stats - Envoy is not running")
+      return
+    }
+
+    let counter = statsClient.counter(elements: ["foo", "bar", "counter"])
     counter.increment()
     counter.increment(count: 2)
 
-    let gauge = statsClient!.gauge(elements: ["foo", "bar", "counter"])
+    let gauge = statsClient.gauge(elements: ["foo", "bar", "counter"])
     gauge.set(value: 5)
     gauge.add(amount: 5)
     gauge.sub(amount: 5)

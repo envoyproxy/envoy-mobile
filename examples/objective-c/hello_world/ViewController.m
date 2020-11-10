@@ -127,17 +127,17 @@ NSString *_REQUEST_SCHEME = @"https";
 }
 
 - (void)sendStats {
-  Element *eleFoo = [[Element alloc] initWithStringLiteral: @"foo"];
-  Element *eleBar = [[Element alloc] initWithStringLiteral: @"bar"];
-  Element *eleCounter = [[Element alloc] initWithStringLiteral: @"counter"];
-  Element *eleGauge = [[Element alloc] initWithStringLiteral: @"gauge"];
-  id<Counter> counter = [self.statsClient counterWithElements: @[eleFoo, eleBar, eleCounter]];
-  [counter incrementWithCount: 1];
+  Element *eleFoo = [[Element alloc] initWithStringLiteral:@"foo"];
+  Element *eleBar = [[Element alloc] initWithStringLiteral:@"bar"];
+  Element *eleCounter = [[Element alloc] initWithStringLiteral:@"counter"];
+  Element *eleGauge = [[Element alloc] initWithStringLiteral:@"gauge"];
+  id<Counter> counter = [self.statsClient counterWithElements:@[ eleFoo, eleBar, eleCounter ]];
+  [counter incrementWithCount:1];
 
-  id<Gauge> gauge = [self.statsClient gaugeWithElements: @[eleFoo, eleBar, eleGauge]];
-  [gauge setWithValue: 1];
-  [gauge addWithAmount: 1];
-  [gauge subWithAmount: 1];
+  id<Gauge> gauge = [self.statsClient gaugeWithElements:@[ eleFoo, eleBar, eleGauge ]];
+  [gauge setWithValue:1];
+  [gauge addWithAmount:1];
+  [gauge subWithAmount:1];
 }
 
 #pragma mark - UITableView
