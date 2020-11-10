@@ -13,7 +13,8 @@ NSString *_REQUEST_SCHEME = @"https";
 #pragma mark - ViewController
 
 @interface ViewController ()
-@property (nonatomic, strong) id<StreamClient> client;
+@property (nonatomic, strong) id<StreamClient> streamClient;
+@property (nonatomic, strong) id<StatsClient> statsClient;
 @property (nonatomic, strong) NSArray<NSString *> *filteredHeaders;
 @property (nonatomic, strong) NSMutableArray<Result *> *results;
 @property (nonatomic, weak) NSTimer *requestTimer;
@@ -46,8 +47,10 @@ NSString *_REQUEST_SCHEME = @"https";
     NSLog(@"starting Envoy failed: %@", error);
   } else {
     NSLog(@"started Envoy, beginning requests...");
-    self.client = [engine streamClient];
+    self.streamClient = [engine streamClient];
+    self.statsClient = [engine statsClient];
     [self startRequests];
+    [self sendStats];
   }
 }
 
@@ -80,7 +83,7 @@ NSString *_REQUEST_SCHEME = @"https";
   RequestHeaders *headers = [builder build];
 
   __weak ViewController *weakSelf = self;
-  StreamPrototype *prototype = [self.client newStreamPrototype];
+  StreamPrototype *prototype = [self.streamClient newStreamPrototype];
   [prototype setOnResponseHeadersWithClosure:^(ResponseHeaders *headers, BOOL endStream) {
     int statusCode = [[[headers valueForName:@":status"] firstObject] intValue];
     NSString *message = [NSString stringWithFormat:@"received headers with status %i", statusCode];
@@ -121,6 +124,20 @@ NSString *_REQUEST_SCHEME = @"https";
 
   [self.results insertObject:result atIndex:0];
   [self.tableView reloadData];
+}
+
+- (void)sendStats {
+  Element *eleFoo = [[Element alloc] initWithStringLiteral: @"foo"];
+  Element *eleBar = [[Element alloc] initWithStringLiteral: @"bar"];
+  Element *eleCounter = [[Element alloc] initWithStringLiteral: @"counter"];
+  Element *eleGauge = [[Element alloc] initWithStringLiteral: @"gauge"];
+  id<Counter> counter = [self.statsClient counterWithElements: @[eleFoo, eleBar, eleCounter]];
+  [counter incrementWithCount: 1];
+
+  id<Gauge> gauge = [self.statsClient gaugeWithElements: @[eleFoo, eleBar, eleGauge]];
+  [gauge setWithValue: 1];
+  [gauge addWithAmount: 1];
+  [gauge subWithAmount: 1];
 }
 
 #pragma mark - UITableView
