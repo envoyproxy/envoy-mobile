@@ -114,12 +114,12 @@ final class ViewController: UITableViewController {
 
     let counter = statsClient.counter(elements: ["foo", "bar", "counter"])
     counter.increment()
-    counter.increment(count: 2)
+    counter.increment(count: 5)
 
     let gauge = statsClient.gauge(elements: ["foo", "bar", "counter"])
     gauge.set(value: 5)
-    gauge.add(amount: 5)
-    gauge.sub(amount: 5)
+    gauge.add(amount: 10)
+    gauge.sub(amount: 1)
   }
   // MARK: - UITableView
 

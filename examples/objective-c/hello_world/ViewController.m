@@ -127,16 +127,18 @@ NSString *_REQUEST_SCHEME = @"https";
 }
 
 - (void)sendStats {
-  Element *eleFoo = [[Element alloc] initWithStringLiteral:@"foo"];
-  Element *eleBar = [[Element alloc] initWithStringLiteral:@"bar"];
-  Element *eleCounter = [[Element alloc] initWithStringLiteral:@"counter"];
-  Element *eleGauge = [[Element alloc] initWithStringLiteral:@"gauge"];
-  id<Counter> counter = [self.statsClient counterWithElements:@[ eleFoo, eleBar, eleCounter ]];
+  Element *elementFoo = [[Element alloc] initWithStringLiteral:@"foo"];
+  Element *elementBar = [[Element alloc] initWithStringLiteral:@"bar"];
+  Element *elementCounter = [[Element alloc] initWithStringLiteral:@"counter"];
+  Element *elementGauge = [[Element alloc] initWithStringLiteral:@"gauge"];
+  id<Counter> counter =
+      [self.statsClient counterWithElements:@[ elementFoo, elementBar, elementCounter ]];
   [counter incrementWithCount:1];
+  [counter incrementWithCount:5];
 
-  id<Gauge> gauge = [self.statsClient gaugeWithElements:@[ eleFoo, eleBar, eleGauge ]];
-  [gauge setWithValue:1];
-  [gauge addWithAmount:1];
+  id<Gauge> gauge = [self.statsClient gaugeWithElements:@[ elementFoo, elementBar, elementGauge ]];
+  [gauge setWithValue:5];
+  [gauge addWithAmount:10];
   [gauge subWithAmount:1];
 }
 

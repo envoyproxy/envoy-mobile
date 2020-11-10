@@ -138,7 +138,7 @@ class MainActivity : Activity() {
     counter.increment(5)
 
     gauge.set(5)
-    gauge.sub(5)
-    gauge.add(5)
+    gauge.add(10)
+    gauge.sub(1)
   }
 }
