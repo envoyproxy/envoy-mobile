@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package envoymobile.extensions.filters.http.local_error;
+
+message LocalError {
+  bool enabled = 1;
+}
