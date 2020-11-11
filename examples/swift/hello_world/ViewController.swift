@@ -32,7 +32,6 @@ final class ViewController: UITableViewController {
 
     NSLog("started Envoy, beginning requests...")
     self.startRequests()
-    self.sendStats()
   }
 
   deinit {
@@ -44,6 +43,7 @@ final class ViewController: UITableViewController {
   private func startRequests() {
     self.timer = .scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
       self?.performRequest()
+      self?.recordStats()
     }
   }
 
@@ -106,7 +106,7 @@ final class ViewController: UITableViewController {
     self.tableView.reloadData()
   }
 
-  private func sendStats() {
+  private func recordStats() {
     guard let statsClient = self.statsClient else {
       NSLog("failed to send stats - Envoy is not running")
       return

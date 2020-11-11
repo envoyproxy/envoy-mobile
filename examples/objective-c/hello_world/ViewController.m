@@ -50,7 +50,6 @@ NSString *_REQUEST_SCHEME = @"https";
     self.streamClient = [engine streamClient];
     self.statsClient = [engine statsClient];
     [self startRequests];
-    [self sendStats];
   }
 }
 
@@ -64,9 +63,13 @@ NSString *_REQUEST_SCHEME = @"https";
 - (void)startRequests {
   self.requestTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
                                                        target:self
-                                                     selector:@selector(performRequest)
+                                                     selector:@selector(timerFired)
                                                      userInfo:nil
                                                       repeats:YES];
+}
+- (void)timerFired {
+  [self performRequest];
+  [self recordStats];
 }
 
 - (void)performRequest {
@@ -126,7 +129,7 @@ NSString *_REQUEST_SCHEME = @"https";
   [self.tableView reloadData];
 }
 
-- (void)sendStats {
+- (void)recordStats {
   Element *elementFoo = [[Element alloc] initWithStringLiteral:@"foo"];
   Element *elementBar = [[Element alloc] initWithStringLiteral:@"bar"];
   Element *elementCounter = [[Element alloc] initWithStringLiteral:@"counter"];
