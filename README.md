@@ -30,8 +30,4 @@ Contributing to Envoy Mobile is fun! To get started:
 
 ## Copyright
 
-Envoy Mobile is licensed under the Apache 2.0 license and copyrighted by Lyft. See LICENSE for terms.
-Lyft has express permission to use the Envoy name and the Envoy logo, which are otherwise owned by
-The Linux Foundation (TLF). The Envoy name is used with permission from Linux and the Cloud Native
-Computing Foundation notwithstanding the assumption that if this project finds traction it will be
-donated to the [Envoy](https://www.envoyproxy.io) project.
+Envoy Mobile is licensed under the Apache 2.0 license and copyrighted by Envoy Project Authors.
