@@ -1,5 +1,5 @@
 /**
- * Templated default configuration
+ * Templated default configuration!
  */
 const char* platform_filter_template = R"(
           - name: envoy.filters.http.platform_bridge
