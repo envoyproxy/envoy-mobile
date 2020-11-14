@@ -196,13 +196,17 @@ stats_sinks:
       grpc_service:
         envoy_grpc:
           cluster_name: stats
+  - name: envoy.stat_sinks.metrics_service.mobile
+    typed_config:
+      "@type": type.googleapis.com/envoymobile.extensions.stat_sinks.metrics_service.EnvoyMobileMetricsServiceConfig
+      report_counters_as_deltas: true
+      grpc_service:
+        envoy_grpc:
+          cluster_name: stats
 stats_config:
   stats_matcher:
     inclusion_list:
       patterns:
-        - safe_regex:
-            google_re2: {}
-            regex: '^client.*'
         - safe_regex:
             google_re2: {}
             regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
@@ -211,10 +215,10 @@ stats_config:
             regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
         - safe_regex:
             google_re2: {}
-            regex: '^dns.apple.*'
+            regex: '^http.dispatcher.*'
         - safe_regex:
             google_re2: {}
-            regex: '^http.dispatcher.*'
+            regex: '^client.*'
         - safe_regex:
             google_re2: {}
             regex: '^http.hcm.decompressor.*'
