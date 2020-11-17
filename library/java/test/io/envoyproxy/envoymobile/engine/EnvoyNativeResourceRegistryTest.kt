@@ -18,7 +18,7 @@ class EnvoyNativeResourceRegistryTest {
       val testResourceReleaser = object : EnvoyNativeResourceReleaser {
         override fun release(nativeHandle: Long) {
           assertThat(nativeHandle).isEqualTo(testHandle)
-          latch.countDown() 
+          latch.countDown()
         }
       }
       EnvoyNativeResourceRegistry.globalRegister(testResourceWrapper, testHandle, testResourceReleaser)
@@ -30,7 +30,7 @@ class EnvoyNativeResourceRegistryTest {
   }
 
   @Test
-  fun `release callbakcs are not invoked when EnvoyNativeResourceWrappers remain reachable`() {
+  fun `release callbacks are not invoked when EnvoyNativeResourceWrappers remain reachable`() {
     val latch = CountDownLatch(1)
     val testHandle: Long = 77
     // Wrapper will remain reachable.
@@ -39,7 +39,7 @@ class EnvoyNativeResourceRegistryTest {
       val testResourceReleaser = object : EnvoyNativeResourceReleaser {
         override fun release(nativeHandle: Long) {
           // Should be not called.
-          latch.countDown() 
+          latch.countDown()
         }
       }
       EnvoyNativeResourceRegistry.globalRegister(testResourceWrapper, testHandle, testResourceReleaser)
