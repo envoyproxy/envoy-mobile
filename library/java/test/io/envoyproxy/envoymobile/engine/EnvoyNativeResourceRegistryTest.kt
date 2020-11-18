@@ -2,7 +2,6 @@ package io.envoyproxy.envoymobile.engine
 
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
