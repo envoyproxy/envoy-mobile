@@ -104,6 +104,16 @@ extension EnvoyHTTPFilter {
           ]
         }
       }
+
+      self.onError = { errorCode, message, attemptCount in
+        responseFilter.onError(EnvoyError(errorCode: errorCode, message: message,
+                               attemptCount: UInt32(exactly: attemptCount), cause: nil))
+        return
+      }
+
+      self.onCancel = {
+        responseFilter.onCancel()
+      }
     }
 
     if let asyncRequestFilter = filter as? AsyncRequestFilter {
