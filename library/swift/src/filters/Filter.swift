@@ -106,9 +106,9 @@ extension EnvoyHTTPFilter {
       }
 
       self.onError = { errorCode, message, attemptCount in
-        responseFilter.onError(EnvoyError(errorCode: errorCode, message: message,
+        let error = EnvoyError(errorCode: errorCode, message: message,
                                attemptCount: UInt32(exactly: attemptCount), cause: nil))
-        return
+        responseFilter.onError(error)
       }
 
       self.onCancel = {
