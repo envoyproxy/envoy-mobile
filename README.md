@@ -30,6 +30,6 @@ Contributing to Envoy Mobile is fun! To get started:
 
 ## Copyright and Trademark
 
-Envoy Mobile is licensed under the Apache 2.0 license and copyrighted by the Envoy Authors. 
+Envoy Mobile is licensed under the Apache 2.0 license and copyrighted by the Envoy Project Authors.
 
 For trademarks, see The [Linux Foundation Trademark Usage](https://www.linuxfoundation.org/trademark-usage/) guidelines.
