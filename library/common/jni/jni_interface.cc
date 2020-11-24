@@ -620,8 +620,13 @@ static envoy_data jvm_get_string(void* context) {
   jmethodID jmid_getString =
       env->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()Ljava/lang/Object;");
   // Passed as a java.nio.ByteBuffer.
-  jobject data = env->CallObjectMethod(j_context, jmid_getString);
-  return buffer_to_native_data(env, data);
+  jobject j_data = env->CallObjectMethod(j_context, jmid_getString);
+  envoy_data native_data = buffer_to_native_data(env, j_data);
+
+  env->DeleteLocalRef(jcls_JvmStringAccessorContext);
+  env->DeleteLocalRef(j_data);
+
+  return native_data;
 }
 
 // EnvoyHTTPStream
