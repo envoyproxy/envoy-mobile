@@ -97,6 +97,10 @@ api_listener:
         domains: "*"
       name: route_config_0
     http_filters:
+      - name: envoy.filters.http.local_error
+        typed_config:
+          "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+          enabled: true
       - name: envoy.router
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
