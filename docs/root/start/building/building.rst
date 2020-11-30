@@ -25,7 +25,7 @@ Envoy Mobile is compiled using the version of Bazel specified in the
 :repo:`.bazelversion <.bazelversion>` file.
 
 To simplify build consistency across environments, bazelisk is used.
-Follow the Envoy instructions `here <https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#installing-bazelisk-as-bazel>`_ to install bazelisk as bazel.
+Follow `these Envoy instructions <https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#installing-bazelisk-as-bazel>`_ to install bazelisk as bazel.
 
 --------------------
 Android requirements
@@ -101,7 +101,7 @@ For a demo of a working app using this artifact, see the :ref:`hello_world` exam
 Maven
 -----
 
-Android artifacts are also uploaded to Maven, and can be accessed/downloaded
+Envoy Mobile Android artifacts are also uploaded to Maven, and can be accessed/downloaded
 `here <https://mvnrepository.com/artifact/io.envoyproxy.envoymobile/envoy>`_.
 
 .. _cocoapods:
