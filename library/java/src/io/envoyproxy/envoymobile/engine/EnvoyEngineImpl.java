@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+import java.util.Map;
+
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
@@ -68,6 +70,12 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
                                        new JvmFilterFactoryContext(filterFactory));
+    }
+
+    for (Map.Entry<String, EnvoyStringAccessor> entry :
+         envoyConfiguration.stringAccessors.entrySet()) {
+      JniLibrary.registerStringAccessor(entry.getKey(),
+                                        new JvmStringAccessorContext(entry.getValue()));
     }
 
     return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString(),
