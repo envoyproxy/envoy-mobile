@@ -44,9 +44,9 @@ class MainActivity : Activity() {
     setContentView(R.layout.activity_main)
 
     engine = AndroidEngineBuilder(application)
-      .addFilter { DemoFilter() }
-      .addFilter { BufferDemoFilter() }
-      .addFilter { AsyncDemoFilter() }
+      .addPlatformFilter { DemoFilter() }
+      .addPlatformFilter { BufferDemoFilter() }
+      .addPlatformFilter { AsyncDemoFilter() }
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()
 

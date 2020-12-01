@@ -118,7 +118,7 @@ public final class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addFilter(name: String = UUID().uuidString,
+  public func addPlatformFilter(name: String = UUID().uuidString,
                         factory: @escaping () -> Filter) -> EngineBuilder
   {
     self.filterChain.append(EnvoyHTTPFilterFactory(filterName: name, factory: factory))

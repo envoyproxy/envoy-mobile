@@ -210,3 +210,4 @@ class JniLibrary {
    *         native filter configuration.
    */
   public static native String nativeFilterTemplateString();
+}

@@ -73,9 +73,9 @@ public class EnvoyConfiguration {
     String filterConfigChain = filterConfigBuilder.toString();
 
     final StringBuilder nativeFilterConfigBuilder = new StringBuilder();
-    for (Map.Entry<String, String> entry : nativeFilters) {
+    for (Map.Entry<String, String> entry : nativeFilters.entrySet()) {
       String nativeFilterConfig =
-          nativeplatformFilterTemplateYAML.replace("{{ native_filter_name }}", entry.getKey()).replace("{{ native_filter_typed_config }}", entry.getValue));
+          nativeplatformFilterTemplateYAML.replace("{{ native_filter_name }}", entry.getKey()).replace("{{ native_filter_typed_config }}", entry.getValue());
       nativeFilterConfigBuilder.append(nativeFilterConfig);
     }
     String nativeFilterConfigChain = nativeFilterConfigBuilder.toString();
@@ -93,7 +93,7 @@ public class EnvoyConfiguration {
             .replace("{{ device_os }}", "Android")
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)
-            .replace("{{ virtual_clusters }}", virtualClusters);
+            .replace("{{ virtual_clusters }}", virtualClusters)
             .replace("{{ native_filter_chain }}", nativeFilterConfigChain);
 
     final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);

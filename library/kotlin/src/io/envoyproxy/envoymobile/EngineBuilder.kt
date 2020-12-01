@@ -26,11 +26,12 @@ open class EngineBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
-  private var filterChain = mutableListOf<EnvoyHTTPFilterFactory>()
+  private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var statsFlushSeconds = 60
   private var appVersion = "unspecified"
   private var appId = "unspecified"
   private var virtualClusters = "[]"
+  private var nativeFilters = mutableMapOf<String, String>()
 
   /**
    * Add a log level to use with Envoy.
@@ -107,7 +108,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Add an HTTP filter factory used to create filters for streams sent by this client.
+   * Add an HTTP filter factory used to create platform filters for streams sent by this client.
    *
    * @param name Custom name to use for this filter factory. Useful for having
    *             more meaningful trace logs, but not required. Should be unique
@@ -116,11 +117,27 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
+  fun addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
     EngineBuilder {
-      this.filterChain.add(FilterFactory(name, factory))
+      this.platformFilterChain.add(FilterFactory(name, factory))
       return this
-    }
+  }
+
+  /**
+   * Add an HTTP filter config used to create native filters for streams sent by this client.
+   *
+   * @param name Custom name to use for this filter factory. Useful for having
+   *             more meaningful trace logs, but not required. Should be unique
+   *             per filter.
+   * @param typedConfig config string for the filter.
+   *
+   * @return this builder.
+   */
+  fun addNativeFilter(name: String = UUID.randomUUID().toString(), typedConfig: String):
+  EngineBuilder {
+    this.nativeFilters.put(name, typedConfig)
+    return this
+  }
 
   /**
    * Set a closure to be called when the engine finishes its async startup and begins running.
@@ -186,7 +203,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            filterChain, statsFlushSeconds, appVersion, appId, virtualClusters
+            platformFilterChain, statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilters
           ),
           logLevel, onEngineRunning
         )
