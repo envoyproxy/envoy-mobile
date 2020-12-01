@@ -4,8 +4,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
-import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
-
+import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
 
 sealed class BaseConfiguration
@@ -149,7 +148,6 @@ open class EngineBuilder(
     this.stringAccessors.put(name, accessor)
     return this
   }
-
 
   /**
    * Add the App Version of the App using this Envoy Client.
