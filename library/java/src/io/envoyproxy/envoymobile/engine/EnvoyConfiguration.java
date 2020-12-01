@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -18,6 +19,7 @@ public class EnvoyConfiguration {
   public final String appVersion;
   public final String appId;
   public final String virtualClusters;
+  public final Map<String, String> nativeFilters;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -38,7 +40,7 @@ public class EnvoyConfiguration {
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
                             List<EnvoyHTTPFilterFactory> httpFilterFactories, int statsFlushSeconds,
-                            String appVersion, String appId, String virtualClusters) {
+                            String appVersion, String appId, String virtualClusters, Map<String, String> nativeFilters) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -49,6 +51,7 @@ public class EnvoyConfiguration {
     this.appVersion = appVersion;
     this.appId = appId;
     this.virtualClusters = virtualClusters;
+    this.nativeFilters = nativeFilters;
   }
 
   /**
@@ -60,14 +63,22 @@ public class EnvoyConfiguration {
    * @throws ConfigurationException, when the template provided is not fully
    *                                 resolved.
    */
-  String resolveTemplate(final String templateYAML, final String filterTemplateYAML) {
+  String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML, final String nativeplatformFilterTemplateYAML) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
     for (EnvoyHTTPFilterFactory filterFactory : httpFilterFactories) {
       String filterConfig =
-          filterTemplateYAML.replace("{{ platform_filter_name }}", filterFactory.getFilterName());
+          platformFilterTemplateYAML.replace("{{ platform_filter_name }}", filterFactory.getFilterName());
       filterConfigBuilder.append(filterConfig);
     }
     String filterConfigChain = filterConfigBuilder.toString();
+
+    final StringBuilder nativeFilterConfigBuilder = new StringBuilder();
+    for (Map.Entry<String, String> entry : nativeFilters) {
+      String nativeFilterConfig =
+          nativeplatformFilterTemplateYAML.replace("{{ native_filter_name }}", entry.getKey()).replace("{{ native_filter_typed_config }}", entry.getValue));
+      nativeFilterConfigBuilder.append(nativeFilterConfig);
+    }
+    String nativeFilterConfigChain = nativeFilterConfigBuilder.toString();
 
     String resolvedConfiguration =
         templateYAML.replace("{{ stats_domain }}", statsDomain)
@@ -83,6 +94,7 @@ public class EnvoyConfiguration {
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)
             .replace("{{ virtual_clusters }}", virtualClusters);
+            .replace("{{ native_filter_chain }}", nativeFilterConfigChain);
 
     final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);
     if (unresolvedKeys.find()) {

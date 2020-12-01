@@ -70,7 +70,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     }
 
     return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString(),
-                                                            JniLibrary.filterTemplateString()),
+                                                            JniLibrary.platformFilterTemplateString(),
+                                                            JniLibrary.nativeFilterTemplateString()),
                          logLevel, onEngineRunning);
   }
 
