@@ -74,6 +74,9 @@ final class ReceiveDataTests: XCTestCase {
         XCTAssertEqual("response_body", responseBody)
         dataExpectation.fulfill()
       }
+      .setOnError { _ in
+        XCTFail()
+      }
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
