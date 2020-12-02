@@ -14,6 +14,11 @@ typedef envoy_data (*envoy_get_string_f)(void* context);
 } // function pointers
 #endif
 
+/**
+ * Datatype used to access strings from the platform layer. This accessor is read-only.
+ */
+// TODO: https://github.com/envoyproxy/envoy-mobile/issues/1192 generalize to access arbitrary
+//       types.
 typedef struct {
   envoy_get_string_f get_string;
   void* context;
