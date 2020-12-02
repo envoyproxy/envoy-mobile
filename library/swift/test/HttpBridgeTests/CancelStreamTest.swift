@@ -33,25 +33,64 @@ final class CancelStreamTests: XCTestCase {
                       direct_response:
                         status: 200
             http_filters:
+              - name: envoy.filters.http.platform_bridge
+                typed_config:
+                  "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+                  platform_filter_name: cancel_validation_filter
               - name: envoy.router
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
-    let expectation = self.expectation(description: "Run called with expected cancellation")
+
+    struct CancelValidationFilter : ResponseFilter {
+      let expectation: XCTestExpectation
+
+      init(expectation: XCTestExpectation) {
+        self.expectation = expectation
+      }
+
+      func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
+        -> FilterHeadersStatus<ResponseHeaders>
+      {
+        return .continue(headers: headers)
+      }
+
+      func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
+        return .continue(data: body)
+      }
+
+      func onResponseTrailers(_ trailers: ResponseTrailers)
+          -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+        return .continue(trailers: trailers)
+      }
+
+      func onError(_ error: EnvoyError) {}
+
+      func onCancel() {
+        self.expectation.fulfill()
+      }
+    }
+
+    let runExpectation = self.expectation(description: "Run called with expected cancellation")
+    let filterExpectation = self.expectation(description: "Filter called with expected cancellation")
+
     let client = try EngineBuilder(yaml: config)
       .addLogLevel(.debug)
-      .addPlatformFilter(factory: DemoFilter.init)
+      .addPlatformFilter(
+        name: "cancel_validation_filter",
+        factory: { CancelValidationFilter(expectation: filterExpectation) }
+      )
       .build()
       .streamClient()
 
     client
       .newStreamPrototype()
       .setOnCancel {
-         expectation.fulfill()
+         runExpectation.fulfill()
       }
       .start()
       .cancel()
 
-    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [filterExpectation, runExpectation], timeout: 1), .completed)
   }
 }
