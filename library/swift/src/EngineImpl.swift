@@ -9,8 +9,8 @@ final class EngineImpl: NSObject {
   private let streamClientImpl: StreamClientImpl
 
   private enum ConfigurationType {
-    case yaml(String)
-    case typed(EnvoyConfiguration)
+    case custom(String, EnvoyConfiguration)
+    case standard(EnvoyConfiguration)
   }
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine,
@@ -22,10 +22,10 @@ final class EngineImpl: NSObject {
     super.init()
 
     switch configType {
-    case .yaml(let configYAML):
-      self.engine.run(withConfigYAML: configYAML, logLevel: logLevel.stringValue,
+    case .custom(let yaml, let config):
+      self.engine.run(withTemplate: yaml, config: config, logLevel: logLevel.stringValue,
                       onEngineRunning: onEngineRunning)
-    case .typed(let config):
+    case .standard(let config):
       self.engine.run(withConfig: config, logLevel: logLevel.stringValue,
                       onEngineRunning: onEngineRunning)
     }
@@ -41,7 +41,7 @@ final class EngineImpl: NSObject {
   convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
                    onEngineRunning: (() -> Void)?)
   {
-    self.init(configType: .typed(config), logLevel: logLevel, engine: engine,
+    self.init(configType: .standard(config), logLevel: logLevel, engine: engine,
               onEngineRunning: onEngineRunning)
   }
 
@@ -52,10 +52,10 @@ final class EngineImpl: NSObject {
   /// - parameter engine:          The underlying engine to use for starting Envoy.
   /// - parameter onEngineRunning: Closure called when the engine finishes its async
   ///                              initialization/startup.
-  convenience init(configYAML: String, logLevel: LogLevel = .info, engine: EnvoyEngine,
+  convenience init(yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
                    onEngineRunning: (() -> Void)?)
   {
-    self.init(configType: .yaml(configYAML), logLevel: logLevel, engine: engine,
+    self.init(configType: .custom(yaml, config), logLevel: logLevel, engine: engine,
               onEngineRunning: onEngineRunning)
   }
 }
