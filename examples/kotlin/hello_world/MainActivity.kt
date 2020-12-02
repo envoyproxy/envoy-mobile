@@ -47,6 +47,7 @@ class MainActivity : Activity() {
       .addPlatformFilter { DemoFilter() }
       .addPlatformFilter { BufferDemoFilter() }
       .addPlatformFilter { AsyncDemoFilter() }
+      .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()
 

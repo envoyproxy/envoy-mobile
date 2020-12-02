@@ -73,7 +73,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_platformFilterTemplateString(JNIEnv* env,
-                                                                      jclass // class
+                                                                              jclass // class
 ) {
   jstring result = env->NewStringUTF(platform_filter_template);
   return result;
@@ -81,7 +81,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_platformFilterTemplateString(JN
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplateString(JNIEnv* env,
-                                                                      jclass // class
+                                                                            jclass // class
 ) {
   jstring result = env->NewStringUTF(native_filter_template);
   return result;

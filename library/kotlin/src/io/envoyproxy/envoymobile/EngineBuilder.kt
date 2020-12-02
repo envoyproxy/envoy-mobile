@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
+import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
@@ -31,7 +32,7 @@ open class EngineBuilder(
   private var appVersion = "unspecified"
   private var appId = "unspecified"
   private var virtualClusters = "[]"
-  private var nativeFilters = mutableMapOf<String, String>()
+  private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
 
   /**
    * Add a log level to use with Envoy.
@@ -135,7 +136,7 @@ open class EngineBuilder(
    */
   fun addNativeFilter(name: String = UUID.randomUUID().toString(), typedConfig: String):
   EngineBuilder {
-    this.nativeFilters.put(name, typedConfig)
+    this.nativeFilterChain.add(EnvoyNativeFilterConfig(name, typedConfig))
     return this
   }
 
@@ -203,7 +204,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            platformFilterChain, statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilters
+            platformFilterChain, statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilterChain
           ),
           logLevel, onEngineRunning
         )
