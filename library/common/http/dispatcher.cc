@@ -63,7 +63,9 @@ void Dispatcher::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& h
       error_attempt_count_ = attempt_count;
     }
 
-    onError();
+    if (end_stream) {
+      onError();
+    }
     return;
   }
 
@@ -89,6 +91,11 @@ void Dispatcher::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool 
   ASSERT(http_dispatcher_.getStream(direct_stream_.stream_handle_));
   if (end_stream) {
     closeStream();
+  }
+
+  if (error_code_) {
+    onError();
+    return;
   }
 
   // Testing hook.

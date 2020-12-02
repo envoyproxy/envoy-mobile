@@ -99,7 +99,7 @@ api_listener:
     http_filters:
       - name: envoy.filters.http.local_error
         typed_config:
-          "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+          "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
           enabled: true
       - name: envoy.router
         typed_config:
@@ -268,6 +268,12 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
   ConditionalInitializer terminal_callback;
   callbacks_called cc = {0, 0, 0, 0, 0, &terminal_callback};
   bridge_callbacks.context = &cc;
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool,
+                                   void*) -> void* {
+    release_envoy_headers(c_headers);
+    ADD_FAILURE() << "unexpected call to on_headers";
+    return nullptr;
+  };
   bridge_callbacks.on_error = [](envoy_error error, void* context) -> void* {
     error.message.release(error.message.context);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -290,6 +296,7 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
   terminal_callback.waitReady();
 
   ASSERT_EQ(cc.on_error_calls, 1);
+  ASSERT_EQ(cc.on_headers_calls, 0);
   // Reset causes a charge to stream_failure.
   test_server_->waitForCounterEq("http.dispatcher.stream_failure", 1);
 }
