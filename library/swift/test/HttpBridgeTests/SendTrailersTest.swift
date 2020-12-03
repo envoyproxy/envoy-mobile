@@ -74,7 +74,7 @@ final class SendTrailersTests: XCTestCase {
          expectation.fulfill()
       }
       .setOnError { _ in
-        XCTFail()
+        XCTFail("Unexpected error")
       }
       .start()
       .sendHeaders(requestHeaders, endStream: false)

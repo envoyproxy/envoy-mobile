@@ -66,7 +66,7 @@ final class SendHeadersTests: XCTestCase {
          expectation.fulfill()
       }
       .setOnError { _ in
-        XCTFail()
+        XCTFail("Unexpected error")
       }
       .start()
       .sendHeaders(requestHeaders, endStream: true)

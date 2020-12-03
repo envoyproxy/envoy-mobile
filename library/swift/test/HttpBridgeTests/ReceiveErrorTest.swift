@@ -57,10 +57,10 @@ final class ReceiveErrorTests: XCTestCase {
     client
       .newStreamPrototype()
       .setOnResponseHeaders { _, _ in
-        XCTFail()
+        XCTFail("Headers received instead of expected error")
       }
       .setOnResponseData { _, _ in
-        XCTFail()
+        XCTFail("Data received instead of expected error")
       }
       // The unmatched expecation will cause a local reply which gets translated in Envoy Mobile to
       // an error.
