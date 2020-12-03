@@ -917,8 +917,7 @@ TEST_F(DispatcherTest, EnvoyResponseWithErrorCode) {
   envoy_http_callbacks bridge_callbacks;
   callbacks_called cc = {0, 0, 0, 0, 0, 0};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool,
-                                   void* context) -> void* {
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool, void* context) -> void* {
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "218");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -977,10 +976,10 @@ TEST_F(DispatcherTest, EnvoyResponseWithErrorCode) {
   EXPECT_CALL(event_dispatcher_, isThreadSafe()).Times(1).WillRepeatedly(Return(true));
   EXPECT_CALL(event_dispatcher_, deferredDelete_(_)).Times(1);
   TestResponseHeaderMapImpl response_headers{
-    {":status", "218"},
-    {"x-internal-error-code", std::to_string(ENVOY_CONNECTION_FAILURE)},
-    {"x-internal-error-message", "no internet"},
-    {"x-envoy-attempt-count", "123"},
+      {":status", "218"},
+      {"x-internal-error-code", std::to_string(ENVOY_CONNECTION_FAILURE)},
+      {"x-internal-error-message", "no internet"},
+      {"x-envoy-attempt-count", "123"},
   };
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc.on_headers_calls, 0);

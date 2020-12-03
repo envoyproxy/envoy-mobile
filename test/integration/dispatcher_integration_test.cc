@@ -268,8 +268,7 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
   ConditionalInitializer terminal_callback;
   callbacks_called cc = {0, 0, 0, 0, 0, &terminal_callback};
   bridge_callbacks.context = &cc;
-  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool,
-                                   void*) -> void* {
+  bridge_callbacks.on_headers = [](envoy_headers c_headers, bool, void*) -> void* {
     release_envoy_headers(c_headers);
     ADD_FAILURE() << "unexpected call to on_headers";
     return nullptr;
