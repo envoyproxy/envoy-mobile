@@ -7,6 +7,8 @@ final class CancelStreamTests: XCTestCase {
   func testCancelStream() throws {
     // swiftlint:disable:next line_length
     let apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    // swiftlint:disable:next line_length
+    let platformBridgeFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
     let config =
     """
     static_resources:
@@ -35,14 +37,14 @@ final class CancelStreamTests: XCTestCase {
             http_filters:
               - name: envoy.filters.http.platform_bridge
                 typed_config:
-                  "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+                  "@type": \(platformBridgeFilterType)
                   platform_filter_name: cancel_validation_filter
               - name: envoy.router
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
 
-    struct CancelValidationFilter : ResponseFilter {
+    struct CancelValidationFilter: ResponseFilter {
       let expectation: XCTestExpectation
 
       init(expectation: XCTestExpectation) {
@@ -72,7 +74,7 @@ final class CancelStreamTests: XCTestCase {
     }
 
     let runExpectation = self.expectation(description: "Run called with expected cancellation")
-    let filterExpectation = self.expectation(description: "Filter called with expected cancellation")
+    let filterExpectation = self.expectation(description: "Filter called with cancellation")
 
     let client = try EngineBuilder(yaml: config)
       .addLogLevel(.debug)
