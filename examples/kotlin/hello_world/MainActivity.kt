@@ -39,6 +39,7 @@ class MainActivity : Activity() {
   private lateinit var viewAdapter: ResponseRecyclerViewAdapter
   private lateinit var engine: Engine
 
+  @Suppress("MaxLineLength")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
