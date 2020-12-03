@@ -204,7 +204,8 @@ open class EngineBuilder(
           EnvoyConfiguration(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            platformFilterChain, statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilterChain
+            statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
+            platformFilterChain
           ),
           logLevel, onEngineRunning
         )

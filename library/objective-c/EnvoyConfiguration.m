@@ -9,12 +9,12 @@
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
-                  nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain {
+                  nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories {
   self = [super init];
   if (!self) {
     return nil;

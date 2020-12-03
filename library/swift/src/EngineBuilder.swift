@@ -1,14 +1,6 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-extension EnvoyNativeFilterConfig {
-  convenience init(name: String, typedConfig: String) {
-    self.init()
-    self.name = name
-    self.typedConfig = typedConfig
-  }
-}
-
 /// Builder used for creating and running a new Engine instance.
 @objcMembers
 public final class EngineBuilder: NSObject {
@@ -210,12 +202,12 @@ public final class EngineBuilder: NSObject {
         dnsRefreshSeconds: self.dnsRefreshSeconds,
         dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
         dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
-        platformFilterChain: self.platformFilterChain,
         statsFlushSeconds: self.statsFlushSeconds,
         appVersion: self.appVersion,
         appId: self.appId,
         virtualClusters: self.virtualClusters,
-        nativeFilterChain: self.nativeFilterChain)
+        nativeFilterChain: self.nativeFilterChain,
+        platformFilterChain: self.platformFilterChain)
       return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
                         onEngineRunning: self.onEngineRunning)
     }

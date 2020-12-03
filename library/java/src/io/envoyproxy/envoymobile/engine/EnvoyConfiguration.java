@@ -35,24 +35,25 @@ public class EnvoyConfiguration {
    * @param appVersion                   the App Version of the App using this Envoy Client.
    * @param appId                        the App ID of the App using this Envoy Client.
    * @param virtualClusters              the JSON list of virtual cluster configs.
-   * @param nativeFilterChain                the configuration for native filters.
+   * @param nativeFilterChain            the configuration for native filters.
+   * @param httpFilterFactories          the configuration for platform filters.
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            List<EnvoyHTTPFilterFactory> httpFilterFactories, int statsFlushSeconds,
-                            String appVersion, String appId, String virtualClusters,
-                            List<EnvoyNativeFilterConfig> nativeFilterChain) {
+                            int statsFlushSeconds, String appVersion, String appId,
+                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
+                            List<EnvoyHTTPFilterFactory> httpFilterFactories) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
-    this.httpFilterFactories = httpFilterFactories;
     this.statsFlushSeconds = statsFlushSeconds;
     this.appVersion = appVersion;
     this.appId = appId;
     this.virtualClusters = virtualClusters;
     this.nativeFilterChain = nativeFilterChain;
+    this.httpFilterFactories = httpFilterFactories;
   }
 
   /**

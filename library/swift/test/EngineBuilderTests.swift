@@ -206,7 +206,6 @@ final class EngineBuilderTests: XCTestCase {
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    platformFilterChain: [filterFactory],
                                     statsFlushSeconds: 600,
                                     appVersion: "v1.2.3",
                                     appId: "com.envoymobile.ios",
@@ -214,7 +213,8 @@ final class EngineBuilderTests: XCTestCase {
                                     nativeFilterChain:
                                       [EnvoyNativeFilterConfig(name: "filter_name",
                                                                typedConfig: "test_config"),
-                                      ])
+                                      ],
+                                    platformFilterChain: [filterFactory])
     let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
     XCTAssertTrue(resolvedYAML.contains("stats_domain: stats.envoyproxy.io"))
     XCTAssertTrue(resolvedYAML.contains("connect_timeout: 200s"))
@@ -237,12 +237,12 @@ final class EngineBuilderTests: XCTestCase {
                                     dnsRefreshSeconds: 300,
                                     dnsFailureRefreshSecondsBase: 400,
                                     dnsFailureRefreshSecondsMax: 500,
-                                    platformFilterChain: [],
                                     statsFlushSeconds: 600,
                                     appVersion: "v1.2.3",
                                     appId: "com.envoymobile.ios",
                                     virtualClusters: "[test]",
-                                    nativeFilterChain: [])
+                                    nativeFilterChain: [],
+                                    platformFilterChain: [])
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))
   }
 }
