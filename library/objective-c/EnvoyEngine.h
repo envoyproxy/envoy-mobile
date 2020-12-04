@@ -259,7 +259,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories;
+                platformFilterChain:
+                    (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories;
 
 /**
  Resolves the provided configuration template using properties on this configuration.

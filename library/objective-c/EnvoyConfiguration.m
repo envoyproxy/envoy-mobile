@@ -14,7 +14,8 @@
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories {
+                platformFilterChain:
+                    (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories {
   self = [super init];
   if (!self) {
     return nil;

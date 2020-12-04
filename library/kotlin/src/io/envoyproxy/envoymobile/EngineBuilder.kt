@@ -28,16 +28,13 @@ open class EngineBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
-  private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var statsFlushSeconds = 60
   private var appVersion = "unspecified"
   private var appId = "unspecified"
   private var virtualClusters = "[]"
-<<<<<<< HEAD
+  private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
-=======
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
->>>>>>> main
 
   /**
    * Add a log level to use with Envoy.

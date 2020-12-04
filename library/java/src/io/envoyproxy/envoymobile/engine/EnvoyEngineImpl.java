@@ -79,9 +79,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                         new JvmStringAccessorContext(entry.getValue()));
     }
 
-    return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString(),
-                                                            JniLibrary.filterTemplateString(),
-                                                            JniLibrary.nativeFilterTemplateString()),
+    return runWithConfig(envoyConfiguration.resolveTemplate(
+                             JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
+                             JniLibrary.nativeFilterTemplateString()),
                          logLevel, onEngineRunning);
   }
 
