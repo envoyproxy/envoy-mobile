@@ -111,9 +111,7 @@ extension EnvoyHTTPFilter {
         responseFilter.onError(error)
       }
 
-      self.onCancel = {
-        responseFilter.onCancel()
-      }
+      self.onCancel = responseFilter.onCancel
     }
 
     if let asyncRequestFilter = filter as? AsyncRequestFilter {

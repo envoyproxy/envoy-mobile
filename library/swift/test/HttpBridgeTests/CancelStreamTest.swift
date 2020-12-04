@@ -47,10 +47,6 @@ final class CancelStreamTests: XCTestCase {
     struct CancelValidationFilter: ResponseFilter {
       let expectation: XCTestExpectation
 
-      init(expectation: XCTestExpectation) {
-        self.expectation = expectation
-      }
-
       func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
         -> FilterHeadersStatus<ResponseHeaders>
       {
