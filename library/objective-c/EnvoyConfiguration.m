@@ -14,7 +14,7 @@
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories {
+                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories {
   self = [super init];
   if (!self) {
     return nil;
@@ -25,7 +25,7 @@
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
-  self.httpFilterFactories = httpFilterFactories;
+  self.httpPlatformFilterFactories = httpPlatformFilterFactories;
   self.statsFlushSeconds = statsFlushSeconds;
   self.appVersion = appVersion;
   self.appId = appId;
@@ -37,7 +37,7 @@
 - (nullable NSString *)resolveTemplate:(NSString *)templateYAML {
   NSString *platformFilterConfigChain = [[NSString alloc] init];
   NSString *platformFilterTemplate = [[NSString alloc] initWithUTF8String:platform_filter_template];
-  for (EnvoyHTTPFilterFactory *filterFactory in self.httpFilterFactories) {
+  for (EnvoyHTTPFilterFactory *filterFactory in self.httpPlatformFilterFactories) {
     NSString *platformFilterConfig =
         [platformFilterTemplate stringByReplacingOccurrencesOfString:@"{{ platform_filter_name }}"
                                                           withString:filterFactory.filterName];

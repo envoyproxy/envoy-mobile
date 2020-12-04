@@ -1,8 +1,11 @@
 package io.envoyproxy.envoymobile.engine;
 
+import java.util.Map;
+
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
+import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
@@ -64,14 +67,21 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
                            EnvoyOnEngineRunning onEngineRunning) {
-    for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpFilterFactories) {
+
+    for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
                                        new JvmFilterFactoryContext(filterFactory));
     }
 
-    return runWithConfig(envoyConfiguration.resolveTemplate(
-                             JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
-                             JniLibrary.nativeFilterTemplateString()),
+    for (Map.Entry<String, EnvoyStringAccessor> entry :
+         envoyConfiguration.stringAccessors.entrySet()) {
+      JniLibrary.registerStringAccessor(entry.getKey(),
+                                        new JvmStringAccessorContext(entry.getValue()));
+    }
+
+    return runWithConfig(envoyConfiguration.resolveTemplate(JniLibrary.templateString(),
+                                                            JniLibrary.filterTemplateString(),
+                                                            JniLibrary.nativeFilterTemplateString()),
                          logLevel, onEngineRunning);
   }
 
@@ -121,5 +131,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int recordGaugeSub(String elements, int amount) {
     return JniLibrary.recordGaugeSub(engineHandle, elements, amount);
+  }
+
+  @Override
+  public int registerStringAccessor(String accessor_name, EnvoyStringAccessor accessor) {
+    return JniLibrary.registerStringAccessor(accessor_name, new JvmStringAccessorContext(accessor));
   }
 }

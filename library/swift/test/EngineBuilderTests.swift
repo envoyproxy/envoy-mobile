@@ -103,7 +103,7 @@ final class EngineBuilderTests: XCTestCase {
   func testAddingPlatformFiltersToConfigurationWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual(1, config.httpFilterFactories.count)
+      XCTAssertEqual(1, config.httpPlatformFilterFactories.count)
       expectation.fulfill()
     }
 

@@ -1,10 +1,12 @@
 package io.envoyproxy.envoymobile.engine;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
+import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 /* Typed configuration that may be used for starting Envoy. */
 public class EnvoyConfiguration {
@@ -13,12 +15,13 @@ public class EnvoyConfiguration {
   public final Integer dnsRefreshSeconds;
   public final Integer dnsFailureRefreshSecondsBase;
   public final Integer dnsFailureRefreshSecondsMax;
-  public final List<EnvoyHTTPFilterFactory> httpFilterFactories;
+  public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
   public final String appVersion;
   public final String appId;
   public final String virtualClusters;
   public final List<EnvoyNativeFilterConfig> nativeFilterChain;
+  public final Map<String, EnvoyStringAccessor> stringAccessors;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -36,13 +39,15 @@ public class EnvoyConfiguration {
    * @param appId                        the App ID of the App using this Envoy Client.
    * @param virtualClusters              the JSON list of virtual cluster configs.
    * @param nativeFilterChain            the configuration for native filters.
-   * @param httpFilterFactories          the configuration for platform filters.
+   * @param httpPlatformFilterFactories          the configuration for platform filters.
+   * @param stringAccesssors             platform string accessors to register.
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
                             int statsFlushSeconds, String appVersion, String appId,
                             String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
-                            List<EnvoyHTTPFilterFactory> httpFilterFactories) {
+                            List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
+                            Map<String, EnvoyStringAccessor> stringAccessors) {
     this.statsDomain = statsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -53,7 +58,8 @@ public class EnvoyConfiguration {
     this.appId = appId;
     this.virtualClusters = virtualClusters;
     this.nativeFilterChain = nativeFilterChain;
-    this.httpFilterFactories = httpFilterFactories;
+    this.httpPlatformFilterFactories = httpPlatformFilterFactories;
+    this.stringAccessors = stringAccessors;
   }
 
   /**
@@ -70,7 +76,7 @@ public class EnvoyConfiguration {
   String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
                          final String nativeFilterTemplateYAML) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
-    for (EnvoyHTTPFilterFactory filterFactory : httpFilterFactories) {
+    for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
       String filterConfig = platformFilterTemplateYAML.replace("{{ platform_filter_name }}",
                                                                filterFactory.getFilterName());
       filterConfigBuilder.append(filterConfig);

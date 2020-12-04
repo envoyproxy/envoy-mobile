@@ -244,7 +244,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *appId;
 @property (nonatomic, strong) NSString *virtualClusters;
 @property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
-@property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpFilterFactories;
+@property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
 
 /**
  Create a new instance of the configuration.
@@ -259,7 +259,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories;
+                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories;
 
 /**
  Resolves the provided configuration template using properties on this configuration.

@@ -45,9 +45,10 @@ class MainActivity : Activity() {
     setContentView(R.layout.activity_main)
 
     engine = AndroidEngineBuilder(application)
-      .addPlatformFilter { DemoFilter() }
-      .addPlatformFilter { BufferDemoFilter() }
-      .addPlatformFilter { AsyncDemoFilter() }
+      .addFilter { DemoFilter() }
+      .addFilter { BufferDemoFilter() }
+      .addFilter { AsyncDemoFilter() }
+      .addStringAccessor("demo-accessor", DemoStringAccessor())
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()

@@ -210,4 +210,14 @@ class JniLibrary {
    *         native filter configuration.
    */
   public static native String nativeFilterTemplateString();
+
+  /**
+   * Register a string accessor to get strings from the platform.
+   *
+   * @param accessorName, unique name identifying this accessor.
+   * @param context,    context containing logic necessary to invoke the accessor.
+   * @return int, the resulting status of the operation.
+   */
+  protected static native int registerStringAccessor(String accessorName,
+                                                     JvmStringAccessorContext context);
 }

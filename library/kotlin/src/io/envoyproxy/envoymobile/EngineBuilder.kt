@@ -5,6 +5,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
+import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
 
 sealed class BaseConfiguration
@@ -32,7 +33,11 @@ open class EngineBuilder(
   private var appVersion = "unspecified"
   private var appId = "unspecified"
   private var virtualClusters = "[]"
+<<<<<<< HEAD
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
+=======
+  private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
+>>>>>>> main
 
   /**
    * Add a log level to use with Envoy.
@@ -153,6 +158,19 @@ open class EngineBuilder(
   }
 
   /**
+   * Add a string accessor to this Envoy Client.
+   *
+   * @param name the name of the accessor.
+   * @param accessor the string accessor.
+   *
+   * @return this builder.
+   */
+  fun addStringAccessor(name: String, accessor: EnvoyStringAccessor): EngineBuilder {
+    this.stringAccessors.put(name, accessor)
+    return this
+  }
+
+  /**
    * Add the App Version of the App using this Envoy Client.
    *
    * @param appVersion the version.
@@ -205,7 +223,7 @@ open class EngineBuilder(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
-            platformFilterChain
+            platformFilterChain, stringAccessors
           ),
           logLevel, onEngineRunning
         )
