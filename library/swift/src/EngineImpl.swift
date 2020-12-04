@@ -52,8 +52,8 @@ final class EngineImpl: NSObject {
   /// - parameter engine:          The underlying engine to use for starting Envoy.
   /// - parameter onEngineRunning: Closure called when the engine finishes its async
   ///                              initialization/startup.
-  convenience init(yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   onEngineRunning: (() -> Void)?)
+  convenience init(yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info,
+                   engine: EnvoyEngine, onEngineRunning: (() -> Void)?)
   {
     self.init(configType: .custom(yaml, config), logLevel: logLevel, engine: engine,
               onEngineRunning: onEngineRunning)

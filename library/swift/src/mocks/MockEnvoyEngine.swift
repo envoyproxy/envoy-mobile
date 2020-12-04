@@ -6,7 +6,11 @@ final class MockEnvoyEngine: NSObject {
   /// Closure called when `run(withConfig:)` is called.
   static var onRunWithConfig: ((_ config: EnvoyConfiguration, _ logLevel: String?) -> Void)?
   /// Closure called when `run(withConfigYAML:)` is called.
-  static var onRunWithTemplate: ((_ template: String, _ config: EnvoyConfiguration, _ logLevel: String?) -> Void)?
+  static var onRunWithTemplate: ((
+    _ template: String,
+    _ config: EnvoyConfiguration,
+    _ logLevel: String?
+  ) -> Void)?
   /// Closure called when `recordCounterInc(_:count:)` is called.
   static var onRecordCounter: ((_ elements: String, _ count: UInt) -> Void)?
   /// Closure called when `recordGaugeSet(_:value:)` is called.
