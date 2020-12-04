@@ -40,10 +40,11 @@ class EnvoyConfigurationTest {
 
   @Test
   fun `resolving with default configuration resolves with values`() {
-    val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3",
-                                                "com.mydomain.myapp", "[test]",
-                                                listOf<EnvoyNativeFilterConfig>(EnvoyNativeFilterConfig("filter_name", "test_config")),
-                                                emptyList(), emptyMap())
+    val envoyConfiguration = EnvoyConfiguration(
+      "stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3", "com.mydomain.myapp", "[test]",
+      listOf<EnvoyNativeFilterConfig>(EnvoyNativeFilterConfig("filter_name", "test_config")),
+      emptyList(), emptyMap()
+    )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG)
     assertThat(resolvedTemplate).contains("stats_domain: stats.foo.com")
@@ -62,9 +63,10 @@ class EnvoyConfigurationTest {
 
   @Test
   fun `resolve templates with invalid templates will throw on build`() {
-    val envoyConfiguration = EnvoyConfiguration("stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3",
-                                                "com.mydomain.myapp", "[test]", emptyList(),
-                                                emptyList(), emptyMap())
+    val envoyConfiguration = EnvoyConfiguration(
+      "stats.foo.com", 123, 234, 345, 456, 567, "v1.2.3", "com.mydomain.myapp", "[test]",
+      emptyList(), emptyList(), emptyMap()
+    )
 
     try {
       envoyConfiguration.resolveTemplate("{{ missing }}", "", "")
