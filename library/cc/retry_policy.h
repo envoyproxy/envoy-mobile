@@ -3,7 +3,6 @@
 #include "headers.h"
 #include "request_headers.h"
 
-
 class RequestHeaders;
 
 class RetryRule {
@@ -17,7 +16,6 @@ public:
     RetriableHeaders,
     Reset,
   };
-
 
   static _RetryRule from_string(std::string retry_rule);
   static std::string to_string(_RetryRule retry_rule);

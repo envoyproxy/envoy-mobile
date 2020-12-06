@@ -3,7 +3,6 @@
 #include <optional>
 #include <string>
 
-
 struct EnvoyError {
   int error_code;
   std::string message;

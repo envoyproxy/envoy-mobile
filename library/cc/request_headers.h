@@ -8,7 +8,6 @@
 #include "retry_policy.h"
 #include "upstream_http_protocol.h"
 
-
 class RequestHeaders : public Headers {
 public:
   RequestMethod request_method() const;

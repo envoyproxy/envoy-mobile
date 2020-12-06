@@ -2,7 +2,6 @@
 
 #include <string>
 
-
 /**
  * See log_level.h on info about how this weird enum thing works
  */

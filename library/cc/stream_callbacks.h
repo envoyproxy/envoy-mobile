@@ -9,7 +9,6 @@
 #include "response_headers.h"
 #include "response_trailers.h"
 
-
 using OnHeadersCallback = std::function<void(ResponseHeaders headers, bool end_stream)>;
 using OnDataCallback = std::function<void(std::vector<std::byte> data, bool end_stream)>;
 using OnTrailersCallback = std::function<void(ResponseTrailers trailers)>;

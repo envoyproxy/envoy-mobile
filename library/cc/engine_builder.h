@@ -1,6 +1,5 @@
 #pragma once
 
-
 class EngineBuilder {
 public:
   EngineBuilder();

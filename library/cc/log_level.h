@@ -2,7 +2,6 @@
 
 #include <string>
 
-
 /**
  * See: https://pybind11.readthedocs.io/en/stable/classes.html#enumerations-and-internal-types
  * this set up will let Python see:

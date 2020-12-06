@@ -2,7 +2,6 @@
 
 #include "headers.h"
 
-
 class HeadersBuilder {
 public:
   HeadersBuilder& add(const std::string& name, std::string& value);

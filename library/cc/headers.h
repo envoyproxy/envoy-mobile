@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 using RawHeaders = std::unordered_map<std::string, std::vector<std::string>>;
 
 class Headers {

@@ -2,7 +2,6 @@
 
 #include <string>
 
-
 class UpstreamHttpProtocol {
 public:
   enum _UpstreamHttpProtocol {

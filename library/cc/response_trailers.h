@@ -3,10 +3,9 @@
 #include "trailers.h"
 #include "response_trailers_builder.h"
 
-
 class ResponseTrailers : public Trailers {
 public:
-  ResponseTrailers(RawHeaders trailers) : Trailers(trailers) { }
+  ResponseTrailers(RawHeaders trailers) : Trailers(trailers) {}
 
   ResponseTrailersBuilder to_response_trailers_builder();
 };

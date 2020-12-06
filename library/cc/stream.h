@@ -7,7 +7,6 @@
 #include "request_headers.h"
 #include "request_trailers.h"
 
-
 class Stream {
 public:
   Stream(envoy_stream_t handle);

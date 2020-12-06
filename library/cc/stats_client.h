@@ -7,7 +7,6 @@
 // #include "stats/element.h"
 // #include "stats/gauge.h"
 
-
 class StatsClient {
 public:
   // virtual Counter counter(Element element) = 0;
