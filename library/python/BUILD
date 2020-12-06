@@ -1,0 +1,12 @@
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+
+pybind_extension(
+    name = "envoy_engine",
+    srcs = [
+        "module_definition.cc",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//library/cc:envoy_engine_cc_lib",
+    ],
+)
