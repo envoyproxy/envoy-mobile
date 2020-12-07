@@ -351,7 +351,8 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
     }
 
     if (platform_filter_.on_error) {
-      platform_filter_.on_error({error_code, error_message, attempt_count}, platform_filter_.instance_context);
+      platform_filter_.on_error({error_code, error_message, attempt_count},
+                                platform_filter_.instance_context);
     }
     error_response_ = true;
     return Http::FilterHeadersStatus::Continue;
