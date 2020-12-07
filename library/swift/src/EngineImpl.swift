@@ -9,8 +9,8 @@ final class EngineImpl: NSObject {
   private let streamClientImpl: StreamClientImpl
 
   private enum ConfigurationType {
-    case custom(String, EnvoyConfiguration)
-    case standard(EnvoyConfiguration)
+    case custom(yaml: String, config: EnvoyConfiguration)
+    case standard(config: EnvoyConfiguration)
   }
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine,
@@ -41,13 +41,14 @@ final class EngineImpl: NSObject {
   convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
                    onEngineRunning: (() -> Void)?)
   {
-    self.init(configType: .standard(config), logLevel: logLevel, engine: engine,
+    self.init(configType: .standard(config: config), logLevel: logLevel, engine: engine,
               onEngineRunning: onEngineRunning)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter configYAML:      Configuration yaml to use for starting Envoy.
+  /// - parameter yaml:            Template yaml to use as basis for configuration.
+  /// - parameter config:          Configuration to use for starting Envoy.
   /// - parameter logLevel:        Log level to use for this instance.
   /// - parameter engine:          The underlying engine to use for starting Envoy.
   /// - parameter onEngineRunning: Closure called when the engine finishes its async
@@ -55,7 +56,7 @@ final class EngineImpl: NSObject {
   convenience init(yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info,
                    engine: EnvoyEngine, onEngineRunning: (() -> Void)?)
   {
-    self.init(configType: .custom(yaml, config), logLevel: logLevel, engine: engine,
+    self.init(configType: .custom(yaml: yaml, config: config), logLevel: logLevel, engine: engine,
               onEngineRunning: onEngineRunning)
   }
 }
