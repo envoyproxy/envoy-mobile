@@ -190,7 +190,7 @@ class JvmFilterContext {
     filter.setResponseFilterCallbacks(EnvoyHTTPFilterCallbacksImpl.create(callbackHandle));
   }
 
-   /**
+  /**
    * Dispatches error received from the JNI layer up to the platform.
    *
    * @param errorCode,    the error code.
