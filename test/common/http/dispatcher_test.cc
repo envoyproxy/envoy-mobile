@@ -940,6 +940,7 @@ TEST_F(DispatcherTest, EnvoyResponseWithErrorCode) {
     EXPECT_EQ(error.attempt_count, 123);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_error_calls++;
+    error.message.release(error.message.context);
     return nullptr;
   };
 
