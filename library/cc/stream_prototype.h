@@ -19,14 +19,11 @@ public:
 
   Stream start(Executor executor);
 
-  StreamPrototype& set_on_response_headers(
-      std::function<void(const ResponseHeaders& headers, bool end_stream)> closure);
-  StreamPrototype& set_on_response_data(
-      std::function<void(const std::vector<std::byte>& bytes, bool end_stream)> closure);
-  StreamPrototype&
-  set_on_response_trailers(std::function<void(const ResponseTrailers& trailers)> closure);
-  StreamPrototype& set_on_error(std::function<void(const EnvoyError& error)> closure);
-  StreamPrototype& set_on_cancel(std::function<void()> closure);
+  StreamPrototype& set_on_response_headers(OnHeadersCallback closure);
+  StreamPrototype& set_on_response_data(OnDataCallback closure);
+  StreamPrototype& set_on_response_trailers(OnTrailersCallback closure);
+  StreamPrototype& set_on_error(OnErrorCallback closure);
+  StreamPrototype& set_on_cancel(OnCancelCallback closure);
 
 private:
   StreamCallbacks callbacks_;

@@ -4,7 +4,7 @@
 
 class HeadersBuilder {
 public:
-  HeadersBuilder& add(const std::string& name, std::string& value);
+  HeadersBuilder& add(const std::string& name, const std::string& value);
   HeadersBuilder& set(const std::string& name, const std::vector<std::string>& values);
   HeadersBuilder& remove(const std::string& name);
 
