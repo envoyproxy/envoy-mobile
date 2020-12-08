@@ -41,7 +41,7 @@ public:
   }
 };
 
-PYBIND11_MODULE(envoy_mobile, m) {
+PYBIND11_MODULE(envoy_engine, m) {
   m.doc() = "a thin wrapper around envoy-mobile to provide speedy networking for python";
 
   // TODO(crockeo): fill out all of the stubs here
@@ -54,8 +54,15 @@ PYBIND11_MODULE(envoy_mobile, m) {
     .def(py::init<>())
     .def("execute", &Executor::execute);
 
-  // TODO(crockeo): do enums
-  // py::class_<LogLevel>(m, "LogLevel");
+  py::enum_<LogLevel>(m, "LogLevel")
+    .value("Trace", LogLevel::Trace)
+    .value("Debug", LogLevel::Debug)
+    .value("Info", LogLevel::Info)
+    .value("Warn", LogLevel::Warn)
+    .value("Error", LogLevel::Error)
+    .value("Critical", LogLevel::Critical)
+    .value("Off", LogLevel::Off);
+
   py::class_<RequestHeaders>(m, "RequestHeaders");
   py::class_<RequestHeadersBuilder>(m, "RequestHeadersBuilder");
   py::class_<RequestMethod>(m, "RequestMethod");
@@ -65,15 +72,25 @@ PYBIND11_MODULE(envoy_mobile, m) {
   py::class_<ResponseHeadersBuilder>(m, "ResponseHeadersBuilder");
   py::class_<ResponseTrailers>(m, "ResponseTrailers");
   py::class_<ResponseTrailersBuilder>(m, "ResponseTrailersBuilder");
-  // TODO(crockeo): do enums
-  // py::class_<RetryRule>(m, "RetryRule");
+
+  py::enum_<RetryRule>(m, "RetryRule")
+    .value("Status5xx", RetryRule::Status5xx)
+    .value("GatewayFailure", RetryRule::GatewayFailure)
+    .value("ConnectFailure", RetryRule::ConnectFailure)
+    .value("RefusedStream", RetryRule::RefusedStream)
+    .value("Retriable4xx", RetryRule::Retriable4xx)
+    .value("RetriableHeaders", RetryRule::RetriableHeaders)
+    .value("Reset", RetryRule::Reset);
+
   py::class_<RetryPolicy>(m, "RetryPolicy");
   py::class_<StatsClient /* TODO(crockeo): StatsClientImpl */>(m, "StatsClient");
   py::class_<Stream>(m, "Stream");
   py::class_<StreamCallbacks>(m, "StreamCallbacks");
   py::class_<StreamClient /* TODO(crockeo): StreamClientImpl */>(m, "StreamClient");
   py::class_<StreamPrototype>(m, "StreamPrototype");
-  // TODO(crockeo): do enums
-  // py::class_<UpstreamHttpProtocol>(m, "UpstreamHttpProtocol");
+
+  py::enum_<UpstreamHttpProtocol>(m, "UpstreamHttpProtocol")
+    .value("HTTP1", UpstreamHttpProtocol::HTTP1)
+    .value("HTTP2", UpstreamHttpProtocol::HTTP2);
 
 }

@@ -21,7 +21,7 @@ public:
 
   RequestHeadersBuilder& add_retry_policy(const RetryPolicy& retry_policy);
   RequestHeadersBuilder&
-  add_upstream_http_protocol(UpstreamHttpProtocol::_UpstreamHttpProtocol upstream_http_protocol);
+  add_upstream_http_protocol(UpstreamHttpProtocol upstream_http_protocol);
 
   RequestHeaders build() const;
 
