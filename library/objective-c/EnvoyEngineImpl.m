@@ -2,6 +2,8 @@
 #import "library/objective-c/EnvoyBridgeUtility.h"
 #import "library/objective-c/EnvoyHTTPFilterCallbacksImpl.h"
 
+#include "library/common/api/c_types.h"
+
 #import "library/common/main_interface.h"
 #import "library/common/types/c_types.h"
 
@@ -219,6 +221,11 @@ static void ios_http_filter_release(const void *context) {
   return;
 }
 
+static envoy_data ios_get_string(void *context) {
+  EnvoyStringAccessor *accessor = (__bridge EnvoyStringAccessor *)context;
+  return toManagedNativeString([accessor getString]);
+}
+
 @implementation EnvoyEngineImpl {
   envoy_engine_t _engineHandle;
 }
@@ -259,6 +266,17 @@ static void ios_http_filter_release(const void *context) {
 
   register_platform_api(filterFactory.filterName.UTF8String, api);
   return kEnvoySuccess;
+}
+
+- (int)registerStringAccessor:(NSString *)name
+               stringAccessor:(EnvoyStringAccessor *)stringAccessor {
+  // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
+  // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
+  envoy_string_accessor *accessor = safe_malloc(sizeof(envoy_string_accessor));
+  accessor->get_string = ios_get_string;
+  accessor->context = CFBridgingRetain(stringAccessor);
+
+  return register_platform_api(name.UTF8String, accessor);
 }
 
 - (int)runWithConfig:(EnvoyConfiguration *)config

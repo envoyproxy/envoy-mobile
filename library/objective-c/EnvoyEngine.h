@@ -218,6 +218,14 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
+#pragma mark - EnvoyStringAccessor
+
+@interface EnvoyStringAccessor : NSObject
+
+- (NSString *)getString;
+
+@end
+
 #pragma mark - EnvoyNativeFilterConfig
 
 @interface EnvoyNativeFilterConfig : NSObject
