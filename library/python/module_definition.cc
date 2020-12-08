@@ -1,4 +1,6 @@
 #include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
+#include "pybind11/stl.h"
 namespace py = pybind11;
 
 #include "library/cc/engine.h"
@@ -26,14 +28,32 @@ namespace py = pybind11;
 #include "library/cc/stream_prototype.h"
 #include "library/cc/upstream_http_protocol.h"
 
-// TODO(crockeo): define Executor trampoline class
+// This is what pybind11 calls a "trampoline" class.
+// It represents a bridge between the Python and C++ layers,
+// in this case is contains a function that defers a Python class
+// that inherits from Executor.
+class PyExecutor : public Executor {
+public:
+  using Executor::Executor;
+
+  void execute(std::function<void()> callback) override {
+    PYBIND11_OVERRIDE_PURE(void, Executor, execute, callback);
+  }
+};
 
 PYBIND11_MODULE(envoy_mobile, m) {
   m.doc() = "a thin wrapper around envoy-mobile to provide speedy networking for python";
 
-  py::class_<Engine, EngineImpl>(m, "Engine");
+  // TODO(crockeo): fill out all of the stubs here
+
+  py::class_<Engine /* TODO(crockeo): EngineImpl */>(m, "Engine");
   py::class_<EngineBuilder>(m, "EngineBuilder");
   py::class_<EnvoyError>(m, "EnvoyError");
+
+  py::class_<Executor, PyExecutor>(m, "Executor")
+    .def(py::init<>())
+    .def("execute", &Executor::execute);
+
   // TODO(crockeo): do enums
   // py::class_<LogLevel>(m, "LogLevel");
   py::class_<RequestHeaders>(m, "RequestHeaders");
@@ -48,10 +68,10 @@ PYBIND11_MODULE(envoy_mobile, m) {
   // TODO(crockeo): do enums
   // py::class_<RetryRule>(m, "RetryRule");
   py::class_<RetryPolicy>(m, "RetryPolicy");
-  py::class_<StatsClient, StatsClientImpl>(m, "StatsClient");
+  py::class_<StatsClient /* TODO(crockeo): StatsClientImpl */>(m, "StatsClient");
   py::class_<Stream>(m, "Stream");
   py::class_<StreamCallbacks>(m, "StreamCallbacks");
-  py::class_<StreamClient, StreamClientImpl>(m, "StreamClient");
+  py::class_<StreamClient /* TODO(crockeo): StreamClientImpl */>(m, "StreamClient");
   py::class_<StreamPrototype>(m, "StreamPrototype");
   // TODO(crockeo): do enums
   // py::class_<UpstreamHttpProtocol>(m, "UpstreamHttpProtocol");
