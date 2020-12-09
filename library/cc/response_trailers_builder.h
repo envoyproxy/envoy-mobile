@@ -5,16 +5,9 @@
 
 class ResponseTrailers;
 
-class ResponseTrailersBuilder : HeadersBuilder {
+class ResponseTrailersBuilder : public HeadersBuilder {
 public:
   ResponseTrailersBuilder() {}
 
-  using HeadersBuilder::add;
-  using HeadersBuilder::remove;
-  using HeadersBuilder::set;
-
   ResponseTrailers build() const;
-
-private:
-  using HeadersBuilder::internal_set;
 };

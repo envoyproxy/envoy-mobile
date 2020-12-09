@@ -14,7 +14,7 @@ public:
   const std::string& scheme() const;
   const std::string& authority() const;
   const std::string& path() const;
-  const std::optional<const RetryPolicy&> retry_policy() const;
+  const std::optional<RetryPolicy> retry_policy() const;
   UpstreamHttpProtocol upstream_http_protocol() const;
 
   RequestHeadersBuilder to_request_headers_builder() const;

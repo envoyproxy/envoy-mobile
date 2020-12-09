@@ -5,17 +5,10 @@
 
 class ResponseHeaders;
 
-class ResponseHeadersBuilder : HeadersBuilder {
+class ResponseHeadersBuilder : public HeadersBuilder {
 public:
   ResponseHeadersBuilder() {}
 
-  using HeadersBuilder::add;
-  using HeadersBuilder::remove;
-  using HeadersBuilder::set;
-
   ResponseHeadersBuilder& add_http_status(int status);
   ResponseHeaders build() const;
-
-private:
-  using HeadersBuilder::internal_set;
 };

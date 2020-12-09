@@ -28,7 +28,6 @@ public:
   EnvoyHttpCallbacksAdapter(Executor executor, StreamCallbacks callbacks);
 
 private:
-  // TODO(crockeo): figure out lifecycle management here
   Executor& executor_;
   StreamCallbacks stream_callbacks_;
 };

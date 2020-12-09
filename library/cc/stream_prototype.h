@@ -17,7 +17,7 @@ class StreamPrototype {
 public:
   StreamPrototype(Engine engine);
 
-  Stream start(Executor executor);
+  Stream start(Executor& executor);
 
   StreamPrototype& set_on_response_headers(OnHeadersCallback closure);
   StreamPrototype& set_on_response_data(OnDataCallback closure);

@@ -4,7 +4,5 @@
 
 class StreamClient {
 public:
-  virtual ~StreamClient() {}
-
-  virtual StreamPrototype new_stream_prototype() = 0;
+  StreamPrototype new_stream_prototype();
 };

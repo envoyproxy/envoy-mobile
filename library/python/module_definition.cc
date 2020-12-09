@@ -5,7 +5,6 @@ namespace py = pybind11;
 
 #include "library/cc/engine.h"
 #include "library/cc/engine_builder.h"
-#include "library/cc/engine_impl.h"
 #include "library/cc/envoy_error.h"
 #include "library/cc/executor.h"
 #include "library/cc/log_level.h"
@@ -20,11 +19,9 @@ namespace py = pybind11;
 #include "library/cc/response_trailers_builder.h"
 #include "library/cc/retry_policy.h"
 #include "library/cc/stats_client.h"
-#include "library/cc/stats_client_impl.h"
 #include "library/cc/stream.h"
 #include "library/cc/stream_callbacks.h"
 #include "library/cc/stream_client.h"
-#include "library/cc/stream_client_impl.h"
 #include "library/cc/stream_prototype.h"
 #include "library/cc/upstream_http_protocol.h"
 
@@ -44,11 +41,32 @@ public:
 PYBIND11_MODULE(envoy_engine, m) {
   m.doc() = "a thin wrapper around envoy-mobile to provide speedy networking for python";
 
-  // TODO(crockeo): fill out all of the stubs here
+  py::class_<Engine>(m, "Engine")
+    .def("stream_client", &Engine::stream_client)
+    .def("stats_client", &Engine::stats_client);
 
-  py::class_<Engine /* TODO(crockeo): EngineImpl */>(m, "Engine");
-  py::class_<EngineBuilder>(m, "EngineBuilder");
-  py::class_<EnvoyError>(m, "EnvoyError");
+  py::class_<EngineBuilder>(m, "EngineBuilder")
+    .def("add_log_level", &EngineBuilder::add_log_level)
+    .def("set_on_engine_running", &EngineBuilder::set_on_engine_running)
+    .def("add_stats_domain", &EngineBuilder::add_stats_domain)
+    .def("add_connect_timeout_seconds", &EngineBuilder::add_connect_timeout_seconds)
+    .def("add_dns_refresh_seconds", &EngineBuilder::add_dns_refresh_seconds)
+    .def("add_dns_failure_refresh_seconds", &EngineBuilder::add_dns_failure_refresh_seconds)
+    .def("add_stats_flush_seconds", &EngineBuilder::add_stats_flush_seconds)
+    .def("set_app_version", &EngineBuilder::set_app_version)
+    .def("set_app_id", &EngineBuilder::set_app_id)
+    .def("add_virtual_clusters", &EngineBuilder::add_virtual_clusters)
+    // TODO(crockeo): add after filter integration
+    // .def("add_platform_filter", &EngineBuilder::add_platform_filter)
+    // .def("add_native_filter", &EngineBuilder::add_native_filter)
+    // .def("add_string_accessor", &EngineBuilder::add_string_accessor)
+    .def("build", &EngineBuilder::build);
+
+  py::class_<EnvoyError>(m, "EnvoyError")
+    .def_readwrite("error_code", &EnvoyError::error_code)
+    .def_readwrite("message", &EnvoyError::message)
+    .def_readwrite("attempt_count", &EnvoyError::attempt_count)
+    .def_readwrite("cause", &EnvoyError::cause);
 
   py::class_<Executor, PyExecutor>(m, "Executor")
     .def(py::init<>())
@@ -63,15 +81,69 @@ PYBIND11_MODULE(envoy_engine, m) {
     .value("Critical", LogLevel::Critical)
     .value("Off", LogLevel::Off);
 
-  py::class_<RequestHeaders>(m, "RequestHeaders");
-  py::class_<RequestHeadersBuilder>(m, "RequestHeadersBuilder");
-  py::class_<RequestMethod>(m, "RequestMethod");
-  py::class_<RequestTrailers>(m, "RequestTrailers");
-  py::class_<RequestTrailersBuilder>(m, "RequestTrailersBuilder");
-  py::class_<ResponseHeaders>(m, "ResponseHeaders");
-  py::class_<ResponseHeadersBuilder>(m, "ResponseHeadersBuilder");
-  py::class_<ResponseTrailers>(m, "ResponseTrailers");
-  py::class_<ResponseTrailersBuilder>(m, "ResponseTrailersBuilder");
+  py::class_<RequestHeaders>(m, "RequestHeaders")
+    .def("__getitem__", &RequestHeaders::operator[])
+    .def("all_headers", &RequestHeaders::all_headers)
+    .def("request_method", &RequestHeaders::request_method)
+    .def("scheme", &RequestHeaders::scheme)
+    .def("authority", &RequestHeaders::authority)
+    .def("path", &RequestHeaders::path)
+    .def("retry_policy", &RequestHeaders::retry_policy)
+    .def("upstream_http_protocol", &RequestHeaders::upstream_http_protocol)
+    .def("to_request_headers_builder", &RequestHeaders::to_request_headers_builder);
+
+  py::class_<RequestHeadersBuilder>(m, "RequestHeadersBuilder")
+    .def("add", &RequestHeadersBuilder::add)
+    .def("set", &RequestHeadersBuilder::set)
+    .def("remove", &RequestHeadersBuilder::remove)
+    .def("add_retry_policy", &RequestHeadersBuilder::add_retry_policy)
+    .def("add_upstream_http_protocol", &RequestHeadersBuilder::add_upstream_http_protocol)
+    .def("build", &RequestHeadersBuilder::build);
+
+  py::enum_<RequestMethod>(m, "RequestMethod")
+    .value("DELETE", RequestMethod::DELETE)
+    .value("GET", RequestMethod::GET)
+    .value("HEAD", RequestMethod::HEAD)
+    .value("OPTIONS", RequestMethod::OPTIONS)
+    .value("PATCH", RequestMethod::PATCH)
+    .value("POST", RequestMethod::POST)
+    .value("PUT", RequestMethod::PUT)
+    .value("TRACE", RequestMethod::TRACE);
+
+  py::class_<RequestTrailers>(m, "RequestTrailers")
+    .def("__getitem__", &RequestTrailers::operator[])
+    .def("all_headers", &RequestTrailers::all_headers)
+    .def("to_request_trailers_builder", &RequestTrailers::to_request_trailers_builder);
+
+  py::class_<RequestTrailersBuilder>(m, "RequestTrailersBuilder")
+    .def("add", &RequestTrailersBuilder::add)
+    .def("set", &RequestTrailersBuilder::set)
+    .def("remove", &RequestTrailersBuilder::remove)
+    .def("build", &RequestTrailersBuilder::build);
+
+  py::class_<ResponseHeaders>(m, "ResponseHeaders")
+    .def("__getitem__", &ResponseHeaders::operator[])
+    .def("all_headers", &ResponseHeaders::all_headers)
+    .def("http_status", &ResponseHeaders::http_status)
+    .def("to_response_headers_builder", &ResponseHeaders::to_response_headers_builder);
+
+  py::class_<ResponseHeadersBuilder>(m, "ResponseHeadersBuilder")
+    .def("add", &RequestHeadersBuilder::add)
+    .def("set", &RequestHeadersBuilder::set)
+    .def("remove", &RequestHeadersBuilder::remove)
+    .def("add_http_status", &ResponseHeadersBuilder::add_http_status)
+    .def("build", &ResponseHeadersBuilder::build);
+
+  py::class_<ResponseTrailers>(m, "ResponseTrailers")
+    .def("__getitem__", &ResponseTrailers::operator[])
+    .def("all_headers", &ResponseTrailers::all_headers)
+    .def("to_response_trailers_builder", &ResponseTrailers::to_response_trailers_builder);
+
+  py::class_<ResponseTrailersBuilder>(m, "ResponseTrailersBuilder")
+    .def("add", &ResponseTrailersBuilder::add)
+    .def("set", &ResponseTrailersBuilder::set)
+    .def("remove", &ResponseTrailersBuilder::remove)
+    .def("build", &ResponseTrailersBuilder::build);
 
   py::enum_<RetryRule>(m, "RetryRule")
     .value("Status5xx", RetryRule::Status5xx)
@@ -82,15 +154,44 @@ PYBIND11_MODULE(envoy_engine, m) {
     .value("RetriableHeaders", RetryRule::RetriableHeaders)
     .value("Reset", RetryRule::Reset);
 
-  py::class_<RetryPolicy>(m, "RetryPolicy");
-  py::class_<StatsClient /* TODO(crockeo): StatsClientImpl */>(m, "StatsClient");
-  py::class_<Stream>(m, "Stream");
-  py::class_<StreamCallbacks>(m, "StreamCallbacks");
-  py::class_<StreamClient /* TODO(crockeo): StreamClientImpl */>(m, "StreamClient");
-  py::class_<StreamPrototype>(m, "StreamPrototype");
+  py::class_<RetryPolicy>(m, "RetryPolicy")
+    .def("output_headers", &RetryPolicy::output_headers)
+    .def("from", &RetryPolicy::from)
+    .def_readwrite("max_retry_count", &RetryPolicy::max_retry_count)
+    .def_readwrite("retry_on", &RetryPolicy::retry_on)
+    .def_readwrite("retry_status_codes", &RetryPolicy::retry_status_codes)
+    .def_readwrite("per_try_timeout_ms", &RetryPolicy::per_try_timeout_ms)
+    .def_readwrite("total_upstream_timeout_ms", &RetryPolicy::total_upstream_timeout_ms);
+
+  // TODO(crockeo): fill out stubs here once stats client impl
+  py::class_<StatsClient>(m, "StatsClient");
+
+  py::class_<Stream>(m, "Stream")
+    .def("send_headers", &Stream::send_headers)
+    .def("send_data", &Stream::send_data)
+    .def("close", static_cast<void (Stream::*)(const RequestTrailers&)>(&Stream::close))
+    .def("close", static_cast<void (Stream::*)(const std::vector<std::byte>&)>(&Stream::close))
+    .def("cancel", &Stream::cancel);
+
+  py::class_<StreamCallbacks>(m, "StreamCallbacks")
+    .def_readwrite("on_headers", &StreamCallbacks::on_headers)
+    .def_readwrite("on_data", &StreamCallbacks::on_data)
+    .def_readwrite("on_trailers", &StreamCallbacks::on_trailers)
+    .def_readwrite("on_cancel", &StreamCallbacks::on_cancel)
+    .def_readwrite("on_error", &StreamCallbacks::on_error);
+
+  py::class_<StreamClient>(m, "StreamClient")
+    .def("new_stream_prototype", &StreamClient::new_stream_prototype);
+
+  py::class_<StreamPrototype>(m, "StreamPrototype")
+    .def("start", &StreamPrototype::start)
+    .def("set_on_response_headers", &StreamPrototype::set_on_response_headers)
+    .def("set_on_response_data", &StreamPrototype::set_on_response_data)
+    .def("set_on_response_trailers", &StreamPrototype::set_on_response_trailers)
+    .def("set_on_error", &StreamPrototype::set_on_error)
+    .def("set_on_cancel", &StreamPrototype::set_on_cancel);
 
   py::enum_<UpstreamHttpProtocol>(m, "UpstreamHttpProtocol")
     .value("HTTP1", UpstreamHttpProtocol::HTTP1)
     .value("HTTP2", UpstreamHttpProtocol::HTTP2);
-
 }
