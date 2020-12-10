@@ -5,11 +5,13 @@
 #include "pybind11/stl.h"
 namespace py = pybind11;
 
+#include "common/common/base_logger.h"
+#include "common/http/headers.h"
+
 #include "library/cc/engine.h"
 #include "library/cc/engine_builder.h"
 #include "library/cc/envoy_error.h"
 #include "library/cc/executor.h"
-#include "library/cc/log_level.h"
 #include "library/cc/request_headers.h"
 #include "library/cc/request_headers_builder.h"
 #include "library/cc/request_method.h"
@@ -74,14 +76,14 @@ PYBIND11_MODULE(envoy_engine, m) {
     .def(py::init<>())
     .def("execute", &Executor::execute);
 
-  py::enum_<LogLevel>(m, "LogLevel")
-    .value("Trace", LogLevel::Trace)
-    .value("Debug", LogLevel::Debug)
-    .value("Info", LogLevel::Info)
-    .value("Warn", LogLevel::Warn)
-    .value("Error", LogLevel::Error)
-    .value("Critical", LogLevel::Critical)
-    .value("Off", LogLevel::Off);
+  py::enum_<Envoy::Logger::Logger::Levels>(m, "LogLevel")
+    .value("Trace", Envoy::Logger::Logger::Levels::trace)
+    .value("Debug", Envoy::Logger::Logger::Levels::debug)
+    .value("Info", Envoy::Logger::Logger::Levels::info)
+    .value("Warn", Envoy::Logger::Logger::Levels::warn)
+    .value("Error", Envoy::Logger::Logger::Levels::error)
+    .value("Critical", Envoy::Logger::Logger::Levels::critical)
+    .value("Off", Envoy::Logger::Logger::Levels::off);
 
   py::class_<RequestHeaders, RequestHeadersSharedPtr>(m, "RequestHeaders")
     .def("__getitem__", &RequestHeaders::operator[])

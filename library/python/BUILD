@@ -8,5 +8,7 @@ pybind_extension(
     visibility = ["//visibility:public"],
     deps = [
         "//library/cc:envoy_engine_cc_lib",
+        # for log levels enum
+        "@envoy//source/common/common:base_logger_lib",
     ],
 )

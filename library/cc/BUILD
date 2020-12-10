@@ -7,7 +7,6 @@ cc_library(
         "executor.h",
         "headers.h",
         "headers_builder.h",
-        "log_level.h",
         "request_headers.h",
         "request_headers_builder.h",
         "request_method.h",
