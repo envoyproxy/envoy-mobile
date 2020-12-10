@@ -31,7 +31,7 @@ namespace py = pybind11;
 
 // This is what pybind11 calls a "trampoline" class.
 // It represents a bridge between the Python and C++ layers,
-// in this case is contains a function that defers a Python class
+// in this case is contains a function that defers to a Python class
 // that inherits from Executor.
 class PyExecutor : public Executor {
 public:
