@@ -219,7 +219,7 @@ static void ios_http_filter_on_cancel(const void *context) {
   if (filter.onCancel == nil) {
     return;
   }
-  [filter onCancel];
+  filter.onCancel();
 }
 
 static void ios_http_filter_on_error(envoy_error error, const void *context) {
