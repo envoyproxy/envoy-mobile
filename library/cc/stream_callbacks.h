@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -11,7 +10,7 @@
 #include "response_trailers.h"
 
 using OnHeadersCallback = std::function<void(ResponseHeadersSharedPtr headers, bool end_stream)>;
-using OnDataCallback = std::function<void(std::vector<std::byte> data, bool end_stream)>;
+using OnDataCallback = std::function<void(std::vector<uint8_t> data, bool end_stream)>;
 using OnTrailersCallback = std::function<void(ResponseTrailersSharedPtr trailers)>;
 using OnCancelCallback = std::function<void()>;
 using OnErrorCallback = std::function<void(EnvoyErrorSharedPtr error)>;

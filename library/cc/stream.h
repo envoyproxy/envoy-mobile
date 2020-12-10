@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <vector>
 
 #include "library/common/types/c_types.h"
@@ -12,9 +11,9 @@ public:
   Stream(envoy_stream_t handle);
 
   Stream& send_headers(RequestHeadersSharedPtr headers, bool end_stream);
-  Stream& send_data(const std::vector<std::byte>& data);
+  Stream& send_data(const std::vector<uint8_t>& data);
   void close(RequestTrailersSharedPtr trailers);
-  void close(const std::vector<std::byte>& data);
+  void close(const std::vector<uint8_t>& data);
   void cancel();
 
 private:

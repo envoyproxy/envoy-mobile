@@ -174,7 +174,7 @@ PYBIND11_MODULE(envoy_engine, m) {
     .def("send_headers", &Stream::send_headers)
     .def("send_data", &Stream::send_data)
     .def("close", static_cast<void (Stream::*)(RequestTrailersSharedPtr)>(&Stream::close))
-    .def("close", static_cast<void (Stream::*)(const std::vector<std::byte>&)>(&Stream::close))
+    .def("close", static_cast<void (Stream::*)(const std::vector<uint8_t>&)>(&Stream::close))
     .def("cancel", &Stream::cancel);
 
   py::class_<StreamCallbacks, StreamCallbacksSharedPtr>(m, "StreamCallbacks")

@@ -3,14 +3,15 @@
 #include <memory>
 #include <string>
 
+#include "common/common/base_logger.h"
+
 #include "engine.h"
-#include "log_level.h"
 
 class EngineBuilder {
 public:
   EngineBuilder();
 
-  EngineBuilder& add_log_level(LogLevel log_level);
+  EngineBuilder& add_log_level(Envoy::Logger::Logger::Levels log_level);
   EngineBuilder& set_on_engine_running(std::function<void()> closure);
 
   EngineBuilder& add_stats_domain(const std::string& stats_domain);
@@ -30,7 +31,7 @@ public:
   // EngineBuilder& addStringAccessor(name: String, accessor: EnvoyStringAccessor): EngineBuilder {
 
 private:
-  LogLevel log_level_;
+  Envoy::Logger::Logger::Levels log_level_;
   std::function<void()> on_engine_running_;
 
   std::string stats_domain_ = "0.0.0.0";
