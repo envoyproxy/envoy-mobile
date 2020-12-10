@@ -21,3 +21,5 @@ public:
 
   RequestHeaders build() const;
 };
+
+using RequestHeadersBuilderSharedPtr = std::shared_ptr<RequestHeadersBuilder>;

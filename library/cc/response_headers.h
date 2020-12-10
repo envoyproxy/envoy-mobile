@@ -11,3 +11,5 @@ public:
 
   ResponseHeadersBuilder to_response_headers_builder();
 };
+
+using ResponseHeadersSharedPtr = std::shared_ptr<ResponseHeaders>;

@@ -12,3 +12,5 @@ public:
   ResponseHeadersBuilder& add_http_status(int status);
   ResponseHeaders build() const;
 };
+
+using ResponseHeadersBuilderSharedPtr = std::shared_ptr<ResponseHeadersBuilder>;

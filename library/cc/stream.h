@@ -11,12 +11,14 @@ class Stream {
 public:
   Stream(envoy_stream_t handle);
 
-  Stream& send_headers(const RequestHeaders& headers, bool end_stream);
+  Stream& send_headers(RequestHeadersSharedPtr headers, bool end_stream);
   Stream& send_data(const std::vector<std::byte>& data);
-  void close(const RequestTrailers& trailers);
+  void close(RequestTrailersSharedPtr trailers);
   void close(const std::vector<std::byte>& data);
   void cancel();
 
 private:
   envoy_stream_t handle_;
 };
+
+using StreamSharedPtr = std::shared_ptr<Stream>;

@@ -11,3 +11,5 @@ public:
 
   ResponseTrailers build() const;
 };
+
+using ResponseTrailersBuilderSharedPtr = std::shared_ptr<ResponseTrailersBuilder>;

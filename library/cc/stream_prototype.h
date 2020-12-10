@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <memory>
 
 #include "engine.h"
 #include "envoy_error.h"
@@ -29,3 +30,5 @@ private:
   StreamCallbacks callbacks_;
   EnvoyHttpCallbacksAdapter adapter_;
 };
+
+using StreamPrototypeSharedPtr = std::shared_ptr<StreamPrototype>;

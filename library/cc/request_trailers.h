@@ -9,3 +9,5 @@ public:
 
   RequestTrailersBuilder to_request_trailers_builder() const;
 };
+
+using RequestTrailersSharedPtr = std::shared_ptr<RequestTrailers>;

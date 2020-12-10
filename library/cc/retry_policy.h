@@ -28,3 +28,5 @@ struct RetryPolicy {
   RawHeaders output_headers() const;
   static RetryPolicy from(const RequestHeaders& headers);
 };
+
+using RetryPolicySharedPtr = std::shared_ptr<RetryPolicy>;

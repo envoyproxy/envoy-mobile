@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 #include "engine.h"
@@ -21,7 +22,7 @@ public:
   EngineBuilder& set_app_id(const std::string& app_id);
   EngineBuilder& add_virtual_clusters(const std::string& virtual_clusters);
 
-  Engine build();
+  EngineSharedPtr build();
 
   // TODO(crockeo): add after filter integration
   // EngineBuilder& addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
@@ -47,3 +48,5 @@ private:
   // private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   // private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
 };
+
+using EngineBuilderSharedPtr = std::shared_ptr<EngineBuilder>;

@@ -20,7 +20,9 @@ public:
   RequestHeadersBuilder to_request_headers_builder() const;
 
 private:
-  RequestHeaders(RawHeaders headers) : Headers(headers) {}
+  RequestHeaders(RawHeaders headers) : Headers(std::move(headers)) {}
 
   friend class RequestHeadersBuilder;
 };
+
+using RequestHeadersSharedPtr = std::shared_ptr<RequestHeaders>;

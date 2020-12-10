@@ -9,3 +9,5 @@ public:
 
   ResponseTrailersBuilder to_response_trailers_builder();
 };
+
+using ResponseTrailersSharedPtr = std::shared_ptr<ResponseTrailers>;

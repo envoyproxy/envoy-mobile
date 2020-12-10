@@ -1,10 +1,13 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 class Executor {
 public:
   virtual ~Executor();
 
-  virtual void execute(std::function<void()> func) = 0;
+  virtual void execute(std::function<void()> closure) = 0;
 };
+
+using ExecutorSharedPtr = std::shared_ptr<Executor>;
