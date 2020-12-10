@@ -5,9 +5,12 @@
 
 class RequestTrailers : public Trailers {
 public:
-  RequestTrailers(const RawHeaders& headers) : Trailers(headers) {}
-
   RequestTrailersBuilder to_request_trailers_builder() const;
+
+private:
+  RequestTrailers(RawHeaders headers) : Trailers(std::move(headers)) {}
+
+  friend class RequestTrailersBuilder;
 };
 
 using RequestTrailersSharedPtr = std::shared_ptr<RequestTrailers>;

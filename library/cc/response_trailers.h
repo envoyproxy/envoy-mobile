@@ -5,9 +5,12 @@
 
 class ResponseTrailers : public Trailers {
 public:
-  ResponseTrailers(RawHeaders trailers) : Trailers(trailers) {}
-
   ResponseTrailersBuilder to_response_trailers_builder();
+
+private:
+  ResponseTrailers(RawHeaders trailers) : Trailers(std::move(trailers)) {}
+
+  friend class ResponseTrailersBuilder;
 };
 
 using ResponseTrailersSharedPtr = std::shared_ptr<ResponseTrailers>;
