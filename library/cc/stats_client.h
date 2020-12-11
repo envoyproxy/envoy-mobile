@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <memory>
 
 // TODO(crockeo): although this is stubbed out since it's in the main directory, it depends on

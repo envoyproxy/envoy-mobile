@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include "headers.h"
 #include "response_headers_builder.h"
 

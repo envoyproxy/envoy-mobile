@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <cstddef>
 #include <functional>
 #include <memory>

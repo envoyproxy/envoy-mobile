@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <vector>
 
 #include "library/common/types/c_types.h"

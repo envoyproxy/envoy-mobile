@@ -1,7 +1,10 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <optional>
 
+#include "absl/types/optional.h"
 #include "headers.h"
 #include "request_headers_builder.h"
 #include "request_method.h"
@@ -14,7 +17,7 @@ public:
   const std::string& scheme() const;
   const std::string& authority() const;
   const std::string& path() const;
-  const std::optional<RetryPolicy> retry_policy() const;
+  const absl::optional<RetryPolicy> retry_policy() const;
   UpstreamHttpProtocol upstream_http_protocol() const;
 
   RequestHeadersBuilder to_request_headers_builder() const;

@@ -1,10 +1,13 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-using RawHeaders = std::unordered_map<std::string, std::vector<std::string>>;
+#include "absl/container/flat_hash_map.h"
+
+using RawHeaders = absl::flat_hash_map<std::string, std::vector<std::string>>;
 
 class Headers {
 public:

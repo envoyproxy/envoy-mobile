@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <memory>
 #include <string>
 
@@ -26,9 +28,10 @@ public:
   EngineSharedPtr build();
 
   // TODO(crockeo): add after filter integration
-  // EngineBuilder& addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
-  // EngineBuilder& addNativeFilter(name: String = UUID.randomUUID().toString(), typedConfig: String):
-  // EngineBuilder& addStringAccessor(name: String, accessor: EnvoyStringAccessor): EngineBuilder {
+  // EngineBuilder& addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () ->
+  // Filter): EngineBuilder& addNativeFilter(name: String = UUID.randomUUID().toString(),
+  // typedConfig: String): EngineBuilder& addStringAccessor(name: String, accessor:
+  // EnvoyStringAccessor): EngineBuilder {
 
 private:
   Envoy::Logger::Logger::Levels log_level_;

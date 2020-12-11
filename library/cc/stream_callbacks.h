@@ -1,9 +1,12 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <memory>
 #include <optional>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "envoy_error.h"
 #include "executor.h"
 #include "response_headers.h"
@@ -16,11 +19,11 @@ using OnCancelCallback = std::function<void()>;
 using OnErrorCallback = std::function<void(EnvoyErrorSharedPtr error)>;
 
 struct StreamCallbacks {
-  std::optional<OnHeadersCallback> on_headers;
-  std::optional<OnDataCallback> on_data;
-  std::optional<OnTrailersCallback> on_trailers;
-  std::optional<OnCancelCallback> on_cancel;
-  std::optional<OnErrorCallback> on_error;
+  absl::optional<OnHeadersCallback> on_headers;
+  absl::optional<OnDataCallback> on_data;
+  absl::optional<OnTrailersCallback> on_trailers;
+  absl::optional<OnCancelCallback> on_cancel;
+  absl::optional<OnErrorCallback> on_error;
 };
 
 using StreamCallbacksSharedPtr = std::shared_ptr<StreamCallbacks>;

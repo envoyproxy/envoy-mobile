@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include "headers_builder.h"
 #include "request_trailers.h"
 

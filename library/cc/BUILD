@@ -1,4 +1,10 @@
-cc_library(
+load("//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+
+licenses(["notice"])  # Apache 2
+
+envoy_package()
+
+envoy_cc_library(
     name = "envoy_engine_cc_lib",
     hdrs = [
         "engine.h",
@@ -25,6 +31,8 @@ cc_library(
         "trailers.h",
         "upstream_http_protocol.h",
     ],
+    external_deps = ["abseil_optional"],
+    repository = "@envoy",
     visibility = ["//visibility:public"],
     deps = [
         "//library/common:envoy_main_interface_lib",

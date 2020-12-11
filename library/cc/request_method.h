@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 enum RequestMethod {
   DELETE,
   GET,

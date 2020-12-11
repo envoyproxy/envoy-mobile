@@ -1,7 +1,9 @@
 #pragma once
 
-#include "trailers.h"
+// NOLINT(namespace-envoy)
+
 #include "response_trailers_builder.h"
+#include "trailers.h"
 
 class ResponseTrailers : public Trailers {
 public:

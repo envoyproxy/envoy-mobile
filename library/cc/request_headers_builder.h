@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include <string>
 
 #include "headers_builder.h"
@@ -16,8 +18,7 @@ public:
                         const std::string& authority, const std::string& path);
 
   RequestHeadersBuilder& add_retry_policy(const RetryPolicy& retry_policy);
-  RequestHeadersBuilder&
-  add_upstream_http_protocol(UpstreamHttpProtocol upstream_http_protocol);
+  RequestHeadersBuilder& add_upstream_http_protocol(UpstreamHttpProtocol upstream_http_protocol);
 
   RequestHeaders build() const;
 };

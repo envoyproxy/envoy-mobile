@@ -1,5 +1,7 @@
 #pragma once
 
+// NOLINT(namespace-envoy)
+
 #include "request_trailers_builder.h"
 #include "trailers.h"
 
