@@ -270,7 +270,23 @@ static void ios_http_filter_release(const void *context) {
     return kEnvoyFailure;
   }
 
-  for (EnvoyHTTPFilterFactory *filterFactory in config.httpFilterFactories) {
+  for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
+    [self registerFilterFactory:filterFactory];
+  }
+
+  return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
+}
+
+- (int)runWithTemplate:(NSString *)yaml
+                config:(EnvoyConfiguration *)config
+              logLevel:(NSString *)logLevel
+       onEngineRunning:(nullable void (^)())onEngineRunning {
+  NSString *resolvedYAML = [config resolveTemplate:yaml];
+  if (resolvedYAML == nil) {
+    return kEnvoyFailure;
+  }
+
+  for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
     [self registerFilterFactory:filterFactory];
   }
 

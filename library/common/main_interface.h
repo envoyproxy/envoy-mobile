@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -22,6 +23,11 @@ extern const char* config_template;
  * Template configuration used for dynamic creation of the platform-bridged filter chain.
  */
 extern const char* platform_filter_template;
+
+/**
+ * Template configuration used for dynamic creation of the native filter chain.
+ */
+extern const char* native_filter_template;
 
 /**
  * Initialize an underlying HTTP stream.

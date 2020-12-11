@@ -218,6 +218,17 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
+#pragma mark - EnvoyNativeFilterConfig
+
+@interface EnvoyNativeFilterConfig : NSObject
+
+@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong) NSString *typedConfig;
+
+- (instancetype)initWithName:(NSString *)name typedConfig:(NSString *)typedConfig;
+
+@end
+
 #pragma mark - EnvoyConfiguration
 
 /// Typed configuration that may be used for starting Envoy.
@@ -228,11 +239,12 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
-@property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpFilterFactories;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
 @property (nonatomic, strong) NSString *virtualClusters;
+@property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
+@property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
 
 /**
  Create a new instance of the configuration.
@@ -242,11 +254,13 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                        filterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpFilterFactories
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
-                    virtualClusters:(NSString *)virtualClusters;
+                    virtualClusters:(NSString *)virtualClusters
+                  nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                platformFilterChain:
+                    (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -288,15 +302,17 @@ extern const int kEnvoyFailure;
 /**
  Run the Envoy engine with the provided yaml string and log level.
 
- @param configYAML The configuration yaml with which to start Envoy.
+ @param yaml The configuration template with which to start Envoy.
+ @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
  @param onEngineRunning Closure called when the engine finishes its async startup and begins
  running.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfigYAML:(NSString *)configYAML
-                logLevel:(NSString *)logLevel
-         onEngineRunning:(nullable void (^)())onEngineRunning;
+- (int)runWithTemplate:(NSString *)yaml
+                config:(EnvoyConfiguration *)config
+              logLevel:(NSString *)logLevel
+       onEngineRunning:(nullable void (^)())onEngineRunning;
 
 /**
  Opens a new HTTP stream attached to this engine.

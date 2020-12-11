@@ -198,7 +198,26 @@ class JniLibrary {
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         filter platform filter configuration.
+   *         platform filter configuration.
    */
-  public static native String filterTemplateString();
+  public static native String platformFilterTemplateString();
+
+  /**
+   * Provides a configuration template that may be used for building native
+   * filter config chains.
+   *
+   * @return A template that may be used as a starting point for constructing
+   *         native filter configuration.
+   */
+  public static native String nativeFilterTemplateString();
+
+  /**
+   * Register a string accessor to get strings from the platform.
+   *
+   * @param accessorName, unique name identifying this accessor.
+   * @param context,    context containing logic necessary to invoke the accessor.
+   * @return int, the resulting status of the operation.
+   */
+  protected static native int registerStringAccessor(String accessorName,
+                                                     JvmStringAccessorContext context);
 }

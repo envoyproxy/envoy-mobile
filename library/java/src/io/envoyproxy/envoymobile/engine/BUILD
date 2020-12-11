@@ -28,6 +28,7 @@ java_library(
         "EnvoyEngineImpl.java",
         "EnvoyHTTPFilterCallbacksImpl.java",
         "EnvoyHTTPStream.java",
+        "EnvoyNativeFilterConfig.java",
         "EnvoyNativeResourceRegistry.java",
         "EnvoyNativeResourceReleaser.java",
         "EnvoyNativeResourceWrapper.java",
@@ -37,6 +38,7 @@ java_library(
         "JvmCallbackContext.java",
         "JvmFilterContext.java",
         "JvmFilterFactoryContext.java",
+        "JvmStringAccessorContext.java",
     ],
     visibility = ["//visibility:public"],
     deps = [
