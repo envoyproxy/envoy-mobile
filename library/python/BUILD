@@ -11,6 +11,6 @@ pybind_extension(
     deps = [
         "//library/cc:envoy_engine_cc_lib",
         # for log levels enum
-        "//source/common/common:base_logger_lib",
+        "@envoy//source/common/common:base_logger_lib",
     ],
 )
