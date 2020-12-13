@@ -18,7 +18,6 @@
 #include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
 
-
 namespace Envoy {
 
 void ExtensionRegistry::registerFactories() {
