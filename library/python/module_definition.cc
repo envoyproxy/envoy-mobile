@@ -198,6 +198,7 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def("set_on_headers", &StreamPrototype::set_on_headers)
       .def("set_on_data", &StreamPrototype::set_on_data)
       .def("set_on_trailers", &StreamPrototype::set_on_trailers)
+      .def("set_on_complete", &StreamPrototype::set_on_complete)
       .def("set_on_error", &StreamPrototype::set_on_error)
       .def("set_on_cancel", &StreamPrototype::set_on_cancel);
 

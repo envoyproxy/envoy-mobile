@@ -2,6 +2,15 @@ load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
 
 licenses(["notice"])  # Apache 2
 
+py_binary(
+    name = "e2e_test",
+    srcs = [":e2e_test.py"],
+    main = "e2e_test.py",
+    data = [
+        ":envoy_engine.so",
+    ],
+)
+
 pybind_extension(
     name = "envoy_engine",
     srcs = [
