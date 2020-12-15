@@ -5,6 +5,7 @@
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
+#include "pybind11/complex.h"
 
 #include "common/common/base_logger.h"
 #include "common/http/headers.h"
@@ -14,6 +15,7 @@
 #include "library/cc/envoy_error.h"
 #include "library/cc/executor.h"
 #include "library/cc/pulse_client.h"
+#include "library/cc/log_level.h"
 #include "library/cc/request_headers.h"
 #include "library/cc/request_headers_builder.h"
 #include "library/cc/request_method.h"
@@ -53,6 +55,7 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def("pulse_client", &Engine::pulse_client);
 
   py::class_<EngineBuilder, EngineBuilderSharedPtr>(m, "EngineBuilder")
+      .def(py::init<>())
       .def("add_log_level", &EngineBuilder::add_log_level)
       .def("set_on_engine_running", &EngineBuilder::set_on_engine_running)
       .def("add_stats_domain", &EngineBuilder::add_stats_domain)
@@ -79,14 +82,14 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def(py::init<>())
       .def("execute", &Executor::execute);
 
-  py::enum_<Envoy::Logger::Logger::Levels>(m, "LogLevel")
-      .value("Trace", Envoy::Logger::Logger::Levels::trace)
-      .value("Debug", Envoy::Logger::Logger::Levels::debug)
-      .value("Info", Envoy::Logger::Logger::Levels::info)
-      .value("Warn", Envoy::Logger::Logger::Levels::warn)
-      .value("Error", Envoy::Logger::Logger::Levels::error)
-      .value("Critical", Envoy::Logger::Logger::Levels::critical)
-      .value("Off", Envoy::Logger::Logger::Levels::off);
+  py::enum_<LogLevel>(m, "LogLevel")
+      .value("Trace", LogLevel::trace)
+      .value("Debug", LogLevel::debug)
+      .value("Info", LogLevel::info)
+      .value("Warn", LogLevel::warn)
+      .value("Error", LogLevel::error)
+      .value("Critical", LogLevel::critical)
+      .value("Off", LogLevel::off);
 
   py::class_<RequestHeaders, RequestHeadersSharedPtr>(m, "RequestHeaders")
       .def("__getitem__", &RequestHeaders::operator[])
@@ -100,6 +103,7 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def("to_request_headers_builder", &RequestHeaders::to_request_headers_builder);
 
   py::class_<RequestHeadersBuilder, RequestHeadersBuilderSharedPtr>(m, "RequestHeadersBuilder")
+      .def(py::init<RequestMethod, const std::string&, const std::string&, const std::string&>())
       .def("add", &RequestHeadersBuilder::add)
       .def("set", &RequestHeadersBuilder::set)
       .def("remove", &RequestHeadersBuilder::remove)
@@ -155,7 +159,7 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::enum_<RetryRule>(m, "RetryRule")
       .value("Status5xx", RetryRule::Status5xx)
-      .value("GatewayFailure", RetryRule::GatewayFailure)
+      .value("GatewayError", RetryRule::GatewayError)
       .value("ConnectFailure", RetryRule::ConnectFailure)
       .value("RefusedStream", RetryRule::RefusedStream)
       .value("Retriable4xx", RetryRule::Retriable4xx)
@@ -163,8 +167,6 @@ PYBIND11_MODULE(envoy_engine, m) {
       .value("Reset", RetryRule::Reset);
 
   py::class_<RetryPolicy, RetryPolicySharedPtr>(m, "RetryPolicy")
-      .def("output_headers", &RetryPolicy::output_headers)
-      .def("from", &RetryPolicy::from)
       .def_readwrite("max_retry_count", &RetryPolicy::max_retry_count)
       .def_readwrite("retry_on", &RetryPolicy::retry_on)
       .def_readwrite("retry_status_codes", &RetryPolicy::retry_status_codes)
@@ -193,9 +195,9 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<StreamPrototype, StreamPrototypeSharedPtr>(m, "StreamPrototype")
       .def("start", &StreamPrototype::start)
-      .def("set_on_response_headers", &StreamPrototype::set_on_response_headers)
-      .def("set_on_response_data", &StreamPrototype::set_on_response_data)
-      .def("set_on_response_trailers", &StreamPrototype::set_on_response_trailers)
+      .def("set_on_headers", &StreamPrototype::set_on_headers)
+      .def("set_on_data", &StreamPrototype::set_on_data)
+      .def("set_on_trailers", &StreamPrototype::set_on_trailers)
       .def("set_on_error", &StreamPrototype::set_on_error)
       .def("set_on_cancel", &StreamPrototype::set_on_cancel);
 
