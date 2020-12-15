@@ -13,7 +13,7 @@ struct EnvoyError {
   int error_code;
   std::string message;
   absl::optional<int> attempt_count;
-  std::exception cause;
+  absl::optional<std::exception> cause;
 };
 
 using EnvoyErrorSharedPtr = std::shared_ptr<EnvoyError>;

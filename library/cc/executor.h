@@ -7,7 +7,7 @@
 
 class Executor {
 public:
-  virtual ~Executor();
+  virtual ~Executor() {}
 
   virtual void execute(std::function<void()> closure) = 0;
 };

@@ -11,6 +11,7 @@
 #include "upstream_http_protocol.h"
 
 class RequestHeaders;
+struct RetryPolicy;
 
 class RequestHeadersBuilder : public HeadersBuilder {
 public:

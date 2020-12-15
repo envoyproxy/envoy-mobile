@@ -13,13 +13,16 @@ class RequestHeaders;
 
 enum RetryRule {
   Status5xx,
-  GatewayFailure,
+  GatewayError,
   ConnectFailure,
   RefusedStream,
   Retriable4xx,
   RetriableHeaders,
   Reset,
 };
+
+std::string retry_rule_to_string(RetryRule retry_rule);
+RetryRule retry_rule_from_string(const std::string& str);
 
 struct RetryPolicy {
   int max_retry_count;
@@ -28,8 +31,8 @@ struct RetryPolicy {
   absl::optional<int> per_try_timeout_ms;
   absl::optional<int> total_upstream_timeout_ms;
 
-  RawHeaders output_headers() const;
-  static RetryPolicy from(const RequestHeaders& headers);
+  RawHeaders as_raw_headers() const;
+  static RetryPolicy from_raw_headers(const RawHeaders& headers);
 };
 
 using RetryPolicySharedPtr = std::shared_ptr<RetryPolicy>;

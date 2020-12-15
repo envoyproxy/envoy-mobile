@@ -5,6 +5,8 @@
 #include "request_trailers_builder.h"
 #include "trailers.h"
 
+class RequestTrailersBuilder;
+
 class RequestTrailers : public Trailers {
 public:
   RequestTrailersBuilder to_request_trailers_builder() const;
