@@ -8,8 +8,8 @@ namespace HttpFilters {
 namespace LocalError {
 
 Http::FilterFactoryCb LocalErrorFilterFactory::createFilterFactoryFromProtoTyped(
-    const envoymobile::extensions::filters::http::local_error::LocalError&,
-    const std::string&, Server::Configuration::FactoryContext&) {
+    const envoymobile::extensions::filters::http::local_error::LocalError&, const std::string&,
+    Server::Configuration::FactoryContext&) {
 
   return [](Http::FilterChainFactoryCallbacks& callbacks) -> void {
     callbacks.addStreamEncoderFilter(std::make_shared<LocalErrorFilter>());
