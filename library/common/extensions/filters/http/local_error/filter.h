@@ -13,24 +13,13 @@ namespace Extensions {
 namespace HttpFilters {
 namespace LocalError {
 
-class LocalErrorFilterConfig {
-public:
-  LocalErrorFilterConfig(
-      const envoymobile::extensions::filters::http::local_error::LocalError& proto_config);
-
-private:
-  const bool enabled_;
-};
-
-typedef std::shared_ptr<LocalErrorFilterConfig> LocalErrorFilterConfigSharedPtr;
-
 /**
  * Filter to assert expectations on HTTP requests.
  */
 class LocalErrorFilter final : public Http::PassThroughEncoderFilter,
                                public Logger::Loggable<Logger::Id::filter> {
 public:
-  LocalErrorFilter(LocalErrorFilterConfigSharedPtr config);
+  LocalErrorFilter();
 
   // StreamEncoderFilter
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap& headers,
@@ -40,7 +29,6 @@ public:
 private:
   void mapLocalResponseToError(Http::ResponseHeaderMap& headers);
 
-  const LocalErrorFilterConfigSharedPtr config_;
   Http::ResponseHeaderMap* headers_{};
   bool processingError_{};
 };

@@ -15,11 +15,7 @@ namespace Extensions {
 namespace HttpFilters {
 namespace LocalError {
 
-LocalErrorFilterConfig::LocalErrorFilterConfig(
-    const envoymobile::extensions::filters::http::local_error::LocalError& proto_config)
-    : enabled_(proto_config.enabled()) {}
-
-LocalErrorFilter::LocalErrorFilter(LocalErrorFilterConfigSharedPtr config) : config_(config) {}
+LocalErrorFilter::LocalErrorFilter() {}
 
 Http::FilterHeadersStatus LocalErrorFilter::encodeHeaders(Http::ResponseHeaderMap& headers,
                                                           bool end_stream) {

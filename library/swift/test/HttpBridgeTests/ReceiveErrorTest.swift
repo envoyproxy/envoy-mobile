@@ -38,7 +38,6 @@ final class ReceiveErrorTests: XCTestCase {
               - name: envoy.filters.http.local_error
                 typed_config:
                   "@type": \(localErrorFilterType)
-                  enabled: true
               - name: envoy.router
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
