@@ -48,9 +48,9 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
-    name = "stats_client_impl_tests",
+    name = "pulse_client_impl_tests",
     srcs = [
-        "StatsClientImplTests.swift",
+        "PulseClientImplTests.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",
