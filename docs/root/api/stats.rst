@@ -1,7 +1,7 @@
 .. _api_stats:
 
-Pulse
-=====
+Pulse (Stats)
+=============
 
 ---------------
 ``PulseClient``
