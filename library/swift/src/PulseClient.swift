@@ -9,7 +9,7 @@ public protocol PulseClient: AnyObject {
   /// - parameter elements: Elements to identify a counter
   ///
   /// - returns: A Counter based on the joined elements.
-  func counter(elements: [Element]) -> Counter:w
+  func counter(elements: [Element]) -> Counter
 
   /// - parameter elements: Elements to identify a gauge
   ///
