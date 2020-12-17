@@ -1,6 +1,7 @@
 #include "retry_policy.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 static const std::pair<RetryRule, std::string> RETRY_RULE_LOOKUP[]{
     {RetryRule::Status5xx, "5xx"},
@@ -99,3 +100,6 @@ RetryPolicy RetryPolicy::from_raw_headers(const RawHeaders& headers) {
 
   return retry_policy;
 }
+
+} // namespace Platform
+} // namespace Envoy

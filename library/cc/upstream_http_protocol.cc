@@ -1,8 +1,9 @@
 #include "upstream_http_protocol.h"
 
-// NOLINT(namespace-envoy)
-
 #include <stdexcept>
+
+namespace Envoy {
+namespace Platform {
 
 static const std::pair<UpstreamHttpProtocol, std::string> UPSTREAM_HTTP_PROTOCOL_LOOKUP[]{
     {UpstreamHttpProtocol::HTTP1, "http1"},
@@ -26,3 +27,6 @@ UpstreamHttpProtocol upstream_http_protocol_from_string(const std::string& str) 
   }
   throw std::invalid_argument("invalid upstream http protocol");
 }
+
+} // namespace Platform
+} // namespace Envoy

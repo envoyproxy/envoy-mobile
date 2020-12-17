@@ -1,11 +1,12 @@
 #include "bridge_utility.h"
 
-// NOLINT(namespace-envoy)
+#include <sstream>
+
+namespace Envoy {
+namespace Platform {
 
 // TODO(crockeo): we always copy memory across boundaries; consider allowing for moves and/or
 // shared ownership w/ reference counting via envoy-mobile's release callbacks
-
-#include <sstream>
 
 envoy_data buffer_as_envoy_data(const std::vector<uint8_t>& data) {
   size_t byte_len = sizeof(uint8_t) * data.size();
@@ -109,3 +110,6 @@ RawHeaders envoy_headers_as_raw_headers(envoy_headers raw_headers) {
   }
   return headers;
 }
+
+} // namespace Platform
+} // namespace Envoy

@@ -1,8 +1,9 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include "headers.h"
+
+namespace Envoy {
+namespace Platform {
 
 class HeadersBuilder {
 public:
@@ -22,3 +23,6 @@ private:
 
   RawHeaders headers_;
 };
+
+} // namespace Platform
+} // namespace Envoy

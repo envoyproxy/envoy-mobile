@@ -1,9 +1,5 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
-#include <cstddef>
-#include <functional>
 #include <memory>
 
 #include "envoy_error.h"
@@ -13,6 +9,9 @@
 #include "response_trailers.h"
 #include "stream.h"
 #include "stream_callbacks.h"
+
+namespace Envoy {
+namespace Platform {
 
 class StreamPrototype {
 public:
@@ -33,3 +32,6 @@ private:
 };
 
 using StreamPrototypeSharedPtr = std::shared_ptr<StreamPrototype>;
+
+} // namespace Platform
+} // namespace Envoy

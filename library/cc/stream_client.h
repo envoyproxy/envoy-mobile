@@ -1,10 +1,11 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <memory>
 
 #include "stream_prototype.h"
+
+namespace Envoy {
+namespace Platform {
 
 class StreamClient {
 public:
@@ -17,3 +18,6 @@ private:
 };
 
 using StreamClientSharedPtr = std::shared_ptr<StreamClient>;
+
+} // namespace Platform
+} // namespace Envoy

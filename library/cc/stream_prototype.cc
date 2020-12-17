@@ -1,8 +1,9 @@
 #include "stream_prototype.h"
 
-// NOLINT(namespace-envoy)
-
 #include "library/common/main_interface.h"
+
+namespace Envoy {
+namespace Platform {
 
 StreamPrototype::StreamPrototype(envoy_engine_t engine) : engine_(engine) {
   this->callbacks_ = std::make_shared<StreamCallbacks>();
@@ -45,3 +46,6 @@ StreamPrototype& StreamPrototype::set_on_cancel(OnCancelCallback closure) {
   this->callbacks_->on_cancel = closure;
   return *this;
 }
+
+} // namespace Platform
+} // namespace Envoy

@@ -1,8 +1,9 @@
 #include "log_level.h"
 
-// NOLINT(namespace-envoy)
-
 #include <stdexcept>
+
+namespace Envoy {
+namespace Platform {
 
 static const std::pair<LogLevel, std::string> LOG_LEVEL_LOOKUP[]{
     {LogLevel::trace, "trace"}, {LogLevel::debug, "debug"}, {LogLevel::info, "info"},
@@ -29,3 +30,6 @@ LogLevel log_level_from_string(const std::string& str) {
 
   throw std::out_of_range("unknown log level type");
 }
+
+} // namespace Platform
+} // namespace Envoy

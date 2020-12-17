@@ -1,6 +1,7 @@
 #include "response_headers.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 int ResponseHeaders::http_status() const {
   if (!this->contains(":status")) {
@@ -19,3 +20,6 @@ ResponseHeadersBuilder ResponseHeaders::to_response_headers_builder() {
   }
   return builder;
 }
+
+} // namespace Platform
+} // namespace Envoy

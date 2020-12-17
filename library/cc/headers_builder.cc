@@ -1,6 +1,7 @@
 #include "headers_builder.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 HeadersBuilder& HeadersBuilder::add(const std::string& name, const std::string& value) {
   if (this->is_restricted_header_(name)) {
@@ -40,3 +41,6 @@ const RawHeaders& HeadersBuilder::all_headers() const { return this->headers_; }
 bool HeadersBuilder::is_restricted_header_(const std::string& name) const {
   return name.find(":") == 0 || name.find("x-envoy-mobile") == 0;
 }
+
+} // namespace Platform
+} // namespace Envoy

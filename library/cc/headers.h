@@ -1,11 +1,12 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+
+namespace Envoy {
+namespace Platform {
 
 using RawHeaders = absl::flat_hash_map<std::string, std::vector<std::string>>;
 
@@ -23,3 +24,6 @@ protected:
 private:
   RawHeaders headers_;
 };
+
+} // namespace Platform
+} // namespace Envoy

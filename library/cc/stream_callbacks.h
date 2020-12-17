@@ -1,7 +1,5 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <memory>
 #include <optional>
 #include <vector>
@@ -12,6 +10,9 @@
 #include "library/common/types/c_types.h"
 #include "response_headers.h"
 #include "response_trailers.h"
+
+namespace Envoy {
+namespace Platform {
 
 using OnHeadersCallback = std::function<void(ResponseHeadersSharedPtr headers, bool end_stream)>;
 using OnDataCallback = std::function<void(std::vector<uint8_t> data, bool end_stream)>;
@@ -50,3 +51,6 @@ private:
 };
 
 using EnvoyHttpCallbacksAdapterSharedPtr = std::shared_ptr<EnvoyHttpCallbacksAdapter>;
+
+} // namespace Platform
+} // namespace Envoy

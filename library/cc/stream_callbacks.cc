@@ -1,8 +1,9 @@
 #include "stream_callbacks.h"
 
-// NOLINT(namespace-envoy)
-
 #include "bridge_utility.h"
+
+namespace Envoy {
+namespace Platform {
 
 EnvoyHttpCallbacksAdapter::EnvoyHttpCallbacksAdapter(ExecutorSharedPtr executor,
                                                      StreamCallbacksSharedPtr callbacks)
@@ -83,3 +84,6 @@ void* EnvoyHttpCallbacksAdapter::dispatch_on_cancel(void* context) {
   }
   return context;
 }
+
+} // namespace Platform
+} // namespace Envoy

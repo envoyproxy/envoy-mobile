@@ -1,8 +1,9 @@
 #include "engine_builder.h"
 
-// NOLINT(namespace-envoy)
-
 #include "library/common/main_interface.h"
+
+namespace Envoy {
+namespace Platform {
 
 EngineBuilder::EngineBuilder() {}
 
@@ -90,3 +91,6 @@ EngineSharedPtr EngineBuilder::build(ExecutorSharedPtr executor) {
                               std::move(executor));
   return EngineSharedPtr(engine);
 }
+
+} // namespace Platform
+} // namespace Envoy

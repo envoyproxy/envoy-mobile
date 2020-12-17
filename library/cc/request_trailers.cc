@@ -1,6 +1,7 @@
 #include "request_trailers.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 RequestTrailersBuilder RequestTrailers::to_request_trailers_builder() const {
   RequestTrailersBuilder builder;
@@ -9,3 +10,6 @@ RequestTrailersBuilder RequestTrailers::to_request_trailers_builder() const {
   }
   return builder;
 }
+
+} // namespace Platform
+} // namespace Envoy

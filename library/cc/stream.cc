@@ -1,12 +1,13 @@
 #include "stream.h"
 
-// NOLINT(namespace-envoy)
-
 #include <iostream>
 
 #include "bridge_utility.h"
-#include "library/common/types/c_types.h"
 #include "library/common/main_interface.h"
+#include "library/common/types/c_types.h"
+
+namespace Envoy {
+namespace Platform {
 
 Stream::Stream(envoy_stream_t handle, EnvoyHttpCallbacksAdapterSharedPtr adapter)
     : handle_(handle), adapter_(adapter) {}
@@ -35,3 +36,6 @@ void Stream::close(const std::vector<uint8_t>& data) {
 }
 
 void Stream::cancel() { reset_stream(this->handle_); }
+
+} // namespace Platform
+} // namespace Envoy

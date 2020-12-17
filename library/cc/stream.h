@@ -1,13 +1,14 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <vector>
 
 #include "library/common/types/c_types.h"
 #include "request_headers.h"
 #include "request_trailers.h"
 #include "stream_callbacks.h"
+
+namespace Envoy {
+namespace Platform {
 
 class Stream {
 public:
@@ -25,3 +26,6 @@ private:
 };
 
 using StreamSharedPtr = std::shared_ptr<Stream>;
+
+} // namespace Platform
+} // namespace Envoy

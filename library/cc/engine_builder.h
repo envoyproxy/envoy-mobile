@@ -1,13 +1,14 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <memory>
 #include <string>
 
 #include "engine.h"
 #include "executor.h"
 #include "log_level.h"
+
+namespace Envoy {
+namespace Platform {
 
 class EngineBuilder {
 public:
@@ -54,3 +55,6 @@ private:
 };
 
 using EngineBuilderSharedPtr = std::shared_ptr<EngineBuilder>;
+
+} // namespace Platform
+} // namespace Envoy

@@ -1,9 +1,10 @@
 #include "request_method.h"
 
-// NOLINT(namespace-envoy)
-
 #include <stdexcept>
 #include <vector>
+
+namespace Envoy {
+namespace Platform {
 
 static const std::pair<RequestMethod, std::string> REQUEST_METHOD_LOOKUP[]{
     {RequestMethod::DELETE, "DELETE"}, {RequestMethod::GET, "GET"},
@@ -31,3 +32,6 @@ RequestMethod request_method_from_string(const std::string& str) {
 
   throw std::out_of_range("unknown request method type");
 }
+
+} // namespace Platform
+} // namespace Envoy

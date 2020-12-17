@@ -1,6 +1,7 @@
 #include "request_headers.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 RequestMethod RequestHeaders::request_method() const {
   return request_method_from_string((*this)[":method"][0]);
@@ -36,3 +37,6 @@ RequestHeadersBuilder RequestHeaders::to_request_headers_builder() const {
   }
   return builder;
 }
+
+} // namespace Platform
+} // namespace Envoy

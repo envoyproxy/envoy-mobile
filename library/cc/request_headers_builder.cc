@@ -1,6 +1,7 @@
 #include "request_headers_builder.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 RequestHeadersBuilder::RequestHeadersBuilder(RequestMethod request_method,
                                              const std::string& scheme,
@@ -29,3 +30,6 @@ RequestHeadersBuilder::add_upstream_http_protocol(UpstreamHttpProtocol upstream_
 }
 
 RequestHeaders RequestHeadersBuilder::build() const { return RequestHeaders(this->all_headers()); }
+
+} // namespace Platform
+} // namespace Envoy

@@ -1,7 +1,5 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <functional>
 
 #include "executor.h"
@@ -9,6 +7,9 @@
 #include "pulse_client.h"
 #include "log_level.h"
 #include "stream_client.h"
+
+namespace Envoy {
+namespace Platform {
 
 class Engine {
 public:
@@ -34,3 +35,6 @@ private:
 };
 
 using EngineSharedPtr = std::shared_ptr<Engine>;
+
+} // namespace Platform
+} // namespace Envoy

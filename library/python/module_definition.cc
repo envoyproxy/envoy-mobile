@@ -33,6 +33,7 @@
 #include "library/cc/upstream_http_protocol.h"
 
 namespace py = pybind11;
+using namespace Envoy::Platform;
 
 // This is what pybind11 calls a "trampoline" class.
 // It represents a bridge between the Python and C++ layers,

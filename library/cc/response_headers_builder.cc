@@ -1,6 +1,7 @@
 #include "response_headers_builder.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 ResponseHeadersBuilder& ResponseHeadersBuilder::add_http_status(int status) {
   this->internal_set(":status", std::vector<std::string>{std::to_string(status)});
@@ -10,3 +11,6 @@ ResponseHeadersBuilder& ResponseHeadersBuilder::add_http_status(int status) {
 ResponseHeaders ResponseHeadersBuilder::build() const {
   return ResponseHeaders(this->all_headers());
 }
+
+} // namespace Platform
+} // namespace Envoy

@@ -1,6 +1,7 @@
 #include "response_trailers.h"
 
-// NOLINT(namespace-envoy)
+namespace Envoy {
+namespace Platform {
 
 ResponseTrailersBuilder ResponseTrailers::to_response_trailers_builder() {
   ResponseTrailersBuilder builder;
@@ -9,3 +10,6 @@ ResponseTrailersBuilder ResponseTrailers::to_response_trailers_builder() {
   }
   return builder;
 }
+
+} // namespace Platform
+} // namespace Envoy

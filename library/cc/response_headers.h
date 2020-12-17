@@ -1,9 +1,10 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include "headers.h"
 #include "response_headers_builder.h"
+
+namespace Envoy {
+namespace Platform {
 
 class ResponseHeadersBuilder;
 
@@ -17,3 +18,6 @@ public:
 };
 
 using ResponseHeadersSharedPtr = std::shared_ptr<ResponseHeaders>;
+
+} // namespace Platform
+} // namespace Envoy

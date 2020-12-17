@@ -1,7 +1,5 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <optional>
 
 #include "absl/types/optional.h"
@@ -10,6 +8,9 @@
 #include "request_method.h"
 #include "retry_policy.h"
 #include "upstream_http_protocol.h"
+
+namespace Envoy {
+namespace Platform {
 
 class RequestHeadersBuilder;
 
@@ -31,3 +32,6 @@ private:
 };
 
 using RequestHeadersSharedPtr = std::shared_ptr<RequestHeaders>;
+
+} // namespace Platform
+} // namespace Envoy

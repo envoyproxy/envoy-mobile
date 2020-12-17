@@ -1,9 +1,10 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <functional>
 #include <memory>
+
+namespace Envoy {
+namespace Platform {
 
 class Executor {
 public:
@@ -13,3 +14,6 @@ public:
 };
 
 using ExecutorSharedPtr = std::shared_ptr<Executor>;
+
+} // namespace Platform
+} // namespace Envoy

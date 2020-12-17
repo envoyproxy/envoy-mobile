@@ -1,9 +1,10 @@
 #include "engine.h"
 
-// NOLINT(namespace-envoy)
-
 #include "library/common/main_interface.h"
 #include "library/common/types/c_types.h"
+
+namespace Envoy {
+namespace Platform {
 
 Engine::Engine(envoy_engine_t engine, const std::string& configuration, LogLevel log_level,
                std::function<void()> on_engine_running, ExecutorSharedPtr executor)
@@ -36,3 +37,6 @@ void Engine::dispatch_on_exit(void* context) {
   // as we don't actually do any post-processing on exit.
   (void)context;
 }
+
+} // namespace Platform
+} // namespace Envoy

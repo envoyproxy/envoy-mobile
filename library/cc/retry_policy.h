@@ -1,13 +1,14 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <optional>
 #include <vector>
 
 #include "absl/types/optional.h"
 #include "headers.h"
 #include "request_headers.h"
+
+namespace Envoy {
+namespace Platform {
 
 class RequestHeaders;
 
@@ -36,3 +37,6 @@ struct RetryPolicy {
 };
 
 using RetryPolicySharedPtr = std::shared_ptr<RetryPolicy>;
+
+} // namespace Platform
+} // namespace Envoy
