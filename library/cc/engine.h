@@ -4,8 +4,8 @@
 
 #include "executor.h"
 #include "library/common/types/c_types.h"
-#include "pulse_client.h"
 #include "log_level.h"
+#include "pulse_client.h"
 #include "stream_client.h"
 
 namespace Envoy {

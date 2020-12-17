@@ -22,7 +22,7 @@ absl::optional<RetryPolicy> RequestHeaders::retry_policy() const {
 }
 
 absl::optional<UpstreamHttpProtocol> RequestHeaders::upstream_http_protocol() const {
-  const auto header_name = ":x-envoy-mobile-upstream-protocol";
+  const auto header_name = "x-envoy-mobile-upstream-protocol";
   if (!this->contains(header_name)) {
     return absl::optional<UpstreamHttpProtocol>();
   }

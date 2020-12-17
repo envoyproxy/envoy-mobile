@@ -5,7 +5,7 @@ namespace Platform {
 
 int ResponseHeaders::http_status() const {
   if (!this->contains(":status")) {
-    throw std::out_of_range("ResponseHeaders does not contain :status");
+    throw std::logic_error("ResponseHeaders does not contain :status");
   }
   return stoi((*this)[":status"][0]);
 }

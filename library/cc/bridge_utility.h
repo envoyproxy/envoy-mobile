@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "headers.h"
 #include "library/common/types/c_types.h"
 
