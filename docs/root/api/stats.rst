@@ -10,7 +10,7 @@ Pulse
 Pulse is Envoy Mobile's stats library, used for capturing client application time series
 metrics. Currently two types of metrics are supported: ``Counter`` and ``Gauge``.
 
-This library (like all of Enovy Mobile) is under active development.
+This library (like all of Envoy Mobile) is under active development.
 
 To leverage Pulse, obtain an instance of a ``PulseClient`` from an Envoy Mobile ``Engine``
 (refer to :ref:`api_starting_envoy` for building an engine instance), and use it to
