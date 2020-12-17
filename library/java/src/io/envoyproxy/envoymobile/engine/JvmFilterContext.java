@@ -117,7 +117,13 @@ class JvmFilterContext {
   }
 
   /**
+   * Invokes onResumeRequest callback with pending HTTP entities.
    *
+   * @param headerCount,  total pending headers included in the header block.
+   * @param data,         buffered body data.
+   * @param trailerCount, total pending trailers included in the trailer block.
+   * @param endStream,    whether the stream is closed at this point.
+   * @return Object[],    tuple of status with updated entities to be forwarded.
    */
   public Object onResumeRequest(long headerCount, byte[] data, long trailerCount,
                                 boolean endStream) {
@@ -139,7 +145,13 @@ class JvmFilterContext {
   }
 
   /**
+   * Invokes onResumeResponse callback with pending HTTP entities.
    *
+   * @param headerCount,  total pending headers included in the header block.
+   * @param data,         buffered body data.
+   * @param trailerCount, total pending trailers included in the trailer block.
+   * @param endStream,    whether the stream is closed at this point.
+   * @return Object[],    tuple of status with updated entities to be forwarded.
    */
   public Object onResumeResponse(long headerCount, byte[] data, long trailerCount,
                                  boolean endStream) {
@@ -161,17 +173,45 @@ class JvmFilterContext {
   }
 
   /**
+   * Sets request filter callbacks with memory-managed wrapper around native implementation.
    *
+   * @param callbackHandle, native identifier for resource management.
    */
   public void setRequestFilterCallbacks(long callbackHandle) {
     filter.setRequestFilterCallbacks(EnvoyHTTPFilterCallbacksImpl.create(callbackHandle));
   }
 
   /**
+   * Sets response filter callbacks with memory-managed wrapper around native implementation.
    *
+   * @param callbackHandle, native identifier for resource management.
    */
   public void setResponseFilterCallbacks(long callbackHandle) {
     filter.setResponseFilterCallbacks(EnvoyHTTPFilterCallbacksImpl.create(callbackHandle));
+  }
+
+  /**
+   * Dispatches error received from the JNI layer up to the platform.
+   *
+   * @param errorCode,    the error code.
+   * @param message,      the error message.
+   * @param attemptCount, the number of times an operation was attempted before firing this error.
+   * @return Object,      not used in HTTP filters.
+   */
+  public Object onError(int errorCode, byte[] message, int attemptCount) {
+    String errorMessage = new String(message);
+    filter.onError(errorCode, errorMessage, attemptCount);
+    return null;
+  }
+
+  /**
+   * Dispatches cancellation notice up to the platform.
+   *
+   * @return Object, not used in HTTP filters.
+   */
+  public Object onCancel() {
+    filter.onCancel();
+    return null;
   }
 
   private static byte[][] toJniHeaders(Object headers) {

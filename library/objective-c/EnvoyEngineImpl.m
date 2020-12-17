@@ -216,6 +216,27 @@ static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
   filter.setResponseFilterCallbacks(responseFilterCallbacks);
 }
 
+static void ios_http_filter_on_cancel(const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onCancel == nil) {
+    return;
+  }
+  filter.onCancel();
+}
+
+static void ios_http_filter_on_error(envoy_error error, const void *context) {
+  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+  if (filter.onError == nil) {
+    return;
+  }
+
+  NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
+                                                    length:error.message.length
+                                                  encoding:NSUTF8StringEncoding];
+  error.message.release(error.message.context);
+  filter.onError(error.error_code, errorMessage, error.attempt_count);
+}
+
 static void ios_http_filter_release(const void *context) {
   CFRelease(context);
   return;
@@ -260,6 +281,8 @@ static envoy_data ios_get_string(void *context) {
   api->on_resume_request = ios_http_filter_on_resume_request;
   api->set_response_callbacks = ios_http_filter_set_response_callbacks;
   api->on_resume_response = ios_http_filter_on_resume_response;
+  api->on_cancel = ios_http_filter_on_cancel;
+  api->on_error = ios_http_filter_on_error;
   api->release_filter = ios_http_filter_release;
   api->static_context = CFBridgingRetain(filterFactory);
   api->instance_context = NULL;
@@ -284,6 +307,22 @@ static envoy_data ios_get_string(void *context) {
      onEngineRunning:(nullable void (^)())onEngineRunning {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
+  if (resolvedYAML == nil) {
+    return kEnvoyFailure;
+  }
+
+  for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
+    [self registerFilterFactory:filterFactory];
+  }
+
+  return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
+}
+
+- (int)runWithTemplate:(NSString *)yaml
+                config:(EnvoyConfiguration *)config
+              logLevel:(NSString *)logLevel
+       onEngineRunning:(nullable void (^)())onEngineRunning {
+  NSString *resolvedYAML = [config resolveTemplate:yaml];
   if (resolvedYAML == nil) {
     return kEnvoyFailure;
   }

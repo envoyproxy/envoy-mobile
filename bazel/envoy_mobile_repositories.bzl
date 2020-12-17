@@ -12,6 +12,7 @@ def envoy_mobile_repositories():
     swift_repos()
     kotlin_repos()
     android_repos()
+    python_repos()
 
 def upstream_envoy_overrides():
     # Patch protobuf to prevent duplicate symbols: https://github.com/lyft/envoy-mobile/issues/617
@@ -48,10 +49,10 @@ def upstream_envoy_overrides():
     http_archive(
         name = "com_google_absl",
         patches = ["@envoy_mobile//bazel:abseil.patch"],
-        sha256 = "573baccd67aa591b8c7209bfb0c77e0d15633d77ced39d1ccbb1232828f7f7d9",
-        strip_prefix = "abseil-cpp-ce4bc927755fdf0ed03d679d9c7fa041175bb3cb",
+        sha256 = "635367c5cac4bbab95d0485ba9e68fa422546b06ce050190c99be7e23aba3ce3",
+        strip_prefix = "abseil-cpp-8f1c34a77a2ba04512b7f9cbc6013d405e6a0b31",
         # 2020-08-08
-        urls = ["https://github.com/abseil/abseil-cpp/archive/ce4bc927755fdf0ed03d679d9c7fa041175bb3cb.tar.gz"],
+        urls = ["https://github.com/abseil/abseil-cpp/archive/8f1c34a77a2ba04512b7f9cbc6013d405e6a0b31.tar.gz"],
     )
 
     # This should be kept in sync with Envoy itself, we just need to apply this patch
@@ -142,4 +143,19 @@ def android_repos():
         urls = ["https://github.com/bazelbuild/rules_android/archive/v0.1.1.zip"],
         sha256 = "cd06d15dd8bb59926e4d65f9003bfc20f9da4b2519985c27e190cddc8b7a7806",
         strip_prefix = "rules_android-0.1.1",
+    )
+
+def python_repos():
+    http_archive(
+        name = "pybind11_bazel",
+        strip_prefix = "pybind11_bazel-26973c0ff320cb4b39e45bc3e4297b82bc3a6c09",
+        urls = ["https://github.com/pybind/pybind11_bazel/archive/26973c0ff320cb4b39e45bc3e4297b82bc3a6c09.zip"],
+        sha256 = "a5666d950c3344a8b0d3892a88dc6b55c8e0c78764f9294e806d69213c03f19d",
+    )
+    http_archive(
+        name = "pybind11",
+        build_file = "@pybind11_bazel//:pybind11.BUILD",
+        strip_prefix = "pybind11-2.6.1",
+        urls = ["https://github.com/pybind/pybind11/archive/v2.6.1.tar.gz"],
+        sha256 = "cdbe326d357f18b83d10322ba202d69f11b2f49e2d87ade0dc2be0c5c34f8e2a",
     )

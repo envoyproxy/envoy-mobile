@@ -125,6 +125,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 3 - NSData *, optional pending data
 @property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
 
+@property (nonatomic, copy) void (^onCancel)(void);
+
+@property (nonatomic, copy) void (^onError)
+    (uint64_t errorCode, NSString *message, int32_t attemptCount);
+
 @property (nonatomic, copy) void (^setRequestFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
 
@@ -310,15 +315,17 @@ extern const int kEnvoyFailure;
 /**
  Run the Envoy engine with the provided yaml string and log level.
 
- @param configYAML The configuration yaml with which to start Envoy.
+ @param yaml The configuration template with which to start Envoy.
+ @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
  @param onEngineRunning Closure called when the engine finishes its async startup and begins
  running.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfigYAML:(NSString *)configYAML
-                logLevel:(NSString *)logLevel
-         onEngineRunning:(nullable void (^)())onEngineRunning;
+- (int)runWithTemplate:(NSString *)yaml
+                config:(EnvoyConfiguration *)config
+              logLevel:(NSString *)logLevel
+       onEngineRunning:(nullable void (^)())onEngineRunning;
 
 /**
  Opens a new HTTP stream attached to this engine.

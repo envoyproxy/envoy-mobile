@@ -11,6 +11,7 @@
 #include "library/common/buffer/utility.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_type_definitions.h"
 #include "library/common/http/header_utility.h"
+#include "library/common/http/headers.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -108,6 +109,12 @@ void PlatformBridgeFilter::setEncoderFilterCallbacks(
 
 void PlatformBridgeFilter::onDestroy() {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::onDestroy", filter_name_);
+  // If the filter chain is destroyed before a response is received, treat as cancellation.
+  if (!response_complete_ && platform_filter_.on_cancel) {
+    ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_cancel", filter_name_);
+    platform_filter_.on_cancel(platform_filter_.instance_context);
+  }
+
   // Allow nullptr as no-op only if nothing was initialized.
   if (platform_filter_.release_filter == nullptr) {
     ASSERT(!platform_filter_.instance_context,
@@ -321,6 +328,36 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
                                                               bool end_stream) {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::encodeHeaders", filter_name_);
 
+  // Presence of internal error header indicates an error that should be surfaced as an
+  // error callback (rather than an HTTP response).
+  const auto error_code_header = headers.get(Http::InternalHeaders::get().ErrorCode);
+  if (!error_code_header.empty()) {
+    envoy_error_code_t error_code;
+    bool parsed_code = absl::SimpleAtoi(error_code_header[0]->value().getStringView(), &error_code);
+    RELEASE_ASSERT(parsed_code, "parse error reading error code");
+
+    envoy_data error_message = envoy_nodata;
+    const auto error_message_header = headers.get(Http::InternalHeaders::get().ErrorMessage);
+    if (!error_message_header.empty()) {
+      error_message =
+          Buffer::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
+    }
+
+    int32_t attempt_count;
+    if (headers.EnvoyAttemptCount()) {
+      bool parsed_attempts =
+          absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count);
+      RELEASE_ASSERT(parsed_attempts, "parse error reading attempt count");
+    }
+
+    if (platform_filter_.on_error) {
+      platform_filter_.on_error({error_code, error_message, attempt_count},
+                                platform_filter_.instance_context);
+    }
+    error_response_ = true;
+    return Http::FilterHeadersStatus::Continue;
+  }
+
   // Delegate to shared implementation for request and response path.
   auto status = onHeaders(headers, end_stream, platform_filter_.on_response_headers);
   if (status == Http::FilterHeadersStatus::StopIteration) {
@@ -349,6 +386,11 @@ Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, 
 
 Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, bool end_stream) {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::encodeData", filter_name_);
+
+  // Pass through if already mapped to error response.
+  if (error_response_) {
+    return Http::FilterDataStatus::Continue;
+  }
 
   // Delegate to shared implementation for request and response path.
   Buffer::Instance* internal_buffer = nullptr;
@@ -387,6 +429,11 @@ Http::FilterTrailersStatus PlatformBridgeFilter::decodeTrailers(Http::RequestTra
 Http::FilterTrailersStatus
 PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::encodeTrailers", filter_name_);
+
+  // Pass through if already mapped to error response.
+  if (error_response_) {
+    return Http::FilterTrailersStatus::Continue;
+  }
 
   // Delegate to shared implementation for request and response path.
   Buffer::Instance* internal_buffer = nullptr;

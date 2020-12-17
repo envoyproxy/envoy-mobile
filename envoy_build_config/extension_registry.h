@@ -10,10 +10,12 @@
 #include "extensions/filters/http/router/config.h"
 #include "extensions/filters/network/http_connection_manager/config.h"
 #include "extensions/stat_sinks/metrics_service/config.h"
+#include "extensions/transport_sockets/raw_buffer/config.h"
 #include "extensions/transport_sockets/tls/config.h"
 #include "extensions/upstreams/http/generic/config.h"
 
 #include "library/common/extensions/filters/http/assertion/config.h"
+#include "library/common/extensions/filters/http/local_error/config.h"
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
 
 namespace Envoy {
