@@ -8,8 +8,9 @@ ResponseHeadersBuilder& ResponseHeadersBuilder::add_http_status(int status) {
   return *this;
 }
 
-ResponseHeaders ResponseHeadersBuilder::build() const {
-  return ResponseHeaders(this->all_headers());
+ResponseHeadersSharedPtr ResponseHeadersBuilder::build() const {
+  ResponseHeaders* headers = new ResponseHeaders(this->all_headers());
+  return std::shared_ptr<ResponseHeaders>(headers);
 }
 
 } // namespace Platform

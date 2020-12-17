@@ -1,6 +1,8 @@
 #include "stream_callbacks.h"
 
 #include "bridge_utility.h"
+#include "response_headers_builder.h"
+#include "response_trailers_builder.h"
 
 namespace Envoy {
 namespace Platform {
@@ -28,9 +30,15 @@ void* EnvoyHttpCallbacksAdapter::dispatch_on_headers(envoy_headers headers, bool
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_headers.has_value()) {
     auto raw_headers = envoy_headers_as_raw_headers(headers);
-    auto response_headers = std::make_shared<ResponseHeaders>(raw_headers);
+    ResponseHeadersBuilder builder;
+    for (const auto& pair : raw_headers) {
+      if (pair.first == ":status") {
+        builder.add_http_status(std::stoi(pair.second[0]));
+      }
+      builder.set(pair.first, pair.second);
+    }
     self->executor_->execute(
-        [=]() { self->stream_callbacks_->on_headers.value()(response_headers, end_stream); });
+        [=]() { self->stream_callbacks_->on_headers.value()(builder.build(), end_stream); });
   }
   return context;
 }
@@ -49,9 +57,12 @@ void* EnvoyHttpCallbacksAdapter::dispatch_on_trailers(envoy_headers metadata, vo
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_trailers.has_value()) {
     auto raw_headers = envoy_headers_as_raw_headers(metadata);
-    auto response_trailers = std::make_shared<ResponseTrailers>(raw_headers);
+    ResponseTrailersBuilder builder;
+    for (const auto& pair : raw_headers) {
+      builder.set(pair.first, pair.second);
+    }
     self->executor_->execute(
-        [=]() { self->stream_callbacks_->on_trailers.value()(response_trailers); });
+        [=]() { self->stream_callbacks_->on_trailers.value()(builder.build()); });
   }
   return context;
 }
