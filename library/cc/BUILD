@@ -7,8 +7,18 @@ envoy_package()
 envoy_cc_library(
     name = "envoy_engine_cc_lib",
     srcs = [
+        "cceaders.cc",
+        "cceaders_builder.cc",
         "log_level.cc",
+        "request_cceaders.cc",
+        "request_cceaders_builder.cc",
         "request_method.cc",
+        "request_trailers.cc",
+        "request_trailers_builder.cc",
+        "response_cceaders.cc",
+        "response_cceaders_builder.cc",
+        "response_trailers.cc",
+        "response_trailers_builder.cc",
         "retry_policy.cc",
         "upstream_http_protocol.h",
     ],
