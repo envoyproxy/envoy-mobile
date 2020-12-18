@@ -4,6 +4,9 @@ licenses(["notice"])  # Apache 2
 
 pybind_library(
     name = "envoy_engine_lib",
+    srcs = [
+        "bytes_view.cc",
+    ],
     hdrs = [
         "bytes_view.h",
         "stream_prototype_shim.h",
