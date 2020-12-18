@@ -362,6 +362,14 @@ extern const int kEnvoyFailure;
  */
 - (int)recordGaugeSub:(NSString *)elements amount:(NSUInteger)amount;
 
+/**
+ Add another recorded amount to the histogram with the given string of elements.
+ @param elements Elements of the histogram stat.
+ @param amount Amount to record as a new value for the histogram.
+ @return A status indicating if the action was successful.
+ */
+- (int)recordHistogramDurationMs:(NSString *)elements amount:(NSUInteger)amount;
+
 @end
 
 #pragma mark - EnvoyEngineImpl

@@ -194,6 +194,15 @@ class JniLibrary {
   protected static native int recordGaugeSub(long engine, String elements, int amount);
 
   /**
+   * Add another recorded amount to the histogram with the given string of elements.
+   *
+   * @param elements Elements of the histogram stat.
+   * @param amount Amount to record as a new value for the histogram.
+   * @return A status indicating if the action was successful.
+   */
+  protected static native int recordHistogramDurationMs(long engine, String elements, int duration);
+
+  /**
    * Provides a configuration template that may be used for building platform
    * filter config chains.
    *

@@ -25,5 +25,7 @@ internal class MockEnvoyEngine : EnvoyEngine {
 
   override fun recordGaugeSub(elements: String, amount: Int): Int = 0
 
+  override fun recordHistogramDurationMs(elements: String, duration: Int): Int = 0
+
   override fun registerStringAccessor(accessorName: String, accessor: EnvoyStringAccessor): Int = 0
 }

@@ -141,7 +141,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return A status indicating if the action was successful.
    */
   public int recordHistogramDurationMs(String elements, int duration) {
-    return JniLibrary.recordHistogramDurationMs(elements, duration);
+    return JniLibrary.recordHistogramDurationMs(engineHandle, elements, duration);
   }
 
   @Override
