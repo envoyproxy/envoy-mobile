@@ -45,12 +45,26 @@ class JvmBridgeUtility {
       throw new RuntimeException(e);
     }
 
+    // Ensure list is present in dictionary value
     List<String> values = headerAccumulator.get(headerKey);
     if (values == null) {
       values = new ArrayList(1);
       headerAccumulator.put(headerKey, values);
     }
-    values.add(headerValue);
+
+    // By convention, these headers disregard the RFC and contain commas single values.
+    if (headerKey.equals("set-cookie") ||
+        headerKey.equals("www-authenticate") ||
+        headerKey.equals("proxy-authenticate")) {
+      values.add(headerValue);
+    } else {
+      // Add trimmed, comma-separated values as individual members of the list.
+      String[] newValues = headerValue.split(",");
+      for (int i = 0; i < newValues.length; i++) {
+        values.add(newValues[i].trim());
+      }
+    }
+
     headerCount++;
   }
 
