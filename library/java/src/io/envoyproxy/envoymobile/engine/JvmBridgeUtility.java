@@ -53,8 +53,7 @@ class JvmBridgeUtility {
     }
 
     // By convention, these headers disregard the RFC and contain commas single values.
-    if (headerKey.equals("set-cookie") ||
-        headerKey.equals("www-authenticate") ||
+    if (headerKey.equals("set-cookie") || headerKey.equals("www-authenticate") ||
         headerKey.equals("proxy-authenticate")) {
       values.add(headerValue);
     } else {
