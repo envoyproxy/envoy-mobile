@@ -539,9 +539,7 @@ jvm_http_filter_on_resume_response(envoy_headers* headers, envoy_data* data,
 }
 
 static void* jvm_on_complete(void* context) {
-  JNIEnv* env = get_env();
-  jobject j_context = static_cast<jobject>(context);
-  env->DeleteGlobalRef(j_context);
+  jni_delete_global_ref(context);
   return NULL;
 }
 
@@ -575,7 +573,7 @@ static void* call_jvm_on_error(envoy_error error, void* context) {
 
 static void* jvm_on_error(envoy_error error, void* context) {
   void* result = call_jvm_on_error(error, context);
-  jvm_on_complete(context);
+  jni_delete_global_ref(context);
   return result;
 }
 
@@ -596,7 +594,7 @@ static void* call_jvm_on_cancel(void* context) {
 
 static void* jvm_on_cancel(void* context) {
   void* result = call_jvm_on_cancel(context);
-  jvm_on_complete(context);
+  jni_delete_global_ref(context);
   return result;
 }
 
