@@ -63,6 +63,13 @@ public:
    */
   envoy_status_t recordGaugeSub(const std::string& elements, uint64_t amount);
 
+  /**
+   * Record a value for the histogram with the given string of elements
+   * @param elements, joined elements of the timeseries.
+   * @param amount, amount to add to the aggregated pool of events for quantile calculations
+   */
+  envoy_status_t recordHistogramDurationMs(const std::string& elements, uint64_t amount);
+
 private:
   envoy_status_t run(std::string config, std::string log_level);
 

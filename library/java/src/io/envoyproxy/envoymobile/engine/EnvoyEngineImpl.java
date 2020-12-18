@@ -133,6 +133,28 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     return JniLibrary.recordGaugeSub(engineHandle, elements, amount);
   }
 
+  /**
+   * Subtract from the gauge with the given string of elements and by the given amount.
+   *
+   * @param elements Elements of the gauge stat.
+   * @param amount Amount to subtract from the gauge.
+   * @return A status indicating if the action was successful.
+   */
+  public int recordHistogramStart(String elements) {
+    return JniLibrary.recordHistogramStart(elements);
+  }
+
+  /**
+   * Subtract from the gauge with the given string of elements and by the given amount.
+   *
+   * @param elements Elements of the gauge stat.
+   * @param amount Amount to subtract from the gauge.
+   * @return A status indicating if the action was successful.
+   */
+  public int recordHistogramDuration(String elements, int duration) {
+    return JniLibrary.recordHistogramDuration(elements, duration);
+  }
+
   @Override
   public int registerStringAccessor(String accessor_name, EnvoyStringAccessor accessor) {
     return JniLibrary.registerStringAccessor(accessor_name, new JvmStringAccessorContext(accessor));

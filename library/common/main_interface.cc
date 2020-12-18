@@ -102,6 +102,15 @@ envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, uint64_t a
   return ENVOY_FAILURE;
 }
 
+envoy_status_t record_histogram_duration_ms(envoy_engine_t, const char* elements, uint64_t amount) {
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine_.lock()) {
+    return e->recordHistogramDurationMs(std::string(elements), amount);
+  }
+  return ENVOY_FAILURE;
+}
+
 envoy_status_t register_platform_api(const char* name, void* api) {
   Envoy::Api::External::registerApi(std::string(name), api);
   return ENVOY_SUCCESS;
