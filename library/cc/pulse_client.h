@@ -1,15 +1,12 @@
 #pragma once
 
-// NOLINT(namespace-envoy)
-
 #include <memory>
+
+namespace Envoy {
+namespace Platform {
 
 // TODO(crockeo): although this is stubbed out since it's in the main directory, it depends on
 // objects defined under stats. this will not be fully stubbed until stats is stubbed
-
-// #include "stats/counter.h"
-// #include "stats/element.h"
-// #include "stats/gauge.h"
 
 class PulseClient {
 public:
@@ -18,3 +15,6 @@ public:
 };
 
 using PulseClientSharedPtr = std::shared_ptr<PulseClient>;
+
+} // namespace Platform
+} // namespace Envoy
