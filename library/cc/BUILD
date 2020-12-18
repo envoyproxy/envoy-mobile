@@ -7,10 +7,12 @@ envoy_package()
 envoy_cc_library(
     name = "envoy_engine_cc_lib",
     srcs = [
+        "engine.cc",
+        "engine_builder.cc",
         "log_level.cc",
         "request_method.cc",
         "retry_policy.cc",
-        "upstream_http_protocol.h",
+        "upstream_http_protocol.cc",
     ],
     hdrs = [
         "bridge_utility.h",
