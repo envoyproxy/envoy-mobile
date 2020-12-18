@@ -134,25 +134,14 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   /**
-   * Subtract from the gauge with the given string of elements and by the given amount.
+   * Add another recorded amount to the histogram with the given string of elements.
    *
-   * @param elements Elements of the gauge stat.
-   * @param amount Amount to subtract from the gauge.
+   * @param elements Elements of the histogram stat.
+   * @param amount Amount to record as a new value for the histogram.
    * @return A status indicating if the action was successful.
    */
-  public int recordHistogramStart(String elements) {
-    return JniLibrary.recordHistogramStart(elements);
-  }
-
-  /**
-   * Subtract from the gauge with the given string of elements and by the given amount.
-   *
-   * @param elements Elements of the gauge stat.
-   * @param amount Amount to subtract from the gauge.
-   * @return A status indicating if the action was successful.
-   */
-  public int recordHistogramDuration(String elements, int duration) {
-    return JniLibrary.recordHistogramDuration(elements, duration);
+  public int recordHistogramDurationMs(String elements, int duration) {
+    return JniLibrary.recordHistogramDurationMs(elements, duration);
   }
 
   @Override

@@ -66,13 +66,8 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public int recordHistogramStart(String elements) {
-    return envoyEngine.recordHistogramStart(elements);
-  }
-
-  @Override
-  public int recordHistogramDuration(String elements, int duration) {
-    return envoyEngine.recordHistogramDuration(elements, duration);
+  public int recordHistogramDurationMs(String elements, int duration) {
+    return envoyEngine.recordHistogramDurationMs(elements, duration);
   }
 
   @Override

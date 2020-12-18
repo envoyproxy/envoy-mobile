@@ -73,22 +73,13 @@ public interface EnvoyEngine {
   int recordGaugeSub(String elements, int amount);
 
   /**
-   * Subtract from the gauge with the given string of elements and by the given amount.
+   * Add another recorded amount to the histogram with the given string of elements.
    *
-   * @param elements Elements of the gauge stat.
-   * @param amount Amount to subtract from the gauge.
+   * @param elements Elements of the histogram stat.
+   * @param amount Amount to record as a new value for the histogram.
    * @return A status indicating if the action was successful.
    */
-  int recordHistogramStart(String elements);
-
-  /**
-   * Subtract from the gauge with the given string of elements and by the given amount.
-   *
-   * @param elements Elements of the gauge stat.
-   * @param amount Amount to subtract from the gauge.
-   * @return A status indicating if the action was successful.
-   */
-  int recordHistogramDuration(String elements, int duration);
+  int recordHistogramDurationMs(String elements, int duration);
 
   int registerStringAccessor(String accessor_name, EnvoyStringAccessor accessor);
 }

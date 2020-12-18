@@ -116,6 +116,13 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), amount);
 }
 
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDurationMs(
+    JNIEnv* env,
+    jclass, // class
+    jlong engine, jstring elements, jint amount) {
+  return record_histogram_duration_ms(engine, env->GetStringUTFChars(elements, nullptr), amount);
+}
+
 // JvmCallbackContext
 
 static void pass_headers(const char* method, envoy_headers headers, jobject j_context) {
