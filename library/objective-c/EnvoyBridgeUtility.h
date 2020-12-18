@@ -91,8 +91,7 @@ static inline EnvoyHeaders *to_ios_headers(envoy_headers headers) {
     }
 
     // By convention, these headers disregard the RFC and contain commas single values.
-    if (headerKey == @"set-cookie" ||
-        headerKey == @"www-authenticate" ||
+    if (headerKey == @"set-cookie" || headerKey == @"www-authenticate" ||
         headerKey == @"proxy-authenticate") {
       [headerValueList addObject:headerValue];
     } else {
@@ -100,7 +99,7 @@ static inline EnvoyHeaders *to_ios_headers(envoy_headers headers) {
       NSArray *newValueList = [headerValue componentsSeparatedByString:@","];
       for (NSString *value in newValueList) {
         NSString *trimmedValue =
-          [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
         [headerValueList addObject:trimmedValue];
       }
     }
