@@ -242,7 +242,7 @@ static void ios_http_filter_release(const void *context) {
   return;
 }
 
-static envoy_data ios_get_string(void *context) {
+static envoy_data ios_get_string(const void *context) {
   EnvoyStringAccessor *accessor = (__bridge EnvoyStringAccessor *)context;
   return toManagedNativeString(accessor.getEnvoyString());
 }
