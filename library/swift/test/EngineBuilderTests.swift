@@ -208,7 +208,7 @@ final class EngineBuilderTests: XCTestCase {
 
     _ = try EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
-      .addStringAccessor(name: "name", accessor: { return "hello"})
+      .addStringAccessor(name: "name", accessor: { return "hello" })
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
