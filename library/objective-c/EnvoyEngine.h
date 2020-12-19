@@ -227,7 +227,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @interface EnvoyStringAccessor : NSObject
 
-- (NSString *)getString;
+@property (nonatomic, copy) NSString * (^getEnvoyString)();
+
+- (instancetype)initWithBlock:(NSString * (^)())block;
 
 @end
 
@@ -258,6 +260,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *virtualClusters;
 @property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
 @property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
+@property (nonatomic, strong) NSDictionary<NSString *, EnvoyStringAccessor *> *stringAccessors;
 
 /**
  Create a new instance of the configuration.
@@ -272,8 +275,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:
-                    (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories;
+                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                    stringAccessors:
+                        (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.

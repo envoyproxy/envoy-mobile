@@ -244,7 +244,7 @@ static void ios_http_filter_release(const void *context) {
 
 static envoy_data ios_get_string(void *context) {
   EnvoyStringAccessor *accessor = (__bridge EnvoyStringAccessor *)context;
-  return toManagedNativeString([accessor getString]);
+  return toManagedNativeString(accessor.getEnvoyString());
 }
 
 @implementation EnvoyEngineImpl {
@@ -291,15 +291,14 @@ static envoy_data ios_get_string(void *context) {
   return kEnvoySuccess;
 }
 
-- (int)registerStringAccessor:(NSString *)name
-               stringAccessor:(EnvoyStringAccessor *)stringAccessor {
+- (int)registerStringAccessor:(NSString *)name accessor:(EnvoyStringAccessor *)accessor {
   // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
-  envoy_string_accessor *accessor = safe_malloc(sizeof(envoy_string_accessor));
-  accessor->get_string = ios_get_string;
-  accessor->context = CFBridgingRetain(stringAccessor);
+  envoy_string_accessor *accessorStruct = safe_malloc(sizeof(envoy_string_accessor));
+  accessorStruct->get_string = ios_get_string;
+  accessorStruct->context = CFBridgingRetain(accessor);
 
-  return register_platform_api(name.UTF8String, accessor);
+  return register_platform_api(name.UTF8String, accessorStruct);
 }
 
 - (int)runWithConfig:(EnvoyConfiguration *)config
@@ -314,6 +313,10 @@ static envoy_data ios_get_string(void *context) {
   for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
     [self registerFilterFactory:filterFactory];
   }
+
+  [config.stringAccessors enumerateKeysAndObjectsUsingBlock:^(id name, id accessor, BOOL *stop) {
+    [self registerStringAccessor:name accessor:accessor];
+  }];
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
 }
@@ -330,6 +333,10 @@ static envoy_data ios_get_string(void *context) {
   for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
     [self registerFilterFactory:filterFactory];
   }
+
+  [config.stringAccessors enumerateKeysAndObjectsUsingBlock:^(id name, id accessor, BOOL *stop) {
+    [self registerStringAccessor:name accessor:accessor];
+  }];
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
 }
