@@ -15,7 +15,7 @@ public:
   ResponseHeadersBuilder to_response_headers_builder();
 
 private:
-  ResponseHeaders(RawHeaders headers) : Headers(std::move(headers)) {}
+  ResponseHeaders(RawHeaderMap headers) : Headers(std::move(headers)) {}
 
   friend class ResponseHeadersBuilder;
 };

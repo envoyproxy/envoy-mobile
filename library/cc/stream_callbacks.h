@@ -39,12 +39,12 @@ public:
   envoy_http_callbacks as_envoy_http_callbacks();
 
 private:
-  static void* dispatch_on_headers(envoy_headers headers, bool end_stream, void* context);
-  static void* dispatch_on_data(envoy_data data, bool end_stream, void* context);
-  static void* dispatch_on_trailers(envoy_headers metadata, void* context);
-  static void* dispatch_on_error(envoy_error raw_error, void* context);
-  static void* dispatch_on_complete(void* context);
-  static void* dispatch_on_cancel(void* context);
+  static void* c_on_headers(envoy_headers headers, bool end_stream, void* context);
+  static void* c_on_data(envoy_data data, bool end_stream, void* context);
+  static void* c_on_trailers(envoy_headers metadata, void* context);
+  static void* c_on_error(envoy_error raw_error, void* context);
+  static void* c_on_complete(void* context);
+  static void* c_on_cancel(void* context);
 
   ExecutorSharedPtr executor_;
   StreamCallbacksSharedPtr stream_callbacks_;

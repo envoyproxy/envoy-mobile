@@ -10,8 +10,11 @@ namespace Platform {
 
 class PulseClient {
 public:
-  // virtual Counter counter(Element element) = 0;
-  // virtual Gauge gauge(Element element) = 0;
+  // TODO: when these are commented out, you're going to have to
+  // #include "envoy/common/pure.h"
+  //
+  // virtual Counter counter(Element element) PURE;
+  // virtual Gauge gauge(Element element) PURE;
 };
 
 using PulseClientSharedPtr = std::shared_ptr<PulseClient>;

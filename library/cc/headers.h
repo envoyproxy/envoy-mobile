@@ -8,21 +8,21 @@
 namespace Envoy {
 namespace Platform {
 
-using RawHeaders = absl::flat_hash_map<std::string, std::vector<std::string>>;
+using RawHeaderMap = absl::flat_hash_map<std::string, std::vector<std::string>>;
 
 class Headers {
 public:
   virtual ~Headers() {}
 
   const std::vector<std::string>& operator[](const std::string& key) const;
-  const RawHeaders& all_headers() const;
+  const RawHeaderMap& all_headers() const;
   bool contains(const std::string& key) const;
 
 protected:
-  Headers(const RawHeaders& headers);
+  Headers(const RawHeaderMap& headers);
 
 private:
-  RawHeaders headers_;
+  RawHeaderMap headers_;
 };
 
 } // namespace Platform

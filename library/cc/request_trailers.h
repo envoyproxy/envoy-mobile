@@ -13,7 +13,7 @@ public:
   RequestTrailersBuilder to_request_trailers_builder() const;
 
 private:
-  RequestTrailers(RawHeaders headers) : Trailers(std::move(headers)) {}
+  RequestTrailers(RawHeaderMap headers) : Trailers(std::move(headers)) {}
 
   friend class RequestTrailersBuilder;
 };

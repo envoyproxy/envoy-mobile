@@ -16,12 +16,12 @@ public:
 protected:
   HeadersBuilder();
   HeadersBuilder& internal_set(const std::string& name, const std::vector<std::string>& values);
-  const RawHeaders& all_headers() const;
+  const RawHeaderMap& all_headers() const;
 
 private:
   bool is_restricted_header_(const std::string& name) const;
 
-  RawHeaders headers_;
+  RawHeaderMap headers_;
 };
 
 } // namespace Platform

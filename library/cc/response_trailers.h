@@ -13,7 +13,7 @@ public:
   ResponseTrailersBuilder to_response_trailers_builder();
 
 private:
-  ResponseTrailers(RawHeaders trailers) : Trailers(std::move(trailers)) {}
+  ResponseTrailers(RawHeaderMap trailers) : Trailers(std::move(trailers)) {}
 
   friend class ResponseTrailersBuilder;
 };

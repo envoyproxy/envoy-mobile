@@ -32,8 +32,8 @@ struct RetryPolicy {
   absl::optional<int> per_try_timeout_ms;
   absl::optional<int> total_upstream_timeout_ms;
 
-  RawHeaders as_raw_headers() const;
-  static RetryPolicy from_raw_headers(const RawHeaders& headers);
+  RawHeaderMap as_raw_header_map() const;
+  static RetryPolicy from_raw_header_map(const RawHeaderMap& headers);
 };
 
 using RetryPolicySharedPtr = std::shared_ptr<RetryPolicy>;
