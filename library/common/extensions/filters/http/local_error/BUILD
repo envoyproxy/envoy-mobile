@@ -3,6 +3,8 @@ load("@envoy_api//bazel:api_build_system.bzl", "api_proto_package")
 
 licenses(["notice"])  # Apache 2
 
+package(default_visibility = ["//visibility:public"])
+
 api_proto_package()
 
 envoy_cc_library(
@@ -38,5 +40,6 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "config_envoy_extension",
+    repository = "@envoy",
     deps = [":config"],
 )

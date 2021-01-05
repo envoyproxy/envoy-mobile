@@ -45,5 +45,6 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "config_envoy_extension",
+    repository = "@envoy",
     deps = [":config"],
 )
