@@ -1,11 +1,13 @@
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_extension", "envoy_extension_package")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
 load("@envoy_api//bazel:api_build_system.bzl", "api_proto_package")
 
 licenses(["notice"])  # Apache 2
 
-envoy_extension_package()
+package(default_visibility = ["//visibility:public"])
 
-envoy_cc_extension(
+api_proto_package()
+
+envoy_cc_library(
     name = "platform_bridge_filter_lib",
     srcs = [
         "c_type_definitions.h",
@@ -15,7 +17,6 @@ envoy_cc_extension(
         "c_types.h",
         "filter.h",
     ],
-    security_posture = "requires_trusted_downstream_and_upstream",
     repository = "@envoy",
     deps = [
         ":pkg_cc_proto",
@@ -30,15 +31,19 @@ envoy_cc_extension(
     ],
 )
 
-envoy_cc_extension(
+envoy_cc_library(
     name = "config",
     srcs = ["config.cc"],
     hdrs = ["config.h"],
-    security_posture = "requires_trusted_downstream_and_upstream",
     repository = "@envoy",
     deps = [
         ":pkg_cc_proto",
         ":platform_bridge_filter_lib",
         "@envoy//source/extensions/filters/http/common:factory_base_lib",
     ],
+)
+
+envoy_cc_library(
+    name = "config_envoy_extension",
+    deps = [":config"],
 )
