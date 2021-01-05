@@ -15,7 +15,7 @@ namespace Envoy {
 namespace Platform {
 
 using OnHeadersCallback = std::function<void(ResponseHeadersSharedPtr headers, bool end_stream)>;
-using OnDataCallback = std::function<void(std::vector<uint8_t> data, bool end_stream)>;
+using OnDataCallback = std::function<void(envoy_data data, bool end_stream)>;
 using OnTrailersCallback = std::function<void(ResponseTrailersSharedPtr trailers)>;
 using OnErrorCallback = std::function<void(EnvoyErrorSharedPtr error)>;
 using OnCompleteCallback = std::function<void()>;

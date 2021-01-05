@@ -15,9 +15,9 @@ public:
   Stream(envoy_stream_t handle, EnvoyHttpCallbacksAdapterSharedPtr adapter);
 
   Stream& send_headers(RequestHeadersSharedPtr headers, bool end_stream);
-  Stream& send_data(const std::vector<uint8_t>& data);
+  Stream& send_data(envoy_data data);
   void close(RequestTrailersSharedPtr trailers);
-  void close(const std::vector<uint8_t>& data);
+  void close(envoy_data data);
   void cancel();
 
 private:
