@@ -6,7 +6,6 @@
 
 #include "absl/types/optional.h"
 #include "envoy_error.h"
-#include "executor.h"
 #include "library/common/types/c_types.h"
 #include "response_headers.h"
 #include "response_trailers.h"
@@ -34,7 +33,7 @@ using StreamCallbacksSharedPtr = std::shared_ptr<StreamCallbacks>;
 
 class EnvoyHttpCallbacksAdapter {
 public:
-  EnvoyHttpCallbacksAdapter(ExecutorSharedPtr executor, StreamCallbacksSharedPtr callbacks);
+  EnvoyHttpCallbacksAdapter(StreamCallbacksSharedPtr callbacks);
 
   envoy_http_callbacks as_envoy_http_callbacks();
 
@@ -46,7 +45,6 @@ private:
   static void* c_on_complete(void* context);
   static void* c_on_cancel(void* context);
 
-  ExecutorSharedPtr executor_;
   StreamCallbacksSharedPtr stream_callbacks_;
 };
 

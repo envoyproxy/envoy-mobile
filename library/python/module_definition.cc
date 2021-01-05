@@ -13,7 +13,6 @@
 #include "library/cc/engine.h"
 #include "library/cc/engine_builder.h"
 #include "library/cc/envoy_error.h"
-#include "library/cc/executor.h"
 #include "library/cc/pulse_client.h"
 #include "library/cc/log_level.h"
 #include "library/cc/request_headers.h"
@@ -37,19 +36,6 @@
 
 namespace py = pybind11;
 using namespace Envoy::Platform;
-
-// This is what pybind11 calls a "trampoline" class.
-// It represents a bridge between the Python and C++ layers,
-// in this case is contains a function that defers to a Python class
-// that inherits from Executor.
-class PyExecutor : public Executor {
-public:
-  using Executor::Executor;
-
-  void execute(std::function<void()> callback) override {
-    PYBIND11_OVERRIDE_PURE(void, Executor, execute, callback);
-  }
-};
 
 PYBIND11_MODULE(envoy_engine, m) {
   m.doc() = "a thin wrapper around envoy-mobile to provide speedy networking for python";
@@ -81,10 +67,6 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def_readwrite("message", &EnvoyError::message)
       .def_readwrite("attempt_count", &EnvoyError::attempt_count)
       .def_readwrite("cause", &EnvoyError::cause);
-
-  py::class_<Executor, PyExecutor, ExecutorSharedPtr>(m, "Executor")
-      .def(py::init<>())
-      .def("execute", &Executor::execute);
 
   py::enum_<LogLevel>(m, "LogLevel")
       .value("Trace", LogLevel::trace)

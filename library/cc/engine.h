@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "executor.h"
 #include "library/common/types/c_types.h"
 #include "log_level.h"
 #include "pulse_client.h"
@@ -20,7 +19,7 @@ public:
 
 private:
   Engine(envoy_engine_t engine, const std::string& configuration, LogLevel log_level,
-         std::function<void()> on_engine_running, ExecutorSharedPtr executor);
+         std::function<void()> on_engine_running);
 
   static void dispatch_on_engine_running(void* context);
   static void dispatch_on_exit(void* context);
@@ -29,7 +28,6 @@ private:
 
   envoy_engine_t engine_;
   std::function<void()> on_engine_running_;
-  ExecutorSharedPtr executor_;
   StreamClientSharedPtr stream_client_;
   PulseClientSharedPtr pulse_client_;
 };

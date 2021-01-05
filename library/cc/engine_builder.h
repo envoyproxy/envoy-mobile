@@ -4,7 +4,6 @@
 #include <string>
 
 #include "engine.h"
-#include "executor.h"
 #include "log_level.h"
 
 namespace Envoy {
@@ -26,7 +25,7 @@ public:
   EngineBuilder& set_app_id(const std::string& app_id);
   EngineBuilder& add_virtual_clusters(const std::string& virtual_clusters);
 
-  EngineSharedPtr build(ExecutorSharedPtr executor);
+  EngineSharedPtr build();
 
   // TODO(crockeo): add after filter integration
   // EngineBuilder& addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () ->

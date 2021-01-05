@@ -11,7 +11,6 @@ envoy_cc_library(
         "engine.h",
         "engine_builder.h",
         "envoy_error.h",
-        "executor.h",
         "headers.h",
         "headers_builder.h",
         "log_level.h",

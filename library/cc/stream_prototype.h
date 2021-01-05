@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "envoy_error.h"
-#include "executor.h"
 #include "library/common/types/c_types.h"
 #include "response_headers.h"
 #include "response_trailers.h"
@@ -17,7 +16,7 @@ class StreamPrototype {
 public:
   StreamPrototype(envoy_engine_t engine);
 
-  StreamSharedPtr start(ExecutorSharedPtr executor);
+  StreamSharedPtr start();
 
   StreamPrototype& set_on_headers(OnHeadersCallback closure);
   StreamPrototype& set_on_data(OnDataCallback closure);
