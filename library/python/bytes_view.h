@@ -11,5 +11,5 @@ namespace Python {
 envoy_data py_bytes_as_envoy_data(py::bytes& bytes);
 py::bytes enoy_data_as_py_bytes(envoy_data data);
 
-}
-}
+} // namespace Python
+} // namespace Envoy

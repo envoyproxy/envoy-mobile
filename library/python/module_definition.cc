@@ -32,6 +32,9 @@
 #include "library/cc/stream_prototype.h"
 #include "library/cc/upstream_http_protocol.h"
 
+#include "library/python/stream_shim.h"
+#include "library/python/stream_prototype_shim.h"
+
 namespace py = pybind11;
 using namespace Envoy::Platform;
 
@@ -179,9 +182,9 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<Stream, StreamSharedPtr>(m, "Stream")
       .def("send_headers", &Stream::send_headers)
-      .def("send_data", &Stream::send_data)
+      .def("send_data", &Envoy::Python::Stream::send_data_shim)
       .def("close", static_cast<void (Stream::*)(RequestTrailersSharedPtr)>(&Stream::close))
-      .def("close", static_cast<void (Stream::*)(envoy_data)>(&Stream::close))
+      .def("close", &Envoy::Python::Stream::close_shim)
       .def("cancel", &Stream::cancel);
 
   py::class_<StreamCallbacks, StreamCallbacksSharedPtr>(m, "StreamCallbacks")
@@ -197,7 +200,7 @@ PYBIND11_MODULE(envoy_engine, m) {
   py::class_<StreamPrototype, StreamPrototypeSharedPtr>(m, "StreamPrototype")
       .def("start", &StreamPrototype::start)
       .def("set_on_headers", &StreamPrototype::set_on_headers)
-      .def("set_on_data", &StreamPrototype::set_on_data)
+      .def("set_on_data", &Envoy::Python::StreamPrototype::set_on_data_shim)
       .def("set_on_trailers", &StreamPrototype::set_on_trailers)
       .def("set_on_complete", &StreamPrototype::set_on_complete)
       .def("set_on_error", &StreamPrototype::set_on_error)
