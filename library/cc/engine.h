@@ -21,8 +21,8 @@ private:
   Engine(envoy_engine_t engine, const std::string& configuration, LogLevel log_level,
          std::function<void()> on_engine_running);
 
-  static void dispatch_on_engine_running(void* context);
-  static void dispatch_on_exit(void* context);
+  static void c_on_engine_running(void* context);
+  static void c_on_exit(void* context);
 
   friend class EngineBuilder;
 
