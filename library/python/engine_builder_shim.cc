@@ -4,6 +4,7 @@ namespace py = pybind11;
 
 namespace Envoy {
 namespace Python {
+namespace EngineBuilder {
 
 Platform::EngineBuilder& set_on_engine_running_shim(Platform::EngineBuilder& self,
                                                     std::function<void()> closure) {
@@ -13,5 +14,6 @@ Platform::EngineBuilder& set_on_engine_running_shim(Platform::EngineBuilder& sel
   });
 }
 
+} // namespace EngineBuilder
 } // namespace Python
 } // namespace Envoy

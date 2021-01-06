@@ -48,7 +48,7 @@ PYBIND11_MODULE(envoy_engine, m) {
   py::class_<EngineBuilder, EngineBuilderSharedPtr>(m, "EngineBuilder")
       .def(py::init<>())
       .def("add_log_level", &EngineBuilder::add_log_level)
-      .def("set_on_engine_running", &Envoy::Python::set_on_engine_running_shim)
+      .def("set_on_engine_running", &Envoy::Python::EngineBuilder::set_on_engine_running_shim)
       .def("add_stats_domain", &EngineBuilder::add_stats_domain)
       .def("add_connect_timeout_seconds", &EngineBuilder::add_connect_timeout_seconds)
       .def("add_dns_refresh_seconds", &EngineBuilder::add_dns_refresh_seconds)
