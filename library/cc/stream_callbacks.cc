@@ -25,7 +25,7 @@ envoy_http_callbacks EnvoyHttpCallbacksAdapter::as_envoy_http_callbacks() {
 }
 
 void* EnvoyHttpCallbacksAdapter::c_on_headers(envoy_headers headers, bool end_stream,
-                                                     void* context) {
+                                              void* context) {
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_headers.has_value()) {
     auto raw_headers = envoy_headers_as_raw_header_map(headers);

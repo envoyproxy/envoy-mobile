@@ -29,9 +29,7 @@ void Stream::close(RequestTrailersSharedPtr trailers) {
   ::send_trailers(this->handle_, raw_headers);
 }
 
-void Stream::close(envoy_data data) {
-  ::send_data(this->handle_, data, true);
-}
+void Stream::close(envoy_data data) { ::send_data(this->handle_, data, true); }
 
 void Stream::cancel() { reset_stream(this->handle_); }
 
