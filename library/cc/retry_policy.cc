@@ -6,7 +6,7 @@ namespace Platform {
 static const std::pair<RetryRule, std::string> RETRY_RULE_LOOKUP[]{
     {RetryRule::Status5xx, "5xx"},
     {RetryRule::GatewayError, "gateway-error"},
-    {RetryRule::ConnectFailure, "conect-failure"},
+    {RetryRule::ConnectFailure, "connect-failure"},
     {RetryRule::RefusedStream, "refused-stream"},
     {RetryRule::Retriable4xx, "retriable-4xx"},
     {RetryRule::RetriableHeaders, "retriable-headers"},
