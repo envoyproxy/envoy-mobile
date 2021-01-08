@@ -31,7 +31,9 @@ envoy_data py_bytes_as_envoy_data(const py::bytes& bytes) {
 // so instead of providing a view onto the underlying data
 // we just copy it over to python-land.
 py::bytes envoy_data_as_py_bytes(envoy_data data) {
-  return py::bytes((const char*)data.bytes, data.length);
+  auto bytes = py::bytes((const char*)data.bytes, data.length);
+  data.release(data.context);
+  return bytes;
 }
 
 } // namespace Python

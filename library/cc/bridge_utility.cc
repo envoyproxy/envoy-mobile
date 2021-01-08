@@ -64,6 +64,7 @@ RawHeaderMap envoy_headers_as_raw_headers(envoy_headers raw_headers) {
     }
     headers[key].push_back(value);
   }
+  release_envoy_headers(raw_headers);
   return headers;
 }
 
