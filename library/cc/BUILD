@@ -6,13 +6,20 @@ envoy_package()
 
 envoy_cc_library(
     name = "envoy_engine_cc_lib",
+    srcs = [
+        "log_level.cc",
+        "request_method.cc",
+        "retry_policy.cc",
+        "upstream_http_protocol.h",
+    ],
     hdrs = [
+        "bridge_utility.h",
         "engine.h",
         "engine_builder.h",
         "envoy_error.h",
-        "executor.h",
         "headers.h",
         "headers_builder.h",
+        "log_level.h",
         "pulse_client.h",
         "request_headers.h",
         "request_headers_builder.h",
