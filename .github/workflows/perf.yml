@@ -11,12 +11,12 @@ jobs:
     name: size_current
     runs-on: ubuntu-18.04
     timeout-minutes: 60
+    container:
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - name: 'Install dependencies'
-        run: ./ci/linux_ci_setup.sh
       - name: 'Build test binary'
         run: |
           export PATH=/usr/lib/llvm-10/bin:$PATH
@@ -31,12 +31,12 @@ jobs:
     name: size_main
     runs-on: ubuntu-18.04
     timeout-minutes: 60
+    container:
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - name: 'Install dependencies'
-        run: ./ci/linux_ci_setup.sh
       - name: 'Build test binary'
         run: |
           git checkout main && git pull origin main && git submodule update
@@ -53,10 +53,10 @@ jobs:
     needs: [sizecurrent, sizemain]
     runs-on: ubuntu-18.04
     timeout-minutes: 30
+    container:
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
-      - name: 'Install dependencies'
-        run: ./ci/linux_ci_setup.sh
       - uses: actions/download-artifact@v1
         with:
           name: sizecurrent

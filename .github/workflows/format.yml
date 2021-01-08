@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 45
     container:
-      image: envoyproxy/envoy-build-ubuntu:04f06115b6ee7cfea74930353fb47a41149cbec3
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
@@ -49,12 +49,12 @@ jobs:
     name: kotlin_lint
     runs-on: ubuntu-18.04
     timeout-minutes: 45
+    container:
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - name: 'Install dependencies'
-        run: ./ci/linux_ci_setup.sh
       - name: 'Run Kotlin Lint (Detekt)'
         run: |
           bazelisk build \
