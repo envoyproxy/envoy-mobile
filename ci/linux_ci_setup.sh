@@ -34,7 +34,7 @@ sudo apt-get install -y wget software-properties-common make cmake git \
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
 sudo apt-get update
-sudo apt-get install -y lld-10 libc++-10-dev libc++abi-10-dev
+sudo apt-get install -y clang-10 lld-10 libc++-10-dev libc++abi-10-dev
 
 LLVM_VERSION="10.0.0"
 LLVM_DISTRO="x86_64-linux-gnu-ubuntu-18.04"
