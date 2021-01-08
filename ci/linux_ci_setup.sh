@@ -52,10 +52,10 @@ sudo update-alternatives --remove-all clang++
 sudo update-alternatives --install /usr/bin/clang clang /opt/llvm/bin/clang-10 100
 sudo update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm/bin/clang++ 100
 
-sudo llvm-cov=/opt/llvm/bin/llvm-cov
-sudo export llvm-cov
-sudo llvm-cov=/opt/llvm/bin/llvm-profdata
-sudo export llvm-profdata
+llvm-cov=/opt/llvm/bin/llvm-cov
+export llvm-cov
+llvm-cov=/opt/llvm/bin/llvm-profdata
+export llvm-profdata
 
 sudo apt-get install gnupg2
 gpg --version
