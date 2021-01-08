@@ -34,7 +34,7 @@ sudo apt-get install -y wget software-properties-common make cmake git \
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
 sudo apt-get update
-sudo apt-get install -y clang-10 lld-10 libc++-10-dev libc++abi-10-dev
+sudo apt-get install -y lld-10 libc++-10-dev libc++abi-10-dev
 
 LLVM_VERSION="10.0.0"
 LLVM_DISTRO="x86_64-linux-gnu-ubuntu-18.04"
@@ -47,14 +47,14 @@ mv "./${LLVM_RELEASE}" /opt/llvm
 sudo chown -R root:root /opt/llvm
 rm "./${LLVM_RELEASE}.tar.xz"
 
+echo "/opt/llvm/lib" > /etc/ld.so.conf.d/llvm.conf
+ldconfig
+
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
-sudo update-alternatives --remove-all llvm-cov
-sudo update-alternatives --remove-all llvm-profdata
 sudo update-alternatives --install /usr/bin/clang clang /opt/llvm/bin/clang-10 100
 sudo update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm/bin/clang++ 100
-sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /opt/llvm/bin/llvm-cov 100
-sudo update-alternatives --install /usr/bin/llvm-profdata llvm-profdata /opt/llvm/bin/llvm-profdata 100
+
 
 sudo apt-get install gnupg2
 gpg --version
