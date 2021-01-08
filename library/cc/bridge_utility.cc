@@ -14,7 +14,7 @@ envoy_data string_as_envoy_data(const std::string& str) {
   return envoy_data{
       .length = str.size(),
       .bytes = bytes,
-      .release = envoy_noop_release,
+      .release = free,
       .context = nullptr,
   };
 }
@@ -23,6 +23,7 @@ std::string envoy_data_as_string(envoy_data data) {
   std::string str;
   str.resize(data.length);
   memcpy(&str[0], data.bytes, data.length);
+  data.release(data.context);
   return str;
 }
 
