@@ -36,7 +36,7 @@ HeadersBuilder& HeadersBuilder::internal_set(const std::string& name,
   return *this;
 }
 
-const RawHeaders& HeadersBuilder::all_headers() const { return this->headers_; }
+const RawHeaderMap& HeadersBuilder::all_headers() const { return this->headers_; }
 
 bool HeadersBuilder::is_restricted_header_(const std::string& name) const {
   return name.find(":") == 0 || name.find("x-envoy-mobile") == 0;

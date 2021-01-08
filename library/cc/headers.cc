@@ -7,11 +7,11 @@ const std::vector<std::string>& Headers::operator[](const std::string& key) cons
   return this->headers_.at(key);
 }
 
-const RawHeaders& Headers::all_headers() const { return this->headers_; }
+const RawHeaderMap& Headers::all_headers() const { return this->headers_; }
 
 bool Headers::contains(const std::string& key) const { return this->headers_.contains(key); }
 
-Headers::Headers(const RawHeaders& headers) : headers_(headers) {}
+Headers::Headers(const RawHeaderMap& headers) : headers_(headers) {}
 
 } // namespace Platform
 } // namespace Envoy

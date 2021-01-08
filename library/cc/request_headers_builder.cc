@@ -14,7 +14,7 @@ RequestHeadersBuilder::RequestHeadersBuilder(RequestMethod request_method,
 }
 
 RequestHeadersBuilder& RequestHeadersBuilder::add_retry_policy(const RetryPolicy& retry_policy) {
-  const RawHeaders retry_policy_headers = retry_policy.as_raw_headers();
+  const RawHeaderMap retry_policy_headers = retry_policy.as_raw_header_map();
   for (const auto& pair : retry_policy_headers) {
     this->internal_set(pair.first, pair.second);
   }
