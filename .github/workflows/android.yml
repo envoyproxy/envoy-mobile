@@ -23,16 +23,16 @@ jobs:
           export CC=clang
           export CXX=clang++
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-          bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
+          bazel build --fat_apk_cpu=x86 //:android_dist_ci
     # TODO: parallelize these two jobs
       - name: 'Build Java app'
         run: |
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-          bazelisk build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+          bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
       - name: 'Build kotlin app'
         run: |
           export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-          bazelisk build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+          bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
   macdist:
     name: mac_dist
     runs-on: macOS-latest
@@ -130,7 +130,7 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - run: bazelisk test --test_output=all --build_tests_only //library/kotlin/test/...
+      - run: bazel test --test_output=all --build_tests_only //library/kotlin/test/...
         name: 'Run Kotlin library tests'
   javatests:
     name: java_tests
@@ -142,5 +142,5 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - run: bazelisk test --test_output=all --build_tests_only //library/java/test/...
+      - run: bazel test --test_output=all --build_tests_only //library/java/test/...
         name: 'Run Java library tests'

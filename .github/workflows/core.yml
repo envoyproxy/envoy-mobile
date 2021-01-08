@@ -34,7 +34,7 @@ jobs:
           export PATH=/usr/lib/llvm-10/bin:$PATH
           export CC=clang
           export CXX=clang++
-          bazelisk test --config=clang-tsan --test_output=all //test/...
+          bazel test --config=clang-tsan --test_output=all //test/...
   asan:
     name: asan
     runs-on: ubuntu-18.04
@@ -50,4 +50,4 @@ jobs:
           export PATH=/usr/lib/llvm-10/bin:$PATH
           export CC=clang
           export CXX=clang++
-          bazelisk test --config=clang-asan --test_output=all //test/...
+          bazel test --config=clang-asan --test_output=all //test/...
