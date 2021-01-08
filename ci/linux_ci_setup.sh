@@ -49,12 +49,13 @@ rm "./${LLVM_RELEASE}.tar.xz"
 
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
-sudo update-alternatives --remove-all llvm-cov
-sudo update-alternatives --remove-all llvm-profdata
 sudo update-alternatives --install /usr/bin/clang clang /opt/llvm/bin/clang-10 100
 sudo update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm/bin/clang++ 100
-sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /opt/llvm/bin/llvm-cov 100
-sudo update-alternatives --install /usr/bin/llvm-profdata llvm-cov /opt/llvm/bin/llvm-profdata 100
+
+sudo llvm-cov=/opt/llvm/bin/llvm-cov
+sudo export llvm-cov
+sudo llvm-cov=/opt/llvm/bin/llvm-profdata
+sudo export llvm-profdata
 
 sudo apt-get install gnupg2
 gpg --version
