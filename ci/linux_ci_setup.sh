@@ -25,12 +25,24 @@ sudo apt-get install -y wget software-properties-common make cmake git \
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
 sudo apt-get update
-sudo apt-get install -y clang-10 lld-10 libc++-10-dev libc++abi-10-dev
+#sudo apt-get install -y clang-10 lld-10 libc++-10-dev libc++abi-10-dev
+sudo apt-get install -y lld-10 libc++-10-dev libc++abi-10-dev
+
+#LLVM_RELEASE="clang+llvm-${LLVM_VERSION}-${LLVM_DISTRO}"
+LLVM_RELEASE="clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04"
+LLVM_SHA256SUM="b25f592a0c00686f03e3b7db68ca6dc87418f681f4ead4df4745a01d9be63843"
+LLVM_DOWNLOAD_PREFIX=${LLVM_DOWNLOAD_PREFIX:-https://github.com/llvm/llvm-project/releases/download/llvmorg-}
+#download_and_check "${LLVM_RELEASE}.tar.xz" "${LLVM_DOWNLOAD_PREFIX}${LLVM_VERSION}/${LLVM_RELEASE}.tar.xz" "${LLVM_SHA256SUM}"
+download_and_check "${LLVM_RELEASE}.tar.xz" "${LLVM_DOWNLOAD_PREFIX}10.0.0/${LLVM_RELEASE}.tar.xz" "${LLVM_SHA256SUM}"
+tar Jxf "${LLVM_RELEASE}.tar.xz"
+mv "./${LLVM_RELEASE}" /opt/llvm
+chown -R root:root /opt/llvm
+rm "./${LLVM_RELEASE}.tar.xz"
 
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
-sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 100
-sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
+sudo update-alternatives --install /usr/bin/clang clang /opt/llvm/bin/clang-10 100
+sudo update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm/bin/clang++ 100
 
 sudo apt-get install gnupg2
 gpg --version
