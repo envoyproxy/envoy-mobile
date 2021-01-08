@@ -47,8 +47,8 @@ mv "./${LLVM_RELEASE}" /opt/llvm
 sudo chown -R root:root /opt/llvm
 rm "./${LLVM_RELEASE}.tar.xz"
 
-echo "/opt/llvm/lib" > /etc/ld.so.conf.d/llvm.conf
-ldconfig
+sudo echo "/opt/llvm/lib" > /etc/ld.so.conf.d/llvm.conf
+sudo ldconfig
 
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
