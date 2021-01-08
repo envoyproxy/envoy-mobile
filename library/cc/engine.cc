@@ -28,8 +28,8 @@ StreamClientSharedPtr Engine::stream_client() { return this->stream_client_; }
 PulseClientSharedPtr Engine::pulse_client() { return this->pulse_client_; }
 
 void Engine::c_on_engine_running(void* context) {
-  Engine* self = static_cast<Engine*>(context);
-  self->on_engine_running_();
+  Engine* engine = static_cast<Engine*>(context);
+  engine->on_engine_running_();
 }
 
 void Engine::c_on_exit(void* context) {
