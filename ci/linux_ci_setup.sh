@@ -45,7 +45,7 @@ LLVM_DOWNLOAD_PREFIX=${LLVM_DOWNLOAD_PREFIX:-https://github.com/llvm/llvm-projec
 download_and_check "${LLVM_RELEASE}.tar.xz" "${LLVM_DOWNLOAD_PREFIX}10.0.0/${LLVM_RELEASE}.tar.xz" "${LLVM_SHA256SUM}"
 tar Jxf "${LLVM_RELEASE}.tar.xz"
 mv "./${LLVM_RELEASE}" /opt/llvm
-chown -R root:root /opt/llvm
+sudo chown -R root:root /opt/llvm
 rm "./${LLVM_RELEASE}.tar.xz"
 
 sudo update-alternatives --remove-all clang
