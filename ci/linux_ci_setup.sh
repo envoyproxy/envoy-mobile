@@ -31,11 +31,14 @@ sudo apt-get install -y wget software-properties-common make cmake git \
   apt-transport-https
 
 # clang 10
+echo "=== Before wget gpg"
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
 sudo apt-get update
 sudo apt-get install -y lld-10 libc++-10-dev libc++abi-10-dev
+echo "=== After apt-get install -y lld-10 libc++-10-dev libc++abi-10-dev"
 
+echo "=== Before clang download etc"
 LLVM_VERSION="10.0.0"
 LLVM_DISTRO="x86_64-linux-gnu-ubuntu-18.04"
 LLVM_RELEASE="clang+llvm-${LLVM_VERSION}-${LLVM_DISTRO}"
@@ -53,10 +56,14 @@ sudo update-alternatives --install /usr/bin/clang clang /opt/llvm/bin/clang-10 1
 sudo update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm/bin/clang++ 100
 sudo chmod +x /opt/llvm/bin
 export PATH="/opt/llvm/bin:${PATH}"
+echo "=== After clang download etc"
 
-
+echo "=== Before gpg"
+sudo apt remove gpg
+sudo apt-get update -y
 sudo apt-get install gnupg2
 gpg --version
+echo "=== After gpg"
 
 # buildifier
 sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/2.2.1/buildifier
