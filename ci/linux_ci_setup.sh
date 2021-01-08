@@ -2,6 +2,15 @@
 
 set -e
 
+function download_and_check () {
+  local to=$1
+  local url=$2
+  local sha256=$3
+
+  curl -fsSL --output "${to}" "${url}"
+  echo "${sha256}  ${to}" | sha256sum --check
+}
+
 # Set up basic requirements and install them.
 # workaround https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
 sudo rm -rf /var/lib/apt/lists/*
