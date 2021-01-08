@@ -202,13 +202,13 @@ final class EngineBuilderTests: XCTestCase {
   func testAddingStringAccessorToConfigurationWhenRunningEnvoy() throws {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual(1, config.stringAccessors.count)
+      XCTAssertEqual("hello", config.stringAccessors. getEnvoyString())
       expectation.fulfill()
     }
 
     _ = try EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
-      .addStringAccessor(name: "name", accessor: { return "hello" })
+      .addStringAccessor(name: "name", accessor: { "hello" })
       .build()
     self.waitForExpectations(timeout: 0.01)
   }

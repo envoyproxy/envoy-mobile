@@ -314,9 +314,9 @@ static envoy_data ios_get_string(const void *context) {
     [self registerFilterFactory:filterFactory];
   }
 
-  [config.stringAccessors enumerateKeysAndObjectsUsingBlock:^(id name, id accessor, BOOL *stop) {
-    [self registerStringAccessor:name accessor:accessor];
-  }];
+  for (NSString *name in config.stringAccessors) {
+    [self registerStringAccessor:name accessor:config.stringAccessors[name]];
+  }
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
 }
@@ -334,9 +334,9 @@ static envoy_data ios_get_string(const void *context) {
     [self registerFilterFactory:filterFactory];
   }
 
-  [config.stringAccessors enumerateKeysAndObjectsUsingBlock:^(id name, id accessor, BOOL *stop) {
-    [self registerStringAccessor:name accessor:accessor];
-  }];
+  for (NSString *name in config.stringAccessors) {
+    [self registerStringAccessor:name accessor:config.stringAccessors[name]];
+  }
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
 }
