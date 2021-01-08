@@ -47,13 +47,12 @@ mv "./${LLVM_RELEASE}" /opt/llvm
 sudo chown -R root:root /opt/llvm
 rm "./${LLVM_RELEASE}.tar.xz"
 
-sudo echo "/opt/llvm/lib" > /etc/ld.so.conf.d/llvm.conf
-sudo ldconfig
-
 sudo update-alternatives --remove-all clang
 sudo update-alternatives --remove-all clang++
 sudo update-alternatives --install /usr/bin/clang clang /opt/llvm/bin/clang-10 100
 sudo update-alternatives --install /usr/bin/clang++ clang++ /opt/llvm/bin/clang++ 100
+sudo chmod +x /opt/llvm/bin
+export PATH="/opt/llvm/bin:${PATH}"
 
 
 sudo apt-get install gnupg2
