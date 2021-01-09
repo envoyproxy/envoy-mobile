@@ -14,7 +14,7 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
       env:
-        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin
+        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin:$PATH
         CLANG_FORMAT: clang-format-10
         BUILDIFIER_BIN: /usr/local/bin/buildifier
         BUILDOZER_BIN: /usr/local/bin/buildozer

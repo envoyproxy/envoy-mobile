@@ -28,7 +28,7 @@ jobs:
       env:
         CC: clang
         CXX: clang++
-        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin
+        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin:$PATH
     steps:
       - uses: actions/checkout@v1
         with:
@@ -44,7 +44,7 @@ jobs:
       env:
         CC: clang
         CXX: clang++
-        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin
+        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin:$PATH
     steps:
       - uses: actions/checkout@v1
         with:

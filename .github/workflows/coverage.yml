@@ -19,19 +19,15 @@ jobs:
       env:
         CC: clang
         CXX: clang++
-        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin
+        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin:$PATH
+        COVERAGE_THRESHOLD: 95
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Run coverage'
         continue-on-error: true
-        run: |
-          export PATH=/usr/lib/llvm-10/bin:$PATH
-          export CC=clang
-          export CXX=clang++
-          export COVERAGE_THRESHOLD=95
-          ./envoy/test/run_envoy_bazel_coverage.sh //test/...
+        run: ./envoy/test/run_envoy_bazel_coverage.sh //test/...
       - name: 'package coverage'
         run: |
           tar -czvf coverage.tar.gz generated/coverage
