@@ -7,32 +7,6 @@ on:
   pull_request:
 
 jobs:
-  linuxdist:
-    name: linux_dist
-    runs-on: ubuntu-18.04
-    timeout-minutes: 90
-    container:
-      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: 'Build envoy.aar distributable'
-        run: |
-          export PATH=/usr/lib/llvm-10/bin:$PATH
-          export CC=clang
-          export CXX=clang++
-          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-          bazel build --fat_apk_cpu=x86 //:android_dist_ci
-    # TODO: parallelize these two jobs
-      - name: 'Build Java app'
-        run: |
-          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-          bazel build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
-      - name: 'Build kotlin app'
-        run: |
-          export ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk-bundle
-          bazel build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
   macdist:
     name: mac_dist
     runs-on: macOS-latest

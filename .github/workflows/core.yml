@@ -25,29 +25,27 @@ jobs:
     timeout-minutes: 90
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
+      env:
+        CC: clang
+        CXX: clang++
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Run tests'
-        run: |
-          export PATH=/usr/lib/llvm-10/bin:$PATH
-          export CC=clang
-          export CXX=clang++
-          bazel test --config=clang-tsan --test_output=all //test/...
+        run: bazel test --config=clang-tsan --test_output=all //test/...
   asan:
     name: asan
     runs-on: ubuntu-18.04
     timeout-minutes: 120
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
+      env:
+        CC: clang
+        CXX: clang++
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Run tests'
-        run: |
-          export PATH=/usr/lib/llvm-10/bin:$PATH
-          export CC=clang
-          export CXX=clang++
-          bazel test --config=clang-asan --test_output=all //test/...
+        run: bazel test --config=clang-asan --test_output=all //test/...

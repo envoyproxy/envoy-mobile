@@ -16,6 +16,9 @@ jobs:
     timeout-minutes: 120
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
+      env:
+        CC: clang
+        CXX: clang++
     steps:
       - uses: actions/checkout@v1
         with:

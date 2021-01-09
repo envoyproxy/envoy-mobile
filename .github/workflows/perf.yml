@@ -13,16 +13,15 @@ jobs:
     timeout-minutes: 60
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
+      env:
+        CC: clang
+        CXX: clang++
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Build test binary'
-        run: |
-          export PATH=/usr/lib/llvm-10/bin:$PATH
-          export CC=clang
-          export CXX=clang++
-          bazel build //test/performance:test_binary_size --config=sizeopt
+        run: bazel build //test/performance:test_binary_size --config=sizeopt
       - uses: actions/upload-artifact@v1
         with:
           name: sizecurrent
@@ -33,6 +32,9 @@ jobs:
     timeout-minutes: 60
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
+      env:
+        CC: clang
+        CXX: clang++
     steps:
       - uses: actions/checkout@v1
         with:
@@ -40,9 +42,6 @@ jobs:
       - name: 'Build test binary'
         run: |
           git checkout main && git pull origin main && git submodule update
-          export PATH=/usr/lib/llvm-10/bin:$PATH
-          export CC=clang
-          export CXX=clang++
           bazel build //test/performance:test_binary_size --config=sizeopt
       - uses: actions/upload-artifact@v1
         with:

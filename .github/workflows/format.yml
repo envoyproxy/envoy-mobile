@@ -19,7 +19,6 @@ jobs:
           submodules: true
       - name: 'Run formatters'
         run: |
-          export PATH=/opt/llvm/bin:$PATH
           export CLANG_FORMAT=clang-format
           export BUILDIFIER_BIN=/usr/local/bin/buildifier
           export BUILDOZER_BIN=/usr/local/bin/buildozer
