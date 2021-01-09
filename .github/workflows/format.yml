@@ -13,17 +13,18 @@ jobs:
     timeout-minutes: 45
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
+      env:
+        PATH: /usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin
+        CLANG_FORMAT: clang-format-10
+        BUILDIFIER_BIN: /usr/local/bin/buildifier
+        BUILDOZER_BIN: /usr/local/bin/buildozer
+        ENVOY_BAZEL_PREFIX: "@envoy"
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Run formatters'
-        run: |
-          export CLANG_FORMAT=clang-format
-          export BUILDIFIER_BIN=/usr/local/bin/buildifier
-          export BUILDOZER_BIN=/usr/local/bin/buildozer
-          export ENVOY_BAZEL_PREFIX=@envoy
-          ./tools/check_format.sh
+        run: ./tools/check_format.sh
   precommit:
     name: precommit
     runs-on: macOS-latest
