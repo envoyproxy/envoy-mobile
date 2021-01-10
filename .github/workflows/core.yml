@@ -26,9 +26,8 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
       env:
-        CC: clang
-        CXX: clang++
-        PATH: "/opt/llvm/bin:${PATH}"
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
     steps:
       - uses: actions/checkout@v1
         with:
