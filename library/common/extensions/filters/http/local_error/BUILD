@@ -21,7 +21,7 @@ envoy_cc_extension(
     repository = "@envoy",
     security_posture = "requires_trusted_downstream_and_upstream",
     deps = [
-        "filter_cc_proto",
+        ":filter_cc_proto",
         "//library/common/http:internal_headers_lib",
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/http:codes_interface",
