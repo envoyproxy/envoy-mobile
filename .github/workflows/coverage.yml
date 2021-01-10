@@ -17,6 +17,8 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
       env:
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
     steps:
       - uses: actions/checkout@v1
