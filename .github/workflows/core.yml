@@ -28,7 +28,7 @@ jobs:
       env:
         CC: clang
         CXX: clang++
-        PATH: "$PATH:/opt/llvm/bin"
+        PATH: $PATH:/opt/llvm/bin
     steps:
       - uses: actions/checkout@v1
         with:
