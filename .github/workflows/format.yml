@@ -46,14 +46,19 @@ jobs:
         run: swiftlint lint --strict
   kotlinlint:
     name: kotlin_lint
-    runs-on: ubuntu-18.04
+    runs-on: macOS-latest
     timeout-minutes: 45
-    container:
-      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
       - name: 'Run Kotlin Lint (Detekt)'
         run: |
           bazel build \

@@ -17,8 +17,6 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
       env:
-        CC: /opt/llvm/bin/clang
-        CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
     steps:
       - uses: actions/checkout@v1
@@ -26,7 +24,7 @@ jobs:
           submodules: true
       - name: 'Run coverage'
         continue-on-error: true
-        run: ./envoy/test/run_envoy_bazel_coverage.sh //test/...
+        run: "PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/..."
       - name: 'package coverage'
         run: |
           tar -czvf coverage.tar.gz generated/coverage
