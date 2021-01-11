@@ -22,7 +22,7 @@ jobs:
           submodules: true
       - name: 'Build test binary'
         run: bazel build //test/performance:test_binary_size --config=sizeopt
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: sizecurrent
           path: bazel-bin/test/performance/test_binary_size
@@ -43,7 +43,7 @@ jobs:
         run: |
           git checkout main && git pull origin main && git submodule update
           bazel build //test/performance:test_binary_size --config=sizeopt
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: sizemain
           path: bazel-bin/test/performance/test_binary_size
@@ -56,11 +56,11 @@ jobs:
       image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v2
         with:
           name: sizecurrent
           path: dist/sizecurrent
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v2
         with:
           name: sizemain
           path: dist/sizemain

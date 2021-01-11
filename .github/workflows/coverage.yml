@@ -30,7 +30,7 @@ jobs:
       - name: 'package coverage'
         run: |
           tar -czvf coverage.tar.gz generated/coverage
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: coverage.tar.gz
           path: coverage.tar.gz

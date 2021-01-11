@@ -24,7 +24,7 @@ jobs:
         name: 'Install dependencies'
       - name: 'Build envoy.aar distributable'
         run: bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: envoy.aar
           path: dist/envoy.aar
@@ -44,7 +44,7 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v2
         with:
           name: envoy.aar
           path: dist/
@@ -77,7 +77,7 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v2
         with:
           name: envoy.aar
           path: dist/
