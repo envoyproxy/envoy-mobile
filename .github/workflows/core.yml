@@ -28,6 +28,7 @@ jobs:
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
+        ENVOY_IP_TEST_VERSIONS: v4only
     steps:
       - uses: actions/checkout@v1
         with:
@@ -44,6 +45,7 @@ jobs:
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
+        ENVOY_IP_TEST_VERSIONS: v4only
     steps:
       - uses: actions/checkout@v1
         with:

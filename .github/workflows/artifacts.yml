@@ -23,6 +23,8 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
+      - name: 'Build envoy.aar distributable'
+        run: |
           current_short_commit=$(git rev-parse --short HEAD)
           bazelisk build \
               --config=release-android \
