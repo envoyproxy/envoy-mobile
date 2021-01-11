@@ -28,14 +28,13 @@ jobs:
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
-        ENVOY_IP_TEST_VERSIONS: v4only
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - run: echo $PATH
       - name: 'Run tests'
-        run: bazel test --config=clang-tsan --test_output=all //test/...
+        run: bazel test --config=clang-tsan --test_output=all --test_env=ENVOY_IP_TEST_VERSIONS=v4only //test/...
   asan:
     name: asan
     runs-on: ubuntu-18.04
@@ -45,10 +44,9 @@ jobs:
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
-        ENVOY_IP_TEST_VERSIONS: v4only
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
       - name: 'Run tests'
-        run: bazel test --config=clang-asan --test_output=all //test/...
+        run: bazel test --config=clang-asan --test_output=all --test_env=ENVOY_IP_TEST_VERSIONS=v4only //test/...
