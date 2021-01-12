@@ -27,6 +27,8 @@ jobs:
       - name: 'Run coverage'
         continue-on-error: true
         run: |
+          add-apt-repository ppa:openjdk-r/ppa
+          apt-get update
           apt install -y openjdk-11-jdk
           "PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/..."
       - name: 'package coverage'
