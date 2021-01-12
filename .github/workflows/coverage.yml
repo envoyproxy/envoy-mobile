@@ -26,12 +26,7 @@ jobs:
           submodules: true
       - name: 'Run coverage'
         continue-on-error: true
-        run: |
-          apt install -y dirmngr
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DE19EB17684BA42D
-          apt update
-          apt install -y default-jdk
-          "PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/..."
+        run: "PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/..."
       - name: 'package coverage'
         run: |
           tar -czvf coverage.tar.gz generated/coverage
