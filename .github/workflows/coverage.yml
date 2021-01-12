@@ -27,6 +27,7 @@ jobs:
       - name: 'Run coverage'
         continue-on-error: true
         run: |
+          apt-get install dirmngr
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DE19EB17684BA42D
           add-apt-repository ppa:openjdk-r/ppa
           apt-get update
