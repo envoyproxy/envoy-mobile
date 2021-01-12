@@ -15,7 +15,7 @@ envoy_data string_as_envoy_data(const std::string& str) {
       .length = str.size(),
       .bytes = bytes,
       .release = free,
-      .context = nullptr,
+      .context = bytes,
   };
 }
 
