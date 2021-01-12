@@ -23,7 +23,7 @@ sudo apt-get install -y wget software-properties-common make cmake git \
 
 # clang 10
 wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-sudo apt-add-repository "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+sudo apt-add-repository "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
 sudo apt-get update
 sudo apt-get install -y clang-10 lld-10 libc++-10-dev libc++abi-10-dev
 
