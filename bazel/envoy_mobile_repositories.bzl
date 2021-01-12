@@ -68,16 +68,16 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "a41a75c291c69676b9974458ceee09aea60cee0e1ee282e27cdc90b679dfd30f",
-        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.21.2/rules_apple.0.21.2.tar.gz",
+        sha256 = "8219971a5e7bb00827239ff997a3a5bde35fc06f29595f6861fc79528f370e20",
+        strip_prefix = "rules_apple-b35ed275931a316b34089fc7fa5e1f20fbf8a15d",
+        url = "https://github.com/bazelbuild/rules_apple/archive/b35ed275931a316b34089fc7fa5e1f20fbf8a15d.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        urls = [
-            "https://github.com/bazelbuild/rules_swift/releases/download/0.17.0/rules_swift.0.17.0.tar.gz",
-        ],
-        sha256 = "c07abf4d94fef598c45e539e9adc0ed25795260c618e167b714cc285b20525e2",
+        sha256 = "e571fd8920dbca579b042ce8350e13639d10d3386a7fa2518956b25c7c70e758",
+        strip_prefix = "rules_swift-f868e5fcf89d1639b9c1593f920dae30e10cfc72",
+        url = "https://github.com/bazelbuild/rules_swift/archive/f868e5fcf89d1639b9c1593f920dae30e10cfc72.tar.gz",
     )
 
 def kotlin_repos():
