@@ -96,31 +96,25 @@ jobs:
         name: 'Check liveliness'
   kotlintests:
     name: kotlin_tests
-    runs-on: macOS-latest
+    runs-on: ubuntu-18.04
     timeout-minutes: 90
+    container:
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
       - run: bazel test --test_output=all --build_tests_only //library/kotlin/test/...
         name: 'Run Kotlin library tests'
   javatests:
     name: java_tests
-    runs-on: macOS-latest
+    runs-on: ubuntu-18.04
     timeout-minutes: 90
+    container:
+      image: envoyproxy/envoy-build-ubuntu:11efa5680d987fff33fde4af3cc5ece105015d04
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
       - run: bazel test --test_output=all --build_tests_only //library/java/test/...
         name: 'Run Java library tests'
