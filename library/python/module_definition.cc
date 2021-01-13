@@ -31,6 +31,7 @@
 #include "library/cc/stream_prototype.h"
 #include "library/cc/upstream_http_protocol.h"
 
+#include "library/python/engine_builder_shim.h"
 #include "library/python/stream_shim.h"
 #include "library/python/stream_prototype_shim.h"
 
@@ -47,7 +48,7 @@ PYBIND11_MODULE(envoy_engine, m) {
   py::class_<EngineBuilder, EngineBuilderSharedPtr>(m, "EngineBuilder")
       .def(py::init<>())
       .def("add_log_level", &EngineBuilder::add_log_level)
-      .def("set_on_engine_running", &EngineBuilder::set_on_engine_running)
+      .def("set_on_engine_running", &Envoy::Python::EngineBuilder::set_on_engine_running_shim)
       .def("add_stats_domain", &EngineBuilder::add_stats_domain)
       .def("add_connect_timeout_seconds", &EngineBuilder::add_connect_timeout_seconds)
       .def("add_dns_refresh_seconds", &EngineBuilder::add_dns_refresh_seconds)
@@ -181,12 +182,12 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<StreamPrototype, StreamPrototypeSharedPtr>(m, "StreamPrototype")
       .def("start", &StreamPrototype::start)
-      .def("set_on_headers", &StreamPrototype::set_on_headers)
+      .def("set_on_headers", &Envoy::Python::StreamPrototype::set_on_headers_shim)
       .def("set_on_data", &Envoy::Python::StreamPrototype::set_on_data_shim)
-      .def("set_on_trailers", &StreamPrototype::set_on_trailers)
-      .def("set_on_complete", &StreamPrototype::set_on_complete)
-      .def("set_on_error", &StreamPrototype::set_on_error)
-      .def("set_on_cancel", &StreamPrototype::set_on_cancel);
+      .def("set_on_trailers", &Envoy::Python::StreamPrototype::set_on_trailers_shim)
+      .def("set_on_complete", &Envoy::Python::StreamPrototype::set_on_complete_shim)
+      .def("set_on_error", &Envoy::Python::StreamPrototype::set_on_error_shim)
+      .def("set_on_cancel", &Envoy::Python::StreamPrototype::set_on_cancel_shim);
 
   py::enum_<UpstreamHttpProtocol>(m, "UpstreamHttpProtocol")
       .value("HTTP1", UpstreamHttpProtocol::HTTP1)
