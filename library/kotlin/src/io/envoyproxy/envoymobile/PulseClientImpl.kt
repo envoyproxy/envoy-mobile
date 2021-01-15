@@ -16,4 +16,8 @@ internal class PulseClientImpl constructor(
   override fun gauge(vararg elements: Element): Gauge {
     return GaugeImpl(engine, elements.asList())
   }
+
+  override fun histogram(vararg elements: Element): Histogram {
+    return HistogramImpl(engine, elements.asList())
+  }
 }

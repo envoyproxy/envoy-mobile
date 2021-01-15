@@ -19,4 +19,8 @@ extension PulseClientImpl: PulseClient {
   func gauge(elements: [Element]) -> Gauge {
     return GaugeImpl(elements: elements, engine: self.engine)
   }
+
+  func histogram(elements: [Element]) -> Histogram {
+    return HistogramImpl(elements: elements, engine: self.engine)
+  }  
 }

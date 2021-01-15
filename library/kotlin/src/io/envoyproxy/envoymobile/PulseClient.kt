@@ -15,4 +15,7 @@ interface PulseClient {
 
   /** @return A gauge based on the joined elements. */
   fun gauge(vararg elements: Element): Gauge
+
+  /** @return A histogram based on the joined elements */
+  fun histogram(vararg elements: Element): Histogram
 }

@@ -95,4 +95,19 @@ final class PulseClientImplTests: XCTestCase {
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualAmount, 5)
   }
+
+  func testHistogramRecordDelegatesToEngineWithValue() {
+    var actualSeries: String?
+    var actualValue: UInt?
+    MockEnvoyEngine.onRecordHistogramDurationMs = { series, value in
+      actualSeries = series
+      actualValue = value
+    }
+    let mockEngine = MockEnvoyEngine()
+    let pulseClient = PulseClientImpl(engine: mockEngine)
+    let histogram = pulseClient.histogram(elements: ["test", "stat"])
+    histogram.record(value: 5)
+    XCTAssertEqual(actualSeries, "test.stat")
+    XCTAssertEqual(actualValue, 5)
+  }
 }

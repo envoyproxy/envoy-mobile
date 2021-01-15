@@ -15,4 +15,9 @@ public protocol PulseClient: AnyObject {
   ///
   /// - returns: A Gauge based on the joined elements.
   func gauge(elements: [Element]) -> Gauge
+
+  /// - parameter elements: Elements to identify a histogram
+  ///
+  /// - returns: A Histogram based on the joined elements.
+  func histogram(elements: [Element]) -> Histogram
 }

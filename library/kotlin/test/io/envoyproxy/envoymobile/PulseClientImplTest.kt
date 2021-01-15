@@ -70,4 +70,16 @@ class PulseClientImplTest {
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(amountCaptor.getValue()).isEqualTo(5)
   }
+
+  @Test
+  fun `histogram delegates to engine with amount for record`() {
+    val pulseClient = PulseClientImpl(envoyEngine)
+    val histogram = pulseClient.histogram(Element("test"), Element("stat"))
+    histogram.record(5)
+    val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
+    val amountCaptor = ArgumentCaptor.forClass(Int::class.java)
+    verify(envoyEngine).recordHistogramDurationMs(elementsCaptor.capture(), amountCaptor.capture())
+    assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
+    assertThat(amountCaptor.getValue()).isEqualTo(5)
+  }
 }
