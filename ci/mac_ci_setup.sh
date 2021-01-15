@@ -55,3 +55,7 @@ bazel version
 pip3 install slackclient
 # https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md#xcode
 sudo xcode-select --switch /Applications/Xcode_12.2.app
+
+echo y | $SDKMANAGER --uninstall "ndk-bundle"
+
+echo y | $SDKMANAGER --install "ndk;21.3.6528147" --channel=0
