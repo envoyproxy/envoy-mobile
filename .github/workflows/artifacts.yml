@@ -36,6 +36,8 @@ jobs:
               --fat_apk_cpu=x86 \
               --define=pom_version=main-$current_short_commit \
               //:android_dist_ci
+      - run: ls -lh bazel-bin/
+      - run: ls -lh dist/
       - uses: actions/upload-artifact@v2
         with:
           name: envoy_android_aar_sources
