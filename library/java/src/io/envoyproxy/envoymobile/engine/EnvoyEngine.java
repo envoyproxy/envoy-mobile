@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit;
 
 /* Wrapper layer for calling into Envoy's C/++ API. */
 public interface EnvoyEngine {
@@ -76,10 +77,11 @@ public interface EnvoyEngine {
    * Add another recorded amount to the histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
-   * @param amount Amount to record as a new value for the histogram.
+   * @param value Amount to record as a new value for the histogram distribution.
+   * @param unitMeasure the unit of measurement (e.g. milliseconds, bytes, etc.)
    * @return A status indicating if the action was successful.
    */
-  int recordHistogramDurationMs(String elements, int duration);
+  int recordHistogramValue(String elements, int value, HistogramUnit unitMeasure);
 
   int registerStringAccessor(String accessor_name, EnvoyStringAccessor accessor);
 }

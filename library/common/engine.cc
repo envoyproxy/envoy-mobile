@@ -154,13 +154,13 @@ envoy_status_t Engine::recordGaugeSub(const std::string& elements, uint64_t amou
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::recordHistogramDurationMs(const std::string& elements, uint64_t amount) {
+envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_t value, Histogram::Unit unit_measure) {
   if (server_ && client_scope_) {
     std::string name = Stats::Utility::sanitizeStatsName(elements);
     server_->dispatcher().post([this, name, amount]() -> void {
       Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Histogram::Unit::Milliseconds)
-          .recordValue(amount);
+                                        unit_measure)
+          .recordValue(value);
     });
     return ENVOY_SUCCESS;
   }

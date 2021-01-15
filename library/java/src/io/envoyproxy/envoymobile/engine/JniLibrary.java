@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -197,10 +198,11 @@ class JniLibrary {
    * Add another recorded amount to the histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
-   * @param amount Amount to record as a new value for the histogram.
+   * @param value Amount to record as a new value for the histogram distribution.
+   * @param unitMeasure The unit of measurement (e.g. milliseconds, bytes, etc.)
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordHistogramDurationMs(long engine, String elements, int duration);
+  protected static native int recordHistogramValue(long engine, String elements, int value, HistogramUnit unitMeasure);
 
   /**
    * Provides a configuration template that may be used for building platform

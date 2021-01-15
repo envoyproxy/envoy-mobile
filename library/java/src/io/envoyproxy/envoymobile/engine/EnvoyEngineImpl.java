@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
@@ -137,11 +138,12 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * Add another recorded amount to the histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
-   * @param amount Amount to record as a new value for the histogram.
+   * @param value Amount to record as a new value for the histogram distribution.
+   * @param unitMeasure the unit of measurement (e.g. milliseconds, bytes, etc.)
    * @return A status indicating if the action was successful.
    */
-  public int recordHistogramDurationMs(String elements, int duration) {
-    return JniLibrary.recordHistogramDurationMs(engineHandle, elements, duration);
+  public int recordHistogramValue(String elements, int value, HistogramUnit unitMeasure) {
+    return JniLibrary.recordHistogramValue(engineHandle, elements, value, unitMeasure);
   }
 
   @Override

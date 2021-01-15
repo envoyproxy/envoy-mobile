@@ -138,9 +138,10 @@ envoy_status_t record_gauge_sub(envoy_engine_t engine, const char* elements, uin
  * Add another recorded amount to the histogram with the given string of elements.
  * @param engine, the engine that owns the histogram.
  * @param elements, the string that identifies the histogram to subtract from.
- * @param amount, amount to record as a new value for the histogram.
+ * @param value, amount to record as a new value for the histogram distribution.
+ * @param unit_measure, the unit of measurement (e.g. milliseconds, bytes, etc.)
  */
-envoy_status_t record_histogram_duration_ms(envoy_engine_t engine, const char* elements, uint64_t amount);
+envoy_status_t record_histogram_value(envoy_engine_t engine, const char* elements, uint64_t value, Histogram::Unit unit_measure);
 
 /**
  * Statically register APIs leveraging platform libraries.

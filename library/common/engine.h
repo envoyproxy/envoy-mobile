@@ -66,9 +66,10 @@ public:
   /**
    * Record a value for the histogram with the given string of elements
    * @param elements, joined elements of the timeseries.
-   * @param amount, amount to add to the aggregated pool of events for quantile calculations
+   * @param value, value to add to the aggregated distribution of values for quantile calculations
+   * @param unit_measure, the unit of measurement (e.g. milliseconds, bytes, etc.)
    */
-  envoy_status_t recordHistogramDurationMs(const std::string& elements, uint64_t amount);
+  envoy_status_t recordHistogramValue(const std::string& elements, uint64_t value, Histogram::Unit unit_measure);
 
 private:
   envoy_status_t run(std::string config, std::string log_level);

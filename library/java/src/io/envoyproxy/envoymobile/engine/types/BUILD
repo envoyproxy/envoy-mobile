@@ -12,6 +12,7 @@ java_library(
         "EnvoyOnEngineRunning.java",
         "EnvoyStatus.java",
         "EnvoyStringAccessor.java",
+        "HistogramUnit.java",
     ],
     visibility = ["//visibility:public"],
 )
