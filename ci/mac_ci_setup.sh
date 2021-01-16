@@ -9,6 +9,13 @@ set -e
 # https://github.com/actions/virtual-environments/blob/master/images/macos/macos-10.15-Readme.md for
 # a list of pre-installed tools in the macOS image.
 
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export SDKMANAGER=$ANDROID_HOME/tools/bin/sdkmanager
+
+echo y | $SDKMANAGER --uninstall "ndk-bundle"
+
+echo y | $SDKMANAGER --install "ndk;21.3.6528147"
+
 export HOMEBREW_NO_AUTO_UPDATE=1
 
 function is_installed {
@@ -55,7 +62,3 @@ bazel version
 pip3 install slackclient
 # https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md#xcode
 sudo xcode-select --switch /Applications/Xcode_12.2.app
-
-echo y | $SDKMANAGER --uninstall "ndk-bundle"
-
-echo y | $SDKMANAGER --install "ndk;21.3.6528147" --channel=0
