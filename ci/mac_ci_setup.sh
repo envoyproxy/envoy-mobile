@@ -12,9 +12,9 @@ set -e
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export SDKMANAGER=$ANDROID_HOME/tools/bin/sdkmanager
 
-echo y | $SDKMANAGER --uninstall "ndk-bundle"
+$SDKMANAGER --uninstall "ndk-bundle"
 
-echo y | $SDKMANAGER --install "ndk;21.3.6528147"
+$SDKMANAGER --install "ndk;21.3.6528147"
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 
