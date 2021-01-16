@@ -20,6 +20,8 @@ export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.3.6528147
 
 echo $ANDROID_NDK_HOME
 
+ls $ANDROID_NDK_HOME/
+
 export HOMEBREW_NO_AUTO_UPDATE=1
 
 function is_installed {
