@@ -16,6 +16,8 @@ $SDKMANAGER --uninstall "ndk-bundle"
 
 $SDKMANAGER --install "ndk;21.3.6528147"
 
+export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.3.6528147
+
 export HOMEBREW_NO_AUTO_UPDATE=1
 
 function is_installed {
