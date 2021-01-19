@@ -1,3 +1,4 @@
+/**
  * Templated default configuration
  */
 const char* platform_filter_template = R"(

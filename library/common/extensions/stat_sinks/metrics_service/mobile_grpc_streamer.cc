@@ -13,7 +13,7 @@ EnvoyMobileGrpcMetricsStreamerImpl::EnvoyMobileGrpcMetricsStreamerImpl(
     : MetricsService::GrpcMetricsStreamer<
           envoymobile::extensions::stat_sinks::metrics_service::EnvoyMobileStreamMetricsMessage,
           envoymobile::extensions::stat_sinks::metrics_service::EnvoyMobileStreamMetricsResponse>(
-          std::move(factory)),
+          *factory),
       local_info_(local_info), random_generator_(random_generator),
       service_method_(*Protobuf::DescriptorPool::generated_pool()->FindMethodByName(
           "envoymobile.extensions.stat_sinks.metrics_service.EnvoyMobileMetricsService."
