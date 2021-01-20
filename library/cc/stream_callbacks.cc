@@ -79,7 +79,7 @@ void* EnvoyHttpCallbacksAdapter::c_on_error(envoy_error raw_error, void* context
 void* EnvoyHttpCallbacksAdapter::c_on_complete(void* context) {
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_complete.has_value()) {
-    self->stream_callbacks_->on_complete.value();
+    self->stream_callbacks_->on_complete.value()();
   }
   return context;
 }
@@ -87,7 +87,7 @@ void* EnvoyHttpCallbacksAdapter::c_on_complete(void* context) {
 void* EnvoyHttpCallbacksAdapter::c_on_cancel(void* context) {
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_cancel.has_value()) {
-    self->stream_callbacks_->on_cancel.value();
+    self->stream_callbacks_->on_cancel.value()();
   }
   return context;
 }
