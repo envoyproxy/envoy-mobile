@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 
 /**
  * Envoy implementation of `PulseClient`.
@@ -17,7 +18,7 @@ internal class PulseClientImpl constructor(
     return GaugeImpl(engine, elements.asList())
   }
 
-  override fun histogram(vararg elements: Element): Histogram {
-    return HistogramImpl(engine, elements.asList())
+  override fun histogram(unitMeasure: HistogramUnit, vararg elements: Element): Histogram {
+    return HistogramImpl(engine, elements.asList(), unitMeasure)
   }
 }

@@ -13,13 +13,13 @@ class HistogramImpl: NSObject, Gauge {
     super.init()
   }
 
-  /// Record a new value for the histogram.
+  /// Record a new value for the histogram distribution.
   /// TODO: potentially raise error to platform if the operation is not successful.
-  func record(value: Int) {
+  func recordValue(value: Int) {
     guard let engine = self.engine else {
       return
     }
 
-    engine.recordHistogramDurationMs(self.series, value: numericCast(value))
+    engine.recordHistogram(self.series, value: numericCast(value))
   }
 }

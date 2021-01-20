@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile
 
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit
+
 /**
  * Client for Envoy Mobile's stats library, Pulse, used to record client time series metrics.
  *
@@ -16,6 +18,6 @@ interface PulseClient {
   /** @return A gauge based on the joined elements. */
   fun gauge(vararg elements: Element): Gauge
 
-  /** @return A histogram based on the joined elements */
-  fun histogram(vararg elements: Element): Histogram
+  /** @return A histogram based on the joined elements with specified unit measurement type */
+  fun histogram(unitMeasure: HistogramUnit, vararg elements: Element): Histogram
 }

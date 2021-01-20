@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 import java.lang.ref.WeakReference
 
 /**
@@ -9,15 +10,17 @@ import java.lang.ref.WeakReference
 internal class HistogramImpl : Histogram {
   internal val envoyEngine: WeakReference<EnvoyEngine>
   internal val elements: List<Element>
+  internal val unitMeasure: HistogramUnit
 
-  internal constructor(engine: EnvoyEngine, elements: List<Element>) {
+  internal constructor(engine: EnvoyEngine, elements: List<Element>, unitMeasure: HistogramUnit) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
     this.elements = elements
+    this.unitMeasure = unitMeasure
   }
 
-  override fun record(value: Int) {
-    envoyEngine.get()?.recordHistogramDurationMs(
-      elements.joinToString(separator = ".") { it.value }, value
+  override fun recordValue(value: Int) {
+    envoyEngine.get()?.recordHistogramValue(
+      elements.joinToString(separator = ".") { it.value }, value, unitMeasure
     )
   }
 }

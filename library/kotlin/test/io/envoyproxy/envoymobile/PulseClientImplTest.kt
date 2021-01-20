@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
+import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.ArgumentCaptor
@@ -72,14 +73,16 @@ class PulseClientImplTest {
   }
 
   @Test
-  fun `histogram delegates to engine with amount for record`() {
+  fun `histogram delegates to engine with value for record and unit measure`() {
     val pulseClient = PulseClientImpl(envoyEngine)
-    val histogram = pulseClient.histogram(Element("test"), Element("stat"))
-    histogram.record(5)
+    val histogram = pulseClient.histogram(HistogramUnit.MILLISECONDS, Element("test"), Element("stat"))
+    histogram.recordValue(5)
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
-    val amountCaptor = ArgumentCaptor.forClass(Int::class.java)
-    verify(envoyEngine).recordHistogramDurationMs(elementsCaptor.capture(), amountCaptor.capture())
+    val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
+    val unitMeasureCaptor = ArgumentCaptor.forClass(HistogramUnit::class.java)
+    verify(envoyEngine).recordHistogramValue(elementsCaptor.capture(), valueCaptor.capture(), unitMeasureCaptor.capture())
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
-    assertThat(amountCaptor.getValue()).isEqualTo(5)
+    assertThat(valueCaptor.getValue()).isEqualTo(5)
+    assertThat(unitMeasureCaptor.getValue()).isEqualTo(HistogramUnit.MILLISECONDS)
   }
 }

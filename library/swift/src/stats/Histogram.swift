@@ -4,6 +4,6 @@ import Foundation
 @objc
 public protocol Histogram: AnyObject {
 
-  /// Record a new value to add to the histogram.
-  func record(value: Int)
+  /// Record a new value to add to the histogram distribution.
+  func recordValue(value: Int)
 }
