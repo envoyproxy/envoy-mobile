@@ -10,6 +10,9 @@ py_binary(
         ":envoy_engine.so",
     ],
     main = "e2e_test.py",
+    deps = [
+        "//library/python/gevent_util",
+    ],
 )
 
 pybind_library(
