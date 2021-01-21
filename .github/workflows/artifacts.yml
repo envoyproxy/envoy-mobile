@@ -36,10 +36,10 @@ jobs:
               --fat_apk_cpu=x86 \
               --define=pom_version=main-$current_short_commit \
               //:android_dist_ci
-      - run: ls -lh bazel-bin/
-      - run: ls -lh dist/
+      # https://github.com/actions/upload-artifact/issues/92
+      # currently the upload-artifact action cannot upload from a symlinked directory.
+      # mv the zipped artifact to the current directory.
       - run: mv bazel-bin/envoy_mobile.zip ./
-      - run: ls -lh
       - uses: actions/upload-artifact@v2
         with:
           name: envoy_android_aar_sources
@@ -58,33 +58,33 @@ jobs:
           name: envoy_android_aar_sources
           path: dist/
       - run: ls -lh dist/
-      - run: unzip envoy_android_aar_sources.zip
-  #     - run: ls -lh dist/
-  #     - name: 'Configure envoy-bot git user'
-  #       run: |
-  #         # Switch global user to be envoy-bot for deployment
-  #         git config --global user.email "envoy-bot@users.noreply.github.com"
-  #         git config --global user.name "envoy-bot"
-  #     - name: 'Configure gpg signing'
-  #       env:
-  #         GPG_KEY: ${{ secrets.gpg_key }}
-  #         GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
-  #         GPG_PASSPHRASE: ${{ secrets.gpg_passphrase }}
-  #       run: |
-  #         # https://github.com/keybase/keybase-issues/issues/2798
-  #         export GPG_TTY=$(tty)
-  #         # Import gpg keys and warm the passphrase to avoid the gpg
-  #         # passphrase prompt when initating a deploy
-  #         # `--pinentry-mode=loopback` could be needed to ensure we
-  #         # suppress the gpg prompt
-  #         echo $GPG_KEY | base64 --decode > signing-key
-  #         gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
-  #         shred signing-key
+      - run: unzip dist/envoy_mobile.zip
+      - run: ls -lh dist/
+      - name: 'Configure envoy-bot git user'
+        run: |
+          # Switch global user to be envoy-bot for deployment
+          git config --global user.email "envoy-bot@users.noreply.github.com"
+          git config --global user.name "envoy-bot"
+      - name: 'Configure gpg signing'
+        env:
+          GPG_KEY: ${{ secrets.gpg_key }}
+          GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
+          GPG_PASSPHRASE: ${{ secrets.gpg_passphrase }}
+        run: |
+          # https://github.com/keybase/keybase-issues/issues/2798
+          export GPG_TTY=$(tty)
+          # Import gpg keys and warm the passphrase to avoid the gpg
+          # passphrase prompt when initating a deploy
+          # `--pinentry-mode=loopback` could be needed to ensure we
+          # suppress the gpg prompt
+          echo $GPG_KEY | base64 --decode > signing-key
+          gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
+          shred signing-key
 
-  #         gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy.aar
-  #         gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
-  #         gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
-  #         gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy.aar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
   #     - name: 'Release to sonatype repository'
   #       env:
   #         READWRITE_USER: ${{ secrets.sonatype_user }}
