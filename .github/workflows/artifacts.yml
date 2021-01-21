@@ -36,14 +36,12 @@ jobs:
               --fat_apk_cpu=x86 \
               --define=pom_version=main-$current_short_commit \
               //:android_dist_ci
-      # https://github.com/actions/upload-artifact/issues/92
-      # currently the upload-artifact action cannot upload from a symlinked directory.
-      # mv the zipped artifact to the current directory.
-      - run: mv bazel-bin/envoy_mobile.zip ./
+      - run: ls -lh
+      - run: tar envoy_mobile.tar.gz dist/envoy.aar dist/envoy-pom.xml dist/envoy-javadoc.jar dist/envoy-sources.jar
       - uses: actions/upload-artifact@v2
         with:
           name: envoy_android_aar_sources
-          path: ./envoy_mobile.zip
+          path: ./envoy_mobile.tar.gz
   android_aar_sonatype_deploy:
     name: android_deploy
     needs: main_android_dist_ci
@@ -58,7 +56,7 @@ jobs:
           name: envoy_android_aar_sources
           path: dist/
       - run: ls -lh dist/
-      - run: unzip dist/envoy_mobile.zip
+      - run: tar -xvf dist/envoy_mobile.tar.gz
       - run: ls -lh dist/
       - name: 'Configure envoy-bot git user'
         run: |
