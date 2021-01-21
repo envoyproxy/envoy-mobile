@@ -46,6 +46,9 @@ static_resources:
                         max_interval: 60s
         http_filters:
 {{ platform_filter_chain }}
+          - name: envoy.filters.http.local_error
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
 {{ native_filter_chain }}
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:
@@ -199,6 +202,7 @@ stats_sinks:
   - name: envoy.metrics_service
     typed_config:
       "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
+      transport_api_version: V3
       report_counters_as_deltas: true
       grpc_service:
         envoy_grpc:
