@@ -36,8 +36,8 @@ jobs:
               --fat_apk_cpu=x86 \
               --define=pom_version=main-$current_short_commit \
               //:android_dist_ci
-      - run: ls -lh
-      - run: tar envoy_mobile.tar.gz dist/envoy.aar dist/envoy-pom.xml dist/envoy-javadoc.jar dist/envoy-sources.jar
+      - run: ls -lh dist/
+      - run: tar -czvf envoy_mobile.tar.gz dist/envoy.aar dist/envoy-pom.xml dist/envoy-javadoc.jar dist/envoy-sources.jar
       - uses: actions/upload-artifact@v2
         with:
           name: envoy_android_aar_sources
