@@ -38,10 +38,12 @@ jobs:
               //:android_dist_ci
       - run: ls -lh bazel-bin/
       - run: ls -lh dist/
+      - run: mv bazel-bin/envoy_mobile.zip ./
+      - run: ls -lh
       - uses: actions/upload-artifact@v2
         with:
           name: envoy_android_aar_sources
-          path: bazel-bin/envoy_mobile.zip
+          path: ./envoy_mobile.zip
   android_aar_sonatype_deploy:
     name: android_deploy
     needs: main_android_dist_ci
