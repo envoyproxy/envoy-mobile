@@ -33,7 +33,6 @@ class CompositionalInheritor(Generic[T]):
         self.base = base
 
     def __getattr__(self, name: str):
-        print(f"{self.__class__.__name__} getattr {name}")
         return getattr(self.base, name)
 
 
