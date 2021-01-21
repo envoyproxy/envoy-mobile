@@ -1,14 +1,27 @@
+import functools
 import threading
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Generic
+from typing import List
+from typing import TypeVar
+
+import gevent
+from gevent.event import Event
+from gevent.pool import Group
 
 from library.python import envoy_engine
 
 
 def main():
-    on_engine_running_cond = threading.Condition(threading.Lock())
+    move_to_gevent = GeventExecutor()
+    engine_running = Event()
+    stream_complete = Event()
 
+    @move_to_gevent
     def on_engine_running():
-        with on_engine_running_cond:
-            on_engine_running_cond.notify()
+        engine_running.set()
 
     engine = (
         envoy_engine.EngineBuilder()
@@ -17,29 +30,28 @@ def main():
         .build()
     )
 
-    with on_engine_running_cond:
-        on_engine_running_cond.wait()
+    engine_running.wait()
 
-    stream_complete_cond = threading.Condition(threading.Lock())
-
+    @move_to_gevent
     def on_headers(response_headers: envoy_engine.ResponseHeaders, end_stream: bool):
         # TODO: provide iter for header types
         print(response_headers)
 
+    @move_to_gevent
     def on_data(data: bytes, end_stream: bool):
         print(data)
 
+    @move_to_gevent
     def on_complete():
-        with stream_complete_cond:
-            stream_complete_cond.notify()
+        stream_complete.set()
 
+    @move_to_gevent
     def on_error(error: envoy_engine.EnvoyError):
-        with stream_complete_cond:
-            stream_complete_cond.notify()
+        stream_complete.set()
 
+    @move_to_gevent
     def on_cancel():
-        with stream_complete_cond:
-            stream_complete_cond.notify()
+        stream_complete.set()
 
     stream = (
         engine
@@ -67,8 +79,58 @@ def main():
         True,
     )
 
-    with stream_complete_cond:
-        stream_complete_cond.wait()
+    stream_complete.wait()
+
+
+class GeventExecutor():
+    def __init__(self):
+        super().__init__()
+        self.group = Group()
+        self.channel: ThreadsafeChannel[Tuple[Callable, List[Any], Dict[str, Any]]] = ThreadsafeChannel()
+        self.spawn_work_greenlet = gevent.spawn(self._spawn_work)
+
+    def __del__(self):
+        super().__del__()
+        self.spawn_work_greenlet.kill()
+
+    def __call__(self, fn: Callable) -> Callable:
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            self.channel.put((fn, args, kwargs))
+        return wrapper
+
+    def _spawn_work(self):
+        while True:
+            (fn, args, kwargs) = self.channel.get()
+            self.group.spawn(fn, *args, **kwargs)
+
+
+T = TypeVar("T")
+
+
+class ThreadsafeChannel(Generic[T]):
+    def __init__(self):
+        self.hub = gevent.get_hub()
+        self.watcher = self.hub.loop.async_()
+        self.lock = threading.Lock()
+        self.values: List[T] = []
+
+    def put(self, value: T) -> None:
+        with self.lock:
+            self.values.append(value)
+            self.watcher.send()
+
+    def get(self) -> T:
+        self.lock.acquire()
+        while len(self.values) == 0:
+            self.lock.release()
+            self.hub.wait(self.watcher)
+            self.lock.acquire()
+
+        value: T = self.values.pop(0)
+        self.lock.release()
+        return value
+
 
 if __name__ == "__main__":
     main()
