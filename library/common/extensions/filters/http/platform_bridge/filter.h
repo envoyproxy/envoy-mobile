@@ -33,7 +33,6 @@ typedef std::shared_ptr<PlatformBridgeFilterConfig> PlatformBridgeFilterConfigSh
 
 enum class IterationState { Ongoing, Stopped };
 
-
 /**
  * Harness to bridge Envoy filter invocations up to the platform layer.
  *
@@ -88,22 +87,21 @@ private:
     FilterBase(PlatformBridgeFilter& parent, envoy_filter_on_headers_f on_headers,
                envoy_filter_on_data_f on_data, envoy_filter_on_trailers_f on_trailers,
                envoy_filter_on_resume_f on_resume)
-        : iteration_state_(IterationState::Ongoing), parent_(parent),
-          on_headers_(on_headers), on_data_(on_data), on_trailers_(on_trailers),
-          on_resume_(on_resume) {}
+        : iteration_state_(IterationState::Ongoing), parent_(parent), on_headers_(on_headers),
+          on_data_(on_data), on_trailers_(on_trailers), on_resume_(on_resume) {}
 
     static FilterBase createRequestBase(PlatformBridgeFilter& parent);
 
     static FilterBase createResponseBase(PlatformBridgeFilter& parent);
 
     Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream);
-  
+
     Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream,
                                   Buffer::Instance* internal_buffer);
-  
+
     Http::FilterTrailersStatus onTrailers(Http::HeaderMap& trailers,
                                           Buffer::Instance* internal_buffer);
-  
+
     // Scheduled on the dispatcher when resume* is called from platform
     // filter callbacks. Provides a snapshot of pending request state to the
     // platform filter, and consumes invocation results to modify pending HTTP
