@@ -96,18 +96,44 @@ final class PulseClientImplTests: XCTestCase {
     XCTAssertEqual(actualAmount, 5)
   }
 
-  func testHistogramRecordDelegatesToEngineWithValue() {
+  func testHistogramTimerRecordDelegatesToEngineWithValue() {
     var actualSeries: String?
     var actualValue: UInt?
-    MockEnvoyEngine.onRecordHistogramDurationMs = { series, value in
+    var actualUnitMeasure: envoy_histogram_stat_unit_t?
+    MockEnvoyEngine.onRecordHistogramValue = { series, value, unitMeasure in
       actualSeries = series
       actualValue = value
+      actualUnitMeasure = unitMeasure
     }
     let mockEngine = MockEnvoyEngine()
+
     let pulseClient = PulseClientImpl(engine: mockEngine)
-    let histogram = pulseClient.histogram(elements: ["test", "stat"])
-    histogram.record(value: 5)
+    let histogram = pulseClient.histogramTimer(elements: ["test", "stat"])
+    histogram.recordValue(value: 5)
+
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualValue, 5)
+    XCTAssertEqual(actualUnitMeasure, MICROSECONDS)
+  }
+
+  func testHistogramGenericRecordDelegatesToEngineWithValue() {
+    var actualSeries: String?
+    var actualValue: UInt?
+    var actualUnitMeasure: envoy_histogram_stat_unit_t?
+
+    MockEnvoyEngine.onRecordHistogramValue = { series, value, unitMeasure in
+      actualSeries = series
+      actualValue = value
+      actualUnitMeasure = unitMeasure
+    }
+    let mockEngine = MockEnvoyEngine()
+
+    let pulseClient = PulseClientImpl(engine: mockEngine)
+    let histogram = pulseClient.histogramGeneric(elements: ["test", "stat"])
+    histogram.recordValue(value: 5)
+
+    XCTAssertEqual(actualSeries, "test.stat")
+    XCTAssertEqual(actualValue, 5)
+    XCTAssertEqual(actualUnitMeasure, UNSPECIFIED)
   }
 }

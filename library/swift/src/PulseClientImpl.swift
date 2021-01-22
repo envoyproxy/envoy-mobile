@@ -20,7 +20,11 @@ extension PulseClientImpl: PulseClient {
     return GaugeImpl(elements: elements, engine: self.engine)
   }
 
-  func histogram(elements: [Element]) -> Histogram {
-    return HistogramImpl(elements: elements, engine: self.engine)
-  }  
+  func histogramTimer(elements: [Element]) -> Histogram {
+    return HistogramTimerImpl(elements: elements, engine: self.engine)
+  }
+
+  func histogramGeneric(elements: [Element]) -> Histogram {
+    return HistogramGenericImpl(elements: elements, engine: self.engine)
+  }
 }

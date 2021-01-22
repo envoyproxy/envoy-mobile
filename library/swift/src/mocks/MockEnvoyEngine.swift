@@ -20,7 +20,7 @@ final class MockEnvoyEngine: NSObject {
   /// Closure called when `recordGaugeSub(_:amount:)` is called.
   static var onRecordGaugeSub: ((_ elements: String, _ amount: UInt) -> Void)?
   /// Closure called when `recordHistogram(_:amount:unitMeasure)` is called.
-  static var onRecordHistogram: ((_ elements: String, _ amount: UInt, _ unitMeasure: HistogramUnit) -> Void)?
+  static var onRecordHistogramValue: ((_ elements: String, _ value: UInt, _ unitMeasure: envoy_histogram_stat_unit_t) -> Void)?
 }
 
 extension MockEnvoyEngine: EnvoyEngine {
@@ -62,8 +62,8 @@ extension MockEnvoyEngine: EnvoyEngine {
     return kEnvoySuccess
   }
 
-  func recordHistogramDurationMs(_ elements: String, amount: UInt) -> Int32 {
-    MockEnvoyEngine.onRecordHistogramDurationMs?(elements, amount)
+  func recordHistogramValue(_ elements: String, value: UInt, unitMeasure: envoy_histogram_stat_unit_t) -> Int32 {
+    MockEnvoyEngine.onRecordHistogramValue?(elements, value, unitMeasure)
     return kEnvoySuccess
   }
 }

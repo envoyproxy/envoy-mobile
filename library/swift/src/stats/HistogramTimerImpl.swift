@@ -1,9 +1,9 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// The implementation of time series gauge.
+/// The implementation of histogram specific to tracking time durations
 @objcMembers
-class HistogramImpl: NSObject, Gauge {
+class HistogramTimerImpl: NSObject, Histogram {
   private let series: String
   private weak var engine: EnvoyEngine?
 
@@ -20,6 +20,6 @@ class HistogramImpl: NSObject, Gauge {
       return
     }
 
-    engine.recordHistogram(self.series, value: numericCast(value))
+    engine.recordHistogramValue(self.series, value: numericCast(value), unitMeasure: MICROSECONDS)
   }
 }

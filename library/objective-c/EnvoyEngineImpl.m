@@ -357,8 +357,8 @@ static void ios_http_filter_release(const void *context) {
   return record_gauge_sub(_engineHandle, elements.UTF8String, amount);
 }
 
-- (int)recordHistogram:(NSString *)elements value:(NSUInteger)value unitMeasure:(HistogramUnit)unitMeasure {
-  return record_histogram(_engineHandle, elements.UTF8String, value, unitMeasure);
+- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value unitMeasure:(envoy_histogram_stat_unit_t)unitMeasure {
+  return record_histogram_value(_engineHandle, elements.UTF8String, value, unitMeasure);
 }
 
 #pragma mark - Private

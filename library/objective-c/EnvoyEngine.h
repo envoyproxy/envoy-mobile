@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+#import "library/common/types/c_types.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Aliases
@@ -363,13 +365,13 @@ extern const int kEnvoyFailure;
 - (int)recordGaugeSub:(NSString *)elements amount:(NSUInteger)amount;
 
 /**
- Add another recorded value to the histogram with the given string of elements.
+ Add another recorded value to the histogram with the given string of elements and unit measure.
  @param elements Elements of the histogram stat.
  @param value Amount to record as a new value for the histogram distribution.
  @param unitMeasure The unit of measurement (e.g. milliseconds, bytes, etc.)
  @return A status indicating if the action was successful.
  */
-- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value unitMeasure:(HistogramUnit)unitMeasure;
+- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value unitMeasure:(envoy_histogram_stat_unit_t)unitMeasure;
 
 @end
 

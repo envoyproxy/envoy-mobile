@@ -69,7 +69,7 @@ public:
    * @param value, value to add to the aggregated distribution of values for quantile calculations
    * @param unit_measure, the unit of measurement (e.g. milliseconds, bytes, etc.)
    */
-  envoy_status_t recordHistogramValue(const std::string& elements, uint64_t value, Histogram::Unit unit_measure);
+  envoy_status_t recordHistogramValue(const std::string& elements, uint64_t value, envoy_histogram_stat_unit_t unit_measure);
 
 private:
   envoy_status_t run(std::string config, std::string log_level);

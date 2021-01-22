@@ -1,6 +1,7 @@
 #include "library/common/engine.h"
 
 #include "common/common/lock_guard.h"
+#include "envoy/stats/histogram.h"
 
 namespace Envoy {
 
@@ -154,12 +155,28 @@ envoy_status_t Engine::recordGaugeSub(const std::string& elements, uint64_t amou
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_t value, Histogram::Unit unit_measure) {
+envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_t value, envoy_histogram_stat_unit_t unit_measure) {
   if (server_ && client_scope_) {
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, amount]() -> void {
+    Stats::Histogram::Unit envoy_unit_measure = Stats::Histogram::Unit::Unspecified;
+    switch (unit_measure) {
+      case MILLISECONDS:
+        envoy_unit_measure = Stats::Histogram::Unit::Milliseconds;
+        break;
+      case MICROSECONDS:
+        envoy_unit_measure = Stats::Histogram::Unit::Microseconds;
+        break;
+      case BYTES:
+        envoy_unit_measure = Stats::Histogram::Unit::Bytes;
+        break;
+      case UNSPECIFIED:
+        envoy_unit_measure = Stats::Histogram::Unit::Unspecified;
+        break;
+    }
+
+    server_->dispatcher().post([this, name, value, envoy_unit_measure]() -> void {
       Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        unit_measure)
+                                        envoy_unit_measure)
           .recordValue(value);
     });
     return ENVOY_SUCCESS;

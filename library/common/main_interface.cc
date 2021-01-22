@@ -102,7 +102,7 @@ envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, uint64_t a
   return ENVOY_FAILURE;
 }
 
-envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, uint64_t value, Histogram::Unit unit_measure) {
+envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, uint64_t value, envoy_histogram_stat_unit_t unit_measure) {
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine_.lock()) {
