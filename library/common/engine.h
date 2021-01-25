@@ -64,7 +64,7 @@ public:
   envoy_status_t recordGaugeSub(const std::string& elements, uint64_t amount);
 
   /**
-   * Record a value for the histogram with the given string of elements
+   * Record a value for the histogram with the given string of elements and unit measurement
    * @param elements, joined elements of the timeseries.
    * @param value, value to add to the aggregated distribution of values for quantile calculations
    * @param unit_measure, the unit of measurement (e.g. milliseconds, bytes, etc.)

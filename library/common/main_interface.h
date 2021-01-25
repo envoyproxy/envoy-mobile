@@ -135,7 +135,7 @@ envoy_status_t record_gauge_add(envoy_engine_t engine, const char* elements, uin
 envoy_status_t record_gauge_sub(envoy_engine_t engine, const char* elements, uint64_t amount);
 
 /**
- * Add another recorded amount to the histogram with the given string of elements.
+ * Add another recorded amount to the histogram with the given string of elements and unit measurement.
  * @param engine, the engine that owns the histogram.
  * @param elements, the string that identifies the histogram to subtract from.
  * @param value, amount to record as a new value for the histogram distribution.
