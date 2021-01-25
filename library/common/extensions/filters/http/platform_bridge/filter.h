@@ -81,7 +81,7 @@ public:
 private:
   /**
    * Internal delegate for managing logic and state that exists for both the request (decoding)
-   * and response (decoding) paths.
+   * and response (encoding) paths.
    */
   struct FilterBase : public Logger::Loggable<Logger::Id::filter> {
     FilterBase(PlatformBridgeFilter& parent, envoy_filter_on_headers_f on_headers,
@@ -103,9 +103,9 @@ private:
                                           Buffer::Instance* internal_buffer);
 
     // Scheduled on the dispatcher when resume* is called from platform
-    // filter callbacks. Provides a snapshot of pending request state to the
+    // filter callbacks. Provides a snapshot of pending HTTP stream state to the
     // platform filter, and consumes invocation results to modify pending HTTP
-    // entities before resuming decoding.
+    // entities before resuming iteration.
     void onResume(Buffer::Instance* internal_buffer, std::function<void()> resume_call);
 
     IterationState iteration_state_;

@@ -534,6 +534,7 @@ void PlatformBridgeFilter::FilterBase::onResume(Buffer::Instance* internal_buffe
   if (result.status == kEnvoyFilterResumeStatusStopIteration) {
     return;
   }
+
   if (pending_headers_) {
     RELEASE_ASSERT(result.pending_headers, "invalid filter state: headers are pending and must be "
                                            "returned to resume filter iteration");
@@ -541,6 +542,7 @@ void PlatformBridgeFilter::FilterBase::onResume(Buffer::Instance* internal_buffe
     pending_headers_ = nullptr;
     free(result.pending_headers);
   }
+
   if (internal_buffer) {
     RELEASE_ASSERT(
         result.pending_data,
@@ -549,14 +551,10 @@ void PlatformBridgeFilter::FilterBase::onResume(Buffer::Instance* internal_buffe
     internal_buffer->addBufferFragment(
         *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
     free(result.pending_data);
-  } else if (result.pending_data) {
-    PANIC("invalid filter state: data injection is unsupported at present");
-    // Buffer::OwnedImpl inject_data;
-    // inject_data.addBufferFragment(
-    //    *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
-    // decoder_callbacks_->addDecodedData(inject_data, /* watermark */ false);
-    // free(result.pending_data);
+  } else {
+    RELEASE_ASSERT(!result.pending_data, "invalid filter state: data injection is unsupported at present");
   }
+
   if (pending_trailers_) {
     RELEASE_ASSERT(result.pending_trailers, "invalid filter state: trailers are pending and must "
                                             "be returned to resume filter iteration");
