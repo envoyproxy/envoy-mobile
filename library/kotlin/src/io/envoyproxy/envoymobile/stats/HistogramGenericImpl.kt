@@ -5,22 +5,20 @@ import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 import java.lang.ref.WeakReference
 
 /**
- * Envoy implementation of a `Histogram`.
+ * Envoy implementation of a `Histogram` for measurements of unspecified amounts
  */
-internal class HistogramImpl : Histogram {
+internal class HistogramGenericImpl : Histogram {
   internal val envoyEngine: WeakReference<EnvoyEngine>
   internal val elements: List<Element>
-  internal val unitMeasure: HistogramUnit
 
-  internal constructor(engine: EnvoyEngine, elements: List<Element>, unitMeasure: HistogramUnit) {
+  internal constructor(engine: EnvoyEngine, elements: List<Element>) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
     this.elements = elements
-    this.unitMeasure = unitMeasure
   }
 
   override fun recordValue(value: Int) {
     envoyEngine.get()?.recordHistogramValue(
-      elements.joinToString(separator = ".") { it.value }, value, unitMeasure
+      elements.joinToString(separator = ".") { it.value }, value, HistogramUnit.UNSPECIFIED
     )
   }
 }

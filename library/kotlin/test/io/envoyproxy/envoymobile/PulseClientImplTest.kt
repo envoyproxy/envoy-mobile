@@ -73,9 +73,9 @@ class PulseClientImplTest {
   }
 
   @Test
-  fun `histogram delegates to engine with value for record and unit measure`() {
+  fun `histogram timer delegates to engine with value for record and unit measure`() {
     val pulseClient = PulseClientImpl(envoyEngine)
-    val histogram = pulseClient.histogram(HistogramUnit.MILLISECONDS, Element("test"), Element("stat"))
+    val histogram = pulseClient.histogramTimer(Element("test"), Element("stat"))
     histogram.recordValue(5)
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
@@ -83,6 +83,20 @@ class PulseClientImplTest {
     verify(envoyEngine).recordHistogramValue(elementsCaptor.capture(), valueCaptor.capture(), unitMeasureCaptor.capture())
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(valueCaptor.getValue()).isEqualTo(5)
-    assertThat(unitMeasureCaptor.getValue()).isEqualTo(HistogramUnit.MILLISECONDS)
+    assertThat(unitMeasureCaptor.getValue()).isEqualTo(HistogramUnit.MICROSECONDS)
+  }
+
+  @Test
+  fun `histogram generic delegates to engine with value for record and unit measure`() {
+    val pulseClient = PulseClientImpl(envoyEngine)
+    val histogram = pulseClient.histogramGeneric(Element("test"), Element("stat"))
+    histogram.recordValue(5)
+    val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
+    val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
+    val unitMeasureCaptor = ArgumentCaptor.forClass(HistogramUnit::class.java)
+    verify(envoyEngine).recordHistogramValue(elementsCaptor.capture(), valueCaptor.capture(), unitMeasureCaptor.capture())
+    assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
+    assertThat(valueCaptor.getValue()).isEqualTo(5)
+    assertThat(unitMeasureCaptor.getValue()).isEqualTo(HistogramUnit.UNSPECIFIED)
   }
 }

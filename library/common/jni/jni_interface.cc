@@ -116,14 +116,14 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), amount);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogram(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(
     JNIEnv* env,
     jclass, // class
     jlong engine,
     jstring elements,
     jint value,
     ) {
-  return record_histogram(engine, env->GetStringUTFChars(elements, nullptr), value);
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value);
 }
 
 // JvmCallbackContext
