@@ -552,7 +552,8 @@ void PlatformBridgeFilter::FilterBase::onResume(Buffer::Instance* internal_buffe
         *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
     free(result.pending_data);
   } else {
-    RELEASE_ASSERT(!result.pending_data, "invalid filter state: data injection is unsupported at present");
+    RELEASE_ASSERT(!result.pending_data,
+                   "invalid filter state: data injection is unsupported at present");
   }
 
   if (pending_trailers_) {
