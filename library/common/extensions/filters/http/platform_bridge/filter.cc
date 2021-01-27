@@ -534,11 +534,11 @@ void PlatformBridgeFilter::ResponseFilterBase::addTrailers(envoy_headers trailer
 }
 
 void PlatformBridgeFilter::RequestFilterBase::resumeIteration() {
-  parent_.encoder_callbacks_->continueEncoding();
+  parent_.decoder_callbacks_->continueDecoding();
 }
 
 void PlatformBridgeFilter::ResponseFilterBase::resumeIteration() {
-  parent_.decoder_callbacks_->continueDecoding();
+  parent_.encoder_callbacks_->continueEncoding();
 }
 
 // Technically-speaking to align with Envoy's internal API this method should take
