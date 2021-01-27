@@ -36,7 +36,8 @@ void* EnvoyHttpCallbacksAdapter::c_on_headers(envoy_headers headers, bool end_st
       }
       builder.set(pair.first, pair.second);
     }
-    self->stream_callbacks_->on_headers.value()(builder.build(), end_stream);
+    auto on_headers = self->stream_callbacks_->on_headers.value();
+    on_headers(builder.build(), end_stream);
   }
   return context;
 }
@@ -44,7 +45,8 @@ void* EnvoyHttpCallbacksAdapter::c_on_headers(envoy_headers headers, bool end_st
 void* EnvoyHttpCallbacksAdapter::c_on_data(envoy_data data, bool end_stream, void* context) {
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_error.has_value()) {
-    self->stream_callbacks_->on_data.value()(data, end_stream);
+    auto on_data = self->stream_callbacks_->on_data.value();
+    on_data(data, end_stream);
   }
   return context;
 }
@@ -57,7 +59,8 @@ void* EnvoyHttpCallbacksAdapter::c_on_trailers(envoy_headers metadata, void* con
     for (const auto& pair : raw_headers) {
       builder.set(pair.first, pair.second);
     }
-    self->stream_callbacks_->on_trailers.value()(builder.build());
+    auto on_trailers = self->stream_callbacks_->on_trailers.value();
+    on_trailers(builder.builder());
   }
   return context;
 }
@@ -71,7 +74,8 @@ void* EnvoyHttpCallbacksAdapter::c_on_error(envoy_error raw_error, void* context
     // when doing so won't cause merge conflicts with other PRs.
     error->message = "";
     error->attempt_count = absl::optional<int>(raw_error.attempt_count);
-    self->stream_callbacks_->on_error.value()(error);
+    auto on_error = self->stream_callbacks_->on_error.value();
+    on_error(error);
   }
   return context;
 }
@@ -79,7 +83,8 @@ void* EnvoyHttpCallbacksAdapter::c_on_error(envoy_error raw_error, void* context
 void* EnvoyHttpCallbacksAdapter::c_on_complete(void* context) {
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_complete.has_value()) {
-    self->stream_callbacks_->on_complete.value()();
+    auto on_complete = self->stream_callbacks_->on_complete.value();
+    on_complete();
   }
   return context;
 }
@@ -87,7 +92,8 @@ void* EnvoyHttpCallbacksAdapter::c_on_complete(void* context) {
 void* EnvoyHttpCallbacksAdapter::c_on_cancel(void* context) {
   auto self = static_cast<EnvoyHttpCallbacksAdapter*>(context);
   if (self->stream_callbacks_->on_cancel.has_value()) {
-    self->stream_callbacks_->on_cancel.value()();
+    auto on_cancel = self->stream_callbacks_->on_cancel.value();
+    on_cancel();
   }
   return context;
 }
