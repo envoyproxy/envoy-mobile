@@ -62,11 +62,6 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public int recordGaugeSub(String elements, int amount) {
-    return envoyEngine.recordGaugeSub(elements, amount);
-  }
-
-  @Override
   public int recordHistogramValue(String elements, int value, HistogramUnit unitMeasure) {
     return envoyEngine.recordHistogramValue(elements, value, unitMeasure);
   }

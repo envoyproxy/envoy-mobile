@@ -1,7 +1,7 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// The implementation of histogram that can be used to track a distribution of any unspecified unit measurement values
+/// The implementation of histogram that can track a distribution of any unit measurement values
 @objcMembers
 class HistogramGenericImpl: NSObject, Histogram {
   private let series: String
