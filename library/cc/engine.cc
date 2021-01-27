@@ -8,12 +8,12 @@ namespace Platform {
 
 namespace {
 
-static void c_on_engine_running(void* context) {
+void c_on_engine_running(void* context) {
   EngineCallbacks* engine_callbacks = static_cast<EngineCallbacks*>(context);
   engine_callbacks->on_engine_running();
 }
 
-static void c_on_exit(void* context) {
+void c_on_exit(void* context) {
   // NOTE: this function is intentionally empty
   // as we don't actually do any post-processing on exit.
   (void)context;
