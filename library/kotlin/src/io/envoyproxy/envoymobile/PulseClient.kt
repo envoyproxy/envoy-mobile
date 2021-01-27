@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit
-
 /**
  * Client for Envoy Mobile's stats library, Pulse, used to record client time series metrics.
  *

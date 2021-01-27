@@ -67,8 +67,8 @@ extension MockEnvoyEngine: EnvoyEngine {
   }
 
   func recordHistogramValue(_ elements: String,
-                                 value: UInt,
-                           unitMeasure: envoy_histogram_stat_unit_t) -> Int32 {
+                            value: UInt,
+                            unitMeasure: envoy_histogram_stat_unit_t) -> Int32 {
     MockEnvoyEngine.onRecordHistogramValue?(elements, value, unitMeasure)
     return kEnvoySuccess
   }
