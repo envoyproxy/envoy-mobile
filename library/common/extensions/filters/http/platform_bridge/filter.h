@@ -90,12 +90,11 @@ private:
         : iteration_state_(IterationState::Ongoing), parent_(parent), on_headers_(on_headers),
           on_data_(on_data), on_trailers_(on_trailers), on_resume_(on_resume) {}
 
-    virtual ~FilterBase() PURE;
+    virtual ~FilterBase() = default;
 
+    // Common handling for both request and response path.
     Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream);
-
     Http::FilterDataStatus onData(Buffer::Instance& data, bool end_stream);
-
     Http::FilterTrailersStatus onTrailers(Http::HeaderMap& trailers);
 
     // Scheduled on the dispatcher when resumeDecoding/Encoding is called from platform
@@ -104,12 +103,10 @@ private:
     // entities before resuming iteration.
     void onResume();
 
+    // Directional (request/response) helper methods.
     virtual void addData(envoy_data data) PURE;
-
     virtual void addTrailers(envoy_headers trailers) PURE;
-
     virtual void resumeIteration() PURE;
-
     virtual Buffer::Instance* buffer() PURE;
 
     IterationState iteration_state_;
@@ -129,8 +126,6 @@ private:
                      parent.platform_filter_.on_request_data,
                      parent.platform_filter_.on_request_trailers,
                      parent.platform_filter_.on_resume_request) {}
-
-    // override ~RequestFilterBase();
 
     // FilterBase
     void addData(envoy_data data) override;
