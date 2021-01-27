@@ -45,8 +45,8 @@ def main():
         envoy_engine.RequestHeadersBuilder(
             envoy_engine.RequestMethod.GET,
             "https",
-            "www.google.com",
-            "/",
+            "api.lyft.com",
+            "/ping",
         )
         .build(),
         True,
