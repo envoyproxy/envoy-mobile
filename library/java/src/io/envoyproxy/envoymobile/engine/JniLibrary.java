@@ -199,11 +199,11 @@ class JniLibrary {
    *
    * @param elements Elements of the histogram stat.
    * @param value Amount to record as a new value for the histogram distribution.
-   * @param unitMeasure The unit of measurement (e.g. milliseconds, bytes, etc.)
+   * @param unitMeasure The ordinal of the unit of measurement enum
    * @return A status indicating if the action was successful.
    */
   protected static native int recordHistogramValue(long engine, String elements, int value,
-                                                   HistogramUnit unitMeasure);
+                                                   int unitMeasureOrdinal);
 
   /**
    * Provides a configuration template that may be used for building platform

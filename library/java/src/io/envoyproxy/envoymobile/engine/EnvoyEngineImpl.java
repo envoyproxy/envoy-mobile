@@ -143,7 +143,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return A status indicating if the action was successful.
    */
   public int recordHistogramValue(String elements, int value, HistogramUnit unitMeasure) {
-    return JniLibrary.recordHistogramValue(engineHandle, elements, value, unitMeasure.ordinal);
+    return JniLibrary.recordHistogramValue(engineHandle, elements, value, unitMeasure.ordinal());
   }
 
   @Override
