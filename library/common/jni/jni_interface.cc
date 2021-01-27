@@ -120,9 +120,10 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* env,
                                                                       jclass, // class
                                                                       jlong engine,
-                                                                      jstring elements,
-                                                                      jint value, ) {
-  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value);
+                                                                      jstring elements, jint value,
+                                                                      jint histogram_unit) {
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value,
+                                histogram_unit);
 }
 
 // JvmCallbackContext
