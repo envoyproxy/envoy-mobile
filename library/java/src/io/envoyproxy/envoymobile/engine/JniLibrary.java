@@ -202,7 +202,8 @@ class JniLibrary {
    * @param unitMeasure The unit of measurement (e.g. milliseconds, bytes, etc.)
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordHistogramValue(long engine, String elements, int value, HistogramUnit unitMeasure);
+  protected static native int recordHistogramValue(long engine, String elements, int value,
+                                                   HistogramUnit unitMeasure);
 
   /**
    * Provides a configuration template that may be used for building platform
