@@ -141,7 +141,8 @@ envoy_status_t record_gauge_sub(envoy_engine_t engine, const char* elements, uin
  * @param value, amount to record as a new value for the histogram distribution.
  * @param unit_measure, the unit of measurement (e.g. milliseconds, bytes, etc.)
  */
-envoy_status_t record_histogram_value(envoy_engine_t engine, const char* elements, uint64_t value, envoy_histogram_stat_unit_t unit_measure);
+envoy_status_t record_histogram_value(envoy_engine_t engine, const char* elements, uint64_t value,
+                                      envoy_histogram_stat_unit_t unit_measure);
 
 /**
  * Statically register APIs leveraging platform libraries.

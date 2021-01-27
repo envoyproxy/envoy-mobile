@@ -1,5 +1,4 @@
 import Foundation
-@_implementationOnly import EnvoyEngine
 
 /// Client for Envoy Mobile's stats library, Pulse, used to record client time series metrics.
 ///
@@ -24,6 +23,6 @@ public protocol PulseClient: AnyObject {
 
   /// - parameter elements: Elements to identify a histogram
   ///
-  /// - returns: A Histogram based on the joined elements that is used for unspecified measurement units
+  /// - returns: A Histogram based on the joined elements to track unspecified measurement units
   func histogramGeneric(elements: [Element]) -> Histogram
 }

@@ -1,7 +1,6 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 
 /**
  * Envoy implementation of `PulseClient`.

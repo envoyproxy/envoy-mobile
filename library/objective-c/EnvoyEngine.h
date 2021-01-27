@@ -371,7 +371,9 @@ extern const int kEnvoyFailure;
  @param unitMeasure The unit of measurement (e.g. milliseconds, bytes, etc.)
  @return A status indicating if the action was successful.
  */
-- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value unitMeasure:(envoy_histogram_stat_unit_t)unitMeasure;
+- (int)recordHistogramValue:(NSString *)elements
+                      value:(NSUInteger)value
+                unitMeasure:(envoy_histogram_stat_unit_t)unitMeasure;
 
 @end
 
