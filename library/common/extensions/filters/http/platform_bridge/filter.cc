@@ -161,6 +161,8 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   case kEnvoyFilterHeadersStatusStopIteration:
     pending_headers_ = &headers;
     iteration_state_ = IterationState::Stopped;
+    // returned headers from the platform filter are not used. Release them here.
+    release_envoy_headers(result.headers);
     return Http::FilterHeadersStatus::StopIteration;
 
   default:
