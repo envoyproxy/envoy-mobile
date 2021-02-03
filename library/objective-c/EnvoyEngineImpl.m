@@ -194,6 +194,7 @@ static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks ca
                                                   const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.setRequestFilterCallbacks == nil) {
+    // This filter is not async, thus the heap allocated C++ callbacks should be released here.
     callbacks.release_callbacks(callbacks.callback_context);
     return;
   }
@@ -207,6 +208,7 @@ static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
                                                    const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.setResponseFilterCallbacks == nil) {
+    // This filter is not async, thus the heap allocated C++ callbacks should be released here.
     callbacks.release_callbacks(callbacks.callback_context);
     return;
   }
