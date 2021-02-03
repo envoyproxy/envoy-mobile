@@ -290,6 +290,8 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
   case kEnvoyFilterTrailersStatusStopIteration:
     pending_trailers_ = &trailers;
     iteration_state_ = IterationState::Stopped;
+    // returned trailers from the platform filter are not used. Release them here.
+    release_envoy_headers(result.trailers);
     return Http::FilterTrailersStatus::StopIteration;
 
   // Resume previously-stopped iteration, possibly forwarding headers and data if iteration was
