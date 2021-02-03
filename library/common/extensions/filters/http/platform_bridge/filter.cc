@@ -90,17 +90,21 @@ void PlatformBridgeFilter::setDecoderFilterCallbacks(
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::setDecoderCallbacks", filter_name_);
   decoder_callbacks_ = &callbacks;
 
-  platform_request_callbacks_.resume_iteration = envoy_filter_callback_resume_decoding;
-  platform_request_callbacks_.release_callbacks = envoy_filter_release_callbacks;
-  // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
-  // Note that the weak_ptr here is heap allocated because it needs to be managed and held by
-  // platform specific runtimes. Therefore, it is NECESSARY that the platform deallocates the
-  // memory. Otherwise the weak ptr will leak.
-  platform_request_callbacks_.callback_context =
-      new PlatformBridgeFilterWeakPtr{shared_from_this()};
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})->set_request_callbacks", filter_name_);
-  platform_filter_.set_request_callbacks(platform_request_callbacks_,
-                                         platform_filter_.instance_context);
+  // TODO(goaway): currently both platform APIs unconditionally set this field, meaning that the
+  // heap allocation below occurs when it could be avoided.
+  if (platform_filter_.set_request_callbacks) {
+    platform_request_callbacks_.resume_iteration = envoy_filter_callback_resume_decoding;
+    platform_request_callbacks_.release_callbacks = envoy_filter_release_callbacks;
+    // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
+    // Note that the weak_ptr here is heap allocated because it needs to be managed and held by
+    // platform specific runtimes. Therefore, it is NECESSARY that the platform deallocates the
+    // memory. Otherwise the weak ptr will leak.
+    platform_request_callbacks_.callback_context =
+        new PlatformBridgeFilterWeakPtr{shared_from_this()};
+    ENVOY_LOG(trace, "PlatformBridgeFilter({})->set_request_callbacks", filter_name_);
+    platform_filter_.set_request_callbacks(platform_request_callbacks_,
+                                           platform_filter_.instance_context);
+  }
 }
 
 void PlatformBridgeFilter::setEncoderFilterCallbacks(
@@ -108,17 +112,21 @@ void PlatformBridgeFilter::setEncoderFilterCallbacks(
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::setEncoderCallbacks", filter_name_);
   encoder_callbacks_ = &callbacks;
 
-  platform_response_callbacks_.resume_iteration = envoy_filter_callback_resume_encoding;
-  platform_response_callbacks_.release_callbacks = envoy_filter_release_callbacks;
-  // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
-  // Note that the weak_ptr here is heap allocated because it needs to be managed and held by
-  // platform specific runtimes. Therefore, it is NECESSARY that the platform deallocates the
-  // memory. Otherwise the weak ptr will leak.
-  platform_response_callbacks_.callback_context =
-      new PlatformBridgeFilterWeakPtr{shared_from_this()};
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})->set_response_callbacks", filter_name_);
-  platform_filter_.set_response_callbacks(platform_response_callbacks_,
-                                          platform_filter_.instance_context);
+  // TODO(goaway): currently both platform APIs unconditionally set this field, meaning that the
+  // heap allocation below occurs when it could be avoided.
+  if (platform_filter_.set_response_callbacks) {
+    platform_response_callbacks_.resume_iteration = envoy_filter_callback_resume_encoding;
+    platform_response_callbacks_.release_callbacks = envoy_filter_release_callbacks;
+    // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
+    // Note that the weak_ptr here is heap allocated because it needs to be managed and held by
+    // platform specific runtimes. Therefore, it is NECESSARY that the platform deallocates the
+    // memory. Otherwise the weak ptr will leak.
+    platform_response_callbacks_.callback_context =
+        new PlatformBridgeFilterWeakPtr{shared_from_this()};
+    ENVOY_LOG(trace, "PlatformBridgeFilter({})->set_response_callbacks", filter_name_);
+    platform_filter_.set_response_callbacks(platform_response_callbacks_,
+                                            platform_filter_.instance_context);
+  }
 }
 
 void PlatformBridgeFilter::onDestroy() {
