@@ -82,3 +82,17 @@ The value of a ``Gauge`` can be incremented, decremented, or reassigned.
 
   // Swift
   gauge.sub(amount: 5)
+
+---------
+``Histogram``
+---------
+Use ``Histogram`` to track a distribution of values and see the cumulative stats like quantile data, averages, and sums.
+
+**Example**::
+
+  // Add a new value to the underlying histogram distribution
+  // Kotlin
+  histogram.recordValue(5)
+
+  // Swift
+  histogram.recordValue(value: 5)
