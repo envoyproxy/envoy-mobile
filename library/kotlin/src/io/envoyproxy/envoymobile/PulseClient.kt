@@ -16,9 +16,9 @@ interface PulseClient {
   /** @return A gauge based on the joined elements. */
   fun gauge(vararg elements: Element): Gauge
 
-  /** @return A histogram based on the joined elements that can be used as a timer. */
-  fun histogramTimer(vararg elements: Element): Histogram
+  /** @return A timer based on the joined elements that can track distribution of durations. */
+  fun timer(vararg elements: Element): Timer
 
-  /** @return A histogram based on the joined elements that tracks an unspecified unit measure */
-  fun histogramGeneric(vararg elements: Element): Histogram
+  /** @return A histogram based on the joined elements that can track distribution of int values. */
+  fun histogram(vararg elements: Element): Histogram
 }

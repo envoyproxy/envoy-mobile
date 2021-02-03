@@ -4,7 +4,6 @@ import android.app.Application;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit;
 
 /* Android-specific implementation of the `EnvoyEngine` interface. */
 public class AndroidEngineImpl implements EnvoyEngine {
@@ -62,8 +61,13 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public int recordHistogramValue(String elements, int value, HistogramUnit unitMeasure) {
-    return envoyEngine.recordHistogramValue(elements, value, unitMeasure);
+  public int recordHistogramDuration(String elements, int durationMs) {
+    return envoyEngine.recordHistogramDuration(elements, durationMs);
+  }
+
+  @Override
+  public int recordHistogramValue(String elements, int value) {
+    return envoyEngine.recordHistogramValue(elements, value);
   }
 
   @Override

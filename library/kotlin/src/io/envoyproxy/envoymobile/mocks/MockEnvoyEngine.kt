@@ -6,7 +6,6 @@ import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 
 /**
  * Mock implementation of `EnvoyEngine`. Used internally for testing the bridging layer & mocking.
@@ -26,7 +25,9 @@ internal class MockEnvoyEngine : EnvoyEngine {
 
   override fun recordGaugeSub(elements: String, amount: Int): Int = 0
 
-  override fun recordHistogramValue(elements: String, value: Int, unitMeasure: HistogramUnit): Int = 0
+  override fun recordHistogramDuration(elements: String, durationMs: Int): Int = 0
+
+  override fun recordHistogramValue(elements: String, value: Int): Int = 0
 
   override fun registerStringAccessor(accessorName: String, accessor: EnvoyStringAccessor): Int = 0
 }

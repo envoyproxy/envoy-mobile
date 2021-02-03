@@ -1,13 +1,12 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 import java.lang.ref.WeakReference
 
 /**
- * Envoy implementation of a `Histogram` for time measurements e.g. durations.
+ * Envoy implementation of a `Timer` for time measurements e.g. distribution of durations.
  */
-internal class HistogramTimerImpl : Histogram {
+internal class TimerImpl : Timer {
   internal val envoyEngine: WeakReference<EnvoyEngine>
   internal val elements: List<Element>
 
@@ -16,9 +15,9 @@ internal class HistogramTimerImpl : Histogram {
     this.elements = elements
   }
 
-  override fun recordValue(value: Int) {
-    envoyEngine.get()?.recordHistogramValue(
-      elements.joinToString(separator = ".") { it.value }, value, HistogramUnit.MICROSECONDS
+  override fun recordDuration(durationMs: Int) {
+    envoyEngine.get()?.recordHistogramDuration(
+      elements.joinToString(separator = ".") { it.value }, durationMs
     )
   }
 }

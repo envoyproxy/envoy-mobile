@@ -16,13 +16,13 @@ public protocol PulseClient: AnyObject {
   /// - returns: A Gauge based on the joined elements.
   func gauge(elements: [Element]) -> Gauge
 
-  /// - parameter elements: Elements to identify a histogram
+  /// - parameter elements: Elements to identify a timer
   ///
-  /// - returns: A Histogram based on the joined elements that can be used as a timer
-  func histogramTimer(elements: [Element]) -> Histogram
+  /// - returns: A Timer based on the joined elements to track a distribution of durations
+  func timer(elements: [Element]) -> Timer
 
   /// - parameter elements: Elements to identify a histogram
   ///
-  /// - returns: A Histogram based on the joined elements to track unspecified measurement units
-  func histogramGeneric(elements: [Element]) -> Histogram
+  /// - returns: A Histogram based on the joined elements to track generic value amounts
+  func histogram(elements: [Element]) -> Histogram
 }

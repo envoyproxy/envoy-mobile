@@ -17,11 +17,11 @@ internal class PulseClientImpl constructor(
     return GaugeImpl(engine, elements.asList())
   }
 
-  override fun histogramTimer(vararg elements: Element): Histogram {
-    return HistogramTimerImpl(engine, elements.asList())
+  override fun timer(vararg elements: Element): Timer {
+    return TimerImpl(engine, elements.asList())
   }
 
-  override fun histogramGeneric(vararg elements: Element): Histogram {
-    return HistogramGenericImpl(engine, elements.asList())
+  override fun histogram(vararg elements: Element): Histogram {
+    return HistogramImpl(engine, elements.asList())
   }
 }

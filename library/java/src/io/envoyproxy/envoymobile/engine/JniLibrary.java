@@ -2,7 +2,6 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -194,16 +193,24 @@ class JniLibrary {
    */
   protected static native int recordGaugeSub(long engine, String elements, int amount);
 
+
   /**
-   * Add another recorded amount to the histogram with the given string of elements.
+   * Add another recorded duration in ms to the timer histogram with the given string of elements.
+   *
+   * @param elements Elements of the histogram stat.
+   * @param durationMs Duration value to record in the histogram timer distribution.
+   * @return A status indicating if the action was successful.
+   */
+  protected static native int recordHistogramDuration(long engine, String elements, int durationMs);
+
+  /**
+   * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
    * @param value Amount to record as a new value for the histogram distribution.
-   * @param unitMeasure The ordinal of the unit of measurement enum
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordHistogramValue(long engine, String elements, int value,
-                                                   int unitMeasureOrdinal);
+  protected static native int recordHistogramValue(long engine, String elements, int value);
 
   /**
    * Provides a configuration template that may be used for building platform

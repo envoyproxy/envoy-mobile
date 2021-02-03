@@ -1,9 +1,9 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// The implementation of histogram specific to tracking time durations
+/// The implementation of histogram that can track a distribution of generic values
 @objcMembers
-class HistogramTimerImpl: NSObject, Histogram {
+class HistogramImpl: NSObject, Histogram {
   private let series: String
   private weak var engine: EnvoyEngine?
 
@@ -20,6 +20,6 @@ class HistogramTimerImpl: NSObject, Histogram {
       return
     }
 
-    engine.recordHistogramValue(self.series, value: numericCast(value), unitMeasure: MICROSECONDS)
+    engine.recordHistogramValue(self.series, value: numericCast(value))
   }
 }

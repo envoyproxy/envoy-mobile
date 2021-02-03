@@ -117,13 +117,23 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 }
 
 extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv* env,
+                                                                      jclass, // class
+                                                                      jlong engine,
+                                                                      jstring elements,
+                                                                      jint durationMs) {
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), durationMs,
+                                MILLISECONDS);
+}
+
+extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* env,
                                                                       jclass, // class
                                                                       jlong engine,
-                                                                      jstring elements, jint value,
-                                                                      jint histogram_unit) {
+                                                                      jstring elements,
+                                                                      jint value) {
   return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value,
-                                histogram_unit);
+                                UNSPECIFIED);
 }
 
 // JvmCallbackContext

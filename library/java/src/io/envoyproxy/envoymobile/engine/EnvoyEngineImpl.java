@@ -6,7 +6,6 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
@@ -135,15 +134,25 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   /**
-   * Add another recorded amount to the histogram with the given string of elements.
+   * Add another recorded duration in ms to the timer histogram with the given string of elements.
+   *
+   * @param elements Elements of the histogram stat.
+   * @param durationMs Duration value to record in the histogram timer distribution.
+   * @return A status indicating if the action was successful.
+   */
+  public int recordHistogramDuration(String elements, int durationMs) {
+    return JniLibrary.recordHistogramDuration(engineHandle, elements, durationMs);
+  }
+
+  /**
+   * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
    * @param value Amount to record as a new value for the histogram distribution.
-   * @param unitMeasure the unit of measurement (e.g. milliseconds, bytes, etc.)
    * @return A status indicating if the action was successful.
    */
-  public int recordHistogramValue(String elements, int value, HistogramUnit unitMeasure) {
-    return JniLibrary.recordHistogramValue(engineHandle, elements, value, unitMeasure.ordinal());
+  public int recordHistogramValue(String elements, int value) {
+    return JniLibrary.recordHistogramValue(engineHandle, elements, value);
   }
 
   @Override

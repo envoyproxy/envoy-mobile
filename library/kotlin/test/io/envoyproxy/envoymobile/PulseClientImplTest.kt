@@ -1,7 +1,6 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
-import io.envoyproxy.envoymobile.engine.types.HistogramUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.ArgumentCaptor
@@ -73,30 +72,30 @@ class PulseClientImplTest {
   }
 
   @Test
-  fun `histogram timer delegates to engine with value for record and unit measure`() {
+  fun `timer delegates to engine with value for record and unit measure`() {
     val pulseClient = PulseClientImpl(envoyEngine)
-    val histogram = pulseClient.histogramTimer(Element("test"), Element("stat"))
-    histogram.recordValue(5)
+    val timer = pulseClient.timer(Element("test"), Element("stat"))
+
+    timer.recordDuration(5)
+
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
-    val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
-    val unitMeasureCaptor = ArgumentCaptor.forClass(HistogramUnit::class.java)
-    verify(envoyEngine).recordHistogramValue(elementsCaptor.capture(), valueCaptor.capture(), unitMeasureCaptor.capture())
+    val durationCaptor = ArgumentCaptor.forClass(Int::class.java)
+    verify(envoyEngine).recordHistogramDuration(elementsCaptor.capture(), durationCaptor.capture())
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
-    assertThat(valueCaptor.getValue()).isEqualTo(5)
-    assertThat(unitMeasureCaptor.getValue()).isEqualTo(HistogramUnit.MICROSECONDS)
+    assertThat(durationCaptor.getValue()).isEqualTo(5)
   }
 
   @Test
   fun `histogram generic delegates to engine with value for record and unit measure`() {
     val pulseClient = PulseClientImpl(envoyEngine)
-    val histogram = pulseClient.histogramGeneric(Element("test"), Element("stat"))
+    val histogram = pulseClient.histogram(Element("test"), Element("stat"))
+
     histogram.recordValue(5)
+
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
-    val unitMeasureCaptor = ArgumentCaptor.forClass(HistogramUnit::class.java)
-    verify(envoyEngine).recordHistogramValue(elementsCaptor.capture(), valueCaptor.capture(), unitMeasureCaptor.capture())
+    verify(envoyEngine).recordHistogramValue(elementsCaptor.capture(), valueCaptor.capture())
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(valueCaptor.getValue()).isEqualTo(5)
-    assertThat(unitMeasureCaptor.getValue()).isEqualTo(HistogramUnit.UNSPECIFIED)
   }
 }

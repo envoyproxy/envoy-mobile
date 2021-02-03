@@ -96,44 +96,38 @@ final class PulseClientImplTests: XCTestCase {
     XCTAssertEqual(actualAmount, 5)
   }
 
-  func testHistogramTimerRecordDelegatesToEngineWithValue() {
+  func testHTimerRecordDelegatesToEngineWithValue() {
     var actualSeries: String?
-    var actualValue: UInt?
-    var actualUnitMeasure: envoy_histogram_stat_unit_t?
-    MockEnvoyEngine.onRecordHistogramValue = { series, value, unitMeasure in
+    var actualDuration: UInt?
+    MockEnvoyEngine.onRecordHistogramDuration = { series, duration in
       actualSeries = series
-      actualValue = value
-      actualUnitMeasure = unitMeasure
+      actualDuration = duration
     }
     let mockEngine = MockEnvoyEngine()
 
     let pulseClient = PulseClientImpl(engine: mockEngine)
-    let histogram = pulseClient.histogramTimer(elements: ["test", "stat"])
-    histogram.recordValue(value: 5)
+    let timer = pulseClient.timer(elements: ["test", "stat"])
+    timer.recordDuration(durationMs: 5)
 
     XCTAssertEqual(actualSeries, "test.stat")
-    XCTAssertEqual(actualValue, 5)
-    XCTAssertEqual(actualUnitMeasure, MICROSECONDS)
+    XCTAssertEqual(actualDuration, 5)
   }
 
-  func testHistogramGenericRecordDelegatesToEngineWithValue() {
+  func testHistogramRecordDelegatesToEngineWithValue() {
     var actualSeries: String?
     var actualValue: UInt?
-    var actualUnitMeasure: envoy_histogram_stat_unit_t?
 
-    MockEnvoyEngine.onRecordHistogramValue = { series, value, unitMeasure in
+    MockEnvoyEngine.onRecordHistogramValue = { series, value in
       actualSeries = series
       actualValue = value
-      actualUnitMeasure = unitMeasure
     }
     let mockEngine = MockEnvoyEngine()
 
     let pulseClient = PulseClientImpl(engine: mockEngine)
-    let histogram = pulseClient.histogramGeneric(elements: ["test", "stat"])
+    let histogram = pulseClient.histogram(elements: ["test", "stat"])
     histogram.recordValue(value: 5)
 
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualValue, 5)
-    XCTAssertEqual(actualUnitMeasure, UNSPECIFIED)
   }
 }

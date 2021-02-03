@@ -365,15 +365,20 @@ extern const int kEnvoyFailure;
 - (int)recordGaugeSub:(NSString *)elements amount:(NSUInteger)amount;
 
 /**
- Add another recorded value to the histogram with the given string of elements and unit measure.
+ Add another recorded duration to the timer histogram with the given string of elements.
  @param elements Elements of the histogram stat.
- @param value Amount to record as a new value for the histogram distribution.
- @param unitMeasure The unit of measurement (e.g. milliseconds, bytes, etc.)
+ @param durationMs The duration in milliseconds to record in the histogram distribution
  @return A status indicating if the action was successful.
  */
-- (int)recordHistogramValue:(NSString *)elements
-                      value:(NSUInteger)value
-                unitMeasure:(envoy_histogram_stat_unit_t)unitMeasure;
+- (int)recordHistogramDuration:(NSString *)elements durationMs:(NSUInteger)durationMs;
+
+/**
+ Add another recorded value to the histogram with the given string of elements.
+ @param elements Elements of the histogram stat.
+ @param value Amount to record as a new value for the histogram distribution.
+ @return A status indicating if the action was successful.
+ */
+- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value;
 
 @end
 

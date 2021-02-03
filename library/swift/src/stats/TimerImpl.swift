@@ -1,9 +1,9 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// The implementation of histogram that can track a distribution of any unit measurement values
+/// The implementation of timer that can be used to track a distribution of time durations
 @objcMembers
-class HistogramGenericImpl: NSObject, Histogram {
+class TimerImpl: NSObject, Timer {
   private let series: String
   private weak var engine: EnvoyEngine?
 
@@ -13,13 +13,13 @@ class HistogramGenericImpl: NSObject, Histogram {
     super.init()
   }
 
-  /// Record a new value for the histogram distribution.
+  /// Record a new duration value for the distribution.
   /// TODO: potentially raise error to platform if the operation is not successful.
-  func recordValue(value: Int) {
+  func recordDuration(durationMs: Int) {
     guard let engine = self.engine else {
       return
     }
 
-    engine.recordHistogramValue(self.series, value: numericCast(value), unitMeasure: UNSPECIFIED)
+    engine.recordHistogramDuration(self.series, durationMs: numericCast(durationMs))
   }
 }
