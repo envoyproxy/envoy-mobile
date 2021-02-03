@@ -86,7 +86,8 @@ The value of a ``Gauge`` can be incremented, decremented, or reassigned.
 ---------
 ``Histogram``
 ---------
-Use ``Histogram`` to track a distribution of values and see the cumulative stats like quantile data, averages, and sums.
+Use ``Histogram`` to track a distribution of values to see the cumulative stats like quantile data, averages, and sums.
+There are two different Histogram implementations exposed, `histogramTimer` to track time durations and `histogramGeneric` to track generic int values.
 
 **Example**::
 
