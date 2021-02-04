@@ -171,8 +171,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   case kEnvoyFilterHeadersStatusStopIteration:
     pending_headers_ = &headers;
     iteration_state_ = IterationState::Stopped;
-    // returned headers from the platform filter are not used. Release them here.
-    release_envoy_headers(result.headers);
+    ASSERT(result.headers.length == 0 && result.headers.headers == NULL);
     return Http::FilterHeadersStatus::StopIteration;
 
   default:
@@ -298,8 +297,7 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
   case kEnvoyFilterTrailersStatusStopIteration:
     pending_trailers_ = &trailers;
     iteration_state_ = IterationState::Stopped;
-    // returned trailers from the platform filter are not used. Release them here.
-    release_envoy_headers(result.trailers);
+    ASSERT(result.trailers.length == 0 && result.trailers.headers == NULL);
     return Http::FilterTrailersStatus::StopIteration;
 
   // Resume previously-stopped iteration, possibly forwarding headers and data if iteration was

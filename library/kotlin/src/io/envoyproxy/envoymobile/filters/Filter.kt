@@ -30,10 +30,10 @@ internal class EnvoyHTTPFilterAdapter(
       val result = requestFilter.onRequestHeaders(RequestHeaders(headers), endStream)
       return when (result) {
         is FilterHeadersStatus.Continue -> arrayOf(result.status, result.headers.headers)
-        is FilterHeadersStatus.StopIteration -> arrayOf(result.status, headers)
+        is FilterHeadersStatus.StopIteration -> arrayOf(result.status, null)
       }
     }
-    return arrayOf(0, headers)
+    return arrayOf(0, null)
   }
 
   override fun onResponseHeaders(headers: Map<String, List<String>>, endStream: Boolean): Array<Any?> {
@@ -41,10 +41,10 @@ internal class EnvoyHTTPFilterAdapter(
       val result = responseFilter.onResponseHeaders(ResponseHeaders(headers), endStream)
       return when (result) {
         is FilterHeadersStatus.Continue -> arrayOf(result.status, result.headers.headers)
-        is FilterHeadersStatus.StopIteration -> arrayOf(result.status, headers)
+        is FilterHeadersStatus.StopIteration -> arrayOf(result.status, null)
       }
     }
-    return arrayOf(0, headers)
+    return arrayOf(0, null)
   }
 
   override fun onRequestData(data: ByteBuffer, endStream: Boolean): Array<Any?> {
@@ -52,12 +52,12 @@ internal class EnvoyHTTPFilterAdapter(
       val result = requestFilter.onRequestData(data, endStream)
       return when (result) {
         is FilterDataStatus.Continue<*> -> arrayOf(result.status, result.data)
-        is FilterDataStatus.StopIterationAndBuffer<*> -> arrayOf(result.status, data)
-        is FilterDataStatus.StopIterationNoBuffer<*> -> arrayOf(result.status, data)
+        is FilterDataStatus.StopIterationAndBuffer<*> -> arrayOf(result.status, null)
+        is FilterDataStatus.StopIterationNoBuffer<*> -> arrayOf(result.status, null)
         is FilterDataStatus.ResumeIteration<*> -> arrayOf(result.status, result.data, result.headers?.headers)
       }
     }
-    return arrayOf(0, data)
+    return arrayOf(0, null)
   }
 
   override fun onResponseData(data: ByteBuffer, endStream: Boolean): Array<Any?> {
@@ -65,12 +65,12 @@ internal class EnvoyHTTPFilterAdapter(
       val result = responseFilter.onResponseData(data, endStream)
       return when (result) {
         is FilterDataStatus.Continue<*> -> arrayOf(result.status, result.data)
-        is FilterDataStatus.StopIterationAndBuffer<*> -> arrayOf(result.status, data)
-        is FilterDataStatus.StopIterationNoBuffer<*> -> arrayOf(result.status, data)
+        is FilterDataStatus.StopIterationAndBuffer<*> -> arrayOf(result.status, null)
+        is FilterDataStatus.StopIterationNoBuffer<*> -> arrayOf(result.status, null)
         is FilterDataStatus.ResumeIteration<*> -> arrayOf(result.status, result.data, result.headers?.headers)
       }
     }
-    return arrayOf(0, data)
+    return arrayOf(0, null)
   }
 
   override fun onRequestTrailers(trailers: Map<String, List<String>>): Array<Any?> {
@@ -78,11 +78,11 @@ internal class EnvoyHTTPFilterAdapter(
       val result = requestFilter.onRequestTrailers(RequestTrailers(trailers))
       return when (result) {
         is FilterTrailersStatus.Continue<*, *> -> arrayOf(result.status, result.trailers.headers)
-        is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, trailers)
+        is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, null)
         is FilterTrailersStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.trailers.headers, result.headers?.headers, result.data)
       }
     }
-    return arrayOf(0, trailers)
+    return arrayOf(0, null)
   }
 
   override fun onResponseTrailers(trailers: Map<String, List<String>>): Array<Any?> {
@@ -90,11 +90,11 @@ internal class EnvoyHTTPFilterAdapter(
       val result = responseFilter.onResponseTrailers(ResponseTrailers(trailers))
       return when (result) {
         is FilterTrailersStatus.Continue<*, *> -> arrayOf(result.status, result.trailers.headers)
-        is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, trailers)
+        is FilterTrailersStatus.StopIteration<*, *> -> arrayOf(result.status, null)
         is FilterTrailersStatus.ResumeIteration<*, *> -> arrayOf(result.status, result.trailers.headers, result.headers?.headers, result.data)
       }
     }
-    return arrayOf(0, trailers)
+    return arrayOf(0, null)
   }
 
   override fun onError(errorCode: Int, message: String, attemptCount: Int) {
