@@ -69,27 +69,21 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
   // context needed for actual filter invocations.
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::PlatformBridgeFilter", filter_name_);
 
-  // If init_filter is missing, zero out the rest of the struct for safety.
-  if (platform_filter_.init_filter == nullptr) {
+  if (platform_filter_.init_filter) {
+    // Set the instance_context to the result of the initialization call. Cleanup will ultimately
+    // occur within the onDestroy() invocation below.
+    ENVOY_LOG(trace, "PlatformBridgeFilter({})->init_filter", filter_name_);
+    platform_filter_.instance_context = platform_filter_.init_filter(&platform_filter_);
+    ASSERT(platform_filter_.instance_context,
+           fmt::format("PlatformBridgeFilter({}): init_filter unsuccessful", filter_name_));
+  } else {
+    // If init_filter is missing, zero out the rest of the struct for safety.
     ENVOY_LOG(debug, "PlatformBridgeFilter({}): missing initializer", filter_name_);
     platform_filter_ = {};
-
-    // Does this make sense, or should we rather protect the rest of the code against nullptr for
-    // both request_filter_base_ and response_filter_base_.
-    request_filter_base_ = std::make_unique<RequestFilterBase>(*this);
-    response_filter_base_ = std::make_unique<ResponseFilterBase>(*this);
-
-    return;
   }
 
-  // Set the instance_context to the result of the initialization call. Cleanup will ultimately
-  // occur within the onDestroy() invocation below.
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})->init_filter", filter_name_);
-  platform_filter_.instance_context = platform_filter_.init_filter(&platform_filter_);
-  ASSERT(platform_filter_.instance_context,
-         fmt::format("PlatformBridgeFilter({}): init_filter unsuccessful", filter_name_));
-
-  // Set directional filters now that the platform filter has been init'ed.
+  // Set directional filters now that the platform_filter_ has been updated (initialized or zero'ed
+  // out).
   request_filter_base_ = std::make_unique<RequestFilterBase>(*this);
   response_filter_base_ = std::make_unique<ResponseFilterBase>(*this);
 }
