@@ -27,7 +27,6 @@ public:
   Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
 
 private:
-  bool grpcError_{};
   bool httpError_{};
   Http::ResponseHeaderMap* headers_{};
 };

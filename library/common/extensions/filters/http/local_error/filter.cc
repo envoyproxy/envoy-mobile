@@ -73,7 +73,6 @@ Http::FilterHeadersStatus LocalErrorFilter::encodeHeaders(Http::ResponseHeaderMa
            "Local gRPC responses must consist of a single headers frame. If Envoy changes "
            "this expectation, this code needs to be updated.");
     ENVOY_LOG(debug, "intercepted local GRPC response");
-    grpcError_ = true;
     mapLocalGrpcResponseToError(grpc_status.value(), headers);
     headers_->addCopy(Http::InternalHeaders::get().ErrorMessage,
                       Grpc::Common::getGrpcMessage(headers));
@@ -100,7 +99,6 @@ Http::FilterDataStatus LocalErrorFilter::encodeData(Buffer::Instance& data, bool
            "Local responses must end the stream with a single data frame. If Envoy changes "
            "this expectation, this code needs to be updated.");
     headers_->addCopy(Http::InternalHeaders::get().ErrorMessage, data.toString());
-    return Http::FilterDataStatus::Continue;
   }
 
   return Http::FilterDataStatus::Continue;
