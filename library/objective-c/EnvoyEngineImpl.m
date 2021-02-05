@@ -21,7 +21,8 @@ static void ios_on_exit(void *context) {
 
 static const void *ios_http_filter_init(const void *context) {
   envoy_http_filter *c_filter = (envoy_http_filter *)context;
-  EnvoyHTTPFilterFactory *filterFactory = (__bridge EnvoyHTTPFilterFactory *)c_filter->static_context;
+  EnvoyHTTPFilterFactory *filterFactory =
+      (__bridge EnvoyHTTPFilterFactory *)c_filter->static_context;
   EnvoyHTTPFilter *filter = filterFactory.create();
 
   // Unset static functions on the c_struct based on the created filter

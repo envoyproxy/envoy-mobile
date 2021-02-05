@@ -74,7 +74,8 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
     ENVOY_LOG(debug, "PlatformBridgeFilter({}): missing initializer", filter_name_);
     platform_filter_ = {};
 
-    // Does this make sense, or should we rather protect the rest of the code against nullptr for both request_filter_base_ and response_filter_base_.
+    // Does this make sense, or should we rather protect the rest of the code against nullptr for
+    // both request_filter_base_ and response_filter_base_.
     request_filter_base_ = std::make_unique<RequestFilterBase>(*this);
     response_filter_base_ = std::make_unique<ResponseFilterBase>(*this);
 
