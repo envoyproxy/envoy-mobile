@@ -270,6 +270,7 @@ static void ios_http_filter_on_cancel(const void *context) {
 static void ios_http_filter_on_error(envoy_error error, const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onError == nil) {
+    error.message.release(error.message.context);
     return;
   }
 
