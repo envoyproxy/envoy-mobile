@@ -24,6 +24,8 @@ envoy_cc_extension(
         ":filter_cc_proto",
         "//library/common/http:internal_headers_lib",
         "//library/common/types:c_types_lib",
+        "@envoy//source/common/grpc:common_lib",
+        "@envoy//source/common/grpc:status_lib",
         "@envoy//include/envoy/http:codes_interface",
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//source/common/http:codes_lib",

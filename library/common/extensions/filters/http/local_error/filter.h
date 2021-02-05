@@ -27,10 +27,9 @@ public:
   Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
 
 private:
-  void mapLocalResponseToError(Http::ResponseHeaderMap& headers);
-
+  bool grpcError_{};
+  bool httpError_{};
   Http::ResponseHeaderMap* headers_{};
-  bool processingError_{};
 };
 
 } // namespace LocalError
