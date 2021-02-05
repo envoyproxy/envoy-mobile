@@ -8,16 +8,14 @@ import java.lang.ref.WeakReference
  */
 internal class HistogramImpl : Histogram {
   internal val envoyEngine: WeakReference<EnvoyEngine>
-  internal val elements: List<Element>
+  internal val elements: String
 
   internal constructor(engine: EnvoyEngine, elements: List<Element>) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
-    this.elements = elements
+    this.elements = elements.joinToString(separator = ".") { it.value }
   }
 
   override fun recordValue(value: Int) {
-    envoyEngine.get()?.recordHistogramValue(
-      elements.joinToString(separator = ".") { it.value }, value
-    )
+    envoyEngine.get()?.recordHistogramValue(elements, value)
   }
 }

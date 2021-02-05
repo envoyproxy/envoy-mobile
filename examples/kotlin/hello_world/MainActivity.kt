@@ -137,8 +137,9 @@ class MainActivity : Activity() {
   private fun recordStats() {
     val counter = engine.pulseClient().counter(Element("foo"), Element("bar"), Element("counter"))
     val gauge = engine.pulseClient().gauge(Element("foo"), Element("bar"), Element("gauge"))
-    val histogramTimer = engine.pulseClient().histogramTimer(Element("foo"), Element("bar"), Element("timer"))
-    val histogramGeneric = engine.pulseClient().histogramGeneric(Element("foo"), Element("bar"), Element("histogram"))
+    val timer = engine.pulseClient().timer(Element("foo"), Element("bar"), Element("timer"))
+    val histogram =
+      engine.pulseClient().histogram(Element("foo"), Element("bar"), Element("histogram"))
 
     counter.increment()
     counter.increment(5)
@@ -147,7 +148,7 @@ class MainActivity : Activity() {
     gauge.add(10)
     gauge.sub(1)
 
-    histogramTimer.recordValue(15)
-    histogramGeneric.recordValue(15)
+    timer.recordDuration(15)
+    histogram.recordValue(15)
   }
 }

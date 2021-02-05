@@ -118,10 +118,10 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv* env,
-                                                                      jclass, // class
-                                                                      jlong engine,
-                                                                      jstring elements,
-                                                                      jint durationMs) {
+                                                                         jclass, // class
+                                                                         jlong engine,
+                                                                         jstring elements,
+                                                                         jint durationMs) {
   return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), durationMs,
                                 MILLISECONDS);
 }

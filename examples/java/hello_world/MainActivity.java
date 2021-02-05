@@ -139,10 +139,10 @@ public class MainActivity extends Activity {
     final Gauge gauge =
         engine.pulseClient().gauge(new Element("foo"), new Element("bar"), new Element("gauge"));
 
-    final Histogram histogramTimer = engine.pulseClient().histogramTimer(
-      new Element("foo"),new Element("bar"), new Element("timer"));
-    final Histogram histogramGeneric = engine.pulseClient().histogramTimer(
-      new Element("foo"),new Element("bar"), new Element("histogram"));
+    final Timer timer =
+        engine.pulseClient().timer(new Element("foo"), new Element("bar"), new Element("timer"));
+    final Histogram histogram = engine.pulseClient().histogram(
+        new Element("foo"), new Element("bar"), new Element("histogram"));
 
     counter.increment(1);
     counter.increment(5);
@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
     gauge.add(10);
     gauge.sub(1);
 
-    histogramTimer.recordValue(15);
-    histogramGeneric.recordValue(15);
+    timer.recordDuration(15);
+    histogram.recordValue(15);
   }
 }

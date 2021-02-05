@@ -193,7 +193,6 @@ class JniLibrary {
    */
   protected static native int recordGaugeSub(long engine, String elements, int amount);
 
-
   /**
    * Add another recorded duration in ms to the timer histogram with the given string of elements.
    *

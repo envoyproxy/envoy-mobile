@@ -84,10 +84,25 @@ The value of a ``Gauge`` can be incremented, decremented, or reassigned.
   gauge.sub(amount: 5)
 
 ---------
-``Histogram``
+``Timer``
 ---------
-Use ``Histogram`` to track a distribution of values to see the cumulative stats like quantile data, averages, and sums.
-There are two different Histogram implementations exposed, `histogramTimer` to track time durations and `histogramGeneric` to track generic int values.
+Use ``Timer`` to track a distribution of time durations.
+You can view the cumulative stats like quantile data (p50/p90/etc.) and average durations.
+
+**Example**::
+
+  // Add a new duration to the underlying timer distribution
+  // Kotlin
+  timer.recordDuration(5)
+
+  // Swift
+  timer.recordDuration(durationMs: 5)
+
+-------------
+``Histogram``
+-------------
+Use ``Histogram`` to track a distribution of int values.
+You can view the cumulative stats like quantile data (p50/p90/etc.) and value averages.
 
 **Example**::
 

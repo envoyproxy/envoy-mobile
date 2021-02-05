@@ -8,16 +8,14 @@ import java.lang.ref.WeakReference
  */
 internal class TimerImpl : Timer {
   internal val envoyEngine: WeakReference<EnvoyEngine>
-  internal val elements: List<Element>
+  internal val elements: String
 
   internal constructor(engine: EnvoyEngine, elements: List<Element>) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
-    this.elements = elements
+    this.elements = elements.joinToString(separator = ".") { it.value }
   }
 
   override fun recordDuration(durationMs: Int) {
-    envoyEngine.get()?.recordHistogramDuration(
-      elements.joinToString(separator = ".") { it.value }, durationMs
-    )
+    envoyEngine.get()?.recordHistogramDuration(elements, durationMs)
   }
 }

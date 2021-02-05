@@ -146,9 +146,10 @@ NSString *_REQUEST_SCHEME = @"https";
   [gauge addWithAmount:10];
   [gauge subWithAmount:1];
 
-  id<Histogram> timer = [self.pulseClient histogramTimerWithElements:@[ elementFoo, elementBar, elementTimer ]];
-  [timer recordValueWithValue:15];
-  id<Histogram> histogram = [self.pulseClient histogramGenericWithElements:@[ elementFoo, elementBar, elementHistogram ]];
+  id<Timer> timer = [self.pulseClient timerWithElements:@[ elementFoo, elementBar, elementTimer ]];
+  [timer recordDurationWithDurationMs:15];
+  id<Histogram> histogram =
+      [self.pulseClient histogramWithElements:@[ elementFoo, elementBar, elementHistogram ]];
   [histogram recordValueWithValue:15];
 }
 

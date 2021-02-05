@@ -124,9 +124,9 @@ final class ViewController: UITableViewController {
     gauge.add(amount: 10)
     gauge.sub(amount: 1)
 
-    let timer = pulseClient.histogramTimer(elements: ["foo", "bar", "timer"])
-    let histogram = pulseClient.histogramGeneric(elements: ["foo", "bar", "histogram"])
-    timer.recordValue(value: 15)
+    let timer = pulseClient.timer(elements: ["foo", "bar", "timer"])
+    let histogram = pulseClient.histogram(elements: ["foo", "bar", "histogram"])
+    timer.recordDuration(durationMs: 15)
     histogram.recordValue(value: 15)
   }
   // MARK: - UITableView
