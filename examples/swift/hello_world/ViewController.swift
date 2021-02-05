@@ -10,7 +10,7 @@ private let kFilteredHeaders =
 
 final class ViewController: UITableViewController {
   private var results = [Result<Response, RequestError>]()
-  private var timer: Timer?
+  private var timer: Foundation.Timer?
   private var streamClient: StreamClient?
   private var pulseClient: PulseClient?
 
