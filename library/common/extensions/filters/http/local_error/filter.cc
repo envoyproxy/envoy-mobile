@@ -47,8 +47,9 @@ void mapLocalHttpResponseToError(uint64_t status, Http::ResponseHeaderMap& heade
 // response. Here that response's "real" status code is mapped to an Envoy Mobile error code
 // which is passed through the response chain as a header. The status code is updated with
 // the sentinel value, 218 ("This is fine").
-void mapLocalGrpcResponseToError(Grpc::Status::GrpcStatus status, Http::ResponseHeaderMap& headers) {
-  return mapLocalHttpResponseToError(Grpc::Utility::grpcToHttpStatus(status), headers); 
+void mapLocalGrpcResponseToError(Grpc::Status::GrpcStatus status,
+                                 Http::ResponseHeaderMap& headers) {
+  return mapLocalHttpResponseToError(Grpc::Utility::grpcToHttpStatus(status), headers);
 }
 
 } // namespace
@@ -74,7 +75,8 @@ Http::FilterHeadersStatus LocalErrorFilter::encodeHeaders(Http::ResponseHeaderMa
     ENVOY_LOG(debug, "intercepted local GRPC response");
     grpcError_ = true;
     mapLocalGrpcResponseToError(grpc_status.value(), headers);
-    headers_->addCopy(Http::InternalHeaders::get().ErrorMessage, Grpc::Common::getGrpcMessage(headers));
+    headers_->addCopy(Http::InternalHeaders::get().ErrorMessage,
+                      Grpc::Common::getGrpcMessage(headers));
     return Http::FilterHeadersStatus::Continue;
   }
 
