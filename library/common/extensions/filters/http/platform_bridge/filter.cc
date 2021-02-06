@@ -99,9 +99,8 @@ void PlatformBridgeFilter::setDecoderFilterCallbacks(
     platform_request_callbacks_.resume_iteration = envoy_filter_callback_resume_decoding;
     platform_request_callbacks_.release_callbacks = envoy_filter_release_callbacks;
     // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
-    // Note that the weak_ptr here is heap allocated because it needs to be managed and held by
-    // platform specific runtimes. Therefore, it is NECESSARY that the platform deallocates the
-    // memory. Otherwise the weak ptr will leak.
+    // The weak_ptr is heap-allocated, because it must be managed (and eventually released) by
+    // platform code.
     platform_request_callbacks_.callback_context =
         new PlatformBridgeFilterWeakPtr{shared_from_this()};
     ENVOY_LOG(trace, "PlatformBridgeFilter({})->set_request_callbacks", filter_name_);
@@ -121,9 +120,8 @@ void PlatformBridgeFilter::setEncoderFilterCallbacks(
     platform_response_callbacks_.resume_iteration = envoy_filter_callback_resume_encoding;
     platform_response_callbacks_.release_callbacks = envoy_filter_release_callbacks;
     // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
-    // Note that the weak_ptr here is heap allocated because it needs to be managed and held by
-    // platform specific runtimes. Therefore, it is NECESSARY that the platform deallocates the
-    // memory. Otherwise the weak ptr will leak.
+    // The weak_ptr is heap-allocated, because it must be managed (and eventually released) by
+    // platform code.
     platform_response_callbacks_.callback_context =
         new PlatformBridgeFilterWeakPtr{shared_from_this()};
     ENVOY_LOG(trace, "PlatformBridgeFilter({})->set_response_callbacks", filter_name_);
