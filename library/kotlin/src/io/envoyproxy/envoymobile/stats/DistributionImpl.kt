@@ -4,9 +4,9 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import java.lang.ref.WeakReference
 
 /**
- * Envoy implementation of a `Histogram` for measurements of generic int values
+ * Envoy implementation of a `Distribution` for measurements of quantile data for int values
  */
-internal class HistogramImpl : Histogram {
+internal class DistributionImpl : Distribution {
   internal val envoyEngine: WeakReference<EnvoyEngine>
   internal val elements: String
 

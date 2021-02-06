@@ -21,8 +21,8 @@ public protocol PulseClient: AnyObject {
   /// - returns: A Timer based on the joined elements to track a distribution of durations
   func timer(elements: [Element]) -> Timer
 
-  /// - parameter elements: Elements to identify a histogram
+  /// - parameter elements: Elements to identify a distribution
   ///
-  /// - returns: A Histogram based on the joined elements to track generic value amounts
-  func histogram(elements: [Element]) -> Histogram
+  /// - returns: A Distribution based on the joined elements to track quantile stats
+  func distribution(elements: [Element]) -> Distribution
 }

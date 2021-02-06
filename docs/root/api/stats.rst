@@ -93,22 +93,22 @@ You can view the cumulative stats like quantile data (p50/p90/etc.) and average 
 
   // Add a new duration to the underlying timer distribution
   // Kotlin
-  timer.recordDuration(5)
+  timer.completeWithDuration(5)
 
   // Swift
-  timer.recordDuration(durationMs: 5)
+  timer.completeWithDuration(durationMs: 5)
 
--------------
-``Histogram``
--------------
-Use ``Histogram`` to track a distribution of int values.
-You can view the cumulative stats like quantile data (p50/p90/etc.) and value averages.
+----------------
+``Distribution``
+----------------
+Use ``Distribution`` to track a distribution of int values.
+You can view the cumulative stats like quantile data (p50/p90/etc.), sum, and averages.
 
 **Example**::
 
-  // Add a new value to the underlying histogram distribution
+  // Add a new value to the underlying distribution
   // Kotlin
-  histogram.recordValue(5)
+  distribution.recordValue(5)
 
   // Swift
-  histogram.recordValue(value: 5)
+  distribution.recordValue(value: 5)

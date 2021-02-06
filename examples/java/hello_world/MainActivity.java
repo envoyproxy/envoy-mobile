@@ -7,10 +7,10 @@ import android.os.HandlerThread;
 import android.util.Log;
 import io.envoyproxy.envoymobile.AndroidEngineBuilder;
 import io.envoyproxy.envoymobile.Counter;
+import io.envoyproxy.envoymobile.Distribution;
 import io.envoyproxy.envoymobile.Engine;
 import io.envoyproxy.envoymobile.Element;
 import io.envoyproxy.envoymobile.Gauge;
-import io.envoyproxy.envoymobile.Histogram;
 import io.envoyproxy.envoymobile.RequestHeaders;
 import io.envoyproxy.envoymobile.RequestHeadersBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
@@ -143,8 +143,8 @@ public class MainActivity extends Activity {
 
     final Timer timer =
         engine.pulseClient().timer(new Element("foo"), new Element("bar"), new Element("timer"));
-    final Histogram histogram = engine.pulseClient().histogram(
-        new Element("foo"), new Element("bar"), new Element("histogram"));
+    final Distribution distribution = engine.pulseClient().distribution(
+        new Element("foo"), new Element("bar"), new Element("distribution"));
 
     counter.increment(1);
     counter.increment(5);
@@ -153,7 +153,7 @@ public class MainActivity extends Activity {
     gauge.add(10);
     gauge.sub(1);
 
-    timer.recordDuration(15);
-    histogram.recordValue(15);
+    timer.completeWithDuration(15);
+    distribution.recordValue(15);
   }
 }

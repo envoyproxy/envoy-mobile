@@ -1,9 +1,9 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// The implementation of histogram that can track a distribution of generic values
+/// The implementation of distribution tracking quantile/sum/average stats
 @objcMembers
-class HistogramImpl: NSObject, Histogram {
+class DistributionImpl: NSObject, Distribution {
   private let series: String
   private weak var engine: EnvoyEngine?
 
@@ -13,7 +13,7 @@ class HistogramImpl: NSObject, Histogram {
     super.init()
   }
 
-  /// Record a new value for the histogram distribution.
+  /// Record a new int value for the distribution.
   /// TODO: potentially raise error to platform if the operation is not successful.
   func recordValue(value: Int) {
     guard let engine = self.engine else {

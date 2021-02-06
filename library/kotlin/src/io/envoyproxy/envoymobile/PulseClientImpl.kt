@@ -21,7 +21,7 @@ internal class PulseClientImpl constructor(
     return TimerImpl(engine, elements.asList())
   }
 
-  override fun histogram(vararg elements: Element): Histogram {
-    return HistogramImpl(engine, elements.asList())
+  override fun distribution(vararg elements: Element): Distribution {
+    return DistributionImpl(engine, elements.asList())
   }
 }

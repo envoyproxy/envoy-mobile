@@ -135,7 +135,7 @@ NSString *_REQUEST_SCHEME = @"https";
   Element *elementCounter = [[Element alloc] initWithStringLiteral:@"counter"];
   Element *elementGauge = [[Element alloc] initWithStringLiteral:@"gauge"];
   Element *elementTimer = [[Element alloc] initWithStringLiteral:@"timer"];
-  Element *elementHistogram = [[Element alloc] initWithStringLiteral:@"histogram"];
+  Element *elementDistribution = [[Element alloc] initWithStringLiteral:@"distribution"];
   id<Counter> counter =
       [self.pulseClient counterWithElements:@[ elementFoo, elementBar, elementCounter ]];
   [counter incrementWithCount:1];
@@ -147,10 +147,10 @@ NSString *_REQUEST_SCHEME = @"https";
   [gauge subWithAmount:1];
 
   id<Timer> timer = [self.pulseClient timerWithElements:@[ elementFoo, elementBar, elementTimer ]];
-  [timer recordDurationWithDurationMs:15];
-  id<Histogram> histogram =
-      [self.pulseClient histogramWithElements:@[ elementFoo, elementBar, elementHistogram ]];
-  [histogram recordValueWithValue:15];
+  [timer completeWithDurationWithDurationMs:15];
+  id<Distribution> distribution =
+      [self.pulseClient distributionWithElements:@[ elementFoo, elementBar, elementDistribution ]];
+  [distribution recordValueWithValue:15];
 }
 
 #pragma mark - UITableView

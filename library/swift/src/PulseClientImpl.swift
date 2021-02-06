@@ -24,7 +24,7 @@ extension PulseClientImpl: PulseClient {
     return TimerImpl(elements: elements, engine: self.engine)
   }
 
-  func histogram(elements: [Element]) -> Histogram {
-    return HistogramImpl(elements: elements, engine: self.engine)
+  func distribution(elements: [Element]) -> Distribution {
+    return DistributionImpl(elements: elements, engine: self.engine)
   }
 }

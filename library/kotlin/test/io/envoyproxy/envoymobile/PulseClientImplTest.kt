@@ -72,11 +72,11 @@ class PulseClientImplTest {
   }
 
   @Test
-  fun `timer delegates to engine with value for record and unit measure`() {
+  fun `timer delegates to engine with duration for record`() {
     val pulseClient = PulseClientImpl(envoyEngine)
     val timer = pulseClient.timer(Element("test"), Element("stat"))
 
-    timer.recordDuration(5)
+    timer.completeWithDuration(5)
 
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val durationCaptor = ArgumentCaptor.forClass(Int::class.java)
@@ -86,11 +86,11 @@ class PulseClientImplTest {
   }
 
   @Test
-  fun `histogram generic delegates to engine with value for record and unit measure`() {
+  fun `distribution delegates to engine with value for record`() {
     val pulseClient = PulseClientImpl(envoyEngine)
-    val histogram = pulseClient.histogram(Element("test"), Element("stat"))
+    val distribution = pulseClient.distribution(Element("test"), Element("stat"))
 
-    histogram.recordValue(5)
+    distribution.recordValue(5)
 
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val valueCaptor = ArgumentCaptor.forClass(Int::class.java)

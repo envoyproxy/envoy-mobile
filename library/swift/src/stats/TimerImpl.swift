@@ -15,7 +15,7 @@ class TimerImpl: NSObject, Timer {
 
   /// Record a new duration value for the distribution.
   /// TODO: potentially raise error to platform if the operation is not successful.
-  func recordDuration(durationMs: Int) {
+  func completeWithDuration(durationMs: Int) {
     guard let engine = self.engine else {
       return
     }

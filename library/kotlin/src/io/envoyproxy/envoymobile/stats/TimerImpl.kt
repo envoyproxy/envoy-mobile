@@ -15,7 +15,7 @@ internal class TimerImpl : Timer {
     this.elements = elements.joinToString(separator = ".") { it.value }
   }
 
-  override fun recordDuration(durationMs: Int) {
+  override fun completeWithDuration(durationMs: Int) {
     envoyEngine.get()?.recordHistogramDuration(elements, durationMs)
   }
 }
