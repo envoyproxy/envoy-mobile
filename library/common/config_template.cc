@@ -105,9 +105,9 @@ static_resources:
                               R"(
     upstream_connection_options: &upstream_opts
       tcp_keepalive:
-        keepalive_interval: 10
+        keepalive_interval: 8
         keepalive_probes: 1
-        keepalive_time: 5
+        keepalive_time: 2
     circuit_breakers: &circuit_breakers_settings
       thresholds:
         - priority: DEFAULT
@@ -203,6 +203,13 @@ stats_sinks:
     typed_config:
       "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
       transport_api_version: V3
+      report_counters_as_deltas: true
+      grpc_service:
+        envoy_grpc:
+          cluster_name: stats
+  - name: envoy.stat_sinks.metrics_service.mobile
+    typed_config:
+      "@type": type.googleapis.com/envoymobile.extensions.stat_sinks.metrics_service.EnvoyMobileMetricsServiceConfig
       report_counters_as_deltas: true
       grpc_service:
         envoy_grpc:
