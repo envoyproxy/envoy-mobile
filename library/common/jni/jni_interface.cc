@@ -116,6 +116,26 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), amount);
 }
 
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv* env,
+                                                                         jclass, // class
+                                                                         jlong engine,
+                                                                         jstring elements,
+                                                                         jint durationMs) {
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), durationMs,
+                                MILLISECONDS);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* env,
+                                                                      jclass, // class
+                                                                      jlong engine,
+                                                                      jstring elements,
+                                                                      jint value) {
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value,
+                                UNSPECIFIED);
+}
+
 // JvmCallbackContext
 
 static void pass_headers(const char* method, envoy_headers headers, jobject j_context) {
@@ -612,7 +632,10 @@ static const void* jvm_http_filter_init(const void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_filter_init");
 
   JNIEnv* env = get_env();
-  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  envoy_http_filter* c_filter = static_cast<envoy_http_filter*>(const_cast<void*>(context));
+  jobject j_context = static_cast<jobject>(const_cast<void*>(c_filter->static_context));
+
   __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "j_context: %p", j_context);
 
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
