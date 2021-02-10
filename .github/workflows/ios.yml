@@ -50,6 +50,8 @@ jobs:
         run: bazelisk run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
       - name: 'Check liveliness'
         run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
+      - run: cat /tmp/envoy.log
+        if: ${{ always() }}
   macobjc:
     name: mac_objc_helloworld
     needs: macdist
