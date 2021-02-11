@@ -1,11 +1,13 @@
 package io.envoyproxy.envoymobile.engine;
 
 import java.util.Map;
+import java.util.List;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import io.envoyproxy.envoymobile.engine.types.EnvoyMobilePair;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
@@ -93,8 +95,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return A status indicating if the action was successful.
    */
   @Override
-  public int recordCounterInc(String elements, int count) {
-    return JniLibrary.recordCounterInc(engineHandle, elements, count);
+  public int recordCounterInc(String elements, List<EnvoyMobilePair> tags, int count) {
+    return JniLibrary.recordCounterInc(engineHandle, elements, tags, count);
   }
 
   /**

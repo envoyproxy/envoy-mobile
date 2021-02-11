@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
+import io.envoyproxy.envoymobile.engine.types.EnvoyMobilePair
 
 /**
  * Mock implementation of `EnvoyEngine`. Used internally for testing the bridging layer & mocking.
@@ -17,7 +18,7 @@ internal class MockEnvoyEngine : EnvoyEngine {
 
   override fun startStream(callbacks: EnvoyHTTPCallbacks?): EnvoyHTTPStream = MockEnvoyHTTPStream(callbacks!!)
 
-  override fun recordCounterInc(elements: String, count: Int): Int = 0
+  override fun recordCounterInc(elements: String, tags: List<EnvoyMobilePair>, count: Int): Int = 0
 
   override fun recordGaugeSet(elements: String, value: Int): Int = 0
 

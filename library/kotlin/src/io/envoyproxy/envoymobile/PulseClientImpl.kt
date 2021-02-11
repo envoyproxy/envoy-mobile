@@ -13,6 +13,10 @@ internal class PulseClientImpl constructor(
     return CounterImpl(engine, elements.asList())
   }
 
+  override fun counter(vararg elements: Element, tags: List<Tag>): Counter {
+    return CounterImpl(engine, elements.asList(), tags)
+  }
+
   override fun gauge(vararg elements: Element): Gauge {
     return GaugeImpl(engine, elements.asList())
   }

@@ -91,8 +91,37 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplateString(JNIE
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
     JNIEnv* env,
     jclass, // class
-    jlong engine, jstring elements, jint count) {
-  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), count);
+    jlong engine, jstring elements, 
+    jobject tags, // list of tags
+    jint count) {
+    
+    jclass java_util_ArrayList = static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
+    jmethodID java_util_ArrayList_get  = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
+
+    jint len = env->CallIntMethod(tags, env->GetMethodID (java_util_ArrayList, "size", "()I"));
+    char*[][] result = char*[len][2];
+    result.reserve(len);
+  
+    for (jint i=0; i<len; i++) {
+      jobject tagObject= env->CallObjectMethod(tags, java_util_ArrayList_get, i);
+      jclass pairClass = env->GetObjectClass(tagObject);
+      jfieldID keyFid = env->GetFieldID(pairClass, "key", "Ljava/lang/String;");
+      jfieldID valueFid = env->GetFieldID(pairClass, "value", "Ljava/lang/String;");
+
+      jstring key = static_cast<jstring>(env->GetObjectField(tagObject, keyFid));
+      jstring value = static_cast<jstring>(env->GetObjectField(tagObject, keyFid));
+      const char* keyChar = env->GetStringUTFChars(key, nullptr);
+      const char* valueChar = env->GetStringUTFChars(value, nullptr);
+      
+      result[i][0] = keyChar;
+      result[i][1] = valueChar;
+  
+      env->ReleaseStringUTFChars(key, keyChar);
+      env->ReleaseStringUTFChars(value, valueChar);
+      env->DeleteLocalRef(key);
+      env->DeleteLocalRef(value);
+  }
+  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), result, count);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(

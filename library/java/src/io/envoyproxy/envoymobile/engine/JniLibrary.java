@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
+import io.envoyproxy.envoymobile.engine.types.EnvoyMobilePair;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -161,7 +162,8 @@ class JniLibrary {
    * @param count Amount to add to the counter.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordCounterInc(long engine, String elements, int count);
+  protected static native int recordCounterInc(
+    long engine, String elements, List<EnvoyMobilePair> tags, int count);
 
   /**
    * Set a gauge of a given string of elements with the given value.

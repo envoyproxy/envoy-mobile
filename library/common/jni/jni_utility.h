@@ -1,6 +1,7 @@
 #pragma once
 
 #include <jni.h>
+#include <vector>
 
 #include "library/common/types/c_types.h"
 
@@ -29,3 +30,6 @@ envoy_data* buffer_to_native_data_ptr(JNIEnv* env, jobject j_data);
 envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers);
 
 envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers);
+
+std::vector<std::pair<std::string, std::string>> 
+    to_native_string_pair(JNIEnv* env, jclass envoy_mobile_pair);

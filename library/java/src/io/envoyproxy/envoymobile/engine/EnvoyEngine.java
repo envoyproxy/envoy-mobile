@@ -1,8 +1,11 @@
 package io.envoyproxy.envoymobile.engine;
 
+import java.util.List;
+
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import io.envoyproxy.envoymobile.engine.types.EnvoyMobilePair;
 
 /* Wrapper layer for calling into Envoy's C/++ API. */
 public interface EnvoyEngine {
@@ -43,7 +46,7 @@ public interface EnvoyEngine {
    * @param count    Amount to add to the counter.
    * @return A status indicating if the action was successful.
    */
-  int recordCounterInc(String elements, int count);
+  int recordCounterInc(String elements, List<EnvoyMobilePair> tags, int count);
 
   /**
    * Set a gauge of a given string of elements with the given value.
