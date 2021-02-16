@@ -103,12 +103,16 @@ TEST_P(PlatformBridgeIntegrationTest, MultipleFilters) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter_2.on_response_data = [](envoy_data c_data, bool,
+  platform_filter_2.on_response_data = [](envoy_data c_data, bool end_stream,
                                           const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations =
     static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_response_data_calls++;
-    return {kEnvoyFilterDataStatusStopIterationAndBuffer, c_data, nullptr};
+    if (!end_stream) {
+      return {kEnvoyFilterDataStatusStopIterationAndBuffer, c_data, nullptr};
+    } else {
+      return {kEnvoyFilterDataStatusResumeIteration, c_data, nullptr};
+    }
   };
   platform_filter_2.release_filter = [](const void*) {};
 
