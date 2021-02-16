@@ -86,8 +86,7 @@ TEST_P(PlatformBridgeIntegrationTest, MultipleFilters) {
   };
   platform_filter_1.on_response_data = [](envoy_data c_data, bool,
                                           const void* context) -> envoy_filter_data_status {
-    filter_invocations* invocations =
-    static_cast<filter_invocations*>(const_cast<void*>(context));
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_response_data_calls++;
     return {kEnvoyFilterDataStatusContinue, c_data, nullptr};
   };
@@ -105,8 +104,7 @@ TEST_P(PlatformBridgeIntegrationTest, MultipleFilters) {
   };
   platform_filter_2.on_response_data = [](envoy_data c_data, bool end_stream,
                                           const void* context) -> envoy_filter_data_status {
-    filter_invocations* invocations =
-    static_cast<filter_invocations*>(const_cast<void*>(context));
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_response_data_calls++;
     if (!end_stream) {
       return {kEnvoyFilterDataStatusStopIterationAndBuffer, c_data, nullptr};
@@ -121,8 +119,7 @@ TEST_P(PlatformBridgeIntegrationTest, MultipleFilters) {
   auto response = codec_client_->makeHeaderOnlyRequest(default_request_headers_);
 
   // Wait for frames to arrive upstream.
-  ASSERT_TRUE(fake_upstreams_[0]->waitForHttpConnection(*dispatcher_,
-  fake_upstream_connection_));
+  ASSERT_TRUE(fake_upstreams_[0]->waitForHttpConnection(*dispatcher_, fake_upstream_connection_));
   ASSERT_TRUE(fake_upstream_connection_->waitForNewStream(*dispatcher_, upstream_request_));
   ASSERT_TRUE(upstream_request_->waitForEndStream(*dispatcher_));
 
