@@ -107,7 +107,8 @@ TEST_P(PlatformBridgeIntegrationTest, MultipleFilters) {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_response_data_calls++;
     if (!end_stream) {
-      return {kEnvoyFilterDataStatusStopIterationAndBuffer, c_data, nullptr};
+      c_data.release(c_data.context);
+      return {kEnvoyFilterDataStatusStopIterationAndBuffer, envoy_nodata, nullptr};
     } else {
       return {kEnvoyFilterDataStatusResumeIteration, c_data, nullptr};
     }
