@@ -68,7 +68,7 @@ Http::FilterHeadersStatus LocalErrorFilter::encodeHeaders(Http::ResponseHeaderMa
     uint64_t http_status = Grpc::Utility::grpcToHttpStatus(grpc_status.value());
     mapLocalHttpResponseToError(http_status, headers);
     headers.addCopy(Http::InternalHeaders::get().ErrorMessage,
-                      Grpc::Common::getGrpcMessage(headers));
+                    Grpc::Common::getGrpcMessage(headers));
     return Http::FilterHeadersStatus::Continue;
   }
 
