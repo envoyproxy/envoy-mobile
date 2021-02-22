@@ -90,11 +90,10 @@ final class ReceiveErrorTests: XCTestCase {
 
     client
       .newGRPCStreamPrototype()
-      .newStreamPrototype()
       .setOnResponseHeaders { _, _ in
         XCTFail("Headers received instead of expected error")
       }
-      .setOnResponseMessage { _, _ in
+      .setOnResponseMessage { _ in
         XCTFail("Message received instead of expected error")
       }
       // The unmatched expecation will cause a local reply which gets translated in Envoy Mobile to
