@@ -87,7 +87,6 @@ final class ReceiveErrorTests: XCTestCase {
                                                    path: "/pb.api.v1.Foo/GetBar").build()
     let message = Data([1, 2, 3, 4, 5])
 
-
     client
       .newGRPCStreamPrototype()
       .setOnResponseHeaders { _, _ in
