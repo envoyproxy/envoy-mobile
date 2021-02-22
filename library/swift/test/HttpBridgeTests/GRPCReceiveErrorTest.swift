@@ -3,8 +3,6 @@ import EnvoyEngine
 import Foundation
 import XCTest
 
-private let kGRPCMessage = Data([1, 2, 3, 4, 5])
-
 final class ReceiveErrorTests: XCTestCase {
   func testReceiveError() throws {
     // swiftlint:disable:next line_length
@@ -87,6 +85,8 @@ final class ReceiveErrorTests: XCTestCase {
 
     let requestHeaders = GRPCRequestHeadersBuilder(scheme: "https", authority: "example.com",
                                                    path: "/pb.api.v1.Foo/GetBar").build()
+    let message = Data([1, 2, 3, 4, 5])
+
 
     client
       .newGRPCStreamPrototype()
@@ -104,7 +104,7 @@ final class ReceiveErrorTests: XCTestCase {
       }
       .start()
       .sendHeaders(requestHeaders, endStream: true)
-      .sendMessage(kGRPCMessage)
+      .sendMessage(message)
 
     XCTAssertEqual(XCTWaiter.wait(for: [filterExpectation, runExpectation], timeout: 1), .completed)
   }
