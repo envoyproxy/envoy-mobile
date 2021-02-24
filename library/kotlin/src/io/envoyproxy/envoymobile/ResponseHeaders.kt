@@ -15,7 +15,7 @@ class ResponseHeaders : Headers {
    * HTTP status code received with the response.
    */
   val httpStatus: Int? by lazy {
-    value(":status")?.first()?.toIntOrNull().takeIf { it >= 0 }
+    value(":status")?.first()?.toIntOrNull()?.takeIf { it >= 0 }
   }
 
   /**
