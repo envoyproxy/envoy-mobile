@@ -42,7 +42,7 @@ public:
    */
   envoy_status_t recordCounterInc(
     const std::string& elements, 
-    std::list<std::pair<std::string, std::string>> tags, uint64_t count);
+    char*[][] tags, uint64_t count);
 
   /**
    * Set a gauge of a given string of elements with the given value.
