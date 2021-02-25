@@ -107,12 +107,21 @@ Engine::~Engine() {
 }
 
 envoy_status_t Engine::recordCounterInc(
-  const std::string& elements, char*[][] tags, uint64_t count) {
+  const std::string& elements, const char * tagArr[][2], uint64_t tagArrSize, uint64_t count) {
+  Stats::StatNameTagVector tags;
+  Stats::StatNameSetPtr stat_name_set_ = client_scope_->symbolTable().makeSet("Pulse");
+  for(uint64_t i = 0; i < tagArrSize; i++) {
+    const char* keyInChars = tagArr[i][0];
+    std::string key(keyInChars);
+    const char* valInChars = tagArr[i][1];
+    std::string val(valInChars);
+    tags.push_back({stat_name_set_->add(key), stat_name_set_->add(val)});
+  }
   if (server_ && client_scope_) {
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, count]() -> void {
+    server_->dispatcher().post([this, name, tags, count]() -> void {
       Stats::Utility::counterFromElements(*client_scope_, 
-        {Stats::DynamicName(name)}).add(count);
+        {Stats::DynamicName(name)}, tags).add(count);
     });
     return ENVOY_SUCCESS;
   }

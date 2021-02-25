@@ -99,7 +99,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
     jmethodID java_util_ArrayList_get  = env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
 
     jint len = env->CallIntMethod(tags, env->GetMethodID (java_util_ArrayList, "size", "()I"));
-    char*[][] result = char*[len][2];
+    const char * result[][] = char * [len][2];
     result.reserve(len);
   
     for (jint i=0; i<len; i++) {
@@ -113,8 +113,8 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
       const char* keyChar = env->GetStringUTFChars(key, nullptr);
       const char* valueChar = env->GetStringUTFChars(value, nullptr);
       
-      result[i][0] = keyChar;
-      result[i][1] = valueChar;
+      *result[i][0] = keyChar;
+      *result[i][1] = valueChar;
   
       env->ReleaseStringUTFChars(key, keyChar);
       env->ReleaseStringUTFChars(value, valueChar);

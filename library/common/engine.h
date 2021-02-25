@@ -41,8 +41,7 @@ public:
    * @param count, amount to add to the counter.
    */
   envoy_status_t recordCounterInc(
-    const std::string& elements, 
-    char*[][] tags, uint64_t count);
+    const std::string& elements, const char * tagArr[][2], uint64_t tagArrSize, uint64_t count);
 
   /**
    * Set a gauge of a given string of elements with the given value.
