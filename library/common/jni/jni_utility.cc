@@ -69,6 +69,7 @@ envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
     jmethodID jmid_array = env->GetMethodID(jcls_ByteBuffer, "array", "()[B");
     jbyteArray array = static_cast<jbyteArray>(env->CallObjectMethod(j_data, jmid_array));
     env->DeleteLocalRef(jcls_ByteBuffer);
+    env->DeleteLocalRef(array);
     return array_to_native_data(env, array);
   }
 
