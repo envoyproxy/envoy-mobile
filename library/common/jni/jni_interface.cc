@@ -48,8 +48,10 @@ static JNIEnv* env() {
         const char *mstr = env->GetStringUTFChars(message, NULL);
         __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "exception check %s", mstr);
         __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check exit");
+        const char *nativeString = env->GetStringUTFChars(message, 0);
+        env->FatalError(nativeString);
     }
-    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check %d", (bool) env->ExceptionCheck());
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check end %d", (bool) env->ExceptionCheck());
     return env;
 }
 
