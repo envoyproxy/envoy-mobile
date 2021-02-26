@@ -92,7 +92,9 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint count) {
-  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), count);
+  // TODO: update to use tags passed from the downstream layer (java) when it's ready.
+  const char * tags[0][2];
+  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), tags, 0, count);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(

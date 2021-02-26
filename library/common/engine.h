@@ -40,7 +40,8 @@ public:
    * @param elements, joined elements of the timeseries.
    * @param count, amount to add to the counter.
    */
-  envoy_status_t recordCounterInc(const std::string& elements, uint64_t count);
+  envoy_status_t recordCounterInc(
+    const std::string& elements, const char * tag_arr[][2], uint64_t tag_arr_size, uint64_t count);
 
   /**
    * Set a gauge of a given string of elements with the given value.
@@ -74,8 +75,10 @@ public:
 
 private:
   envoy_status_t run(std::string config, std::string log_level);
+  Stats::StatNameTagVector transform(const char * tag_arr[][2], uint64_t tag_arr_len);
 
   Stats::ScopePtr client_scope_;
+  Stats::StatNameSetPtr stat_name_set_;
   envoy_engine_callbacks callbacks_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;

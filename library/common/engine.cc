@@ -57,6 +57,7 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           server_ = TS_UNCHECKED_READ(main_common_)->server();
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
+          stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
           http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
@@ -106,11 +107,14 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-envoy_status_t Engine::recordCounterInc(const std::string& elements, uint64_t count) {
-  if (server_ && client_scope_) {
+envoy_status_t Engine::recordCounterInc(
+  const std::string& elements, const char * tag_arr[][2], uint64_t tag_arr_len, uint64_t count) {
+  if (server_ && client_scope_ && stat_name_set_) {
+    Stats::StatNameTagVector tags = transform(tag_arr, tag_arr_len);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, count]() -> void {
-      Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(name)}).add(count);
+    server_->dispatcher().post([this, name, tags, count]() -> void {
+      Stats::Utility::counterFromElements(
+        *client_scope_, {Stats::DynamicName(name)}, tags).add(count);
     });
     return ENVOY_SUCCESS;
   }
@@ -188,4 +192,15 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_
 
 Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
 
+Stats::StatNameTagVector Engine::transform(const char * tag_arr[][2], uint64_t tag_arr_size) {
+  Stats::StatNameTagVector tags;
+  for(uint64_t i = 0; i < tag_arr_size; i++) {
+    const char* tag_key_chars = tag_arr[i][0];
+    std::string key(tag_key_chars);
+    const char* val_in_chars = tag_arr[i][1];
+    std::string val(val_in_chars);
+    tags.push_back({stat_name_set_->add(key), stat_name_set_->add(val)});
+  }
+  return tags;
+}
 } // namespace Envoy

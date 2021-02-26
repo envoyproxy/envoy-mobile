@@ -413,7 +413,9 @@ static envoy_data ios_get_string(const void *context) {
 }
 
 - (int)recordCounterInc:(NSString *)elements count:(NSUInteger)count {
-  return record_counter_inc(_engineHandle, elements.UTF8String, count);
+  // TODO: update to use real tag array when the API layer change is ready.
+  char * tags[0][2];
+  return record_counter_inc(_engineHandle, elements.UTF8String, tags, 0, count);
 }
 
 - (int)recordGaugeSet:(NSString *)elements value:(NSUInteger)value {

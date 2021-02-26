@@ -106,9 +106,13 @@ envoy_status_t set_preferred_network(envoy_network_t network);
  * Increment a counter with the given elements and by the given count.
  * @param engine, the engine that owns the counter.
  * @param elements, the string that identifies the counter to increment.
+ * @param tag_arr, the array of {key, value} pairs of tags.
+ * @param tag_arr_len, length of tag_arr
  * @param count, the count to increment by.
  */
-envoy_status_t record_counter_inc(envoy_engine_t engine, const char* elements, uint64_t count);
+envoy_status_t record_counter_inc(
+  envoy_engine_t, const char* elements, const char * tag_arr[][2], 
+  uint64_t tag_arr_len, uint64_t count);
 
 /**
  * Set a gauge of a given string of elements with the given value.
