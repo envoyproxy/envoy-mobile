@@ -12,6 +12,7 @@
 
 // NOLINT(namespace-envoy)
 
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
   JNIEnv* env = nullptr;
   if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION) != JNI_OK) {
@@ -31,20 +32,41 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
   return init_engine();
 }
 
+static JNIEnv* env() {
+    JNIEnv* env = get_env();
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check %d", (bool) env->ExceptionCheck());
+    if ((bool) env->ExceptionCheck()) {
+        __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check entry");
+        jthrowable e = env->ExceptionOccurred();
+        env->ExceptionClear(); // clears the exception; e seems to remain valid
+        __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check entry 2");
+        jclass clazz = env->GetObjectClass(e);
+        jmethodID getMessage = env->GetMethodID(clazz,
+                                                "getMessage",
+                                                "()Ljava/lang/String;");
+        jstring message = (jstring)env->CallObjectMethod(e, getMessage);
+        const char *mstr = env->GetStringUTFChars(message, NULL);
+        __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "exception check %s", mstr);
+        __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check exit");
+    }
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "---exception check %d", (bool) env->ExceptionCheck());
+    return env;
+}
+
 static void jvm_on_engine_running(void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_engine_running");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
-  jclass jcls_JvmonEngineRunningContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onEngineRunning = env->GetMethodID(
+  jclass jcls_JvmonEngineRunningContext = env()->GetObjectClass(j_context);
+  jmethodID jmid_onEngineRunning = env()->GetMethodID(
       jcls_JvmonEngineRunningContext, "invokeOnEngineRunning", "()Ljava/lang/Object;");
-  env->CallObjectMethod(j_context, jmid_onEngineRunning);
+  env()->CallObjectMethod(j_context, jmid_onEngineRunning);
 
-  env->DeleteLocalRef(jcls_JvmonEngineRunningContext);
+  env()->DeleteLocalRef(jcls_JvmonEngineRunningContext);
   // TODO(goaway): This isn't re-used by other engine callbacks, so it's safe to delete here.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
-  env->DeleteGlobalRef(j_context);
+  env()->DeleteGlobalRef(j_context);
 }
 
 static void jvm_on_exit(void*) {
@@ -139,13 +161,20 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* en
 // JvmCallbackContext
 
 static void pass_headers(const char* method, envoy_headers headers, jobject j_context) {
-  JNIEnv* env = get_env();
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
-  jmethodID jmid_passHeader = env->GetMethodID(jcls_JvmCallbackContext, method, "([B[BZ)V");
-  env->PushLocalFrame(headers.length * 2);
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers start");
+  // JNIEnv* env = get_env();
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
+  jmethodID jmid_passHeader = env()->GetMethodID(jcls_JvmCallbackContext, method, "([B[BZ)V");
+  env()->PushLocalFrame(headers.length * 2);
   jboolean start_headers = JNI_TRUE;
 
   for (envoy_header_size_t i = 0; i < headers.length; i++) {
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers %d", i);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers header len %d", headers.headers[i].key.length);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers header key %s", headers.headers[i].key.bytes);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers header value %s", headers.headers[i].value.bytes);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers exception check %d", (bool) env()->ExceptionCheck());
+
     // Note this is just an initial implementation, and we will pass a more optimized structure in
     // the future.
 
@@ -153,34 +182,38 @@ static void pass_headers(const char* method, envoy_headers headers, jobject j_co
     // requires a null-terminated *modified* UTF-8 string.
 
     // Create platform byte array for header key
-    jbyteArray key = env->NewByteArray(headers.headers[i].key.length);
+
+    jbyteArray key = env()->NewByteArray(headers.headers[i].key.length);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers a %d", i);
     // TODO: check if copied via isCopy.
     // TODO: check for NULL.
     // https://github.com/lyft/envoy-mobile/issues/758
-    void* critical_key = env->GetPrimitiveArrayCritical(key, nullptr);
+    void* critical_key = env()->GetPrimitiveArrayCritical(key, nullptr);
     memcpy(critical_key, headers.headers[i].key.bytes, headers.headers[i].key.length);
     // Here '0' (for which there is no named constant) indicates we want to commit the changes back
     // to the JVM and free the c array, where applicable.
-    env->ReleasePrimitiveArrayCritical(key, critical_key, 0);
-
+    env()->ReleasePrimitiveArrayCritical(key, critical_key, 0);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers b %d", i);
     // Create platform byte array for header value
-    jbyteArray value = env->NewByteArray(headers.headers[i].value.length);
+    jbyteArray value = env()->NewByteArray(headers.headers[i].value.length);
     // TODO: check for NULL.
-    void* critical_value = env->GetPrimitiveArrayCritical(value, nullptr);
+    void* critical_value = env()->GetPrimitiveArrayCritical(value, nullptr);
     memcpy(critical_value, headers.headers[i].value.bytes, headers.headers[i].value.length);
-    env->ReleasePrimitiveArrayCritical(value, critical_value, 0);
-
+    env()->ReleasePrimitiveArrayCritical(value, critical_value, 0);
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers c %d", i);
     // Pass this header pair to the platform
-    env->CallVoidMethod(j_context, jmid_passHeader, key, value, start_headers);
+    env()->CallVoidMethod(j_context, jmid_passHeader, key, value, start_headers);
 
     // We don't release local refs currently because we've pushed a large enough frame, but we could
     // consider this and/or periodically popping the frame.
+    __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers d %d", i);
     start_headers = JNI_FALSE;
   }
 
-  env->PopLocalFrame(nullptr);
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  env()->PopLocalFrame(nullptr);
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
   release_envoy_headers(headers);
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "pass_headers end");
 }
 
 // Platform callback implementation
@@ -189,21 +222,23 @@ static void pass_headers(const char* method, envoy_headers headers, jobject j_co
 
 static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_stream,
                             void* context) {
-  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers");
-  JNIEnv* env = get_env();
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers 1");
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   pass_headers("passHeader", headers, j_context);
-
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers exception check %d", (bool) env()->ExceptionCheck());
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers 2");
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
   jmethodID jmid_onHeaders =
-      env->GetMethodID(jcls_JvmCallbackContext, method, "(JZ)Ljava/lang/Object;");
+      env()->GetMethodID(jcls_JvmCallbackContext, method, "(JZ)Ljava/lang/Object;");
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers 3");
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
-  jobject result = env->CallObjectMethod(j_context, jmid_onHeaders, (jlong)headers.length,
+  jobject result = env()->CallObjectMethod(j_context, jmid_onHeaders, (jlong)headers.length,
                                          end_stream ? JNI_TRUE : JNI_FALSE);
 
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
-
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
+  __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_headers 4");
   return result;
 }
 
@@ -213,19 +248,19 @@ static void* jvm_on_response_headers(envoy_headers headers, bool end_stream, voi
 
 static envoy_filter_headers_status
 jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_headers("onRequestHeaders", headers, end_stream, const_cast<void*>(context)));
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_headers native_headers = to_native_headers(env, j_headers);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_headers native_headers = to_native_headers(env(), j_headers);
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_headers);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_headers);
 
   return (envoy_filter_headers_status){/*status*/ unboxed_status,
                                        /*headers*/ native_headers};
@@ -233,19 +268,19 @@ jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const
 
 static envoy_filter_headers_status
 jvm_http_filter_on_response_headers(envoy_headers headers, bool end_stream, const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_headers("onResponseHeaders", headers, end_stream, const_cast<void*>(context)));
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_headers native_headers = to_native_headers(env, j_headers);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_headers native_headers = to_native_headers(env(), j_headers);
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_headers);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_headers);
 
   return (envoy_filter_headers_status){/*status*/ unboxed_status,
                                        /*headers*/ native_headers};
@@ -253,28 +288,28 @@ jvm_http_filter_on_response_headers(envoy_headers headers, bool end_stream, cons
 
 static void* jvm_on_data(const char* method, envoy_data data, bool end_stream, void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_data");
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
   jmethodID jmid_onData =
-      env->GetMethodID(jcls_JvmCallbackContext, method, "([BZ)Ljava/lang/Object;");
+      env()->GetMethodID(jcls_JvmCallbackContext, method, "([BZ)Ljava/lang/Object;");
 
-  jbyteArray j_data = env->NewByteArray(data.length);
+  jbyteArray j_data = env()->NewByteArray(data.length);
   // TODO: check if copied via isCopy.
   // TODO: check for NULL.
   // https://github.com/lyft/envoy-mobile/issues/758
-  void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr);
+  void* critical_data = env()->GetPrimitiveArrayCritical(j_data, nullptr);
   memcpy(critical_data, data.bytes, data.length);
   // Here '0' (for which there is no named constant) indicates we want to commit the changes back
   // to the JVM and free the c array, where applicable.
-  env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
+  env()->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
   jobject result =
-      env->CallObjectMethod(j_context, jmid_onData, j_data, end_stream ? JNI_TRUE : JNI_FALSE);
+      env()->CallObjectMethod(j_context, jmid_onData, j_data, end_stream ? JNI_TRUE : JNI_FALSE);
 
   data.release(data.context);
-  env->DeleteLocalRef(j_data);
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  env()->DeleteLocalRef(j_data);
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
 
   return result;
 }
@@ -285,27 +320,27 @@ static void* jvm_on_response_data(envoy_data data, bool end_stream, void* contex
 
 static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data, bool end_stream,
                                                                 const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_data("onRequestData", data, end_stream, const_cast<void*>(context)));
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobject j_data = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_data native_data = buffer_to_native_data(env, j_data);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_data native_data = buffer_to_native_data(env(), j_data);
 
   envoy_headers* pending_headers = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (unboxed_status == kEnvoyFilterDataStatusResumeIteration) {
-    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
-    pending_headers = to_native_headers_ptr(env, j_headers);
-    env->DeleteLocalRef(j_headers);
+    jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 2));
+    pending_headers = to_native_headers_ptr(env(), j_headers);
+    env()->DeleteLocalRef(j_headers);
   }
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_data);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_data);
 
   return (envoy_filter_data_status){/*status*/ unboxed_status,
                                     /*data*/ native_data,
@@ -314,27 +349,27 @@ static envoy_filter_data_status jvm_http_filter_on_request_data(envoy_data data,
 
 static envoy_filter_data_status jvm_http_filter_on_response_data(envoy_data data, bool end_stream,
                                                                  const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_data("onResponseData", data, end_stream, const_cast<void*>(context)));
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobject j_data = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobject j_data = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_data native_data = buffer_to_native_data(env, j_data);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_data native_data = buffer_to_native_data(env(), j_data);
 
   envoy_headers* pending_headers = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (unboxed_status == kEnvoyFilterDataStatusResumeIteration) {
-    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
-    pending_headers = to_native_headers_ptr(env, j_headers);
-    env->DeleteLocalRef(j_headers);
+    jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 2));
+    pending_headers = to_native_headers_ptr(env(), j_headers);
+    env()->DeleteLocalRef(j_headers);
   }
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_data);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_data);
 
   return (envoy_filter_data_status){/*status*/ unboxed_status,
                                     /*data*/ native_data,
@@ -350,18 +385,18 @@ static void* jvm_on_metadata(envoy_headers metadata, void* context) {
 static void* jvm_on_trailers(const char* method, envoy_headers trailers, void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_trailers");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   pass_headers("passHeader", trailers, j_context);
 
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
   jmethodID jmid_onTrailers =
-      env->GetMethodID(jcls_JvmCallbackContext, method, "(J)Ljava/lang/Object;");
+      env()->GetMethodID(jcls_JvmCallbackContext, method, "(J)Ljava/lang/Object;");
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
-  jobject result = env->CallObjectMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
+  jobject result = env()->CallObjectMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
 
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
 
   return result;
 }
@@ -372,32 +407,32 @@ static void* jvm_on_response_trailers(envoy_headers trailers, void* context) {
 
 static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_headers trailers,
                                                                         const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_trailers("onRequestTrailers", trailers, const_cast<void*>(context)));
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobjectArray j_trailers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_headers native_trailers = to_native_headers(env, j_trailers);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_headers native_trailers = to_native_headers(env(), j_trailers);
 
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (unboxed_status == kEnvoyFilterTrailersStatusResumeIteration) {
-    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
-    pending_headers = to_native_headers_ptr(env, j_headers);
-    env->DeleteLocalRef(j_headers);
+    jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 2));
+    pending_headers = to_native_headers_ptr(env(), j_headers);
+    env()->DeleteLocalRef(j_headers);
 
-    jobject j_data = static_cast<jobject>(env->GetObjectArrayElement(result, 3));
-    pending_data = buffer_to_native_data_ptr(env, j_data);
-    env->DeleteLocalRef(j_data);
+    jobject j_data = static_cast<jobject>(env()->GetObjectArrayElement(result, 3));
+    pending_data = buffer_to_native_data_ptr(env(), j_data);
+    env()->DeleteLocalRef(j_data);
   }
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_trailers);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_trailers);
 
   return (envoy_filter_trailers_status){/*status*/ unboxed_status,
                                         /*trailers*/ native_trailers,
@@ -407,32 +442,32 @@ static envoy_filter_trailers_status jvm_http_filter_on_request_trailers(envoy_he
 
 static envoy_filter_trailers_status jvm_http_filter_on_response_trailers(envoy_headers trailers,
                                                                          const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(
       jvm_on_trailers("onResponseTrailers", trailers, const_cast<void*>(context)));
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobjectArray j_trailers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_headers native_trailers = to_native_headers(env, j_trailers);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_headers native_trailers = to_native_headers(env(), j_trailers);
 
   envoy_headers* pending_headers = nullptr;
   envoy_data* pending_data = nullptr;
   // Avoid out-of-bounds access to array when checking for optional pending entities.
   if (unboxed_status == kEnvoyFilterTrailersStatusResumeIteration) {
-    jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 2));
-    pending_headers = to_native_headers_ptr(env, j_headers);
-    env->DeleteLocalRef(j_headers);
+    jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 2));
+    pending_headers = to_native_headers_ptr(env(), j_headers);
+    env()->DeleteLocalRef(j_headers);
 
-    jobject j_data = static_cast<jobject>(env->GetObjectArrayElement(result, 3));
-    pending_data = buffer_to_native_data_ptr(env, j_data);
-    env->DeleteLocalRef(j_data);
+    jobject j_data = static_cast<jobject>(env()->GetObjectArrayElement(result, 3));
+    pending_data = buffer_to_native_data_ptr(env(), j_data);
+    env()->DeleteLocalRef(j_data);
   }
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_trailers);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_trailers);
 
   return (envoy_filter_trailers_status){/*status*/ unboxed_status,
                                         /*trailers*/ native_trailers,
@@ -445,9 +480,9 @@ static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks ca
 
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_http_filter_set_request_callbacks");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
 
   envoy_http_filter_callbacks* on_heap_callbacks =
       static_cast<envoy_http_filter_callbacks*>(safe_malloc(sizeof(envoy_http_filter_callbacks)));
@@ -455,10 +490,10 @@ static void jvm_http_filter_set_request_callbacks(envoy_http_filter_callbacks ca
   jlong callback_handle = reinterpret_cast<jlong>(on_heap_callbacks);
 
   jmethodID jmid_setRequestFilterCallbacks =
-      env->GetMethodID(jcls_JvmCallbackContext, "setRequestFilterCallbacks", "(J)V");
-  env->CallVoidMethod(j_context, jmid_setRequestFilterCallbacks, callback_handle);
+      env()->GetMethodID(jcls_JvmCallbackContext, "setRequestFilterCallbacks", "(J)V");
+  env()->CallVoidMethod(j_context, jmid_setRequestFilterCallbacks, callback_handle);
 
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
 }
 
 static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks,
@@ -466,9 +501,9 @@ static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
 
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_http_filter_set_response_callbacks");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
 
   envoy_http_filter_callbacks* on_heap_callbacks =
       static_cast<envoy_http_filter_callbacks*>(safe_malloc(sizeof(envoy_http_filter_callbacks)));
@@ -476,10 +511,10 @@ static void jvm_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
   jlong callback_handle = reinterpret_cast<jlong>(on_heap_callbacks);
 
   jmethodID jmid_setResponseFilterCallbacks =
-      env->GetMethodID(jcls_JvmCallbackContext, "setResponseFilterCallbacks", "(J)V");
-  env->CallVoidMethod(j_context, jmid_setResponseFilterCallbacks, callback_handle);
+      env()->GetMethodID(jcls_JvmCallbackContext, "setResponseFilterCallbacks", "(J)V");
+  env()->CallVoidMethod(j_context, jmid_setResponseFilterCallbacks, callback_handle);
 
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
 }
 
 static envoy_filter_resume_status
@@ -487,7 +522,7 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
                           envoy_headers* trailers, bool end_stream, const void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_resume");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jlong headers_length = -1;
   if (headers) {
@@ -496,15 +531,15 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
   }
   jbyteArray j_in_data = NULL;
   if (data) {
-    j_in_data = env->NewByteArray(data->length);
+    j_in_data = env()->NewByteArray(data->length);
     // TODO: check if copied via isCopy.
     // TODO: check for NULL.
     // https://github.com/lyft/envoy-mobile/issues/758
-    void* critical_data = env->GetPrimitiveArrayCritical(j_in_data, nullptr);
+    void* critical_data = env()->GetPrimitiveArrayCritical(j_in_data, nullptr);
     memcpy(critical_data, data->bytes, data->length);
     // Here '0' (for which there is no named constant) indicates we want to commit the changes back
     // to the JVM and free the c array, where applicable.
-    env->ReleasePrimitiveArrayCritical(j_in_data, critical_data, 0);
+    env()->ReleasePrimitiveArrayCritical(j_in_data, critical_data, 0);
   }
   jlong trailers_length = -1;
   if (trailers) {
@@ -512,32 +547,32 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
     pass_headers("passTrailer", *trailers, j_context);
   }
 
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmCallbackContext = env()->GetObjectClass(j_context);
   jmethodID jmid_onResume =
-      env->GetMethodID(jcls_JvmCallbackContext, method, "(J[BJZ)Ljava/lang/Object;");
+      env()->GetMethodID(jcls_JvmCallbackContext, method, "(J[BJZ)Ljava/lang/Object;");
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
   jobjectArray result = static_cast<jobjectArray>(
-      env->CallObjectMethod(j_context, jmid_onResume, headers_length, j_in_data, trailers_length,
+      env()->CallObjectMethod(j_context, jmid_onResume, headers_length, j_in_data, trailers_length,
                             end_stream ? JNI_TRUE : JNI_FALSE));
 
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
+  env()->DeleteLocalRef(jcls_JvmCallbackContext);
 
-  jobject status = env->GetObjectArrayElement(result, 0);
-  jobjectArray j_headers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 1));
-  jobject j_data = static_cast<jobject>(env->GetObjectArrayElement(result, 2));
-  jobjectArray j_trailers = static_cast<jobjectArray>(env->GetObjectArrayElement(result, 3));
+  jobject status = env()->GetObjectArrayElement(result, 0);
+  jobjectArray j_headers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 1));
+  jobject j_data = static_cast<jobject>(env()->GetObjectArrayElement(result, 2));
+  jobjectArray j_trailers = static_cast<jobjectArray>(env()->GetObjectArrayElement(result, 3));
 
-  int unboxed_status = unbox_integer(env, status);
-  envoy_headers* pending_headers = to_native_headers_ptr(env, j_headers);
-  envoy_data* pending_data = buffer_to_native_data_ptr(env, j_data);
-  envoy_headers* pending_trailers = to_native_headers_ptr(env, j_trailers);
+  int unboxed_status = unbox_integer(env(), status);
+  envoy_headers* pending_headers = to_native_headers_ptr(env(), j_headers);
+  envoy_data* pending_data = buffer_to_native_data_ptr(env(), j_data);
+  envoy_headers* pending_trailers = to_native_headers_ptr(env(), j_trailers);
 
-  env->DeleteLocalRef(result);
-  env->DeleteLocalRef(status);
-  env->DeleteLocalRef(j_headers);
-  env->DeleteLocalRef(j_data);
-  env->DeleteLocalRef(j_trailers);
+  env()->DeleteLocalRef(result);
+  env()->DeleteLocalRef(status);
+  env()->DeleteLocalRef(j_headers);
+  env()->DeleteLocalRef(j_data);
+  env()->DeleteLocalRef(j_trailers);
 
   return (envoy_filter_resume_status){/*status*/ unboxed_status,
                                       /*pending_headers*/ pending_headers,
@@ -565,29 +600,29 @@ static void* jvm_on_complete(void* context) {
 
 static void* call_jvm_on_error(envoy_error error, void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_error");
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
-  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmObserverContext = env()->GetObjectClass(j_context);
   jmethodID jmid_onError =
-      env->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI)Ljava/lang/Object;");
+      env()->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI)Ljava/lang/Object;");
 
-  jbyteArray j_error_message = env->NewByteArray(error.message.length);
+  jbyteArray j_error_message = env()->NewByteArray(error.message.length);
   // TODO: check if copied via isCopy.
   // TODO: check for NULL.
   // https://github.com/lyft/envoy-mobile/issues/758
-  void* critical_error_message = env->GetPrimitiveArrayCritical(j_error_message, nullptr);
+  void* critical_error_message = env()->GetPrimitiveArrayCritical(j_error_message, nullptr);
   memcpy(critical_error_message, error.message.bytes, error.message.length);
   // Here '0' (for which there is no named constant) indicates we want to commit the changes back
   // to the JVM and free the c array, where applicable.
-  env->ReleasePrimitiveArrayCritical(j_error_message, critical_error_message, 0);
+  env()->ReleasePrimitiveArrayCritical(j_error_message, critical_error_message, 0);
 
-  jobject result = env->CallObjectMethod(j_context, jmid_onError, error.error_code, j_error_message,
+  jobject result = env()->CallObjectMethod(j_context, jmid_onError, error.error_code, j_error_message,
                                          error.attempt_count);
 
   error.message.release(error.message.context);
-  env->DeleteLocalRef(jcls_JvmObserverContext);
-  env->DeleteLocalRef(j_error_message);
+  env()->DeleteLocalRef(jcls_JvmObserverContext);
+  env()->DeleteLocalRef(j_error_message);
   return result;
 }
 
@@ -600,15 +635,15 @@ static void* jvm_on_error(envoy_error error, void* context) {
 static void* call_jvm_on_cancel(void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_cancel");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
 
-  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmObserverContext = env()->GetObjectClass(j_context);
   jmethodID jmid_onCancel =
-      env->GetMethodID(jcls_JvmObserverContext, "onCancel", "()Ljava/lang/Object;");
-  jobject result = env->CallObjectMethod(j_context, jmid_onCancel);
+      env()->GetMethodID(jcls_JvmObserverContext, "onCancel", "()Ljava/lang/Object;");
+  jobject result = env()->CallObjectMethod(j_context, jmid_onCancel);
 
-  env->DeleteLocalRef(jcls_JvmObserverContext);
+  env()->DeleteLocalRef(jcls_JvmObserverContext);
   return result;
 }
 
@@ -631,23 +666,23 @@ static void jvm_http_filter_on_cancel(const void* context) {
 static const void* jvm_http_filter_init(const void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_filter_init");
 
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
 
   envoy_http_filter* c_filter = static_cast<envoy_http_filter*>(const_cast<void*>(context));
   jobject j_context = static_cast<jobject>(const_cast<void*>(c_filter->static_context));
 
   __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "j_context: %p", j_context);
 
-  jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
-  jmethodID jmid_create = env->GetMethodID(jcls_JvmFilterFactoryContext, "create",
+  jclass jcls_JvmFilterFactoryContext = env()->GetObjectClass(j_context);
+  jmethodID jmid_create = env()->GetMethodID(jcls_JvmFilterFactoryContext, "create",
                                            "()Lio/envoyproxy/envoymobile/engine/JvmFilterContext;");
 
-  jobject j_filter = env->CallObjectMethod(j_context, jmid_create);
+  jobject j_filter = env()->CallObjectMethod(j_context, jmid_create);
   __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "j_filter: %p", j_filter);
-  jobject retained_filter = env->NewGlobalRef(j_filter);
+  jobject retained_filter = env()->NewGlobalRef(j_filter);
 
-  env->DeleteLocalRef(jcls_JvmFilterFactoryContext);
-  env->DeleteLocalRef(j_filter);
+  env()->DeleteLocalRef(jcls_JvmFilterFactoryContext);
+  env()->DeleteLocalRef(j_filter);
 
   return retained_filter;
 }
@@ -655,17 +690,17 @@ static const void* jvm_http_filter_init(const void* context) {
 // EnvoyStringAccessor
 
 static envoy_data jvm_get_string(const void* context) {
-  JNIEnv* env = get_env();
+  // JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
-  jclass jcls_JvmStringAccessorContext = env->GetObjectClass(j_context);
+  jclass jcls_JvmStringAccessorContext = env()->GetObjectClass(j_context);
   jmethodID jmid_getString =
-      env->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()Ljava/nio/ByteBuffer;");
+      env()->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()Ljava/nio/ByteBuffer;");
   // Passed as a java.nio.ByteBuffer.
-  jobject j_data = env->CallObjectMethod(j_context, jmid_getString);
-  envoy_data native_data = buffer_to_native_data(env, j_data);
+  jobject j_data = env()->CallObjectMethod(j_context, jmid_getString);
+  envoy_data native_data = buffer_to_native_data(env(), j_data);
 
-  env->DeleteLocalRef(jcls_JvmStringAccessorContext);
-  env->DeleteLocalRef(j_data);
+  env()->DeleteLocalRef(jcls_JvmStringAccessorContext);
+  env()->DeleteLocalRef(j_data);
 
   return native_data;
 }
