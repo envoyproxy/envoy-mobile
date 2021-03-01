@@ -51,11 +51,11 @@ necessary tools::
 
 .. attention::
 
-    After this `change <https://github.com/envoyproxy/envoy/pull/12569>`_ Envoy starting
+    After this `change <https://github.com/envoyproxy/envoy/pull/12569>`_ Envoy started
     using split DWARF capabilities to reduce link time and binary size when compiling debug symbols.
     However, Bloaty (the analysis tool described below)
     does not support using ``.dwp`` files as a source for debug symbols
-    (tracked in this  `issue <https://github.com/google/bloaty/issues/156>`_). Therefore, a patch
+    (tracked in this `issue <https://github.com/google/bloaty/issues/156>`_). Therefore, a patch
     `like this <https://github.com/envoyproxy/envoy-mobile/issues/1274#issuecomment-788345216>`_
     must be applied to the Envoy submodule before compiling the binary described
     below.
