@@ -217,6 +217,7 @@ def _create_classes_jar(name, manifest, android_library):
     android_binary(
         name = android_binary_name,
         manifest = manifest,
+        custom_package = "does.not.matter",
         srcs = [],
         deps = [android_library],
     )
