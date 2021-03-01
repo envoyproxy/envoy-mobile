@@ -212,7 +212,7 @@ def _create_classes_jar(name, manifest, android_library):
     """
     android_binary_name = name + "_bin"
 
-    # This creates bazel-bin/library/kotlin/src/io/envoyproxy/envoymobile/{name}_bin_deploy.jar
+    # This creates bazel-bin/library/kotlin/io/envoyproxy/envoymobile/{name}_bin_deploy.jar
     # This jar has all the classes needed for our aar and will be our `classes.jar`
     android_binary(
         name = android_binary_name,

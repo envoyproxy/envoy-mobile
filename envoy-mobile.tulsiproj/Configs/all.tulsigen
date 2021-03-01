@@ -1,6 +1,6 @@
 {
   "additionalFilePaths" : [
-    "library/swift/src/BUILD",
+    "library/swift/BUILD",
     "library/swift/test/BUILD"
   ],
   "buildTargets" : [
@@ -8,7 +8,7 @@
     "//examples/objective-c/hello_world:appmain",
     "//examples/swift/hello_world:app",
     "//examples/swift/hello_world:appmain",
-    "//library/swift/src:ios_framework_archive",
+    "//library/swift:ios_framework_archive",
     "//library/swift/test:grpc_request_headers_builder_tests",
     "//library/swift/test:grpc_request_headers_builder_tests_lib",
     "//library/swift/test:grpc_stream_tests",
@@ -76,6 +76,6 @@
     "library",
     "library/objective-c/...",
     "library/swift/...",
-    "library/swift/src"
+    "library/swift"
   ]
 }

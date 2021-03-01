@@ -16,7 +16,7 @@
     }
   },
   "packages" : [
-    "library/swift/src",
+    "library/swift",
     "library/swift/test",
     "examples/objective-c/hello_world",
     "examples/swift/hello_world"

@@ -4,7 +4,7 @@ licenses(["notice"])  # Apache 2
 
 alias(
     name = "ios_framework",
-    actual = "//library/swift/src:ios_framework",
+    actual = "//library/swift:ios_framework",
     visibility = ["//visibility:public"],
 )
 
