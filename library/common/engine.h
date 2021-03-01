@@ -79,7 +79,8 @@ private:
   envoy_engine_callbacks callbacks_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
-  std::unique_ptr<Http::Dispatcher> http_dispatcher_;
+  std::unique_ptr<Http::Client> http_client_;
+  std::unique_ptr<Event::ProvisionalDispatcher> dispatcher_;
   std::unique_ptr<MobileMainCommon> main_common_ GUARDED_BY(mutex_);
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;

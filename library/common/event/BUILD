@@ -5,9 +5,9 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
-    name = "client_lib",
-    srcs = ["client.cc"],
-    hdrs = ["client.h"],
+    name = "provisional_dispatcher_lib",
+    srcs = ["provisional_dispatcher.cc"],
+    hdrs = ["provisional_dispatcher.h"],
     external_deps = ["abseil_optional"],
     repository = "@envoy",
     deps = [
@@ -18,9 +18,9 @@ envoy_cc_library(
         "//library/common/network:synthetic_address_lib",
         "//library/common/thread:lock_guard_lib",
         "//library/common/types:c_types_lib",
-        "//library/common/event:provisional_dispatcher_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//include/envoy/event:deferred_deletable",
+        "@envoy//include/envoy/event:dispatcher_interface",
         "@envoy//include/envoy/http:api_listener_interface",
         "@envoy//include/envoy/http:header_map_interface",
         "@envoy//include/envoy/stats:stats_interface",

@@ -6,8 +6,7 @@
 
 namespace Envoy {
 
-Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
-               std::atomic<envoy_network_t>& preferred_network)
+Engine::Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& preferred_network)
     : callbacks_(callbacks) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
@@ -19,11 +18,20 @@ Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char*
   // https://github.com/lyft/envoy-mobile/issues/720
   http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
 
-  // Start the Envoy on a dedicated thread.
-  main_thread_ = std::thread(&Engine::run, this, std::string(config), std::string(log_level));
+  // Create thread without starting anything.
+  main_thread_{};
 }
 
 envoy_status_t Engine::run(const std::string config, const std::string log_level) {
+  // Start the Envoy on the dedicated thread. Note: due to how the assignment operator works with
+  // std::thread, main_thread_ is the same object after this call, but its state is replaced with
+  // that of the temporary. The temporary object's state becomes the default state, which does
+  // nothing.
+  main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level));
+  return ENVOY_SUCCESS;
+}
+
+envoy_status_t Engine::main(const std::string config, const std::string log_level) {
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -186,6 +194,6 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_
   return ENVOY_FAILURE;
 }
 
-Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
+Http::Dispatcher& Engine::httpClient() { return *http_client_; }
 
 } // namespace Envoy
