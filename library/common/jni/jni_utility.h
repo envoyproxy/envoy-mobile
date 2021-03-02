@@ -39,3 +39,7 @@ envoy_data* buffer_to_native_data_ptr(JNIEnv* env, jobject j_data);
 envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers);
 
 envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers);
+
+void to_tag_arr(JNIEnv* env, jobject tags, const char** tag_arr[2], int len);
+
+int get_list_size(JNIEnv* env, jobject listObject);

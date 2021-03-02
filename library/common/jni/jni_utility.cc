@@ -157,3 +157,34 @@ envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers) {
   *native_headers = to_native_headers(env, headers);
   return native_headers;
 }
+
+void to_tag_arr(JNIEnv* env, jobject tags, const char** tag_arr[2], int len) {
+  jclass java_util_ArrayList =
+      static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
+  jmethodID java_util_ArrayList_get =
+      env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
+  for (jint i = 0; i < len; i++) {
+    jobject tagObject = env->CallObjectMethod(tags, java_util_ArrayList_get, i);
+    jclass pairClass = env->GetObjectClass(tagObject);
+    jfieldID keyFid = env->GetFieldID(pairClass, "key", "Ljava/lang/String;");
+    jfieldID valueFid = env->GetFieldID(pairClass, "value", "Ljava/lang/String;");
+    jstring key = static_cast<jstring>(env->GetObjectField(tagObject, keyFid));
+    jstring value = static_cast<jstring>(env->GetObjectField(tagObject, valueFid));
+    const char* keyChar = env->GetStringUTFChars(key, nullptr);
+    const char* valueChar = env->GetStringUTFChars(value, nullptr);
+    tag_arr[i][0] = keyChar;
+    tag_arr[i][1] = valueChar;
+    env->ReleaseStringUTFChars(key, keyChar);
+    env->ReleaseStringUTFChars(value, valueChar);
+    env->DeleteLocalRef(key);
+    env->DeleteLocalRef(value);
+  }
+}
+
+int get_list_size(JNIEnv* env, jobject listObject) {
+  jclass java_util_ArrayList =
+      static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
+  int len = static_cast<int>(
+      env->CallIntMethod(listObject, env->GetMethodID(java_util_ArrayList, "size", "()I")));
+  return len;
+}
