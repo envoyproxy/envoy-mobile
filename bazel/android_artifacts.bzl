@@ -256,6 +256,7 @@ def _create_sources_javadocs(name, android_library):
     java_binary(
         name = _sources_name,
         runtime_deps = [android_library],
+        main_class = "EngineImpl",
     )
 
     # This takes all the source files from the source jar and creates a javadoc.jar from it
