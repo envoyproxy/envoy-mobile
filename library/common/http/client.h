@@ -41,9 +41,7 @@ struct ClientStats {
  */
 class Client : public Logger::Loggable<Logger::Id::http> {
 public:
-  Client(std::atomic<envoy_network_t>& preferred_network);
-
-  void setApiListener(Event::Client& event_client, Stats::Scope& scope, ApiListener& api_listener);
+  Client(ApiListener& api_listener, Stats::Scope& scope, std::atomic<envoy_network_t>& preferred_network);
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and

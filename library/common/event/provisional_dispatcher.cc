@@ -1,16 +1,7 @@
-#include "library/common/http/dispatcher.h"
+#include "library/common/event/provisional_dispatcher.h"
 
-#include "common/buffer/buffer_impl.h"
 #include "common/common/lock_guard.h"
-#include "common/http/codes.h"
-#include "common/http/headers.h"
-#include "common/http/utility.h"
 
-#include "library/common/buffer/bridge_fragment.h"
-#include "library/common/buffer/utility.h"
-#include "library/common/http/header_utility.h"
-#include "library/common/http/headers.h"
-#include "library/common/network/synthetic_address_impl.h"
 #include "library/common/thread/lock_guard.h"
 
 namespace Envoy {

@@ -13,11 +13,6 @@ Engine::Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& p
   // https://github.com/lyft/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
 
-  // Create the Http::Dispatcher first since it contains initial queueing logic.
-  // TODO: consider centralizing initial queueing in this class.
-  // https://github.com/lyft/envoy-mobile/issues/720
-  http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
-
   // Create thread without starting anything.
   main_thread_{};
 }
@@ -42,7 +37,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                   log_flag.c_str(), log_level.c_str(),   nullptr};
 
       main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
-      event_dispatcher_ = &main_common_->server()->dispatcher();
+      dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>(&main_common_->server()->dispatcher());
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
@@ -62,17 +57,18 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
     postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
-        Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          server_ = TS_UNCHECKED_READ(main_common_)->server();
-          client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
-          auto api_listener = server_->listenerManager().apiListener()->get().http();
-          ASSERT(api_listener.has_value());
-          http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
-                                  api_listener.value());
-          if (callbacks_.on_engine_running != nullptr) {
-            callbacks_.on_engine_running(callbacks_.context);
-          }
-        });
+      Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
+        server_ = TS_UNCHECKED_READ(main_common_)->server();
+        client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
+        auto api_listener = server_->listenerManager().apiListener()->get().http();
+        ASSERT(api_listener.has_value());
+        http_dispatcher_ = std::make_unique<Http::Dispatcher>(api_listener.value(), server_->serverFactoryContext().scope(), preferred_network);
+        dispatcher_.run();
+        if (callbacks_.on_engine_running != nullptr) {
+          callbacks_.on_engine_running(callbacks_.context);
+        }
+      }
+    );
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.

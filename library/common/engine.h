@@ -30,10 +30,10 @@ public:
   ~Engine();
 
   /**
-   * Accessor for the http dispatcher.
-   * @return Http::Dispatcher&, the dispatcher being used by the engine.
+   * Accessor for the http dispatcher. Must be called from the dispatcher's context.
+   * @return Http::Client&, the dispatcher being used by the engine.
    */
-  Http::Dispatcher& httpDispatcher();
+  Http::Dispatcher& httpClient();
 
   /**
    * Increment a counter with a given string of elements and by the given count.

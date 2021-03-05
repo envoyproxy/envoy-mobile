@@ -195,80 +195,77 @@ Client::Client(std::atomic<envoy_network_t>& preferred_network)
 
 envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks) {
-  dispatcher_.post([this, new_stream_handle, bridge_callbacks]() -> void {
-    Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
-    direct_stream->callbacks_ =
-        std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
+  direct_stream->callbacks_ =
+      std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
-    // Note: streams created by Envoy Mobile are tagged as is_internally_created. This means that
-    // the Http::ConnectionManager _will not_ sanitize headers when creating a stream.
-    direct_stream->request_decoder_ =
-      api_listener_->newStream(*direct_stream->callbacks_, true /* is_internally_created */);
+  // Note: streams created by Envoy Mobile are tagged as is_internally_created. This means that
+  // the Http::ConnectionManager _will not_ sanitize headers when creating a stream.
+  direct_stream->request_decoder_ =
+    api_listener_->newStream(*direct_stream->callbacks_, true /* is_internally_created */);
 
-    streams_.emplace(new_stream_handle, std::move(direct_stream));
-    ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
-  });
+  streams_.emplace(new_stream_handle, std::move(direct_stream));
+  ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
 
   return ENVOY_SUCCESS;
 }
 
 envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers,
                                        bool end_stream) {
-  dispatcher_.post([this, stream, headers, end_stream]() -> void {
-    Client::DirectStreamSharedPtr direct_stream = getStream(stream);
-    // If direct_stream is not found, it means the stream has already closed or been reset
-    // and the appropriate callback has been issued to the caller. There's nothing to do here
-    // except silently swallow this.
-    // TODO: handle potential race condition with cancellation or failure get a stream in the
-    // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
-    // from the caller.
-    // https://github.com/lyft/envoy-mobile/issues/301
-    if (direct_stream) {
-      RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
-      setDestinationCluster(*internal_headers);
-      // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
-      // enabled. This is done here because the ApiListener's synthetic connection would make the
-      // Http::ConnectionManager set the scheme to http otherwise. In the future we might want to
-      // configure the connection instead of setting the header here.
-      // https://github.com/envoyproxy/envoy/issues/10291
-      //
-      // Setting this header is also currently important because Envoy Mobile starts stream with the
-      // ApiListener setting the is_internally_created bool to true. This means the
-      // Http::ConnectionManager *will not* mutate Envoy Mobile's request headers. One of the
-      // mutations done is adding the x-forwarded-proto header if not present. Unfortunately, the
-      // router relies on the present of this header to determine if it should provided a route for
-      // a request here:
-      // https://github.com/envoyproxy/envoy/blob/c9e3b9d2c453c7fe56a0e3615f0c742ac0d5e768/source/common/router/config_impl.cc#L1091-L1096
-      internal_headers->setReferenceForwardedProto(Headers::get().SchemeValues.Https);
-      ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
-                *internal_headers);
-      direct_stream->request_decoder_->decodeHeaders(std::move(internal_headers), end_stream);
-    }
-  });
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  // If direct_stream is not found, it means the stream has already closed or been reset
+  // and the appropriate callback has been issued to the caller. There's nothing to do here
+  // except silently swallow this.
+  // TODO: handle potential race condition with cancellation or failure get a stream in the
+  // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
+  // from the caller.
+  // https://github.com/lyft/envoy-mobile/issues/301
+  if (direct_stream) {
+    RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
+    setDestinationCluster(*internal_headers);
+    // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
+    // enabled. This is done here because the ApiListener's synthetic connection would make the
+    // Http::ConnectionManager set the scheme to http otherwise. In the future we might want to
+    // configure the connection instead of setting the header here.
+    // https://github.com/envoyproxy/envoy/issues/10291
+    //
+    // Setting this header is also currently important because Envoy Mobile starts stream with the
+    // ApiListener setting the is_internally_created bool to true. This means the
+    // Http::ConnectionManager *will not* mutate Envoy Mobile's request headers. One of the
+    // mutations done is adding the x-forwarded-proto header if not present. Unfortunately, the
+    // router relies on the present of this header to determine if it should provided a route for
+    // a request here:
+    // https://github.com/envoyproxy/envoy/blob/c9e3b9d2c453c7fe56a0e3615f0c742ac0d5e768/source/common/router/config_impl.cc#L1091-L1096
+    internal_headers->setReferenceForwardedProto(Headers::get().SchemeValues.Https);
+    ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
+              *internal_headers);
+    direct_stream->request_decoder_->decodeHeaders(std::move(internal_headers), end_stream);
+  }
 
   return ENVOY_SUCCESS;
 }
 
 envoy_status_t Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
-  dispatcher_.post([this, stream, data, end_stream]() -> void {
-    Client::DirectStreamSharedPtr direct_stream = getStream(stream);
-    // If direct_stream is not found, it means the stream has already closed or been reset
-    // and the appropriate callback has been issued to the caller. There's nothing to do here
-    // except silently swallow this.
-    // TODO: handle potential race condition with cancellation or failure get a stream in the
-    // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
-    // from the caller.
-    // https://github.com/lyft/envoy-mobile/issues/301
-    if (direct_stream) {
-      // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
-      // of the InstancePtr to outlive this function call.
-      Buffer::InstancePtr buf = Buffer::Utility::toInternalData(data);
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  // If direct_stream is not found, it means the stream has already closed or been reset
+  // and the appropriate callback has been issued to the caller. There's nothing to do here
+  // except silently swallow this.
+  // TODO: handle potential race condition with cancellation or failure get a stream in the
+  // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
+  // from the caller.
+  // https://github.com/lyft/envoy-mobile/issues/301
+  if (direct_stream) {
+    // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
+    // of the InstancePtr to outlive this function call.
+    Buffer::InstancePtr buf = Buffer::Utility::toInternalData(data);
 
-      ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
-                data.length, end_stream);
-      direct_stream->request_decoder_->decodeData(*buf, end_stream);
-    }
-  });
+    ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
+              data.length, end_stream);
+    direct_stream->request_decoder_->decodeData(*buf, end_stream);
+  }
 
   return ENVOY_SUCCESS;
 }
@@ -278,48 +275,46 @@ envoy_status_t Client::sendMetadata(envoy_stream_t, envoy_headers) {
 }
 
 envoy_status_t Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
-  dispatcher_.post([this, stream, trailers]() -> void {
-    Client::DirectStreamSharedPtr direct_stream = getStream(stream);
-    // If direct_stream is not found, it means the stream has already closed or been reset
-    // and the appropriate callback has been issued to the caller. There's nothing to do here
-    // except silently swallow this.
-    // TODO: handle potential race condition with cancellation or failure get a stream in the
-    // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
-    // from the caller.
-    // https://github.com/lyft/envoy-mobile/issues/301
-    if (direct_stream) {
-      RequestTrailerMapPtr internal_trailers = Utility::toRequestTrailers(trailers);
-      ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
-      direct_stream->request_decoder_->decodeTrailers(std::move(internal_trailers));
-    }
-  });
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  // If direct_stream is not found, it means the stream has already closed or been reset
+  // and the appropriate callback has been issued to the caller. There's nothing to do here
+  // except silently swallow this.
+  // TODO: handle potential race condition with cancellation or failure get a stream in the
+  // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
+  // from the caller.
+  // https://github.com/lyft/envoy-mobile/issues/301
+  if (direct_stream) {
+    RequestTrailerMapPtr internal_trailers = Utility::toRequestTrailers(trailers);
+    ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
+    direct_stream->request_decoder_->decodeTrailers(std::move(internal_trailers));
+  }
 
   return ENVOY_SUCCESS;
 }
 
 envoy_status_t Client::cancelStream(envoy_stream_t stream) {
-  dispatcher_.post([this, stream]() -> void {
-    Client::DirectStreamSharedPtr direct_stream = getStream(stream);
-    if (direct_stream) {
-      removeStream(direct_stream->stream_handle_);
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  if (direct_stream) {
+    removeStream(direct_stream->stream_handle_);
 
-      // Testing hook.
-      synchronizer_.syncPoint("dispatch_on_cancel");
-      direct_stream->callbacks_->onCancel();
+    // Testing hook.
+    synchronizer_.syncPoint("dispatch_on_cancel");
+    direct_stream->callbacks_->onCancel();
 
-      // Since https://github.com/envoyproxy/envoy/pull/13052, the connection manager expects that
-      // response code details are set on all possible paths for streams.
-      direct_stream->setResponseDetails(getCancelDetails());
+    // Since https://github.com/envoyproxy/envoy/pull/13052, the connection manager expects that
+    // response code details are set on all possible paths for streams.
+    direct_stream->setResponseDetails(getCancelDetails());
 
-      // The runResetCallbacks call synchronously causes Envoy to defer delete the HCM's
-      // ActiveStream. We have some concern that this could potentially race a terminal callback
-      // scheduled on the same iteration of the event loop. If we see violations in the callback
-      // assertions checking stream presence, this is a likely potential culprit. However, it's
-      // plausible that upstream guards will protect us here, given that Envoy allows streams to be
-      // reset from a wide variety of contexts without apparent issue.
-      direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
-    }
-  });
+    // The runResetCallbacks call synchronously causes Envoy to defer delete the HCM's
+    // ActiveStream. We have some concern that this could potentially race a terminal callback
+    // scheduled on the same iteration of the event loop. If we see violations in the callback
+    // assertions checking stream presence, this is a likely potential culprit. However, it's
+    // plausible that upstream guards will protect us here, given that Envoy allows streams to be
+    // reset from a wide variety of contexts without apparent issue.
+    direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
+  }
   return ENVOY_SUCCESS;
 }
 
