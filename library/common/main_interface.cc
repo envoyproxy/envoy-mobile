@@ -6,14 +6,14 @@
 #include "library/common/api/external.h"
 #include "library/common/engine.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
-#include "library/common/http/dispatcher.h"
+#include "library/common/http/client.h"
 
 // NOLINT(namespace-envoy)
 
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
 static std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
 
-static Envoy::Engine* engine(envoy_engine_callbacks callbacks = {0}) {
+static Envoy::Engine* engine(envoy_engine_callbacks callbacks = {}) {
   static Envoy::Engine* engine = new Envoy::Engine{callbacks, preferred_network_};
   return engine; 
 }
@@ -22,7 +22,7 @@ envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
   if (auto e = engine()) {
-    return dispatcher_.post([e, stream, bridge_callbacks]() -> void {
+    return e->dispatcher().post([e, stream, callbacks]() -> void {
       e->httpClient().startStream(stream, callbacks);
     });
   }
@@ -31,7 +31,7 @@ envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callback
 
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
   if (auto e = engine()) {
-    return dispatcher_.post([e, stream, headers, end_stream]() -> void {
+    return e->dispatcher().post([e, stream, headers, end_stream]() -> void {
       e->httpClient().sendHeaders(stream, headers, end_stream);
     });
   }
@@ -40,7 +40,7 @@ envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool e
 
 envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
   if (auto e = engine()) {
-    return dispatcher_.post([e, stream, data, end_stream]() -> void {
+    return e->dispatcher().post([e, stream, data, end_stream]() -> void {
       e->httpClient().sendData(stream, data, end_stream);
     });
   }
@@ -52,7 +52,7 @@ envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILU
 
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
   if (auto e = engine()) {
-    return dispatcher_.post([e, stream, trailers]() -> void {
+    return e->dispatcher().post([e, stream, trailers]() -> void {
       e->httpClient().sendTrailers(stream, trailers);
     });
   }
@@ -61,7 +61,7 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
   if (auto e = engine()) {
-    return dispatcher_.post([e, stream]() -> void {
+    return e->dispatcher().post([e, stream]() -> void {
       e->httpClient().cancelStream(stream);
     });
   }
@@ -77,7 +77,7 @@ envoy_status_t record_counter_inc(envoy_engine_t, const char* elements, uint64_t
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return dispatcher_.post([e, elements, count]() -> void {
+    return e->dispatcher().post([e, elements, count]() -> void {
       e->recordCounterInc(std::string(elements), count);
     });
   }
@@ -88,7 +88,7 @@ envoy_status_t record_gauge_set(envoy_engine_t, const char* elements, uint64_t v
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return dispatcher_.post([e, elements, value]() -> void {
+    return e->dispatcher().post([e, elements, value]() -> void {
       e->recordGaugeSet(std::string(elements), value);
     });
   }
@@ -99,7 +99,7 @@ envoy_status_t record_gauge_add(envoy_engine_t, const char* elements, uint64_t a
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return dispatcher_.post([e, elements, amount]() -> void {
+    return e->dispatcher().post([e, elements, amount]() -> void {
       e->recordGaugeAdd(std::string(elements), amount);
     });
   }
@@ -110,7 +110,7 @@ envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, uint64_t a
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return dispatcher_.post([e, elements, amount]() -> void {
+    return e->dispatcher().post([e, elements, amount]() -> void {
       e->recordGaugeSub(std::string(elements), amount);
     });
   }
@@ -122,7 +122,7 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, uint
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return dispatcher_.post([e, elements, value, unit_measure]() -> void {
+    return e->dispatcher().post([e, elements, value, unit_measure]() -> void {
       e->recordHistogramValue(std::string(elements), value, unit_measure);
     });
   }
@@ -138,17 +138,17 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks) {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   envoy_engine_t id = 1;
-  RELEASE_ASSERT(engine(callbacks) != nullptr);
+  engine(callbacks);
   return id;
 }
 
-envoy_status_t run_engine(envoy_engine_t handle, const char* config,
+envoy_status_t run_engine(envoy_engine_t, const char* config,
                           const char* log_level) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
 
   if (auto e = engine()) {
-    e->runEngine(config, log_level);
+    e->run(config, log_level);
     return ENVOY_SUCCESS;
   }
 

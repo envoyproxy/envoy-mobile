@@ -7,14 +7,11 @@
 namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks) {
+    : callbacks_(callbacks), preferred_network_(preferred_network) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
-
-  // Create thread without starting anything.
-  main_thread_{};
 }
 
 envoy_status_t Engine::run(const std::string config, const std::string log_level) {
@@ -37,7 +34,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                   log_flag.c_str(), log_level.c_str(),   nullptr};
 
       main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
-      dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>(&main_common_->server()->dispatcher());
+      dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>(main_common_->server()->dispatcher());
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
@@ -62,8 +59,8 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
         client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
         auto api_listener = server_->listenerManager().apiListener()->get().http();
         ASSERT(api_listener.has_value());
-        http_dispatcher_ = std::make_unique<Http::Dispatcher>(api_listener.value(), server_->serverFactoryContext().scope(), preferred_network);
-        dispatcher_.run();
+        http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_, server_->serverFactoryContext().scope(), preferred_network_);
+        dispatcher_->drain();
         if (callbacks_.on_engine_running != nullptr) {
           callbacks_.on_engine_running(callbacks_.context);
         }
@@ -190,6 +187,11 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_
   return ENVOY_FAILURE;
 }
 
-Http::Dispatcher& Engine::httpClient() { return *http_client_; }
+Event::ProvisionalDispatcher& Engine::dispatcher() { return *dispatcher_; }
+
+Http::Client& Engine::httpClient() {
+  RELEASE_ASSERT(dispatcher_->isThreadSafe(), "httpClient must be accessed from dispatcher's context");
+  return *http_client_;
+}
 
 } // namespace Envoy

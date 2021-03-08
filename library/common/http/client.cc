@@ -10,7 +10,6 @@
 #include "library/common/buffer/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
-#include "library/common/network/synthetic_address_impl.h"
 #include "library/common/thread/lock_guard.h"
 
 namespace Envoy {
@@ -189,10 +188,6 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   callbacks_->onError();
 }
 
-Client::Client(std::atomic<envoy_network_t>& preferred_network)
-    : stats_prefix_("http.client."), preferred_network_(preferred_network),
-      address_(std::make_shared<Network::Address::SyntheticAddressImpl>()) {}
-
 envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
                                        envoy_http_callbacks bridge_callbacks) {
   ASSERT(dispatcher_.isThreadSafe());
@@ -203,7 +198,7 @@ envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
   // Note: streams created by Envoy Mobile are tagged as is_internally_created. This means that
   // the Http::ConnectionManager _will not_ sanitize headers when creating a stream.
   direct_stream->request_decoder_ =
-    api_listener_->newStream(*direct_stream->callbacks_, true /* is_internally_created */);
+    &api_listener_.newStream(*direct_stream->callbacks_, true /* is_internally_created */);
 
   streams_.emplace(new_stream_handle, std::move(direct_stream));
   ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
@@ -318,23 +313,8 @@ envoy_status_t Client::cancelStream(envoy_stream_t stream) {
   return ENVOY_SUCCESS;
 }
 
-void setListener(ApiListener& listener) {
-  RELEASE_ASSERT(dispatcher_.isThreadSafe(),
-                 "setListener must be performed on the dispatcher_'s thread.");
-  api_listener_ = &api_listener;
-}
-
-void setScope(Stats::Scope& scope) {
-  RELEASE_ASSERT(dispatcher_.isThreadSafe(),
-                 "setScope must be performed on the dispatcher_'s thread.");
-  stats_.emplace(generateStats(stats_prefix_, scope));
-}
-
-const ClientStats& Client::stats() const {
-  // Only the initial setting of the api_listener_ is guarded.
-  // By the time the Http::Client is using its stats ready must have been called.
-  ASSERT(TS_UNCHECKED_READ(stats_).has_value());
-  return TS_UNCHECKED_READ(stats_).value();
+const HttpClientStats& Client::stats() const {
+  return stats_;
 }
 
 Client::DirectStreamSharedPtr Client::getStream(envoy_stream_t stream) {
@@ -357,7 +337,7 @@ void Client::removeStream(envoy_stream_t stream_handle) {
   // the HCM's ActiveStream lives. Hence its deletion needs to live beyond the synchronous code in
   // Client::resetStream.
   auto direct_stream_wrapper = std::make_unique<DirectStreamWrapper>(std::move(direct_stream));
-  TS_UNCHECKED_READ(dispatcher_)->deferredDelete(std::move(direct_stream_wrapper));
+  dispatcher_.deferredDelete(std::move(direct_stream_wrapper));
   // However, the entry in the map should not exist after removeStream.
   // Hence why it is synchronously erased from the streams map.
   size_t erased = streams_.erase(stream_handle);

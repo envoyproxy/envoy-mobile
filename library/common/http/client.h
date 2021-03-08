@@ -2,7 +2,6 @@
 
 #include "envoy/buffer/buffer.h"
 #include "envoy/event/deferred_deletable.h"
-#include "envoy/event/client.h"
 #include "envoy/http/api_listener.h"
 #include "envoy/http/codec.h"
 #include "envoy/http/header_map.h"
@@ -15,15 +14,18 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/optional.h"
+
+#include "library/common/event/provisional_dispatcher.h"
+#include "library/common/network/synthetic_address_impl.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Http {
 
 /**
- * All client stats. @see stats_macros.h
+ * All http client stats. @see stats_macros.h
  */
-#define ALL_HTTP_DISPATCHER_STATS(COUNTER)                                                         \
+#define ALL_HTTP_CLIENT_STATS(COUNTER)                                                         \
   COUNTER(stream_success)                                                                          \
   COUNTER(stream_failure)                                                                          \
   COUNTER(stream_cancel)
@@ -31,17 +33,19 @@ namespace Http {
 /**
  * Struct definition for client stats. @see stats_macros.h
  */
-struct ClientStats {
-  ALL_HTTP_DISPATCHER_STATS(GENERATE_COUNTER_STRUCT)
+struct HttpClientStats {
+  ALL_HTTP_CLIENT_STATS(GENERATE_COUNTER_STRUCT)
 };
 
 /**
  * Manages HTTP streams, and provides an interface to interact with them.
- * The Client executes all stream operations on the provided dispatcher's event loop.
  */
 class Client : public Logger::Loggable<Logger::Id::http> {
 public:
-  Client(ApiListener& api_listener, Stats::Scope& scope, std::atomic<envoy_network_t>& preferred_network);
+  Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope, std::atomic<envoy_network_t>& preferred_network)
+  : api_listener_(api_listener), dispatcher_(dispatcher),
+    stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}), preferred_network_(preferred_network),
+      address_(std::make_shared<Network::Address::SyntheticAddressImpl>()) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -97,19 +101,8 @@ public:
    */
   envoy_status_t cancelStream(envoy_stream_t stream);
 
-  /**
-   * Set listener with thread safety check.
-   * @param api_listener, the listener.
-   */
-  void setListener(ApiListener& api_listener);
+  const HttpClientStats& stats() const;
 
-  /**
-   * Set stats scope with thread safety check.
-   * @param scope, the scope.
-   */
-  void setScope(Stats::Scope& scope);
-
-  const ClientStats& stats() const;
   // Used to fill response code details for streams that are cancelled via cancelStream.
   const std::string& getCancelDetails() {
     CONSTRUCT_ON_FIRST_USE(std::string, "client cancelled stream");
@@ -220,25 +213,13 @@ private:
 
   using DirectStreamWrapperPtr = std::unique_ptr<DirectStreamWrapper>;
 
-  static ClientStats generateStats(const std::string& prefix, Stats::Scope& scope) {
-    return ClientStats{ALL_HTTP_DISPATCHER_STATS(POOL_COUNTER_PREFIX(scope, prefix))};
-  }
-
   DirectStreamSharedPtr getStream(envoy_stream_t stream_handle);
   void removeStream(envoy_stream_t stream_handle);
   void setDestinationCluster(HeaderMap& headers);
 
+  ApiListener& api_listener_;
   Event::ProvisionalDispatcher& dispatcher_;
-  ApiListener* api_listener_ ;
-  // stats_ is not currently const because the Http::Client is constructed before there is
-  // access to MainCommon's stats scope.
-  // This can be fixed when queueing logic is moved out of the Http::Client, as at that point
-  // the Http::Client could be constructed when access to all objects set in
-  // Http::Client::ready() is done; obviously this would require "ready()" to not me a member
-  // function of the client, but rather have a static factory method.
-  // Related issue: https://github.com/lyft/envoy-mobile/issues/720
-  const std::string stats_prefix_;
-  absl::optional<ClientStats> stats_ GUARDED_BY(ready_lock_){};
+  HttpClientStats stats_;
   absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
