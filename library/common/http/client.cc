@@ -24,13 +24,13 @@ namespace Http {
  */
 
 Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream,
-                                                         envoy_http_callbacks bridge_callbacks,
-                                                         Client& http_client)
+                                                     envoy_http_callbacks bridge_callbacks,
+                                                     Client& http_client)
     : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks),
       http_client_(http_client) {}
 
 void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
-                                                      bool end_stream) {
+                                                  bool end_stream) {
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
 
@@ -169,9 +169,7 @@ void Client::DirectStreamCallbacks::onCancel() {
 Client::DirectStream::DirectStream(envoy_stream_t stream_handle, Client& http_client)
     : stream_handle_(stream_handle), parent_(http_client) {}
 
-Client::DirectStream::~DirectStream() {
-  ENVOY_LOG(debug, "[S{}] destroy stream", stream_handle_);
-}
+Client::DirectStream::~DirectStream() { ENVOY_LOG(debug, "[S{}] destroy stream", stream_handle_); }
 
 void Client::DirectStream::resetStream(StreamResetReason reason) {
   // This seems in line with other codec implementations, and so the assumption is that this is in
@@ -189,7 +187,7 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
 }
 
 envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
-                                       envoy_http_callbacks bridge_callbacks) {
+                                   envoy_http_callbacks bridge_callbacks) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
   direct_stream->callbacks_ =
@@ -198,7 +196,7 @@ envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
   // Note: streams created by Envoy Mobile are tagged as is_internally_created. This means that
   // the Http::ConnectionManager _will not_ sanitize headers when creating a stream.
   direct_stream->request_decoder_ =
-    &api_listener_.newStream(*direct_stream->callbacks_, true /* is_internally_created */);
+      &api_listener_.newStream(*direct_stream->callbacks_, true /* is_internally_created */);
 
   streams_.emplace(new_stream_handle, std::move(direct_stream));
   ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
@@ -206,8 +204,7 @@ envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers,
-                                       bool end_stream) {
+envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream = getStream(stream);
   // If direct_stream is not found, it means the stream has already closed or been reset
@@ -313,9 +310,7 @@ envoy_status_t Client::cancelStream(envoy_stream_t stream) {
   return ENVOY_SUCCESS;
 }
 
-const HttpClientStats& Client::stats() const {
-  return stats_;
-}
+const HttpClientStats& Client::stats() const { return stats_; }
 
 Client::DirectStreamSharedPtr Client::getStream(envoy_stream_t stream) {
   auto direct_stream_pair_it = streams_.find(stream);

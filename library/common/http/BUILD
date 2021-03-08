@@ -13,12 +13,12 @@ envoy_cc_library(
     deps = [
         "//library/common/buffer:bridge_fragment_lib",
         "//library/common/buffer:utility_lib",
+        "//library/common/event:provisional_dispatcher_lib",
         "//library/common/extensions/filters/http/local_error:local_error_filter_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/network:synthetic_address_lib",
         "//library/common/thread:lock_guard_lib",
         "//library/common/types:c_types_lib",
-        "//library/common/event:provisional_dispatcher_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//include/envoy/event:deferred_deletable",
         "@envoy//include/envoy/http:api_listener_interface",

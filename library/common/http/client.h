@@ -14,7 +14,6 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/optional.h"
-
 #include "library/common/event/provisional_dispatcher.h"
 #include "library/common/network/synthetic_address_impl.h"
 #include "library/common/types/c_types.h"
@@ -25,7 +24,7 @@ namespace Http {
 /**
  * All http client stats. @see stats_macros.h
  */
-#define ALL_HTTP_CLIENT_STATS(COUNTER)                                                         \
+#define ALL_HTTP_CLIENT_STATS(COUNTER)                                                             \
   COUNTER(stream_success)                                                                          \
   COUNTER(stream_failure)                                                                          \
   COUNTER(stream_cancel)
@@ -42,10 +41,12 @@ struct HttpClientStats {
  */
 class Client : public Logger::Loggable<Logger::Id::http> {
 public:
-  Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope, std::atomic<envoy_network_t>& preferred_network)
-  : api_listener_(api_listener), dispatcher_(dispatcher),
-    stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}), preferred_network_(preferred_network),
-      address_(std::make_shared<Network::Address::SyntheticAddressImpl>()) {}
+  Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
+         std::atomic<envoy_network_t>& preferred_network)
+      : api_listener_(api_listener), dispatcher_(dispatcher),
+        stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
+        preferred_network_(preferred_network),
+        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and

@@ -15,16 +15,15 @@ static std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
 
 static Envoy::Engine* engine(envoy_engine_callbacks callbacks = {}) {
   static Envoy::Engine* engine = new Envoy::Engine{callbacks, preferred_network_};
-  return engine; 
+  return engine;
 }
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
   if (auto e = engine()) {
-    return e->dispatcher().post([e, stream, callbacks]() -> void {
-      e->httpClient().startStream(stream, callbacks);
-    });
+    return e->dispatcher().post(
+        [e, stream, callbacks]() -> void { e->httpClient().startStream(stream, callbacks); });
   }
   return ENVOY_FAILURE;
 }
@@ -52,18 +51,15 @@ envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILU
 
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
   if (auto e = engine()) {
-    return e->dispatcher().post([e, stream, trailers]() -> void {
-      e->httpClient().sendTrailers(stream, trailers);
-    });
+    return e->dispatcher().post(
+        [e, stream, trailers]() -> void { e->httpClient().sendTrailers(stream, trailers); });
   }
   return ENVOY_FAILURE;
 }
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
   if (auto e = engine()) {
-    return e->dispatcher().post([e, stream]() -> void {
-      e->httpClient().cancelStream(stream);
-    });
+    return e->dispatcher().post([e, stream]() -> void { e->httpClient().cancelStream(stream); });
   }
   return ENVOY_FAILURE;
 }
@@ -77,9 +73,8 @@ envoy_status_t record_counter_inc(envoy_engine_t, const char* elements, uint64_t
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([e, elements, count]() -> void {
-      e->recordCounterInc(std::string(elements), count);
-    });
+    return e->dispatcher().post(
+        [e, elements, count]() -> void { e->recordCounterInc(std::string(elements), count); });
   }
   return ENVOY_FAILURE;
 }
@@ -88,9 +83,8 @@ envoy_status_t record_gauge_set(envoy_engine_t, const char* elements, uint64_t v
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([e, elements, value]() -> void {
-      e->recordGaugeSet(std::string(elements), value);
-    });
+    return e->dispatcher().post(
+        [e, elements, value]() -> void { e->recordGaugeSet(std::string(elements), value); });
   }
   return ENVOY_FAILURE;
 }
@@ -99,9 +93,8 @@ envoy_status_t record_gauge_add(envoy_engine_t, const char* elements, uint64_t a
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([e, elements, amount]() -> void {
-      e->recordGaugeAdd(std::string(elements), amount);
-    });
+    return e->dispatcher().post(
+        [e, elements, amount]() -> void { e->recordGaugeAdd(std::string(elements), amount); });
   }
   return ENVOY_FAILURE;
 }
@@ -110,9 +103,8 @@ envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, uint64_t a
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([e, elements, amount]() -> void {
-      e->recordGaugeSub(std::string(elements), amount);
-    });
+    return e->dispatcher().post(
+        [e, elements, amount]() -> void { e->recordGaugeSub(std::string(elements), amount); });
   }
   return ENVOY_FAILURE;
 }
@@ -142,8 +134,7 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks) {
   return id;
 }
 
-envoy_status_t run_engine(envoy_engine_t, const char* config,
-                          const char* log_level) {
+envoy_status_t run_engine(envoy_engine_t, const char* config, const char* log_level) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
 

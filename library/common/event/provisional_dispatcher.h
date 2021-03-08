@@ -13,11 +13,14 @@ namespace Envoy {
 namespace Event {
 
 /**
- * Wrapper around Envoy's Event::Dispatcher that queues callbacks until drain() is called. Future versions may support correct calling semantics after the underlying dispatcher has been terminated/deleted or before it has been created.
+ * Wrapper around Envoy's Event::Dispatcher that queues callbacks until drain() is called. Future
+ * versions may support correct calling semantics after the underlying dispatcher has been
+ * terminated/deleted or before it has been created.
  */
 class ProvisionalDispatcher : public Logger::Loggable<Logger::Id::main> {
 public:
-  ProvisionalDispatcher(Event::Dispatcher& event_dispatcher) : event_dispatcher_(event_dispatcher) {}
+  ProvisionalDispatcher(Event::Dispatcher& event_dispatcher)
+      : event_dispatcher_(event_dispatcher) {}
 
   /**
    * Drains all queued callbacks to the real dispatcher. Must be called after the underlying
@@ -25,21 +28,25 @@ public:
    */
   void drain();
 
-  //TODO(goaway): return ENVOY_FAILURE after the underlying dispatcher has exited.
+  // TODO(goaway): return ENVOY_FAILURE after the underlying dispatcher has exited.
   /**
-   * Before the underlying dispatcher is running, queues posted callbacks; afterwards passes them through.
+   * Before the underlying dispatcher is running, queues posted callbacks; afterwards passes them
+   * through.
    * @param callback, the callback to be dispatched.
-   * @return should return ENVOY_FAILURE when the underlying dispatcher exits, but at present it always returns ENVOY_SUCCESS.
+   * @return should return ENVOY_FAILURE when the underlying dispatcher exits, but at present it
+   * always returns ENVOY_SUCCESS.
    */
   envoy_status_t post(Event::PostCb callback);
 
   /**
-   * @return false before the underlying dispatcher is running, otherwise the result of the underlying call to Event::Dispatcher::isThreadSafe().
+   * @return false before the underlying dispatcher is running, otherwise the result of the
+   * underlying call to Event::Dispatcher::isThreadSafe().
    */
   bool isThreadSafe();
 
   /**
-   * Submits an item for deferred delete. Must be called from context where ProvisionalDispatcher::isThreadSafe() is true.
+   * Submits an item for deferred delete. Must be called from context where
+   * ProvisionalDispatcher::isThreadSafe() is true.
    */
   void deferredDelete(DeferredDeletablePtr&& to_delete);
 
@@ -47,7 +54,8 @@ public:
   Thread::ThreadSynchronizer& synchronizer() { return synchronizer_; }
 
 private:
-  // TODO(goaway): This class supports a straightforward case-specific lock-free implementation, but uses heavyweight synchronization for expediency at present.
+  // TODO(goaway): This class supports a straightforward case-specific lock-free implementation, but
+  // uses heavyweight synchronization for expediency at present.
   Thread::MutexBasicLockable state_lock_;
   bool drained_ GUARDED_BY(state_lock_){};
   std::list<Event::PostCb> init_queue_ GUARDED_BY(state_lock_);
