@@ -42,6 +42,7 @@ if [ -n "$CIRCLECI" ]; then
 fi
 
 echo "Installing go"
+brew unlink go || true
 brew reinstall --force go
 if ! brew link --overwrite go; then
     echo "Failed to install and link go"
