@@ -29,7 +29,7 @@ function install {
 #    exit 1
 #fi
 
-DEPS="automake cmake coreutils go libtool wget ninja"
+DEPS="automake cmake coreutils libtool wget ninja"
 for DEP in ${DEPS}
 do
     is_installed "${DEP}" || install "${DEP}"
@@ -40,6 +40,14 @@ if [ -n "$CIRCLECI" ]; then
     # convert https://github.com to ssh://git@github.com, which jgit does not support.
     mv ~/.gitconfig ~/.gitconfig_save
 fi
+
+echo "Installing go"
+brew reinstall --force go
+if ! brew link --overwrite go; then
+    echo "Failed to install and link go"
+    exit 1
+fi
+
 
 # Required as bazel and a foreign bazelisk are installed in the latest macos vm image, we have
 # to unlink/overwrite them to install bazelisk
