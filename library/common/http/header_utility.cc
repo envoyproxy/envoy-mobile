@@ -12,7 +12,7 @@ std::string convertToString(envoy_data s) {
 
 RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
   RequestHeaderMapPtr transformed_headers = RequestHeaderMapImpl::create();
-  for (envoy_data_map_size_t i = 0; i < headers.length; i++) {
+  for (envoy_map_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(LowerCaseString(convertToString(headers.entries[i].key)),
                                  convertToString(headers.entries[i].value));
   }
@@ -23,7 +23,7 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
 
 RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers) {
   RequestTrailerMapPtr transformed_trailers = RequestTrailerMapImpl::create();
-  for (envoy_data_map_size_t i = 0; i < trailers.length; i++) {
+  for (envoy_map_size_t i = 0; i < trailers.length; i++) {
     transformed_trailers->addCopy(LowerCaseString(convertToString(trailers.entries[i].key)),
                                   convertToString(trailers.entries[i].value));
   }
@@ -33,8 +33,8 @@ RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers) {
 }
 
 envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
-  envoy_data_map_entry* headers = static_cast<envoy_data_map_entry*>(
-      safe_malloc(sizeof(envoy_data_map_entry) * header_map.size()));
+  envoy_map_entry* headers =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * header_map.size()));
   envoy_headers transformed_headers;
   transformed_headers.length = 0;
   transformed_headers.entries = headers;

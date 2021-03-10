@@ -33,21 +33,21 @@ envoy_headers raw_header_map_as_envoy_headers(const RawHeaderMap& headers) {
     header_count += pair.second.size();
   }
 
-  envoy_data_map_entry* headers_list =
-      static_cast<envoy_data_map_entry*>(safe_malloc(sizeof(envoy_data_map_entry) * header_count));
+  envoy_map_entry* headers_list =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * header_count));
 
   size_t i = 0;
   for (const auto& pair : headers) {
     const auto& key = pair.first;
     for (const auto& value : pair.second) {
-      envoy_data_map_entry& header = headers_list[i++];
+      envoy_map_entry& header = headers_list[i++];
       header.key = string_as_envoy_data(key);
       header.value = string_as_envoy_data(value);
     }
   }
 
   envoy_headers raw_headers{
-      .length = static_cast<envoy_data_map_size_t>(header_count),
+      .length = static_cast<envoy_map_size_t>(header_count),
       .entries = headers_list,
   };
   return raw_headers;

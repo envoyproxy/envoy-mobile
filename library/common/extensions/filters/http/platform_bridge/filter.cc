@@ -22,7 +22,7 @@ namespace {
 // TODO: https://github.com/envoyproxy/envoy-mobile/issues/1287
 void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers) {
   headers.clear();
-  for (envoy_data_map_size_t i = 0; i < c_headers.length; i++) {
+  for (envoy_map_size_t i = 0; i < c_headers.length; i++) {
     headers.addCopy(Http::LowerCaseString(Http::Utility::convertToString(c_headers.entries[i].key)),
                     Http::Utility::convertToString(c_headers.entries[i].value));
   }

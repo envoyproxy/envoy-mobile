@@ -27,8 +27,8 @@ envoy_data make_envoy_data(const std::string& s) {
 }
 
 envoy_headers make_envoy_headers(std::vector<std::pair<std::string, std::string>> pairs) {
-  envoy_data_map_entry* headers =
-      static_cast<envoy_data_map_entry*>(safe_malloc(sizeof(envoy_data_map_entry) * pairs.size()));
+  envoy_map_entry* headers =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * pairs.size()));
   envoy_headers new_headers;
   new_headers.length = 0;
   new_headers.entries = headers;

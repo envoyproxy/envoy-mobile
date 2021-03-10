@@ -26,9 +26,9 @@ void* safe_calloc(size_t count, size_t size) {
 
 void envoy_noop_release(void* context) { (void)context; }
 
-void release_envoy_data_map(envoy_data_map map) {
-  for (envoy_data_map_size_t i = 0; i < map.length; i++) {
-    envoy_data_map_entry entry = map.entries[i];
+void release_envoy_data_map(envoy_map map) {
+  for (envoy_map_size_t i = 0; i < map.length; i++) {
+    envoy_map_entry entry = map.entries[i];
     entry.key.release(entry.key.context);
     entry.value.release(entry.value.context);
   }
@@ -37,16 +37,16 @@ void release_envoy_data_map(envoy_data_map map) {
 
 void release_envoy_headers(envoy_headers headers) { release_envoy_data_map(headers); }
 
-envoy_data_map copy_envoy_data_map(envoy_data_map src) {
-  envoy_data_map_entry* dst_entries =
-      static_cast<envoy_data_map_entry*>(safe_malloc(sizeof(envoy_data_map_entry) * src.length));
-  for (envoy_data_map_size_t i = 0; i < src.length; i++) {
-    envoy_data_map_entry new_entry = {
+envoy_map copy_envoy_data_map(envoy_map src) {
+  envoy_map_entry* dst_entries =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * src.length));
+  for (envoy_map_size_t i = 0; i < src.length; i++) {
+    envoy_map_entry new_entry = {
         copy_envoy_data(src.entries[i].key.length, src.entries[i].key.bytes),
         copy_envoy_data(src.entries[i].value.length, src.entries[i].value.bytes)};
     dst_entries[i] = new_entry;
   }
-  envoy_data_map dst = {src.length, dst_entries};
+  envoy_map dst = {src.length, dst_entries};
   return dst;
 }
 

@@ -34,7 +34,7 @@ const std::string LEVEL_DEBUG = "debug";
 // Based on Http::Utility::toRequestHeaders() but only used for these tests.
 Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
   Http::ResponseHeaderMapPtr transformed_headers = Http::ResponseHeaderMapImpl::create();
-  for (envoy_data_map_size_t i = 0; i < headers.length; i++) {
+  for (envoy_map_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(
         Http::LowerCaseString(Http::Utility::convertToString(headers.entries[i].key)),
         Http::Utility::convertToString(headers.entries[i].value));

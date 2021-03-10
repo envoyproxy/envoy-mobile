@@ -144,7 +144,7 @@ static void pass_headers(const char* method, envoy_headers headers, jobject j_co
   jmethodID jmid_passHeader = env->GetMethodID(jcls_JvmCallbackContext, method, "([B[BZ)V");
   jboolean start_headers = JNI_TRUE;
 
-  for (envoy_data_map_size_t i = 0; i < headers.length; i++) {
+  for (envoy_map_size_t i = 0; i < headers.length; i++) {
     // Note this is just an initial implementation, and we will pass a more optimized structure in
     // the future.
 
