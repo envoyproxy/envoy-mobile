@@ -8,8 +8,6 @@
 #include "envoy/stats/stats_macros.h"
 
 #include "common/common/logger.h"
-#include "common/common/thread.h"
-#include "common/common/thread_synchronizer.h"
 #include "common/http/codec_helper.h"
 
 #include "absl/container/flat_hash_map.h"

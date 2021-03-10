@@ -31,5 +31,17 @@ envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
   return ENVOY_SUCCESS;
 }
 
+bool ProvisionalDispatcher::isThreadSafe() {
+  // Doesn't require locking because if a thread has a stale view of drained_, then by definition
+  // this wasn't a threadsafe call.
+  return TS_UNCHECKED_READ(drained_) && isThreadSafe();
+}
+
+void ProvisionalDispatcher::deferredDelete(DeferredDeletablePtr&& to_delete) {
+  RELEASE_ASSERT(isThreadSafe(),
+                 "ProvisionalDispatcher::deferredDelete must be called from a threadsafe context");
+  event_dispatcher_.deferredDelete(std::move(to_delete));
+}
+
 } // namespace Event
 } // namespace Envoy
