@@ -204,7 +204,7 @@ public final class EngineBuilder: NSObject {
   ///
   /// - returns: A new instance of Envoy.
   public func build() throws -> Engine {
-    let engine = self.engineType.init()
+    let engine = self.engineType.init(runningCallback: self.onEngineRunning)
     let config = EnvoyConfiguration(
         statsDomain: self.statsDomain,
         connectTimeoutSeconds: self.connectTimeoutSeconds,
@@ -221,11 +221,9 @@ public final class EngineBuilder: NSObject {
 
     switch self.base {
     case .custom(let yaml):
-      return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, engine: engine,
-                        onEngineRunning: self.onEngineRunning)
+      return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, engine: engine)
     case .standard:
-      return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
-                        onEngineRunning: self.onEngineRunning)
+      return EngineImpl(config: config, logLevel: self.logLevel, engine: engine)
     }
   }
 
