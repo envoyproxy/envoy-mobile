@@ -16,23 +16,18 @@ final class ViewController: UITableViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    do {
-      NSLog("starting Envoy...")
-      let engine = try EngineBuilder()
-        .addPlatformFilter(factory: DemoFilter.init)
-        .addPlatformFilter(factory: BufferDemoFilter.init)
-        .addPlatformFilter(factory: AsyncDemoFilter.init)
-        .addNativeFilter(name: "envoy.filters.http.buffer",
-                         // swiftlint:disable:next line_length
-                         typedConfig: "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
-        .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
-        .addStringAccessor(name: "string_accessor", accessor: { return "DemoStringAccessor" })
-        .build()
-      self.streamClient = engine.streamClient()
-      self.pulseClient = engine.pulseClient()
-    } catch let error {
-      NSLog("starting Envoy failed: \(error)")
-    }
+
+    let engine = EngineBuilder()
+      .addPlatformFilter(factory: DemoFilter.init)
+      .addPlatformFilter(factory: BufferDemoFilter.init)
+      .addPlatformFilter(factory: AsyncDemoFilter.init)
+      // swiftlint:disable:next line_length
+      .addNativeFilter(name: "envoy.filters.http.buffer", typedConfig: "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
+      .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
+      .addStringAccessor(name: "string_accessor", accessor: { return "DemoStringAccessor" })
+      .build()
+    self.streamClient = engine.streamClient()
+    self.pulseClient = engine.pulseClient()
 
     NSLog("started Envoy, beginning requests...")
     self.startRequests()

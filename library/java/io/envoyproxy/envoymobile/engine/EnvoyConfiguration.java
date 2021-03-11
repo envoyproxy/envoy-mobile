@@ -106,6 +106,12 @@ public class EnvoyConfiguration {
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)
             .replace("{{ virtual_clusters }}", virtualClusters)
+            // TODO(@buildbreaker): Update these empty values to expose direct responses:
+            // https://github.com/envoyproxy/envoy-mobile/issues/1291
+            .replace("{{ fake_cluster_matchers }}", "")
+            .replace("{{ fake_remote_cluster }}", "")
+            .replace("{{ fake_remote_listener }}", "")
+            .replace("{{ route_reset_filter }}", "")
             .replace("{{ native_filter_chain }}", nativeFilterConfigChain);
 
     final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);

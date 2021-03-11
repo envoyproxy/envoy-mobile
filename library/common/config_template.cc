@@ -1,6 +1,7 @@
 /**
- * Templated default configuration
+ * Templated default configurations
  */
+
 const char* platform_filter_template = R"(
           - name: envoy.filters.http.platform_bridge
             typed_config:
@@ -13,9 +14,53 @@ const char* native_filter_template = R"(
             typed_config: {{ native_filter_typed_config }}
 )";
 
+const char* route_cache_reset_filter_template = R"(
+          - name: envoy.filters.http.route_cache_reset
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
+)";
+
+const char* fake_remote_listener_template = R"(
+  - name: fake_remote_listener
+    address:
+      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: remote_hcm
+          route_config:
+            name: remote_route
+            virtual_hosts:
+            - name: remote_service
+              domains: ["*"]
+              routes:
+{{ direct_responses }}
+          http_filters:
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+)";
+
+const char* fake_remote_cluster_template = R"(
+  - name: fake_remote
+    connect_timeout: 1.0s
+    type: STATIC
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: fake_remote
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address: { address: 127.0.0.1, port_value: 10101 }
+)";
+
 const char* config_template = R"(
 static_resources:
   listeners:
+{{ fake_remote_listener }}
   - name: base_api_listener
     address:
       socket_address:
@@ -36,6 +81,7 @@ static_resources:
               domains:
                 - "*"
               routes:
+{{ fake_cluster_matchers }}
                 - match:
                     prefix: "/"
                   route:
@@ -79,10 +125,12 @@ static_resources:
                   enabled:
                     default_value: false
                     runtime_key: request_decompressor_enabled
+{{ route_reset_filter }}
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
+{{ fake_remote_cluster }}
   - name: base
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
