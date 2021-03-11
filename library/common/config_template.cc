@@ -184,58 +184,6 @@ static_resources:
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-  - name: stats
-    connect_timeout: {{ connect_timeout_seconds }}s
-    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
-    http2_protocol_options: {}
-    lb_policy: ROUND_ROBIN
-    load_assignment:
-      cluster_name: stats
-      endpoints:
-        - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address: {address: {{ stats_domain }}, port_value: 443}
-    transport_socket: *base_transport_socket
-    type: LOGICAL_DNS
-stats_flush_interval: {{ stats_flush_interval_seconds }}s
-stats_sinks:
-  - name: envoy.metrics_service
-    typed_config:
-      "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
-      transport_api_version: V3
-      report_counters_as_deltas: true
-      grpc_service:
-        envoy_grpc:
-          cluster_name: stats
-stats_config:
-  stats_matcher:
-    inclusion_list:
-      patterns:
-        - safe_regex:
-            google_re2: {}
-            regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
-        - safe_regex:
-            google_re2: {}
-            regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
-        - safe_regex:
-            google_re2: {}
-            regex: '^dns.apple.*'
-        - safe_regex:
-            google_re2: {}
-            regex: '^http.dispatcher.*'
-        - safe_regex:
-            google_re2: {}
-            regex: '^http.hcm.decompressor.*'
-        - safe_regex:
-            google_re2: {}
-            regex: '^http.hcm.downstream_rq_(?:[12345]xx|total|completed)'
-        - safe_regex:
-            google_re2: {}
-            regex: '^pulse.*'
-        - safe_regex:
-            google_re2: {}
-            regex: '^vhost.api.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
 watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
