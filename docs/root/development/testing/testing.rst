@@ -55,7 +55,7 @@ Coverage
 Currently, CI runs coverage jobs whenever any of the common (C/C++ code) under
 ``library/common/...`` or ``test/common/...`` changes; and on all commits to main.
 The coverage job will fail if the resulting coverage percentage falls below the project's
-threshold.
+`threshold <https://github.com/envoyproxy/envoy-mobile/blob/0b06697989c7d64ab73dee76744b7493ce38c28b/.github/workflows/coverage.yml#L23>`_.
 
 The coverage report can be downloaded and inspected by clicking on the ``Artifacts`` drop down on
 the top right corner of the coverage CI job.
