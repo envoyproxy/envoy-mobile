@@ -10,9 +10,12 @@ public class AndroidEngineImpl implements EnvoyEngine {
   private final Application application;
   private final EnvoyEngine envoyEngine;
 
-  public AndroidEngineImpl(Application application) {
+  /**
+   * @param runningCallback Called when the engine finishes its async startup and begins running.
+   */
+  public AndroidEngineImpl(Application application, EnvoyOnEngineRunning runningCallback) {
     this.application = application;
-    this.envoyEngine = new EnvoyEngineImpl();
+    this.envoyEngine = new EnvoyEngineImpl(runningCallback);
     AndroidJniLibrary.load(application.getBaseContext());
     AndroidNetworkMonitor.load(application.getBaseContext());
   }

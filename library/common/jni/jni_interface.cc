@@ -24,16 +24,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 // JniLibrary
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
-    JNIEnv* env,
-    jclass,
-    jobject context
-) {
-  jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
-  envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
-  return init_engine(native_callbacks);
-}
-
 static void jvm_on_engine_running(void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_engine_running");
 
@@ -57,6 +47,16 @@ static void jvm_on_exit(void*) {
   // This function is called from the context of the engine's
   // thread due to it being posted to the engine's event dispatcher.
   jvm_detach_thread();
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
+    JNIEnv* env,
+    jclass,
+    jobject context
+) {
+  jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
+  envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
+  return init_engine(native_callbacks);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
