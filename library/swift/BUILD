@@ -5,6 +5,7 @@ licenses(["notice"])  # Apache 2
 swift_static_framework(
     name = "ios_framework",
     srcs = glob([
+        "DirectResponse.swift",
         "Engine.swift",
         "EngineBuilder.swift",
         "EngineImpl.swift",
@@ -25,6 +26,7 @@ swift_static_framework(
         "ResponseTrailersBuilder.swift",
         "RetryPolicy.swift",
         "RetryPolicyMapper.swift",
+        "RouteMatcher.swift",
         "Stream.swift",
         "StreamCallbacks.swift",
         "StreamClient.swift",

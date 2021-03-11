@@ -13,7 +13,8 @@
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
-                  nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                      directResponses:(NSString *)directResponses
+                 nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
                 platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                     stringAccessors:
                         (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
@@ -31,6 +32,7 @@
   self.appVersion = appVersion;
   self.appId = appId;
   self.virtualClusters = virtualClusters;
+  self.directResponses = directResponses;
   self.nativeFilterChain = nativeFilterChain;
   self.httpPlatformFilterFactories = httpPlatformFilterFactories;
   self.stringAccessors = stringAccessors;
@@ -76,6 +78,7 @@
     @"app_version" : self.appVersion,
     @"app_id" : self.appId,
     @"virtual_clusters" : self.virtualClusters,
+    @"direct_responses": self.directResponses,
     @"native_filter_chain" : nativeFilterConfigChain,
   };
 
@@ -85,6 +88,7 @@
         [templateYAML stringByReplacingOccurrencesOfString:keyToReplace
                                                 withString:templateKeysToValues[templateKey]];
   }
+    NSLog(@"VALUE**:\n\n%@", templateYAML);
 
   if ([templateYAML rangeOfString:@"{{"].length != 0) {
     NSLog(@"[Envoy] error: could not resolve all template keys in config:\n%@", templateYAML);

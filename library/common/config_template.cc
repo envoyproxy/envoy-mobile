@@ -36,6 +36,7 @@ static_resources:
               domains:
                 - "*"
               routes:
+{{ direct_responses }}
                 - match:
                     prefix: "/"
                   route:

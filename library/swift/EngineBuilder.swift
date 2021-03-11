@@ -26,6 +26,7 @@ public final class EngineBuilder: NSObject {
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
+  private var directResponses: [DirectResponse] = []
 
   // MARK: - Public
 
@@ -143,6 +144,19 @@ public final class EngineBuilder: NSObject {
     return self
   }
 
+  /// Adds a direct response configuration which will be used when starting the engine.
+  /// Doing so will cause Envoy to clear its route cache for each stream in order to allow
+  /// filters to mutate headers (which can subsequently affect routing).
+  ///
+  /// - parameter response: The response configuration to add.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addDirectResponse(_ response: DirectResponse) -> EngineBuilder {
+    self.directResponses.append(response)
+    return self
+  }
+
   /// Add a string accessor to this Envoy Client.
   ///
   /// - parameter name: the name of the accessor.
@@ -215,9 +229,11 @@ public final class EngineBuilder: NSObject {
         appVersion: self.appVersion,
         appId: self.appId,
         virtualClusters: self.virtualClusters,
+        directResponses: self.directResponses.map { $0.resolvedYAMLFormat() }.joined(separator: "\n"),
         nativeFilterChain: self.nativeFilterChain,
         platformFilterChain: self.platformFilterChain,
-        stringAccessors: self.stringAccessors)
+        stringAccessors: self.stringAccessors
+    )
 
     switch self.base {
     case .custom(let yaml):
