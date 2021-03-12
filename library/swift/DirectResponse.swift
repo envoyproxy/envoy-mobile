@@ -26,7 +26,7 @@ public final class DirectResponse: NSObject {
     return
       """
       \(self.resolvedMatchYAML())
-                        route: { cluster: fake_remote })
+                        route: { cluster: fake_remote }
       """
   }
 

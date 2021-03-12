@@ -17,6 +17,7 @@
 
 #include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
+#include "library/common/extensions/filters/http/route_cache_reset/config.h"
 
 namespace Envoy {
 
@@ -30,6 +31,7 @@ void ExtensionRegistry::registerFactories() {
       forceRegisterDynamicForwardProxyFilterFactory();
   Envoy::Extensions::HttpFilters::LocalError::forceRegisterLocalErrorFilterFactory();
   Envoy::Extensions::HttpFilters::PlatformBridge::forceRegisterPlatformBridgeFilterFactory();
+  Envoy::Extensions::HttpFilters::PlatformBridge::forceRegisterRouteCacheResetFilterFactory();
   Envoy::Extensions::HttpFilters::RouterFilter::forceRegisterRouterFilterConfig();
   Envoy::Extensions::NetworkFilters::HttpConnectionManager::
       forceRegisterHttpConnectionManagerFilterConfigFactory();

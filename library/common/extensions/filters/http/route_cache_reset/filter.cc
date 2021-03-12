@@ -19,7 +19,7 @@ namespace RouteCacheReset {
 
 RouteCacheResetFilter::RouteCacheResetFilter() {}
 
-Http::FilterHeadersStatus IpTaggingFilter::decodeHeaders(Http::RequestHeaderMap& headers, bool) {
+Http::FilterHeadersStatus RouteCacheResetFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
   callbacks_->clearRouteCache();
   return Http::FilterHeadersStatus::Continue;
 }
