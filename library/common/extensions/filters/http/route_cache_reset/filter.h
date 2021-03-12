@@ -6,32 +6,33 @@
 
 #include "extensions/filters/http/common/pass_through_filter.h"
 
-#include "library/common/extensions/filters/http/local_error/filter.pb.h"
+#include "library/common/extensions/filters/http/route_cache_reset/filter.pb.h"
 
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
-namespace LocalError {
+namespace RouteCacheReset {
 
 /**
- * Filter to assert expectations on HTTP requests.
+ * Filter that has the sole purpose of clearing the route cache for a given
+ * stream on the request path. This forces the router filter to recompute
+ * routes for outbound requests (taking into account mutations from platform
+ * and other filters on the request/headers).
  */
-class LocalErrorFilter final : public Http::PassThroughEncoderFilter,
+class RouteCacheResetFilter final : public Http::StreamDecoderFilter,
                                public Logger::Loggable<Logger::Id::filter> {
 public:
-  LocalErrorFilter();
+  RouteCacheResetFilter();
 
-  // StreamEncoderFilter
-  Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap& headers,
+  // StreamDecoderFilter
+  Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
                                           bool end_stream) override;
-  Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
 
 private:
-  bool httpError_{};
-  Http::ResponseHeaderMap* headers_{};
+  Http::StreamDecoderFilterCallbacks* callbacks_{};
 };
 
-} // namespace LocalError
+} // namespace RouteCacheReset
 } // namespace HttpFilters
 } // namespace Extensions
 } // namespace Envoy

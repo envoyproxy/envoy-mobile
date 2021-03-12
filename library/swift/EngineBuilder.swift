@@ -3,7 +3,7 @@ import Foundation
 
 /// Builder used for creating and running a new Engine instance.
 @objcMembers
-public final class EngineBuilder: NSObject {
+public class EngineBuilder: NSObject {
   private let base: BaseConfiguration
   private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var logLevel: LogLevel = .info
@@ -144,19 +144,6 @@ public final class EngineBuilder: NSObject {
     return self
   }
 
-  /// Adds a direct response configuration which will be used when starting the engine.
-  /// Doing so will cause Envoy to clear its route cache for each stream in order to allow
-  /// filters to mutate headers (which can subsequently affect routing).
-  ///
-  /// - parameter response: The response configuration to add.
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func addDirectResponse(_ response: DirectResponse) -> EngineBuilder {
-    self.directResponses.append(response)
-    return self
-  }
-
   /// Add a string accessor to this Envoy Client.
   ///
   /// - parameter name: the name of the accessor.
@@ -217,22 +204,27 @@ public final class EngineBuilder: NSObject {
   /// Builds and runs a new `Engine` instance with the provided configuration.
   ///
   /// - returns: A new instance of Envoy.
-  public func build() throws -> Engine {
+  public func build() -> Engine {
     let engine = self.engineType.init()
     let config = EnvoyConfiguration(
-        statsDomain: self.statsDomain,
-        connectTimeoutSeconds: self.connectTimeoutSeconds,
-        dnsRefreshSeconds: self.dnsRefreshSeconds,
-        dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
-        dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
-        statsFlushSeconds: self.statsFlushSeconds,
-        appVersion: self.appVersion,
-        appId: self.appId,
-        virtualClusters: self.virtualClusters,
-        directResponses: self.directResponses.map { $0.resolvedYAMLFormat() }.joined(separator: "\n"),
-        nativeFilterChain: self.nativeFilterChain,
-        platformFilterChain: self.platformFilterChain,
-        stringAccessors: self.stringAccessors
+      statsDomain: self.statsDomain,
+      connectTimeoutSeconds: self.connectTimeoutSeconds,
+      dnsRefreshSeconds: self.dnsRefreshSeconds,
+      dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
+      dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
+      statsFlushSeconds: self.statsFlushSeconds,
+      appVersion: self.appVersion,
+      appId: self.appId,
+      virtualClusters: self.virtualClusters,
+      directResponseMatchers: self.directResponses
+        .map { $0.resolvedRouteMatchYAML() }
+        .joined(separator: "\n"),
+      directResponses: self.directResponses
+        .map { $0.resolvedDirectResponseYAML() }
+        .joined(separator: "\n"),
+      nativeFilterChain: self.nativeFilterChain,
+      platformFilterChain: self.platformFilterChain,
+      stringAccessors: self.stringAccessors
     )
 
     switch self.base {
@@ -255,5 +247,14 @@ public final class EngineBuilder: NSObject {
   func addEngineType(_ engineType: EnvoyEngine.Type) -> EngineBuilder {
     self.engineType = engineType
     return self
+  }
+
+  /// Add a direct response to be used when configuring the engine.
+  /// This function is internal so it is not publicly exposed to production builders,
+  /// but is available for use by the `TestEngineBuilder`.
+  ///
+  /// - parameter directResponse: The response configuration to add.
+  func addDirectResponseInternal(_ directResponse: DirectResponse) {
+    self.directResponses.append(directResponse)
   }
 }

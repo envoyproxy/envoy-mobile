@@ -21,7 +21,7 @@ public final class RouteMatcher: NSObject {
       case prefix
       case suffix
 
-      func resolvedYAMLFormat(value: String) -> String {
+      func resolvedYAML(value: String) -> String {
         switch self {
         case .contains:
           return "contains_match: \"\(value)\""

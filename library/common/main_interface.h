@@ -30,6 +30,18 @@ extern const char* platform_filter_template;
 extern const char* native_filter_template;
 
 /**
+ * Template configuration used for creating "fake" remote clusters which enable
+ * local responses to be returned via direct response configurations.
+ */
+extern const char* fake_remote_cluster_template;
+
+/**
+ * Template configuration used for creating "fake" remote listeners which enable
+ * local responses to be returned via direct response configurations.
+ */
+extern const char* fake_remote_listener_template;
+
+/**
  * Initialize an underlying HTTP stream.
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.

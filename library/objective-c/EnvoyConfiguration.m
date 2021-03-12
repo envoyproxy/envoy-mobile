@@ -13,7 +13,8 @@
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
-                      directResponses:(NSString *)directResponses
+             directResponseMatchers:(NSString *)directResponseMatchers
+                    directResponses:(NSString *)directResponses
                  nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
                 platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                     stringAccessors:
@@ -32,6 +33,7 @@
   self.appVersion = appVersion;
   self.appId = appId;
   self.virtualClusters = virtualClusters;
+  self.directResponseMatchers = directResponseMatchers;
   self.directResponses = directResponses;
   self.nativeFilterChain = nativeFilterChain;
   self.httpPlatformFilterFactories = httpPlatformFilterFactories;
@@ -61,6 +63,15 @@
     nativeFilterConfigChain = [nativeFilterConfigChain stringByAppendingString:nativeFilterConfig];
   }
 
+  BOOL hasDirectResponses = self.directResponses.length > 0;
+  if (hasDirectResponses) {
+    NSString *listenerTemplate = [[NSString alloc] initWithUTF8String:fake_remote_listener_template];
+    listenerTemplate = [listenerTemplate stringByReplacingOccurrencesOfString:@"{{ direct_responses }}" withString:self.directResponses];
+    templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"{{ fake_remote_listener }}" withString:listenerTemplate];
+  } else {
+    templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"{{ fake_remote_listener }}" withString:@""];
+  }
+
   NSDictionary<NSString *, NSString *> *templateKeysToValues = @{
     @"platform_filter_chain" : platformFilterConfigChain,
     @"stats_domain" : self.statsDomain,
@@ -80,6 +91,8 @@
     @"virtual_clusters" : self.virtualClusters,
     @"direct_responses": self.directResponses,
     @"native_filter_chain" : nativeFilterConfigChain,
+    @"fake_remote_cluster": hasDirectResponses ? [[NSString alloc] initWithUTF8String:fake_remote_cluster_template] : @"",
+    @"fake_cluster_matchers": hasDirectResponses ? self.directResponseMatchers : @"",
   };
 
   for (NSString *templateKey in templateKeysToValues) {
@@ -90,7 +103,7 @@
   }
     NSLog(@"VALUE**:\n\n%@", templateYAML);
 
-  if ([templateYAML rangeOfString:@"{{"].length != 0) {
+  if ([templateYAML containsString:@"{{"]) {
     NSLog(@"[Envoy] error: could not resolve all template keys in config:\n%@", templateYAML);
     return nil;
   }

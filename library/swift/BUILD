@@ -32,6 +32,7 @@ swift_static_framework(
         "StreamClient.swift",
         "StreamClientImpl.swift",
         "StreamPrototype.swift",
+        "TestEngineBuilder.swift",
         "Trailers.swift",
         "UpstreamHttpProtocol.swift",
         "filters/*.swift",

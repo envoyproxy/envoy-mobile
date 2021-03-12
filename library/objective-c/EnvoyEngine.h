@@ -260,7 +260,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
 @property (nonatomic, strong) NSString *virtualClusters;
-@property (nonatomic, strong, nullable) NSString *directResponses;
+@property (nonatomic, strong) NSString *directResponseMatchers;
+@property (nonatomic, strong) NSString *directResponses;
 @property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
 @property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
 @property (nonatomic, strong) NSDictionary<NSString *, EnvoyStringAccessor *> *stringAccessors;
@@ -277,7 +278,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
-                      directResponses:(NSString *)directResponses
+             directResponseMatchers:(NSString *)directResponseMatchers
+                    directResponses:(NSString *)directResponses
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
                 platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                     stringAccessors:
