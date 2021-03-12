@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+
 import io.envoyproxy.envoymobile.AndroidEngineBuilder
 import io.envoyproxy.envoymobile.Element
 import io.envoyproxy.envoymobile.Engine
@@ -17,7 +18,9 @@ import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
+
 import java.io.IOException
+import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -48,7 +51,7 @@ class MainActivity : Activity() {
       .addPlatformFilter { DemoFilter() }
       .addPlatformFilter { BufferDemoFilter() }
       .addPlatformFilter { AsyncDemoFilter() }
-      .addStringAccessor("demo-accessor", DemoStringAccessor())
+      .addStringAccessor("demo-accessor", { ByteBuffer.wrap("PlatformString".toByteArray(Charsets.UTF_8)) })
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()

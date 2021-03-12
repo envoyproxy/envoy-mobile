@@ -14,5 +14,5 @@ class JvmStringAccessorContext {
    *
    * @return ByteBuffer, the string retrieved from the platform.
    */
-  public ByteBuffer getString() { return accessor.getString(); }
+  public ByteBuffer getEnvoyString() { return accessor.getEnvoyString(); }
 }
