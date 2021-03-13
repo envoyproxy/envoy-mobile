@@ -14,6 +14,12 @@ const char* native_filter_template = R"(
             typed_config: {{ native_filter_typed_config }}
 )";
 
+const char* route_cache_reset_filter_template = R"(
+          - name: envoy.filters.http.route_cache_reset
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
+)";
+
 const char* fake_remote_listener_template = R"(
   - name: fake_remote_listener
     address:
@@ -119,6 +125,7 @@ static_resources:
                   enabled:
                     default_value: false
                     runtime_key: request_decompressor_enabled
+{{ route_reset_filter }}
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router

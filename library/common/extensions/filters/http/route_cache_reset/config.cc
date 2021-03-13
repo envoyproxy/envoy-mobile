@@ -12,7 +12,7 @@ Http::FilterFactoryCb RouteCacheResetFilterFactory::createFilterFactoryFromProto
     Server::Configuration::FactoryContext&) {
 
   return [](Http::FilterChainFactoryCallbacks& callbacks) -> void {
-    callbacks.addStreamEncoderFilter(std::make_shared<RouteCacheResetFilter>());
+    callbacks.addStreamDecoderFilter(std::make_shared<RouteCacheResetFilter>());
   };
 }
 

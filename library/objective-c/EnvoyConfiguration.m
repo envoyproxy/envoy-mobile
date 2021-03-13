@@ -93,6 +93,7 @@
     @"native_filter_chain" : nativeFilterConfigChain,
     @"fake_remote_cluster": hasDirectResponses ? [[NSString alloc] initWithUTF8String:fake_remote_cluster_template] : @"",
     @"fake_cluster_matchers": hasDirectResponses ? self.directResponseMatchers : @"",
+    @"route_reset_filter": hasDirectResponses ? [[NSString alloc] initWithUTF8String:route_cache_reset_filter_template] : @"",
   };
 
   for (NSString *templateKey in templateKeysToValues) {

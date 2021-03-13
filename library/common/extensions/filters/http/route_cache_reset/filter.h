@@ -24,9 +24,15 @@ class RouteCacheResetFilter final : public Http::StreamDecoderFilter,
 public:
   RouteCacheResetFilter();
 
-  // StreamDecoderFilter
+  // Http::StreamFilterBase
+  void onDestroy() override;
+
+  // Http::StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
                                           bool end_stream) override;
+  Http::FilterDataStatus decodeData(Buffer::Instance& data, bool end_stream) override;
+  Http::FilterTrailersStatus decodeTrailers(Http::RequestTrailerMap& trailers) override;
+  void setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) override;
 
 private:
   Http::StreamDecoderFilterCallbacks* callbacks_{};

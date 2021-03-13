@@ -19,6 +19,8 @@ namespace RouteCacheReset {
 
 RouteCacheResetFilter::RouteCacheResetFilter() {}
 
+void RouteCacheResetFilter::onDestroy() {}
+
 Http::FilterHeadersStatus RouteCacheResetFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
   callbacks_->clearRouteCache();
   return Http::FilterHeadersStatus::Continue;
@@ -26,6 +28,14 @@ Http::FilterHeadersStatus RouteCacheResetFilter::decodeHeaders(Http::RequestHead
 
 void RouteCacheResetFilter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) {
   callbacks_ = &callbacks;
+}
+
+Http::FilterDataStatus RouteCacheResetFilter::decodeData(Buffer::Instance&, bool) {
+  return Http::FilterDataStatus::Continue;
+}
+
+Http::FilterTrailersStatus RouteCacheResetFilter::decodeTrailers(Http::RequestTrailerMap&) {
+  return Http::FilterTrailersStatus::Continue;
 }
 
 } // namespace RouteCacheReset
