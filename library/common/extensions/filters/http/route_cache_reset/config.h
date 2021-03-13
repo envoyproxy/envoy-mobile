@@ -14,7 +14,8 @@ namespace RouteCacheReset {
  * Config registration for the route_cache_reset filter. @see NamedHttpFilterConfigFactory.
  */
 class RouteCacheResetFilterFactory
-    : public Common::FactoryBase<envoymobile::extensions::filters::http::route_cache_reset::RouteCacheReset> {
+    : public Common::FactoryBase<
+          envoymobile::extensions::filters::http::route_cache_reset::RouteCacheReset> {
 public:
   RouteCacheResetFilterFactory() : FactoryBase("route_cache_reset") {}
 

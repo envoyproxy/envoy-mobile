@@ -20,7 +20,7 @@ namespace RouteCacheReset {
  * and other filters on the request/headers).
  */
 class RouteCacheResetFilter final : public Http::StreamDecoderFilter,
-                               public Logger::Loggable<Logger::Id::filter> {
+                                    public Logger::Loggable<Logger::Id::filter> {
 public:
   RouteCacheResetFilter();
 

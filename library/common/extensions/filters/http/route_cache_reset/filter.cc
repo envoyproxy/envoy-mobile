@@ -23,10 +23,12 @@ void RouteCacheResetFilter::onDestroy() {}
 
 Http::FilterHeadersStatus RouteCacheResetFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
   callbacks_->clearRouteCache();
+  ENVOY_LOG(debug, "cleared route cache after decoding headers");
   return Http::FilterHeadersStatus::Continue;
 }
 
-void RouteCacheResetFilter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) {
+void RouteCacheResetFilter::setDecoderFilterCallbacks(
+    Http::StreamDecoderFilterCallbacks& callbacks) {
   callbacks_ = &callbacks;
 }
 
