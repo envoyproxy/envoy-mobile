@@ -7,7 +7,9 @@ import java.nio.ByteBuffer
  *
  * `StringAccessor` is bridged through to `EnvoyStringAccessor` to communicate with the engine.
  */
-class StringAccessor (val getEnvoyString: (() -> ByteBuffer)) {}
+class StringAccessor constructor (
+  val getEnvoyString: (() -> ByteBuffer)
+)
 
 /**
  * Class responsible for bridging between the platform-level `StringAccessor` and the
