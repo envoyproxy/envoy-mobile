@@ -10,7 +10,7 @@ class EngineImpl internal constructor(
   internal val envoyEngine: EnvoyEngine,
   internal val envoyConfiguration: EnvoyConfiguration?,
   internal val configurationYAML: String?,
-  internal val logLevel: LogLevel,
+  internal val logLevel: LogLevel
 ) : Engine {
 
   private val streamClient: StreamClient

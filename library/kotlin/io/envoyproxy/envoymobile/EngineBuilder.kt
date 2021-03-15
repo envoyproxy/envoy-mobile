@@ -20,7 +20,7 @@ open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
   protected var onEngineRunning: (() -> Unit) = {}
-  private var : () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning) }
+  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning) }
   private var logLevel = LogLevel.INFO
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30
@@ -232,8 +232,8 @@ open class EngineBuilder(
    *
    * A new instance of this engine will be created when `build()` is called.
    */
-  fun addEngineType(: () -> EnvoyEngine): EngineBuilder {
-    this. = engineType
+  fun addEngineType(engineType: () -> EnvoyEngine): EngineBuilder {
+    this.engineType = engineType
     return this
   }
 }
