@@ -31,7 +31,6 @@ void* c_on_data(envoy_data data, bool end_stream, void* context) {
   if (stream_callbacks->on_error.has_value()) {
     auto on_data = self->stream_callbacks_->on_data.value();
     on_data(data, end_stream);
-    stream_callbacks->on_data.value()(data, end_stream);
   }
   return context;
 }
