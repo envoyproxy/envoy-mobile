@@ -9,12 +9,22 @@
     "//examples/swift/hello_world:app",
     "//examples/swift/hello_world:appmain",
     "//library/swift:ios_framework_archive",
+    "//test/swift:counter_tests",
+    "//test/swift:counter_tests_lib",
+    "//test/swift:direct_response_tests",
+    "//test/swift:direct_response_tests_lib",
+    "//test/swift:element_tests",
+    "//test/swift:element_tests_lib",
+    "//test/swift:engine_builder_tests",
+    "//test/swift:engine_builder_tests_lib",
     "//test/swift:grpc_request_headers_builder_tests",
     "//test/swift:grpc_request_headers_builder_tests_lib",
     "//test/swift:grpc_stream_tests",
     "//test/swift:grpc_stream_tests_lib",
     "//test/swift:headers_builder_tests",
     "//test/swift:headers_builder_tests_lib",
+    "//test/swift:pulse_client_impl_tests",
+    "//test/swift:pulse_client_impl_tests_lib",
     "//test/swift:request_headers_builder_tests",
     "//test/swift:request_headers_builder_tests_lib",
     "//test/swift:response_headers_tests",
@@ -22,9 +32,7 @@
     "//test/swift:retry_policy_mapper_tests",
     "//test/swift:retry_policy_mapper_tests_lib",
     "//test/swift:retry_policy_tests",
-    "//test/swift:retry_policy_tests_lib",
-    "//test/swift:engine_builder_tests",
-    "//test/swift:engine_builder_tests_lib"
+    "//test/swift:retry_policy_tests_lib"
   ],
   "optionSet" : {
     "BazelBuildOptionsDebug" : {
@@ -75,7 +83,7 @@
     "examples/...",
     "library",
     "library/objective-c/...",
-    "library/swift/...",
-    "library/swift"
+    "library/swift",
+    "library/swift/..."
   ]
 }

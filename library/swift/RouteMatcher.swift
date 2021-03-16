@@ -1,7 +1,8 @@
 import Foundation
 
 /// Typed representation of a route matcher that may be specified when starting the engine.
-/// https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#envoy-v3-api-msg-config-route-v3-routematch
+/// https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/
+/// v3/route_components.proto#envoy-v3-api-msg-config-route-v3-routematch
 @objcMembers
 public final class RouteMatcher: NSObject {
   public let fullPath: String?

@@ -21,9 +21,8 @@ final class ViewController: UITableViewController {
       .addPlatformFilter(factory: DemoFilter.init)
       .addPlatformFilter(factory: BufferDemoFilter.init)
       .addPlatformFilter(factory: AsyncDemoFilter.init)
-      .addNativeFilter(name: "envoy.filters.http.buffer",
-                        // swiftlint:disable:next line_length
-                        typedConfig: "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
+      // swiftlint:disable:next line_length
+      .addNativeFilter(name: "envoy.filters.http.buffer", typedConfig: "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
       .addStringAccessor(name: "string_accessor", accessor: { return "DemoStringAccessor" })
       .build()

@@ -10,6 +10,13 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
+    name = "direct_response_tests",
+    srcs = [
+        "DirectResponseTests.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
     name = "element_tests",
     srcs = [
         "ElementTests.swift",

@@ -2,7 +2,8 @@ import Foundation
 
 /// Allows for configuring Envoy to return a local response based on matching criteria.
 /// Especially useful for testing/mocking clients.
-/// https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#config-route-v3-directresponseaction
+/// https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/
+/// v3/route_components.proto#config-route-v3-directresponseaction
 @objcMembers
 public final class DirectResponse: NSObject {
   public let matcher: RouteMatcher
