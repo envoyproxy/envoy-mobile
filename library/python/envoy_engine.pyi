@@ -46,7 +46,7 @@ class RequestHeaders:
     def path(self) -> str: ...
     def retry_policy(self) -> "RetryPolicy": ...
     def upstream_http_protocol(self) -> "UpstreamHttpProtocol": ...
-    def to_request_headers_builder(self) -> "RequestHeadersBulder": ...
+    def to_request_headers_builder(self) -> "RequestHeadersBuilder": ...
 
 
 class RequestHeadersBuilder:
@@ -61,7 +61,7 @@ class RequestHeadersBuilder:
 class RequestTrailers:
     def __getitem__(self, name: str) -> List[str]: ...
     def all_headers(self) -> Dict[str, List[str]]: ...
-    def to_request_trailers_builder(self) -> "RequestTrailersBulder": ...
+    def to_request_trailers_builder(self) -> "RequestTrailersBuilder": ...
 
 
 class RequestTrailersBuilder:
@@ -76,7 +76,7 @@ class ResponseHeaders:
     def __getitem__(self, name: str) -> List[str]: ...
     def all_headers(self) -> Dict[str, List[str]]: ...
     def http_status(self) -> int: ...
-    def to_response_headers_builder(self) -> "ResponseHeadersBulder": ...
+    def to_response_headers_builder(self) -> "ResponseHeadersBuilder": ...
 
 
 class ResponseHeadersBuilder:
@@ -91,7 +91,7 @@ class ResponseHeadersBuilder:
 class ResponseTrailers:
     def __getitem__(self, name: str) -> List[str]: ...
     def all_trailers(self) -> Dict[str, List[str]]: ...
-    def to_response_trailers_builder(self) -> "ResponseTrailersBulder": ...
+    def to_response_trailers_builder(self) -> "ResponseTrailersBuilder": ...
 
 
 class ResponseTrailersBuilder:
@@ -138,36 +138,35 @@ class StreamPrototype:
     def set_on_cancel(self, on_cancel: Callable[[], None]) -> "StreamPrototype": ...
 
 
-# TODO: figure out how the heck we do enums in mypy
+class LogLevel:
+    Trace: "LogLevel"
+    Debug: "LogLevel"
+    Info: "LogLevel"
+    Warn: "LogLevel"
+    Error: "LogLevel"
+    Critical: "LogLevel"
+    Off: "LogLevel"
 
-# py::enum_<LogLevel>(m, "LogLevel")
-#     .value("Trace", LogLevel::trace)
-#     .value("Debug", LogLevel::debug)
-#     .value("Info", LogLevel::info)
-#     .value("Warn", LogLevel::warn)
-#     .value("Error", LogLevel::error)
-#     .value("Critical", LogLevel::critical)
-#     .value("Off", LogLevel::off);
 
-# py::enum_<RequestMethod>(m, "RequestMethod")
-#     .value("DELETE", RequestMethod::DELETE)
-#     .value("GET", RequestMethod::GET)
-#     .value("HEAD", RequestMethod::HEAD)
-#     .value("OPTIONS", RequestMethod::OPTIONS)
-#     .value("PATCH", RequestMethod::PATCH)
-#     .value("POST", RequestMethod::POST)
-#     .value("PUT", RequestMethod::PUT)
-#     .value("TRACE", RequestMethod::TRACE);
+class RequestMethod:
+    DELETE: "RequestMethod"
+    GET: "RequestMethod"
+    HEAD: "RequestMethod"
+    OPTIONS: "RequestMethod"
+    PATCH: "RequestMethod"
+    POST: "RequestMethod"
+    PUT: "RequestMethod"
+    TRACE: "RequestMethod"
 
-# py::enum_<RetryRule>(m, "RetryRule")
-#     .value("Status5xx", RetryRule::Status5xx)
-#     .value("GatewayError", RetryRule::GatewayError)
-#     .value("ConnectFailure", RetryRule::ConnectFailure)
-#     .value("RefusedStream", RetryRule::RefusedStream)
-#     .value("Retriable4xx", RetryRule::Retriable4xx)
-#     .value("RetriableHeaders", RetryRule::RetriableHeaders)
-#     .value("Reset", RetryRule::Reset);
+class RetryRule:
+    Status5xx: "RetryRule"
+    GatewayError: "RetryRule"
+    ConnectFailure: "RetryRule"
+    RefusedStream: "RetryRule"
+    Retriable4xx: "RetryRule"
+    RetriableHeaders: "RetryRule"
+    Reset: "RetryRule"
 
-# py::enum_<UpstreamHttpProtocol>(m, "UpstreamHttpProtocol")
-#     .value("HTTP1", UpstreamHttpProtocol::HTTP1)
-#     .value("HTTP2", UpstreamHttpProtocol::HTTP2);
+class UpstreamHttpProtocol:
+    HTTP1: "UpstreamHttpProtocol"
+    HTTP2: "UpstreamHttpProtocol"
