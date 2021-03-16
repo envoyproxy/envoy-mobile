@@ -4,8 +4,6 @@
 
 #include "common/common/logger.h"
 
-#include "extensions/filters/http/common/pass_through_filter.h"
-
 #include "library/common/extensions/filters/http/route_cache_reset/filter.pb.h"
 
 namespace Envoy {

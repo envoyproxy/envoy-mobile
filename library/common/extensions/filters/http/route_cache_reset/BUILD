@@ -23,17 +23,10 @@ envoy_cc_extension(
     security_posture = "requires_trusted_downstream_and_upstream",
     deps = [
         ":filter_cc_proto",
-        "//library/common/http:internal_headers_lib",
-        "//library/common/types:c_types_lib",
-        "@envoy//include/envoy/http:codes_interface",
         "@envoy//include/envoy/http:filter_interface",
-        "@envoy//source/common/grpc:common_lib",
-        "@envoy//source/common/grpc:status_lib",
-        "@envoy//source/common/http:codes_lib",
         "@envoy//source/common/http:header_map_lib",
         "@envoy//source/common/http:headers_lib",
         "@envoy//source/common/http:utility_lib",
-        "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
     ],
 )
 
