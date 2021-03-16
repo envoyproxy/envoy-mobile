@@ -67,7 +67,7 @@ RawHeaderMap envoy_headers_as_raw_header_map(envoy_headers raw_headers) {
   // free instead of release_envoy_headers
   // because we already free each envoy_data piecewise
   // during calls to envoy_data_as_string
-  free(raw_headers.headers);
+  free(raw_headers.entries);
   return headers;
 }
 
