@@ -34,10 +34,10 @@ const std::string LEVEL_DEBUG = "debug";
 // Based on Http::Utility::toRequestHeaders() but only used for these tests.
 Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
   Http::ResponseHeaderMapPtr transformed_headers = Http::ResponseHeaderMapImpl::create();
-  for (envoy_header_size_t i = 0; i < headers.length; i++) {
+  for (envoy_map_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(
-        Http::LowerCaseString(Http::Utility::convertToString(headers.headers[i].key)),
-        Http::Utility::convertToString(headers.headers[i].value));
+        Http::LowerCaseString(Http::Utility::convertToString(headers.entries[i].key)),
+        Http::Utility::convertToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);
@@ -353,6 +353,31 @@ TEST(EngineTest, SubFromGauge) {
   record_gauge_add(0, "gauge", 30);
 
   EXPECT_EQ(ENVOY_SUCCESS, record_gauge_sub(0, "gauge", 30));
+
+  terminate_engine(0);
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
+}
+
+TEST(EngineTest, RecordHistogramValue) {
+  engine_test_context test_context{};
+  envoy_engine_callbacks callbacks{[](void* context) -> void {
+                                     auto* engine_running =
+                                         static_cast<engine_test_context*>(context);
+                                     engine_running->on_engine_running.Notify();
+                                   } /*on_engine_running*/,
+                                   [](void* context) -> void {
+                                     auto* exit = static_cast<engine_test_context*>(context);
+                                     exit->on_exit.Notify();
+                                   } /*on_exit*/,
+                                   &test_context /*context*/};
+  EXPECT_EQ(ENVOY_FAILURE, record_histogram_value(0, "histogram", 99, MILLISECONDS));
+
+  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+
+  record_histogram_value(0, "histogram", 99, MILLISECONDS);
+
+  EXPECT_EQ(ENVOY_SUCCESS, record_histogram_value(0, "histogram", 99, MILLISECONDS));
 
   terminate_engine(0);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));

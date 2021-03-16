@@ -49,10 +49,21 @@ necessary tools::
   make -j6
   cp bloaty /usr/local/bin/bloaty
 
+.. attention::
+
+    After this `change <https://github.com/envoyproxy/envoy/pull/12569>`_ Envoy started
+    using split DWARF capabilities to reduce link time and binary size when compiling debug symbols.
+    However, Bloaty (the analysis tool described below)
+    does not support using ``.dwp`` files as a source for debug symbols
+    (tracked in this `issue <https://github.com/google/bloaty/issues/156>`_). Therefore, a patch
+    `like this <https://github.com/envoyproxy/envoy-mobile/issues/1274#issuecomment-788345216>`_
+    must be applied to the Envoy submodule before compiling the binary described
+    below.
+
 The binary being compiled is ``//test/performance:test_binary_size``.
 The binary is getting built with the following build command::
 
-  bazel build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
+  bazelisk build //test/performance:test_binary_size --config=sizeopt --copt=-ggdb3 --linkopt=-fuse-ld=lld
 
 Thus the binary is compiled with the following flags pertinent to reducing
 binary size:

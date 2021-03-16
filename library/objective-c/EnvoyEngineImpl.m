@@ -2,6 +2,8 @@
 #import "library/objective-c/EnvoyBridgeUtility.h"
 #import "library/objective-c/EnvoyHTTPFilterCallbacksImpl.h"
 
+#include "library/common/api/c_types.h"
+
 #import "library/common/main_interface.h"
 #import "library/common/types/c_types.h"
 
@@ -20,8 +22,53 @@ static void ios_on_exit(void *context) {
 }
 
 static const void *ios_http_filter_init(const void *context) {
-  EnvoyHTTPFilterFactory *filterFactory = (__bridge EnvoyHTTPFilterFactory *)context;
+  envoy_http_filter *c_filter = (envoy_http_filter *)context;
+  EnvoyHTTPFilterFactory *filterFactory =
+      (__bridge EnvoyHTTPFilterFactory *)c_filter->static_context;
   EnvoyHTTPFilter *filter = filterFactory.create();
+
+  // Unset static functions on the c_struct based on the created filter
+  if (filter.onRequestHeaders == nil) {
+    c_filter->on_request_headers = NULL;
+  }
+  if (filter.onRequestData == nil) {
+    c_filter->on_request_data = NULL;
+  }
+  if (filter.onRequestTrailers == nil) {
+    c_filter->on_request_trailers = NULL;
+  }
+
+  if (filter.onResponseHeaders == nil) {
+    c_filter->on_response_headers = NULL;
+  }
+  if (filter.onResponseData == nil) {
+    c_filter->on_response_data = NULL;
+  }
+  if (filter.onResponseTrailers == nil) {
+    c_filter->on_response_trailers = NULL;
+  }
+
+  if (filter.setRequestFilterCallbacks == nil) {
+    c_filter->set_request_callbacks = NULL;
+  }
+  if (filter.onResumeRequest == nil) {
+    c_filter->on_resume_request = NULL;
+  }
+
+  if (filter.setResponseFilterCallbacks == nil) {
+    c_filter->set_response_callbacks = NULL;
+  }
+  if (filter.onResumeResponse == nil) {
+    c_filter->on_resume_response = NULL;
+  }
+
+  if (filter.onCancel == nil) {
+    c_filter->on_cancel = NULL;
+  }
+  if (filter.onError == nil) {
+    c_filter->on_error = NULL;
+  }
+
   return CFBridgingRetain(filter);
 }
 
@@ -225,6 +272,7 @@ static void ios_http_filter_on_cancel(const void *context) {
 static void ios_http_filter_on_error(envoy_error error, const void *context) {
   EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
   if (filter.onError == nil) {
+    error.message.release(error.message.context);
     return;
   }
 
@@ -238,6 +286,11 @@ static void ios_http_filter_on_error(envoy_error error, const void *context) {
 static void ios_http_filter_release(const void *context) {
   CFRelease(context);
   return;
+}
+
+static envoy_data ios_get_string(const void *context) {
+  EnvoyStringAccessor *accessor = (__bridge EnvoyStringAccessor *)context;
+  return toManagedNativeString(accessor.getEnvoyString());
 }
 
 @implementation EnvoyEngineImpl {
@@ -284,6 +337,16 @@ static void ios_http_filter_release(const void *context) {
   return kEnvoySuccess;
 }
 
+- (int)registerStringAccessor:(NSString *)name accessor:(EnvoyStringAccessor *)accessor {
+  // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
+  // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
+  envoy_string_accessor *accessorStruct = safe_malloc(sizeof(envoy_string_accessor));
+  accessorStruct->get_string = ios_get_string;
+  accessorStruct->context = CFBridgingRetain(accessor);
+
+  return register_platform_api(name.UTF8String, accessorStruct);
+}
+
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
      onEngineRunning:(nullable void (^)())onEngineRunning {
@@ -295,6 +358,10 @@ static void ios_http_filter_release(const void *context) {
 
   for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
     [self registerFilterFactory:filterFactory];
+  }
+
+  for (NSString *name in config.stringAccessors) {
+    [self registerStringAccessor:name accessor:config.stringAccessors[name]];
   }
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
@@ -311,6 +378,10 @@ static void ios_http_filter_release(const void *context) {
 
   for (EnvoyHTTPFilterFactory *filterFactory in config.httpPlatformFilterFactories) {
     [self registerFilterFactory:filterFactory];
+  }
+
+  for (NSString *name in config.stringAccessors) {
+    [self registerStringAccessor:name accessor:config.stringAccessors[name]];
   }
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel onEngineRunning:onEngineRunning];
@@ -355,6 +426,14 @@ static void ios_http_filter_release(const void *context) {
 
 - (int)recordGaugeSub:(NSString *)elements amount:(NSUInteger)amount {
   return record_gauge_sub(_engineHandle, elements.UTF8String, amount);
+}
+
+- (int)recordHistogramDuration:(NSString *)elements durationMs:(NSUInteger)durationMs {
+  return record_histogram_value(_engineHandle, elements.UTF8String, durationMs, MILLISECONDS);
+}
+
+- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value {
+  return record_histogram_value(_engineHandle, elements.UTF8String, value, UNSPECIFIED);
 }
 
 #pragma mark - Private

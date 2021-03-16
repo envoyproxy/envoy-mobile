@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+#import "library/common/types/c_types.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Aliases
@@ -223,6 +225,16 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
+#pragma mark - EnvoyStringAccessor
+
+@interface EnvoyStringAccessor : NSObject
+
+@property (nonatomic, copy) NSString * (^getEnvoyString)();
+
+- (instancetype)initWithBlock:(NSString * (^)())block;
+
+@end
+
 #pragma mark - EnvoyNativeFilterConfig
 
 @interface EnvoyNativeFilterConfig : NSObject
@@ -250,6 +262,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *virtualClusters;
 @property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
 @property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
+@property (nonatomic, strong) NSDictionary<NSString *, EnvoyStringAccessor *> *stringAccessors;
 
 /**
  Create a new instance of the configuration.
@@ -264,8 +277,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:
-                    (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories;
+                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                    stringAccessors:
+                        (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -361,6 +375,22 @@ extern const int kEnvoyFailure;
  @return A status indicating if the action was successful.
  */
 - (int)recordGaugeSub:(NSString *)elements amount:(NSUInteger)amount;
+
+/**
+ Add another recorded duration to the timer histogram with the given string of elements.
+ @param elements Elements of the histogram stat.
+ @param durationMs The duration in milliseconds to record in the histogram distribution
+ @return A status indicating if the action was successful.
+ */
+- (int)recordHistogramDuration:(NSString *)elements durationMs:(NSUInteger)durationMs;
+
+/**
+ Add another recorded value to the histogram with the given string of elements.
+ @param elements Elements of the histogram stat.
+ @param value Amount to record as a new value for the histogram distribution.
+ @return A status indicating if the action was successful.
+ */
+- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value;
 
 @end
 

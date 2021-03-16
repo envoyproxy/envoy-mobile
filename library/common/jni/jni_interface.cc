@@ -116,16 +116,35 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), amount);
 }
 
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv* env,
+                                                                         jclass, // class
+                                                                         jlong engine,
+                                                                         jstring elements,
+                                                                         jint durationMs) {
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), durationMs,
+                                MILLISECONDS);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* env,
+                                                                      jclass, // class
+                                                                      jlong engine,
+                                                                      jstring elements,
+                                                                      jint value) {
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value,
+                                UNSPECIFIED);
+}
+
 // JvmCallbackContext
 
 static void pass_headers(const char* method, envoy_headers headers, jobject j_context) {
   JNIEnv* env = get_env();
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
   jmethodID jmid_passHeader = env->GetMethodID(jcls_JvmCallbackContext, method, "([B[BZ)V");
-  env->PushLocalFrame(headers.length * 2);
   jboolean start_headers = JNI_TRUE;
 
-  for (envoy_header_size_t i = 0; i < headers.length; i++) {
+  for (envoy_map_size_t i = 0; i < headers.length; i++) {
     // Note this is just an initial implementation, and we will pass a more optimized structure in
     // the future.
 
@@ -133,32 +152,33 @@ static void pass_headers(const char* method, envoy_headers headers, jobject j_co
     // requires a null-terminated *modified* UTF-8 string.
 
     // Create platform byte array for header key
-    jbyteArray key = env->NewByteArray(headers.headers[i].key.length);
+    jbyteArray key = env->NewByteArray(headers.entries[i].key.length);
     // TODO: check if copied via isCopy.
     // TODO: check for NULL.
     // https://github.com/lyft/envoy-mobile/issues/758
     void* critical_key = env->GetPrimitiveArrayCritical(key, nullptr);
-    memcpy(critical_key, headers.headers[i].key.bytes, headers.headers[i].key.length);
+    memcpy(critical_key, headers.entries[i].key.bytes, headers.entries[i].key.length);
     // Here '0' (for which there is no named constant) indicates we want to commit the changes back
     // to the JVM and free the c array, where applicable.
     env->ReleasePrimitiveArrayCritical(key, critical_key, 0);
 
     // Create platform byte array for header value
-    jbyteArray value = env->NewByteArray(headers.headers[i].value.length);
+    jbyteArray value = env->NewByteArray(headers.entries[i].value.length);
     // TODO: check for NULL.
     void* critical_value = env->GetPrimitiveArrayCritical(value, nullptr);
-    memcpy(critical_value, headers.headers[i].value.bytes, headers.headers[i].value.length);
+    memcpy(critical_value, headers.entries[i].value.bytes, headers.entries[i].value.length);
     env->ReleasePrimitiveArrayCritical(value, critical_value, 0);
 
     // Pass this header pair to the platform
     env->CallVoidMethod(j_context, jmid_passHeader, key, value, start_headers);
+    env->DeleteLocalRef(key);
+    env->DeleteLocalRef(value);
 
     // We don't release local refs currently because we've pushed a large enough frame, but we could
     // consider this and/or periodically popping the frame.
     start_headers = JNI_FALSE;
   }
 
-  env->PopLocalFrame(nullptr);
   env->DeleteLocalRef(jcls_JvmCallbackContext);
   release_envoy_headers(headers);
 }
@@ -612,7 +632,10 @@ static const void* jvm_http_filter_init(const void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_filter_init");
 
   JNIEnv* env = get_env();
-  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  envoy_http_filter* c_filter = static_cast<envoy_http_filter*>(const_cast<void*>(context));
+  jobject j_context = static_cast<jobject>(const_cast<void*>(c_filter->static_context));
+
   __android_log_print(ANDROID_LOG_VERBOSE, "[Envoy]", "j_context: %p", j_context);
 
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
@@ -631,9 +654,9 @@ static const void* jvm_http_filter_init(const void* context) {
 
 // EnvoyStringAccessor
 
-static envoy_data jvm_get_string(void* context) {
+static envoy_data jvm_get_string(const void* context) {
   JNIEnv* env = get_env();
-  jobject j_context = static_cast<jobject>(context);
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jclass jcls_JvmStringAccessorContext = env->GetObjectClass(j_context);
   jmethodID jmid_getString =
       env->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()Ljava/nio/ByteBuffer;");

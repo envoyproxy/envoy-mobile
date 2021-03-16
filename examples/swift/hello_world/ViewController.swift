@@ -10,7 +10,7 @@ private let kFilteredHeaders =
 
 final class ViewController: UITableViewController {
   private var results = [Result<Response, RequestError>]()
-  private var timer: Timer?
+  private var timer: Foundation.Timer?
   private var streamClient: StreamClient?
   private var pulseClient: PulseClient?
 
@@ -26,6 +26,7 @@ final class ViewController: UITableViewController {
                          // swiftlint:disable:next line_length
                          typedConfig: "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
         .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
+        .addStringAccessor(name: "string_accessor", accessor: { return "DemoStringAccessor" })
         .build()
       self.streamClient = engine.streamClient()
       self.pulseClient = engine.pulseClient()
@@ -69,7 +70,7 @@ final class ViewController: UITableViewController {
     streamClient
       .newStreamPrototype()
       .setOnResponseHeaders { [weak self] headers, _ in
-        let statusCode = headers.httpStatus ?? -1
+        let statusCode = headers.httpStatus.map(String.init) ?? "nil"
         let message = "received headers with status \(statusCode)"
 
         let headerMessage = headers.allHeaders()
@@ -123,6 +124,11 @@ final class ViewController: UITableViewController {
     gauge.set(value: 5)
     gauge.add(amount: 10)
     gauge.sub(amount: 1)
+
+    let timer = pulseClient.timer(elements: ["foo", "bar", "timer"])
+    let distribution = pulseClient.distribution(elements: ["foo", "bar", "distribution"])
+    timer.completeWithDuration(durationMs: 15)
+    distribution.recordValue(value: 15)
   }
   // MARK: - UITableView
 

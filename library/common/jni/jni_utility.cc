@@ -45,6 +45,7 @@ void jni_delete_const_global_ref(const void* context) {
 int unbox_integer(JNIEnv* env, jobject boxedInteger) {
   jclass jcls_Integer = env->FindClass("java/lang/Integer");
   jmethodID jmid_intValue = env->GetMethodID(jcls_Integer, "intValue", "()I");
+  env->DeleteLocalRef(jcls_Integer);
   return env->CallIntMethod(boxedInteger, jmid_intValue);
 }
 
@@ -67,7 +68,11 @@ envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
     // implemented in the JVM layer.
     jmethodID jmid_array = env->GetMethodID(jcls_ByteBuffer, "array", "()[B");
     jbyteArray array = static_cast<jbyteArray>(env->CallObjectMethod(j_data, jmid_array));
-    return array_to_native_data(env, array);
+    env->DeleteLocalRef(jcls_ByteBuffer);
+
+    envoy_data native_data = array_to_native_data(env, array);
+    env->DeleteLocalRef(array);
+    return native_data;
   }
 
   envoy_data native_data;
@@ -89,19 +94,23 @@ envoy_data* buffer_to_native_data_ptr(JNIEnv* env, jobject j_data) {
     return nullptr;
   }
 
-  envoy_data* native_data = static_cast<envoy_data*>(safe_malloc(sizeof(envoy_header)));
+  envoy_data* native_data = static_cast<envoy_data*>(safe_malloc(sizeof(envoy_map_entry)));
   *native_data = buffer_to_native_data(env, j_data);
   return native_data;
 }
 
 envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
   // Note that headers is a flattened array of key/value pairs.
-  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_header.
-  envoy_header_size_t length = env->GetArrayLength(headers);
-  envoy_header* header_array =
-      static_cast<envoy_header*>(safe_malloc(sizeof(envoy_header) * length / 2));
+  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_map_entry.
+  envoy_map_size_t length = env->GetArrayLength(headers);
+  if (length == 0) {
+    return envoy_noheaders;
+  }
 
-  for (envoy_header_size_t i = 0; i < length; i += 2) {
+  envoy_map_entry* header_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * length / 2));
+
+  for (envoy_map_size_t i = 0; i < length; i += 2) {
     // Copy native byte array for header key
     jbyteArray j_key = static_cast<jbyteArray>(env->GetObjectArrayElement(headers, i));
     size_t key_length = env->GetArrayLength(j_key);
@@ -121,6 +130,8 @@ envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
     envoy_data header_value = {value_length, native_value, free, native_value};
 
     header_array[i / 2] = {header_key, header_value};
+    env->DeleteLocalRef(j_key);
+    env->DeleteLocalRef(j_value);
   }
 
   envoy_headers native_headers = {length / 2, header_array};
@@ -137,7 +148,7 @@ envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers) {
     return nullptr;
   }
 
-  envoy_headers* native_headers = static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_header)));
+  envoy_headers* native_headers = static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_map_entry)));
   *native_headers = to_native_headers(env, headers);
   return native_headers;
 }

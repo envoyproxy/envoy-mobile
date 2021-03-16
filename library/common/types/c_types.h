@@ -27,6 +27,13 @@ typedef enum {
   ENVOY_FAILURE = 1,
 } envoy_status_t;
 
+typedef enum {
+  UNSPECIFIED = 0, // Measured quantity does not require a unit, e.g. "items".
+  BYTES = 1,
+  MICROSECONDS = 2,
+  MILLISECONDS = 3,
+} envoy_histogram_stat_unit_t;
+
 /**
  * Equivalent constants to envoy_status_t, for contexts where the enum may not be usable.
  */
@@ -80,28 +87,30 @@ typedef struct {
 } envoy_data;
 
 /**
- * Holds a single key/value header.
+ * Holds a single key/value pair.
  */
 typedef struct {
   envoy_data key;
-  // Multiple header values for the same header key are supported via a comma-delimited string.
   envoy_data value;
-} envoy_header;
+} envoy_map_entry;
 
 /**
  * Consistent type for dealing with encodable/processable header counts.
  */
-typedef int envoy_header_size_t;
+typedef int envoy_map_size_t;
 
 /**
- * Holds an HTTP header map as an array of envoy_header structs.
+ * Holds a map as an array of envoy_map_entry structs.
  */
 typedef struct {
-  // Number of header elements in the array.
-  envoy_header_size_t length;
-  // Array of headers.
-  envoy_header* headers;
-} envoy_headers;
+  // Number of entries in the array.
+  envoy_map_size_t length;
+  // Array of map entries.
+  envoy_map_entry* entries;
+} envoy_map;
+
+// Multiple header values for the same header key are supported via a comma-delimited string.
+typedef envoy_map envoy_headers;
 
 #ifdef __cplusplus
 extern "C" { // utility functions
