@@ -8,9 +8,9 @@ class JvmStringAccessorContext {
   public JvmStringAccessorContext(EnvoyStringAccessor accessor) { this.accessor = accessor; }
 
   /**
-   * Invokes getString callback.
+   * Invokes getEnvoyString callback.
    *
-   * @return ByteBuffer, the string retrieved from the platform.
+   * @return String, the string retrieved from the platform.
    */
   public String getEnvoyString() { return accessor.getEnvoyString(); }
 }
