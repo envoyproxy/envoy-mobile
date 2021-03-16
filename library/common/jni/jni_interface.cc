@@ -659,10 +659,9 @@ static envoy_data jvm_get_string(const void* context) {
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jclass jcls_JvmStringAccessorContext = env->GetObjectClass(j_context);
   jmethodID jmid_getString =
-      env->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()Ljava/nio/ByteBuffer;");
-  // Passed as a java.nio.ByteBuffer.
-  jobject j_data = env->CallObjectMethod(j_context, jmid_getString);
-  envoy_data native_data = buffer_to_native_data(env, j_data);
+      env->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()[B");
+  jbyteArray j_data =  static_cast<jbyteArray>(env->CallObjectMethod(j_context, jmid_getString));
+  envoy_data native_data = array_to_native_data(env, j_data);
 
   env->DeleteLocalRef(jcls_JvmStringAccessorContext);
   env->DeleteLocalRef(j_data);

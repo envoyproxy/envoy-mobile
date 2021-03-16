@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine;
 
-import java.nio.ByteBuffer;
-
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 class JvmStringAccessorContext {
@@ -14,5 +12,5 @@ class JvmStringAccessorContext {
    *
    * @return ByteBuffer, the string retrieved from the platform.
    */
-  public ByteBuffer getEnvoyString() { return accessor.getEnvoyString(); }
+  public String getEnvoyString() { return accessor.getEnvoyString(); }
 }
