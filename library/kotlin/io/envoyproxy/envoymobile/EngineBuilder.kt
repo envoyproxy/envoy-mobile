@@ -6,7 +6,6 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
-
 import java.nio.ByteBuffer
 import java.util.UUID
 
