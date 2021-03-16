@@ -106,6 +106,10 @@ public class EnvoyConfiguration {
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)
             .replace("{{ virtual_clusters }}", virtualClusters)
+            .replace("{{ virtual_clusters }}", virtualClusters)
+            .replace("{{ virtual_clusters }}", virtualClusters)
+            .replace("{{ virtual_clusters }}", virtualClusters)
+            .replace("{{ virtual_clusters }}", virtualClusters)
             .replace("{{ native_filter_chain }}", nativeFilterConfigChain);
 
     final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);

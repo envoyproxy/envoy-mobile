@@ -12,8 +12,8 @@ public final class DirectResponse: NSObject {
   /// Designated initializer.
   ///
   /// - parameter matcher: The matcher to use for returning a direct response.
-  /// - parameter status:  This status code will be returned to the consumer.
-  /// - parameter body:    A string that will be returned as the body of the response.
+  /// - parameter status:  HTTP status code that will be returned with the response.
+  /// - parameter body:    String that will be returned as the body of the response.
   public init(matcher: RouteMatcher, status: UInt, body: String?) {
     self.matcher = matcher
     self.status = status

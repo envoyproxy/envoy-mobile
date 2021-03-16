@@ -14,8 +14,8 @@ namespace RouteCacheReset {
 /**
  * Filter that has the sole purpose of clearing the route cache for a given
  * stream on the request path. This forces the router filter to recompute
- * routes for outbound requests (taking into account mutations from platform
- * and other filters on the request/headers).
+ * routes for outbound requests using information that was potentially
+ * mutated by other filters (such as headers).
  */
 class RouteCacheResetFilter final : public Http::StreamDecoderFilter,
                                     public Logger::Loggable<Logger::Id::filter> {

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Typed representation of route matchers that may be specified when starting the engine.
+/// Typed representation of a route matcher that may be specified when starting the engine.
 /// https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto#envoy-v3-api-msg-config-route-v3-routematch
 @objcMembers
 public final class RouteMatcher: NSObject {
@@ -45,8 +45,7 @@ public final class RouteMatcher: NSObject {
 
   /// Initialize a matcher with a path prefix.
   ///
-  /// - parameter pathPrefix: If specified, the route is a prefix rule meaning that the prefix
-  ///                         must match the beginning of the :path header.
+  /// - parameter pathPrefix: This prefix must match the beginning of the :path header.
   /// - parameter headers:    Specifies a set of headers that the route should match on. The
   ///                         router will check the request’s headers against all the specified
   ///                         headers in the route
@@ -63,8 +62,7 @@ public final class RouteMatcher: NSObject {
 
   /// Initialize a matcher with a full path.
   ///
-  /// - parameter fullPath: If specified, the route is an exact path rule meaning that the path
-  ///                       must exactly match the :path header once the query string is
+  /// - parameter fullPath: This value must exactly match the :path header once the query string is
   ///                       removed.
   /// - parameter headers:  Specifies a set of headers that the route should match on. The
   ///                       router will check the request’s headers against all the specified

@@ -63,6 +63,7 @@
     nativeFilterConfigChain = [nativeFilterConfigChain stringByAppendingString:nativeFilterConfig];
   }
 
+  // Some direct response templates need to be resolved first because they have nested content.
   BOOL hasDirectResponses = self.directResponses.length > 0;
   if (hasDirectResponses) {
     NSString *listenerTemplate =
