@@ -13,6 +13,7 @@
 #include "extensions/stat_sinks/metrics_service/config.h"
 #include "extensions/transport_sockets/raw_buffer/config.h"
 #include "extensions/transport_sockets/tls/config.h"
+#include "extensions/transport_sockets/tls/cert_validator/default_validator.h"
 #include "extensions/upstreams/http/generic/config.h"
 
 #include "library/common/extensions/filters/http/assertion/config.h"
@@ -36,6 +37,7 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::StatSinks::MetricsService::forceRegisterMetricsServiceSinkFactory();
   Envoy::Extensions::TransportSockets::RawBuffer::forceRegisterUpstreamRawBufferSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
+  Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
 
