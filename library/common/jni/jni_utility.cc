@@ -58,6 +58,19 @@ envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
   return {data_length, native_bytes, free, native_bytes};
 }
 
+jbyteArray native_data_to_array(JNIEnv* env, envoy_data data) {
+  jbyteArray j_data = env->NewByteArray(data.length);
+  // TODO: check if copied via isCopy.
+  // TODO: check for NULL.
+  // https://github.com/lyft/envoy-mobile/issues/758
+  void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr);
+  memcpy(critical_data, data.bytes, data.length);
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
+  return j_data;
+}
+
 envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
   uint8_t* direct_address = static_cast<uint8_t*>(env->GetDirectBufferAddress(j_data));
 
