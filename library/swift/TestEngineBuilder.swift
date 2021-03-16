@@ -17,7 +17,7 @@ public final class TestEngineBuilder: EngineBuilder {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addDirectResponse(_ response: DirectResponse) -> TestEngineBuilder {
+  public func addDirectResponse(_ response: DirectResponse) -> Self {
     self.addDirectResponseInternal(response)
     return self
   }
