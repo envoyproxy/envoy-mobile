@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include "library/common/jni/jni_version.h"
+#include "common/common/assert.h"
+
 
 // NOLINT(namespace-envoy)
 
@@ -60,9 +62,8 @@ envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
 
 jbyteArray native_data_to_array(JNIEnv* env, envoy_data data) {
   jbyteArray j_data = env->NewByteArray(data.length);
+  RELEASE_ASSERT(j_data);
   // TODO: check if copied via isCopy.
-  // TODO: check for NULL.
-  // https://github.com/lyft/envoy-mobile/issues/758
   void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr);
   memcpy(critical_data, data.bytes, data.length);
   // Here '0' (for which there is no named constant) indicates we want to commit the changes back
