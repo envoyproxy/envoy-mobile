@@ -19,14 +19,13 @@ namespace Event {
  */
 class ProvisionalDispatcher : public Logger::Loggable<Logger::Id::main> {
 public:
-  ProvisionalDispatcher(Event::Dispatcher& event_dispatcher)
-      : event_dispatcher_(event_dispatcher) {}
+  ProvisionalDispatcher() {}
 
   /**
    * Drains all queued callbacks to the real dispatcher. Must be called after the underlying
    * dispatcher is running. Further posts will be transparently passed through.
    */
-  void drain();
+  void drain(Event::Dispatcher& event_dispatcher);
 
   // TODO(goaway): return ENVOY_FAILURE after the underlying dispatcher has exited.
   /**
@@ -59,7 +58,7 @@ private:
   Thread::MutexBasicLockable state_lock_;
   bool drained_ GUARDED_BY(state_lock_){};
   std::list<Event::PostCb> init_queue_ GUARDED_BY(state_lock_);
-  Event::Dispatcher& event_dispatcher_;
+  Event::Dispatcher* event_dispatcher_{};
   Thread::ThreadSynchronizer synchronizer_;
 };
 

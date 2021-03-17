@@ -7,13 +7,15 @@
 namespace Envoy {
 namespace Event {
 
-void ProvisionalDispatcher::drain() {
+void ProvisionalDispatcher::drain(Event::Dispatcher& event_dispatcher) {
+  // TODO(goaway): Must be called from the real dispatcher's thread, but we can't assert here because the main dispatch loop has not yet started: event_dispatcher_->isThreadSafe() will crash.
   Thread::LockGuard lock(state_lock_);
-
-  ASSERT(!drained_);
+  ENVOY_LOG(trace, "ProvisionalDispatcher::drain");
+  RELEASE_ASSERT(!drained_, "ProvisionalDispatcher::drain must only occur once");
+  event_dispatcher_ = &event_dispatcher;
 
   for (const Event::PostCb& cb : init_queue_) {
-    event_dispatcher_.post(cb);
+    event_dispatcher_->post(cb);
   }
 
   drained_ = true;
@@ -21,9 +23,10 @@ void ProvisionalDispatcher::drain() {
 
 envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
   Thread::LockGuard lock(state_lock_);
+  ENVOY_LOG(trace, "ProvisionalDispatcher::post");
 
   if (drained_) {
-    event_dispatcher_.post(callback);
+    event_dispatcher_->post(callback);
     return ENVOY_SUCCESS;
   }
 
@@ -34,13 +37,14 @@ envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
 bool ProvisionalDispatcher::isThreadSafe() {
   // Doesn't require locking because if a thread has a stale view of drained_, then by definition
   // this wasn't a threadsafe call.
-  return TS_UNCHECKED_READ(drained_) && isThreadSafe();
+  ENVOY_LOG(trace, "ProvisionalDispatcher::isThreadSafe");
+  return TS_UNCHECKED_READ(drained_) && event_dispatcher_->isThreadSafe();
 }
 
 void ProvisionalDispatcher::deferredDelete(DeferredDeletablePtr&& to_delete) {
   RELEASE_ASSERT(isThreadSafe(),
                  "ProvisionalDispatcher::deferredDelete must be called from a threadsafe context");
-  event_dispatcher_.deferredDelete(std::move(to_delete));
+  event_dispatcher_->deferredDelete(std::move(to_delete));
 }
 
 } // namespace Event

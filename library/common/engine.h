@@ -85,6 +85,7 @@ public:
 private:
   envoy_status_t main(std::string config, std::string log_level);
 
+  Event::Dispatcher* event_dispatcher_;
   Stats::ScopePtr client_scope_;
   envoy_engine_callbacks callbacks_;
   Thread::MutexBasicLockable mutex_;
@@ -94,7 +95,6 @@ private:
   std::unique_ptr<MobileMainCommon> main_common_ GUARDED_BY(mutex_);
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
-  Event::Dispatcher* event_dispatcher_;
   std::atomic<envoy_network_t>& preferred_network_;
   // main_thread_ should be destroyed first, hence it is the last member variable. Objects that
   // instructions scheduled on the main_thread_ need to have a longer lifetime.
