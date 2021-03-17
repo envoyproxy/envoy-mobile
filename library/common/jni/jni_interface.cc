@@ -49,11 +49,8 @@ static void jvm_on_exit(void*) {
   jvm_detach_thread();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
-    JNIEnv* env,
-    jclass,
-    jobject context
-) {
+extern "C" JNIEXPORT jlong JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env, jclass, jobject context) {
   jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
   envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
   return init_engine(native_callbacks);

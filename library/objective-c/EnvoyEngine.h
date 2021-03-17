@@ -315,8 +315,7 @@ extern const int kEnvoyFailure;
  @param logLevel The log level to use when starting Envoy.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfig:(EnvoyConfiguration *)config
-            logLevel:(NSString *)logLevel;
+- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.

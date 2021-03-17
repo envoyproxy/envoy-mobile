@@ -350,8 +350,7 @@ static envoy_data ios_get_string(const void *context) {
   return register_platform_api(name.UTF8String, accessorStruct);
 }
 
-- (int)runWithConfig:(EnvoyConfiguration *)config
-            logLevel:(NSString *)logLevel {
+- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -388,15 +387,13 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel];
 }
 
-- (int)runWithConfigYAML:(NSString *)configYAML
-                logLevel:(NSString *)logLevel {
+- (int)runWithConfigYAML:(NSString *)configYAML logLevel:(NSString *)logLevel {
   [self startObservingLifecycleNotifications];
 
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    return (int)run_engine(_engineHandle, configYAML.UTF8String,
-                           logLevel.UTF8String);
+    return (int)run_engine(_engineHandle, configYAML.UTF8String, logLevel.UTF8String);
   } @catch (NSException *exception) {
     NSLog(@"[Envoy] exception caught: %@", exception);
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyError" object:self];

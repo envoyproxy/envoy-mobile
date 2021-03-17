@@ -8,7 +8,9 @@ namespace Envoy {
 namespace Event {
 
 void ProvisionalDispatcher::drain(Event::Dispatcher& event_dispatcher) {
-  // TODO(goaway): Must be called from the real dispatcher's thread, but we can't assert here because the main dispatch loop has not yet started: event_dispatcher_->isThreadSafe() will crash.
+  // TODO(goaway): Must be called from the real dispatcher's thread, but we can't assert here
+  // because the main dispatch loop has not yet started: event_dispatcher_->isThreadSafe() will
+  // crash.
   Thread::LockGuard lock(state_lock_);
   ENVOY_LOG(trace, "ProvisionalDispatcher::drain");
   RELEASE_ASSERT(!drained_, "ProvisionalDispatcher::drain must only occur once");

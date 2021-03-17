@@ -7,8 +7,8 @@
 namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks), dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()), preferred_network_(preferred_network) 
- {
+    : callbacks_(callbacks), dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
+      preferred_network_(preferred_network) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
