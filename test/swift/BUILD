@@ -10,55 +10,6 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
-    name = "direct_response_contains_headers_integration_tests",
-    srcs = [
-        "DirectResponseContainsHeadersMatchIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "direct_response_exact_headers_match_integration_tests",
-    srcs = [
-        "DirectResponseExactHeadersMatchIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "direct_response_exact_path_match_integration_tests",
-    srcs = [
-        "DirectResponseExactPathMatchIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "direct_response_filter_mutation_integration_tests",
-    srcs = [
-        "DirectResponseFilterMutationIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "direct_response_prefix_headers_match_integration_tests",
-    srcs = [
-        "DirectResponsePrefixHeadersMatchIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "direct_response_prefix_path_match_integration_tests",
-    srcs = [
-        "DirectResponsePrefixPathMatchIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "direct_response_suffix_path_match_integration_tests",
-    srcs = [
-        "DirectResponseSuffixHeadersMatchIntegrationTests.swift",
-    ],
-)
-
-envoy_mobile_swift_test(
     name = "element_tests",
     srcs = [
         "ElementTests.swift",

@@ -1,7 +1,7 @@
 import Envoy
 import XCTest
 
-final class DirectResponsePrefixHeadersMatchIntegrationTests: XCTestCase {
+final class DirectResponsePrefixHeadersMatchIntegrationTest: XCTestCase {
   func testDirectResponseWithPrefixHeadersMatch() {
     let headersExpectation = self.expectation(description: "Response headers received")
     let dataExpectation = self.expectation(description: "Response data received")

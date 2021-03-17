@@ -1,7 +1,7 @@
 import Envoy
 import XCTest
 
-final class DirectResponseExactPathMatchIntegrationTests: XCTestCase {
+final class DirectResponseExactPathMatchIntegrationTest: XCTestCase {
   func testDirectResponseWithExactPathMatch() {
     let headersExpectation = self.expectation(description: "Response headers received")
     let dataExpectation = self.expectation(description: "Response data received")

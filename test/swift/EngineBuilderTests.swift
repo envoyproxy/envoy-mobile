@@ -20,6 +20,10 @@ mock_template:
   virtual_clusters: {{ virtual_clusters }}
   native_filter_chain:
 {{ native_filter_chain }}
+{{ fake_remote_listener }}
+{{ fake_cluster_matchers }}
+{{ route_reset_filter }}
+{{ fake_remote_cluster }}
 """
 
 private struct TestFilter: Filter {}
@@ -214,22 +218,26 @@ final class EngineBuilderTests: XCTestCase {
   }
 
   func testResolvesYAMLWithIndividuallySetValues() throws {
-    let filterFactory = EnvoyHTTPFilterFactory(filterName: "TestFilter", factory: TestFilter.init)
-    let config = EnvoyConfiguration(statsDomain: "stats.envoyproxy.io",
-                                    connectTimeoutSeconds: 200,
-                                    dnsRefreshSeconds: 300,
-                                    dnsFailureRefreshSecondsBase: 400,
-                                    dnsFailureRefreshSecondsMax: 500,
-                                    statsFlushSeconds: 600,
-                                    appVersion: "v1.2.3",
-                                    appId: "com.envoymobile.ios",
-                                    virtualClusters: "[test]",
-                                    nativeFilterChain:
-                                      [EnvoyNativeFilterConfig(name: "filter_name",
-                                                               typedConfig: "test_config"),
-                                      ],
-                                    platformFilterChain: [filterFactory],
-                                    stringAccessors: [:])
+    let config = EnvoyConfiguration(
+      statsDomain: "stats.envoyproxy.io",
+      connectTimeoutSeconds: 200,
+      dnsRefreshSeconds: 300,
+      dnsFailureRefreshSecondsBase: 400,
+      dnsFailureRefreshSecondsMax: 500,
+      statsFlushSeconds: 600,
+      appVersion: "v1.2.3",
+      appId: "com.envoymobile.ios",
+      virtualClusters: "[test]",
+      directResponseMatchers: "",
+      directResponses: "",
+      nativeFilterChain: [
+        EnvoyNativeFilterConfig(name: "filter_name", typedConfig: "test_config"),
+      ],
+      platformFilterChain: [
+        EnvoyHTTPFilterFactory(filterName: "TestFilter", factory: TestFilter.init),
+      ],
+      stringAccessors: [:]
+    )
     let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
     XCTAssertTrue(resolvedYAML.contains("stats_domain: stats.envoyproxy.io"))
     XCTAssertTrue(resolvedYAML.contains("connect_timeout: 200s"))
@@ -247,18 +255,22 @@ final class EngineBuilderTests: XCTestCase {
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
-    let config = EnvoyConfiguration(statsDomain: "stats.envoyproxy.io",
-                                    connectTimeoutSeconds: 200,
-                                    dnsRefreshSeconds: 300,
-                                    dnsFailureRefreshSecondsBase: 400,
-                                    dnsFailureRefreshSecondsMax: 500,
-                                    statsFlushSeconds: 600,
-                                    appVersion: "v1.2.3",
-                                    appId: "com.envoymobile.ios",
-                                    virtualClusters: "[test]",
-                                    nativeFilterChain: [],
-                                    platformFilterChain: [],
-                                    stringAccessors: [:])
+    let config = EnvoyConfiguration(
+      statsDomain: "stats.envoyproxy.io",
+      connectTimeoutSeconds: 200,
+      dnsRefreshSeconds: 300,
+      dnsFailureRefreshSecondsBase: 400,
+      dnsFailureRefreshSecondsMax: 500,
+      statsFlushSeconds: 600,
+      appVersion: "v1.2.3",
+      appId: "com.envoymobile.ios",
+      virtualClusters: "[test]",
+      directResponseMatchers: "",
+      directResponses: "",
+      nativeFilterChain: [],
+      platformFilterChain: [],
+      stringAccessors: [:]
+    )
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))
   }
 }

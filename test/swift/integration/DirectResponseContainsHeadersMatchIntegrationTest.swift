@@ -1,15 +1,16 @@
 import Envoy
 import XCTest
 
-final class DirectResponseSuffixHeadersMatchIntegrationTests: XCTestCase {
-  func testDirectResponseWithSuffixHeadersMatch() {
+final class DirectResponseContainsHeadersMatchIntegrationTest: XCTestCase {
+  func testDirectResponseWithContainsHeadersMatch() {
     let headersExpectation = self.expectation(description: "Response headers received")
     let dataExpectation = self.expectation(description: "Response data received")
 
     let requestHeaders = RequestHeadersBuilder(
       method: .get, authority: "127.0.0.1", path: "/v1/abc"
     )
-    .add(name: "x-foo", value: "123456")
+    .add(name: "x-foo", value: "123")
+    .add(name: "x-foo", value: "456")
     .build()
 
     let engine = TestEngineBuilder()
@@ -17,7 +18,7 @@ final class DirectResponseSuffixHeadersMatchIntegrationTests: XCTestCase {
         .init(
           matcher: RouteMatcher(
             fullPath: "/v1/abc", headers: [
-              .init(name: "x-foo", value: "456", mode: .suffix),
+              .init(name: "x-foo", value: "123", mode: .contains),
             ]
           ),
           status: 200, body: "hello world"
