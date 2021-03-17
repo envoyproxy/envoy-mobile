@@ -62,7 +62,7 @@ envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
 
 jbyteArray native_data_to_array(JNIEnv* env, envoy_data data) {
   jbyteArray j_data = env->NewByteArray(data.length);
-  RELEASE_ASSERT(j_data);
+  RELEASE_ASSERT(j_data != NULL, "unable to allocate memory in jni_utility");
   // TODO: check if copied via isCopy.
   void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr);
   memcpy(critical_data, data.bytes, data.length);
