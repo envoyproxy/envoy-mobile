@@ -119,7 +119,7 @@ final class DirectResponseTests: XCTestCase {
         .init(
           matcher: RouteMatcher(
             fullPath: "/v1/abc", headers: [
-              .init(name: "x-foo", value: "123", mode: .exact)
+              .init(name: "x-foo", value: "123", mode: .exact),
             ]
           ),
           status: 200, body: "hello world"
@@ -166,7 +166,7 @@ final class DirectResponseTests: XCTestCase {
         .init(
           matcher: RouteMatcher(
             fullPath: "/v1/abc", headers: [
-              .init(name: "x-foo", value: "123", mode: .contains)
+              .init(name: "x-foo", value: "123", mode: .contains),
             ]
           ),
           status: 200, body: "hello world"
@@ -212,7 +212,7 @@ final class DirectResponseTests: XCTestCase {
         .init(
           matcher: RouteMatcher(
             fullPath: "/v1/abc", headers: [
-              .init(name: "x-foo", value: "123", mode: .prefix)
+              .init(name: "x-foo", value: "123", mode: .prefix),
             ]
           ),
           status: 200, body: "hello world"
@@ -258,7 +258,7 @@ final class DirectResponseTests: XCTestCase {
         .init(
           matcher: RouteMatcher(
             fullPath: "/v1/abc", headers: [
-              .init(name: "x-foo", value: "456", mode: .suffix)
+              .init(name: "x-foo", value: "456", mode: .suffix),
             ]
           ),
           status: 200, body: "hello world"
@@ -308,7 +308,7 @@ final class DirectResponseTests: XCTestCase {
         .init(
           matcher: RouteMatcher(
             fullPath: "/v1/abc", headers: [
-              .init(name: "x-foo", value: "123", mode: .exact)
+              .init(name: "x-foo", value: "123", mode: .exact),
             ]
           ),
           status: 200, body: "hello world"
