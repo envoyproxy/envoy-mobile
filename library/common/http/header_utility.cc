@@ -1,8 +1,8 @@
 #include "library/common/http/header_utility.h"
 
-#include "library/common/buffer/utility.h"
-
 #include "common/http/header_map_impl.h"
+
+#include "library/common/buffer/utility.h"
 
 namespace Envoy {
 namespace Http {
@@ -11,8 +11,9 @@ namespace Utility {
 RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
   RequestHeaderMapPtr transformed_headers = RequestHeaderMapImpl::create();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
-    transformed_headers->addCopy(LowerCaseString(Buffer::Utility::copyToString(headers.entries[i].key)),
-                                 Buffer::Utility::copyToString(headers.entries[i].value));
+    transformed_headers->addCopy(
+        LowerCaseString(Buffer::Utility::copyToString(headers.entries[i].key)),
+        Buffer::Utility::copyToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);
@@ -22,8 +23,9 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
 RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers) {
   RequestTrailerMapPtr transformed_trailers = RequestTrailerMapImpl::create();
   for (envoy_map_size_t i = 0; i < trailers.length; i++) {
-    transformed_trailers->addCopy(LowerCaseString(Buffer::Utility::copyToString(trailers.entries[i].key)),
-                                  Buffer::Utility::copyToString(trailers.entries[i].value));
+    transformed_trailers->addCopy(
+        LowerCaseString(Buffer::Utility::copyToString(trailers.entries[i].key)),
+        Buffer::Utility::copyToString(trailers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(trailers);
@@ -38,13 +40,8 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
   transformed_headers.entries = headers;
 
   header_map.iterate([&transformed_headers](const HeaderEntry& header) -> HeaderMap::Iterate {
-    const absl::string_view header_key = header.key().getStringView();
-    const absl::string_view header_value = header.value().getStringView();
-
-    envoy_data key =
-        copy_envoy_data(header_key.size(), reinterpret_cast<const uint8_t*>(header_key.data()));
-    envoy_data value =
-        copy_envoy_data(header_value.size(), reinterpret_cast<const uint8_t*>(header_value.data()));
+    envoy_data key = Buffer::Utility::copyToBridgeData(header.key().getStringView());
+    envoy_data value = Buffer::Utility::copyToBridgeData(header.value().getStringView());
 
     transformed_headers.entries[transformed_headers.length] = {key, value};
     transformed_headers.length++;

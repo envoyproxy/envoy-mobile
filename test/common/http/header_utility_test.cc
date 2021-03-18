@@ -1,7 +1,6 @@
 #include "common/http/header_map_impl.h"
 
 #include "gtest/gtest.h"
-
 #include "library/common/buffer/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/types/c_types.h"
@@ -65,7 +64,8 @@ TEST(RequestHeaderDataConstructorTest, FromCToCpp) {
   ASSERT_EQ(cpp_headers->size(), c_headers_copy.length);
 
   for (envoy_map_size_t i = 0; i < c_headers_copy.length; i++) {
-    auto expected_key = LowerCaseString(Buffer::Utility::copyToString(c_headers_copy.entries[i].key));
+    auto expected_key =
+        LowerCaseString(Buffer::Utility::copyToString(c_headers_copy.entries[i].key));
     auto expected_value = Buffer::Utility::copyToString(c_headers_copy.entries[i].value);
 
     // Key is present.
@@ -106,7 +106,8 @@ TEST(RequestTrailerDataConstructorTest, FromCToCpp) {
   ASSERT_EQ(cpp_trailers->size(), c_trailers_copy.length);
 
   for (envoy_map_size_t i = 0; i < c_trailers_copy.length; i++) {
-    auto expected_key = LowerCaseString(Buffer::Utility::copyToString(c_trailers_copy.entries[i].key));
+    auto expected_key =
+        LowerCaseString(Buffer::Utility::copyToString(c_trailers_copy.entries[i].key));
     auto expected_value = Buffer::Utility::copyToString(c_trailers_copy.entries[i].value);
 
     // Key is present.
