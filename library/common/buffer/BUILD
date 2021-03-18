@@ -24,5 +24,6 @@ envoy_cc_library(
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//source/common/buffer:buffer_lib",
+        "@envoy//source/common/common:empty_string",
     ],
 )

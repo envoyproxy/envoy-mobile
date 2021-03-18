@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "common/buffer/buffer_impl.h"
+#include "common/common/empty_string.h"
 
 #include "library/common/buffer/bridge_fragment.h"
 
@@ -20,35 +21,28 @@ Buffer::InstancePtr toInternalData(envoy_data data) {
 }
 
 envoy_data toBridgeData(Buffer::Instance& data) {
-  envoy_data bridge_data;
-  bridge_data.length = data.length();
-  bridge_data.bytes = static_cast<uint8_t*>(safe_malloc(sizeof(uint8_t) * bridge_data.length));
-  data.copyOut(0, bridge_data.length, const_cast<uint8_t*>(bridge_data.bytes));
+  envoy_data bridge_data = copyToBridgeData(data);
   data.drain(bridge_data.length);
-  bridge_data.release = free;
-  bridge_data.context = const_cast<uint8_t*>(bridge_data.bytes);
   return bridge_data;
 }
 
 envoy_data copyToBridgeData(absl::string_view str) {
-  envoy_data bridge_data;
-  bridge_data.length = str.length();
-  void* buffer = safe_malloc(sizeof(uint8_t) * bridge_data.length);
-  memcpy(buffer, str.data(), str.length());
-  bridge_data.bytes = static_cast<uint8_t*>(buffer);
-  bridge_data.release = free;
-  bridge_data.context = const_cast<uint8_t*>(bridge_data.bytes);
-  return bridge_data;
+  uint8_t* buffer = static_cast<uint8_t*>(safe_malloc(sizeof(uint8_t) * str.length()));
+  memcpy(buffer, str.data(), str.length()); // NOLINT(safe-memcpy)
+  return {str.length(), buffer, free, buffer};
 }
 
 envoy_data copyToBridgeData(const Buffer::Instance& data) {
-  envoy_data bridge_data;
-  bridge_data.length = data.length();
-  bridge_data.bytes = static_cast<uint8_t*>(safe_malloc(sizeof(uint8_t) * bridge_data.length));
-  data.copyOut(0, bridge_data.length, const_cast<uint8_t*>(bridge_data.bytes));
-  bridge_data.release = free;
-  bridge_data.context = const_cast<uint8_t*>(bridge_data.bytes);
-  return bridge_data;
+  uint8_t* buffer = static_cast<uint8_t*>(safe_malloc(sizeof(uint8_t) * data.length()));
+  data.copyOut(0, data.length(), buffer);
+  return {data.length(), buffer, free, buffer};
+}
+
+std::string copyToString(envoy_data data) {
+  if (data.length == 0) {
+    return EMPTY_STRING;
+  }
+  return std::string(const_cast<char*>(reinterpret_cast<const char*>((data.bytes))), data.length);
 }
 
 } // namespace Utility

@@ -21,7 +21,6 @@ envoy_cc_test(
     repository = "@envoy",
     deps = [
         "//library/common/buffer:utility_lib",
-        "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/buffer:buffer_lib",
     ],

@@ -1,20 +1,18 @@
 #include "library/common/http/header_utility.h"
 
+#include "library/common/buffer/utility.h"
+
 #include "common/http/header_map_impl.h"
 
 namespace Envoy {
 namespace Http {
 namespace Utility {
 
-std::string convertToString(envoy_data s) {
-  return std::string(reinterpret_cast<char*>(const_cast<uint8_t*>(s.bytes)), s.length);
-}
-
 RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
   RequestHeaderMapPtr transformed_headers = RequestHeaderMapImpl::create();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
-    transformed_headers->addCopy(LowerCaseString(convertToString(headers.entries[i].key)),
-                                 convertToString(headers.entries[i].value));
+    transformed_headers->addCopy(LowerCaseString(Buffer::Utility::copyToString(headers.entries[i].key)),
+                                 Buffer::Utility::copyToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);
@@ -24,8 +22,8 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
 RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers) {
   RequestTrailerMapPtr transformed_trailers = RequestTrailerMapImpl::create();
   for (envoy_map_size_t i = 0; i < trailers.length; i++) {
-    transformed_trailers->addCopy(LowerCaseString(convertToString(trailers.entries[i].key)),
-                                  convertToString(trailers.entries[i].value));
+    transformed_trailers->addCopy(LowerCaseString(Buffer::Utility::copyToString(trailers.entries[i].key)),
+                                  Buffer::Utility::copyToString(trailers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(trailers);

@@ -2,7 +2,6 @@
 
 #include "gtest/gtest.h"
 #include "library/common/buffer/utility.h"
-#include "library/common/http/header_utility.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -43,7 +42,7 @@ TEST(DataConstructorTest, FromCppToC) {
   envoy_data c_data = Utility::toBridgeData(cpp_data);
 
   ASSERT_EQ(c_data.length, s.size());
-  ASSERT_EQ(Http::Utility::convertToString(c_data), s);
+  ASSERT_EQ(Utility::copyToString(c_data), s);
   c_data.release(c_data.context);
 }
 
@@ -54,7 +53,7 @@ TEST(DataConstructorTest, CopyFromCppToC) {
   envoy_data c_data = Utility::copyToBridgeData(cpp_data);
 
   ASSERT_EQ(c_data.length, s.size());
-  ASSERT_EQ(Http::Utility::convertToString(c_data), s);
+  ASSERT_EQ(Utility::copyToString(c_data), s);
   c_data.release(c_data.context);
 }
 
@@ -64,7 +63,7 @@ TEST(DataConstructorTest, CopyStringFromCppToC) {
   envoy_data c_data = Utility::copyToBridgeData(s);
 
   ASSERT_EQ(c_data.length, s.size());
-  ASSERT_EQ(Http::Utility::convertToString(c_data), s);
+  ASSERT_EQ(Utility::copyToString(c_data), s);
   c_data.release(c_data.context);
 }
 

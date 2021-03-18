@@ -36,8 +36,8 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
   Http::ResponseHeaderMapPtr transformed_headers = Http::ResponseHeaderMapImpl::create();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(
-        Http::LowerCaseString(Http::Utility::convertToString(headers.entries[i].key)),
-        Http::Utility::convertToString(headers.entries[i].value));
+        Http::LowerCaseString(Buffer::Utility::copyToString(headers.entries[i].key)),
+        Buffer::Utility::copyToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);

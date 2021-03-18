@@ -1,6 +1,8 @@
 #include "common/http/header_map_impl.h"
 
 #include "gtest/gtest.h"
+
+#include "library/common/buffer/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/types/c_types.h"
 
@@ -63,8 +65,8 @@ TEST(RequestHeaderDataConstructorTest, FromCToCpp) {
   ASSERT_EQ(cpp_headers->size(), c_headers_copy.length);
 
   for (envoy_map_size_t i = 0; i < c_headers_copy.length; i++) {
-    auto expected_key = LowerCaseString(Utility::convertToString(c_headers_copy.entries[i].key));
-    auto expected_value = Utility::convertToString(c_headers_copy.entries[i].value);
+    auto expected_key = LowerCaseString(Buffer::Utility::copyToString(c_headers_copy.entries[i].key));
+    auto expected_value = Buffer::Utility::copyToString(c_headers_copy.entries[i].value);
 
     // Key is present.
     EXPECT_FALSE(cpp_headers->get(expected_key).empty());
@@ -104,8 +106,8 @@ TEST(RequestTrailerDataConstructorTest, FromCToCpp) {
   ASSERT_EQ(cpp_trailers->size(), c_trailers_copy.length);
 
   for (envoy_map_size_t i = 0; i < c_trailers_copy.length; i++) {
-    auto expected_key = LowerCaseString(Utility::convertToString(c_trailers_copy.entries[i].key));
-    auto expected_value = Utility::convertToString(c_trailers_copy.entries[i].value);
+    auto expected_key = LowerCaseString(Buffer::Utility::copyToString(c_trailers_copy.entries[i].key));
+    auto expected_value = Buffer::Utility::copyToString(c_trailers_copy.entries[i].value);
 
     // Key is present.
     EXPECT_FALSE(cpp_trailers->get(expected_key).empty());
@@ -135,8 +137,8 @@ TEST(HeaderDataConstructorTest, FromCppToC) {
   ASSERT_EQ(c_headers.length, static_cast<envoy_map_size_t>(cpp_headers->size()));
 
   for (envoy_map_size_t i = 0; i < c_headers.length; i++) {
-    auto actual_key = LowerCaseString(Utility::convertToString(c_headers.entries[i].key));
-    auto actual_value = Utility::convertToString(c_headers.entries[i].value);
+    auto actual_key = LowerCaseString(Buffer::Utility::copyToString(c_headers.entries[i].key));
+    auto actual_value = Buffer::Utility::copyToString(c_headers.entries[i].value);
 
     // Key is present.
     EXPECT_FALSE(cpp_headers->get(actual_key).empty());

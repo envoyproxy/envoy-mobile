@@ -22,8 +22,8 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
   Http::ResponseHeaderMapPtr transformed_headers = Http::ResponseHeaderMapImpl::create();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(
-        Http::LowerCaseString(Http::Utility::convertToString(headers.entries[i].key)),
-        Http::Utility::convertToString(headers.entries[i].value));
+        Http::LowerCaseString(Buffer::Utility::copyToString(headers.entries[i].key)),
+        Buffer::Utility::copyToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);
@@ -141,7 +141,7 @@ TEST_P(DispatcherIntegrationTest, Basic) {
   };
   bridge_callbacks.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
     if (end_stream) {
-      EXPECT_EQ(Http::Utility::convertToString(c_data), "");
+      EXPECT_EQ(Buffer::Utility::copyToString(c_data), "");
     } else {
       EXPECT_EQ(c_data.length, 10);
     }

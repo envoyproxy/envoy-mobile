@@ -43,6 +43,7 @@ envoy_cc_library(
     hdrs = ["header_utility.h"],
     repository = "@envoy",
     deps = [
+        "//library/common/buffer:utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//include/envoy/http:header_map_interface",

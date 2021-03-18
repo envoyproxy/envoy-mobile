@@ -23,8 +23,8 @@ namespace {
 void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers) {
   headers.clear();
   for (envoy_map_size_t i = 0; i < c_headers.length; i++) {
-    headers.addCopy(Http::LowerCaseString(Http::Utility::convertToString(c_headers.entries[i].key)),
-                    Http::Utility::convertToString(c_headers.entries[i].value));
+    headers.addCopy(Http::LowerCaseString(Buffer::Utility::copyToString(c_headers.entries[i].key)),
+                    Buffer::Utility::copyToString(c_headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(c_headers);
