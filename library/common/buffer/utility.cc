@@ -35,7 +35,7 @@ envoy_data copyToBridgeData(absl::string_view str) {
 envoy_data copyToBridgeData(const Buffer::Instance& data) {
   uint8_t* buffer = static_cast<uint8_t*>(safe_malloc(sizeof(uint8_t) * data.length()));
   data.copyOut(0, data.length(), buffer);
-  return {data.length(), buffer, free, buffer};
+  return {static_cast<size_t>(data.length()), buffer, free, buffer};
 }
 
 std::string copyToString(envoy_data data) {
