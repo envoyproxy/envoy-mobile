@@ -38,7 +38,7 @@ envoy_data copyToBridgeData(const Buffer::Instance&);
 
 /**
  * Copy envoy_data into an std::string.
- * @param data the envoy_data to copy.
+ * @param data, the envoy_data to copy.
  * @return std::string the string constructed from data.
  */
 std::string copyToString(envoy_data data);

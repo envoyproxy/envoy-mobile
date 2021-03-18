@@ -7,8 +7,6 @@
 namespace Envoy {
 namespace Platform {
 
-// TODO(crockeo): we always copy memory across boundaries; consider allowing for moves and/or
-// shared ownership w/ reference counting via envoy-mobile's release callbacks
 envoy_headers raw_header_map_as_envoy_headers(const RawHeaderMap& headers) {
   size_t header_count = 0;
   for (const auto& pair : headers) {
