@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "library/common/buffer/utility.h"
+#include "library/common/data/utility.h"
 
 namespace Envoy {
 namespace Platform {
@@ -21,8 +21,8 @@ envoy_headers raw_header_map_as_envoy_headers(const RawHeaderMap& headers) {
     const auto& key = pair.first;
     for (const auto& value : pair.second) {
       envoy_map_entry& header = headers_list[i++];
-      header.key = Buffer::Utility::copyToBridgeData(key);
-      header.value = Buffer::Utility::copyToBridgeData(value);
+      header.key = Data::Utility::copyToBridgeData(key);
+      header.value = Data::Utility::copyToBridgeData(value);
     }
   }
 
@@ -36,8 +36,8 @@ envoy_headers raw_header_map_as_envoy_headers(const RawHeaderMap& headers) {
 RawHeaderMap envoy_headers_as_raw_headers(envoy_headers raw_headers) {
   RawHeaderMap headers;
   for (auto i = 0; i < raw_headers.length; i++) {
-    auto key = Buffer::Utility::copyToString(raw_headers.entries[i].key);
-    auto value = Buffer::Utility::copyToString(raw_headers.entries[i].value);
+    auto key = Data::Utility::copyToString(raw_headers.entries[i].key);
+    auto value = Data::Utility::copyToString(raw_headers.entries[i].value);
 
     if (!headers.contains(key)) {
       headers.emplace(key, std::vector<std::string>());

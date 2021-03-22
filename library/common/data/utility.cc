@@ -1,4 +1,4 @@
-#include "library/common/buffer/utility.h"
+#include "library/common/data/utility.h"
 
 #include <stdlib.h>
 
@@ -8,14 +8,14 @@
 #include "library/common/buffer/bridge_fragment.h"
 
 namespace Envoy {
-namespace Buffer {
+namespace Data {
 namespace Utility {
 
 Buffer::InstancePtr toInternalData(envoy_data data) {
   // This fragment only needs to live until done is called.
   // Therefore, it is sufficient to allocate on the heap, and delete in the done method.
   Buffer::BridgeFragment* fragment = Buffer::BridgeFragment::createBridgeFragment(data);
-  InstancePtr buf = std::make_unique<Buffer::OwnedImpl>();
+  Buffer::InstancePtr buf = std::make_unique<Buffer::OwnedImpl>();
   buf->addBufferFragment(*fragment);
   return buf;
 }
@@ -46,5 +46,5 @@ std::string copyToString(envoy_data data) {
 }
 
 } // namespace Utility
-} // namespace Buffer
+} // namespace Data
 } // namespace Envoy

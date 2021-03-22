@@ -60,6 +60,6 @@ envoy_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//library/common:envoy_main_interface_lib",
-        "//library/common/buffer:utility_lib",
+        "//library/common/data:utility_lib",
     ],
 )

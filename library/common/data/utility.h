@@ -5,7 +5,7 @@
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
-namespace Buffer {
+namespace Data {
 namespace Utility {
 
 /**
@@ -44,5 +44,5 @@ envoy_data copyToBridgeData(const Buffer::Instance&);
 std::string copyToString(envoy_data data);
 
 } // namespace Utility
-} // namespace Buffer
+} // namespace Data
 } // namespace Envoy
