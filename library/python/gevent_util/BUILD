@@ -11,5 +11,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         requirement("gevent"),
+        requirement("greenlet"),
+        requirement("zope.interface"),
     ],
 )
