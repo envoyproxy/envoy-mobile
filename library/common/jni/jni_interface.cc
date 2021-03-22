@@ -624,12 +624,12 @@ static envoy_data jvm_get_string(const void* context) {
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jclass jcls_JvmStringAccessorContext = env->GetObjectClass(j_context);
   jmethodID jmid_getString =
-      env->GetMethodID(jcls_JvmStringAccessorContext, "getEnvoyString", "()[B");
-  jbyteArray j_data = static_cast<jbyteArray>(env->CallObjectMethod(j_context, jmid_getString));
-  envoy_data native_data = array_to_native_data(env, j_data);
+      env->GetMethodID(jcls_JvmStringAccessorContext, "getEnvoyString", "()Ljava/lang/String;");
+  jstring j_string = static_cast<jstring>(env->CallObjectMethod(j_context, jmid_getString));
+  envoy_data native_data = jstring_to_native_data(env, j_string);
 
   env->DeleteLocalRef(jcls_JvmStringAccessorContext);
-  env->DeleteLocalRef(j_data);
+  env->DeleteLocalRef(j_string);
 
   return native_data;
 }

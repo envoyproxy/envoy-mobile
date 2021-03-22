@@ -20,6 +20,8 @@ void jni_delete_const_global_ref(const void* context);
 
 int unbox_integer(JNIEnv* env, jobject boxedInteger);
 
+envoy_data jstring_to_native_data(JNIEnv* env, jstring j_string);
+
 envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data);
 
 /**

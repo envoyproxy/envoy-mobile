@@ -51,6 +51,17 @@ int unbox_integer(JNIEnv* env, jobject boxedInteger) {
   return env->CallIntMethod(boxedInteger, jmid_intValue);
 }
 
+envoy_data jstring_to_native_data(JNIEnv* env, jstring j_string) {
+  const char *data = env->GetStringUTFChars(j_string, 0);
+  size_t data_length = strlen(data);
+  uint8_t* native_bytes = static_cast<uint8_t*>(safe_malloc(data_length));
+  jbyteArray bytes = env->NewByteArray(data_length);
+  env->SetByteArrayRegion(bytes, 0, data_length, reinterpret_cast<const jbyte*>(data));
+  memcpy(native_bytes, bytes, data_length);
+  env->DeleteLocalRef(bytes);
+  return {data_length, native_bytes, free, native_bytes};
+}
+
 envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
   size_t data_length = env->GetArrayLength(j_data);
   uint8_t* native_bytes = static_cast<uint8_t*>(safe_malloc(data_length));
