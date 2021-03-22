@@ -25,10 +25,10 @@ using EngineCallbacksSharedPtr = std::shared_ptr<EngineCallbacks>;
 
 class Engine {
 public:
-  ~Engine();
-
   StreamClientSharedPtr stream_client();
   PulseClientSharedPtr pulse_client();
+
+  void terminate();
 
 private:
   Engine(envoy_engine_t engine, const std::string& configuration, LogLevel log_level,

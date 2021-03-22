@@ -37,10 +37,10 @@ Engine::Engine(envoy_engine_t engine, const std::string& configuration, LogLevel
   this->pulse_client_ = std::make_shared<PulseClient>();
 }
 
-Engine::~Engine() { terminate_engine(this->engine_); }
-
 StreamClientSharedPtr Engine::stream_client() { return this->stream_client_; }
 PulseClientSharedPtr Engine::pulse_client() { return this->pulse_client_; }
+
+void Engine::terminate() { terminate_engine(this->engine_); }
 
 } // namespace Platform
 } // namespace Envoy
