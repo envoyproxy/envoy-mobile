@@ -7,10 +7,12 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 load("@rules_proto_grpc//protobuf:repositories.bzl", "protobuf_repos")
 load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
+load("@rules_python//python:pip.bzl", "pip_repositories", "pip3_import")
 
 def envoy_mobile_dependencies():
     swift_dependencies()
     kotlin_dependencies()
+    python_dependencies()
 
 def swift_dependencies():
     apple_support_dependencies()
@@ -46,3 +48,10 @@ def kotlin_dependencies():
     )
     protobuf_repos()
     rules_proto_grpc_java_repos()
+
+def python_dependencies():
+    pip_repositories()
+    pip3_import(
+        name = "py_envoy_engine_deps",
+        requirements = "//library/python:requirements.txt",
+    )
