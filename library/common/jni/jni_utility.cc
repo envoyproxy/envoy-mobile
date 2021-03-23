@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common/common/assert.h"
+
 #include "library/common/jni/jni_version.h"
 
 // NOLINT(namespace-envoy)
@@ -53,9 +55,21 @@ envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
   size_t data_length = env->GetArrayLength(j_data);
   uint8_t* native_bytes = static_cast<uint8_t*>(safe_malloc(data_length));
   void* critical_data = env->GetPrimitiveArrayCritical(j_data, 0);
-  memcpy(native_bytes, critical_data, data_length);
+  memcpy(native_bytes, critical_data, data_length); // NOLINT(safe-memcpy)
   env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
   return {data_length, native_bytes, free, native_bytes};
+}
+
+jbyteArray native_data_to_array(JNIEnv* env, envoy_data data) {
+  jbyteArray j_data = env->NewByteArray(data.length);
+  void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr);
+  RELEASE_ASSERT(critical_data != nullptr, "unable to allocate memory in jni_utility");
+  memcpy(critical_data, data.bytes, data.length); // NOLINT(safe-memcpy)
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  // TODO: potential perf improvement. Check if copied via isCopy, and optimize memory handling.
+  env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
+  return j_data;
 }
 
 envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
