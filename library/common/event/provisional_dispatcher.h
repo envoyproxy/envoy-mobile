@@ -19,13 +19,14 @@ namespace Event {
  */
 class ProvisionalDispatcher : public Logger::Loggable<Logger::Id::main> {
 public:
-  ProvisionalDispatcher() {}
+  ProvisionalDispatcher() = default;
+  virtual ~ProvisionalDispatcher() = default;
 
   /**
    * Drains all queued callbacks to the real dispatcher. Must be called after the underlying
    * dispatcher is running. Further posts will be transparently passed through.
    */
-  void drain(Event::Dispatcher& event_dispatcher);
+  virtual void drain(Event::Dispatcher& event_dispatcher);
 
   // TODO(goaway): return ENVOY_FAILURE after the underlying dispatcher has exited.
   /**
@@ -35,19 +36,19 @@ public:
    * @return should return ENVOY_FAILURE when the underlying dispatcher exits, but at present it
    * always returns ENVOY_SUCCESS.
    */
-  envoy_status_t post(Event::PostCb callback);
+  virtual envoy_status_t post(Event::PostCb callback);
 
   /**
    * @return false before the underlying dispatcher is running, otherwise the result of the
    * underlying call to Event::Dispatcher::isThreadSafe().
    */
-  bool isThreadSafe();
+  virtual bool isThreadSafe();
 
   /**
    * Submits an item for deferred delete. Must be called from context where
    * ProvisionalDispatcher::isThreadSafe() is true.
    */
-  void deferredDelete(DeferredDeletablePtr&& to_delete);
+  virtual void deferredDelete(DeferredDeletablePtr&& to_delete);
 
   // Used for testing.
   Thread::ThreadSynchronizer& synchronizer() { return synchronizer_; }

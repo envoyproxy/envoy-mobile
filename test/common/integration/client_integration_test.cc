@@ -8,7 +8,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "library/common/buffer/utility.h"
-#include "library/common/http/dispatcher.h"
+#include "library/common/http/client.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/types/c_types.h"
 
@@ -41,10 +41,10 @@ typedef struct {
 
 // TODO(junr03): move this to derive from the ApiListenerIntegrationTest after moving that class
 // into a test lib.
-class DispatcherIntegrationTest : public BaseIntegrationTest,
+class ClientIntegrationTest : public BaseIntegrationTest,
                                   public testing::TestWithParam<Network::Address::IpVersion> {
 public:
-  DispatcherIntegrationTest() : BaseIntegrationTest(GetParam(), bootstrap_config()) {
+  ClientIntegrationTest() : BaseIntegrationTest(GetParam(), bootstrap_config()) {
     use_lds_ = false;
     autonomous_upstream_ = true;
     defer_listener_finalization_ = true;
@@ -107,17 +107,17 @@ api_listener:
   }
 
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
-  Http::Dispatcher http_dispatcher_{preferred_network_};
+  Http::Client http_client_{preferred_network_};
 };
 
-INSTANTIATE_TEST_SUITE_P(IpVersions, DispatcherIntegrationTest,
+INSTANTIATE_TEST_SUITE_P(IpVersions, ClientIntegrationTest,
                          testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
                          TestUtility::ipTestParamsToString);
 
-TEST_P(DispatcherIntegrationTest, Basic) {
+TEST_P(ClientIntegrationTest, Basic) {
   ConditionalInitializer ready_ran;
   test_server_->server().dispatcher().post([this, &ready_ran]() -> void {
-    http_dispatcher_.ready(
+    http_client_.ready(
         test_server_->server().dispatcher(), test_server_->statStore(),
         test_server_->server().listenerManager().apiListener()->get().http()->get());
     ready_ran.setReady();
@@ -174,10 +174,10 @@ TEST_P(DispatcherIntegrationTest, Basic) {
   envoy_headers c_trailers = Http::Utility::toBridgeHeaders(trailers);
 
   // Create a stream.
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-  http_dispatcher_.sendHeaders(stream, c_headers, false);
-  http_dispatcher_.sendData(stream, c_data, false);
-  http_dispatcher_.sendTrailers(stream, c_trailers);
+  EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+  http_client_.sendHeaders(stream, c_headers, false);
+  http_client_.sendData(stream, c_data, false);
+  http_client_.sendTrailers(stream, c_trailers);
 
   terminal_callback.waitReady();
 
@@ -189,10 +189,10 @@ TEST_P(DispatcherIntegrationTest, Basic) {
   test_server_->waitForCounterEq("http.dispatcher.stream_success", 1);
 }
 
-TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
+TEST_P(ClientIntegrationTest, BasicNon2xx) {
   ConditionalInitializer ready_ran;
   test_server_->server().dispatcher().post([this, &ready_ran]() -> void {
-    http_dispatcher_.ready(
+    http_client_.ready(
         test_server_->server().dispatcher(), test_server_->statStore(),
         test_server_->server().listenerManager().apiListener()->get().http()->get());
     ready_ran.setReady();
@@ -238,8 +238,8 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
 
   // Create a stream.
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-  http_dispatcher_.sendHeaders(stream, c_headers, true);
+  EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+  http_client_.sendHeaders(stream, c_headers, true);
 
   terminal_callback.waitReady();
 
@@ -251,10 +251,10 @@ TEST_P(DispatcherIntegrationTest, BasicNon2xx) {
   test_server_->waitForCounterEq("http.dispatcher.stream_failure", 1);
 }
 
-TEST_P(DispatcherIntegrationTest, BasicReset) {
+TEST_P(ClientIntegrationTest, BasicReset) {
   ConditionalInitializer ready_ran;
   test_server_->server().dispatcher().post([this, &ready_ran]() -> void {
-    http_dispatcher_.ready(
+    http_client_.ready(
         test_server_->server().dispatcher(), test_server_->statStore(),
         test_server_->server().listenerManager().apiListener()->get().http()->get());
     ready_ran.setReady();
@@ -288,8 +288,8 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
 
   // Create a stream.
-  EXPECT_EQ(http_dispatcher_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-  http_dispatcher_.sendHeaders(stream, c_headers, true);
+  EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+  http_client_.sendHeaders(stream, c_headers, true);
 
   terminal_callback.waitReady();
 
@@ -300,7 +300,7 @@ TEST_P(DispatcherIntegrationTest, BasicReset) {
 }
 
 // TODO(junr03): test with envoy local reply with local stream not closed, which causes a reset
-// fired from the Http:ConnectionManager rather than the Http::Dispatcher. This cannot be done in
+// fired from the Http:ConnectionManager rather than the Http::Client. This cannot be done in
 // unit tests because the Http::ConnectionManager is mocked using a mock response encoder.
 
 } // namespace
