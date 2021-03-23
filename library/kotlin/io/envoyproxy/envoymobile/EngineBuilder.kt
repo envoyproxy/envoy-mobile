@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
+import java.nio.ByteBuffer
 import java.util.UUID
 
 sealed class BaseConfiguration
@@ -162,7 +163,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addStringAccessor(name: String, accessor: () -> String): EngineBuilder {
+  fun addStringAccessor(name: String, accessor: () -> ByteBuffer): EngineBuilder {
     this.stringAccessors.put(name, EnvoyStringAccessorAdapter(StringAccessor(accessor)))
     return this
   }

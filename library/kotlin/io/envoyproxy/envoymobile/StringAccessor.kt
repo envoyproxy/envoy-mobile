@@ -1,13 +1,14 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
+import java.nio.ByteBuffer
 
 /**
  *
  * `StringAccessor` is bridged through to `EnvoyStringAccessor` to communicate with the engine.
  */
 class StringAccessor constructor (
-  val getEnvoyString: (() -> String)
+  val getEnvoyString: (() -> ByteBuffer)
 )
 
 /**
@@ -17,7 +18,7 @@ class StringAccessor constructor (
 internal class EnvoyStringAccessorAdapter(
   private val callbacks: StringAccessor
 ) : EnvoyStringAccessor {
-  override fun getEnvoyString(): String {
+  override fun getEnvoyString(): ByteBuffer {
     return callbacks.getEnvoyString()
   }
 }

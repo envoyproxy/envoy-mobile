@@ -18,6 +18,7 @@ import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
 import java.io.IOException
+import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -48,7 +49,7 @@ class MainActivity : Activity() {
       .addPlatformFilter { DemoFilter() }
       .addPlatformFilter { BufferDemoFilter() }
       .addPlatformFilter { AsyncDemoFilter() }
-      .addStringAccessor("demo-accessor", { "PlatformString" })
+      .addStringAccessor("demo-accessor", { ByteBuffer.wrap("PlatformString".toByteArray(Charsets.UTF_8)) })
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()
