@@ -12,7 +12,10 @@ final class DirectResponsePrefixPathMatchIntegrationTest: XCTestCase {
 
     let engine = TestEngineBuilder()
       .addDirectResponse(
-        .init(matcher: RouteMatcher(pathPrefix: "/v1/foo"), status: 200, body: "hello world", headers: ["x-response-foo": "aaa"])
+        .init(
+          matcher: RouteMatcher(pathPrefix: "/v1/foo"),
+          status: 200, body: "hello world", headers: ["x-response-foo": "aaa"]
+        )
       )
       .build()
 
