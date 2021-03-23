@@ -12,7 +12,7 @@ final class DirectResponsePrefixPathMatchIntegrationTest: XCTestCase {
 
     let engine = TestEngineBuilder()
       .addDirectResponse(
-        .init(matcher: RouteMatcher(pathPrefix: "/v1/foo"), status: 200, body: "hello world")
+        .init(matcher: RouteMatcher(pathPrefix: "/v1/foo"), status: 200, body: "hello world", headers: ["x-response-foo": "aaa"])
       )
       .build()
 
@@ -22,6 +22,7 @@ final class DirectResponsePrefixPathMatchIntegrationTest: XCTestCase {
       .newStreamPrototype()
       .setOnResponseHeaders { headers, endStream in
         XCTAssertEqual(200, headers.httpStatus)
+        XCTAssertEqual(["aaa"], headers.value(forName: "x-response-foo"))
         XCTAssertFalse(endStream)
         headersExpectation.fulfill()
       }

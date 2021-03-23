@@ -20,7 +20,7 @@ final class DirectResponseSuffixHeadersMatchIntegrationTest: XCTestCase {
               .init(name: "x-foo", value: "456", mode: .suffix),
             ]
           ),
-          status: 200, body: "hello world"
+          status: 200, body: "hello world", headers: ["x-response-foo": "aaa"]
         )
       )
       .build()
@@ -31,6 +31,7 @@ final class DirectResponseSuffixHeadersMatchIntegrationTest: XCTestCase {
       .newStreamPrototype()
       .setOnResponseHeaders { headers, endStream in
         XCTAssertEqual(200, headers.httpStatus)
+        XCTAssertEqual(["aaa"], headers.value(forName: "x-response-foo"))
         XCTAssertFalse(endStream)
         headersExpectation.fulfill()
       }

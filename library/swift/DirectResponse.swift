@@ -9,16 +9,19 @@ public final class DirectResponse: NSObject {
   public let matcher: RouteMatcher
   public let status: UInt
   public let body: String?
+  public let headers: [String: String]
 
   /// Designated initializer.
   ///
   /// - parameter matcher: The matcher to use for returning a direct response.
   /// - parameter status:  HTTP status code that will be returned with the response.
   /// - parameter body:    String that will be returned as the body of the response.
-  public init(matcher: RouteMatcher, status: UInt, body: String?) {
+  /// - parameter headers: Headers to add to the response.
+  public init(matcher: RouteMatcher, status: UInt, body: String?, headers: [String: String] = [:]) {
     self.matcher = matcher
     self.status = status
     self.body = body
+    self.headers = headers
     super.init()
   }
 
@@ -34,12 +37,22 @@ public final class DirectResponse: NSObject {
   /// - returns: YAML that can be used for route matching & direct responses
   ///            in Envoy configurations.
   func resolvedDirectResponseYAML() -> String {
+    let formattedResponseHeaders = self.headers.map { name, value in
+      """
+                          - header:
+                              key: "\(name)"
+                              value: "\(value)"
+      """
+    }.joined(separator: "\n")
+
     return
       """
       \(self.resolvedMatchYAML())
                         direct_response:
                           status: \(self.status)
                           body: \(self.body.map { "{ inline_string: \"\($0)\" }" } ?? "")
+                        response_headers_to_add:
+      \(formattedResponseHeaders)
       """
   }
 

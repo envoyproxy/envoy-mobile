@@ -20,7 +20,7 @@ final class DirectResponseExactHeadersMatchIntegrationTest: XCTestCase {
               .init(name: "x-foo", value: "123", mode: .exact),
             ]
           ),
-          status: 200, body: "hello world"
+          status: 200, body: "hello world", headers: ["x-response-foo": "aaa"]
         )
       )
       .build()
@@ -31,6 +31,7 @@ final class DirectResponseExactHeadersMatchIntegrationTest: XCTestCase {
       .newStreamPrototype()
       .setOnResponseHeaders { headers, endStream in
         XCTAssertEqual(200, headers.httpStatus)
+        XCTAssertEqual(["aaa"], headers.value(forName: "x-response-foo"))
         XCTAssertFalse(endStream)
         headersExpectation.fulfill()
       }
