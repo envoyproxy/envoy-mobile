@@ -7,5 +7,5 @@ public interface EnvoyStringAccessor {
   /**
    * Called to retrieve a string from the Application
    */
-  ByteBuffer getEnvoyString();
+  String getEnvoyString();
 }

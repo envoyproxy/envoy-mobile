@@ -163,7 +163,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addStringAccessor(name: String, accessor: () -> ByteBuffer): EngineBuilder {
+  fun addStringAccessor(name: String, accessor: () -> String): EngineBuilder {
     this.stringAccessors.put(name, EnvoyStringAccessorAdapter(StringAccessor(accessor)))
     return this
   }
