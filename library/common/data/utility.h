@@ -43,6 +43,13 @@ envoy_data copyToBridgeData(const Buffer::Instance&);
  */
 std::string copyToString(envoy_data data);
 
+/**
+ * Transform from an std::string to an envoy_data.
+ * @param s, the std::string to transform envoy_data from.
+ * @return envoy_data the envoy_data transformed from s.
+ */
+envoy_data toEnvoyData(const std::string& s);
+
 } // namespace Utility
 } // namespace Data
 } // namespace Envoy

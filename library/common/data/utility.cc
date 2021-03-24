@@ -6,6 +6,7 @@
 #include "common/common/empty_string.h"
 
 #include "library/common/buffer/bridge_fragment.h"
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Data {
@@ -44,6 +45,8 @@ std::string copyToString(envoy_data data) {
   }
   return std::string(const_cast<char*>(reinterpret_cast<const char*>((data.bytes))), data.length);
 }
+
+envoy_data toEnvoyData(const std::string& s) { return copyToBridgeData(s); }
 
 } // namespace Utility
 } // namespace Data

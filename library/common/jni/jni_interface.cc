@@ -93,29 +93,32 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
     jclass, // class
     jlong engine, jstring elements, jint count) {
   // TODO: update to use tags passed from the downstream layer (java) when it's ready.
-  const char * tags[0][2];
-  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), tags, 0, count);
+  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
+                            count);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint value) {
-  return record_gauge_set(engine, env->GetStringUTFChars(elements, nullptr), value);
+  return record_gauge_set(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
+                          value);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeAdd(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint amount) {
-  return record_gauge_add(engine, env->GetStringUTFChars(elements, nullptr), amount);
+  return record_gauge_add(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
+                          amount);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSub(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint amount) {
-  return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), amount);
+  return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
+                          amount);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -124,8 +127,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv*
                                                                          jlong engine,
                                                                          jstring elements,
                                                                          jint durationMs) {
-  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), durationMs,
-                                MILLISECONDS);
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr),
+                                envoy_stats_notags, durationMs, MILLISECONDS);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -134,8 +137,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* en
                                                                       jlong engine,
                                                                       jstring elements,
                                                                       jint value) {
-  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr), value,
-                                UNSPECIFIED);
+  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr),
+                                envoy_stats_notags, value, UNSPECIFIED);
 }
 
 // JvmCallbackContext

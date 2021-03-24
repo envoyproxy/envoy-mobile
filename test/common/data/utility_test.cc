@@ -67,5 +67,14 @@ TEST(DataConstructorTest, CopyStringFromCppToC) {
   c_data.release(c_data.context);
 }
 
+TEST(DataConstructorTest, TransformStringFromCppToC) {
+  std::string s = "test string";
+  envoy_data c_data = Utility::toEnvoyData(s);
+
+  ASSERT_EQ(c_data.length, s.size());
+  ASSERT_EQ(Utility::copyToString(c_data), s);
+  c_data.release(c_data.context);
+}
+
 } // namespace Data
 } // namespace Envoy

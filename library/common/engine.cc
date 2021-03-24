@@ -4,6 +4,8 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/stats/utility.h"
+
 namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
@@ -57,6 +59,9 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           server_ = TS_UNCHECKED_READ(main_common_)->server();
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
+          // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
+          // on-the-fly without risking contention on system with lots of threads.
+          // It also comes with ease of programming.
           stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
@@ -75,6 +80,7 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
+  stat_name_set_.reset();
   TS_UNCHECKED_READ(main_common_).reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
@@ -107,26 +113,30 @@ Engine::~Engine() {
   main_thread_.join();
 }
 
-envoy_status_t Engine::recordCounterInc(
-  const std::string& elements, const char * tag_arr[][2], uint64_t tag_arr_len, uint64_t count) {
+envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,
+                                        uint64_t count) {
   if (server_ && client_scope_ && stat_name_set_) {
-    Stats::StatNameTagVector tags = transform(tag_arr, tag_arr_len);
+    Stats::StatNameTagVector tags_vctr =
+        Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags, count]() -> void {
-      Stats::Utility::counterFromElements(
-        *client_scope_, {Stats::DynamicName(name)}, tags).add(count);
+    server_->dispatcher().post([this, name, tags_vctr, count]() -> void {
+      Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(name)}, tags_vctr)
+          .add(count);
     });
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::recordGaugeSet(const std::string& elements, uint64_t value) {
-  if (server_ && client_scope_) {
+envoy_status_t Engine::recordGaugeSet(const std::string& elements, envoy_stats_tags tags,
+                                      uint64_t value) {
+  if (server_ && client_scope_ && stat_name_set_) {
+    Stats::StatNameTagVector tags_vctr =
+        Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, value]() -> void {
+    server_->dispatcher().post([this, name, tags_vctr, value]() -> void {
       Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport)
+                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
           .set(value);
     });
     return ENVOY_SUCCESS;
@@ -134,12 +144,15 @@ envoy_status_t Engine::recordGaugeSet(const std::string& elements, uint64_t valu
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::recordGaugeAdd(const std::string& elements, uint64_t amount) {
-  if (server_ && client_scope_) {
+envoy_status_t Engine::recordGaugeAdd(const std::string& elements, envoy_stats_tags tags,
+                                      uint64_t amount) {
+  if (server_ && client_scope_ && stat_name_set_) {
+    Stats::StatNameTagVector tags_vctr =
+        Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, amount]() -> void {
+    server_->dispatcher().post([this, name, tags_vctr, amount]() -> void {
       Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport)
+                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
           .add(amount);
     });
     return ENVOY_SUCCESS;
@@ -147,12 +160,15 @@ envoy_status_t Engine::recordGaugeAdd(const std::string& elements, uint64_t amou
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::recordGaugeSub(const std::string& elements, uint64_t amount) {
-  if (server_ && client_scope_) {
+envoy_status_t Engine::recordGaugeSub(const std::string& elements, envoy_stats_tags tags,
+                                      uint64_t amount) {
+  if (server_ && client_scope_ && stat_name_set_) {
+    Stats::StatNameTagVector tags_vctr =
+        Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, amount]() -> void {
+    server_->dispatcher().post([this, name, tags_vctr, amount]() -> void {
       Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport)
+                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
           .sub(amount);
     });
     return ENVOY_SUCCESS;
@@ -160,9 +176,12 @@ envoy_status_t Engine::recordGaugeSub(const std::string& elements, uint64_t amou
   return ENVOY_FAILURE;
 }
 
-envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_t value,
+envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_stats_tags tags,
+                                            uint64_t value,
                                             envoy_histogram_stat_unit_t unit_measure) {
-  if (server_ && client_scope_) {
+  if (server_ && client_scope_ && stat_name_set_) {
+    Stats::StatNameTagVector tags_vctr =
+        Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
     Stats::Histogram::Unit envoy_unit_measure = Stats::Histogram::Unit::Unspecified;
     switch (unit_measure) {
@@ -180,9 +199,9 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_
       break;
     }
 
-    server_->dispatcher().post([this, name, value, envoy_unit_measure]() -> void {
+    server_->dispatcher().post([this, name, tags_vctr, value, envoy_unit_measure]() -> void {
       Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                            envoy_unit_measure)
+                                            envoy_unit_measure, tags_vctr)
           .recordValue(value);
     });
     return ENVOY_SUCCESS;
@@ -192,15 +211,4 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_
 
 Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
 
-Stats::StatNameTagVector Engine::transform(const char * tag_arr[][2], uint64_t tag_arr_size) {
-  Stats::StatNameTagVector tags;
-  for(uint64_t i = 0; i < tag_arr_size; i++) {
-    const char* tag_key_chars = tag_arr[i][0];
-    std::string key(tag_key_chars);
-    const char* val_in_chars = tag_arr[i][1];
-    std::string val(val_in_chars);
-    tags.push_back({stat_name_set_->add(key), stat_name_set_->add(val)});
-  }
-  return tags;
-}
 } // namespace Envoy
