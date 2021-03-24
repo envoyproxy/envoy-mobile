@@ -39,11 +39,10 @@ typedef struct {
   ConditionalInitializer* terminal_callback;
 } callbacks_called;
 
-
 // TODO(junr03): move this to derive from the ApiListenerIntegrationTest after moving that class
 // into a test lib.
 class ClientIntegrationTest : public BaseIntegrationTest,
-                                  public testing::TestWithParam<Network::Address::IpVersion> {
+                              public testing::TestWithParam<Network::Address::IpVersion> {
 public:
   ClientIntegrationTest() : BaseIntegrationTest(GetParam(), bootstrap_config()) {
     use_lds_ = false;
@@ -108,7 +107,8 @@ api_listener:
   }
 
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
-  std::unique_ptr<Event::ProvisionalDispatcher> dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>();
+  std::unique_ptr<Event::ProvisionalDispatcher> dispatcher_ =
+      std::make_unique<Event::ProvisionalDispatcher>();
   std::unique_ptr<Http::Client> http_client_{};
 };
 
@@ -120,11 +120,8 @@ TEST_P(ClientIntegrationTest, Basic) {
   ConditionalInitializer server_started;
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
-        test_server_->server().listenerManager().apiListener()->get().http()->get(),
-        *dispatcher_,
-        test_server_->statStore(),
-        preferred_network_
-    );
+        test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
+        test_server_->statStore(), preferred_network_);
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();
   });
@@ -200,11 +197,8 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
   ConditionalInitializer server_started;
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
-        test_server_->server().listenerManager().apiListener()->get().http()->get(),
-        *dispatcher_,
-        test_server_->statStore(),
-        preferred_network_
-    );
+        test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
+        test_server_->statStore(), preferred_network_);
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();
   });
@@ -267,11 +261,8 @@ TEST_P(ClientIntegrationTest, BasicReset) {
   ConditionalInitializer server_started;
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
-        test_server_->server().listenerManager().apiListener()->get().http()->get(),
-        *dispatcher_,
-        test_server_->statStore(),
-        preferred_network_
-    );
+        test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
+        test_server_->statStore(), preferred_network_);
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();
   });

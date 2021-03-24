@@ -8,9 +8,8 @@
 #include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
 
-#include "library/common/event/provisional_dispatcher.h"
-
 #include "gmock/gmock.h"
+#include "library/common/event/provisional_dispatcher.h"
 
 namespace Envoy {
 namespace Event {
@@ -34,7 +33,7 @@ public:
   }
 
   // Event::ProvisionalDispatcher
-  MOCK_METHOD(void, drain, (Event::Dispatcher& event_dispatcher));
+  MOCK_METHOD(void, drain, (Event::Dispatcher & event_dispatcher));
   MOCK_METHOD(void, deferredDelete_, (DeferredDeletable * to_delete));
   MOCK_METHOD(envoy_status_t, post_, (std::function<void()> callback));
   MOCK_METHOD(bool, isThreadSafe, ());

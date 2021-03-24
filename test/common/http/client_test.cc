@@ -5,6 +5,7 @@
 #include "common/stats/isolated_store_impl.h"
 
 #include "test/common/http/common.h"
+#include "test/common/mocks/event/mocks.h"
 #include "test/mocks/buffer/mocks.h"
 #include "test/mocks/event/mocks.h"
 #include "test/mocks/http/api_listener.h"
@@ -18,7 +19,6 @@
 #include "library/common/http/client.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/types/c_types.h"
-#include "test/common/mocks/event/mocks.h"
 
 using testing::_;
 using testing::NiceMock;
@@ -852,7 +852,6 @@ TEST_F(ClientTest, ResetStreamLocal) {
         return request_decoder_;
       }));
   EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-
 
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   ASSERT_EQ(http_client_.cancelStream(stream), ENVOY_SUCCESS);

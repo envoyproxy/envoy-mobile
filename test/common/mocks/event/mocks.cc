@@ -16,8 +16,8 @@ using testing::SaveArg;
 namespace Envoy {
 namespace Event {
 
-//MockFileEvent::MockFileEvent() = default;
-//MockFileEvent::~MockFileEvent() = default;
+// MockFileEvent::MockFileEvent() = default;
+// MockFileEvent::~MockFileEvent() = default;
 
 } // namespace Event
 } // namespace Envoy
