@@ -39,6 +39,7 @@ typedef struct {
   ConditionalInitializer* terminal_callback;
 } callbacks_called;
 
+
 // TODO(junr03): move this to derive from the ApiListenerIntegrationTest after moving that class
 // into a test lib.
 class ClientIntegrationTest : public BaseIntegrationTest,
@@ -107,7 +108,8 @@ api_listener:
   }
 
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
-  Http::Client http_client_{preferred_network_};
+  std::unique_ptr<Event::ProvisionalDispatcher> dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>();
+  std::unique_ptr<Http::Client> http_client_{};
 };
 
 INSTANTIATE_TEST_SUITE_P(IpVersions, ClientIntegrationTest,
@@ -115,14 +117,18 @@ INSTANTIATE_TEST_SUITE_P(IpVersions, ClientIntegrationTest,
                          TestUtility::ipTestParamsToString);
 
 TEST_P(ClientIntegrationTest, Basic) {
-  ConditionalInitializer ready_ran;
-  test_server_->server().dispatcher().post([this, &ready_ran]() -> void {
-    http_client_.ready(
-        test_server_->server().dispatcher(), test_server_->statStore(),
-        test_server_->server().listenerManager().apiListener()->get().http()->get());
-    ready_ran.setReady();
+  ConditionalInitializer server_started;
+  test_server_->server().dispatcher().post([this, &server_started]() -> void {
+    http_client_ = std::make_unique<Http::Client>(
+        test_server_->server().listenerManager().apiListener()->get().http()->get(),
+        *dispatcher_,
+        test_server_->statStore(),
+        preferred_network_
+    );
+    dispatcher_->drain(test_server_->server().dispatcher());
+    server_started.setReady();
   });
-  ready_ran.waitReady();
+  server_started.waitReady();
 
   envoy_stream_t stream = 1;
   ConditionalInitializer terminal_callback;
@@ -174,11 +180,12 @@ TEST_P(ClientIntegrationTest, Basic) {
   envoy_headers c_trailers = Http::Utility::toBridgeHeaders(trailers);
 
   // Create a stream.
-  EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-  http_client_.sendHeaders(stream, c_headers, false);
-  http_client_.sendData(stream, c_data, false);
-  http_client_.sendTrailers(stream, c_trailers);
-
+  dispatcher_->post([&]() -> void {
+    EXPECT_EQ(http_client_->startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+    http_client_->sendHeaders(stream, c_headers, false);
+    http_client_->sendData(stream, c_data, false);
+    http_client_->sendTrailers(stream, c_trailers);
+  });
   terminal_callback.waitReady();
 
   ASSERT_EQ(cc.on_headers_calls, 1);
@@ -186,18 +193,22 @@ TEST_P(ClientIntegrationTest, Basic) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 
   // stream_success gets charged for 2xx status codes.
-  test_server_->waitForCounterEq("http.dispatcher.stream_success", 1);
+  test_server_->waitForCounterEq("http.client.stream_success", 1);
 }
 
 TEST_P(ClientIntegrationTest, BasicNon2xx) {
-  ConditionalInitializer ready_ran;
-  test_server_->server().dispatcher().post([this, &ready_ran]() -> void {
-    http_client_.ready(
-        test_server_->server().dispatcher(), test_server_->statStore(),
-        test_server_->server().listenerManager().apiListener()->get().http()->get());
-    ready_ran.setReady();
+  ConditionalInitializer server_started;
+  test_server_->server().dispatcher().post([this, &server_started]() -> void {
+    http_client_ = std::make_unique<Http::Client>(
+        test_server_->server().listenerManager().apiListener()->get().http()->get(),
+        *dispatcher_,
+        test_server_->statStore(),
+        preferred_network_
+    );
+    dispatcher_->drain(test_server_->server().dispatcher());
+    server_started.setReady();
   });
-  ready_ran.waitReady();
+  server_started.waitReady();
 
   // Set response header status to be non-2xx to test that the correct stats get charged.
   reinterpret_cast<AutonomousUpstream*>(fake_upstreams_.front().get())
@@ -238,9 +249,10 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
 
   // Create a stream.
-  EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-  http_client_.sendHeaders(stream, c_headers, true);
-
+  dispatcher_->post([&]() -> void {
+    EXPECT_EQ(http_client_->startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+    http_client_->sendHeaders(stream, c_headers, true);
+  });
   terminal_callback.waitReady();
 
   ASSERT_EQ(cc.on_error_calls, 0);
@@ -248,18 +260,22 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
   ASSERT_EQ(cc.on_complete_calls, 1);
 
   // stream_failure gets charged for all non-2xx status codes.
-  test_server_->waitForCounterEq("http.dispatcher.stream_failure", 1);
+  test_server_->waitForCounterEq("http.client.stream_failure", 1);
 }
 
 TEST_P(ClientIntegrationTest, BasicReset) {
-  ConditionalInitializer ready_ran;
-  test_server_->server().dispatcher().post([this, &ready_ran]() -> void {
-    http_client_.ready(
-        test_server_->server().dispatcher(), test_server_->statStore(),
-        test_server_->server().listenerManager().apiListener()->get().http()->get());
-    ready_ran.setReady();
+  ConditionalInitializer server_started;
+  test_server_->server().dispatcher().post([this, &server_started]() -> void {
+    http_client_ = std::make_unique<Http::Client>(
+        test_server_->server().listenerManager().apiListener()->get().http()->get(),
+        *dispatcher_,
+        test_server_->statStore(),
+        preferred_network_
+    );
+    dispatcher_->drain(test_server_->server().dispatcher());
+    server_started.setReady();
   });
-  ready_ran.waitReady();
+  server_started.waitReady();
 
   envoy_stream_t stream = 1;
   // Setup bridge_callbacks to handle the response.
@@ -288,15 +304,16 @@ TEST_P(ClientIntegrationTest, BasicReset) {
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
 
   // Create a stream.
-  EXPECT_EQ(http_client_.startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
-  http_client_.sendHeaders(stream, c_headers, true);
-
+  dispatcher_->post([&]() -> void {
+    EXPECT_EQ(http_client_->startStream(stream, bridge_callbacks), ENVOY_SUCCESS);
+    http_client_->sendHeaders(stream, c_headers, true);
+  });
   terminal_callback.waitReady();
 
   ASSERT_EQ(cc.on_error_calls, 1);
   ASSERT_EQ(cc.on_headers_calls, 0);
   // Reset causes a charge to stream_failure.
-  test_server_->waitForCounterEq("http.dispatcher.stream_failure", 1);
+  test_server_->waitForCounterEq("http.client.stream_failure", 1);
 }
 
 // TODO(junr03): test with envoy local reply with local stream not closed, which causes a reset
