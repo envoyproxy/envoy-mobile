@@ -27,7 +27,7 @@ envoy_cc_library(
         "stream_callbacks.cc",
         "stream_client.cc",
         "stream_prototype.cc",
-        "upstream_http_protocol.h",
+        "upstream_http_protocol.cc",
     ],
     hdrs = [
         "bridge_utility.h",
@@ -60,5 +60,6 @@ envoy_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//library/common:envoy_main_interface_lib",
+        "//library/common/data:utility_lib",
     ],
 )

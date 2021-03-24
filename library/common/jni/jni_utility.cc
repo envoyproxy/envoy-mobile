@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common/common/assert.h"
+
 #include "library/common/jni/jni_version.h"
 
 // NOLINT(namespace-envoy)
@@ -53,9 +55,21 @@ envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
   size_t data_length = env->GetArrayLength(j_data);
   uint8_t* native_bytes = static_cast<uint8_t*>(safe_malloc(data_length));
   void* critical_data = env->GetPrimitiveArrayCritical(j_data, 0);
-  memcpy(native_bytes, critical_data, data_length);
+  memcpy(native_bytes, critical_data, data_length); // NOLINT(safe-memcpy)
   env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
   return {data_length, native_bytes, free, native_bytes};
+}
+
+jbyteArray native_data_to_array(JNIEnv* env, envoy_data data) {
+  jbyteArray j_data = env->NewByteArray(data.length);
+  void* critical_data = env->GetPrimitiveArrayCritical(j_data, nullptr);
+  RELEASE_ASSERT(critical_data != nullptr, "unable to allocate memory in jni_utility");
+  memcpy(critical_data, data.bytes, data.length); // NOLINT(safe-memcpy)
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  // TODO: potential perf improvement. Check if copied via isCopy, and optimize memory handling.
+  env->ReleasePrimitiveArrayCritical(j_data, critical_data, 0);
+  return j_data;
 }
 
 envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
@@ -94,40 +108,30 @@ envoy_data* buffer_to_native_data_ptr(JNIEnv* env, jobject j_data) {
     return nullptr;
   }
 
-  envoy_data* native_data = static_cast<envoy_data*>(safe_malloc(sizeof(envoy_header)));
+  envoy_data* native_data = static_cast<envoy_data*>(safe_malloc(sizeof(envoy_map_entry)));
   *native_data = buffer_to_native_data(env, j_data);
   return native_data;
 }
 
 envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
   // Note that headers is a flattened array of key/value pairs.
-  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_header.
-  envoy_header_size_t length = env->GetArrayLength(headers);
+  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_map_entry.
+  envoy_map_size_t length = env->GetArrayLength(headers);
   if (length == 0) {
     return envoy_noheaders;
   }
 
-  envoy_header* header_array =
-      static_cast<envoy_header*>(safe_malloc(sizeof(envoy_header) * length / 2));
+  envoy_map_entry* header_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * length / 2));
 
-  for (envoy_header_size_t i = 0; i < length; i += 2) {
+  for (envoy_map_size_t i = 0; i < length; i += 2) {
     // Copy native byte array for header key
     jbyteArray j_key = static_cast<jbyteArray>(env->GetObjectArrayElement(headers, i));
-    size_t key_length = env->GetArrayLength(j_key);
-    uint8_t* native_key = static_cast<uint8_t*>(safe_malloc(key_length));
-    void* critical_key = env->GetPrimitiveArrayCritical(j_key, 0);
-    memcpy(native_key, critical_key, key_length);
-    env->ReleasePrimitiveArrayCritical(j_key, critical_key, 0);
-    envoy_data header_key = {key_length, native_key, free, native_key};
+    envoy_data header_key = array_to_native_data(env, j_key);
 
     // Copy native byte array for header value
     jbyteArray j_value = static_cast<jbyteArray>(env->GetObjectArrayElement(headers, i + 1));
-    size_t value_length = env->GetArrayLength(j_value);
-    uint8_t* native_value = static_cast<uint8_t*>(safe_malloc(value_length));
-    void* critical_value = env->GetPrimitiveArrayCritical(j_value, 0);
-    memcpy(native_value, critical_value, value_length);
-    env->ReleasePrimitiveArrayCritical(j_value, critical_value, 0);
-    envoy_data header_value = {value_length, native_value, free, native_value};
+    envoy_data header_value = array_to_native_data(env, j_value);
 
     header_array[i / 2] = {header_key, header_value};
     env->DeleteLocalRef(j_key);
@@ -148,7 +152,7 @@ envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers) {
     return nullptr;
   }
 
-  envoy_headers* native_headers = static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_header)));
+  envoy_headers* native_headers = static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_map_entry)));
   *native_headers = to_native_headers(env, headers);
   return native_headers;
 }

@@ -87,28 +87,30 @@ typedef struct {
 } envoy_data;
 
 /**
- * Holds a single key/value header.
+ * Holds a single key/value pair.
  */
 typedef struct {
   envoy_data key;
-  // Multiple header values for the same header key are supported via a comma-delimited string.
   envoy_data value;
-} envoy_header;
+} envoy_map_entry;
 
 /**
  * Consistent type for dealing with encodable/processable header counts.
  */
-typedef int envoy_header_size_t;
+typedef int envoy_map_size_t;
 
 /**
- * Holds an HTTP header map as an array of envoy_header structs.
+ * Holds a map as an array of envoy_map_entry structs.
  */
 typedef struct {
-  // Number of header elements in the array.
-  envoy_header_size_t length;
-  // Array of headers.
-  envoy_header* headers;
-} envoy_headers;
+  // Number of entries in the array.
+  envoy_map_size_t length;
+  // Array of map entries.
+  envoy_map_entry* entries;
+} envoy_map;
+
+// Multiple header values for the same header key are supported via a comma-delimited string.
+typedef envoy_map envoy_headers;
 
 #ifdef __cplusplus
 extern "C" { // utility functions
@@ -144,11 +146,10 @@ envoy_headers copy_envoy_headers(envoy_headers src);
 
 /**
  * Helper function to copy envoy_data.
- * @param length, the length of the data to copy.
- * @param src_bytes, the byte array to copy from.
+ * @param src, the envoy_data to copy from.
  * @return envoy_data, the envoy_data copied from the src.
  */
-envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes);
+envoy_data copy_envoy_data(envoy_data src);
 
 #ifdef __cplusplus
 } // utility functions

@@ -7,7 +7,7 @@
 #include "common/http/utility.h"
 
 #include "library/common/buffer/bridge_fragment.h"
-#include "library/common/buffer/utility.h"
+#include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
 #include "library/common/thread/lock_guard.h"
@@ -53,7 +53,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
     const auto error_message_header = headers.get(InternalHeaders::get().ErrorMessage);
     if (!error_message_header.empty()) {
       error_message_ =
-          Buffer::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
+          Data::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
     }
 
     uint32_t attempt_count;
@@ -105,7 +105,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   ENVOY_LOG(debug,
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
-  bridge_callbacks_.on_data(Buffer::Utility::toBridgeData(data), end_stream,
+  bridge_callbacks_.on_data(Data::Utility::toBridgeData(data), end_stream,
                             bridge_callbacks_.context);
   if (end_stream) {
     onComplete();
@@ -252,7 +252,7 @@ envoy_status_t Client::sendData(envoy_stream_t stream, envoy_data data, bool end
   if (direct_stream) {
     // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
     // of the InstancePtr to outlive this function call.
-    Buffer::InstancePtr buf = Buffer::Utility::toInternalData(data);
+    Buffer::InstancePtr buf = Data::Utility::toInternalData(data);
 
     ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
               data.length, end_stream);
