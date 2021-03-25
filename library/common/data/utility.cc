@@ -6,7 +6,6 @@
 #include "common/common/empty_string.h"
 
 #include "library/common/buffer/bridge_fragment.h"
-#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Data {
