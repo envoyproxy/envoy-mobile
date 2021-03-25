@@ -18,8 +18,8 @@ envoy_stats_tags make_envoy_stats_tags(std::vector<std::pair<std::string, std::s
   new_tags.entries = tags;
 
   for (const auto& pair : pairs) {
-    envoy_data key = Data::Utility::toEnvoyData(pair.first);
-    envoy_data value = Data::Utility::toEnvoyData(pair.second);
+    envoy_data key = Data::Utility::copyToBridgeData(pair.first);
+    envoy_data value = Data::Utility::copyToBridgeData(pair.second);
     new_tags.entries[new_tags.length] = {key, value};
     new_tags.length++;
   }
@@ -39,7 +39,7 @@ TEST(TransformTest, FromEnvoyStatsTagsToStatNameTagVector) {
   ASSERT_EQ(symbol_table_->toString(tags_vctr[1].second), "dev");
 }
 
-TEST(TransformTestNoTags, FromEnvoyStatsTagsToStatNameTagVector) {
+TEST(TransformTest, FromEnvoyStatsTagsToStatNameTagVectorNoTags) {
   Stats::TestUtil::TestSymbolTable symbol_table_;
   StatNameSetPtr stat_name_set_;
   stat_name_set_ = symbol_table_->makeSet("pulse");

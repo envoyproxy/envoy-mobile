@@ -45,8 +45,6 @@ std::string copyToString(envoy_data data) {
   return std::string(const_cast<char*>(reinterpret_cast<const char*>((data.bytes))), data.length);
 }
 
-envoy_data toEnvoyData(const std::string& s) { return copyToBridgeData(s); }
-
 } // namespace Utility
 } // namespace Data
 } // namespace Envoy
