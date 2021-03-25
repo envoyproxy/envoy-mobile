@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine.types;
 
-import java.nio.ByteBuffer;
-
 public interface EnvoyStringAccessor {
 
   /**
