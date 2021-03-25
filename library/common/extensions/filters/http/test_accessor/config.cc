@@ -8,11 +8,12 @@ namespace HttpFilters {
 namespace TestAccessor {
 
 Http::FilterFactoryCb TestAccessorFilterFactory::createFilterFactoryFromProtoTyped(
-    const envoymobile::extensions::filters::http::test_accessor::TestAccessor&,
+    const envoymobile::extensions::filters::http::test_accessor::TestAccessor& proto_config,
     const std::string&, Server::Configuration::FactoryContext&) {
 
-  return [](Http::FilterChainFactoryCallbacks& callbacks) -> void {
-    callbacks.addStreamFilter(std::make_shared<TestAccessorFilter>());
+  auto config = std::make_shared<TestAccessorFilterConfig>(proto_config);
+  return [config](Http::FilterChainFactoryCallbacks& callbacks) -> void {
+    callbacks.addStreamFilter(std::make_shared<TestAccessorFilter>(config));
   };
 }
 
