@@ -5,13 +5,14 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_test(
-    name = "dispatcher_test",
-    srcs = ["dispatcher_test.cc"],
+    name = "client_test",
+    srcs = ["client_test.cc"],
     repository = "@envoy",
     deps = [
-        "//library/common/http:dispatcher_lib",
+        "//library/common/http:client_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
+        "//test/common/mocks/event:event_mocks",
         "@envoy//source/common/http:context_lib",
         "@envoy//source/common/stats:isolated_store_lib",
         "@envoy//test/common/http:common_lib",
@@ -28,7 +29,7 @@ envoy_cc_test(
     srcs = ["header_utility_test.cc"],
     repository = "@envoy",
     deps = [
-        "//library/common/buffer:utility_lib",
+        "//library/common/data:utility_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/buffer:buffer_lib",

@@ -6,24 +6,25 @@
 
 namespace Envoy {
 
-Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
-               std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks) {
+Engine::Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& preferred_network)
+    : callbacks_(callbacks), dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
+      preferred_network_(preferred_network) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
-
-  // Create the Http::Dispatcher first since it contains initial queueing logic.
-  // TODO: consider centralizing initial queueing in this class.
-  // https://github.com/lyft/envoy-mobile/issues/720
-  http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
-
-  // Start the Envoy on a dedicated thread.
-  main_thread_ = std::thread(&Engine::run, this, std::string(config), std::string(log_level));
 }
 
 envoy_status_t Engine::run(const std::string config, const std::string log_level) {
+  // Start the Envoy on the dedicated thread. Note: due to how the assignment operator works with
+  // std::thread, main_thread_ is the same object after this call, but its state is replaced with
+  // that of the temporary. The temporary object's state becomes the default state, which does
+  // nothing.
+  main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level));
+  return ENVOY_SUCCESS;
+}
+
+envoy_status_t Engine::main(const std::string config, const std::string log_level) {
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -34,7 +35,6 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
                                   log_flag.c_str(), log_level.c_str(),   nullptr};
 
       main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
-      event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
@@ -59,8 +59,10 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
-          http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
-                                  api_listener.value());
+          http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_,
+                                                        server_->serverFactoryContext().scope(),
+                                                        preferred_network_);
+          dispatcher_->drain(server_->dispatcher());
           if (callbacks_.on_engine_running != nullptr) {
             callbacks_.on_engine_running(callbacks_.context);
           }
@@ -186,6 +188,12 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, uint64_
   return ENVOY_FAILURE;
 }
 
-Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
+Event::ProvisionalDispatcher& Engine::dispatcher() { return *dispatcher_; }
+
+Http::Client& Engine::httpClient() {
+  RELEASE_ASSERT(dispatcher_->isThreadSafe(),
+                 "httpClient must be accessed from dispatcher's context");
+  return *http_client_;
+}
 
 } // namespace Envoy

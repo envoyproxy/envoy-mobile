@@ -8,6 +8,6 @@ class AndroidEngineBuilder @JvmOverloads constructor(
   baseConfiguration: BaseConfiguration = Standard()
 ) : EngineBuilder(baseConfiguration) {
   init {
-    addEngineType { AndroidEngineImpl(application) }
+    addEngineType { AndroidEngineImpl(application, onEngineRunning) }
   }
 }

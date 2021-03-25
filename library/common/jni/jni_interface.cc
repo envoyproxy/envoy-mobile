@@ -24,13 +24,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 // JniLibrary
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
-    JNIEnv* env,
-    jclass // class
-) {
-  return init_engine();
-}
-
 static void jvm_on_engine_running(void* context) {
   __android_log_write(ANDROID_LOG_VERBOSE, "[Envoy]", "jvm_on_engine_running");
 
@@ -56,11 +49,16 @@ static void jvm_on_exit(void*) {
   jvm_detach_thread();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
-    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level, jobject context) {
+extern "C" JNIEXPORT jlong JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env, jclass, jobject context) {
   jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
   envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
-  return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
+  return init_engine(native_callbacks);
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
+    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
+  return run_engine(engine, env->GetStringUTFChars(config, nullptr),
                     env->GetStringUTFChars(log_level, nullptr));
 }
 
@@ -623,7 +621,8 @@ static envoy_data jvm_get_string(const void* context) {
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
   jclass jcls_JvmStringAccessorContext = env->GetObjectClass(j_context);
-  jmethodID jmid_getString = env->GetMethodID(jcls_JvmStringAccessorContext, "getString", "()[B");
+  jmethodID jmid_getString =
+      env->GetMethodID(jcls_JvmStringAccessorContext, "getEnvoyString", "()[B");
   jbyteArray j_data = static_cast<jbyteArray>(env->CallObjectMethod(j_context, jmid_getString));
   envoy_data native_data = array_to_native_data(env, j_data);
 

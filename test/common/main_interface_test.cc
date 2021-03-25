@@ -2,7 +2,7 @@
 
 #include "absl/synchronization/notification.h"
 #include "gtest/gtest.h"
-#include "library/common/buffer/utility.h"
+#include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/main_interface.h"
 
@@ -36,8 +36,8 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
   Http::ResponseHeaderMapPtr transformed_headers = Http::ResponseHeaderMapImpl::create();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
     transformed_headers->addCopy(
-        Http::LowerCaseString(Http::Utility::convertToString(headers.entries[i].key)),
-        Http::Utility::convertToString(headers.entries[i].value));
+        Http::LowerCaseString(Data::Utility::copyToString(headers.entries[i].key)),
+        Data::Utility::copyToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);
@@ -74,7 +74,8 @@ TEST(MainInterfaceTest, BasicStream) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  run_engine(0, engine_cbs, config.c_str(), level.c_str());
+  init_engine(engine_cbs);
+  run_engine(0, config.c_str(), level.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -103,7 +104,7 @@ TEST(MainInterfaceTest, BasicStream) {
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
 
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
+  envoy_data c_data = Data::Utility::toBridgeData(request_data);
 
   Http::TestRequestTrailerMapImpl trailers;
   envoy_headers c_trailers = Http::Utility::toBridgeHeaders(trailers);
@@ -138,7 +139,8 @@ TEST(MainInterfaceTest, SendMetadata) {
 
   // There is nothing functional about the config used to run the engine, as the created stream is
   // only used for send_metadata.
-  run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(engine_cbs);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -174,7 +176,8 @@ TEST(MainInterfaceTest, ResetStream) {
 
   // There is nothing functional about the config used to run the engine, as the created stream is
   // immediately reset.
-  run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(engine_cbs);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -214,7 +217,7 @@ TEST(MainInterfaceTest, UsingMainInterfaceWithoutARunningEngine) {
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
 
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  envoy_data c_data = Buffer::Utility::toBridgeData(request_data);
+  envoy_data c_data = Data::Utility::toBridgeData(request_data);
 
   Http::TestRequestTrailerMapImpl trailers;
   envoy_headers c_trailers = Http::Utility::toBridgeHeaders(trailers);
@@ -244,7 +247,8 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
                                     &engine_cbs_context /*context*/};
 
   // Using the minimal envoy mobile config that allows for running the engine.
-  run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(engine_cbs);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -259,7 +263,18 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
 TEST(MainInterfaceTest, InitEngineReturns1) {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  ASSERT_EQ(1, init_engine());
+  engine_test_context test_context{};
+  envoy_engine_callbacks callbacks{[](void* context) -> void {
+                                     auto* engine_running =
+                                         static_cast<engine_test_context*>(context);
+                                     engine_running->on_engine_running.Notify();
+                                   } /*on_engine_running*/,
+                                   [](void* context) -> void {
+                                     auto* exit = static_cast<engine_test_context*>(context);
+                                     exit->on_exit.Notify();
+                                   } /*on_exit*/,
+                                   &test_context /*context*/};
+  ASSERT_EQ(1, init_engine(callbacks));
 }
 
 TEST(MainInterfaceTest, PreferredNetwork) {
@@ -279,7 +294,8 @@ TEST(EngineTest, RecordCounter) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_counter_inc(0, "counter", 1));
-  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(callbacks);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   EXPECT_EQ(ENVOY_SUCCESS, record_counter_inc(0, "counter", 1));
 
@@ -300,7 +316,8 @@ TEST(EngineTest, SetGauge) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_set(0, "gauge", 1));
-  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(callbacks);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
@@ -324,7 +341,8 @@ TEST(EngineTest, AddToGauge) {
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_add(0, "gauge", 30));
 
-  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(callbacks);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   EXPECT_EQ(ENVOY_SUCCESS, record_gauge_add(0, "gauge", 30));
@@ -347,7 +365,8 @@ TEST(EngineTest, SubFromGauge) {
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_sub(0, "gauge", 30));
 
-  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(callbacks);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   record_gauge_add(0, "gauge", 30);
@@ -372,7 +391,8 @@ TEST(EngineTest, RecordHistogramValue) {
                                    &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_histogram_value(0, "histogram", 99, MILLISECONDS));
 
-  run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  init_engine(callbacks);
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   record_histogram_value(0, "histogram", 99, MILLISECONDS);

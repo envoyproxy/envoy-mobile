@@ -126,9 +126,10 @@ class JniLibrary {
   /**
    * Initialize an engine for handling network streams.
    *
+   * @param runninCallback, called when the engine finishes its async startup and begins running.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine();
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback);
 
   /**
    * External entry point for library.
@@ -136,11 +137,9 @@ class JniLibrary {
    * @param engine,          the engine to run.
    * @param config,          the configuration blob to run envoy with.
    * @param logLevel,        the logging level to run envoy with.
-   * @param onEngineRunning, called when the engine finishes its async startup and begins running.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel,
-                                        EnvoyOnEngineRunning onEngineRunning);
+  protected static native int runEngine(long engine, String config, String logLevel);
 
   // Other native methods
 

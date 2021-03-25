@@ -12,7 +12,8 @@ typedef struct {
   absl::Notification on_exit;
 } engine_test_context;
 
-TEST_F(EngineTest, EarlyExit) {
+// TODO(goaway): Early exit is not supported until we have non-singleton engines.
+TEST_F(EngineTest, DISABLED_EarlyExit) {
   const std::string config =
       "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\","
       "\"address\":{\"socket_address\":{\"protocol\":\"TCP\",\"address\":\"0.0.0.0\",\"port_"
@@ -41,7 +42,8 @@ TEST_F(EngineTest, EarlyExit) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
 
-  run_engine(0, callbacks, config.c_str(), level.c_str());
+  init_engine(callbacks);
+  run_engine(0, config.c_str(), level.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   terminate_engine(0);

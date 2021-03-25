@@ -306,21 +306,20 @@ extern const int kEnvoyFailure;
 
 /**
  Create a new instance of the engine.
+
+ @param onEngineRunning Closure called when the engine finishes its async startup and begins
+ running.
  */
-- (instancetype)init;
+- (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning;
 
 /**
  Run the Envoy engine with the provided configuration and log level.
 
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onEngineRunning Closure called when the engine finishes its async startup and begins
- running.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfig:(EnvoyConfiguration *)config
-            logLevel:(NSString *)logLevel
-     onEngineRunning:(nullable void (^)())onEngineRunning;
+- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.
@@ -328,14 +327,11 @@ extern const int kEnvoyFailure;
  @param yaml The configuration template with which to start Envoy.
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onEngineRunning Closure called when the engine finishes its async startup and begins
- running.
  @return A status indicating if the action was successful.
  */
 - (int)runWithTemplate:(NSString *)yaml
                 config:(EnvoyConfiguration *)config
-              logLevel:(NSString *)logLevel
-       onEngineRunning:(nullable void (^)())onEngineRunning;
+              logLevel:(NSString *)logLevel;
 
 /**
  Opens a new HTTP stream attached to this engine.
