@@ -14,6 +14,7 @@ import io.envoyproxy.envoymobile.Engine
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
+import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
@@ -49,8 +50,10 @@ class MainActivity : Activity() {
       .addPlatformFilter { BufferDemoFilter() }
       .addPlatformFilter { AsyncDemoFilter() }
       .addStringAccessor("demo-accessor", { "PlatformString" })
+      .addNativeFilter("envoy.filters.http.test_accessor", "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_accessor.TestAccessor\",\"accessor_name\":\"demo-accessor\",\"expected_string\":\"PlatformString\"}")
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
+      .addLogLevel(LogLevel.DEBUG)
       .build()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView
