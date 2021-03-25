@@ -25,6 +25,8 @@ using EngineCallbacksSharedPtr = std::shared_ptr<EngineCallbacks>;
 
 class Engine {
 public:
+  ~Engine();
+
   StreamClientSharedPtr stream_client();
   PulseClientSharedPtr pulse_client();
 
@@ -40,6 +42,7 @@ private:
   EngineCallbacksSharedPtr callbacks_;
   StreamClientSharedPtr stream_client_;
   PulseClientSharedPtr pulse_client_;
+  bool terminated_;
 };
 
 using EngineSharedPtr = std::shared_ptr<Engine>;
