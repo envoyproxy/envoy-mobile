@@ -12,11 +12,13 @@
 #include "extensions/filters/network/http_connection_manager/config.h"
 #include "extensions/stat_sinks/metrics_service/config.h"
 #include "extensions/transport_sockets/raw_buffer/config.h"
+#include "extensions/transport_sockets/tls/cert_validator/default_validator.h"
 #include "extensions/transport_sockets/tls/config.h"
 #include "extensions/upstreams/http/generic/config.h"
 
 #include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
+#include "library/common/extensions/filters/http/test_accessor/config.h"
 
 namespace Envoy {
 
@@ -31,11 +33,13 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::HttpFilters::LocalError::forceRegisterLocalErrorFilterFactory();
   Envoy::Extensions::HttpFilters::PlatformBridge::forceRegisterPlatformBridgeFilterFactory();
   Envoy::Extensions::HttpFilters::RouterFilter::forceRegisterRouterFilterConfig();
+  Envoy::Extensions::HttpFilters::TestAccessor::forceRegisterTestAccessorFilterFactory();
   Envoy::Extensions::NetworkFilters::HttpConnectionManager::
       forceRegisterHttpConnectionManagerFilterConfigFactory();
   Envoy::Extensions::StatSinks::MetricsService::forceRegisterMetricsServiceSinkFactory();
   Envoy::Extensions::TransportSockets::RawBuffer::forceRegisterUpstreamRawBufferSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
+  Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
 
