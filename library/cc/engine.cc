@@ -47,6 +47,9 @@ StreamClientSharedPtr Engine::stream_client() { return this->stream_client_; }
 PulseClientSharedPtr Engine::pulse_client() { return this->pulse_client_; }
 
 void Engine::terminate() {
+  if (this->terminated_) {
+    throw std::runtime_error("attempting to double terminate Engine");
+  }
   terminate_engine(this->engine_);
   this->terminated_ = true;
 }
