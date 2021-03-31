@@ -50,7 +50,7 @@ public final class DirectResponse: NSObject {
       \(self.resolvedMatchYAML())
                         direct_response:
                           status: \(self.status)
-                          body: \(self.body.map { "{ inline_string: \"\($0)\" }" } ?? "")
+                          body: \(self.body.map { "{ inline_string: '\($0)' }" } ?? "")
                         response_headers_to_add:
       \(formattedResponseHeaders)
       """
