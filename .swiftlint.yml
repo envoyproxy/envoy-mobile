@@ -86,6 +86,7 @@ whitelist_rules:
   - trailing_newline
   - trailing_semicolon
   - trailing_whitespace
+  - type_body_length
   - unavailable_function
   - unneeded_break_in_switch
   - unneeded_parentheses_in_closure_argument
