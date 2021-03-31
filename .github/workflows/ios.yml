@@ -30,7 +30,7 @@ jobs:
     name: mac_swift_helloworld
     needs: macdist
     runs-on: macOS-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v1
         with:
@@ -57,7 +57,7 @@ jobs:
     name: mac_objc_helloworld
     needs: macdist
     runs-on: macOS-latest
-    timeout-minutes: 45
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v1
         with:
