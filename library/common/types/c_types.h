@@ -112,6 +112,8 @@ typedef struct {
 // Multiple header values for the same header key are supported via a comma-delimited string.
 typedef envoy_map envoy_headers;
 
+typedef envoy_map envoy_stats_tags;
+
 #ifdef __cplusplus
 extern "C" { // utility functions
 #endif
@@ -138,6 +140,12 @@ void* safe_calloc(size_t count, size_t size);
 void release_envoy_headers(envoy_headers headers);
 
 /**
+ * Helper function to free/release memory associated with underlying stats_tags.
+ * @param headers, envoy_stats_tags to release.
+ */
+void release_envoy_stats_tags(envoy_stats_tags stats_tags);
+
+/**
  * Helper function to copy envoy_headers.
  * @param src, the envoy_headers to copy from.
  * @param envoy_headers, copied headers.
@@ -146,11 +154,10 @@ envoy_headers copy_envoy_headers(envoy_headers src);
 
 /**
  * Helper function to copy envoy_data.
- * @param length, the length of the data to copy.
- * @param src_bytes, the byte array to copy from.
+ * @param src, the envoy_data to copy from.
  * @return envoy_data, the envoy_data copied from the src.
  */
-envoy_data copy_envoy_data(size_t length, const uint8_t* src_bytes);
+envoy_data copy_envoy_data(envoy_data src);
 
 #ifdef __cplusplus
 } // utility functions
@@ -162,6 +169,9 @@ extern const envoy_data envoy_nodata;
 
 // Convenience constant to pass to function calls with no headers.
 extern const envoy_headers envoy_noheaders;
+
+// Convenience constant to pass to function calls with no tags.
+extern const envoy_stats_tags envoy_stats_notags;
 
 /*
  * Error struct.

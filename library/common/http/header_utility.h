@@ -10,16 +10,10 @@ namespace Http {
 namespace Utility {
 
 /**
- * Copy envoy_data into an std::string.
- * @param s the envoy_data to copy.
- * @return std::string the string constructed from s.
- */
-std::string convertToString(envoy_data s);
-
-/**
  * Transform envoy_headers to RequestHeaderMap.
  * This function copies the content.
- * @param headers, the envoy_headers to transform.
+ * @param headers, the envoy_headers to transform. headers is free'd. Use after function return is
+ * unsafe.
  * @return RequestHeaderMapPtr, the RequestHeaderMap 1:1 transformation of the headers param.
  */
 RequestHeaderMapPtr toRequestHeaders(envoy_headers headers);
@@ -27,7 +21,8 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers);
 /**
  * Transform envoy_headers to RequestHeaderMap.
  * This function copies the content.
- * @param trailers, the envoy_headers (trailers) to transform.
+ * @param trailers, the envoy_headers (trailers) to transform. headers is free'd. Use after function
+ * return is unsafe.
  * @return RequestTrailerMapPtr, the RequestTrailerMap 1:1 transformation of the headers param.
  */
 RequestTrailerMapPtr toRequestTrailers(envoy_headers trailers);
