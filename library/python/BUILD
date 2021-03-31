@@ -1,19 +1,8 @@
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@pip//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 
 licenses(["notice"])  # Apache 2
-
-py_binary(
-    name = "e2e_test",
-    srcs = ["e2e_test.py"],
-    data = [
-        ":envoy_engine.so",
-    ],
-    main = "e2e_test.py",
-    deps = [
-        "//library/python/gevent_util",
-    ],
-)
 
 pybind_library(
     name = "envoy_engine_lib",
@@ -47,4 +36,19 @@ pybind_extension(
         # for log levels enum
         "@envoy//source/common/common:base_logger_lib",
     ],
+)
+
+py_library(
+    name = "envoy_requests",
+    srcs = glob([
+        "envoy_requests/**/*.py",
+    ]),
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("gevent"),
+    ],
+    data = [
+        ":envoy_engine.so",
+    ],
+    imports = ["."],
 )

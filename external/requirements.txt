@@ -1,0 +1,5 @@
+gevent
+mypy
+pytest
+pytest-asyncio
+requests
