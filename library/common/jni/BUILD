@@ -46,9 +46,9 @@ cc_binary(
 cc_library(
         name = "java_log",
         srcs = [
-            "java_log_support.cc",
+            "java_jni_support.cc",
         ],
-        hdrs = ["log_support.h"],
+        hdrs = ["jni_support.h"],
         copts = ["-std=c++14"],
         linkopts = [
             "-lm",
@@ -59,9 +59,9 @@ cc_library(
 cc_library(
         name = "android_log",
         srcs = [
-            "ndk_log_support.cc",
+            "ndk_jni_support.cc",
         ],
-        hdrs = ["log_support.h"],
+        hdrs = ["jni_support.h"],
         copts = ["-std=c++14"],
         linkopts = [
             "-lm",
@@ -74,7 +74,7 @@ cc_library(
     srcs = [
         "jni_interface.cc",
     ],
-    hdrs = ["log_support.h"],
+    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
