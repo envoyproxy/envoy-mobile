@@ -14,6 +14,7 @@ envoy_cc_library(
     hdrs = [
         "jni_utility.h",
         "jni_version.h",
+        "jni_support.h",
     ],
     repository = "@envoy",
     deps = [
@@ -44,16 +45,21 @@ cc_binary(
 )
 
 cc_library(
-        name = "java_log",
-        srcs = [
-            "java_jni_support.cc",
-        ],
-        hdrs = ["jni_support.h"],
-        copts = ["-std=c++14"],
-        linkopts = [
-            "-lm",
-            "-llog",
-        ],
+    name = "java_log",
+    srcs = [
+        "java_jni_support.cc",
+        "@local_jdk//:jni_header",
+    ],
+    hdrs = ["jni_support.h"],
+    copts = ["-std=c++14"],
+    includes = [
+        "../../../external/local_jdk/include",
+        "../../../external/local_jdk/include/darwin",
+        "../../../external/local_jdk/include/linux",
+    ],
+    linkopts = [
+        "-lm",
+    ],
 )
 
 cc_library(
