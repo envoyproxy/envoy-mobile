@@ -70,7 +70,7 @@ cc_library(
 )
 
 cc_library(
-    name = "envoy_android_jni_lib",
+    name = "envoy_jni_lib",
     srcs = [
         "jni_interface.cc",
     ],
