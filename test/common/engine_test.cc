@@ -13,7 +13,7 @@ typedef struct {
 } engine_test_context;
 
 // TODO(goaway): Early exit is not supported until we have non-singleton engines.
-TEST_F(EngineTest, DISABLED_EarlyExit) {
+TEST_F(EngineTest, EarlyExit) {
   const std::string config =
       "{\"admin\":{},\"static_resources\":{\"listeners\":[{\"name\":\"base_api_listener\","
       "\"address\":{\"socket_address\":{\"protocol\":\"TCP\",\"address\":\"0.0.0.0\",\"port_"
