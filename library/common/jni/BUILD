@@ -36,8 +36,78 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
+        ":android_log",
         ":jni_utility_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
+    ],
+)
+
+cc_library(
+        name = "java_log",
+        srcs = [
+            "java_log_support.cc",
+        ],
+        hdrs = ["log_support.h"],
+        copts = ["-std=c++14"],
+        linkopts = [
+            "-lm",
+            "-llog",
+        ],
+)
+
+cc_library(
+        name = "android_log",
+        srcs = [
+            "ndk_log_support.cc",
+        ],
+        hdrs = ["log_support.h"],
+        copts = ["-std=c++14"],
+        linkopts = [
+            "-lm",
+            "-llog",
+        ],
+)
+
+cc_library(
+    name = "envoy_android_jni_lib",
+    srcs = [
+        "jni_interface.cc",
+    ],
+    hdrs = ["log_support.h"],
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+        "-llog",
+    ],
+    deps = [":envoy_main_interface_lib"],
+)
+
+cc_library(
+    name = "envoy_java_jni_lib",
+    srcs = [
+        "jni_interface.cc",
+        "jni_utility.cc",
+        "jni_version.cc",
+        "@local_jdk//:jni_header",
+    ],
+    hdrs = [
+        "jni_utility.h",
+        "jni_version.h",
+    ],
+    copts = ["-std=c++14"],
+    includes = [
+        "../../../external/local_jdk/include",
+        "../../../external/local_jdk/include/darwin",
+        "../../../external/local_jdk/include/linux",
+    ],
+    linkopts = [
+        "-lm",
+    ],
+    deps = [
+        "java_log",
+        "//library/common:envoy_main_interface_lib",
+        "//library/common/types:c_types_lib",
+        "@envoy//source/common/common:assert_lib",
     ],
 )
