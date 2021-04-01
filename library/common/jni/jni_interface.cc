@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "library/common/jni/jni_support.h"
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
 #include "library/common/jni/jni_version.h"
 #include "library/common/main_interface.h"

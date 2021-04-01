@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
 
 licenses(["notice"])  # Apache 2
@@ -12,9 +12,9 @@ envoy_cc_library(
         "jni_version.cc",
     ],
     hdrs = [
+        "jni_support.h",
         "jni_utility.h",
         "jni_version.h",
-        "jni_support.h",
     ],
     repository = "@envoy",
     deps = [
@@ -63,16 +63,16 @@ cc_library(
 )
 
 cc_library(
-        name = "android_log",
-        srcs = [
-            "ndk_jni_support.cc",
-        ],
-        hdrs = ["jni_support.h"],
-        copts = ["-std=c++14"],
-        linkopts = [
-            "-lm",
-            "-llog",
-        ],
+    name = "android_log",
+    srcs = [
+        "ndk_jni_support.cc",
+    ],
+    hdrs = ["jni_support.h"],
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+        "-llog",
+    ],
 )
 
 cc_library(

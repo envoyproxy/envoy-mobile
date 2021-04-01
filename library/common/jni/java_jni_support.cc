@@ -2,10 +2,8 @@
 
 // NOLINT(namespace-envoy)
 
-int jni_log(const char *tag,  const char *fmt, ...) {
-    return 0;
-}
+int jni_log(const char* tag, const char* fmt, ...) { return 0; }
 
-jint java_vm_attach_current_thread(JavaVM *vm, JNIEnv** p_env, void *thr_args) {
-    return vm->AttachCurrentThread(reinterpret_cast<void**>(p_env), thr_args);
+jint java_vm_attach_current_thread(JavaVM* vm, JNIEnv** p_env, void* thr_args) {
+  return vm->AttachCurrentThread(reinterpret_cast<void**>(p_env), thr_args);
 }
