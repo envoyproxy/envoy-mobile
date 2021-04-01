@@ -44,51 +44,7 @@ cc_binary(
     ],
 )
 
-cc_library(
-    name = "java_log",
-    srcs = [
-        "java_jni_support.cc",
-        "@local_jdk//:jni_header",
-    ],
-    hdrs = ["jni_support.h"],
-    copts = ["-std=c++14"],
-    includes = [
-        "../../../external/local_jdk/include",
-        "../../../external/local_jdk/include/darwin",
-        "../../../external/local_jdk/include/linux",
-    ],
-    linkopts = [
-        "-lm",
-    ],
-)
-
-cc_library(
-    name = "android_log",
-    srcs = [
-        "ndk_jni_support.cc",
-    ],
-    hdrs = ["jni_support.h"],
-    copts = ["-std=c++14"],
-    linkopts = [
-        "-lm",
-        "-llog",
-    ],
-)
-
-cc_library(
-    name = "envoy_jni_lib",
-    srcs = [
-        "jni_interface.cc",
-    ],
-    hdrs = ["jni_support.h"],
-    copts = ["-std=c++14"],
-    linkopts = [
-        "-lm",
-        "-llog",
-    ],
-    deps = [":envoy_main_interface_lib"],
-)
-
+# Java JNI library
 cc_library(
     name = "envoy_java_jni_lib",
     srcs = [
@@ -115,5 +71,38 @@ cc_library(
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
+    ],
+)
+
+# Utility implementation for Java JNI
+cc_library(
+    name = "java_log",
+    srcs = [
+        "java_jni_support.cc",
+        "@local_jdk//:jni_header",
+    ],
+    hdrs = ["jni_support.h"],
+    copts = ["-std=c++14"],
+    includes = [
+        "../../../external/local_jdk/include",
+        "../../../external/local_jdk/include/darwin",
+        "../../../external/local_jdk/include/linux",
+    ],
+    linkopts = [
+        "-lm",
+    ],
+)
+
+# Utility implementation for NDK JNI
+cc_library(
+    name = "android_log",
+    srcs = [
+        "ndk_jni_support.cc",
+    ],
+    hdrs = ["jni_support.h"],
+    copts = ["-std=c++14"],
+    linkopts = [
+        "-lm",
+        "-llog",
     ],
 )
