@@ -1,6 +1,6 @@
 package test.kotlin.io.envoyproxy.envoymobile.integration
 
-import io.envoyproxy.envoymobile.EngineBuilder
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 class FooTest {
@@ -8,10 +8,10 @@ class FooTest {
   @Test
   fun tst() {
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    println(System.getProperty("user.dir"))
     println(System.getProperty("java.library.path"))
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-    val engine = EngineBuilder().build()
-    engine.streamClient()
+    assertThat(Main().foo()).isEqualTo(42)
   }
 }

@@ -29,9 +29,11 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
 # A basic macro to make it easier to declare and run kotlin tests which depend on a JNI lib
 # This will create the native .so binary (for linux) and a .jnilib (for OS X) look up
 def envoy_mobile_jni_kt_test(name, srcs, lib = "", deps = []):
+    jnilib = "{}.jnilib".format(lib)
+    so_file = "{}.so".format(lib)
     # .so file
     native.cc_binary(
-        name = name + "_envoy_jni.so",
+        name = so_file,
         linkshared = 1,
         visibility = ["//visibility:public"],
         deps = [lib],
@@ -39,16 +41,16 @@ def envoy_mobile_jni_kt_test(name, srcs, lib = "", deps = []):
 
     # Generate .jnilib file for OS X look up
     native.genrule(
-        name = name + "_envoy_jni.jnilib",
+        name = jnilib,
         cmd = """
         cp $(location {src}) $@
-        """.format(src = name + "_envoy_jni.so"),
-        outs = ["libenvoy_jni.jnilib"],
-        srcs = [name + "_envoy_jni.so"],
+        """.format(src = so_file),
+        outs = ["lib"+jnilib],
+        srcs = [so_file],
         visibility = ["//visibility:public"],
     )
 
-    _internal_kt_test(name, srcs, deps, data = [name + "_envoy_jni.jnilib"], jvm_flags = ["-Djava.library.path=../.."])
+    _internal_kt_test(name, srcs, deps, data = [jnilib, so_file], jvm_flags = ["-Djava.library.path=../.."])
 
 # A basic macro to make it easier to declare and run kotlin tests
 #
