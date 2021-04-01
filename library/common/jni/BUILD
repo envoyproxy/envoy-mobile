@@ -58,11 +58,6 @@ cc_library(
         "jni_version.h",
     ],
     copts = ["-std=c++14"],
-    includes = [
-        "../../../external/local_jdk/include",
-        "../../../external/local_jdk/include/darwin",
-        "../../../external/local_jdk/include/linux",
-    ],
     linkopts = [
         "-lm",
     ],
@@ -70,6 +65,7 @@ cc_library(
         "java_log",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
+        "@bazel_tools//tools/jdk:jni",
         "@envoy//source/common/common:assert_lib",
     ],
 )
@@ -83,11 +79,7 @@ cc_library(
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
-    includes = [
-        "../../../external/local_jdk/include",
-        "../../../external/local_jdk/include/darwin",
-        "../../../external/local_jdk/include/linux",
-    ],
+    deps = ["@bazel_tools//tools/jdk:jni"],
     linkopts = [
         "-lm",
     ],
