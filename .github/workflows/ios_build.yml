@@ -32,7 +32,7 @@ jobs:
         name: 'Build Envoy.framework distributable'
   swifthelloworld:
     name: swift_helloworld
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: iosbuild
     runs-on: macOS-latest
     timeout-minutes: 15
     steps:
@@ -62,7 +62,7 @@ jobs:
         name: 'Log app run'
   objchelloworld:
     name: objc_helloworld
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: iosbuild
     runs-on: macOS-latest
     timeout-minutes: 15
     steps:
