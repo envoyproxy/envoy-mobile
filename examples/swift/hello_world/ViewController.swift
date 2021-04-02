@@ -16,7 +16,6 @@ final class ViewController: UITableViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-<<<<<<< HEAD
 
     let engine = EngineBuilder()
       .addPlatformFilter(factory: DemoFilter.init)
