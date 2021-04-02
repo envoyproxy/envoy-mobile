@@ -63,9 +63,9 @@ cc_library(
     ],
     deps = [
         "java_log",
+        "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
-        "@bazel_tools//tools/jdk:jni",
         "@envoy//source/common/common:assert_lib",
     ],
 )
