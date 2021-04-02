@@ -86,7 +86,7 @@ jobs:
       - run: bazelisk run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
         name: 'Run objective-c app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
-        if: ${{ failure() || cancelled() }}
         name: 'Check connectivity'
       - run: cat /tmp/envoy.log
+        if: ${{ failure() || cancelled() }}
         name: 'Log app run'
