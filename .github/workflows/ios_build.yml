@@ -1,0 +1,28 @@
+name: ios_build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  iosbuild:
+    name: ios_build
+    runs-on: macOS-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/mac_ci_setup.sh
+      - name: 'Build Envoy.framework distributable'
+        run: bazelisk build --config=ios //:ios_dist
+      - name: 'Zip Envoy.framework.zip distributable'
+        run: zip -r dist/Envoy.framework.zip dist/Envoy.framework
+      - run: ls -lh dist/
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Envoy.framework.zip
+          path: dist/Envoy.framework.zip
