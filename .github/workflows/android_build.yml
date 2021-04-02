@@ -21,6 +21,9 @@ jobs:
           key: aar-${{ github.sha }}
           path: dist/envoy.aar
         name: 'Check cache'
+      - run: echo "Found envoy.aar from previous run!"
+        if: steps.check-cache.outputs.cache-hit == 'true'
+        name: 'Build cache hit'
       - uses: actions/setup-java@v1
         if: steps.check-cache.outputs.cache-hit != 'true'
         with:
@@ -33,9 +36,6 @@ jobs:
       - run: bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build envoy.aar distributable'
-      - run: echo "Found envoy.aar from previous run!"
-        if: steps.check-cache.outputs.cache-hit == 'true'
-        name: 'Cache hit'
   javahelloworld:
     name: java_helloworld
     needs: androidbuild
@@ -60,7 +60,7 @@ jobs:
         name: 'Download aar'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Failed to locate aar'
+        name: 'Short-circuit'
       #- run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
@@ -98,7 +98,7 @@ jobs:
         name: 'Download aar'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Failed to locate aar'
+        name: 'Short-circuit'
       #- run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
