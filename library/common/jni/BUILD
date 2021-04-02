@@ -46,7 +46,7 @@ cc_binary(
 
 # Java JNI library
 cc_library(
-    name = "envoy_java_jni_lib",
+    name = "java_jni_lib",
     srcs = [
         "jni_interface.cc",
         "jni_utility.cc",
