@@ -79,10 +79,10 @@ cc_library(
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
-    deps = ["@bazel_tools//tools/jdk:jni"],
     linkopts = [
         "-lm",
     ],
+    deps = ["@bazel_tools//tools/jdk:jni"],
 )
 
 # Utility implementation for NDK JNI
