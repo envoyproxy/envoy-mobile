@@ -22,7 +22,7 @@ namespace Envoy {
 class MobileMainCommon {
 public:
   MobileMainCommon(int argc, const char* const* argv,
-                   absl::optional<Logger::LambdaDelegate::FlushCb> flush_cb);
+                   absl::optional<Logger::LambdaDelegate::LogCb> log_cb);
   bool run() { return base_.run(); }
 
   /**

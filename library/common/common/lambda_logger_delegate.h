@@ -12,8 +12,10 @@ namespace Logger {
 
 class LambdaDelegate : public SinkDelegate {
 public:
-  using FlushCb = std::function<void(std::string)>;
-  LambdaDelegate(FlushCb flush_callback, DelegatingLogSinkSharedPtr log_sink);
+  using LogCb = std::function<void(absl::string_view)>;
+  using FlushCb = std::function<void()>;
+
+  LambdaDelegate(LogCb log_callback, FlushCb flush_callback, DelegatingLogSinkSharedPtr log_sink);
   ~LambdaDelegate() override;
 
   // SinkDelegate
@@ -22,8 +24,8 @@ public:
 
 private:
   Thread::MutexBasicLockable mutex_;
-  FlushCb flush_callback_;
-  std::string to_flush_ ABSL_GUARDED_BY(mutex_);
+  LogCb log_callback_ ABSL_GUARDED_BY(mutex_);
+  FlushCb flush_callback_ ABSL_GUARDED_BY(mutex_);
 };
 
 } // namespace Logger

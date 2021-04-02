@@ -45,11 +45,11 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
                                   nullptr};
 
       // FIXME: only set if c callback exists.
-      auto flush_cb = [this](std::string msg) -> void {
+      auto log_cb = [this](absl::string_view msg) -> void {
         callbacks_.on_log(Data::Utility::copyToBridgeData(msg), callbacks_.context);
       };
 
-      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv, flush_cb);
+      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv, log_cb);
       event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
