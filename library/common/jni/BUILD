@@ -12,12 +12,12 @@ envoy_cc_library(
         "jni_version.cc",
     ],
     hdrs = [
+        "jni_support.h",
         "jni_utility.h",
         "jni_version.h",
     ],
     repository = "@envoy",
     deps = [
-        ":ndk_jni_support",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ],
@@ -37,6 +37,7 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
+        ":ndk_jni_support",
         ":jni_utility_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
