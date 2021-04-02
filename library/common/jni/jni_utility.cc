@@ -26,7 +26,7 @@ JNIEnv* get_env() {
   if (result == JNI_EDETACHED) {
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
     JavaVMAttachArgs args = {JNI_VERSION, "EnvoyMain", NULL};
-    result = java_vm_attach_current_thread(static_jvm, &local_env, &args);
+    result = attach_jvm(static_jvm, &local_env, &args);
   }
   // TODO(goaway): add assertions and uncomment
   // ASSERT(result == JNI_OK);

@@ -72,7 +72,7 @@ cc_library(
 
 # Utility implementation for Java JNI
 cc_library(
-    name = "java_log",
+    name = "java_jni_support",
     srcs = [
         "java_jni_support.cc",
         "@local_jdk//:jni_header",
@@ -82,7 +82,7 @@ cc_library(
     linkopts = [
         "-lm",
     ],
-    deps = ["@bazel_tools//tools/jdk:jni"],
+    deps = ["//bazel:jni",],
 )
 
 # Utility implementation for NDK JNI
