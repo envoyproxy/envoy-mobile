@@ -37,7 +37,7 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
-        ":android_log",
+        ":ndk_jni_support",
         ":jni_utility_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
@@ -62,7 +62,7 @@ cc_library(
         "-lm",
     ],
     deps = [
-        "java_log",
+        ":java_jni_support",
         "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
@@ -87,7 +87,7 @@ cc_library(
 
 # Utility implementation for NDK JNI
 cc_library(
-    name = "android_log",
+    name = "ndk_jni_support",
     srcs = [
         "ndk_jni_support.cc",
     ],
