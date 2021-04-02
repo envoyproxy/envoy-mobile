@@ -21,7 +21,8 @@ namespace Envoy {
  */
 class MobileMainCommon {
 public:
-  MobileMainCommon(int argc, const char* const* argv);
+  MobileMainCommon(int argc, const char* const* argv,
+                   absl::optional<Logger::LambdaDelegate::FlushCb> flush_cb);
   bool run() { return base_.run(); }
 
   /**
@@ -36,7 +37,7 @@ private:
   DefaultListenerHooks default_listener_hooks_;
   ProdComponentFactory prod_component_factory_;
   MainCommonBase base_;
-  // std::unique_ptr<Logger::LambdaDelegate> lambda_logger_{};
+  std::unique_ptr<Logger::LambdaDelegate> lambda_logger_{};
 };
 
 } // namespace Envoy

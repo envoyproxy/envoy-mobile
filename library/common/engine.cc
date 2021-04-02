@@ -4,6 +4,7 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
@@ -43,7 +44,12 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
                                   log_level.c_str(),
                                   nullptr};
 
-      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
+      // FIXME: only set if c callback exists.
+      auto flush_cb = [this](std::string msg) -> void {
+        callbacks_.on_log(Data::Utility::copyToBridgeData(msg), callbacks_.context);
+      };
+
+      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv, flush_cb);
       event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {

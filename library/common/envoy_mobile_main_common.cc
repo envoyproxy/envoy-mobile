@@ -6,7 +6,8 @@
 
 namespace Envoy {
 
-MobileMainCommon::MobileMainCommon(int argc, const char* const* argv)
+MobileMainCommon::MobileMainCommon(int argc, const char* const* argv,
+                                   absl::optional<Logger::LambdaDelegate::FlushCb> flush_cb_)
     : options_(argc, argv, &MainCommon::hotRestartVersion, spdlog::level::info),
       base_(options_, real_time_system_, default_listener_hooks_, prod_component_factory_,
             std::make_unique<PlatformImpl>(), std::make_unique<Random::RandomGeneratorImpl>(),
@@ -20,9 +21,10 @@ MobileMainCommon::MobileMainCommon(int argc, const char* const* argv)
   // https://github.com/lyft/envoy-mobile/blob/a72a51e64543882ea05fba3c76178b5784d39cdc/library/common/engine.cc#L105.
   options_.setSignalHandling(false);
 
-  // lambda_logger_ = std::make_unique<Logger::LambdaDelegate>([](std::string flushed_string) -> void {
-  //   std::cerr << "IN LAMBDA 1" << flushed_string << "IN LAMBDA 2" << std::endl;
-  // }, Logger::Registry::getSink());
+  if (flush_cb_) {
+    lambda_logger_ =
+        std::make_unique<Logger::LambdaDelegate>(flush_cb_.value(), Logger::Registry::getSink());
+  }
 }
 
 } // namespace Envoy

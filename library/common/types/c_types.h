@@ -285,6 +285,8 @@ typedef void (*envoy_on_exit_f)(void* context);
  */
 typedef void (*envoy_on_engine_running_f)(void* context);
 
+typedef void (*envoy_on_log_f)(envoy_data data, void* context);
+
 #ifdef __cplusplus
 } // function pointers
 #endif
@@ -310,6 +312,7 @@ typedef struct {
 typedef struct {
   envoy_on_engine_running_f on_engine_running;
   envoy_on_exit_f on_exit;
+  envoy_on_log_f on_log;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
 } envoy_engine_callbacks;

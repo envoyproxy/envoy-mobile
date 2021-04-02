@@ -21,9 +21,9 @@ public:
   void flush() override;
 
 private:
-  // Thread::MutexBasicLockable mutex_;
+  Thread::MutexBasicLockable mutex_;
   FlushCb flush_callback_;
-  std::string to_flush_; // ABSL_GUARDED_BY(mutex_);
+  std::string to_flush_ ABSL_GUARDED_BY(mutex_);
 };
 
 } // namespace Logger

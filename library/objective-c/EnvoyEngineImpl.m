@@ -21,6 +21,8 @@ static void ios_on_exit(void *context) {
   NSLog(@"[Envoy] library is exiting");
 }
 
+static void ios_on_log(envoy_data data, void *context) { NSLog(@"NSLog: %@", to_ios_string(data)); }
+
 static const void *ios_http_filter_init(const void *context) {
   envoy_http_filter *c_filter = (envoy_http_filter *)context;
   EnvoyHTTPFilterFactory *filterFactory =
@@ -396,7 +398,7 @@ static envoy_data ios_get_string(const void *context) {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit,
+    envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit, ios_on_log,
                                                (__bridge void *)(self)};
     return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
                            logLevel.UTF8String);
