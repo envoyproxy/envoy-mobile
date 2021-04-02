@@ -61,7 +61,6 @@ jobs:
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Short-circuit'
-      #- run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
       # Return to using:
@@ -99,7 +98,6 @@ jobs:
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Short-circuit'
-      #- run: ls -lh dist/
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
       # Return to using:
