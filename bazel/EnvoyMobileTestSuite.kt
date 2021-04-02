@@ -21,7 +21,6 @@ import org.junit.runner.RunWith
 object EnvoyMobileTestSuite {
   private const val TEST_SUFFIX = "Test"
   private const val CLASS_SUFFIX = ".class"
-  private const val ENVOY_MOBILE_PACKAGE = "io.envoyproxy.envoymobile"
 
   @JvmStatic
   fun suite(): TestSuite {
@@ -58,7 +57,7 @@ object EnvoyMobileTestSuite {
         if (entryName.endsWith(CLASS_SUFFIX)) {
           val classNameEnd = entryName.length - CLASS_SUFFIX.length
           val resolvedClass = entryName.substring(0, classNameEnd).replace('/', '.')
-          if (resolvedClass.contains(ENVOY_MOBILE_PACKAGE) && resolvedClass.endsWith(TEST_SUFFIX)) {
+          if (resolvedClass.endsWith(TEST_SUFFIX)) {
             classNames.add(resolvedClass)
           }
         }

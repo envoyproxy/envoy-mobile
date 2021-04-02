@@ -5,9 +5,10 @@ public class App {
         System.loadLibrary("native");
     }
 
+    // For running as main
     public static void main(String[] args) {
         f(123);
     }
 
-    private static native void f(int x);
+    public static native int f(int x);
 }
