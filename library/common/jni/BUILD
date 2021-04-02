@@ -12,7 +12,6 @@ envoy_cc_library(
         "jni_version.cc",
     ],
     hdrs = [
-        "jni_support.h",
         "jni_utility.h",
         "jni_version.h",
     ],
@@ -77,7 +76,6 @@ cc_library(
         "java_jni_support.cc",
         "@local_jdk//:jni_header",
     ],
-    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
@@ -91,7 +89,6 @@ cc_library(
     srcs = [
         "ndk_jni_support.cc",
     ],
-    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
