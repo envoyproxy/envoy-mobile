@@ -11,6 +11,8 @@
 #include "server/listener_hooks.h"
 #include "server/options_impl.h"
 
+#include "library/common/common/lambda_logger_delegate.h"
+
 namespace Envoy {
 
 /**
@@ -34,6 +36,7 @@ private:
   DefaultListenerHooks default_listener_hooks_;
   ProdComponentFactory prod_component_factory_;
   MainCommonBase base_;
+  // std::unique_ptr<Logger::LambdaDelegate> lambda_logger_{};
 };
 
 } // namespace Envoy

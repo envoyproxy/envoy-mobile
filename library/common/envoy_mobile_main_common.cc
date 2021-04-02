@@ -1,5 +1,6 @@
 #include "library/common/envoy_mobile_main_common.h"
 
+#include "common/common/logger.h"
 #include "common/common/random_generator.h"
 #include "common/runtime/runtime_impl.h"
 
@@ -18,6 +19,10 @@ MobileMainCommon::MobileMainCommon(int argc, const char* const* argv)
   // likely that the event loop will only exit due to Engine destruction
   // https://github.com/lyft/envoy-mobile/blob/a72a51e64543882ea05fba3c76178b5784d39cdc/library/common/engine.cc#L105.
   options_.setSignalHandling(false);
+
+  // lambda_logger_ = std::make_unique<Logger::LambdaDelegate>([](std::string flushed_string) -> void {
+  //   std::cerr << "IN LAMBDA 1" << flushed_string << "IN LAMBDA 2" << std::endl;
+  // }, Logger::Registry::getSink());
 }
 
 } // namespace Envoy

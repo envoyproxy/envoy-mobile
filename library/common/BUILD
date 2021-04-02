@@ -42,6 +42,8 @@ envoy_cc_library(
     hdrs = ["envoy_mobile_main_common.h"],
     repository = "@envoy",
     deps = [
+        "//library/common/common:lambda_logger_delegate_lib",
+        "@envoy//source/common/common:minimal_logger_lib",
         "@envoy//source/common/common:random_generator_lib",
         "@envoy//source/common/runtime:runtime_lib",
         "@envoy//source/exe:main_common_lib",
