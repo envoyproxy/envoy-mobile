@@ -37,8 +37,8 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
-        ":ndk_jni_support",
         ":jni_utility_lib",
+        ":ndk_jni_support",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
     ],
@@ -77,6 +77,7 @@ cc_library(
         "java_jni_support.cc",
         "@local_jdk//:jni_header",
     ],
+    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
@@ -90,6 +91,7 @@ cc_library(
     srcs = [
         "ndk_jni_support.cc",
     ],
+    hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
