@@ -12,6 +12,7 @@ envoy_cc_library(
         "jni_version.cc",
     ],
     hdrs = [
+        "jni_support.h",
         "jni_utility.h",
         "jni_version.h",
     ],
