@@ -8,7 +8,7 @@ on:
 
 jobs:
   swifttests:
-    name: swift_tests
+    name: swift_tests_new
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
