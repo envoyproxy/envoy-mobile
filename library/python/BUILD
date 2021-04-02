@@ -1,4 +1,5 @@
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 
 licenses(["notice"])  # Apache 2
@@ -47,4 +48,20 @@ pybind_extension(
         # for log levels enum
         "@envoy//source/common/common:base_logger_lib",
     ],
+)
+
+py_wheel(
+    name = "envoy_engine_whl",
+    distribution = "envoy_engine",
+    version = "0.0.1",
+    # TODO: parametrize these by toolchain + platform:
+    #   - python_tag + abi = version of python used during build
+    #   - platform = select({ ... }) of targets
+    python_tag = "cp39",
+    abi = "cp39",
+    platform = "macosx_10_15_x86_64",
+    deps = [
+        ":envoy_engine.so",
+    ],
+    strip_path_prefixes = ["library/python"],
 )
