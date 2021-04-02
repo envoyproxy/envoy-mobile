@@ -2,9 +2,13 @@ name: android_build
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    tags:
+      - v*
+#on:
+#  push:
+#    branches:
+#      - main
+#  pull_request:
 
 jobs:
   androidbuild:

@@ -1,11 +1,14 @@
 name: ios
 
+#on:
+#  push:
+#    branches:
+#      - main
+#  pull_request:
 on:
   push:
-    branches:
-      - main
-  pull_request:
-
+    tags:
+      - v*
 jobs:
   macdist:
     name: mac_dist
