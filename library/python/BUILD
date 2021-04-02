@@ -56,10 +56,17 @@ py_wheel(
     version = "0.0.1",
     # TODO: parametrize these by toolchain + platform:
     #   - python_tag + abi = version of python used during build
-    #   - platform = select({ ... }) of targets
     python_tag = "cp39",
     abi = "cp39",
-    platform = "macosx_10_15_x86_64",
+    platform = select({
+        "@bazel_tools//src/conditions:darwin_arm64": "macos_10_9_aarch64",
+        # TODO: figure out why my x86_64 processor isn't picked up by
+        # x86_64
+        "@bazel_tools//src/conditions:darwin_x86_64": "macos_10_9_x86_64",
+        "@bazel_tools//src/conditions:darwin": "macos_10_9_x86_64",
+        "@bazel_tools//src/conditions:linux_aarch64": "manylinux2014_aarch64",
+        "@bazel_tools//src/conditions:linux_x86_64": "manylinux2014_x86_64",
+    }),
     deps = [
         ":envoy_engine.so",
     ],
