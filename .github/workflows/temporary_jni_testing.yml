@@ -20,6 +20,6 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-      - run: bazel test --test_output=all //test:app_test
+      - run: export CMAKE_GENERATOR=Ninja; bazel test --test_output=all //test:app_test
         name: 'Run JNI example test'
 
