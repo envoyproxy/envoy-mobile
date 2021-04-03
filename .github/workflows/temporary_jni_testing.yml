@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  jniexample:
-    name: jni_tests
+  jni_test_example:
+    name: jni_test
     runs-on: ubuntu-18.04
     timeout-minutes: 90
     steps:
@@ -22,4 +22,18 @@ jobs:
           architecture: x64
       - run: bazel test --test_output=all //test:app_test
         name: 'Run JNI example test'
-
+  jni_app:
+    name: jni_app
+    runs-on: ubuntu-18.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: bazel run //test:app_test
+        name: 'Run JNI example test'

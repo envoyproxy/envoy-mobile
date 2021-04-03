@@ -4,7 +4,10 @@ object App {
   // For running as main
   @JvmStatic
   fun main(args: Array<String>) {
-    f(123)
+    val f = f(123)
+    if (f != 123) {
+      throw RuntimeException()
+    }
   }
 
   external fun f(x: Int): Int
