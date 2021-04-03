@@ -9,7 +9,7 @@ on:
 jobs:
   jniexample:
     name: jni_tests
-    runs-on: macOS-latest
+    runs-on: ubuntu-18.04
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v1
@@ -20,6 +20,6 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-      - run: export CMAKE_GENERATOR=Ninja; bazel test --test_output=all //test:app_test
+      - run: bazel test --test_output=all //test:app_test
         name: 'Run JNI example test'
 
