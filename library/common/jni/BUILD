@@ -6,7 +6,7 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
-    name = "jni_utility_lib",
+    name = "ndk_jni_utility_lib",
     srcs = [
         "jni_utility.cc",
         "jni_version.cc",
@@ -18,6 +18,26 @@ envoy_cc_library(
     ],
     repository = "@envoy",
     deps = [
+        ":ndk_jni_support",
+        "//library/common/types:c_types_lib",
+        "@envoy//source/common/common:assert_lib",
+    ],
+)
+
+envoy_cc_library(
+    name = "java_jni_utility_lib",
+    srcs = [
+        "jni_utility.cc",
+        "jni_version.cc",
+    ],
+    hdrs = [
+        "jni_support.h",
+        "jni_utility.h",
+        "jni_version.h",
+    ],
+    repository = "@envoy",
+    deps = [
+        ":java_jni_support",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ],
@@ -37,32 +57,21 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
-        ":jni_utility_lib",
-        ":ndk_jni_support",
+        ":ndk_jni_utility_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
     ],
 )
 
 # Java JNI library
-cc_library(
-    name = "java_jni_lib",
+cc_binary(
+    name = "java_jni_lib.so",
     srcs = [
         "jni_interface.cc",
-        "jni_utility.cc",
-        "jni_version.cc",
-        "@local_jdk//:jni_header",
     ],
-    hdrs = [
-        "jni_utility.h",
-        "jni_version.h",
-    ],
-    copts = ["-std=c++14"],
-    linkopts = [
-        "-lm",
-    ],
+    linkshared = 1,
     deps = [
-        ":java_jni_support",
+        ":java_jni_utility_lib",
         "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",

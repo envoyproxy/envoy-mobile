@@ -1,17 +1,14 @@
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test", "kt_jvm_library")
 
-java_binary(
+kt_jvm_library(
   name = "app",
-  srcs = ["App.java"],
-  main_class = 'test.App',
-  data = [":libnative.so", ":libnative.jnilib"],
-  jvm_flags = ["-Djava.library.path=test"],
+  srcs = ["App.kt"],
 )
 
 genrule(
-    name = "libnative.jnilib",
-    outs = ["libnative.jnilib"],
-    srcs = ["libnative.so"],
+    name = "java_jni_lib.jnilib",
+    outs = ["libenvoy_jni.jnilib"],
+    srcs = ["//library/common/jni:java_jni_lib.so"],
     cmd = """
     cp -f $< $@
     """
@@ -26,11 +23,11 @@ cc_binary(
 
 kt_jvm_test(
     name = "app_test",
-    srcs = ["AppTest.kt", "App.java"],
-    data = [":libnative.so", ":libnative.jnilib"],
+    srcs = ["AppTest.kt"],
+    data = ["//library/common/jni:java_jni_lib.so", "java_jni_lib.jnilib"],
     test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
     deps = [
-        "app",
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//bazel:envoy_mobile_test_suite",
         "@maven//:org_assertj_assertj_core",
         "@maven//:junit_junit",
