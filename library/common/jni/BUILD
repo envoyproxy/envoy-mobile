@@ -65,7 +65,7 @@ cc_binary(
 
 # Java JNI library
 cc_binary(
-    name = "java_jni_lib.so",
+    name = "java_libenvoy_jni.so",
     srcs = [
         "jni_interface.cc",
     ],

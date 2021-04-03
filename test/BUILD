@@ -8,7 +8,7 @@ kt_jvm_library(
 genrule(
     name = "java_jni_lib.jnilib",
     outs = ["libenvoy_jni.jnilib"],
-    srcs = ["//library/common/jni:java_jni_lib.so"],
+    srcs = ["//library/common/jni:java_libenvoy_jni.so"],
     cmd = """
     cp -f $< $@
     """
@@ -24,7 +24,7 @@ cc_binary(
 kt_jvm_test(
     name = "app_test",
     srcs = ["AppTest.kt"],
-    data = ["//library/common/jni:java_jni_lib.so", "java_jni_lib.jnilib"],
+    data = ["//library/common/jni:java_libenvoy_jni.so", "java_jni_lib.jnilib"],
     test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
