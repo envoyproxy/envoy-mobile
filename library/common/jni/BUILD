@@ -84,7 +84,7 @@ cc_library(
     name = "java_jni_support",
     srcs = [
         "java_jni_support.cc",
-        "@local_jdk//:jni_header",
+        "@bazel_tools//tools/jdk:current_java_runtime",
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
