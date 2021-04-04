@@ -1,6 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
-load("@rules_python//python:packaging.bzl", "py_package", "py_wheel")
+load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
+load("@python_version//:version.bzl", "python_abi")
 
 licenses(["notice"])  # Apache 2
 
@@ -56,8 +57,8 @@ py_wheel(
     version = "0.0.1",
     # TODO: parametrize these by toolchain + platform:
     #   - python_tag + abi = version of python used during build
-    python_tag = "cp39",
-    abi = "cp39",
+    python_tag = python_abi(),
+    abi = python_abi(),
     platform = select({
         "@bazel_tools//src/conditions:darwin_arm64": "macos_10_9_aarch64",
         # TODO: figure out why my x86_64 processor isn't picked up by
