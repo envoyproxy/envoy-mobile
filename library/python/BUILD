@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@python_abi//:abi.bzl", "python_abi")
@@ -53,12 +53,8 @@ pybind_extension(
 
 py_wheel(
     name = "envoy_engine_whl",
-    distribution = "envoy_engine",
-    version = "0.0.1",
-    # TODO: parametrize these by toolchain + platform:
-    #   - python_tag + abi = version of python used during build
-    python_tag = python_abi(),
     abi = python_abi(),
+    distribution = "envoy_engine",
     platform = select({
         "@bazel_tools//src/conditions:darwin_arm64": "macos_10_9_aarch64",
         # TODO: figure out why my x86_64 processor isn't picked up by
@@ -68,8 +64,10 @@ py_wheel(
         "@bazel_tools//src/conditions:linux_aarch64": "manylinux2014_aarch64",
         "@bazel_tools//src/conditions:linux_x86_64": "manylinux2014_x86_64",
     }),
+    python_tag = python_abi(),
+    strip_path_prefixes = ["library/python"],
+    version = "0.0.1",
     deps = [
         ":envoy_engine.so",
     ],
-    strip_path_prefixes = ["library/python"],
 )

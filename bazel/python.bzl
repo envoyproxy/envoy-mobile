@@ -1,17 +1,12 @@
-load("@rules_python//python:packaging.bzl", "py_wheel")
-
-
 abi_bzl_template = """\
 def python_abi():
     return "{python_abi}"
 """
 
-
 # we reuse the PYTHON_BIN_PATH environment variable from pybind11 so that the
 # ABI tag we detect is always compatible with the version of python that was
 # used for the build
 _PYTHON_BIN_PATH_ENV = "PYTHON_BIN_PATH"
-
 
 def _get_python_bin(rctx):
     python_version = rctx.attr.python_version
@@ -28,7 +23,6 @@ def _get_python_bin(rctx):
 
     fail("cannot find python binary")
 
-
 def _get_python_abi(rctx, python_bin):
     result = rctx.execute([
         python_bin,
@@ -44,12 +38,12 @@ def _declare_python_abi_impl(rctx):
     python_bin = _get_python_bin(rctx)
     python_abi = _get_python_abi(rctx, python_bin)
     rctx.file("BUILD")
-    rctx.file("abi.bzl", abi_bzl_template.format(python_abi=python_abi))
+    rctx.file("abi.bzl", abi_bzl_template.format(python_abi = python_abi))
 
 declare_python_abi = repository_rule(
     implementation = _declare_python_abi_impl,
     attrs = {
-        "python_version": attr.string(mandatory=True),
+        "python_version": attr.string(mandatory = True),
     },
     local = True,
 )
