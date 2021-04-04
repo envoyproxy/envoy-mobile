@@ -40,8 +40,8 @@ envoy_mobile_toolchains()
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 python_configure(name = "local_config_python", python_version = "3")
 
-load("//bazel:python.bzl", "declare_python_version")
-declare_python_version(name = "python_version", python_version = "3")
+load("//bazel:python.bzl", "declare_python_abi")
+declare_python_abi(name = "python_abi", python_version = "3")
 
 # Note: proguard is failing for API 30+
 android_sdk_repository(name = "androidsdk", api_level = 29)

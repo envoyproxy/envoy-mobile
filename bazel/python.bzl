@@ -1,44 +1,32 @@
 load("@rules_python//python:packaging.bzl", "py_wheel")
 
 
-version_bzl_template = """\
+abi_bzl_template = """\
 def python_abi():
     return "{python_abi}"
 """
 
 
-# python binary detection shamelessly stolen from pybind11
-# https://github.com/pybind/pybind11_bazel/blob/26973c0ff320cb4b39e45bc3e4297b82bc3a6c09/python_configure.bzl#L155-L171
-# so that we have the same python version + detect the same ABI
-#
-# TODO(crockeo): roll our own / unify python version detection
-_PYTHON_BIN_PATH = "PYTHON_BIN_PATH"
+# we reuse the PYTHON_BIN_PATH environment variable from pybind11 so that the
+# ABI tag we detect is always compatible with the version of python that was
+# used for the build
+_PYTHON_BIN_PATH_ENV = "PYTHON_BIN_PATH"
 
 
-def _fail(msg):
-    """Output failure message when auto configuration fails."""
-    red = "\033[0;31m"
-    no_color = "\033[0m"
-    fail("%sPython Configuration Error:%s %s\n" % (red, no_color, msg))
+def _get_python_bin(rctx):
+    python_version = rctx.attr.python_version
+    if python_version != "2" and python_version != "3":
+        fail("python_version must be one of: '2', '3'")
 
-
-def _get_python_bin(repository_ctx):
-    """Gets the python bin path."""
-    python_bin = repository_ctx.os.environ.get(_PYTHON_BIN_PATH)
+    python_bin = rctx.os.environ.get(_PYTHON_BIN_PATH_ENV)
     if python_bin != None:
         return python_bin
 
-    python_short_name = "python" + repository_ctx.attr.python_version
-    python_bin_path = repository_ctx.which(python_short_name)
+    python_bin = rctx.which("python" + python_version)
+    if python_bin != None:
+        return python_bin
 
-    if python_bin_path != None:
-        return str(python_bin_path)
-    _fail("Cannot find python in PATH, please make sure " +
-          "python is installed and add its directory in PATH, or --define " +
-          "%s='/something/else'.\nPATH=%s" % (
-              _PYTHON_BIN_PATH,
-              repository_ctx.os.environ.get("PATH", ""),
-          ))
+    fail("cannot find python binary")
 
 
 def _get_python_abi(rctx, python_bin):
@@ -52,14 +40,14 @@ def _get_python_abi(rctx, python_bin):
     ])
     return result.stdout.splitlines()[0]
 
-def _declare_python_version_impl(rctx):
+def _declare_python_abi_impl(rctx):
     python_bin = _get_python_bin(rctx)
     python_abi = _get_python_abi(rctx, python_bin)
     rctx.file("BUILD")
-    rctx.file("version.bzl", version_bzl_template.format(python_abi=python_abi))
+    rctx.file("abi.bzl", abi_bzl_template.format(python_abi=python_abi))
 
-declare_python_version = repository_rule(
-    implementation = _declare_python_version_impl,
+declare_python_abi = repository_rule(
+    implementation = _declare_python_abi_impl,
     attrs = {
         "python_version": attr.string(mandatory=True),
     },
