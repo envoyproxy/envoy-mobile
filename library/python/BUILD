@@ -56,13 +56,13 @@ py_wheel(
     abi = python_abi(),
     distribution = "envoy_engine",
     platform = select({
-        "@bazel_tools//src/conditions:darwin_arm64": "macos_10_9_aarch64",
-        # TODO: figure out why my x86_64 processor isn't picked up by
-        # x86_64
-        "@bazel_tools//src/conditions:darwin_x86_64": "macos_10_9_x86_64",
-        "@bazel_tools//src/conditions:darwin": "macos_10_9_x86_64",
-        "@bazel_tools//src/conditions:linux_aarch64": "manylinux2014_aarch64",
-        "@bazel_tools//src/conditions:linux_x86_64": "manylinux2014_x86_64",
+        # TODO: build these on target platforms / architectures to verify
+        # that this select statement is correct
+        "//bazel:darwin_arm64": "macos_10_9_aarch64",
+        "//bazel:darwin_x86_64": "macos_10_9_x86_64",
+        "//bazel:darwin": "macos_10_9_x86_64",
+        "//bazel:linux_aarch64": "manylinux2014_aarch64",
+        "//bazel:linux_x86_64": "manylinux2014_x86_64",
     }),
     python_tag = python_abi(),
     strip_path_prefixes = ["library/python"],
