@@ -3,6 +3,7 @@ import pytest
 from envoy_requests import asyncio
 from envoy_requests import gevent
 from envoy_requests.response import Response
+from library.python.envoy_requests import threading
 
 
 METHODS = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"]
@@ -19,6 +20,23 @@ def test_request_gevent(http_server_url: str, method: str):
 @pytest.mark.parametrize("method", METHODS)
 def test_method_func_gevent(http_server_url: str, method: str):
     method_func = getattr(gevent, method.lower())
+    response = method_func(http_server_url)
+    assert_valid_response(response)
+    if method != "HEAD":
+        assert response.json().get("method") == method
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_request_threading(http_server_url: str, method: str):
+    response = threading.request(method, http_server_url)
+    assert_valid_response(response)
+    if method != "HEAD":
+        assert response.json().get("method") == method
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_method_func_threading(http_server_url: str, method: str):
+    method_func = getattr(threading, method.lower())
     response = method_func(http_server_url)
     assert_valid_response(response)
     if method != "HEAD":

@@ -85,3 +85,16 @@ class AsyncioExecutor(Executor):
             self.loop.call_soon_threadsafe(fn, *args, **kwargs)
 
         return cast(_Func, wrapper)
+
+
+class ThreadingExecutor(Executor):
+    def __init__(self):
+        self.lock = threading.Lock()
+
+    def wrap(self, fn: _Func) -> _Func:
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            with self.lock:
+                fn(*args, **kwargs)
+
+        return cast(_Func, wrapper)
