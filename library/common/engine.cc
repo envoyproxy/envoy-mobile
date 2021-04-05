@@ -49,7 +49,11 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
         callbacks_.on_log(Data::Utility::copyToBridgeData(msg), callbacks_.context);
       };
 
-      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv, log_cb);
+      if (callbacks_.on_log) {
+        main_common_ = std::make_unique<MobileMainCommon>(7, envoy_argv, log_cb);
+      } else {
+        main_common_ = std::make_unique<MobileMainCommon>(7, envoy_argv, absl::nullopt);
+      }
       event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
