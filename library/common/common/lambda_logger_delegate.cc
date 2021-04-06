@@ -13,13 +13,9 @@ LambdaDelegate::LambdaDelegate(LogCb log_callback, FlushCb flush_callback,
 
 LambdaDelegate::~LambdaDelegate() { restoreDelegate(); }
 
-void LambdaDelegate::log(absl::string_view msg) {
-  log_callback_(msg);
-}
+void LambdaDelegate::log(absl::string_view msg) { log_callback_(msg); }
 
-void LambdaDelegate::flush() {
-  flush_callback_();
-}
+void LambdaDelegate::flush() { flush_callback_(); }
 
 } // namespace Logger
 } // namespace Envoy
