@@ -9,19 +9,17 @@ namespace Envoy {
 namespace Logger {
 
 TEST(LambdaDelegate, LogCb) {
-  uint i{0};
   std::string expected_msg = "Hello LambdaDelegate";
+  std::string actual_msg;
 
   LambdaDelegate delegate = LambdaDelegate(
-      [&i, &expected_msg](absl::string_view msg) -> void {
-        EXPECT_THAT(msg, HasSubstr(expected_msg));
-        i++;
+      [&actual_msg](absl::string_view msg) -> void {
+        actual_msg = msg;
       },
       []() -> void {}, Registry::getSink());
 
-  EXPECT_EQ(i, 0U);
   ENVOY_LOG_MISC(error, expected_msg);
-  EXPECT_EQ(i, 1U);
+  EXPECT_THAT(actual_msg, HasSubstr(expected_msg));
 }
 
 TEST(LambdaDelegate, FlushCb) {
