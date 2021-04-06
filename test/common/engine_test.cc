@@ -39,9 +39,9 @@ TEST_F(EngineTest, EarlyExit) {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
-                                   nullptr /*on_log*/, &test_context /*context*/};
+                                   &test_context /*context*/};
 
-  run_engine(0, callbacks, config.c_str(), level.c_str());
+  run_engine(0, callbacks, {}, config.c_str(), level.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   terminate_engine(0);

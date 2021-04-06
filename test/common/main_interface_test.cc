@@ -73,7 +73,7 @@ TEST(MainInterfaceTest, BasicStream) {
                                       auto* exit = static_cast<engine_test_context*>(context);
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
-                                    nullptr /*on_log*/, &engine_cbs_context /*context*/};
+                                    &engine_cbs_context /*context*/};
   run_engine(0, engine_cbs, config.c_str(), level.c_str());
 
   ASSERT_TRUE(
@@ -134,7 +134,7 @@ TEST(MainInterfaceTest, SendMetadata) {
                                       auto* exit = static_cast<engine_test_context*>(context);
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
-                                    nullptr /*on_log*/, &engine_cbs_context /*context*/};
+                                    &engine_cbs_context /*context*/};
 
   // There is nothing functional about the config used to run the engine, as the created stream is
   // only used for send_metadata.
@@ -170,7 +170,7 @@ TEST(MainInterfaceTest, ResetStream) {
                                       auto* exit = static_cast<engine_test_context*>(context);
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
-                                    nullptr /*on_log*/, &engine_cbs_context /*context*/};
+                                    &engine_cbs_context /*context*/};
 
   // There is nothing functional about the config used to run the engine, as the created stream is
   // immediately reset.
@@ -241,7 +241,7 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
                                       auto* exit = static_cast<engine_test_context*>(context);
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
-                                    nullptr /*on_log*/, &engine_cbs_context /*context*/};
+                                    &engine_cbs_context /*context*/};
 
   // Using the minimal envoy mobile config that allows for running the engine.
   run_engine(0, engine_cbs, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
@@ -277,7 +277,7 @@ TEST(EngineTest, RecordCounter) {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
-                                   nullptr /*on_log*/, &test_context /*context*/};
+                                   &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_counter_inc(0, "counter", envoy_stats_notags, 1));
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
@@ -298,7 +298,7 @@ TEST(EngineTest, SetGauge) {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
-                                   nullptr /*on_log*/, &test_context /*context*/};
+                                   &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_set(0, "gauge", envoy_stats_notags, 1));
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
@@ -321,7 +321,7 @@ TEST(EngineTest, AddToGauge) {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
-                                   nullptr /*on_log*/, &test_context /*context*/};
+                                   &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_add(0, "gauge", envoy_stats_notags, 30));
 
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
@@ -344,7 +344,7 @@ TEST(EngineTest, SubFromGauge) {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
-                                   nullptr /*on_log*/, &test_context /*context*/};
+                                   &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_sub(0, "gauge", envoy_stats_notags, 30));
 
   run_engine(0, callbacks, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
@@ -369,7 +369,7 @@ TEST(EngineTest, RecordHistogramValue) {
                                      auto* exit = static_cast<engine_test_context*>(context);
                                      exit->on_exit.Notify();
                                    } /*on_exit*/,
-                                   nullptr /*on_log*/, &test_context /*context*/};
+                                   &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE,
             record_histogram_value(0, "histogram", envoy_stats_notags, 99, MILLISECONDS));
 
