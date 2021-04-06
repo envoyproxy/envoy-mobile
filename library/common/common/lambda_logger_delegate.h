@@ -3,7 +3,6 @@
 #include <string>
 
 #include "common/common/logger.h"
-#include "common/common/thread.h"
 
 #include "absl/strings/string_view.h"
 
@@ -23,9 +22,8 @@ public:
   void flush() override;
 
 private:
-  Thread::MutexBasicLockable mutex_;
-  LogCb log_callback_ ABSL_GUARDED_BY(mutex_);
-  FlushCb flush_callback_ ABSL_GUARDED_BY(mutex_);
+  LogCb log_callback_;
+  FlushCb flush_callback_;
 };
 
 using LambdaDelegatePtr = std::unique_ptr<LambdaDelegate>;
