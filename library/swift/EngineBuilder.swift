@@ -48,6 +48,7 @@ public final class EngineBuilder: NSObject {
   /// - parameter statsDomain: the domain to use.
   ///
   /// - returns: This builder.
+  @discardableResult
   public func addStatsDomain(_ statsDomain: String) -> EngineBuilder {
     self.statsDomain = statsDomain
     return self
@@ -58,6 +59,7 @@ public final class EngineBuilder: NSObject {
   /// - parameter logLevel: The log level to use with Envoy.
   ///
   /// - returns: This builder.
+  @discardableResult
   public func addLogLevel(_ logLevel: LogLevel) -> EngineBuilder {
     self.logLevel = logLevel
     return self
