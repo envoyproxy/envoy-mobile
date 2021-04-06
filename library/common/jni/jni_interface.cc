@@ -606,14 +606,14 @@ static const void* jvm_http_filter_init(const void* context) {
   envoy_http_filter* c_filter = static_cast<envoy_http_filter*>(const_cast<void*>(context));
   jobject j_context = static_cast<jobject>(const_cast<void*>(c_filter->static_context));
 
-  jni_log("[Envoy]", "j_context: %p", j_context);
+  jni_log_fmt("[Envoy]", "j_context: %p", j_context);
 
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
   jmethodID jmid_create = env->GetMethodID(jcls_JvmFilterFactoryContext, "create",
                                            "()Lio/envoyproxy/envoymobile/engine/JvmFilterContext;");
 
   jobject j_filter = env->CallObjectMethod(j_context, jmid_create);
-  jni_log("[Envoy]", "j_filter: %p", j_filter);
+  jni_log_fmt("[Envoy]", "j_filter: %p", j_filter);
   jobject retained_filter = env->NewGlobalRef(j_filter);
 
   env->DeleteLocalRef(jcls_JvmFilterFactoryContext);
@@ -681,10 +681,10 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* e
   // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
   jni_log("[Envoy]", "registerFilterFactory");
-  jni_log("[Envoy]", "j_context: %p", j_context);
+  jni_log_fmt("[Envoy]", "j_context: %p", j_context);
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
   jobject retained_context = env->NewGlobalRef(j_context);
-  jni_log("[Envoy]", "retained_context: %p", retained_context);
+  jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
   envoy_http_filter* api = (envoy_http_filter*)safe_malloc(sizeof(envoy_http_filter));
   api->init_filter = jvm_http_filter_init;
   api->on_request_headers = jvm_http_filter_on_request_headers;
