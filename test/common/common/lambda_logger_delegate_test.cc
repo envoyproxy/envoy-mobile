@@ -12,11 +12,9 @@ TEST(LambdaDelegate, LogCb) {
   std::string expected_msg = "Hello LambdaDelegate";
   std::string actual_msg;
 
-  LambdaDelegate delegate = LambdaDelegate(
-      [&actual_msg](absl::string_view msg) -> void {
-        actual_msg = msg;
-      },
-      []() -> void {}, Registry::getSink());
+  LambdaDelegate delegate =
+      LambdaDelegate([&actual_msg](absl::string_view msg) -> void { actual_msg = msg; },
+                     []() -> void {}, Registry::getSink());
 
   ENVOY_LOG_MISC(error, expected_msg);
   EXPECT_THAT(actual_msg, HasSubstr(expected_msg));
