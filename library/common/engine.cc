@@ -4,13 +4,15 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
 
-Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
+Engine::Engine(envoy_engine_callbacks callbacks, envoy_logging_callbacks logging_callbacks,
+               const char* config, const char* log_level,
                std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks) {
+    : callbacks_(callbacks), logging_callbacks_(logging_callbacks) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
@@ -42,9 +44,29 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
                                              log_flag.c_str(),
                                              log_level.c_str(),
                                              nullptr};
-
       main_common_ = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
+
       event_dispatcher_ = &main_common_->server()->dispatcher();
+
+      if (logging_callbacks_.on_log || logging_callbacks_.on_flush) {
+        Logger::LambdaDelegate::LogCb log_cb = [](absl::string_view) -> void {};
+        if (logging_callbacks_.on_log) {
+          log_cb = [this](absl::string_view msg) -> void {
+            logging_callbacks_.on_log(Data::Utility::copyToBridgeData(msg),
+                                      logging_callbacks_.context);
+          };
+        }
+
+        Logger::LambdaDelegate::FlushCb flush_cb = []() -> void {};
+        if (logging_callbacks_.on_flush) {
+          flush_cb = [this]() -> void { logging_callbacks_.on_flush(logging_callbacks_.context); };
+        }
+
+        // TODO(junr03): wire up after https://github.com/envoyproxy/envoy-mobile/pull/1354 merges.
+        // lambda_logger_ =
+        //     std::make_unique<Logger::LambdaDelegate>(log_cb, flush_cb, Logger::Registry::getSink());
+      }
+
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
