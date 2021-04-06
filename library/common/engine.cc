@@ -64,7 +64,8 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
 
         // TODO(junr03): wire up after https://github.com/envoyproxy/envoy-mobile/pull/1354 merges.
         // lambda_logger_ =
-        //     std::make_unique<Logger::LambdaDelegate>(log_cb, flush_cb, Logger::Registry::getSink());
+        //     std::make_unique<Logger::LambdaDelegate>(log_cb, flush_cb,
+        //     Logger::Registry::getSink());
       }
 
       cv_.notifyAll();
