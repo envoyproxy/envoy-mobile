@@ -24,6 +24,7 @@ public final class EngineBuilder: NSObject {
   private var virtualClusters: String = "[]"
   private var onEngineRunning: (() -> Void)?
   private var onEngineLog: ((String) -> Void)?
+  private var onEngineFlush: (() -> Void)?
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
@@ -170,7 +171,7 @@ public final class EngineBuilder: NSObject {
     return self
   }
 
-  /// Set a closure to be called when the engine logs.
+  /// Set a closure to be called when the engine's logger logs.
   ///
   /// - parameter closure: The closure to be called.
   ///
@@ -178,6 +179,17 @@ public final class EngineBuilder: NSObject {
   @discardableResult
   public func setonEngineLog(closure: @escaping (String) -> Void) -> EngineBuilder {
     self.onEngineLog = closure
+    return self
+  }
+
+  /// Set a closure to be called when the engine's logger flushes.
+  ///
+  /// - parameter closure: The closure to be called.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func setonEngineFlush(closure: @escaping () -> Void) -> EngineBuilder {
+    self.onEngineFlush = closure
     return self
   }
 
@@ -236,10 +248,10 @@ public final class EngineBuilder: NSObject {
     switch self.base {
     case .custom(let yaml):
       return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, engine: engine,
-                        onEngineRunning: self.onEngineRunning, onEngineLog: self.onEngineLog)
+                        onEngineRunning: self.onEngineRunning, onEngineLog: self.onEngineLog, onEngineFlush: self.onEngineFlush)
     case .standard:
       return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
-                        onEngineRunning: self.onEngineRunning, onEngineLog: self.onEngineLog)
+                        onEngineRunning: self.onEngineRunning, onEngineLog: self.onEngineLog, onEngineFlush: self.onEngineFlush)
     }
   }
 

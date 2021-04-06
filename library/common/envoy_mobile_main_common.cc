@@ -6,8 +6,7 @@
 
 namespace Envoy {
 
-MobileMainCommon::MobileMainCommon(int argc, const char* const* argv,
-                                   absl::optional<Logger::LambdaDelegate::LogCb> log_cb_)
+MobileMainCommon::MobileMainCommon(int argc, const char* const* argv)
     : options_(argc, argv, &MainCommon::hotRestartVersion, spdlog::level::info),
       base_(options_, real_time_system_, default_listener_hooks_, prod_component_factory_,
             std::make_unique<PlatformImpl>(), std::make_unique<Random::RandomGeneratorImpl>(),
@@ -20,12 +19,6 @@ MobileMainCommon::MobileMainCommon(int argc, const char* const* argv,
   // likely that the event loop will only exit due to Engine destruction
   // https://github.com/lyft/envoy-mobile/blob/a72a51e64543882ea05fba3c76178b5784d39cdc/library/common/engine.cc#L105.
   options_.setSignalHandling(false);
-
-  // FIXME: pipe flush_cb
-  if (log_cb_) {
-    lambda_logger_ = std::make_unique<Logger::LambdaDelegate>(
-        log_cb_.value(), []() -> void {}, Logger::Registry::getSink());
-  }
 }
 
 } // namespace Envoy

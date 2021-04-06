@@ -28,5 +28,7 @@ private:
   FlushCb flush_callback_ ABSL_GUARDED_BY(mutex_);
 };
 
+using LambdaDelegatePtr = std::unique_ptr<LambdaDelegate>;
+
 } // namespace Logger
 } // namespace Envoy

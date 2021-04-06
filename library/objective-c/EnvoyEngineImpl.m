@@ -28,6 +28,13 @@ static void ios_on_log(envoy_data data, void *context) {
   }
 }
 
+static void ios_on_flush(void *context) {
+  EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
+  if (engineImpl.onEngineFlush) {
+    engineImpl.onEngineFlush();
+  }
+}
+
 static const void *ios_http_filter_init(const void *context) {
   envoy_http_filter *c_filter = (envoy_http_filter *)context;
   EnvoyHTTPFilterFactory *filterFactory =
@@ -357,7 +364,8 @@ static envoy_data ios_get_string(const void *context) {
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
      onEngineRunning:(nullable void (^)())onEngineRunning
-         onEngineLog:(nullable void (^)(NSString *))onEngineLog {
+         onEngineLog:(nullable void (^)(NSString *))onEngineLog
+       onEngineFlush:(nullable void (^)())onEngineFlush {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -375,14 +383,16 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML
                         logLevel:logLevel
                  onEngineRunning:onEngineRunning
-                     onEngineLog:onEngineLog];
+                     onEngineLog:onEngineLog
+                   onEngineFlush:onEngineFlush];
 }
 
 - (int)runWithTemplate:(NSString *)yaml
                 config:(EnvoyConfiguration *)config
               logLevel:(NSString *)logLevel
        onEngineRunning:(nullable void (^)())onEngineRunning
-           onEngineLog:(nullable void (^)(NSString *))onEngineLog {
+           onEngineLog:(nullable void (^)(NSString *))onEngineLog
+         onEngineFlush:(nullable void (^)())onEngineFlush {
   NSString *resolvedYAML = [config resolveTemplate:yaml];
   if (resolvedYAML == nil) {
     return kEnvoyFailure;
@@ -399,29 +409,40 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML
                         logLevel:logLevel
                  onEngineRunning:onEngineRunning
-                     onEngineLog:onEngineLog];
+                     onEngineLog:onEngineLog
+                   onEngineFlush:onEngineFlush];
 }
 
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
          onEngineRunning:(nullable void (^)())onEngineRunning
-             onEngineLog:(nullable void (^)(NSString *))onEngineLog {
+             onEngineLog:(nullable void (^)(NSString *))onEngineLog
+           onEngineFlush:(nullable void (^)())onEngineFlush {
   self.onEngineRunning = onEngineRunning;
   self.onEngineLog = onEngineLog;
+  self.onEngineFlush = onEngineFlush;
+
   [self startObservingLifecycleNotifications];
 
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit, ios_on_log,
+    envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit,
                                                (__bridge void *)(self)};
 
+    envoy_logging_callbacks native_logging_callbacks = {ios_on_log, ios_on_flush,
+                                                        (__bridge void *)(self)};
+
     if (!self.onEngineLog) {
-      native_callbacks.on_log = NULL;
+      native_logging_callbacks.on_log = NULL;
     }
 
-    return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
-                           logLevel.UTF8String);
+    if (!self.onEngineFlush) {
+      native_logging_callbacks.on_flush = NULL;
+    }
+
+    return (int)run_engine(_engineHandle, native_callbacks, native_logging_callbacks,
+                           configYAML.UTF8String, logLevel.UTF8String);
   } @catch (NSException *exception) {
     NSLog(@"[Envoy] exception caught: %@", exception);
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyError" object:self];
