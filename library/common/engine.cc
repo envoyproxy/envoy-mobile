@@ -44,7 +44,17 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
                                              log_level.c_str(),
                                              nullptr};
 
-      main_common_ = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
+      // FIXME: only set if c callback exists.
+      auto log_cb = [this](absl::string_view msg) -> void {
+        callbacks_.on_log(Data::Utility::copyToBridgeData(msg), callbacks_.context);
+      };
+
+      if (callbacks_.on_log) {
+        main_common_ = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data(), log_cb);
+      } else {
+        main_common_ = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data(), absl::nullopt);
+      }
+
       event_dispatcher_ = &main_common_->server()->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
