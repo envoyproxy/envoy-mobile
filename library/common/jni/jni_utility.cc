@@ -115,32 +115,7 @@ envoy_data* buffer_to_native_data_ptr(JNIEnv* env, jobject j_data) {
 }
 
 envoy_headers to_native_headers(JNIEnv* env, jobjectArray headers) {
-  // Note that headers is a flattened array of key/value pairs.
-  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_map_entry.
-  envoy_map_size_t length = env->GetArrayLength(headers);
-  if (length == 0) {
-    return envoy_noheaders;
-  }
-
-  envoy_map_entry* header_array =
-      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * length / 2));
-
-  for (envoy_map_size_t i = 0; i < length; i += 2) {
-    // Copy native byte array for header key
-    jbyteArray j_key = static_cast<jbyteArray>(env->GetObjectArrayElement(headers, i));
-    envoy_data header_key = array_to_native_data(env, j_key);
-
-    // Copy native byte array for header value
-    jbyteArray j_value = static_cast<jbyteArray>(env->GetObjectArrayElement(headers, i + 1));
-    envoy_data header_value = array_to_native_data(env, j_value);
-
-    header_array[i / 2] = {header_key, header_value};
-    env->DeleteLocalRef(j_key);
-    env->DeleteLocalRef(j_value);
-  }
-
-  envoy_headers native_headers = {length / 2, header_array};
-  return native_headers;
+  return to_envoy_data(env, headers);
 }
 
 envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers) {
@@ -158,33 +133,33 @@ envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers) {
   return native_headers;
 }
 
-void to_tag_arr(JNIEnv* env, jobject tags, const char** tag_arr[2], int len) {
-  jclass java_util_ArrayList =
-      static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
-  jmethodID java_util_ArrayList_get =
-      env->GetMethodID(java_util_ArrayList, "get", "(I)Ljava/lang/Object;");
-  for (jint i = 0; i < len; i++) {
-    jobject tagObject = env->CallObjectMethod(tags, java_util_ArrayList_get, i);
-    jclass pairClass = env->GetObjectClass(tagObject);
-    jfieldID keyFid = env->GetFieldID(pairClass, "key", "Ljava/lang/String;");
-    jfieldID valueFid = env->GetFieldID(pairClass, "value", "Ljava/lang/String;");
-    jstring key = static_cast<jstring>(env->GetObjectField(tagObject, keyFid));
-    jstring value = static_cast<jstring>(env->GetObjectField(tagObject, valueFid));
-    const char* keyChar = env->GetStringUTFChars(key, nullptr);
-    const char* valueChar = env->GetStringUTFChars(value, nullptr);
-    tag_arr[i][0] = keyChar;
-    tag_arr[i][1] = valueChar;
-    env->ReleaseStringUTFChars(key, keyChar);
-    env->ReleaseStringUTFChars(value, valueChar);
-    env->DeleteLocalRef(key);
-    env->DeleteLocalRef(value);
-  }
-}
+envoy_stats_tags to_native_tags(JNIEnv* env, jobjectArray tags) { return to_envoy_data(env, tags); }
 
-int get_list_size(JNIEnv* env, jobject listObject) {
-  jclass java_util_ArrayList =
-      static_cast<jclass>(env->NewGlobalRef(env->FindClass("java/util/ArrayList")));
-  int len = static_cast<int>(
-      env->CallIntMethod(listObject, env->GetMethodID(java_util_ArrayList, "size", "()I")));
-  return len;
+envoy_map to_envoy_data(JNIEnv* env, jobjectArray jobjArray) {
+  // Note that headers is a flattened array of key/value pairs.
+  // Therefore, the length of the native header array is n envoy_data or n/2 envoy_map_entry.
+  envoy_map_size_t length = env->GetArrayLength(jobjArray);
+  if (length == 0) {
+    return {0, NULL};
+  }
+
+  envoy_map_entry* data_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * length / 2));
+
+  for (envoy_map_size_t i = 0; i < length; i += 2) {
+    // Copy native byte array for header key
+    jbyteArray j_key = static_cast<jbyteArray>(env->GetObjectArrayElement(jobjArray, i));
+    envoy_data data_key = array_to_native_data(env, j_key);
+
+    // Copy native byte array for header value
+    jbyteArray j_value = static_cast<jbyteArray>(env->GetObjectArrayElement(jobjArray, i + 1));
+    envoy_data data_value = array_to_native_data(env, j_value);
+
+    data_array[i / 2] = {data_key, data_value};
+    env->DeleteLocalRef(j_key);
+    env->DeleteLocalRef(j_value);
+  }
+
+  envoy_map native_map = {length / 2, data_array};
+  return native_map;
 }
