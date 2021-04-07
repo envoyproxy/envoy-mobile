@@ -1,4 +1,5 @@
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 licenses(["notice"])  # Apache 2
 
@@ -100,4 +101,20 @@ genrule(
         --editorconfig=$(location //:editor_config)
     """,
     tools = ["@kotlin_formatter//file"],
+)
+
+cc_library(
+    name = "jni_headers",
+    srcs = [
+        "@local_jdk//:jni_header",
+        "@local_jdk//:jni_md_header-linux",
+    ],
+    includes = [
+        "external/local_jdk/include",
+        "external/local_jdk/include/linux",
+    ],
+    linkstatic = 1,
+    visibility = [
+        "//visibility:public",
+    ],
 )

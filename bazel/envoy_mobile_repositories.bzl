@@ -122,6 +122,12 @@ def kotlin_repos():
         urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
     )
 
+    http_archive(
+        name = "robolectric",
+        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.4.tar.gz"],
+        strip_prefix = "robolectric-bazel-4.4",
+    )
+
     # Dokka 0.10.0 introduced a bug which makes the CLI tool error out:
     # https://github.com/Kotlin/dokka/issues/942
     http_jar(

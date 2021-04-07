@@ -1,5 +1,9 @@
+#ifndef UNIT_TEST
 #include <android/log.h>
 #include <ares.h>
+#else
+#include "library/common/jni/android_log.h"
+#endif
 #include <jni.h>
 
 #include "library/common/jni/jni_utility.h"
@@ -13,6 +17,7 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jclass, // class
                                                                    jobject connectivity_manager) {
+#ifndef UNIT_TEST
   // See note above about c-ares.
   // c-ares jvm init is necessary in order to let c-ares perform DNS resolution in Envoy.
   // More information can be found at:
@@ -20,6 +25,9 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
   ares_library_init_jvm(get_vm());
 
   return ares_library_init_android(connectivity_manager);
+#else
+  return 0;
+#endif
 }
 
 extern "C" JNIEXPORT jint JNICALL

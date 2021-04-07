@@ -1,5 +1,8 @@
+#ifndef UNIT_TEST
 #include <android/log.h>
-#include <ares.h>
+#else
+#include "library/common/jni/android_log.h"
+#endif
 #include <jni.h>
 
 #include <string>
