@@ -2,17 +2,21 @@
 
 #include <iostream>
 
+#include "library/common/data/utility.h"
+
 namespace Envoy {
 namespace Logger {
 
-LambdaDelegate::LambdaDelegate(LogCb log_callback, DelegatingLogSinkSharedPtr log_sink)
-    : SinkDelegate(log_sink), log_callback_(log_callback) {
+LambdaDelegate::LambdaDelegate(envoy_logger logger, DelegatingLogSinkSharedPtr log_sink)
+    : SinkDelegate(log_sink), logger_(logger) {
   setDelegate();
 }
 
 LambdaDelegate::~LambdaDelegate() { restoreDelegate(); }
 
-void LambdaDelegate::log(absl::string_view msg) { log_callback_(msg); }
+void LambdaDelegate::log(absl::string_view msg) {
+  logger_.log(Data::Utility::copyToBridgeData(msg), logger_.context);
+}
 
 } // namespace Logger
 } // namespace Envoy

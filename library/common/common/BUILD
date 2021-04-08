@@ -10,6 +10,8 @@ envoy_cc_library(
     hdrs = ["lambda_logger_delegate.h"],
     repository = "@envoy",
     deps = [
+        "//library/common/data:utility_lib",
+        "//library/common/types:c_types_lib",
         "@envoy//source/common/common:macros",
         "@envoy//source/common/common:minimal_logger_lib",
     ],
