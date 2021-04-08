@@ -11,8 +11,8 @@ from urllib.parse import urlparse
 
 import envoy_engine
 
-from envoy_requests.common.executor import Executor
-from envoy_requests.response import Response
+from ..response import Response
+from .executor import Executor
 
 
 Data = Optional[Union[bytes, str, Dict[str, Any], List[Tuple[str, Any]]]]

@@ -1,5 +1,4 @@
 import atexit
-from functools import lru_cache
 from threading import Event
 from typing import Optional
 
