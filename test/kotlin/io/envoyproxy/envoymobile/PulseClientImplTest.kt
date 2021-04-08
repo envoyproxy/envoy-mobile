@@ -2,13 +2,13 @@ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
 import org.junit.Before
+import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
-import org.mockito.MockitoAnnotations
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
+import org.mockito.MockitoAnnotations
 
 class PulseClientImplTest {
   private var envoyEngine: EnvoyEngine = mock(EnvoyEngine::class.java)
@@ -30,7 +30,8 @@ class PulseClientImplTest {
     val countCaptor = ArgumentCaptor.forClass(Int::class.java)
     // val tagsCaptor = ArgumentCaptor.forClass(MutableMap::class.java)
     verify(envoyEngine).recordCounterInc(
-      elementsCaptor.capture(), tagsCaptor.capture(), countCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), countCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(countCaptor.getValue()).isEqualTo(1)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
@@ -43,9 +44,9 @@ class PulseClientImplTest {
     counter.increment(5)
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val countCaptor = ArgumentCaptor.forClass(Int::class.java)
-    //val tagsCaptor = ArgumentCaptor.forClass(MutableMap::class.java)
     verify(envoyEngine).recordCounterInc(
-      elementsCaptor.capture(), tagsCaptor.capture(), countCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), countCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(countCaptor.getValue()).isEqualTo(5)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
@@ -59,7 +60,8 @@ class PulseClientImplTest {
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
     verify(envoyEngine).recordGaugeSet(
-      elementsCaptor.capture(), tagsCaptor.capture(), valueCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), valueCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(valueCaptor.getValue()).isEqualTo(5)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
@@ -73,7 +75,8 @@ class PulseClientImplTest {
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val amountCaptor = ArgumentCaptor.forClass(Int::class.java)
     verify(envoyEngine).recordGaugeAdd(
-      elementsCaptor.capture(), tagsCaptor.capture(), amountCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), amountCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(amountCaptor.getValue()).isEqualTo(5)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
@@ -88,7 +91,8 @@ class PulseClientImplTest {
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val amountCaptor = ArgumentCaptor.forClass(Int::class.java)
     verify(envoyEngine).recordGaugeSub(
-      elementsCaptor.capture(), tagsCaptor.capture(), amountCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), amountCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(amountCaptor.getValue()).isEqualTo(5)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
@@ -104,7 +108,8 @@ class PulseClientImplTest {
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val durationCaptor = ArgumentCaptor.forClass(Int::class.java)
     verify(envoyEngine).recordHistogramDuration(
-      elementsCaptor.capture(), tagsCaptor.capture(), durationCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), durationCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(durationCaptor.getValue()).isEqualTo(5)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
@@ -120,7 +125,8 @@ class PulseClientImplTest {
     val elementsCaptor = ArgumentCaptor.forClass(String::class.java)
     val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
     verify(envoyEngine).recordHistogramValue(
-      elementsCaptor.capture(), tagsCaptor.capture(), valueCaptor.capture())
+      elementsCaptor.capture(), tagsCaptor.capture(), valueCaptor.capture()
+    )
     assertThat(elementsCaptor.getValue()).isEqualTo("test.stat")
     assertThat(valueCaptor.getValue()).isEqualTo(5)
     assertThat(tagsCaptor.getValue().size).isEqualTo(0)
