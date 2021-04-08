@@ -9,7 +9,4 @@ py_test(
         "//library/python:envoy_engine.so",
     ],
     main = "test_send_headers.py",
-    deps = [
-        "//library/python/gevent_util",
-    ],
 )
