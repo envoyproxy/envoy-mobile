@@ -68,16 +68,16 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "faefb7080338aeebf77e0387cc768bf9064f1b4708685fc5da83973ca9fc720d",
+        sha256 = "84f34c95e68f65618b54c545f75e2df73559af47fb42ae28b17189fcebb7ed17",
         strip_prefix = "rules_apple-0.31.1",
-        url = "https://github.com/bazelbuild/rules_apple/archive/0.31.1.tar.gz",
+        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.31.1/rules_apple.0.31.1.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
         sha256 = "a525d254b0323380b7abe7cbbe03534167f0fcb45f44f7d16cdd4d7d057b8f8d",
         strip_prefix = "rules_swift-0.20.0",
-        url = "https://github.com/bazelbuild/rules_swift/archive/0.20.0.tar.gz",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.20.0/rules_swift.0.20.0.tar.gz",
     )
 
 def kotlin_repos():
