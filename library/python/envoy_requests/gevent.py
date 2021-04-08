@@ -1,10 +1,23 @@
+import functools
+import threading
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Generic
+from typing import List
+from typing import Tuple
+from typing import TypeVar
+from typing import cast
+
+import gevent
+from gevent import Group
 from gevent.event import Event
 
-from envoy_requests.common.core import make_stream
-from envoy_requests.common.core import send_request
-from envoy_requests.common.engine import Engine
-from envoy_requests.common.executor import GeventExecutor
-from envoy_requests.response import Response
+from .common.core import make_stream
+from .common.core import send_request
+from .common.engine import Engine
+from .common.executor import Executor
+from .response import Response
 
 
 # TODO: add better typing to this (and functions that use it)
@@ -50,3 +63,55 @@ def put(*args, **kwargs) -> Response:
 
 def trace(*args, **kwargs) -> Response:
     return request("trace", *args, **kwargs)
+
+
+T = TypeVar("T")
+_Func = TypeVar("_Func", bound=Callable[..., Any])
+
+
+class GeventExecutor(Executor):
+    def __init__(self):
+        self.group = Group()
+        self.channel: GeventChannel[
+            Tuple[Callable, List[Any], Dict[str, Any]]
+        ] = GeventChannel()
+        self.spawn_work_greenlet = gevent.spawn(self._spawn_work)
+
+    def __del__(self):
+        self.spawn_work_greenlet.kill()
+
+    def wrap(self, fn: _Func) -> _Func:
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            self.channel.put((fn, args, kwargs))
+
+        return cast(_Func, wrapper)
+
+    def _spawn_work(self):
+        while True:
+            (fn, args, kwargs) = self.channel.get()
+            self.group.spawn(fn, *args, **kwargs)
+
+
+class GeventChannel(Generic[T]):
+    def __init__(self):
+        self.hub = gevent.get_hub()
+        self.watcher = self.hub.loop.async_()
+        self.lock = threading.Lock()
+        self.values: List[T] = []
+
+    def put(self, value: T) -> None:
+        with self.lock:
+            self.values.append(value)
+            self.watcher.send()
+
+    def get(self) -> T:
+        self.lock.acquire()
+        while len(self.values) == 0:
+            self.lock.release()
+            self.hub.wait(self.watcher)
+            self.lock.acquire()
+
+        value: T = self.values.pop(0)
+        self.lock.release()
+        return value

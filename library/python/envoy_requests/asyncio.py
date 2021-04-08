@@ -1,10 +1,15 @@
 import asyncio
+import functools
+from typing import Any
+from typing import Callable
+from typing import cast
+from typing import TypeVar
 
-from envoy_requests.common.core import make_stream
-from envoy_requests.common.core import send_request
-from envoy_requests.common.engine import Engine
-from envoy_requests.common.executor import AsyncioExecutor
-from envoy_requests.response import Response
+from .common.core import make_stream
+from .common.core import send_request
+from .common.engine import Engine
+from .common.executor import Executor
+from .response import Response
 
 
 # TODO: add better typing to this (and functions that use it)
@@ -50,3 +55,18 @@ async def put(*args, **kwargs) -> Response:
 
 async def trace(*args, **kwargs) -> Response:
     return await request("trace", *args, **kwargs)
+
+
+_Func = TypeVar("_Func", bound=Callable[..., Any])
+
+
+class AsyncioExecutor(Executor):
+    def __init__(self):
+        self.loop = asyncio.get_running_loop()
+
+    def wrap(self, fn: _Func) -> _Func:
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            self.loop.call_soon_threadsafe(fn, *args, **kwargs)
+
+        return cast(_Func, wrapper)

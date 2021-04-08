@@ -1,9 +1,15 @@
+import functools
 from threading import Event
+from threading import Lock
+from typing import Any
+from typing import Callable
+from typing import TypeVar
+from typing import cast
 
 from .common.core import make_stream
 from .common.core import send_request
 from .common.engine import Engine
-from .common.executor import ThreadingExecutor
+from .common.executor import Executor
 from .response import Response
 
 
@@ -50,3 +56,19 @@ def put(*args, **kwargs) -> Response:
 
 def trace(*args, **kwargs) -> Response:
     return request("trace", *args, **kwargs)
+
+
+_Func = TypeVar("_Func", bound=Callable[..., Any])
+
+
+class ThreadingExecutor(Executor):
+    def __init__(self):
+        self.lock = Lock()
+
+    def wrap(self, fn: _Func) -> _Func:
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            with self.lock:
+                fn(*args, **kwargs)
+
+        return cast(_Func, wrapper)
