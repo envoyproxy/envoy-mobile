@@ -1,4 +1,3 @@
-load("@rules_python//python:defs.bzl", "py_binary")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 
 licenses(["notice"])  # Apache 2
