@@ -69,13 +69,13 @@ def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
         sha256 = "09423d57ace0fca1b84e19326dc9aadd42f2be52f1b5a15bc652d18c2c1dee71",
-        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.31.1/rules_apple.0.30.0.tar.gz",
+        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.30.0/rules_apple.0.30.0.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "a525d254b0323380b7abe7cbbe03534167f0fcb45f44f7d16cdd4d7d057b8f8d",
-        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.20.0/rules_swift.0.20.0.tar.gz",
+        sha256 = "be80375680b2553a8b318ffd02ce916a7e1d9060ccad3e7c50f543caafb86fed",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.19.0/rules_swift.0.19.0.tar.gz",
     )
 
 def kotlin_repos():
