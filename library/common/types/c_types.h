@@ -293,15 +293,7 @@ typedef void (*envoy_on_engine_running_f)(void* context);
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  */
-typedef void (*envoy_on_log_f)(envoy_data data, void* context);
-
-/**
- * Called when envoy's logger flushes.
- *
- * @param context, contains the necessary state to carry out platform-specific dispatch and
- * execution.
- */
-typedef void (*envoy_on_flush_f)(void* context);
+typedef void (*envoy_log_f)(envoy_data data, void* context);
 
 #ifdef __cplusplus
 } // function pointers
@@ -333,11 +325,10 @@ typedef struct {
 } envoy_engine_callbacks;
 
 /**
- * Interface that can handle logging callbacks.
+ * Interface for logging.
  */
 typedef struct {
-  envoy_on_log_f on_log;
-  envoy_on_flush_f on_flush;
+  envoy_log_f log;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
-} envoy_logging_callbacks;
+} envoy_logger;
