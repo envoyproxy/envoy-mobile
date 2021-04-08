@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.envoyproxy.envoymobile.AndroidEngineBuilder
 import io.envoyproxy.envoymobile.Element
 import io.envoyproxy.envoymobile.Engine
+import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
@@ -45,11 +46,13 @@ class MainActivity : Activity() {
     setContentView(R.layout.activity_main)
 
     engine = AndroidEngineBuilder(application)
+      .addLogLevel(LogLevel.DEBUG)
       .addPlatformFilter { DemoFilter() }
       .addPlatformFilter { BufferDemoFilter() }
       .addPlatformFilter { AsyncDemoFilter() }
-      .addStringAccessor("demo-accessor", { "PlatformString" })
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
+      .addNativeFilter("envoy.filters.http.test_accessor", "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_accessor.TestAccessor\",\"accessor_name\":\"demo-accessor\",\"expected_string\":\"PlatformString\"}")
+      .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .build()
 
