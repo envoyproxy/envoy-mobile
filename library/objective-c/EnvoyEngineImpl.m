@@ -28,13 +28,6 @@ static void ios_on_log(envoy_data data, void *context) {
   }
 }
 
-static void ios_on_flush(void *context) {
-  EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  if (engineImpl.onEngineFlush) {
-    engineImpl.onEngineFlush();
-  }
-}
-
 static const void *ios_http_filter_init(const void *context) {
   envoy_http_filter *c_filter = (envoy_http_filter *)context;
   EnvoyHTTPFilterFactory *filterFactory =
@@ -364,8 +357,7 @@ static envoy_data ios_get_string(const void *context) {
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
      onEngineRunning:(nullable void (^)())onEngineRunning
-         onEngineLog:(nullable void (^)(NSString *))onEngineLog
-       onEngineFlush:(nullable void (^)())onEngineFlush {
+         onEngineLog:(nullable void (^)(NSString *))onEngineLog {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -383,16 +375,14 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML
                         logLevel:logLevel
                  onEngineRunning:onEngineRunning
-                     onEngineLog:onEngineLog
-                   onEngineFlush:onEngineFlush];
+                     onEngineLog:onEngineLog];
 }
 
 - (int)runWithTemplate:(NSString *)yaml
                 config:(EnvoyConfiguration *)config
               logLevel:(NSString *)logLevel
        onEngineRunning:(nullable void (^)())onEngineRunning
-           onEngineLog:(nullable void (^)(NSString *))onEngineLog
-         onEngineFlush:(nullable void (^)())onEngineFlush {
+           onEngineLog:(nullable void (^)(NSString *))onEngineLog {
   NSString *resolvedYAML = [config resolveTemplate:yaml];
   if (resolvedYAML == nil) {
     return kEnvoyFailure;
@@ -409,18 +399,15 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML
                         logLevel:logLevel
                  onEngineRunning:onEngineRunning
-                     onEngineLog:onEngineLog
-                   onEngineFlush:onEngineFlush];
+                     onEngineLog:onEngineLog];
 }
 
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
          onEngineRunning:(nullable void (^)())onEngineRunning
-             onEngineLog:(nullable void (^)(NSString *))onEngineLog
-           onEngineFlush:(nullable void (^)())onEngineFlush {
+             onEngineLog:(nullable void (^)(NSString *))onEngineLog {
   self.onEngineRunning = onEngineRunning;
   self.onEngineLog = onEngineLog;
-  self.onEngineFlush = onEngineFlush;
 
   [self startObservingLifecycleNotifications];
 
@@ -436,10 +423,6 @@ static envoy_data ios_get_string(const void *context) {
 
     // if (!self.onEngineLog) {
     //   native_logging_callbacks.on_log = NULL;
-    // }
-
-    // if (!self.onEngineFlush) {
-    //   native_logging_callbacks.on_flush = NULL;
     // }
 
     return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,

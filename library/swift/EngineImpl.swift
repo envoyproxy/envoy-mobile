@@ -14,8 +14,7 @@ final class EngineImpl: NSObject {
   }
 
   private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine,
-               onEngineRunning: (() -> Void)?, onEngineLog: ((String) -> Void)?,
-               onEngineFlush: (() -> Void)?)
+               onEngineRunning: (() -> Void)?, onEngineLog: ((String) -> Void)?)
   {
     self.engine = engine
     self.pulseClientImpl = PulseClientImpl(engine: engine)
@@ -25,12 +24,10 @@ final class EngineImpl: NSObject {
     switch configType {
     case .custom(let yaml, let config):
       self.engine.run(withTemplate: yaml, config: config, logLevel: logLevel.stringValue,
-                      onEngineRunning: onEngineRunning, onEngineLog: onEngineLog,
-                      onEngineFlush: onEngineFlush)
+                      onEngineRunning: onEngineRunning, onEngineLog: onEngineLog)
     case .standard(let config):
       self.engine.run(withConfig: config, logLevel: logLevel.stringValue,
-                      onEngineRunning: onEngineRunning, onEngineLog: onEngineLog,
-                      onEngineFlush: onEngineFlush)
+                      onEngineRunning: onEngineRunning, onEngineLog: onEngineLog)
     }
   }
 
@@ -42,14 +39,11 @@ final class EngineImpl: NSObject {
   /// - parameter onEngineRunning: Closure called when the engine finishes its async
   ///                              initialization/startup.
   /// - parameter onEngineLog:     Closure called when the engine's logger logs.
-  /// - parameter onEngineLog:     Closure called when the engine's logger flushes.
   convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine,
-                   onEngineRunning: (() -> Void)?, onEngineLog: ((String) -> Void)?,
-                   onEngineFlush: (() -> Void)?)
+                   onEngineRunning: (() -> Void)?, onEngineLog: ((String) -> Void)?)
   {
     self.init(configType: .standard(config: config), logLevel: logLevel, engine: engine,
-              onEngineRunning: onEngineRunning, onEngineLog: onEngineLog,
-              onEngineFlush: onEngineFlush)
+              onEngineRunning: onEngineRunning, onEngineLog: onEngineLog)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
@@ -61,14 +55,12 @@ final class EngineImpl: NSObject {
   /// - parameter onEngineRunning: Closure called when the engine finishes its async
   ///                              initialization/startup.
   /// - parameter onEngineLog:     Closure called when the engine's logger logs.
-  /// - parameter onEngineLog:     Closure called when the engine's logger flushes.
   convenience init(yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info,
                    engine: EnvoyEngine, onEngineRunning: (() -> Void)?,
-                   onEngineLog: ((String) -> Void)?, onEngineFlush: (() -> Void)?)
+                   onEngineLog: ((String) -> Void)?)
   {
     self.init(configType: .custom(yaml: yaml, config: config), logLevel: logLevel, engine: engine,
-              onEngineRunning: onEngineRunning, onEngineLog: onEngineLog,
-              onEngineFlush: onEngineFlush)
+              onEngineRunning: onEngineRunning, onEngineLog: onEngineLog)
   }
 }
 
