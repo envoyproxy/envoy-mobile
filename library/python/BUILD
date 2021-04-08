@@ -5,16 +5,16 @@ licenses(["notice"])  # Apache 2
 pybind_library(
     name = "envoy_engine_lib",
     srcs = [
-        "bytes_view.cc",
-        "engine_builder_shim.cc",
-        "stream_prototype_shim.cc",
-        "stream_shim.cc",
+        "envoy_engine/bytes_view.cc",
+        "envoy_engine/engine_builder_shim.cc",
+        "envoy_engine/stream_prototype_shim.cc",
+        "envoy_engine/stream_shim.cc",
     ],
     hdrs = [
-        "bytes_view.h",
-        "engine_builder_shim.h",
-        "stream_prototype_shim.h",
-        "stream_shim.h",
+        "envoy_engine/bytes_view.h",
+        "envoy_engine/engine_builder_shim.h",
+        "envoy_engine/stream_prototype_shim.h",
+        "envoy_engine/stream_shim.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -25,7 +25,7 @@ pybind_library(
 pybind_extension(
     name = "envoy_engine",
     srcs = [
-        "module_definition.cc",
+        "envoy_engine/module_definition.cc",
     ],
     visibility = ["//visibility:public"],
     deps = [

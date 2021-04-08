@@ -31,9 +31,9 @@
 #include "library/cc/stream_prototype.h"
 #include "library/cc/upstream_http_protocol.h"
 
-#include "library/python/engine_builder_shim.h"
-#include "library/python/stream_shim.h"
-#include "library/python/stream_prototype_shim.h"
+#include "engine_builder_shim.h"
+#include "stream_shim.h"
+#include "stream_prototype_shim.h"
 
 namespace py = pybind11;
 using namespace Envoy::Platform;
