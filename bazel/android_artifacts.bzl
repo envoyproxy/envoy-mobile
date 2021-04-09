@@ -166,7 +166,7 @@ def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, vi
 
     return _aar_output
 
-def _create_jni_library(name, native_deps = []):
+def _create_jni_library(name, native_lib_name = "envoy_jni", native_deps = []):
     """
     Creates an apk containing the jni so files.
 
@@ -199,6 +199,33 @@ def _create_jni_library(name, native_deps = []):
         name = cc_lib_name,
         srcs = native_deps,
     )
+
+#    # Depend on the explicit envoy_aar_jni_unsigned.apk which contains the .so files.
+#    native.genrule(
+#        name = jni_archive_name+"_a",
+#        outs = [jni_archive_name + "_sources_so.zip"],
+#        srcs = [jni_archive_name + "_unsigned.apk"],
+#        cmd = "\n".join([
+##            "original_dir=$$PWD",
+#            "set -- $(SRCS)",
+##            "tmp_dir=$$(mktemp -d -t ci-XXXXXXXXXX)",
+##            "pushd $$tmp_dir",
+##            "unzip $$original_dir/$$1 > /dev/null",
+#            "echo '~~~~~~~~~~~~~~~~~~!!!'",
+##            "ls",
+##            "echo $$1",
+#            "echo '~~~~~~~~~~~~~~~~~~!!!'",
+##            "find lib -name '*.so'",
+##            "find lib -name '*.so' -exec sh -c 'nm -g -C --defined-only $$0' {} \;",
+#            "echo '~~~~~~~~~~~~~~~~~~!!!'",
+##            "find lib -name '*.so' -exec sh -c 'mv $$0 $$(dirname $$0)/{--}.so' {} \;".replace('{--}', "envoy_jni"),
+#            """echo "~~~~~~~~~~~~~~~~~~" """,
+##            "find lib -name '*.so' -exec sh -c 'nm -g -C --defined-only $$0' {} \;",
+#            """echo "~~~~~~~~~~~~~~~~~~" """,
+#            "cp $< $@"
+##            "zip -r $@ lib"
+#        ])
+#    )
 
     return jni_archive_name + "_unsigned.apk"
 
