@@ -23,8 +23,8 @@ static void ios_on_exit(void *context) {
 
 static void ios_on_log(envoy_data data, void *context) {
   EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  if (engineImpl.Logger) {
-    engineImpl.Logger(to_ios_string(data));
+  if (engineImpl.logger) {
+    engineImpl.logger(to_ios_string(data));
   }
 }
 
@@ -357,7 +357,7 @@ static envoy_data ios_get_string(const void *context) {
 - (int)runWithConfig:(EnvoyConfiguration *)config
             logLevel:(NSString *)logLevel
      onEngineRunning:(nullable void (^)())onEngineRunning
-              Logger:(nullable void (^)(NSString *))Logger {
+              logger:(nullable void (^)(NSString *))logger {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   NSString *resolvedYAML = [config resolveTemplate:templateYAML];
   if (resolvedYAML == nil) {
@@ -375,14 +375,14 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML
                         logLevel:logLevel
                  onEngineRunning:onEngineRunning
-                          Logger:Logger];
+                          logger:logger];
 }
 
 - (int)runWithTemplate:(NSString *)yaml
                 config:(EnvoyConfiguration *)config
               logLevel:(NSString *)logLevel
        onEngineRunning:(nullable void (^)())onEngineRunning
-                Logger:(nullable void (^)(NSString *))Logger {
+                logger:(nullable void (^)(NSString *))logger {
   NSString *resolvedYAML = [config resolveTemplate:yaml];
   if (resolvedYAML == nil) {
     return kEnvoyFailure;
@@ -399,15 +399,15 @@ static envoy_data ios_get_string(const void *context) {
   return [self runWithConfigYAML:resolvedYAML
                         logLevel:logLevel
                  onEngineRunning:onEngineRunning
-                          Logger:Logger];
+                          logger:logger];
 }
 
 - (int)runWithConfigYAML:(NSString *)configYAML
                 logLevel:(NSString *)logLevel
          onEngineRunning:(nullable void (^)())onEngineRunning
-                  Logger:(nullable void (^)(NSString *))Logger {
+                  logger:(nullable void (^)(NSString *))logger {
   self.onEngineRunning = onEngineRunning;
-  self.Logger = Logger;
+  self.logger = logger;
 
   [self startObservingLifecycleNotifications];
 
@@ -421,7 +421,7 @@ static envoy_data ios_get_string(const void *context) {
     // envoy_logging_callbacks native_logging_callbacks = {ios_on_log, ios_on_flush,
     //                                                     (__bridge void *)(self)};
 
-    // if (!self.Logger) {
+    // if (!self.logger) {
     //   native_logging_callbacks.on_log = NULL;
     // }
 

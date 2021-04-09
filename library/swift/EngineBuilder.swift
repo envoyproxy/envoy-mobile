@@ -23,7 +23,7 @@ public final class EngineBuilder: NSObject {
   private var appId: String = "unspecified"
   private var virtualClusters: String = "[]"
   private var onEngineRunning: (() -> Void)?
-  private var Logger: ((String) -> Void)?
+  private var logger: ((String) -> Void)?
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
@@ -177,7 +177,7 @@ public final class EngineBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func setLogger(closure: @escaping (String) -> Void) -> EngineBuilder {
-    self.Logger = closure
+    self.logger = closure
     return self
   }
 
@@ -236,10 +236,10 @@ public final class EngineBuilder: NSObject {
     switch self.base {
     case .custom(let yaml):
       return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, engine: engine,
-                        onEngineRunning: self.onEngineRunning, Logger: self.Logger)
+                        onEngineRunning: self.onEngineRunning, logger: self.logger)
     case .standard:
       return EngineImpl(config: config, logLevel: self.logLevel, engine: engine,
-                        onEngineRunning: self.onEngineRunning, Logger: self.Logger)
+                        onEngineRunning: self.onEngineRunning, logger: self.logger)
     }
   }
 
