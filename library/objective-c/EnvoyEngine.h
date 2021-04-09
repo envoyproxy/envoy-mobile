@@ -404,13 +404,12 @@ extern const int kEnvoyFailure;
 // Logging interface.
 @interface EnvoyLogger : NSObject
 
-@property (nonatomic, copy, nullable) void (^log)(NSString *);
+@property (nonatomic, copy) void (^log)(NSString *);
 
 /**
  Create a new instance of the logger.
  */
-- (instancetype)initWithLog:(nullable void (^)(NSString *))log;
-;
+- (instancetype)initWithLogClosure:(void (^)(NSString *))log;
 
 @end
 
@@ -420,7 +419,6 @@ extern const int kEnvoyFailure;
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
 @property (nonatomic, copy, nullable) void (^onEngineRunning)();
-@property (nonatomic, strong, nullable) EnvoyLogger *logger;
 
 @end
 
