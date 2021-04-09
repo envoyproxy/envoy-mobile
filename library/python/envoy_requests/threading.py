@@ -58,17 +58,17 @@ def trace(*args, **kwargs) -> Response:
     return request("trace", *args, **kwargs)
 
 
-_Func = TypeVar("_Func", bound=Callable[..., Any])
+Func = TypeVar("Func", bound=Callable[..., Any])
 
 
 class ThreadingExecutor(Executor):
     def __init__(self):
         self.lock = Lock()
 
-    def wrap(self, fn: _Func) -> _Func:
+    def wrap(self, fn: Func) -> Func:
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             with self.lock:
                 fn(*args, **kwargs)
 
-        return cast(_Func, wrapper)
+        return cast(Func, wrapper)

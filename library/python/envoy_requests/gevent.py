@@ -66,7 +66,7 @@ def trace(*args, **kwargs) -> Response:
 
 
 T = TypeVar("T")
-_Func = TypeVar("_Func", bound=Callable[..., Any])
+Func = TypeVar("Func", bound=Callable[..., Any])
 
 
 class GeventExecutor(Executor):
@@ -80,12 +80,12 @@ class GeventExecutor(Executor):
     def __del__(self):
         self.spawn_work_greenlet.kill()
 
-    def wrap(self, fn: _Func) -> _Func:
+    def wrap(self, fn: Func) -> Func:
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             self.channel.put((fn, args, kwargs))
 
-        return cast(_Func, wrapper)
+        return cast(Func, wrapper)
 
     def _spawn_work(self):
         while True:

@@ -57,16 +57,16 @@ async def trace(*args, **kwargs) -> Response:
     return await request("trace", *args, **kwargs)
 
 
-_Func = TypeVar("_Func", bound=Callable[..., Any])
+Func = TypeVar("Func", bound=Callable[..., Any])
 
 
 class AsyncioExecutor(Executor):
     def __init__(self):
         self.loop = asyncio.get_running_loop()
 
-    def wrap(self, fn: _Func) -> _Func:
+    def wrap(self, fn: Func) -> Func:
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             self.loop.call_soon_threadsafe(fn, *args, **kwargs)
 
-        return cast(_Func, wrapper)
+        return cast(Func, wrapper)

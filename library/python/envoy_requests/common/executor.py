@@ -5,11 +5,11 @@ from typing import Callable
 from typing import TypeVar
 
 
-_Func = TypeVar("_Func", bound=Callable[..., Any])
+Func = TypeVar("Func", bound=Callable[..., Any])
 
 
 class Executor(ABC):
     # TODO: verify that this preserves type signature
     @abstractmethod
-    def wrap(self, fn: _Func) -> _Func:
+    def wrap(self, fn: Func) -> Func:
         pass
