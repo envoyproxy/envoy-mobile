@@ -415,10 +415,10 @@ static envoy_data ios_get_string(const void *context) {
 
     envoy_logger native_logger = {NULL, NULL, NULL};
     if (logger) {
-      EnvoyLogger *objclogger = [[EnvoyLogger alloc] initWithLogClosure:logger];
+      EnvoyLogger *objcLogger = [[EnvoyLogger alloc] initWithLogClosure:logger];
       native_logger.log = ios_on_log;
       native_logger.release = ios_on_logger_release;
-      native_logger.context = CFBridgingRetain(objclogger);
+      native_logger.context = CFBridgingRetain(objcLogger);
     }
 
     return (int)run_engine(_engineHandle, native_callbacks, native_logger, configYAML.UTF8String,
