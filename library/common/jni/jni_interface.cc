@@ -24,8 +24,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 // JniLibrary
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
+extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
     JNIEnv* env,
     jclass // class
 ) {
@@ -57,8 +56,7 @@ static void jvm_on_exit(void*) {
   jvm_detach_thread();
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring jvm_log_level, jobject context) {
   jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
   envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
@@ -66,8 +64,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
                     env->GetStringUTFChars(jvm_log_level, nullptr));
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_terminateEngine(
+extern "C" JNIEXPORT void JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_terminateEngine(
     JNIEnv* env, jclass, jlong engine_handle) {
   terminate_engine(static_cast<envoy_engine_t>(engine_handle));
 }
@@ -96,8 +93,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplateString(JNIE
   return result;
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint count) {
@@ -106,8 +102,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
                             count);
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint value) {
@@ -115,8 +110,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(
                           value);
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeAdd(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeAdd(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint amount) {
@@ -124,8 +118,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeAdd(
                           amount);
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSub(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSub(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jint amount) {
@@ -653,15 +646,13 @@ static envoy_data jvm_get_string(const void* context) {
 
 // EnvoyHTTPStream
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_initStream(
+extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initStream(
     JNIEnv* env, jclass, jlong engine_handle) {
 
   return init_stream(static_cast<envoy_engine_t>(engine_handle));
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_startStream(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_startStream(
     JNIEnv* env, jclass, jlong stream_handle, jobject j_context) {
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
@@ -760,8 +751,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer
 
 // Note: J_3BZ is the mangled signature of the java method.
 // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
-extern "C" JNIEXPORT jint JNICALL
-_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BZ(
+extern "C" JNIEXPORT jint JNICALL _io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BZ(
     JNIEnv* env, jclass, jlong stream_handle, jbyteArray data, jboolean end_stream) {
   if (end_stream) {
     jni_log("[Envoy]", "jvm_send_data_end_stream");
@@ -772,24 +762,21 @@ _io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BZ(
                    end_stream);
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendHeaders(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendHeaders(
     JNIEnv* env, jclass, jlong stream_handle, jobjectArray headers, jboolean end_stream) {
 
   return send_headers(static_cast<envoy_stream_t>(stream_handle), to_native_headers(env, headers),
                       end_stream);
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendTrailers(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendTrailers(
     JNIEnv* env, jclass, jlong stream_handle, jobjectArray trailers) {
   jni_log("[Envoy]", "jvm_send_trailers");
   return send_trailers(static_cast<envoy_stream_t>(stream_handle),
                        to_native_headers(env, trailers));
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_resetStream(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_resetStream(
     JNIEnv* env, jclass, jlong stream_handle) {
 
   return reset_stream(static_cast<envoy_stream_t>(stream_handle));
