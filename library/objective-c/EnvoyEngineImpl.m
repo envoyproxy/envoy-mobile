@@ -14,21 +14,16 @@ static void ios_on_engine_running(void *context) {
   if (engineImpl.onEngineRunning) {
     engineImpl.onEngineRunning();
   }
-  CFBridgingRetain(engineImpl);
 }
 
-static void ios_on_exit(void *context) {
-  NSLog(@"[Envoy] library is exiting");
-  // ios_on_engine_running retains the bridged EnvoyEngineImpl so here we release.
-  CFRelease(context);
-}
+static void ios_on_exit(void *context) { NSLog(@"[Envoy] library is exiting"); }
 
 static void ios_on_log(envoy_data data, void *context) {
-  EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  if (engineImpl.logger) {
-    engineImpl.logger(to_ios_string(data));
-  }
+  EnvoyLogger *logger = (__bridge EnvoyLogger *)context;
+  logger.log(to_ios_string(data));
 }
+
+static void ios_on_logger_release(void *context) { CFRelease(context); }
 
 static const void *ios_http_filter_init(const void *context) {
   envoy_http_filter *c_filter = (envoy_http_filter *)context;
@@ -409,7 +404,6 @@ static envoy_data ios_get_string(const void *context) {
          onEngineRunning:(nullable void (^)())onEngineRunning
                   logger:(nullable void (^)(NSString *))logger {
   self.onEngineRunning = onEngineRunning;
-  self.logger = logger;
 
   [self startObservingLifecycleNotifications];
 
@@ -419,10 +413,12 @@ static envoy_data ios_get_string(const void *context) {
     envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit,
                                                (__bridge void *)(self)};
 
-    envoy_logger native_logger = {ios_on_log, (__bridge void *)(self)};
-
-    if (!self.logger) {
-      native_logger.log = NULL;
+    envoy_logger native_logger = {NULL, NULL, NULL};
+    if (logger) {
+      EnvoyLogger *Objclogger = [[EnvoyLogger alloc] initWithLog:logger];
+      native_logger.log = ios_on_log;
+      native_logger.release = ios_on_logger_release;
+      native_logger.context = CFBridgingRetain(Objclogger);
     }
 
     return (int)run_engine(_engineHandle, native_callbacks, native_logger, configYAML.UTF8String,
