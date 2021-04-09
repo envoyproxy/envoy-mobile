@@ -14,11 +14,13 @@ static void ios_on_engine_running(void *context) {
   if (engineImpl.onEngineRunning) {
     engineImpl.onEngineRunning();
   }
+  CFBridgingRetain(engineImpl);
 }
 
 static void ios_on_exit(void *context) {
-  // Currently nothing needs to happen in iOS on exit. Just log.
   NSLog(@"[Envoy] library is exiting");
+  // ios_on_engine_running retains the bridged EnvoyEngineImpl so here we release.
+  CFRelease(context);
 }
 
 static void ios_on_log(envoy_data data, void *context) {
