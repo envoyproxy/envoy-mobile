@@ -4,13 +4,14 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
 
-Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
-               std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks) {
+Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger, const char* config,
+               const char* log_level, std::atomic<envoy_network_t>& preferred_network)
+    : callbacks_(callbacks), logger_(logger) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
@@ -32,11 +33,25 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
       const std::string name = "envoy";
       const std::string config_flag = "--config-yaml";
       const std::string log_flag = "-l";
-      const char* envoy_argv[] = {name.c_str(),     config_flag.c_str(), config.c_str(),
-                                  log_flag.c_str(), log_level.c_str(),   nullptr};
+      const std::string concurrency_option = "--concurrency";
+      const std::string concurrency_arg = "0";
+      std::vector<const char*> envoy_argv = {name.c_str(),
+                                             config_flag.c_str(),
+                                             config.c_str(),
+                                             concurrency_option.c_str(),
+                                             concurrency_arg.c_str(),
+                                             log_flag.c_str(),
+                                             log_level.c_str(),
+                                             nullptr};
+      main_common_ = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
 
-      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
       event_dispatcher_ = &main_common_->server()->dispatcher();
+
+      if (logger_.log) {
+        lambda_logger_ =
+            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
+      }
+
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
