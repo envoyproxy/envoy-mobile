@@ -24,8 +24,10 @@ envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
   if (auto e = engine()) {
-    return e->dispatcher().post(
-        [stream, callbacks]() -> void { if (auto e = engine()) e->httpClient().startStream(stream, callbacks); });
+    return e->dispatcher().post([stream, callbacks]() -> void {
+      if (auto e = engine())
+        e->httpClient().startStream(stream, callbacks);
+    });
   }
   return ENVOY_FAILURE;
 }
@@ -33,7 +35,8 @@ envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callback
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
   if (auto e = engine()) {
     return e->dispatcher().post([stream, headers, end_stream]() -> void {
-      if (auto e = engine()) e->httpClient().sendHeaders(stream, headers, end_stream);
+      if (auto e = engine())
+        e->httpClient().sendHeaders(stream, headers, end_stream);
     });
   }
   return ENVOY_FAILURE;
@@ -42,7 +45,8 @@ envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool e
 envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
   if (auto e = engine()) {
     return e->dispatcher().post([stream, data, end_stream]() -> void {
-      if (auto e = engine()) e->httpClient().sendData(stream, data, end_stream);
+      if (auto e = engine())
+        e->httpClient().sendData(stream, data, end_stream);
     });
   }
   return ENVOY_FAILURE;
@@ -53,15 +57,20 @@ envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILU
 
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
   if (auto e = engine()) {
-    return e->dispatcher().post(
-        [stream, trailers]() -> void { if (auto e = engine()) e->httpClient().sendTrailers(stream, trailers); });
+    return e->dispatcher().post([stream, trailers]() -> void {
+      if (auto e = engine())
+        e->httpClient().sendTrailers(stream, trailers);
+    });
   }
   return ENVOY_FAILURE;
 }
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
   if (auto e = engine()) {
-    return e->dispatcher().post([stream]() -> void { if (auto e = engine()) e->httpClient().cancelStream(stream); });
+    return e->dispatcher().post([stream]() -> void {
+      if (auto e = engine())
+        e->httpClient().cancelStream(stream);
+    });
   }
   return ENVOY_FAILURE;
 }
@@ -77,7 +86,8 @@ envoy_status_t record_counter_inc(envoy_engine_t, const char* elements, envoy_st
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
     return e->dispatcher().post([elements, tags, count]() -> void {
-      if (auto e = engine()) e->recordCounterInc(std::string(elements), tags, count);
+      if (auto e = engine())
+        e->recordCounterInc(std::string(elements), tags, count);
     });
   }
   return ENVOY_FAILURE;
@@ -89,7 +99,8 @@ envoy_status_t record_gauge_set(envoy_engine_t, const char* elements, envoy_stat
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
     return e->dispatcher().post([elements, tags, value]() -> void {
-      if (auto e = engine()) e->recordGaugeSet(std::string(elements), tags, value);
+      if (auto e = engine())
+        e->recordGaugeSet(std::string(elements), tags, value);
     });
   }
   return ENVOY_FAILURE;
@@ -101,7 +112,8 @@ envoy_status_t record_gauge_add(envoy_engine_t, const char* elements, envoy_stat
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
     return e->dispatcher().post([elements, tags, amount]() -> void {
-      if (auto e = engine()) e->recordGaugeAdd(std::string(elements), tags, amount);
+      if (auto e = engine())
+        e->recordGaugeAdd(std::string(elements), tags, amount);
     });
   }
   return ENVOY_FAILURE;
@@ -113,7 +125,8 @@ envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, envoy_stat
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
     return e->dispatcher().post([elements, tags, amount]() -> void {
-      if (auto e = engine()) e->recordGaugeSub(std::string(elements), tags, amount);
+      if (auto e = engine())
+        e->recordGaugeSub(std::string(elements), tags, amount);
     });
   }
   return ENVOY_FAILURE;
@@ -125,7 +138,8 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, envo
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
     return e->dispatcher().post([elements, tags, value, unit_measure]() -> void {
-      if (auto e = engine()) e->recordHistogramValue(std::string(elements), tags, value, unit_measure);
+      if (auto e = engine())
+        e->recordHistogramValue(std::string(elements), tags, value, unit_measure);
     });
   }
   return ENVOY_FAILURE;
