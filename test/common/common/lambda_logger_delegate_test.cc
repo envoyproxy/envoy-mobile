@@ -16,6 +16,7 @@ TEST(LambdaDelegate, LogCb) {
   LambdaDelegate delegate = LambdaDelegate({[](envoy_data data, void* context) -> void {
                                               auto* actual_msg = static_cast<std::string*>(context);
                                               *actual_msg = Data::Utility::copyToString(data);
+                                              data.release(data.context);
                                             },
                                             &actual_msg},
                                            Registry::getSink());

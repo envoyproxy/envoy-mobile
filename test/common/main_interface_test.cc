@@ -406,6 +406,7 @@ TEST(EngineTest, Logger) {
   envoy_logger logger{[](envoy_data data, void* context) -> void {
                         auto* actual_log = static_cast<std::string*>(context);
                         *actual_log = Data::Utility::copyToString(data);
+                        data.release(data.context);
                       },
                       &actual_log};
 
