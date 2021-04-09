@@ -418,14 +418,13 @@ static envoy_data ios_get_string(const void *context) {
                                                (__bridge void *)(self)};
 
     // TODO(junr03): wire-up when https://github.com/envoyproxy/envoy-mobile/pull/1355 merges.
-    // envoy_logging_callbacks native_logging_callbacks = {ios_on_log, ios_on_flush,
-    //                                                     (__bridge void *)(self)};
+    envoy_logger native_logger = {ios_on_log, (__bridge void *)(self)};
 
-    // if (!self.logger) {
-    //   native_logging_callbacks.on_log = NULL;
-    // }
+    if (!self.logger) {
+      native_logger.log = NULL;
+    }
 
-    return (int)run_engine(_engineHandle, native_callbacks, configYAML.UTF8String,
+    return (int)run_engine(_engineHandle, native_callbacks, native_logger, configYAML.UTF8String,
                            logLevel.UTF8String);
   } @catch (NSException *exception) {
     NSLog(@"[Envoy] exception caught: %@", exception);
