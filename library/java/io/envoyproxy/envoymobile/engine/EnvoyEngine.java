@@ -15,7 +15,7 @@ public interface EnvoyEngine {
   EnvoyHTTPStream startStream(EnvoyHTTPCallbacks callbacks);
 
   /**
-   * Terminates the current engine.
+   * Terminates the running engine.
    */
   void terminate();
 

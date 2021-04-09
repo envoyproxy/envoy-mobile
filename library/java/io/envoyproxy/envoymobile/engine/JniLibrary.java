@@ -140,9 +140,9 @@ class JniLibrary {
                                         EnvoyOnEngineRunning onEngineRunning);
 
   /**
-   * Terminate or shutdown the Envoy Engine.
+   * Terminate the engine.
    *
-   * @param engine the engine to shutdown.
+   * @param engine handle for the engine to terminate.
    */
   protected static native void terminateEngine(long engine);
 
