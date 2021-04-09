@@ -417,7 +417,6 @@ static envoy_data ios_get_string(const void *context) {
     envoy_engine_callbacks native_callbacks = {ios_on_engine_running, ios_on_exit,
                                                (__bridge void *)(self)};
 
-    // TODO(junr03): wire-up when https://github.com/envoyproxy/envoy-mobile/pull/1355 merges.
     envoy_logger native_logger = {ios_on_log, (__bridge void *)(self)};
 
     if (!self.logger) {

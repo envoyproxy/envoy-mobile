@@ -54,7 +54,7 @@ final class LoggerTests: XCTestCase {
       .addLogLevel(.debug)
       .setLogger { msg in
         if msg.contains("starting main dispatch loop") {
-          engineExpectation.fulfill()
+          loggingExpectation.fulfill()
         }
       }
       .setOnEngineRunning {
