@@ -275,6 +275,10 @@ TEST(MainInterfaceTest, InitEngineReturns1) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
   ASSERT_EQ(1, init_engine(callbacks));
+  run_engine(0, MINIMAL_NOOP_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+  terminate_engine(0);
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
 TEST(MainInterfaceTest, PreferredNetwork) {

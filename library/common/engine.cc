@@ -27,6 +27,8 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
 }
 
 envoy_status_t Engine::main(const std::string config, const std::string log_level) {
+  // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
+  std::unique_ptr<MobileMainCommon> main_common;
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -44,8 +46,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                              log_level.c_str(),
                                              nullptr};
 
-      main_common_ = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
-      event_dispatcher_ = &main_common_->server()->dispatcher();
+      main_common = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
+      server_ = main_common->server();
+      event_dispatcher_ = &server_->dispatcher();
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
@@ -64,9 +67,8 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
     // When we improve synchronous failure handling and/or move to dynamic forwarding, we only need
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
-    postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
+    postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          server_ = TS_UNCHECKED_READ(main_common_)->server();
           server_->dispatcher().post([&]() -> void {
             client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
             // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
@@ -87,14 +89,14 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
-  bool run_success = TS_UNCHECKED_READ(main_common_)->run();
+  bool run_success = main_common->run();
   // The above call is blocking; at this point the event loop has exited.
 
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
-  TS_UNCHECKED_READ(main_common_).reset(nullptr);
+  main_common.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
 
@@ -107,23 +109,25 @@ Engine::~Engine() {
     return;
   }
 
+  //ASSERT(!dispatcher_->isThreadSafe(), "Must not destruct in the room loop!");
+
   // If we're not on the main thread, we need to be sure that MainCommon is finished being
   // constructed so we can dispatch shutdown.
   {
     Thread::LockGuard lock(mutex_);
 
-    if (!main_common_) {
+    if (!event_dispatcher_) {
       cv_.wait(mutex_);
     }
 
-    ASSERT(main_common_);
+    ASSERT(event_dispatcher_);
 
     // Exit the event loop and finish up in Engine::run(...)
     event_dispatcher_->exit();
   } // _mutex
 
-  // Now we wait for the main thread to wrap things up.
-  main_thread_.join();
+  // Now detach the main thread to let it wrap things up.
+  main_thread_.detach();
 }
 
 envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,
