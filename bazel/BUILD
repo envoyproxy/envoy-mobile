@@ -25,6 +25,11 @@ alias(
     actual = "@bazel_tools//tools/zip:zipper",
 )
 
+alias(
+    name = "jni",
+    actual = "@bazel_tools//tools/jdk:jni",
+)
+
 # autoformat requires that there be no @bazel_tools references outside of //bazel,
 # so we alias all of the relevant platforms for determining wheel packaging here
 alias(
