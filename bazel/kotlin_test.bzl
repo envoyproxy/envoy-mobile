@@ -1,4 +1,8 @@
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_test")
+load("@build_bazel_rules_android//android:rules.bzl", "android_local_test")
+load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+
+JNI_INITIALIZED = {}
 
 def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
     # This is to work around the issue where we have specific implementation functionality which
@@ -28,33 +32,8 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
 
 # A basic macro to make it easier to declare and run kotlin tests which depend on a JNI lib
 # This will create the native .so binary (for linux) and a .jnilib (for OS X) look up
-def envoy_mobile_jni_kt_test(name, srcs, native_lib_name = "", native_dep = [], deps = []):
-    jni_lib = "lib{}.jnilib".format(native_lib_name)
-    so_lib = "lib{}.so".format(native_lib_name)
-
-    # Generate .jnilib file for OS X look up
-    native.genrule(
-        name = jni_lib,
-        cmd = """
-        cp $< $@
-        """,
-        outs = [jni_lib],
-        srcs = native_dep,
-        visibility = ["//visibility:public"],
-    )
-
-    # Generate .jnilib file for OS X look up
-    native.genrule(
-        name = so_lib,
-        cmd = """
-        cp $< $@
-        """,
-        outs = [so_lib],
-        srcs = native_dep,
-        visibility = ["//visibility:public"],
-    )
-
-    _internal_kt_test(name, srcs, deps, data = [jni_lib, so_lib], jvm_flags = ["-Djava.library.path=../.."])
+def envoy_mobile_jni_kt_test(name, srcs, native_lib_name = "envoy_jni", native_deps = [], deps = []):
+    _internal_kt_test(name, srcs, deps, data = native_deps, jvm_flags = ["-Djava.library.path=../.."])
 
 # A basic macro to make it easier to declare and run kotlin tests
 #
@@ -74,3 +53,57 @@ def envoy_mobile_jni_kt_test(name, srcs, native_lib_name = "", native_dep = [], 
 # )
 def envoy_mobile_kt_test(name, srcs, deps = []):
     _internal_kt_test(name, srcs, deps)
+
+def envoy_mobile_android_test(name, srcs, deps = [], native_lib_name = "envoy_jni", native_deps = []):
+
+    native.android_library(
+        name = name + "_android_test_lib",
+        manifest = "//bazel:test_manifest.xml",
+        exports = deps,
+        data = native_deps,
+        custom_package = "io.envoyproxy.envoymobile.tests",
+        deps = deps + [
+            "@maven//:androidx_annotation_annotation",
+            "@maven//:androidx_test_core",
+            "@maven//:androidx_test_ext_junit",
+            "@maven//:androidx_test_runner",
+            "@maven//:androidx_test_monitor",
+            "@maven//:androidx_test_rules",
+            "@maven//:org_robolectric_robolectric",
+            "@robolectric//bazel:android-all",
+
+            "//bazel:envoy_mobile_test_suite",
+            "@maven//:org_assertj_assertj_core",
+            "@maven//:junit_junit",
+            "@maven//:org_mockito_mockito_inline",
+            "@maven//:org_mockito_mockito_core",
+        ],
+    )
+
+    kt_android_library(
+        name = name + "_kt_proxy",
+        srcs = srcs,
+        deps = [
+            "//bazel:envoy_mobile_test_suite",
+            name + "_android_test_lib",
+        ],
+        manifest = "//bazel:test_manifest.xml",
+        custom_package = "io.envoyproxy.envoymobile.tests",
+    )
+
+
+    native.android_local_test(
+        name = name,
+        srcs = [],
+        deps = [
+            name + "_kt_proxy",
+            "//bazel:envoy_mobile_test_suite",
+            name + "_android_test_lib",
+        ],
+        manifest = "//bazel:test_manifest.xml",
+        custom_package = "io.envoyproxy.envoymobile.tests",
+        test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
+        jvm_flags = [
+            "-Djava.library.path=../..",
+        ],
+    )

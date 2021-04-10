@@ -1,12 +1,11 @@
 package io.envoyproxy.envoymobile.bazel
 
-import java.io.File
-import java.lang.RuntimeException
-import java.net.URLClassLoader
-import java.util.zip.ZipFile
 import junit.framework.JUnit4TestAdapter
 import junit.framework.TestSuite
 import org.junit.runner.RunWith
+import java.io.File
+import java.net.URLClassLoader
+import java.util.zip.ZipFile
 
 /**
  * This is class is taken from https://stackoverflow.com/questions/46365464/how-to-run-all-tests-in-bazel-from-a-single-java-test-rule
@@ -26,7 +25,15 @@ object EnvoyMobileTestSuite {
   fun suite(): TestSuite {
     val suite = TestSuite()
     val classLoader = Thread.currentThread().contextClassLoader as URLClassLoader
+    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    for (urL in classLoader.urLs) {
+      for (clazz in findClassesInJar(File(urL.path))) {
+        val message = Class.forName(clazz)
 
+        println(message)
+      }
+    }
+    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     val testAdapters = mutableListOf<JUnit4TestAdapter>()
     // The first entry on the classpath contains the srcs from java_test
     val classesInJar = findClassesInJar(File(classLoader.urLs[0].path))
@@ -37,7 +44,7 @@ object EnvoyMobileTestSuite {
     }
 
     if (testAdapters.isEmpty()) {
-      throw RuntimeException("Unable to find any tests in test target")
+      throw NoTestFoundException("Unable to find any tests in test target")
     }
 
     for (testAdapter in testAdapters) {
@@ -48,11 +55,13 @@ object EnvoyMobileTestSuite {
 
   private fun findClassesInJar(jarFile: File): Set<String> {
     val classNames = mutableSetOf<String>()
+    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!")
 
     ZipFile(jarFile).use { zipFile ->
       val entries = zipFile.entries()
       for (entry in entries) {
         val entryName = entry.name
+        println("  "+entryName)
 
         if (entryName.endsWith(CLASS_SUFFIX)) {
           val classNameEnd = entryName.length - CLASS_SUFFIX.length
@@ -63,7 +72,9 @@ object EnvoyMobileTestSuite {
         }
       }
     }
-
+    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!")
     return classNames
   }
 }
+
+class NoTestFoundException(message: String) : RuntimeException(message)

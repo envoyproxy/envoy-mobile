@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("//bazel:kotlin_lib.bzl", "local_dynamic_jnilib", "local_dynamic_so")
 
 licenses(["notice"])  # Apache 2
 
@@ -24,7 +25,7 @@ envoy_cc_library(
 )
 
 cc_binary(
-    name = "libenvoy_jni.so",
+    name = "envoy_lib.so",
     srcs = [
         "android_jni_interface.cc",
         "jni_interface.cc",
@@ -45,6 +46,18 @@ cc_binary(
 )
 
 # Java JNI library for local unit test execution
+local_dynamic_jnilib(
+    name = "envoy_jni_jnilib",
+    native_lib_name = "envoy_jni",
+    native_deps = ["java_jni_lib.so"],
+)
+
+local_dynamic_so(
+    name = "envoy_jni_so",
+    native_lib_name = "envoy_jni",
+    native_deps = ["java_jni_lib.so"],
+)
+
 cc_binary(
     name = "java_jni_lib.so",
     srcs = ["jni_interface.cc"],
