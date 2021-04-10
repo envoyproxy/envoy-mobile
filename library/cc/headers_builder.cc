@@ -31,7 +31,7 @@ HeadersBuilder& HeadersBuilder::remove(const std::string& name) {
 HeadersBuilder::HeadersBuilder() {}
 
 HeadersBuilder& HeadersBuilder::internalSet(const std::string& name,
-                                             const std::vector<std::string>& values) {
+                                            const std::vector<std::string>& values) {
   this->headers_[name] = values;
   return *this;
 }

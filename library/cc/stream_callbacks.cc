@@ -9,7 +9,7 @@ namespace Platform {
 
 namespace {
 
-void* cOnHeaders(envoy_headers headers, bool end_stream, void* context) {
+void* c_on_headers(envoy_headers headers, bool end_stream, void* context) {
   auto stream_callbacks = static_cast<StreamCallbacks*>(context);
   if (stream_callbacks->on_headers.has_value()) {
     auto raw_headers = envoyHeadersAsRawHeaderMap(headers);
@@ -26,7 +26,7 @@ void* cOnHeaders(envoy_headers headers, bool end_stream, void* context) {
   return context;
 }
 
-void* cOnData(envoy_data data, bool end_stream, void* context) {
+void* c_on_data(envoy_data data, bool end_stream, void* context) {
   auto stream_callbacks = static_cast<StreamCallbacks*>(context);
   if (stream_callbacks->on_data.has_value()) {
     auto on_data = stream_callbacks->on_data.value();
@@ -35,7 +35,7 @@ void* cOnData(envoy_data data, bool end_stream, void* context) {
   return context;
 }
 
-void* cOnTrailers(envoy_headers metadata, void* context) {
+void* c_on_trailers(envoy_headers metadata, void* context) {
   auto stream_callbacks = static_cast<StreamCallbacks*>(context);
   if (stream_callbacks->on_trailers.has_value()) {
     auto raw_headers = envoyHeadersAsRawHeaderMap(metadata);
@@ -49,7 +49,7 @@ void* cOnTrailers(envoy_headers metadata, void* context) {
   return context;
 }
 
-void* cOnError(envoy_error raw_error, void* context) {
+void* c_on_error(envoy_error raw_error, void* context) {
   auto stream_callbacks = static_cast<StreamCallbacks*>(context);
   if (stream_callbacks->on_error.has_value()) {
     EnvoyErrorSharedPtr error = std::make_shared<EnvoyError>();
@@ -64,7 +64,7 @@ void* cOnError(envoy_error raw_error, void* context) {
   return context;
 }
 
-void* cOnComplete(void* context) {
+void* c_on_complete(void* context) {
   auto stream_callbacks = static_cast<StreamCallbacks*>(context);
   if (stream_callbacks->on_complete.has_value()) {
     auto on_complete = stream_callbacks->on_complete.value();
@@ -73,7 +73,7 @@ void* cOnComplete(void* context) {
   return context;
 }
 
-void* cOnCancel(void* context) {
+void* c_on_cancel(void* context) {
   auto stream_callbacks = static_cast<StreamCallbacks*>(context);
   if (stream_callbacks->on_cancel.has_value()) {
     auto on_cancel = stream_callbacks->on_cancel.value();
@@ -86,13 +86,13 @@ void* cOnCancel(void* context) {
 
 envoy_http_callbacks StreamCallbacks::asEnvoyHttpCallbacks() {
   return envoy_http_callbacks{
-      .on_headers = &cOnHeaders,
-      .on_data = &cOnData,
+      .on_headers = &c_on_headers,
+      .on_data = &c_on_data,
       // on_metadata is not used
-      .on_trailers = &cOnTrailers,
-      .on_error = &cOnError,
-      .on_complete = &cOnComplete,
-      .on_cancel = &cOnCancel,
+      .on_trailers = &c_on_trailers,
+      .on_error = &c_on_error,
+      .on_complete = &c_on_complete,
+      .on_cancel = &c_on_cancel,
       .context = this,
   };
 }
