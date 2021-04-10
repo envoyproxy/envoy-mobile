@@ -14,7 +14,7 @@ namespace Event {
 
 /**
  * Wrapper around Envoy's Event::Dispatcher that queues callbacks until drain() is called. Future
- * versions may support correct calling semantics after the underlying dispatcher has been
+ * versions may support correct calling semantics after the Event::Dispatcher has been
  * terminated/deleted or before it has been created.
  */
 class ProvisionalDispatcher : public Logger::Loggable<Logger::Id::main> {
@@ -30,16 +30,16 @@ public:
 
   // TODO(goaway): return ENVOY_FAILURE after the underlying dispatcher has exited.
   /**
-   * Before the underlying dispatcher is running, queues posted callbacks; afterwards passes them
+   * Before the Event::Dispatcher is running, queues posted callbacks; afterwards passes them
    * through.
    * @param callback, the callback to be dispatched.
-   * @return should return ENVOY_FAILURE when the underlying dispatcher exits, but at present it
+   * @return should return ENVOY_FAILURE when the Event::Dispatcher exits, but at present it
    * always returns ENVOY_SUCCESS.
    */
   virtual envoy_status_t post(Event::PostCb callback);
 
   /**
-   * @return false before the underlying dispatcher is running, otherwise the result of the
+   * @return false before the Event::Dispatcher is running, otherwise the result of the
    * underlying call to Event::Dispatcher::isThreadSafe().
    */
   virtual bool isThreadSafe();
