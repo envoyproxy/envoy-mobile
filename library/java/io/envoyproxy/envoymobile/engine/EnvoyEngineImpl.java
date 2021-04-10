@@ -50,8 +50,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   public int runWithConfig(String configurationYAML, String logLevel,
                            EnvoyOnEngineRunning onEngineRunning) {
     try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel,
-              onEngineRunning);
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, onEngineRunning);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;
@@ -72,19 +71,19 @@ public class EnvoyEngineImpl implements EnvoyEngine {
 
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
-                                       new JvmFilterFactoryContext(filterFactory));
+              new JvmFilterFactoryContext(filterFactory));
     }
 
     for (Map.Entry<String, EnvoyStringAccessor> entry :
-         envoyConfiguration.stringAccessors.entrySet()) {
+            envoyConfiguration.stringAccessors.entrySet()) {
       JniLibrary.registerStringAccessor(entry.getKey(),
-                                        new JvmStringAccessorContext(entry.getValue()));
+              new JvmStringAccessorContext(entry.getValue()));
     }
 
     return runWithConfig(envoyConfiguration.resolveTemplate(
-                             JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
-                             JniLibrary.nativeFilterTemplateString()),
-                         logLevel, onEngineRunning);
+            JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
+            JniLibrary.nativeFilterTemplateString()),
+            logLevel, onEngineRunning);
   }
 
   /**
