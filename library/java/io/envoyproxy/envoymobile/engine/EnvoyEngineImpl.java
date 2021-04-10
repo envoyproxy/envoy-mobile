@@ -10,11 +10,9 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
   // TODO(goaway): enforce agreement values in /library/common/types/c_types.h.
-  private static final int ENVOY_SUCCESS = 0;
   private static final int ENVOY_FAILURE = 1;
 
   private final long engineHandle;
-  private EnvoyOnEngineRunning onEngineRunning = () -> { return null; };
 
   public EnvoyEngineImpl() {
     JniLibrary.load();
@@ -51,10 +49,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int runWithConfig(String configurationYAML, String logLevel,
                            EnvoyOnEngineRunning onEngineRunning) {
-    this.onEngineRunning = onEngineRunning;
     try {
       return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel,
-                                  this.onEngineRunning);
+              onEngineRunning);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;

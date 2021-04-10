@@ -6,7 +6,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
-import java.util.UUID
+import java.util.*
 
 sealed class BaseConfiguration
 
@@ -21,7 +21,7 @@ open class EngineBuilder(
 ) {
   private var logLevel = LogLevel.INFO
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
-  private var onEngineRunning: (() -> Unit)? = null
+  private var onEngineRunning: (() -> Unit) = { }
 
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30
@@ -122,9 +122,9 @@ open class EngineBuilder(
    */
   fun addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
     EngineBuilder {
-      this.platformFilterChain.add(FilterFactory(name, factory))
-      return this
-    }
+    this.platformFilterChain.add(FilterFactory(name, factory))
+    return this
+  }
 
   /**
    * Add an HTTP filter config used to create native filters for streams sent by this client.
@@ -138,9 +138,9 @@ open class EngineBuilder(
    */
   fun addNativeFilter(name: String = UUID.randomUUID().toString(), typedConfig: String):
     EngineBuilder {
-      this.nativeFilterChain.add(EnvoyNativeFilterConfig(name, typedConfig))
-      return this
-    }
+    this.nativeFilterChain.add(EnvoyNativeFilterConfig(name, typedConfig))
+    return this
+  }
 
   /**
    * Set a closure to be called when the engine finishes its async startup and begins running.
