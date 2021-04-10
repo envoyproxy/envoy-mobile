@@ -6,12 +6,12 @@ namespace Envoy {
 namespace Python {
 namespace Stream {
 
-Platform::Stream& send_data_shim(Platform::Stream& self, py::bytes data) {
+Platform::Stream& sendDataShim(Platform::Stream& self, py::bytes data) {
   envoy_data raw_data = pyBytesAsEnvoyData(data);
   return self.sendData(raw_data);
 }
 
-void close_shim(Platform::Stream& self, py::bytes data) {
+void closeShim(Platform::Stream& self, py::bytes data) {
   envoy_data raw_data = pyBytesAsEnvoyData(data);
   self.close(raw_data);
 }
