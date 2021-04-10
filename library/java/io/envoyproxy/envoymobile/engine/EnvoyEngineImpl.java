@@ -6,7 +6,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
-
+// NOLINT(namespace-envoy)
 /* Concrete implementation of the `EnvoyEngine` interface. */
 public class EnvoyEngineImpl implements EnvoyEngine {
   // TODO(goaway): enforce agreement values in /library/common/types/c_types.h.
@@ -71,19 +71,19 @@ public class EnvoyEngineImpl implements EnvoyEngine {
 
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
-              new JvmFilterFactoryContext(filterFactory));
+                                       new JvmFilterFactoryContext(filterFactory));
     }
 
     for (Map.Entry<String, EnvoyStringAccessor> entry :
-            envoyConfiguration.stringAccessors.entrySet()) {
+         envoyConfiguration.stringAccessors.entrySet()) {
       JniLibrary.registerStringAccessor(entry.getKey(),
-              new JvmStringAccessorContext(entry.getValue()));
+                                        new JvmStringAccessorContext(entry.getValue()));
     }
 
     return runWithConfig(envoyConfiguration.resolveTemplate(
-            JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
-            JniLibrary.nativeFilterTemplateString()),
-            logLevel, onEngineRunning);
+                             JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
+                             JniLibrary.nativeFilterTemplateString()),
+                         logLevel, onEngineRunning);
   }
 
   /**
