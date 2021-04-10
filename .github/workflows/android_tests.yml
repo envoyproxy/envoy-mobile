@@ -12,6 +12,7 @@ jobs:
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
+      - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: actions/checkout@v1
         with:
           submodules: true
@@ -27,6 +28,7 @@ jobs:
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
+      - uses: seanmiddleditch/gha-setup-ninja@master
       - uses: actions/checkout@v1
         with:
           submodules: true
