@@ -40,27 +40,6 @@ pybind_extension(
     ],
 )
 
-py_wheel(
-    name = "envoy_engine_whl",
-    abi = python_abi(),
-    distribution = "envoy_engine",
-    platform = select({
-        # TODO: build these on target platforms / architectures to verify
-        # that this select statement is correct
-        "//bazel:darwin_arm64": "macos_10_9_aarch64",
-        "//bazel:darwin_x86_64": "macos_10_9_x86_64",
-        "//bazel:darwin": "macos_10_9_x86_64",
-        "//bazel:linux_aarch64": "manylinux2014_aarch64",
-        "//bazel:linux_x86_64": "manylinux2014_x86_64",
-    }),
-    python_tag = python_abi(),
-    strip_path_prefixes = ["library/python"],
-    version = "0.0.1",
-    deps = [
-        ":envoy_engine.so",
-    ],
-)
-
 py_library(
     name = "envoy_requests",
     srcs = glob([
@@ -74,4 +53,26 @@ py_library(
         ":envoy_engine.so",
     ],
     imports = ["."],
+)
+
+py_wheel(
+    name = "envoy_requests_whl",
+    abi = python_abi(),
+    distribution = "envoy_requests",
+    platform = select({
+        # TODO: build these on target platforms / architectures to verify
+        # that this select statement is correct
+        "//bazel:darwin_arm64": "macosx_10_9_aarch64",
+        "//bazel:darwin_x86_64": "macosx_10_9_x86_64",
+        "//bazel:darwin": "macosx_10_9_x86_64",
+        "//bazel:linux_aarch64": "manylinux2014_aarch64",
+        "//bazel:linux_x86_64": "manylinux2014_x86_64",
+    }),
+    python_tag = python_abi(),
+    strip_path_prefixes = ["library/python"],
+    version = "0.0.1",
+    deps = [
+        ":envoy_engine.so",
+        ":envoy_requests",
+    ],
 )
