@@ -39,9 +39,7 @@ public class AndroidEngineImpl implements EnvoyEngine {
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
   }
 
-  public void terminate() {
-    envoyEngine.terminate();
-  }
+  public void terminate() { envoyEngine.terminate(); }
 
   @Override
   public int recordCounterInc(String elements, int count) {

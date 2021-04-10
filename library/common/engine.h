@@ -21,7 +21,8 @@ public:
    * @param logger, the callbacks to use for engine logging.
    * @param preferred_network, hook to obtain the preferred network for new streams.
    */
-  Engine(envoy_engine_callbacks callbacks, envoy_logger logger, std::atomic<envoy_network_t>& preferred_network);
+  Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
+         std::atomic<envoy_network_t>& preferred_network);
 
   /**
    * Engine destructor.
