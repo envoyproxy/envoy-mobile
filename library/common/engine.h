@@ -6,6 +6,7 @@
 
 #include "absl/base/call_once.h"
 #include "extension_registry.h"
+#include "library/common/common/lambda_logger_delegate.h"
 #include "library/common/envoy_mobile_main_common.h"
 #include "library/common/http/client.h"
 #include "library/common/types/c_types.h"
@@ -17,9 +18,10 @@ public:
   /**
    * Constructor for a new engine instance.
    * @param callbacks, the callbacks to use for engine lifecycle monitoring.
+   * @param logger, the callbacks to use for engine logging.
    * @param preferred_network, hook to obtain the preferred network for new streams.
    */
-  Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& preferred_network);
+  Engine(envoy_engine_callbacks callbacks, envoy_logger logger, std::atomic<envoy_network_t>& preferred_network);
 
   /**
    * Engine destructor.
@@ -97,14 +99,16 @@ private:
   Stats::ScopePtr client_scope_;
   Stats::StatNameSetPtr stat_name_set_;
   envoy_engine_callbacks callbacks_;
+  envoy_logger logger_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   std::unique_ptr<Http::Client> http_client_;
   std::unique_ptr<Event::ProvisionalDispatcher> dispatcher_;
+  Logger::LambdaDelegatePtr lambda_logger_{};
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
   std::atomic<envoy_network_t>& preferred_network_;
-  // main_thread_ should be destroyed first, hence it is the last member variable. Objects that
+  // main_thread_ should be destroyed first, hence it is the last member variable. Objects with
   // instructions scheduled on the main_thread_ need to have a longer lifetime.
   std::thread main_thread_{}; // Empty placeholder to be populated later.
 };

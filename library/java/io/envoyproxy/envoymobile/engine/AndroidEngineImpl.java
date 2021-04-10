@@ -1,23 +1,21 @@
 package io.envoyproxy.envoymobile.engine;
 
-import android.app.Application;
+import android.content.Context;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 /* Android-specific implementation of the `EnvoyEngine` interface. */
 public class AndroidEngineImpl implements EnvoyEngine {
-  private final Application application;
   private final EnvoyEngine envoyEngine;
 
   /**
    * @param runningCallback Called when the engine finishes its async startup and begins running.
    */
-  public AndroidEngineImpl(Application application, EnvoyOnEngineRunning runningCallback) {
-    this.application = application;
+  public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback) {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback);
-    AndroidJniLibrary.load(application.getBaseContext());
-    AndroidNetworkMonitor.load(application.getBaseContext());
+    AndroidJniLibrary.load(context);
+    AndroidNetworkMonitor.load(context);
   }
 
   @Override
@@ -39,6 +37,10 @@ public class AndroidEngineImpl implements EnvoyEngine {
     // gets fixed. AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
     // application.registerActivityLifecycleCallbacks(monitor);
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
+  }
+
+  public void terminate() {
+    envoyEngine.terminate();
   }
 
   @Override

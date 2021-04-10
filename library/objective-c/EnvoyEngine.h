@@ -305,9 +305,10 @@ extern const int kEnvoyFailure;
 
  @param onEngineRunning Closure called when the engine finishes its async startup and begins
  running.
+ @param logger Logging interface.
  */
-- (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning;
-
+- (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
+                                 logger:(nullable void (^)(NSString *))logger;
 /**
  Run the Envoy engine with the provided configuration and log level.
 
@@ -387,6 +388,20 @@ extern const int kEnvoyFailure;
  @return A status indicating if the action was successful.
  */
 - (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value;
+
+@end
+
+#pragma mark - EnvoyLogger
+
+// Logging interface.
+@interface EnvoyLogger : NSObject
+
+@property (nonatomic, copy) void (^log)(NSString *);
+
+/**
+ Create a new instance of the logger.
+ */
+- (instancetype)initWithLogClosure:(void (^)(NSString *))log;
 
 @end
 

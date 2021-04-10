@@ -4,12 +4,15 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
 
-Engine::Engine(envoy_engine_callbacks callbacks, std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks), dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
+Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
+               std::atomic<envoy_network_t>& preferred_network)
+    : callbacks_(callbacks), logger_(logger),
+      dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
       preferred_network_(preferred_network) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
@@ -49,6 +52,11 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       main_common = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
+      if (logger_.log) {
+        lambda_logger_ =
+            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
+      }
+
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
@@ -95,6 +103,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
+  lambda_logger_.reset(nullptr);
   main_common.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);

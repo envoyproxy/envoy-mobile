@@ -41,7 +41,7 @@ TEST_F(EngineTest, EarlyExit) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
 
-  init_engine(callbacks);
+  init_engine(callbacks, {});
   run_engine(0, config.c_str(), level.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
