@@ -44,14 +44,23 @@ cc_binary(
     ],
 )
 
-# Java JNI library
+# Java JNI library for local unit test execution
+cc_binary(
+    name = "java_jni_lib.so",
+    srcs = [        "jni_interface.cc",],
+    deps = ["java_jni_lib"],
+    copts = ["-std=c++17"],
+        linkopts = [
+            "-lm",
+        ],
+        linkshared = True,
+)
+
 cc_library(
     name = "java_jni_lib",
     srcs = [
-        "jni_interface.cc",
         "jni_utility.cc",
         "jni_version.cc",
-        "@local_jdk//:jni_header",
     ],
     hdrs = [
         "jni_utility.h",
