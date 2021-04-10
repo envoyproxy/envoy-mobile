@@ -68,24 +68,23 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
     postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
-        Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          server_->dispatcher().post([&]() -> void {
-            client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
-            // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
-            // on-the-fly without risking contention on system with lots of threads.
-            // It also comes with ease of programming.
-            stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
-            auto api_listener = server_->listenerManager().apiListener()->get().http();
-            ASSERT(api_listener.has_value());
-            http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_,
-                                                          server_->serverFactoryContext().scope(),
-                                                          preferred_network_);
-            dispatcher_->drain(server_->dispatcher());
-            if (callbacks_.on_engine_running != nullptr) {
-              callbacks_.on_engine_running(callbacks_.context);
-            }
-          });
-        });
+      Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
+        client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
+        // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
+        // on-the-fly without risking contention on system with lots of threads.
+        // It also comes with ease of programming.
+        stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
+        auto api_listener = server_->listenerManager().apiListener()->get().http();
+        ASSERT(api_listener.has_value());
+        http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_,
+                                                      server_->serverFactoryContext().scope(),
+                                                      preferred_network_);
+        dispatcher_->drain(server_->dispatcher());
+        if (callbacks_.on_engine_running != nullptr) {
+          callbacks_.on_engine_running(callbacks_.context);
+        }
+      }
+    );
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
@@ -108,8 +107,6 @@ Engine::~Engine() {
   if (!main_thread_.joinable()) {
     return;
   }
-
-  //ASSERT(!dispatcher_->isThreadSafe(), "Must not destruct in the room loop!");
 
   // If we're not on the main thread, we need to be sure that MainCommon is finished being
   // constructed so we can dispatch shutdown.
