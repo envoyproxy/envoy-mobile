@@ -43,7 +43,7 @@ def envoy_mobile_jni_kt_test(name, srcs, native_lib_name = "", native_dep = [], 
         visibility = ["//visibility:public"],
     )
 
-        # Generate .jnilib file for OS X look up
+    # Generate .jnilib file for OS X look up
     native.genrule(
         name = so_lib,
         cmd = """

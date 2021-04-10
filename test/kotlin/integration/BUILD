@@ -5,8 +5,8 @@ envoy_mobile_jni_kt_test(
     srcs = [
         "EnvoyEngineSimpleIntegrationTest.kt",
     ],
-    native_lib_name = "envoy_jni",
     native_dep = ["//library/common/jni:java_jni_lib.so"],
+    native_lib_name = "envoy_jni",
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],

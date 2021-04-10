@@ -175,7 +175,7 @@ def _create_jni_library(name, native_lib_name, native_deps = []):
     """
     cc_lib_name = name + "_jni_interface_lib"
     jni_archive_name = name + "_jni"
-    android_so_apk = name +"_so_apk"
+    android_so_apk = name + "_so_apk"
 
     # Create a dummy manifest file for our android_binary
     native.genrule(
@@ -213,9 +213,9 @@ def _create_jni_library(name, native_lib_name, native_deps = []):
         original_dir=$$PWD
         set -- $(SRCS)
         unzip $$original_dir/$$1 > /dev/null
-        find lib -name '*.so' -exec sh -c 'mv $$0 $$(dirname $$0)/{--}.so' {} \;
+        find lib -name '*.so' -exec sh -c 'mv $$0 $$(dirname $$0)/{--}.so' {} \\;
         zip -r $@ lib > /dev/null
-        """.replace('{--}', "envoy_jni"),
+        """.replace("{--}", "envoy_jni"),
     )
 
     return jni_archive_name

@@ -47,13 +47,13 @@ cc_binary(
 # Java JNI library for local unit test execution
 cc_binary(
     name = "java_jni_lib.so",
-    srcs = [        "jni_interface.cc",],
-    deps = ["java_jni_lib"],
+    srcs = ["jni_interface.cc"],
     copts = ["-std=c++17"],
-        linkopts = [
-            "-lm",
-        ],
-        linkshared = True,
+    linkopts = [
+        "-lm",
+    ],
+    linkshared = True,
+    deps = ["java_jni_lib"],
 )
 
 cc_library(
