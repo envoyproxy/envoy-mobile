@@ -20,13 +20,12 @@ public final class UploadDataProviders {
    * @return A new UploadDataProvider for the given file
    */
   public static UploadDataProvider create(final File file) {
-    return new FileUploadProvider(
-        new FileChannelProvider() {
-          @Override
-          public FileChannel getChannel() throws IOException {
-            return new FileInputStream(file).getChannel();
-          }
-        });
+    return new FileUploadProvider(new FileChannelProvider() {
+      @Override
+      public FileChannel getChannel() throws IOException {
+        return new FileInputStream(file).getChannel();
+      }
+    });
   }
 
   /**
@@ -37,18 +36,17 @@ public final class UploadDataProviders {
    * @return A new UploadDataProvider for the given file descriptor
    */
   public static UploadDataProvider create(final ParcelFileDescriptor fd) {
-    return new FileUploadProvider(
-        new FileChannelProvider() {
-          @Override
-          public FileChannel getChannel() throws IOException {
-            if (fd.getStatSize() != -1) {
-              return new ParcelFileDescriptor.AutoCloseInputStream(fd).getChannel();
-            } else {
-              fd.close();
-              throw new IllegalArgumentException("Not a file: " + fd);
-            }
-          }
-        });
+    return new FileUploadProvider(new FileChannelProvider() {
+      @Override
+      public FileChannel getChannel() throws IOException {
+        if (fd.getStatSize() != -1) {
+          return new ParcelFileDescriptor.AutoCloseInputStream(fd).getChannel();
+        } else {
+          fd.close();
+          throw new IllegalArgumentException("Not a file: " + fd);
+        }
+      }
+    });
   }
 
   /**
@@ -79,9 +77,7 @@ public final class UploadDataProviders {
    * @param data Array containing data to upload
    * @return A new UploadDataProvider for the given data
    */
-  public static UploadDataProvider create(byte[] data) {
-    return create(data, 0, data.length);
-  }
+  public static UploadDataProvider create(byte[] data) { return create(data, 0, data.length); }
 
   private interface FileChannelProvider {
     FileChannel getChannel() throws IOException;
@@ -93,9 +89,7 @@ public final class UploadDataProviders {
     /** Guards initalization of {@code mChannel} */
     private final Object mLock = new Object();
 
-    private FileUploadProvider(FileChannelProvider provider) {
-      this.mProvider = provider;
-    }
+    private FileUploadProvider(FileChannelProvider provider) { this.mProvider = provider; }
 
     @Override
     public long getLength() throws IOException {
@@ -153,9 +147,7 @@ public final class UploadDataProviders {
   private static final class ByteBufferUploadProvider extends UploadDataProvider {
     private final ByteBuffer mUploadBuffer;
 
-    private ByteBufferUploadProvider(ByteBuffer uploadBuffer) {
-      this.mUploadBuffer = uploadBuffer;
-    }
+    private ByteBufferUploadProvider(ByteBuffer uploadBuffer) { this.mUploadBuffer = uploadBuffer; }
 
     @Override
     public long getLength() {

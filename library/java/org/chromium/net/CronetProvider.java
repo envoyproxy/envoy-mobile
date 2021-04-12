@@ -104,18 +104,10 @@ public abstract class CronetProvider {
   @Override
   public String toString() {
     return "["
-        + "class="
-        + getClass().getName()
-        + ", "
-        + "name="
-        + getName()
-        + ", "
-        + "version="
-        + getVersion()
-        + ", "
-        + "enabled="
-        + isEnabled()
-        + "]";
+        + "class=" + getClass().getName() + ", "
+        + "name=" + getName() + ", "
+        + "version=" + getVersion() + ", "
+        + "enabled=" + isEnabled() + "]";
   }
 
   /** Name of the Java {@link CronetProvider} class. */
@@ -148,8 +140,8 @@ public abstract class CronetProvider {
     // Use LinkedHashSet to preserve the order and eliminate duplicate providers.
     Set<CronetProvider> providers = new LinkedHashSet<>();
     addCronetProviderFromResourceFile(context, providers);
-    addCronetProviderImplByClassName(
-        context, PLAY_SERVICES_CRONET_PROVIDER_CLASS, providers, false);
+    addCronetProviderImplByClassName(context, PLAY_SERVICES_CRONET_PROVIDER_CLASS, providers,
+                                     false);
     addCronetProviderImplByClassName(context, GMS_CORE_CRONET_PROVIDER_CLASS, providers, false);
     addCronetProviderImplByClassName(context, NATIVE_CRONET_PROVIDER_CLASS, providers, false);
     addCronetProviderImplByClassName(context, JAVA_CRONET_PROVIDER_CLASS, providers, false);
@@ -164,8 +156,9 @@ public abstract class CronetProvider {
    * @return {@code true} if the provider was added to the set; {@code false} if the provider
    *     couldn't be instantiated.
    */
-  private static boolean addCronetProviderImplByClassName(
-      Context context, String className, Set<CronetProvider> providers, boolean logError) {
+  private static boolean addCronetProviderImplByClassName(Context context, String className,
+                                                          Set<CronetProvider> providers,
+                                                          boolean logError) {
     ClassLoader loader = context.getClassLoader();
     try {
       Class<? extends CronetProvider> providerClass =
@@ -191,18 +184,14 @@ public abstract class CronetProvider {
    * De-duplicates exception handling logic in {@link #addCronetProviderImplByClassName}. It should
    * be removed when support of API Levels lower than 19 is deprecated.
    */
-  private static void logReflectiveOperationException(
-      String className, boolean logError, Exception e) {
+  private static void logReflectiveOperationException(String className, boolean logError,
+                                                      Exception e) {
     if (logError) {
       Log.e(TAG, "Unable to load provider class: " + className, e);
     } else {
       if (Log.isLoggable(TAG, Log.DEBUG)) {
-        Log.d(
-            TAG,
-            "Tried to load "
-                + className
-                + " provider class but it wasn't"
-                + " included in the app classpath");
+        Log.d(TAG, "Tried to load " + className + " provider class but it wasn't"
+                       + " included in the app classpath");
       }
     }
   }
@@ -215,12 +204,10 @@ public abstract class CronetProvider {
    *     do not include the string with {@link #RES_KEY_CRONET_IMPL_CLASS} key.
    * @throws RuntimeException if the provider cannot be found or instantiated.
    */
-  private static boolean addCronetProviderFromResourceFile(
-      Context context, Set<CronetProvider> providers) {
-    int resId =
-        context
-            .getResources()
-            .getIdentifier(RES_KEY_CRONET_IMPL_CLASS, "string", context.getPackageName());
+  private static boolean addCronetProviderFromResourceFile(Context context,
+                                                           Set<CronetProvider> providers) {
+    int resId = context.getResources().getIdentifier(RES_KEY_CRONET_IMPL_CLASS, "string",
+                                                     context.getPackageName());
     // Resource not found
     if (resId == 0) {
       // The resource wasn't included in the app; therefore, there is nothing to add.
@@ -230,22 +217,17 @@ public abstract class CronetProvider {
 
     // If the resource specifies a well known provider, don't load it because
     // there will be an attempt to load it anyways.
-    if (className == null
-        || className.equals(PLAY_SERVICES_CRONET_PROVIDER_CLASS)
-        || className.equals(GMS_CORE_CRONET_PROVIDER_CLASS)
-        || className.equals(JAVA_CRONET_PROVIDER_CLASS)
-        || className.equals(NATIVE_CRONET_PROVIDER_CLASS)) {
+    if (className == null || className.equals(PLAY_SERVICES_CRONET_PROVIDER_CLASS) ||
+        className.equals(GMS_CORE_CRONET_PROVIDER_CLASS) ||
+        className.equals(JAVA_CRONET_PROVIDER_CLASS) ||
+        className.equals(NATIVE_CRONET_PROVIDER_CLASS)) {
       return false;
     }
 
     if (!addCronetProviderImplByClassName(context, className, providers, true)) {
-      Log.e(
-          TAG,
-          "Unable to instantiate Cronet implementation class "
-              + className
-              + " that is listed as in the app string resource file under "
-              + RES_KEY_CRONET_IMPL_CLASS
-              + " key");
+      Log.e(TAG, "Unable to instantiate Cronet implementation class " + className +
+                     " that is listed as in the app string resource file under " +
+                     RES_KEY_CRONET_IMPL_CLASS + " key");
     }
     return true;
   }

@@ -81,8 +81,8 @@ public abstract class UrlRequest {
      *     Executor}. May optionally be the same {@code Executor} the request itself is using.
      * @return the builder to facilitate chaining.
      */
-    public abstract Builder setUploadDataProvider(
-        UploadDataProvider uploadDataProvider, Executor executor);
+    public abstract Builder setUploadDataProvider(UploadDataProvider uploadDataProvider,
+                                                  Executor executor);
 
     /**
      * Marks that the executors this request will use to notify callbacks (for {@code
@@ -128,8 +128,8 @@ public abstract class UrlRequest {
      * @throws Exception if an error occurs while processing a redirect. {@link #onFailed} will be
      *     called with the thrown exception set as the cause of the {@link CallbackException}.
      */
-    public abstract void onRedirectReceived(
-        UrlRequest request, UrlResponseInfo info, String newLocationUrl) throws Exception;
+    public abstract void onRedirectReceived(UrlRequest request, UrlResponseInfo info,
+                                            String newLocationUrl) throws Exception;
 
     /**
      * Invoked when the final set of headers, after all redirects, is received. Will only be invoked
@@ -166,8 +166,8 @@ public abstract class UrlRequest {
      *     will be called with the thrown exception set as the cause of the {@link
      *     CallbackException}.
      */
-    public abstract void onReadCompleted(
-        UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception;
+    public abstract void onReadCompleted(UrlRequest request, UrlResponseInfo info,
+                                         ByteBuffer byteBuffer) throws Exception;
 
     /**
      * Invoked when request is completed successfully. Once invoked, no other {@link Callback}

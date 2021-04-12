@@ -83,9 +83,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      *     application context. A reference to only the application context will be kept, so as to
      *     avoid extending the lifetime of {@code context} unnecessarily.
      */
-    public Builder(Context context) {
-      super(context);
-    }
+    public Builder(Context context) { super(context); }
 
     /**
      * Constructs {@link Builder} with a given delegate that provides the actual implementation of
@@ -94,9 +92,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * @param builderDelegate delegate that provides the actual implementation.
      *     <p>{@hide}
      */
-    public Builder(ICronetEngineBuilder builderDelegate) {
-      super(builderDelegate);
-    }
+    public Builder(ICronetEngineBuilder builderDelegate) { super(builderDelegate); }
 
     /**
      * Enables the network quality estimator, which collects and reports measurements of round trip
@@ -199,8 +195,8 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
     }
 
     @Override
-    public Builder addPublicKeyPins(
-        String hostName, Set<byte[]> pinsSha256, boolean includeSubdomains, Date expirationDate) {
+    public Builder addPublicKeyPins(String hostName, Set<byte[]> pinsSha256,
+                                    boolean includeSubdomains, Date expirationDate) {
       super.addPublicKeyPins(hostName, pinsSha256, includeSubdomains, expirationDate);
       return this;
     }
@@ -229,12 +225,13 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
    * @param executor the {@link Executor} on which {@code callback} methods will be invoked.
    * @return the created builder.
    */
-  public abstract ExperimentalBidirectionalStream.Builder newBidirectionalStreamBuilder(
-      String url, BidirectionalStream.Callback callback, Executor executor);
+  public abstract ExperimentalBidirectionalStream.Builder
+  newBidirectionalStreamBuilder(String url, BidirectionalStream.Callback callback,
+                                Executor executor);
 
   @Override
-  public abstract ExperimentalUrlRequest.Builder newUrlRequestBuilder(
-      String url, UrlRequest.Callback callback, Executor executor);
+  public abstract ExperimentalUrlRequest.Builder
+  newUrlRequestBuilder(String url, UrlRequest.Callback callback, Executor executor);
 
   /**
    * Starts NetLog logging to a specified directory with a bounded size. The NetLog will contain
@@ -264,9 +261,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
    * @return the estimated connection type. The returned value is one of {@link
    *     #EFFECTIVE_CONNECTION_TYPE_UNKNOWN EFFECTIVE_CONNECTION_TYPE_* }.
    */
-  public int getEffectiveConnectionType() {
-    return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  }
+  public int getEffectiveConnectionType() { return EFFECTIVE_CONNECTION_TYPE_UNKNOWN; }
 
   /**
    * Configures the network quality estimator for testing. This must be called before round trip
@@ -278,8 +273,9 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
    * @param disableOfflineCheck when set to true, disables the device offline checks when computing
    *     the effective connection type or when writing the prefs.
    */
-  public void configureNetworkQualityEstimatorForTesting(
-      boolean useLocalHostRequests, boolean useSmallerResponses, boolean disableOfflineCheck) {}
+  public void configureNetworkQualityEstimatorForTesting(boolean useLocalHostRequests,
+                                                         boolean useSmallerResponses,
+                                                         boolean disableOfflineCheck) {}
 
   /**
    * Registers a listener that gets called whenever the network quality estimator witnesses a sample
@@ -363,9 +359,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
    *
    * @return Estimate of the HTTP RTT in milliseconds.
    */
-  public int getHttpRttMs() {
-    return CONNECTION_METRIC_UNKNOWN;
-  }
+  public int getHttpRttMs() { return CONNECTION_METRIC_UNKNOWN; }
 
   /**
    * Returns the transport RTT estimate (in milliseconds) computed by the network quality estimator.
@@ -374,9 +368,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
    *
    * @return Estimate of the transport RTT in milliseconds.
    */
-  public int getTransportRttMs() {
-    return CONNECTION_METRIC_UNKNOWN;
-  }
+  public int getTransportRttMs() { return CONNECTION_METRIC_UNKNOWN; }
 
   /**
    * Returns the downstream throughput estimate (in kilobits per second) computed by the network
@@ -386,7 +378,5 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
    *
    * @return Estimate of the downstream throughput in kilobits per second.
    */
-  public int getDownstreamThroughputKbps() {
-    return CONNECTION_METRIC_UNKNOWN;
-  }
+  public int getDownstreamThroughputKbps() { return CONNECTION_METRIC_UNKNOWN; }
 }

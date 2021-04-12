@@ -62,9 +62,7 @@ public abstract class NetworkException extends CronetException {
    *     java.io.IOException#getCause getCause()} method). A null value is permitted, and indicates
    *     that the cause is nonexistent or unknown.
    */
-  protected NetworkException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  protected NetworkException(String message, Throwable cause) { super(message, cause); }
 
   /**
    * Returns error code, one of {@link #ERROR_HOSTNAME_NOT_RESOLVED ERROR_*}.

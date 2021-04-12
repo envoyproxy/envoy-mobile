@@ -20,9 +20,7 @@ public abstract class QuicException extends NetworkException {
    *     java.io.IOException#getCause getCause()} method). A null value is permitted, and indicates
    *     that the cause is nonexistent or unknown.
    */
-  protected QuicException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  protected QuicException(String message, Throwable cause) { super(message, cause); }
 
   /**
    * Returns the <a href="https://www.chromium.org/quic">QUIC</a> error code, which is a value from

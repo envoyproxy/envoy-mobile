@@ -17,7 +17,5 @@ public abstract class CallbackException extends CronetException {
    * @param cause exception thrown by {@link UrlRequest.Callback} that's being wrapped. It is saved
    *     for later retrieval by the {@link java.io.IOException#getCause getCause()}.
    */
-  protected CallbackException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  protected CallbackException(String message, Throwable cause) { super(message, cause); }
 }

@@ -32,9 +32,7 @@ public abstract class ExperimentalBidirectionalStream extends BidirectionalStrea
      *     {@link RequestFinishedInfo}.
      * @return the builder to facilitate chaining.
      */
-    public Builder addRequestAnnotation(Object annotation) {
-      return this;
-    }
+    public Builder addRequestAnnotation(Object annotation) { return this; }
 
     /**
      * Sets {@link android.net.TrafficStats} tag to use when accounting socket traffic caused by
@@ -53,9 +51,7 @@ public abstract class ExperimentalBidirectionalStream extends BidirectionalStrea
      *     application.
      * @return the builder to facilitate chaining.
      */
-    public Builder setTrafficStatsTag(int tag) {
-      return this;
-    }
+    public Builder setTrafficStatsTag(int tag) { return this; }
 
     /**
      * Sets specific UID to use when accounting socket traffic caused by this request. See {@link
@@ -72,27 +68,21 @@ public abstract class ExperimentalBidirectionalStream extends BidirectionalStrea
      * @param uid the UID to attribute socket traffic caused by this request.
      * @return the builder to facilitate chaining.
      */
-    public Builder setTrafficStatsUid(int uid) {
-      return this;
-    }
+    public Builder setTrafficStatsUid(int uid) { return this; }
 
     // To support method chaining, override superclass methods to return an
     // instance of this class instead of the parent.
 
-    @Override
-    public abstract Builder setHttpMethod(String method);
+    @Override public abstract Builder setHttpMethod(String method);
+
+    @Override public abstract Builder addHeader(String header, String value);
+
+    @Override public abstract Builder setPriority(int priority);
 
     @Override
-    public abstract Builder addHeader(String header, String value);
+    public abstract Builder
+    delayRequestHeadersUntilFirstFlush(boolean delayRequestHeadersUntilFirstFlush);
 
-    @Override
-    public abstract Builder setPriority(int priority);
-
-    @Override
-    public abstract Builder delayRequestHeadersUntilFirstFlush(
-        boolean delayRequestHeadersUntilFirstFlush);
-
-    @Override
-    public abstract ExperimentalBidirectionalStream build();
+    @Override public abstract ExperimentalBidirectionalStream build();
   }
 }

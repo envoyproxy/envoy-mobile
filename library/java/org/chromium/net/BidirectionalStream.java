@@ -75,8 +75,8 @@ public abstract class BidirectionalStream {
      *     until flush() is called.
      * @return the builder to facilitate chaining.
      */
-    public abstract Builder delayRequestHeadersUntilFirstFlush(
-        boolean delayRequestHeadersUntilFirstFlush);
+    public abstract Builder
+    delayRequestHeadersUntilFirstFlush(boolean delayRequestHeadersUntilFirstFlush);
 
     /**
      * Creates a {@link BidirectionalStream} using configuration from this {@link Builder}. The
@@ -109,8 +109,8 @@ public abstract class BidirectionalStream {
      * @param stream the stream on which response headers were received.
      * @param info the response information.
      */
-    public abstract void onResponseHeadersReceived(
-        BidirectionalStream stream, UrlResponseInfo info);
+    public abstract void onResponseHeadersReceived(BidirectionalStream stream,
+                                                   UrlResponseInfo info);
 
     /**
      * Invoked when data is read into the buffer passed to {@link BidirectionalStream#read read()}.
@@ -127,8 +127,8 @@ public abstract class BidirectionalStream {
      * @param endOfStream if true, this is the last read data, remote will not send more data, and
      *     the read side is closed.
      */
-    public abstract void onReadCompleted(
-        BidirectionalStream stream, UrlResponseInfo info, ByteBuffer buffer, boolean endOfStream);
+    public abstract void onReadCompleted(BidirectionalStream stream, UrlResponseInfo info,
+                                         ByteBuffer buffer, boolean endOfStream);
 
     /**
      * Invoked when the entire ByteBuffer passed to {@link BidirectionalStream#write write()} is
@@ -142,8 +142,8 @@ public abstract class BidirectionalStream {
      * @param endOfStream the endOfStream flag that was passed to the corresponding {@link
      *     BidirectionalStream#write write()}. If true, the write side is closed.
      */
-    public abstract void onWriteCompleted(
-        BidirectionalStream stream, UrlResponseInfo info, ByteBuffer buffer, boolean endOfStream);
+    public abstract void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
+                                          ByteBuffer buffer, boolean endOfStream);
 
     /**
      * Invoked when trailers are received before closing the stream. Only invoked when server sends
@@ -156,8 +156,8 @@ public abstract class BidirectionalStream {
      * @param info the response information
      * @param trailers the trailers received
      */
-    public void onResponseTrailersReceived(
-        BidirectionalStream stream, UrlResponseInfo info, UrlResponseInfo.HeaderBlock trailers) {}
+    public void onResponseTrailersReceived(BidirectionalStream stream, UrlResponseInfo info,
+                                           UrlResponseInfo.HeaderBlock trailers) {}
 
     /**
      * Invoked when there is no data to be read or written and the stream is closed successfully
@@ -179,8 +179,8 @@ public abstract class BidirectionalStream {
      * @param info the response information. May be {@code null} if no response was received.
      * @param error information about the failure
      */
-    public abstract void onFailed(
-        BidirectionalStream stream, UrlResponseInfo info, CronetException error);
+    public abstract void onFailed(BidirectionalStream stream, UrlResponseInfo info,
+                                  CronetException error);
 
     /**
      * Invoked if the stream was canceled via {@link BidirectionalStream#cancel}. Once invoked, no

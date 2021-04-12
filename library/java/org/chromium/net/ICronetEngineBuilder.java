@@ -17,8 +17,9 @@ import java.util.Set;
  */
 public abstract class ICronetEngineBuilder {
   // Public API methods.
-  public abstract ICronetEngineBuilder addPublicKeyPins(
-      String hostName, Set<byte[]> pinsSha256, boolean includeSubdomains, Date expirationDate);
+  public abstract ICronetEngineBuilder addPublicKeyPins(String hostName, Set<byte[]> pinsSha256,
+                                                        boolean includeSubdomains,
+                                                        Date expirationDate);
 
   public abstract ICronetEngineBuilder addQuicHint(String host, int port, int alternatePort);
 
@@ -26,8 +27,8 @@ public abstract class ICronetEngineBuilder {
 
   public abstract ICronetEngineBuilder enableHttpCache(int cacheMode, long maxSize);
 
-  public abstract ICronetEngineBuilder enablePublicKeyPinningBypassForLocalTrustAnchors(
-      boolean value);
+  public abstract ICronetEngineBuilder
+  enablePublicKeyPinningBypassForLocalTrustAnchors(boolean value);
 
   public abstract ICronetEngineBuilder enableQuic(boolean value);
 
@@ -56,11 +57,7 @@ public abstract class ICronetEngineBuilder {
   // removing the experimental methods from the implementation layer without breaking
   // the client.
 
-  public ICronetEngineBuilder enableNetworkQualityEstimator(boolean value) {
-    return this;
-  }
+  public ICronetEngineBuilder enableNetworkQualityEstimator(boolean value) { return this; }
 
-  public ICronetEngineBuilder setThreadPriority(int priority) {
-    return this;
-  }
+  public ICronetEngineBuilder setThreadPriority(int priority) { return this; }
 }

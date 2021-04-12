@@ -49,9 +49,7 @@ public abstract class RequestFinishedInfo {
      *
      * @return this listener's {@link java.util.concurrent.Executor}
      */
-    public Executor getExecutor() {
-      return mExecutor;
-    }
+    public Executor getExecutor() { return mExecutor; }
   }
 
   /**
@@ -102,8 +100,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when the native request actually started. This
      *     timestamp will match the system clock at the time it represents.
      */
-    @Nullable
-    public abstract Date getRequestStart();
+    @Nullable public abstract Date getRequestStart();
 
     /**
      * Returns time when DNS lookup started. This and {@link #getDnsEnd} will return non-null values
@@ -112,8 +109,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when DNS lookup started. {@code null} if the
      *     socket was reused (see {@link #getSocketReused}).
      */
-    @Nullable
-    public abstract Date getDnsStart();
+    @Nullable public abstract Date getDnsStart();
 
     /**
      * Returns time when DNS lookup finished. This and {@link #getDnsStart} will return non-null
@@ -122,8 +118,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when DNS lookup finished. {@code null} if the
      *     socket was reused (see {@link #getSocketReused}).
      */
-    @Nullable
-    public abstract Date getDnsEnd();
+    @Nullable public abstract Date getDnsEnd();
 
     /**
      * Returns time when connection establishment started.
@@ -132,8 +127,7 @@ public abstract class RequestFinishedInfo {
      *     when DNS resolution finishes. {@code null} if the socket was reused (see {@link
      *     #getSocketReused}).
      */
-    @Nullable
-    public abstract Date getConnectStart();
+    @Nullable public abstract Date getConnectStart();
 
     /**
      * Returns time when connection establishment finished.
@@ -144,8 +138,7 @@ public abstract class RequestFinishedInfo {
      *     {@link #getSendingStart}. {@code null} if the socket was reused (see {@link
      *     #getSocketReused}).
      */
-    @Nullable
-    public abstract Date getConnectEnd();
+    @Nullable public abstract Date getConnectEnd();
 
     /**
      * Returns time when SSL handshake started. For QUIC, this will be the same time as {@link
@@ -154,8 +147,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when SSL handshake started. {@code null} if SSL
      *     is not used or if the socket was reused (see {@link #getSocketReused}).
      */
-    @Nullable
-    public abstract Date getSslStart();
+    @Nullable public abstract Date getSslStart();
 
     /**
      * Returns time when SSL handshake finished. For QUIC, this will be the same time as {@link
@@ -164,16 +156,14 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when SSL handshake finished. {@code null} if SSL
      *     is not used or if the socket was reused (see {@link #getSocketReused}).
      */
-    @Nullable
-    public abstract Date getSslEnd();
+    @Nullable public abstract Date getSslEnd();
 
     /**
      * Returns time when sending the request started.
      *
      * @return {@link java.util.Date} representing when sending HTTP request headers started.
      */
-    @Nullable
-    public abstract Date getSendingStart();
+    @Nullable public abstract Date getSendingStart();
 
     /**
      * Returns time when sending the request finished.
@@ -181,8 +171,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when sending HTTP request body finished. (Sending
      *     request body happens after sending request headers.)
      */
-    @Nullable
-    public abstract Date getSendingEnd();
+    @Nullable public abstract Date getSendingEnd();
 
     /**
      * Returns time when first byte of HTTP/2 server push was received.
@@ -190,8 +179,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when the first byte of an HTTP/2 server push was
      *     received. {@code null} if server push is not used.
      */
-    @Nullable
-    public abstract Date getPushStart();
+    @Nullable public abstract Date getPushStart();
 
     /**
      * Returns time when last byte of HTTP/2 server push was received.
@@ -199,8 +187,7 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when the last byte of an HTTP/2 server push was
      *     received. {@code null} if server push is not used.
      */
-    @Nullable
-    public abstract Date getPushEnd();
+    @Nullable public abstract Date getPushEnd();
 
     /**
      * Returns time when the end of the response headers was received.
@@ -208,16 +195,14 @@ public abstract class RequestFinishedInfo {
      * @return {@link java.util.Date} representing when the end of the response headers was
      *     received.
      */
-    @Nullable
-    public abstract Date getResponseStart();
+    @Nullable public abstract Date getResponseStart();
 
     /**
      * Returns time when the request finished.
      *
      * @return {@link java.util.Date} representing when the request finished.
      */
-    @Nullable
-    public abstract Date getRequestEnd();
+    @Nullable public abstract Date getRequestEnd();
 
     /**
      * Returns whether the socket was reused from a previous request. In HTTP/2 or QUIC, if streams
@@ -233,29 +218,25 @@ public abstract class RequestFinishedInfo {
      * null} if not collected. TODO(mgersh): Remove once new API works http://crbug.com/629194
      * {@hide}
      */
-    @Nullable
-    public abstract Long getTtfbMs();
+    @Nullable public abstract Long getTtfbMs();
 
     /**
      * Returns milliseconds between request initiation and finish, including a failure or
      * cancellation, or {@code null} if not collected. TODO(mgersh): Remove once new API works
      * http://crbug.com/629194 {@hide}
      */
-    @Nullable
-    public abstract Long getTotalTimeMs();
+    @Nullable public abstract Long getTotalTimeMs();
 
     /**
      * Returns total bytes sent over the network transport layer, or {@code null} if not collected.
      */
-    @Nullable
-    public abstract Long getSentByteCount();
+    @Nullable public abstract Long getSentByteCount();
 
     /**
      * Returns total bytes received over the network transport layer, or {@code null} if not
      * collected. Number of bytes does not include any previous redirects.
      */
-    @Nullable
-    public abstract Long getReceivedByteCount();
+    @Nullable public abstract Long getReceivedByteCount();
   }
 
   /**
@@ -317,8 +298,7 @@ public abstract class RequestFinishedInfo {
    *
    * @return {@link UrlResponseInfo} for the request, if its response had started.
    */
-  @Nullable
-  public abstract UrlResponseInfo getResponseInfo();
+  @Nullable public abstract UrlResponseInfo getResponseInfo();
 
   /**
    * If the request failed, returns the same {@link CronetException} provided to {@link
@@ -326,6 +306,5 @@ public abstract class RequestFinishedInfo {
    *
    * @return the request's {@link CronetException}, if the request failed
    */
-  @Nullable
-  public abstract CronetException getException();
+  @Nullable public abstract CronetException getException();
 }

@@ -25,9 +25,7 @@ public abstract class NetworkQualityThroughputListener {
     mExecutor = executor;
   }
 
-  public Executor getExecutor() {
-    return mExecutor;
-  }
+  public Executor getExecutor() { return mExecutor; }
 
   /**
    * Reports a new throughput observation.

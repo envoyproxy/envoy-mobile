@@ -30,9 +30,7 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
      *
      * @return the builder to facilitate chaining.
      */
-    public Builder disableConnectionMigration() {
-      return this;
-    }
+    public Builder disableConnectionMigration() { return this; }
 
     /**
      * Associates the annotation object with this request. May add more than one. Passed through to
@@ -42,9 +40,7 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
      *     {@link RequestFinishedInfo}.
      * @return the builder to facilitate chaining.
      */
-    public Builder addRequestAnnotation(Object annotation) {
-      return this;
-    }
+    public Builder addRequestAnnotation(Object annotation) { return this; }
 
     /**
      * Sets {@link android.net.TrafficStats} tag to use when accounting socket traffic caused by
@@ -63,9 +59,7 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
      *     application.
      * @return the builder to facilitate chaining.
      */
-    public Builder setTrafficStatsTag(int tag) {
-      return this;
-    }
+    public Builder setTrafficStatsTag(int tag) { return this; }
 
     /**
      * Sets specific UID to use when accounting socket traffic caused by this request. See {@link
@@ -82,9 +76,7 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
      * @param uid the UID to attribute socket traffic caused by this request.
      * @return the builder to facilitate chaining.
      */
-    public Builder setTrafficStatsUid(int uid) {
-      return this;
-    }
+    public Builder setTrafficStatsUid(int uid) { return this; }
 
     /**
      * Sets a listener that gets invoked after {@link Callback#onCanceled onCanceled()}, {@link
@@ -122,33 +114,25 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
      *     #DEFAULT_IDEMPOTENCY IDEMPOTENT NOT_IDEMPOTENT} values.
      * @return the builder to facilitate chaining.
      */
-    public Builder setIdempotency(int idempotency) {
-      return this;
-    }
+    public Builder setIdempotency(int idempotency) { return this; }
 
     // To support method chaining, override superclass methods to return an
     // instance of this class instead of the parent.
 
-    @Override
-    public abstract Builder setHttpMethod(String method);
+    @Override public abstract Builder setHttpMethod(String method);
+
+    @Override public abstract Builder addHeader(String header, String value);
+
+    @Override public abstract Builder disableCache();
+
+    @Override public abstract Builder setPriority(int priority);
 
     @Override
-    public abstract Builder addHeader(String header, String value);
+    public abstract Builder setUploadDataProvider(UploadDataProvider uploadDataProvider,
+                                                  Executor executor);
 
-    @Override
-    public abstract Builder disableCache();
+    @Override public abstract Builder allowDirectExecutor();
 
-    @Override
-    public abstract Builder setPriority(int priority);
-
-    @Override
-    public abstract Builder setUploadDataProvider(
-        UploadDataProvider uploadDataProvider, Executor executor);
-
-    @Override
-    public abstract Builder allowDirectExecutor();
-
-    @Override
-    public abstract ExperimentalUrlRequest build();
+    @Override public abstract ExperimentalUrlRequest build();
   }
 }

@@ -63,9 +63,7 @@ public abstract class CronetEngine {
      *     application context. A reference to only the application context will be kept, so as to
      *     avoid extending the lifetime of {@code context} unnecessarily.
      */
-    public Builder(Context context) {
-      this(createBuilderDelegate(context));
-    }
+    public Builder(Context context) { this(createBuilderDelegate(context)); }
 
     /**
      * Constructs {@link Builder} with a given delegate that provides the actual implementation of
@@ -74,9 +72,7 @@ public abstract class CronetEngine {
      * @param builderDelegate delegate that provides the actual implementation.
      *     <p>{@hide}
      */
-    public Builder(ICronetEngineBuilder builderDelegate) {
-      mBuilderDelegate = builderDelegate;
-    }
+    public Builder(ICronetEngineBuilder builderDelegate) { mBuilderDelegate = builderDelegate; }
 
     /**
      * Constructs a User-Agent string including application name and version, system build version,
@@ -84,9 +80,7 @@ public abstract class CronetEngine {
      *
      * @return User-Agent string.
      */
-    public String getDefaultUserAgent() {
-      return mBuilderDelegate.getDefaultUserAgent();
-    }
+    public String getDefaultUserAgent() { return mBuilderDelegate.getDefaultUserAgent(); }
 
     /**
      * Overrides the User-Agent header for all requests. An explicitly set User-Agent header (set
@@ -259,8 +253,8 @@ public abstract class CronetEngine {
      * @throws IllegalArgumentException if the given host name is invalid or {@code pinsSha256}
      *     contains a byte array that does not represent a valid SHA-256 hash.
      */
-    public Builder addPublicKeyPins(
-        String hostName, Set<byte[]> pinsSha256, boolean includeSubdomains, Date expirationDate) {
+    public Builder addPublicKeyPins(String hostName, Set<byte[]> pinsSha256,
+                                    boolean includeSubdomains, Date expirationDate) {
       mBuilderDelegate.addPublicKeyPins(hostName, pinsSha256, includeSubdomains, expirationDate);
       return this;
     }
@@ -287,9 +281,7 @@ public abstract class CronetEngine {
      *
      * @return constructed {@link CronetEngine}.
      */
-    public CronetEngine build() {
-      return mBuilderDelegate.build();
-    }
+    public CronetEngine build() { return mBuilderDelegate.build(); }
 
     /**
      * Creates an implementation of {@link ICronetEngineBuilder} that can be used to delegate the
@@ -303,8 +295,8 @@ public abstract class CronetEngine {
       List<CronetProvider> providers = new ArrayList<>(CronetProvider.getAllProviders(context));
       CronetProvider provider = getEnabledCronetProviders(context, providers).get(0);
       if (Log.isLoggable(TAG, Log.DEBUG)) {
-        Log.d(
-            TAG, String.format("Using '%s' provider for creating CronetEngine.Builder.", provider));
+        Log.d(TAG,
+              String.format("Using '%s' provider for creating CronetEngine.Builder.", provider));
       }
       return provider.createBuilder().mBuilderDelegate;
     }
@@ -320,16 +312,16 @@ public abstract class CronetEngine {
      *     disabled.
      */
     @VisibleForTesting
-    static List<CronetProvider> getEnabledCronetProviders(
-        Context context, List<CronetProvider> providers) {
+    static List<CronetProvider> getEnabledCronetProviders(Context context,
+                                                          List<CronetProvider> providers) {
       // Check that there is at least one available provider.
       if (providers.size() == 0) {
-        throw new RuntimeException(
-            "Unable to find any Cronet provider." + " Have you included all necessary jars?");
+        throw new RuntimeException("Unable to find any Cronet provider."
+                                   + " Have you included all necessary jars?");
       }
 
       // Exclude disabled providers from the list.
-      for (Iterator<CronetProvider> i = providers.iterator(); i.hasNext(); ) {
+      for (Iterator<CronetProvider> i = providers.iterator(); i.hasNext();) {
         CronetProvider provider = i.next();
         if (!provider.isEnabled()) {
           i.remove();
@@ -338,28 +330,25 @@ public abstract class CronetEngine {
 
       // Check that there is at least one enabled provider.
       if (providers.size() == 0) {
-        throw new RuntimeException(
-            "All available Cronet providers are disabled."
-                + " A provider should be enabled before it can be used.");
+        throw new RuntimeException("All available Cronet providers are disabled."
+                                   + " A provider should be enabled before it can be used.");
       }
 
       // Sort providers based on version and type.
-      Collections.sort(
-          providers,
-          new Comparator<CronetProvider>() {
-            @Override
-            public int compare(CronetProvider p1, CronetProvider p2) {
-              // The fallback provider should always be at the end of the list.
-              if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p1.getName())) {
-                return 1;
-              }
-              if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p2.getName())) {
-                return -1;
-              }
-              // A provider with higher version should go first.
-              return -compareVersions(p1.getVersion(), p2.getVersion());
-            }
-          });
+      Collections.sort(providers, new Comparator<CronetProvider>() {
+        @Override
+        public int compare(CronetProvider p1, CronetProvider p2) {
+          // The fallback provider should always be at the end of the list.
+          if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p1.getName())) {
+            return 1;
+          }
+          if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p2.getName())) {
+            return -1;
+          }
+          // A provider with higher version should go first.
+          return -compareVersions(p1.getVersion(), p2.getVersion());
+        }
+      });
       return providers;
     }
 
@@ -388,13 +377,10 @@ public abstract class CronetEngine {
             return Integer.signum(s1segment - s2segment);
           }
         } catch (NumberFormatException e) {
-          throw new IllegalArgumentException(
-              "Unable to convert version segments into"
-                  + " integers: "
-                  + s1segments[i]
-                  + " & "
-                  + s2segments[i],
-              e);
+          throw new IllegalArgumentException("Unable to convert version segments into"
+                                                 + " integers: " + s1segments[i] + " & " +
+                                                 s2segments[i],
+                                             e);
         }
       }
       return Integer.signum(s1segments.length - s2segments.length);
@@ -507,6 +493,6 @@ public abstract class CronetEngine {
    * @param callback callback object that gets invoked on different events.
    * @param executor {@link Executor} on which all callbacks will be invoked.
    */
-  public abstract UrlRequest.Builder newUrlRequestBuilder(
-      String url, UrlRequest.Callback callback, Executor executor);
+  public abstract UrlRequest.Builder newUrlRequestBuilder(String url, UrlRequest.Callback callback,
+                                                          Executor executor);
 }
