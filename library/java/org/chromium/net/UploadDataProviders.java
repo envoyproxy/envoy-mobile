@@ -86,7 +86,7 @@ public final class UploadDataProviders {
   private static final class FileUploadProvider extends UploadDataProvider {
     private volatile FileChannel mChannel;
     private final FileChannelProvider mProvider;
-    /** Guards initalization of {@code mChannel} */
+    /** Guards initialization of {@code mChannel} */
     private final Object mLock = new Object();
 
     private FileUploadProvider(FileChannelProvider provider) { this.mProvider = provider; }

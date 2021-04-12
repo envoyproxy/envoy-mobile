@@ -76,7 +76,7 @@ public abstract class NetworkException extends CronetException {
    * {@link #getErrorCode}, but the constant values are not exposed to Java and may change over
    * time. See <a
    * href=https://chromium.googlesource.com/chromium/src/+/master/net/base/net_error_list.h>here</a>
-   * for the lastest list of values.
+   * for the latest list of values.
    *
    * @return Cronet internal error code.
    */
