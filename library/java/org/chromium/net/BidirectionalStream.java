@@ -251,9 +251,10 @@ public abstract class BidirectionalStream {
 
   /**
    * Cancels the stream. Can be called at any time after {@link #start}. {@link Callback#onCanceled
-   * onCanceled()} will be invoked when cancelation is complete and no further callback methods will
-   * be invoked. If the stream has completed or has not started, calling {@code cancel()} has no
-   * effect and {@code onCanceled()} will not be invoked. If the {@link Executor} passed in during
+   * onCanceled()} will be invoked when cancellation is complete and no further callback methods
+   * will be invoked. If the stream has completed or has not started, calling {@code cancel()} has
+   * no effect and {@code onCanceled()} will not be invoked. If the {@link Executor} passed in
+   * during
    * {@code BidirectionalStream} construction runs tasks on a single thread, and {@code cancel()} is
    * called on that thread, no listener methods (besides {@code onCanceled()}) will be invoked after
    * {@code cancel()} is called. Otherwise, at most one callback method may be invoked after {@code
