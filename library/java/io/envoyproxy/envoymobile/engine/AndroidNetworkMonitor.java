@@ -1,10 +1,12 @@
 package io.envoyproxy.envoymobile.engine;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.NetworkCallback;
 import android.net.Network;
@@ -12,6 +14,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
+import androidx.core.content.ContextCompat;
 
 /**
  * This class makes use of some deprecated APIs, but it's only current purpose is to attempt to
@@ -44,6 +47,11 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   }
 
   private AndroidNetworkMonitor(Context context) {
+    int permission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
+    if(permission == PackageManager.PERMISSION_DENIED) {
+      return;
+    }
+
     connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     networkRequest = new NetworkRequest.Builder()
