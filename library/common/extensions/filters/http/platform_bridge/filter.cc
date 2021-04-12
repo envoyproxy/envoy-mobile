@@ -361,6 +361,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
     if (!error_message_header.empty()) {
       error_message =
           Data::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
+      ENVOY_LOG(error, "Parsed error {} {}", error_message_header[0]->value().getStringView().length(), error_message.length);
     }
 
     int32_t attempt_count;
@@ -373,7 +374,10 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
     if (platform_filter_.on_error) {
       platform_filter_.on_error({error_code, error_message, attempt_count},
                                 platform_filter_.instance_context);
+    } else {
+      error_message.release(error_message.context);
     }
+
     error_response_ = true;
     return Http::FilterHeadersStatus::Continue;
   }
