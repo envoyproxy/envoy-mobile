@@ -1,6 +1,6 @@
 import pytest
 
-import envoy_requests
+from library.python import envoy_requests
 
 
 def test_send_request(http_server_url: str):

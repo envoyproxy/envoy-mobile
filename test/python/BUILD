@@ -12,7 +12,7 @@ py_test(
         "unit/**/*.py",
     ]),
     main = "runner.py",
-    args = ["test/python/"],
+    args = ["test/python/", "-s"],
     deps = [
         "//library/python:envoy_requests",
         requirement("pytest"),

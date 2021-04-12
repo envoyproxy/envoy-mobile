@@ -5,7 +5,7 @@ from threading import Thread
 
 import pytest
 
-from envoy_requests.common.engine import Engine
+from library.python.envoy_requests.common.engine import Engine
 from test.python.echo_server import EchoServerHandler
 
 
@@ -13,7 +13,7 @@ from test.python.echo_server import EchoServerHandler
 def http_server_url():
     with open("test/python/test_envoy_config_template.yaml", "r") as f:
         Engine.config_template_override = f.read()
-    Engine()
+    Engine.build()
 
     ip = "127.0.0.1"
     port = 9876
