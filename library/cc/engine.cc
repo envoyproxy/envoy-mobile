@@ -30,10 +30,10 @@ Engine::Engine(envoy_engine_t engine, const std::string& configuration, LogLevel
       .context = this->callbacks_.get(),
   };
 
-  envoy_logger null_logger {
-    .log = nullptr,
-    .release = envoy_noop_release,
-    .context = nullptr,
+  envoy_logger null_logger{
+      .log = nullptr,
+      .release = envoy_noop_release,
+      .context = nullptr,
   };
 
   run_engine(this->engine_, envoy_callbacks, null_logger, configuration.c_str(),

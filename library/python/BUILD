@@ -1,7 +1,7 @@
 load("@pip//:requirements.bzl", "requirement")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
 load("@python_abi//:abi.bzl", "python_abi")
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 
 licenses(["notice"])  # Apache 2
@@ -45,14 +45,14 @@ py_library(
     srcs = glob([
         "envoy_requests/**/*.py",
     ]),
-    visibility = ["//visibility:public"],
-    deps = [
-        requirement("gevent"),
-    ],
     data = [
         ":envoy_engine.so",
     ],
     imports = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("gevent"),
+    ],
 )
 
 py_wheel(
