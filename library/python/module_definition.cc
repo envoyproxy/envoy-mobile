@@ -43,9 +43,11 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<Engine, EngineSharedPtr>(m, "Engine")
       .def("stream_client", &Engine::stream_client)
-      .def("pulse_client", &Engine::pulse_client);
+      .def("pulse_client", &Engine::pulse_client)
+      .def("terminate", &Engine::terminate);
 
   py::class_<EngineBuilder, EngineBuilderSharedPtr>(m, "EngineBuilder")
+      .def(py::init<std::string>())
       .def(py::init<>())
       .def("add_log_level", &EngineBuilder::add_log_level)
       .def("set_on_engine_running", &Envoy::Python::EngineBuilder::set_on_engine_running_shim)
@@ -80,6 +82,14 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<RequestHeaders, RequestHeadersSharedPtr>(m, "RequestHeaders")
       .def("__getitem__", &RequestHeaders::operator[])
+      .def("__len__",
+           [](RequestHeadersSharedPtr request_headers) {
+             return request_headers->all_headers().size();
+           })
+      .def("__iter__",
+           [](RequestHeadersSharedPtr request_headers) {
+             return py::make_iterator(request_headers->begin(), request_headers->end());
+           })
       .def("all_headers", &RequestHeaders::all_headers)
       .def("request_method", &RequestHeaders::request_method)
       .def("scheme", &RequestHeaders::scheme)
@@ -110,6 +120,14 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<RequestTrailers, RequestTrailersSharedPtr>(m, "RequestTrailers")
       .def("__getitem__", &RequestTrailers::operator[])
+      .def("__len__",
+           [](RequestTrailersSharedPtr request_trailers) {
+             return request_trailers->all_headers().size();
+           })
+      .def("__iter__",
+           [](RequestTrailersSharedPtr request_trailers) {
+             return py::make_iterator(request_trailers->begin(), request_trailers->end());
+           })
       .def("all_headers", &RequestTrailers::all_headers)
       .def("to_request_trailers_builder", &RequestTrailers::to_request_trailers_builder);
 
@@ -121,6 +139,14 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<ResponseHeaders, ResponseHeadersSharedPtr>(m, "ResponseHeaders")
       .def("__getitem__", &ResponseHeaders::operator[])
+      .def("__len__",
+           [](ResponseHeadersSharedPtr response_headers) {
+             return response_headers->all_headers().size();
+           })
+      .def("__iter__",
+           [](ResponseHeadersSharedPtr response_headers) {
+             return py::make_iterator(response_headers->begin(), response_headers->end());
+           })
       .def("all_headers", &ResponseHeaders::all_headers)
       .def("http_status", &ResponseHeaders::http_status)
       .def("to_response_headers_builder", &ResponseHeaders::to_response_headers_builder);
@@ -134,6 +160,14 @@ PYBIND11_MODULE(envoy_engine, m) {
 
   py::class_<ResponseTrailers, ResponseTrailersSharedPtr>(m, "ResponseTrailers")
       .def("__getitem__", &ResponseTrailers::operator[])
+      .def("__len__",
+           [](ResponseTrailersSharedPtr response_trailers) {
+             return response_trailers->all_headers().size();
+           })
+      .def("__iter__",
+           [](ResponseTrailersSharedPtr response_trailers) {
+             return py::make_iterator(response_trailers->begin(), response_trailers->end());
+           })
       .def("all_headers", &ResponseTrailers::all_headers)
       .def("to_response_trailers_builder", &ResponseTrailers::to_response_trailers_builder);
 

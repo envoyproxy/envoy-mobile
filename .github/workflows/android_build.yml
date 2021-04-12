@@ -1,4 +1,4 @@
-name: android
+name: android_build
 
 on:
   push:
@@ -7,30 +7,38 @@ on:
   pull_request:
 
 jobs:
-  macdist:
-    name: mac_dist
+  androidbuild:
+    name: android_build
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/cache@v2
+        id: check-cache
         with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
-      - run: ./ci/mac_ci_setup.sh
-        name: 'Install dependencies'
-      - name: 'Build envoy.aar distributable'
-        run: bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
-      - uses: actions/upload-artifact@v2
-        with:
-          name: envoy.aar
+          key: aar-${{ github.sha }}
           path: dist/envoy.aar
-  macjava:
-    name: mac_java_helloworld
-    needs: macdist
+        name: 'Check cache'
+      - run: echo "Found envoy.aar from previous run!"
+        if: steps.check-cache.outputs.cache-hit == 'true'
+        name: 'Build cache hit'
+      - uses: actions/setup-java@v1
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Install dependencies'
+      - run: bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Build envoy.aar distributable'
+  javahelloworld:
+    name: java_helloworld
+    needs: androidbuild
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
@@ -44,11 +52,15 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/download-artifact@v2
+      - uses: actions/cache@v2
+        id: check-cache
         with:
-          name: envoy.aar
-          path: dist/
-      - run: ls -lh dist/
+          key: aar-${{ github.sha }}
+          path: dist/envoy.aar
+        name: 'Download aar'
+      - run: exit 1
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Short-circuit'
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
       # Return to using:
@@ -60,10 +72,10 @@ jobs:
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
         name: 'Start java app'
       - run: 'adb logcat -e "received headers with status 200" -m 1'
-        name: 'Check liveliness'
-  mackotlin:
-    name: mac_kotlin_helloworld
-    needs: macdist
+        name: 'Check connectivity'
+  kotlinhelloworld:
+    name: kotlin_helloworld
+    needs: androidbuild
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
@@ -77,11 +89,15 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/download-artifact@v2
+      - uses: actions/cache@v2
+        id: check-cache
         with:
-          name: envoy.aar
-          path: dist/
-      - run: ls -lh dist/
+          key: aar-${{ github.sha }}
+          path: dist/envoy.aar
+        name: 'Download aar'
+      - run: exit 1
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Short-circuit'
       - name: start simulator
         run: ./ci/mac_start_emulator.sh
       # Return to using:
@@ -93,34 +109,4 @@ jobs:
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin/.MainActivity
         name: 'Start kotlin app'
       - run: 'adb logcat -e "received headers with status 200" -m 1'
-        name: 'Check liveliness'
-  kotlintests:
-    name: kotlin_tests
-    runs-on: macOS-latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
-      - run: bazel test --test_output=all --build_tests_only //test/kotlin/...
-        name: 'Run Kotlin library tests'
-  javatests:
-    name: java_tests
-    runs-on: macOS-latest
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
-      - run: bazel test --test_output=all --build_tests_only //test/java/...
-        name: 'Run Java library tests'
+        name: 'Check connectivity'
