@@ -10,8 +10,8 @@ from typing import TypeVar
 from typing import cast
 
 import gevent
-from gevent import Group
 from gevent.event import Event
+from gevent.pool import Group
 
 from .common.core import make_stream
 from .common.core import send_request
@@ -26,7 +26,7 @@ def request(*args, **kwargs) -> Response:
     stream_complete = Event()
 
     stream = make_stream(
-        Engine().handle, GeventExecutor(), response, stream_complete
+        Engine.handle(), GeventExecutor(), response, stream_complete
     )
     send_request(stream, *args, **kwargs)
     stream_complete.wait()

@@ -18,7 +18,7 @@ async def request(*args, **kwargs) -> Response:
     stream_complete = asyncio.Event()
 
     stream = make_stream(
-        Engine().handle, AsyncioExecutor(), response, stream_complete
+        Engine.handle(), AsyncioExecutor(), response, stream_complete
     )
     send_request(stream, *args, **kwargs)
     await stream_complete.wait()

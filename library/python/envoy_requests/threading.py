@@ -19,7 +19,7 @@ def request(*args, **kwargs) -> Response:
     stream_complete = Event()
 
     stream = make_stream(
-        Engine().handle, ThreadingExecutor(), response, stream_complete
+        Engine.handle(), ThreadingExecutor(), response, stream_complete
     )
     send_request(stream, *args, **kwargs)
     stream_complete.wait()
