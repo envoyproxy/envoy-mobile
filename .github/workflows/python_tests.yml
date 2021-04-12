@@ -1,4 +1,4 @@
-name: python
+name: python_tests
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     pull_request:
 
 jobs:
-  swifttests:
+  pythontests:
     name: python_tests
     runs-on: ubuntu-18.04
     timeout-minutes: 90
