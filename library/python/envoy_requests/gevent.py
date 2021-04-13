@@ -26,7 +26,7 @@ def request(*args, **kwargs) -> Response:
     stream_complete = Event()
 
     stream = make_stream(
-        Engine.handle(), GeventExecutor(), response, stream_complete
+        Engine.handle(), GeventExecutor(), response, lambda: stream_complete.set(),
     )
     send_request(stream, *args, **kwargs)
     stream_complete.wait()

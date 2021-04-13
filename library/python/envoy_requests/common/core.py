@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -25,18 +26,11 @@ Timeout = Optional[Union[int, float, timedelta]]
 NormalTimeout = int
 
 
-# TODO: come up with a better name that describes this
-# Settable by itself doesn't express the fact that this is an event
-class Settable(Protocol):
-    def set(self):
-        ...
-
-
 def make_stream(
     engine: envoy_engine.Engine,
     executor: Executor,
     response: Response,
-    stream_complete: Settable,
+    set_stream_complete: Callable[[], None],
 ):
     def _on_headers(headers: envoy_engine.ResponseHeaders, _: bool):
         response.status_code = headers.http_status()
@@ -53,14 +47,14 @@ def make_stream(
         response.body_raw.extend(data)
 
     def _on_complete():
-        stream_complete.set()
+        set_stream_complete()
 
     def _on_error(error: envoy_engine.EnvoyError):
         response.envoy_error = error
-        stream_complete.set()
+        set_stream_complete()
 
     def _on_cancel():
-        stream_complete.set()
+        set_stream_complete()
 
     return (
         engine.stream_client()
