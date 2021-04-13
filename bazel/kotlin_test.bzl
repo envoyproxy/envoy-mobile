@@ -66,7 +66,7 @@ def envoy_mobile_kt_test(name, srcs, deps = []):
     _internal_kt_test(name, srcs, deps)
 
 def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
-    native_lib_name = native_lib_name(native_dep)
+    native_lib_name = native_lib_name(native_deps[0])
     native.android_library(
         name = name + "_test_lib",
         custom_package = "io.envoyproxy.envoymobile.test",
