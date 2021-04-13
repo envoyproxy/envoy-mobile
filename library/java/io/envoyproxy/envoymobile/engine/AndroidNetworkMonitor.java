@@ -47,8 +47,9 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   }
 
   private AndroidNetworkMonitor(Context context) {
-    int permission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
-    if(permission == PackageManager.PERMISSION_DENIED) {
+    int permission =
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
+    if (permission == PackageManager.PERMISSION_DENIED) {
       return;
     }
 

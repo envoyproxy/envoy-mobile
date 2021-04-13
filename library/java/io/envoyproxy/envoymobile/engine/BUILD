@@ -14,9 +14,9 @@ android_library(
     manifest = "AndroidEngineManifest.xml",
     visibility = ["//visibility:public"],
     deps = [
-        "@maven//:androidx_core_core",
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
+        "@maven//:androidx_core_core",
     ],
 )
 
