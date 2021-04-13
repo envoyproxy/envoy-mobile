@@ -1,5 +1,4 @@
 import functools
-import queue
 from queue import Queue
 from threading import Event
 from threading import Lock
