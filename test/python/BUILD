@@ -11,18 +11,21 @@ py_test(
         "runner.py",
         "unit/**/*.py",
     ]),
+    args = [
+        "test/python/",
+        "-s",
+    ],
+    data = [
+        "test_envoy_config_template.yaml",
+    ],
     main = "runner.py",
-    args = ["test/python/", "-s"],
+    python_version = "PY3",
     deps = [
         "//library/python:envoy_requests",
         requirement("pytest"),
         requirement("pytest-asyncio"),
         requirement("requests"),
     ],
-    data = [
-        "test_envoy_config_template.yaml",
-    ],
-    python_version = "PY3",
 )
 
 py_test(
@@ -33,14 +36,14 @@ py_test(
         "runner.py",
         "integration/**/*.py",
     ]),
-    main = "runner.py",
     args = ["test/python/"],
+    data = [
+        "test_envoy_config_template.yaml",
+    ],
+    main = "runner.py",
+    python_version = "PY3",
     deps = [
         "//library/python:envoy_requests",
         requirement("pytest"),
     ],
-    data = [
-        "test_envoy_config_template.yaml",
-    ],
-    python_version = "PY3",
 )
