@@ -2,8 +2,6 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
 load("//bazel:kotlin_lib.bzl", "native_lib_name")
 
-JNI_INITIALIZED = {}
-
 def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
     # This is to work around the issue where we have specific implementation functionality which
     # we want to avoid consumers to use but we want to unit test
@@ -53,7 +51,7 @@ def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = []):
 # 3. Ability to run more than one test file per target
 # 4. Ability to test internal envoy mobile entities
 # Usage example:
-# load("//bazel:kotlin_test.bzl", "envoy_mobile_kt_test)
+# load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_kt_test)
 #
 # envoy_mobile_kt_test(
 #     name = "example_kotlin_test",

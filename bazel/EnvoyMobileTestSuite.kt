@@ -25,15 +25,6 @@ object EnvoyMobileTestSuite {
   fun suite(): TestSuite {
     val suite = TestSuite()
     val classLoader = Thread.currentThread().contextClassLoader as URLClassLoader
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    for (urL in classLoader.urLs) {
-      for (clazz in findClassesInJar(File(urL.path))) {
-        val message = Class.forName(clazz)
-
-        println(message)
-      }
-    }
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     val testAdapters = mutableListOf<JUnit4TestAdapter>()
     // The first entry on the classpath contains the srcs from java_test
     val classesInJar = findClassesInJar(File(classLoader.urLs[0].path))
@@ -55,7 +46,6 @@ object EnvoyMobileTestSuite {
 
   private fun findClassesInJar(jarFile: File): Set<String> {
     val classNames = mutableSetOf<String>()
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!")
 
     ZipFile(jarFile).use { zipFile ->
       val entries = zipFile.entries()
@@ -72,7 +62,6 @@ object EnvoyMobileTestSuite {
         }
       }
     }
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!")
     return classNames
   }
 }
