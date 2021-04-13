@@ -2,8 +2,8 @@
 #include <ares.h>
 
 #include "library/common/jni/jni_support.h"
-#include "library/common/main_interface.h"
 #include "library/common/jni/jni_utility.h"
+#include "library/common/main_interface.h"
 
 // NOLINT(namespace-envoy)
 
