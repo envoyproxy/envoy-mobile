@@ -18,6 +18,7 @@ jobs:
         with:
           submodules: true
       - uses: actions/setup-python@v2
-        python-version: '3.8'
+        with:
+          python-version: '3.8'
       - name: 'Run tests'
         run: bazel test --test_output=all //test/python/...
