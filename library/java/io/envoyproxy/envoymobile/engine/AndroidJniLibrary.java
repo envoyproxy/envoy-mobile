@@ -11,9 +11,7 @@ public class AndroidJniLibrary {
 
   // Load test libraries based on the jvm_flag `envoy_jni_library_name`.
   // WARNING: This should only be used for testing.
-  public static void loadTestLibrary() {
-    JniLibrary.loadTestLibrary();
-  }
+  public static void loadTestLibrary() { JniLibrary.loadTestLibrary(); }
 
   public static void load(Context context) {
     if (loader != null) {

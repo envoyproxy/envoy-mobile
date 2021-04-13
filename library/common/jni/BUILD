@@ -1,3 +1,4 @@
+load("@rules_android//android:rules.bzl", "android_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_so_to_jni_lib")
