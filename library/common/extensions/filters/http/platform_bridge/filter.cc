@@ -505,9 +505,10 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     internal_buffer->drain(internal_buffer->length());
     internal_buffer->addBufferFragment(
         *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
-    free(result.pending_data);
   } else if (result.pending_data) {
     addData(*result.pending_data);
+    // result.pending_data is copied either in the case above (to internal_buffer) or in the line
+    // above (via addData) or both. Regardless, it can now be freed.
     free(result.pending_data);
   }
 
@@ -516,9 +517,11 @@ void PlatformBridgeFilter::FilterBase::onResume() {
                                             "be returned to resume filter iteration");
     replaceHeaders(*pending_trailers_, *result.pending_trailers);
     pending_trailers_ = nullptr;
-    free(result.pending_trailers);
   } else if (result.pending_trailers) {
     addTrailers(*result.pending_trailers);
+    // result.pending_trailers is copied either in the case above (to pending_tra) or in the line
+    // above (via addData) or both. Regardless, it can now be freed.
+    free(result.pending_data);
   }
 
   iteration_state_ = IterationState::Ongoing;
