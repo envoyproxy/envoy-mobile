@@ -27,7 +27,7 @@ load("@google_bazel_common//tools/maven:pom_file.bzl", "pom_file")
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-def android_artifacts(name, android_library, manifest, archive_name, native_deps = [], proguard_rules = "", visibility = [], native_lib_name = "envoy_jni"):
+def android_artifacts(name, android_library, manifest, archive_name, native_deps = [], proguard_rules = "", visibility = []):
     """
     NOTE: The bazel android_library's implicit aar output doesn't flatten its transitive
     dependencies. Additionally, when using the kotlin rules, the kt_android_library rule
@@ -50,7 +50,7 @@ def android_artifacts(name, android_library, manifest, archive_name, native_deps
 
     # Create the aar
     _classes_jar = _create_classes_jar(name, manifest, android_library)
-    _jni_archive = _create_jni_library(name, native_lib_name, native_deps)
+    _jni_archive = _create_jni_library(name, native_deps)
     _aar_output = _create_aar(name, archive_name, _classes_jar, _jni_archive, proguard_rules, visibility)
 
     # Generate other needed files for a maven publish
@@ -166,7 +166,7 @@ def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, vi
 
     return _aar_output
 
-def _create_jni_library(name, native_lib_name, native_deps = []):
+def _create_jni_library(name, native_deps = []):
     """
     Creates an apk containing the jni so files.
 

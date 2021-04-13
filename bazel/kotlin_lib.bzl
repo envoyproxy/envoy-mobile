@@ -15,12 +15,12 @@ def native_lib_name(native_dep):
     tests with android. Each of these require a different so file built which
     means that Bazel will have to output 3 types of so files with different names.
     """
-    native_lib_name = ""
+    lib_name = ""
     if ":" in native_dep:
-        native_lib_name = native_dep.split(":")[1].split('.so')[0]
+        lib_name = native_dep.split(":")[1].split('.so')[0]
     else:
-        native_lib_name = native_dep.split('.so')[0]
-    return native_lib_name
+        lib_name = native_dep.split('.so')[0]
+    return lib_name
 
 def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
@@ -39,8 +39,8 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     )
 
 def envoy_mobile_so_to_jni_lib(name, native_dep):
-    native_lib_name = native_lib_name(native_dep)
-    output =  "lib{}.jnilib".format(native_lib_name)
+    lib_name = native_lib_name(native_dep)
+    output =  "lib{}.jnilib".format(lib_name)
 
     return native.genrule(
         name = name,
@@ -56,5 +56,5 @@ def envoy_mobile_so_to_jni_lib(name, native_dep):
 
         cp $< $@
         chmod 755 $@
-        """.replace('{}', native_lib_name)
+        """.replace('{}', lib_name)
     )
