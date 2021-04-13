@@ -4,6 +4,7 @@
 #include <string>
 
 #include "engine.h"
+#include "engine_callbacks.h"
 #include "log_level.h"
 
 namespace Envoy {
@@ -36,7 +37,7 @@ public:
 
 private:
   LogLevel log_level_ = LogLevel::info;
-  EngineCallbacksSharedPtr callbacks_;
+  EngineCallbacksPtr callbacks_;
 
   std::string config_template_;
   std::string stats_domain_ = "0.0.0.0";

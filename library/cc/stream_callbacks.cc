@@ -61,7 +61,8 @@ void* c_on_error(envoy_error raw_error, void* context) {
     auto on_error = stream_callbacks->on_error.value();
     on_error(error);
   }
-  return context;
+  delete stream_callbacks;
+  return nullptr;
 }
 
 void* c_on_complete(void* context) {
@@ -70,7 +71,8 @@ void* c_on_complete(void* context) {
     auto on_complete = stream_callbacks->on_complete.value();
     on_complete();
   }
-  return context;
+  delete stream_callbacks;
+  return nullptr;
 }
 
 void* c_on_cancel(void* context) {
@@ -79,7 +81,8 @@ void* c_on_cancel(void* context) {
     auto on_cancel = stream_callbacks->on_cancel.value();
     on_cancel();
   }
-  return context;
+  delete stream_callbacks;
+  return nullptr;
 }
 
 } // namespace

@@ -9,9 +9,13 @@
 #include "library/common/types/c_types.h"
 #include "response_headers.h"
 #include "response_trailers.h"
+#include "stream.h"
 
 namespace Envoy {
 namespace Platform {
+
+class Stream;
+using StreamSharedPtr = std::shared_ptr<Stream>;
 
 using OnHeadersCallback = std::function<void(ResponseHeadersSharedPtr headers, bool end_stream)>;
 using OnDataCallback = std::function<void(envoy_data data, bool end_stream)>;
@@ -29,6 +33,8 @@ struct StreamCallbacks {
   absl::optional<OnCancelCallback> on_cancel;
 
   envoy_http_callbacks as_envoy_http_callbacks();
+
+  StreamSharedPtr parent;
 };
 
 using StreamCallbacksSharedPtr = std::shared_ptr<StreamCallbacks>;

@@ -1,7 +1,5 @@
 #include "stream.h"
 
-#include <iostream>
-
 #include "bridge_utility.h"
 #include "library/common/main_interface.h"
 #include "library/common/types/c_types.h"
@@ -9,8 +7,7 @@
 namespace Envoy {
 namespace Platform {
 
-Stream::Stream(envoy_stream_t handle, StreamCallbacksSharedPtr callbacks)
-    : handle_(handle), callbacks_(callbacks) {}
+Stream::Stream(EngineSharedPtr engine, envoy_stream_t handle) : engine_(engine), handle_(handle) {}
 
 Stream& Stream::send_headers(RequestHeadersSharedPtr headers, bool end_stream) {
   envoy_headers raw_headers = raw_header_map_as_envoy_headers(headers->all_headers());

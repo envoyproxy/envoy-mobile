@@ -10,9 +10,12 @@
 namespace Envoy {
 namespace Platform {
 
+class Engine;
+using EngineSharedPtr = std::shared_ptr<Engine>;
+
 class Stream {
 public:
-  Stream(envoy_stream_t handle, StreamCallbacksSharedPtr callbacks);
+  Stream(EngineSharedPtr engine_, envoy_stream_t handle);
 
   Stream& send_headers(RequestHeadersSharedPtr headers, bool end_stream);
   Stream& send_data(envoy_data data);
@@ -21,8 +24,8 @@ public:
   void cancel();
 
 private:
+  EngineSharedPtr engine_;
   envoy_stream_t handle_;
-  StreamCallbacksSharedPtr callbacks_;
 };
 
 using StreamSharedPtr = std::shared_ptr<Stream>;

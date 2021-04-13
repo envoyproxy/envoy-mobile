@@ -10,7 +10,7 @@ EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {}
 
 EngineBuilder& EngineBuilder::add_log_level(LogLevel log_level) {
   this->log_level_ = log_level;
-  this->callbacks_ = std::make_shared<EngineCallbacks>();
+  this->callbacks_ = std::make_unique<EngineCallbacks>();
   return *this;
 }
 
@@ -89,8 +89,23 @@ EngineSharedPtr EngineBuilder::build() {
     }
   }
 
-  Engine* engine = new Engine(init_engine(), config_str, this->log_level_, this->callbacks_);
-  return EngineSharedPtr(engine);
+  auto envoy_engine = init_engine();
+  Engine* engine = new Engine(envoy_engine);
+  auto engine_ptr = EngineSharedPtr(engine);
+
+  auto callbacks = this->callbacks_.release();
+  callbacks->parent = engine_ptr;
+
+  envoy_logger null_logger{
+      .log = nullptr,
+      .release = envoy_noop_release,
+      .context = nullptr,
+  };
+
+  run_engine(envoy_engine, callbacks->as_envoy_engine_callbacks(), null_logger, config_str.c_str(),
+             log_level_to_string(this->log_level_).c_str());
+
+  return engine_ptr;
 }
 
 } // namespace Platform

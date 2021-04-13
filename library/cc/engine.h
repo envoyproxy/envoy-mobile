@@ -10,36 +10,25 @@
 namespace Envoy {
 namespace Platform {
 
-// TODO(crockeo): refactor engine callbacks
-//   - make EngineCallbacks struct with on_engine_running and (eventually) on_exit
-//   - change context from Engine ptr to EngineCallbacks ptr
-//   - move c_on_(...) from private static fn to static fn in anonymous namespace
+class StreamClient;
+using StreamClientSharedPtr = std::shared_ptr<StreamClient>;
 
-struct EngineCallbacks {
-  std::function<void()> on_engine_running;
-  // unused:
-  // std::function<void()> on_exit;
-};
-
-using EngineCallbacksSharedPtr = std::shared_ptr<EngineCallbacks>;
-
-class Engine {
+class Engine : public std::enable_shared_from_this<Engine> {
 public:
-  ~Engine();
-
   StreamClientSharedPtr stream_client();
   PulseClientSharedPtr pulse_client();
 
   void terminate();
 
 private:
-  Engine(envoy_engine_t engine, const std::string& configuration, LogLevel log_level,
-         EngineCallbacksSharedPtr callbacks);
+  Engine(envoy_engine_t engine);
 
+  // required to access private constructor
   friend class EngineBuilder;
+  // required to use envoy_engine_t without exposing it publicly
+  friend class StreamPrototype;
 
   envoy_engine_t engine_;
-  EngineCallbacksSharedPtr callbacks_;
   StreamClientSharedPtr stream_client_;
   PulseClientSharedPtr pulse_client_;
   bool terminated_;
