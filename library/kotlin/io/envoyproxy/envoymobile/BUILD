@@ -26,7 +26,6 @@ android_library(
     visibility = ["//visibility:public"],
     exports = [
      ":envoy_lib",
-#     ":envoy_interfaces_lib",
     ],
     deps = [],
 )

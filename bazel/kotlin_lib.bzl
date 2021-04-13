@@ -1,5 +1,27 @@
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
+
+def native_lib_name(native_dep):
+    """
+    This is the magic function which helps get the name of the native library
+    from the native dependency. In general, the bazel cc_binary rules will
+    output a binary based on the target name. This macro just infers the output
+    so file name.
+
+    The main functionality of this method is used for integration java/android
+    testing. Bazel itself doesn't play well with different genrules outputting
+    the same output. In this project there's 3 types of artifacts we end up
+    using: envoy's aar, integration tests with just vanilla jvm, integration
+    tests with android. Each of these require a different so file built which
+    means that Bazel will have to output 3 types of so files with different names.
+    """
+    native_lib_name = ""
+    if ":" in native_dep:
+        native_lib_name = native_dep.split(":")[1].split('.so')[0]
+    else:
+        native_lib_name = native_dep.split('.so')[0]
+    return native_lib_name
+
 def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     # These source files must be re-exported to the kotlin custom library rule to ensure their
     # inclusion. This is used to work around testing visibility.
@@ -17,11 +39,7 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     )
 
 def envoy_mobile_so_to_jni_lib(name, native_dep):
-    native_lib_name = ""
-    if ":" in native_dep:
-        native_lib_name = native_dep.split(":")[1].split('.so')[0]
-    else:
-        native_lib_name = native_dep.split('.so')[0]
+    native_lib_name = native_lib_name(native_dep)
     output =  "lib{}.jnilib".format(native_lib_name)
 
     return native.genrule(

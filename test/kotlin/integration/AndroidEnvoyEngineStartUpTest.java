@@ -4,18 +4,19 @@ import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 import io.envoyproxy.envoymobile.AndroidEngineBuilder;
 import io.envoyproxy.envoymobile.Engine;
+import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(RobolectricTestRunner.class)
 public class AndroidEnvoyEngineStartUpTest {
     static  {
-        System.out.println("~~~~~~~~~~~~~~~~");
-        System.out.println(System.getProperty("xjnilibname"));
-        System.out.println(System.getProperty("user.dir"));
-        System.out.println("~~~~~~~~~~~~~~~~");
+        AndroidJniLibrary.loadTestLibrary();
     }
+
     private final Context appContext = ApplicationProvider.getApplicationContext();
 
     @Test
@@ -23,5 +24,6 @@ public class AndroidEnvoyEngineStartUpTest {
         Engine engine = new AndroidEngineBuilder(appContext).build();
         Thread.sleep(1000);
         engine.terminate();
+        assertThat(true).isTrue();
     }
 }

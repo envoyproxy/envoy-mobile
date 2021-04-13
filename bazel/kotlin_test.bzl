@@ -1,6 +1,7 @@
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_test")
 load("@build_bazel_rules_android//android:rules.bzl", "android_local_test")
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+load("//bazel:kotlin_lib.bzl", "native_lib_name")
 
 JNI_INITIALIZED = {}
 
@@ -34,8 +35,16 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
 # This will create the native .so binary (for linux) and a .jnilib (for OS X) look up
 def envoy_mobile_jni_kt_test(name, srcs,  native_deps =[], deps = []):
     native_lib_name = native_deps[0].split(":")[1].split('.so')[0]
-    _internal_kt_test(name, srcs, deps, data = native_deps,
-                      jvm_flags = ["-Djava.library.path=library/common/jni", "-Dxjnilibname={}".format(native_lib_name)])
+    _internal_kt_test(
+        name,
+        srcs,
+        deps,
+        data = native_deps,
+        jvm_flags = [
+        "-Djava.library.path=library/common/jni",
+        "-Denvoy_jni_library_name={}".format(native_lib_name)
+        ]
+    )
 
 # A basic macro to make it easier to declare and run kotlin tests
 #
@@ -57,6 +66,7 @@ def envoy_mobile_kt_test(name, srcs, deps = []):
     _internal_kt_test(name, srcs, deps)
 
 def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
+    native_lib_name = native_lib_name(native_dep)
     native.android_library(
         name = name + "_test_lib",
         custom_package = "io.envoyproxy.envoymobile.test",
@@ -92,5 +102,6 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
         jvm_flags = [
             "-Djava.library.path=library/common/jni",
-        ],
+            "-Denvoy_jni_library_name={}".format(native_lib_name)
+        ]
     )
