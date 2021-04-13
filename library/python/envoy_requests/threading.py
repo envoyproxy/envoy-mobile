@@ -1,6 +1,9 @@
 import functools
+import queue
+from queue import Queue
 from threading import Event
 from threading import Lock
+from threading import Thread
 from typing import Any
 from typing import Callable
 from typing import TypeVar
@@ -17,9 +20,14 @@ from .response import Response
 def request(*args, **kwargs) -> Response:
     response = Response()
     stream_complete = Event()
+    executor = ThreadingExecutor()
+
+    def _set_stream_complete():
+        stream_complete.set()
+        executor.finish()
 
     stream = make_stream(
-        Engine.handle(), ThreadingExecutor(), response, lambda: stream_complete.set(),
+        Engine.handle(), executor, response, _set_stream_complete,
     )
     send_request(stream, *args, **kwargs)
     stream_complete.wait()
@@ -64,11 +72,24 @@ Func = TypeVar("Func", bound=Callable[..., Any])
 class ThreadingExecutor(Executor):
     def __init__(self):
         self.lock = Lock()
+        self.queue = Queue()
+        self.process_callbacks = Thread(target=self._process_callbacks)
+        self.process_callbacks.start()
 
     def wrap(self, fn: Func) -> Func:
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
-            with self.lock:
-                fn(*args, **kwargs)
+            self.queue.put((fn, args, kwargs))
 
         return cast(Func, wrapper)
+
+    def finish(self):
+        self.queue.put((None, None, None))
+
+    def _process_callbacks(self):
+        while True:
+            fn, args, kwargs = self.queue.get(block=True, timeout=0.25)
+            if fn is None and args is None and kwargs is None:
+                break
+            with self.lock:
+                fn(*args, **kwargs)
