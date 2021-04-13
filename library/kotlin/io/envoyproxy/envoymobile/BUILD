@@ -1,4 +1,3 @@
-load("@rules_android//android:rules.bzl", "android_library")
 load("@envoy_mobile//bazel:android_artifacts.bzl", "android_artifacts")
 load("@envoy_mobile//bazel:kotlin_lib.bzl", "envoy_mobile_kt_library")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
