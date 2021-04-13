@@ -16,28 +16,27 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
         visibility = visibility,
     )
 
-def local_dynamic_jnilib(name, native_lib_name, native_deps):
-    jni_lib = "lib{}.jnilib".format(native_lib_name)
-    # Generate .jnilib file for OS X look up
-    native.genrule(
-        name = name,
-        cmd = """
-        cp $< $@
-        """,
-        outs = [jni_lib],
-        srcs = native_deps,
-        visibility = ["//visibility:public"],
-    )
+def envoy_mobile_so_to_jni_lib(name, native_dep):
+    native_lib_name = ""
+    if ":" in native_dep:
+        native_lib_name = native_dep.split(":")[1].split('.so')[0]
+    else:
+        native_lib_name = native_dep.split('.so')[0]
+    output =  "lib{}.jnilib".format(native_lib_name)
 
-def local_dynamic_so(name, native_lib_name, native_deps):
-    so_lib = "lib{}.so".format(native_lib_name)
-    # Generate .so file for OS X look up
-    native.genrule(
+    return native.genrule(
         name = name,
+        outs = [output],
+        srcs = [native_dep],
         cmd = """
+        so_file="lib{}.so"
+        if [ ! -f $$so_file ]; then
+            dir=$$(dirname $@)
+            cp $< $$dir/lib{}.so
+            chmod 755 $$dir/lib{}.so
+        fi
+
         cp $< $@
-        """,
-        outs = [so_lib],
-        srcs = native_deps,
-        visibility = ["//visibility:public"],
+        chmod 755 $@
+        """.replace('{}', native_lib_name)
     )

@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
-load("//bazel:kotlin_lib.bzl", "local_dynamic_jnilib", "local_dynamic_so")
+load("//bazel:kotlin_lib.bzl", "envoy_mobile_so_to_jni_lib")
 
 licenses(["notice"])  # Apache 2
 
@@ -46,16 +46,43 @@ cc_binary(
 )
 
 # Java JNI library for local unit test execution
-local_dynamic_jnilib(
-    name = "envoy_jni_jnilib",
-    native_lib_name = "envoy_jni",
-    native_deps = ["java_jni_lib.so"],
+envoy_mobile_so_to_jni_lib(
+    name = "ndk_envoy_lib.jnilib",
+    native_dep = "ndk_envoy_lib.so"
 )
 
-local_dynamic_so(
-    name = "envoy_jni_so",
-    native_lib_name = "envoy_jni",
-    native_deps = ["java_jni_lib.so"],
+android_library(
+    name = "android_ndk_envoy_lib",
+    srcs = [],
+    data = [
+        "ndk_envoy_lib.so",
+        "ndk_envoy_lib.jnilib",
+    ],
+)
+
+cc_binary(
+    name = "ndk_envoy_lib.so",
+    srcs = [
+        "android_test_jni_interface.cc",
+        "jni_interface.cc",
+        "@local_jdk//:jni_header",
+    ],
+    copts = ["-std=c++17"],
+    linkopts = [
+    ],
+    linkshared = True,
+    deps = [
+        ":java_jni_support",
+        "java_jni_lib",
+        "//bazel:jni",
+        "//library/common:envoy_main_interface_lib",
+        "//library/common/api:c_types",
+    ],
+)
+
+envoy_mobile_so_to_jni_lib(
+    name = "java_jni_lib.jnilib",
+    native_dep = "java_jni_lib.so"
 )
 
 cc_binary(
@@ -74,6 +101,7 @@ cc_library(
     srcs = [
         "jni_utility.cc",
         "jni_version.cc",
+        "@local_jdk//:jni_header",
     ],
     hdrs = [
         "jni_utility.h",

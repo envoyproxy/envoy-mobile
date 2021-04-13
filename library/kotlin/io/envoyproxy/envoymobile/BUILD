@@ -17,6 +17,20 @@ android_artifacts(
     visibility = ["//visibility:public"],
 )
 
+android_library(
+    name = "envoy_test_lib",
+    srcs = [
+    ],
+    custom_package = "io.envoyproxy.envoymobile",
+    manifest = "EnvoyManifest.xml",
+    visibility = ["//visibility:public"],
+    exports = [
+     ":envoy_lib",
+#     ":envoy_interfaces_lib",
+    ],
+    deps = [],
+)
+
 kt_android_library(
     name = "envoy_lib",
     srcs = [
