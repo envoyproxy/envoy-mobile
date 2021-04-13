@@ -51,7 +51,6 @@ object EnvoyMobileTestSuite {
       val entries = zipFile.entries()
       for (entry in entries) {
         val entryName = entry.name
-        println("  "+entryName)
 
         if (entryName.endsWith(CLASS_SUFFIX)) {
           val classNameEnd = entryName.length - CLASS_SUFFIX.length
