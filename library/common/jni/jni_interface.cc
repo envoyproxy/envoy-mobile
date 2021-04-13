@@ -1,4 +1,3 @@
-#include <ares.h>
 #include <jni.h>
 
 #include <string>
