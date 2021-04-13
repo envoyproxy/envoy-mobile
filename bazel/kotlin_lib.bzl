@@ -1,6 +1,5 @@
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 
-
 def native_lib_name(native_dep):
     """
     This is the magic function which helps get the name of the native library
@@ -17,9 +16,9 @@ def native_lib_name(native_dep):
     """
     lib_name = ""
     if ":" in native_dep:
-        lib_name = native_dep.split(":")[1].split('.so')[0]
+        lib_name = native_dep.split(":")[1].split(".so")[0]
     else:
-        lib_name = native_dep.split('.so')[0]
+        lib_name = native_dep.split(".so")[0]
     return lib_name
 
 def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
@@ -40,7 +39,7 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
 
 def envoy_mobile_so_to_jni_lib(name, native_dep):
     lib_name = native_lib_name(native_dep)
-    output =  "lib{}.jnilib".format(lib_name)
+    output = "lib{}.jnilib".format(lib_name)
 
     return native.genrule(
         name = name,
@@ -56,5 +55,5 @@ def envoy_mobile_so_to_jni_lib(name, native_dep):
 
         cp $< $@
         chmod 755 $@
-        """.replace('{}', lib_name)
+        """.replace("{}", lib_name),
     )

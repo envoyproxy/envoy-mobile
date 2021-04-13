@@ -25,7 +25,7 @@ android_library(
     manifest = "EnvoyManifest.xml",
     visibility = ["//visibility:public"],
     exports = [
-     ":envoy_lib",
+        ":envoy_lib",
     ],
     deps = [],
 )

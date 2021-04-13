@@ -33,17 +33,17 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
 
 # A basic macro to make it easier to declare and run kotlin tests which depend on a JNI lib
 # This will create the native .so binary (for linux) and a .jnilib (for OS X) look up
-def envoy_mobile_jni_kt_test(name, srcs,  native_deps =[], deps = []):
-    native_lib_name = native_deps[0].split(":")[1].split('.so')[0]
+def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = []):
+    native_lib_name = native_lib_name(native_deps[0])
     _internal_kt_test(
         name,
         srcs,
         deps,
         data = native_deps,
         jvm_flags = [
-        "-Djava.library.path=library/common/jni",
-        "-Denvoy_jni_library_name={}".format(native_lib_name)
-        ]
+            "-Djava.library.path=library/common/jni",
+            "-Denvoy_jni_library_name={}".format(native_lib_name),
+        ],
     )
 
 # A basic macro to make it easier to declare and run kotlin tests
@@ -82,7 +82,6 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
         data = native_deps,
         deps = deps + [
             "//bazel:envoy_mobile_test_suite",
-
             "@maven//:androidx_annotation_annotation",
             "@maven//:androidx_test_core",
             "@maven//:androidx_test_ext_junit",
@@ -91,7 +90,6 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
             "@maven//:androidx_test_rules",
             "@maven//:org_robolectric_robolectric",
             "@robolectric//bazel:android-all",
-
             "@maven//:org_assertj_assertj_core",
             "@maven//:junit_junit",
             "@maven//:org_mockito_mockito_inline",
@@ -102,6 +100,6 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
         jvm_flags = [
             "-Djava.library.path=library/common/jni",
-            "-Denvoy_jni_library_name={}".format(native_lib_name)
-        ]
+            "-Denvoy_jni_library_name={}".format(native_lib_name),
+        ],
     )

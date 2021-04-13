@@ -48,15 +48,15 @@ cc_binary(
 # Java JNI library for local unit test execution
 envoy_mobile_so_to_jni_lib(
     name = "ndk_envoy_lib.jnilib",
-    native_dep = "ndk_envoy_lib.so"
+    native_dep = "ndk_envoy_lib.so",
 )
 
 android_library(
     name = "android_ndk_envoy_lib",
     srcs = [],
     data = [
-        "ndk_envoy_lib.so",
         "ndk_envoy_lib.jnilib",
+        "ndk_envoy_lib.so",
     ],
 )
 
@@ -72,8 +72,8 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
-        ":java_jni_support",
         "java_jni_lib",
+        ":java_jni_support",
         "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
@@ -82,7 +82,7 @@ cc_binary(
 
 envoy_mobile_so_to_jni_lib(
     name = "java_jni_lib.jnilib",
-    native_dep = "java_jni_lib.so"
+    native_dep = "java_jni_lib.so",
 )
 
 cc_binary(
