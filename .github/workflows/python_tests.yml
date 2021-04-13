@@ -20,5 +20,7 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
+      - name: 'list libs'
+        run: ls /__t/Python/3.8.8/x64/lib && ls /tmp/runner/work/_tool/Python/3.8.8/x64/lib
       - name: 'Run tests'
         run: bazel test --test_output=all //test/python/...
