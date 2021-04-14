@@ -13,9 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 public class AndroidEnvoyEngineStartUpTest {
-  static {
-    AndroidJniLibrary.loadTestLibrary();
-  }
+  static { AndroidJniLibrary.loadTestLibrary(); }
 
   private final Context appContext = ApplicationProvider.getApplicationContext();
 
