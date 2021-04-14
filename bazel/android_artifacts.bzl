@@ -184,7 +184,6 @@ def _create_jni_library(name, native_deps = []):
     )
 
     # This outputs {android_so_apk}_unsigned.apk which will contain the base files for our aar
-
     native.android_binary(
         name = android_so_apk,
         manifest = name + "_generated_AndroidManifest.xml",
