@@ -24,6 +24,7 @@ envoy_cc_library(
     ],
 )
 
+# Main dynamic library for the Envoy Mobile aar
 cc_binary(
     name = "envoy_lib.so",
     srcs = [
@@ -44,22 +45,14 @@ cc_binary(
         "//library/common/api:c_types",
     ],
 )
-
-# Java JNI library for local unit test execution
+## Targets for local execution
+# OS X binary (.jnilib) for NDK testing
 envoy_mobile_so_to_jni_lib(
     name = "ndk_envoy_lib.jnilib",
     native_dep = "ndk_envoy_lib.so",
 )
 
-android_library(
-    name = "android_ndk_envoy_lib",
-    srcs = [],
-    data = [
-        "ndk_envoy_lib.jnilib",
-        "ndk_envoy_lib.so",
-    ],
-)
-
+# Base binary (.so) for NDK testing
 cc_binary(
     name = "ndk_envoy_lib.so",
     srcs = [
@@ -80,11 +73,13 @@ cc_binary(
     ],
 )
 
+# OS X binary (.jnilib) for JVM testing
 envoy_mobile_so_to_jni_lib(
     name = "java_jni_lib.jnilib",
     native_dep = "java_jni_lib.so",
 )
 
+# Base binary (.so) for JVM testing
 cc_binary(
     name = "java_jni_lib.so",
     srcs = ["jni_interface.cc"],
