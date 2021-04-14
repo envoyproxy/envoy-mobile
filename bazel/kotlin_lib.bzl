@@ -12,7 +12,6 @@ load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_library")
 # tests with android. Each of these require a different so file built which
 # means that Bazel will have to output 3 types of so files with different names.
 def native_lib_name(native_dep):
-
     lib_name = ""
     if ":" in native_dep:
         lib_name = native_dep.split(":")[1].split(".so")[0]
