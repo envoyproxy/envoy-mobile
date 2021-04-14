@@ -11,6 +11,8 @@ import org.robolectric.RobolectricTestRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// NOLINT(namespace-envoy)
+
 @RunWith(RobolectricTestRunner.class)
 public class AndroidEnvoyEngineStartUpTest {
   static { AndroidJniLibrary.loadTestLibrary(); }
