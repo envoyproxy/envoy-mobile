@@ -45,6 +45,7 @@ cc_binary(
         "//library/common/api:c_types",
     ],
 )
+
 ## Targets for local execution
 # OS X binary (.jnilib) for NDK testing
 envoy_mobile_so_to_jni_lib(
