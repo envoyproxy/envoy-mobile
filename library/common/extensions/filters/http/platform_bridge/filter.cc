@@ -531,7 +531,6 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     free(result.pending_trailers);
   } else if (result.pending_trailers) {
     addTrailers(*result.pending_trailers);
-    free(result.pending_trailers);
   }
 
   iteration_state_ = IterationState::Ongoing;

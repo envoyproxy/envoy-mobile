@@ -1161,6 +1161,11 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenDontResumeOnR
     release_envoy_headers(*pending_trailers);
 
     invocations->on_resume_request_calls++;
+    if (modified_data == nullptr) {
+      std::cerr << "IN TEST: sending null modified_data " << std::endl;
+    } else {
+      std::cerr << "IN TEST: sending modified_data " << std::endl;
+    }
     return {kEnvoyFilterResumeStatusStopIteration, modified_headers, modified_data,
             modified_trailers};
   };
