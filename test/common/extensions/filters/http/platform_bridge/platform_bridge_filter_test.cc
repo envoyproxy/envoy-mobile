@@ -411,7 +411,7 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecodingW
 
     envoy_headers* modified_trailers =
         static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_trailers = make_envoy_headers({{"trailer1", "test.trailer"}});
+    *modified_trailers = make_envoy_headers({{"trailer", "test.trailer.async"}});
 
     return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, nullptr, modified_trailers};
   };
@@ -441,6 +441,11 @@ platform_filter_name: StopOnRequestHeadersThenResumeOnResumeDecoding
   EXPECT_EQ(
       request_headers.get(Http::LowerCaseString("x-async-resumed"))[0]->value().getStringView(),
       "Very Yes");
+
+  EXPECT_FALSE(trailers.get(Http::LowerCaseString("trailer")).empty());
+  EXPECT_EQ(
+      trailers.get(Http::LowerCaseString("trailer"))[0]->value().getStringView(),
+      "test.trailer.async");
 }
 
 TEST_F(PlatformBridgeFilterTest, AsyncResumeDecodingIsNoopAfterPreviousResume) {
@@ -1017,11 +1022,6 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnResum
     release_envoy_headers(*pending_trailers);
 
     invocations->on_resume_request_calls++;
-    if (modified_data == nullptr) {
-      std::cerr << "IN TEST: sending null modified_data " << std::endl;
-    } else {
-      std::cerr << "IN TEST: sending modified_data " << std::endl;
-    }
     return {kEnvoyFilterResumeStatusResumeIteration, modified_headers, modified_data,
             modified_trailers};
   };
