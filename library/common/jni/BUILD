@@ -26,7 +26,7 @@ envoy_cc_library(
 
 # Main dynamic library for the Envoy Mobile aar
 cc_binary(
-    name = "envoy_lib.so",
+    name = "libenvoy_jni.so",
     srcs = [
         "android_jni_interface.cc",
         "jni_interface.cc",

@@ -174,7 +174,6 @@ def _create_jni_library(name, native_deps = []):
     """
     cc_lib_name = name + "_jni_interface_lib"
     jni_archive_name = name + "_jni"
-    android_so_apk = name + "_so_apk"
 
     # Create a dummy manifest file for our android_binary
     native.genrule(
@@ -183,9 +182,9 @@ def _create_jni_library(name, native_deps = []):
         cmd = """cat > $(OUTS) <<EOF {}EOF""".format(_manifest("does.not.matter")),
     )
 
-    # This outputs {android_so_apk}_unsigned.apk which will contain the base files for our aar
-    native.android_binary(
-        name = android_so_apk,
+    # This outputs {jni_archive_name}_unsigned.apk which will contain the base files for our aar
+    android_binary(
+        name = jni_archive_name,
         manifest = name + "_generated_AndroidManifest.xml",
         custom_package = "does.not.matter",
         srcs = [],
@@ -200,24 +199,7 @@ def _create_jni_library(name, native_deps = []):
         srcs = native_deps,
     )
 
-    # Depend on the explicit envoy_aar_jni_unsigned.apk which contains the .so files.
-    native.genrule(
-        name = jni_archive_name,
-        outs = [jni_archive_name + "_sources_so.zip"],
-        srcs = [android_so_apk + "_unsigned.apk"],
-        # The reason for not using a string format is because the script
-        # has usages of the character`.` within the script.
-        # Replace does work instead.
-        cmd = """
-        original_dir=$$PWD
-        set -- $(SRCS)
-        unzip $$original_dir/$$1 > /dev/null
-        find lib -name '*.so' -exec sh -c 'mv $$0 $$(dirname $$0)/{--}.so' {} \\;
-        zip -r $@ lib > /dev/null
-        """.replace("{--}", "envoy_jni"),
-    )
-
-    return jni_archive_name
+    return jni_archive_name + "_unsigned.apk"
 
 def _create_classes_jar(name, manifest, android_library):
     """
@@ -231,7 +213,7 @@ def _create_classes_jar(name, manifest, android_library):
 
     # This creates bazel-bin/library/kotlin/io/envoyproxy/envoymobile/{name}_bin_deploy.jar
     # This jar has all the classes needed for our aar and will be our `classes.jar`
-    native.android_binary(
+    android_binary(
         name = android_binary_name,
         manifest = manifest,
         custom_package = "does.not.matter",
