@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidNetworkMonitor extends BroadcastReceiver {
+  private static final String PERMISSION_DENIED_STATS_ELEMENT = "android_access_network_state_denied";
   private static final int ENVOY_NET_GENERIC = 0;
   private static final int ENVOY_NET_WWAN = 1;
   private static final int ENVOY_NET_WLAN = 2;
@@ -33,7 +34,7 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   private NetworkCallback networkCallback;
   private NetworkRequest networkRequest;
 
-  public static void load(Context context) {
+  public static void load(Context context, EnvoyEngine envoyEngine) {
     if (instance != null) {
       return;
     }
@@ -42,14 +43,19 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       if (instance != null) {
         return;
       }
-      instance = new AndroidNetworkMonitor(context);
+      instance = new AndroidNetworkMonitor(context, envoyEngine);
     }
   }
 
-  private AndroidNetworkMonitor(Context context) {
+  private AndroidNetworkMonitor(Context context, EnvoyEngine envoyEngine) {
     int permission =
         ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
     if (permission == PackageManager.PERMISSION_DENIED) {
+      try {
+        envoyEngine.recordCounterInc(PERMISSION_DENIED_STATS_ELEMENT, 1);
+      } catch (Throwable t) {
+        // no-op if this errors out and return
+      }
       return;
     }
 
