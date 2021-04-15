@@ -37,7 +37,7 @@ Engine::Engine(envoy_engine_t engine, const std::string& configuration, LogLevel
   };
 
   run_engine(this->engine_, envoy_callbacks, null_logger, configuration.c_str(),
-             log_level_to_string(log_level).c_str());
+             logLevelToString(log_level).c_str());
 
   this->stream_client_ = std::make_shared<StreamClient>(this->engine_);
   this->pulse_client_ = std::make_shared<PulseClient>();
