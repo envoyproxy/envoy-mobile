@@ -16,7 +16,7 @@ const std::string& RequestHeaders::path() const { return (*this)[":path"][0]; }
 absl::optional<RetryPolicy> RequestHeaders::retryPolicy() const {
   try {
     return absl::optional<RetryPolicy>(RetryPolicy::fromRawHeaderMap(this->allHeaders()));
-  } catch (std::exception) {
+  } catch (const std::exception&) {
     return absl::optional<RetryPolicy>();
   }
 }
