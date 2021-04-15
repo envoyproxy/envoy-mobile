@@ -443,9 +443,8 @@ platform_filter_name: StopOnRequestHeadersThenResumeOnResumeDecoding
       "Very Yes");
 
   EXPECT_FALSE(trailers.get(Http::LowerCaseString("trailer")).empty());
-  EXPECT_EQ(
-      trailers.get(Http::LowerCaseString("trailer"))[0]->value().getStringView(),
-      "test.trailer.async");
+  EXPECT_EQ(trailers.get(Http::LowerCaseString("trailer"))[0]->value().getStringView(),
+            "test.trailer.async");
 }
 
 TEST_F(PlatformBridgeFilterTest, AsyncResumeDecodingIsNoopAfterPreviousResume) {
