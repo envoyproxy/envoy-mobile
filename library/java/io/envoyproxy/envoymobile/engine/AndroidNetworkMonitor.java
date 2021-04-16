@@ -16,6 +16,8 @@ import android.net.NetworkRequest;
 import android.os.Build;
 import androidx.core.content.ContextCompat;
 
+import java.util.Collections;
+
 /**
  * This class makes use of some deprecated APIs, but it's only current purpose is to attempt to
  * distill some notion of a preferred network from the OS, upon which we can assume new sockets will
@@ -53,7 +55,7 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
         ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
     if (permission == PackageManager.PERMISSION_DENIED) {
       try {
-        envoyEngine.recordCounterInc(PERMISSION_DENIED_STATS_ELEMENT, 1);
+        envoyEngine.recordCounterInc(PERMISSION_DENIED_STATS_ELEMENT, Collections.emptyMap(),1);
       } catch (Throwable t) {
         // no-op if this errors out and return
       }
