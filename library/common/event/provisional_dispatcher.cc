@@ -15,8 +15,6 @@ void ProvisionalDispatcher::drain(Event::Dispatcher& event_dispatcher) {
   ENVOY_LOG(trace, "ProvisionalDispatcher::drain");
   RELEASE_ASSERT(!drained_, "ProvisionalDispatcher::drain must only occur once");
   drained_ = true;
-  // RELEASE_ASSERT(isThreadSafe(),
-  //               "ProvisionalDispatcher::drain must be called from a threadsafe context");
   event_dispatcher_ = &event_dispatcher;
 
   for (const Event::PostCb& cb : init_queue_) {
