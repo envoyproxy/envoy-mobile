@@ -24,7 +24,7 @@ import androidx.core.content.ContextCompat;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidNetworkMonitor extends BroadcastReceiver {
   private static final String PERMISSION_DENIED_STATS_ELEMENT =
-      "android_access_network_state_denied";
+      "android_permissions.network_state_denied";
   private static final int ENVOY_NET_GENERIC = 0;
   private static final int ENVOY_NET_WWAN = 1;
   private static final int ENVOY_NET_WLAN = 2;
