@@ -127,6 +127,10 @@ Engine::~Engine() {
 
     ASSERT(event_dispatcher_);
 
+    if (std::this_thread::get_id() == main_thread_.get_id()) {
+      event_dispatcher_->shutdown();
+    }
+
     // Exit the event loop and finish up in Engine::run(...)
     event_dispatcher_->exit();
   } // _mutex
