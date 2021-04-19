@@ -1,5 +1,11 @@
-import gevent.monkey
+# call to construct the Engine before we monkeypatch
+# because gevent.monkey.patch_all() patches threading.Event
+# which ruins the Engine constructor
+# TODO: fix this
+from library.python.envoy_requests.common.engine import Engine
+Engine.handle()
 
+import gevent.monkey
 gevent.monkey.patch_all()
 
 import gevent
@@ -7,13 +13,7 @@ import pytest
 import requests
 from gevent.pool import Group
 
-from envoy_requests import gevent as envoy_requests
-from envoy_requests.gevent.engine import make_gevent_envoy_engine
-
-
-@pytest.fixture
-def premake_envoy_engine():
-    make_gevent_envoy_engine()
+from library.python.envoy_requests import gevent as envoy_requests
 
 
 def ping_api(requests_impl, url: str, concurrent_requests: int):
@@ -23,9 +23,14 @@ def ping_api(requests_impl, url: str, concurrent_requests: int):
     group.join()
 
 
-@pytest.mark.parametrize("implementation", [requests, envoy_requests])
+@pytest.mark.parametrize(
+    "implementation",
+    [
+        pytest.param(requests, id="requests"),
+        pytest.param(requests.Session(), id="requests_session"),
+        pytest.param(envoy_requests, id="envoy_requests"),
+    ],
+)
 @pytest.mark.parametrize("concurrent_requests", [1, 10, 100])
-def test_performance(
-    premake_envoy_engine, benchmark, implementation, concurrent_requests
-):
+def test_performance(benchmark, implementation, concurrent_requests):
     benchmark(ping_api, implementation, "https://www.google.com/", concurrent_requests)

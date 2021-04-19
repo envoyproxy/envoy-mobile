@@ -47,3 +47,24 @@ py_test(
         requirement("pytest"),
     ],
 )
+
+py_test(
+    name = "benchmark_envoy_vs_requests",
+    srcs = [
+        "runner.py",
+        "benchmark/__init__.py",
+        "benchmark/envoy_vs_requests.py",
+    ],
+    args = [
+        "test/python/benchmark/envoy_vs_requests.py",
+        "-s",
+    ],
+    main = "runner.py",
+    python_version = "PY3",
+    deps = [
+        "//library/python:envoy_requests",
+        requirement("pytest"),
+        requirement("pytest-benchmark"),
+        requirement("requests"),
+    ],
+)
