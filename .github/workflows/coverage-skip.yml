@@ -1,0 +1,23 @@
+name: coverage
+
+on:
+  pull_request:
+    paths:
+      - '!library/common/**'
+      - '!test/common/**'
+
+jobs:
+  coverage:
+    name: coverage
+    runs-on: ubuntu-18.04
+    timeout-minutes: 120
+    container:
+      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+      env:
+        BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only"
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
+        COVERAGE_THRESHOLD: 95
+    steps:
+      - name: 'Skipping coverage'
+        run: exit 0
