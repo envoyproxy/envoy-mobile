@@ -26,8 +26,10 @@ jobs:
         name: 'Check whether to run'
         run: |
           if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only HEAD^ HEAD | grep -q common/ ; then
+            echo "Coverage will run."
             echo "::set-output name=run_coverage::true"
           else
+            echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
       - name: 'Run coverage'
