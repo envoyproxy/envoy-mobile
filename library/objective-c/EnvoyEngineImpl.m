@@ -20,7 +20,14 @@ static void ios_on_exit(void *context) { NSLog(@"[Envoy] library is exiting"); }
 
 static void ios_on_log(envoy_data data, void *context) {
   EnvoyLogger *logger = (__bridge EnvoyLogger *)context;
-  logger.log(to_ios_string(data));
+
+  @autoreleasepool {
+    NSString *logMessage = [[NSString alloc] initWithBytes:data.bytes
+                                                      length:data.length
+                                                    encoding:NSUTF8StringEncoding];
+    data.release(data.context);
+    logger.log(logMessage);
+  }
 }
 
 static void ios_on_logger_release(void *context) { CFRelease(context); }
@@ -279,7 +286,6 @@ static void ios_http_filter_on_error(envoy_error error, const void *context) {
     error.message.release(error.message.context);
     return;
   }
-
   @autoreleasepool {
     NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
                                                       length:error.message.length
