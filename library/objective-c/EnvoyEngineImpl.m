@@ -10,92 +10,103 @@
 #import <UIKit/UIKit.h>
 
 static void ios_on_engine_running(void *context) {
-  EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
-  if (engineImpl.onEngineRunning) {
-    engineImpl.onEngineRunning();
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
+    if (engineImpl.onEngineRunning) {
+      engineImpl.onEngineRunning();
+    }
   }
 }
 
-static void ios_on_exit(void *context) { NSLog(@"[Envoy] library is exiting"); }
+static void ios_on_exit(void *context) {
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    NSLog(@"[Envoy] library is exiting");
+  }
+}
 
 static void ios_on_log(envoy_data data, void *context) {
-  EnvoyLogger *logger = (__bridge EnvoyLogger *)context;
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
-    NSString *logMessage = to_ios_string(data);
-    logger.log(logMessage);
+    EnvoyLogger *logger = (__bridge EnvoyLogger *)context;
+    logger.log(to_ios_string(data));
   }
 }
 
 static void ios_on_logger_release(void *context) { CFRelease(context); }
 
 static const void *ios_http_filter_init(const void *context) {
-  envoy_http_filter *c_filter = (envoy_http_filter *)context;
-  EnvoyHTTPFilterFactory *filterFactory =
-      (__bridge EnvoyHTTPFilterFactory *)c_filter->static_context;
-  EnvoyHTTPFilter *filter = filterFactory.create();
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    envoy_http_filter *c_filter = (envoy_http_filter *)context;
 
-  // Unset static functions on the c_struct based on the created filter
-  if (filter.onRequestHeaders == nil) {
-    c_filter->on_request_headers = NULL;
-  }
-  if (filter.onRequestData == nil) {
-    c_filter->on_request_data = NULL;
-  }
-  if (filter.onRequestTrailers == nil) {
-    c_filter->on_request_trailers = NULL;
-  }
+    EnvoyHTTPFilterFactory *filterFactory =
+        (__bridge EnvoyHTTPFilterFactory *)c_filter->static_context;
+    EnvoyHTTPFilter *filter = filterFactory.create();
 
-  if (filter.onResponseHeaders == nil) {
-    c_filter->on_response_headers = NULL;
-  }
-  if (filter.onResponseData == nil) {
-    c_filter->on_response_data = NULL;
-  }
-  if (filter.onResponseTrailers == nil) {
-    c_filter->on_response_trailers = NULL;
-  }
+    // Unset static functions on the c_struct based on the created filter
+    if (filter.onRequestHeaders == nil) {
+      c_filter->on_request_headers = NULL;
+    }
+    if (filter.onRequestData == nil) {
+      c_filter->on_request_data = NULL;
+    }
+    if (filter.onRequestTrailers == nil) {
+      c_filter->on_request_trailers = NULL;
+    }
 
-  if (filter.setRequestFilterCallbacks == nil) {
-    c_filter->set_request_callbacks = NULL;
-  }
-  if (filter.onResumeRequest == nil) {
-    c_filter->on_resume_request = NULL;
-  }
+    if (filter.onResponseHeaders == nil) {
+      c_filter->on_response_headers = NULL;
+    }
+    if (filter.onResponseData == nil) {
+      c_filter->on_response_data = NULL;
+    }
+    if (filter.onResponseTrailers == nil) {
+      c_filter->on_response_trailers = NULL;
+    }
 
-  if (filter.setResponseFilterCallbacks == nil) {
-    c_filter->set_response_callbacks = NULL;
-  }
-  if (filter.onResumeResponse == nil) {
-    c_filter->on_resume_response = NULL;
-  }
+    if (filter.setRequestFilterCallbacks == nil) {
+      c_filter->set_request_callbacks = NULL;
+    }
+    if (filter.onResumeRequest == nil) {
+      c_filter->on_resume_request = NULL;
+    }
 
-  if (filter.onCancel == nil) {
-    c_filter->on_cancel = NULL;
-  }
-  if (filter.onError == nil) {
-    c_filter->on_error = NULL;
-  }
+    if (filter.setResponseFilterCallbacks == nil) {
+      c_filter->set_response_callbacks = NULL;
+    }
+    if (filter.onResumeResponse == nil) {
+      c_filter->on_resume_response = NULL;
+    }
 
-  return CFBridgingRetain(filter);
+    if (filter.onCancel == nil) {
+      c_filter->on_cancel = NULL;
+    }
+    if (filter.onError == nil) {
+      c_filter->on_error = NULL;
+    }
+
+    return CFBridgingRetain(filter);
+  }
 }
 
 static envoy_filter_headers_status
 ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const void *context) {
-  // TODO(goaway): optimize unmodified case
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onRequestHeaders == nil) {
-    return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
-                                         /*headers*/ headers};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    // TODO(goaway): optimize unmodified case
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onRequestHeaders == nil) {
+      return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
+                                           /*headers*/ headers};
+    }
+
     EnvoyHeaders *platformHeaders = to_ios_headers(headers);
     // TODO(goaway): consider better solution for compound return
     NSArray *result = filter.onRequestHeaders(platformHeaders, end_stream);
@@ -106,17 +117,16 @@ ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const
 
 static envoy_filter_headers_status
 ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, const void *context) {
-  // TODO(goaway): optimize unmodified case
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onResponseHeaders == nil) {
-    return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
-                                         /*headers*/ headers};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    // TODO(goaway): optimize unmodified case
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onResponseHeaders == nil) {
+      return (envoy_filter_headers_status){/*status*/ kEnvoyFilterHeadersStatusContinue,
+                                           /*headers*/ headers};
+    }
+
     EnvoyHeaders *platformHeaders = to_ios_headers(headers);
     NSArray *result = filter.onResponseHeaders(platformHeaders, end_stream);
     return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
@@ -126,17 +136,16 @@ ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, cons
 
 static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data, bool end_stream,
                                                                 const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onRequestData == nil) {
-    return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
-                                      /*data*/ data,
-                                      /*pending_headers*/ NULL};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onRequestData == nil) {
+      return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
+                                        /*data*/ data,
+                                        /*pending_headers*/ NULL};
+    }
+
     NSData *platformData = to_ios_data(data);
     NSArray *result = filter.onRequestData(platformData, end_stream);
     // Result is typically a pair of status and entity, but uniquely in the case of
@@ -150,17 +159,16 @@ static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data,
 
 static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream,
                                                                  const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onResponseData == nil) {
-    return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
-                                      /*data*/ data,
-                                      /*pending_headers*/ NULL};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onResponseData == nil) {
+      return (envoy_filter_data_status){/*status*/ kEnvoyFilterDataStatusContinue,
+                                        /*data*/ data,
+                                        /*pending_headers*/ NULL};
+    }
+
     NSData *platformData = to_ios_data(data);
     NSArray *result = filter.onResponseData(platformData, end_stream);
     // Result is typically a pair of status and entity, but uniquely in the case of
@@ -174,18 +182,17 @@ static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data
 
 static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers,
                                                                         const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onRequestTrailers == nil) {
-    return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
-                                          /*trailers*/ trailers,
-                                          /*pending_headers*/ NULL,
-                                          /*pending_trailers*/ NULL};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onRequestTrailers == nil) {
+      return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
+                                            /*trailers*/ trailers,
+                                            /*pending_headers*/ NULL,
+                                            /*pending_trailers*/ NULL};
+    }
+
     EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
     NSArray *result = filter.onRequestTrailers(platformTrailers);
     envoy_headers *pending_headers = NULL;
@@ -205,18 +212,17 @@ static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_he
 
 static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_headers trailers,
                                                                          const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onResponseTrailers == nil) {
-    return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
-                                          /*trailers*/ trailers,
-                                          /*pending_headers*/ NULL,
-                                          /*pending_data*/ NULL};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onResponseTrailers == nil) {
+      return (envoy_filter_trailers_status){/*status*/ kEnvoyFilterTrailersStatusContinue,
+                                            /*trailers*/ trailers,
+                                            /*pending_headers*/ NULL,
+                                            /*pending_data*/ NULL};
+    }
+
     EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
     NSArray *result = filter.onResponseTrailers(platformTrailers);
     envoy_headers *pending_headers = NULL;
@@ -237,18 +243,17 @@ static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_h
 static envoy_filter_resume_status
 ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envoy_headers *trailers,
                                   bool end_stream, const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onResumeRequest == nil) {
-    return (envoy_filter_resume_status){/*status*/ kEnvoyFilterResumeStatusResumeIteration,
-                                        /*pending_headers*/ headers,
-                                        /*pending_data*/ data,
-                                        /*pending_trailers*/ trailers};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onResumeRequest == nil) {
+      return (envoy_filter_resume_status){/*status*/ kEnvoyFilterResumeStatusResumeIteration,
+                                          /*pending_headers*/ headers,
+                                          /*pending_data*/ data,
+                                          /*pending_trailers*/ trailers};
+    }
+
     EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
     NSData *pendingData = data ? to_ios_data(*data) : nil;
     EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
@@ -264,18 +269,17 @@ ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envo
 static envoy_filter_resume_status
 ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
                                    envoy_headers *trailers, bool end_stream, const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onResumeResponse == nil) {
-    return (envoy_filter_resume_status){/*status*/ kEnvoyFilterResumeStatusResumeIteration,
-                                        /*pending_headers*/ headers,
-                                        /*pending_data*/ data,
-                                        /*pending_trailers*/ trailers};
-  }
-
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onResumeResponse == nil) {
+      return (envoy_filter_resume_status){/*status*/ kEnvoyFilterResumeStatusResumeIteration,
+                                          /*pending_headers*/ headers,
+                                          /*pending_data*/ data,
+                                          /*pending_trailers*/ trailers};
+    }
+
     EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
     NSData *pendingData = data ? to_ios_data(*data) : nil;
     EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
@@ -290,47 +294,63 @@ ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
 
 static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
                                                   const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.setRequestFilterCallbacks == nil) {
-    return;
-  }
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.setRequestFilterCallbacks == nil) {
+      return;
+    }
 
-  EnvoyHTTPFilterCallbacksImpl *requestFilterCallbacks =
-      [[EnvoyHTTPFilterCallbacksImpl alloc] initWithCallbacks:callbacks];
-  filter.setRequestFilterCallbacks(requestFilterCallbacks);
+    EnvoyHTTPFilterCallbacksImpl *requestFilterCallbacks =
+        [[EnvoyHTTPFilterCallbacksImpl alloc] initWithCallbacks:callbacks];
+    filter.setRequestFilterCallbacks(requestFilterCallbacks);
+  }
 }
 
 static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks callbacks,
                                                    const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.setResponseFilterCallbacks == nil) {
-    return;
-  }
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.setResponseFilterCallbacks == nil) {
+      return;
+    }
 
-  EnvoyHTTPFilterCallbacksImpl *responseFilterCallbacks =
-      [[EnvoyHTTPFilterCallbacksImpl alloc] initWithCallbacks:callbacks];
-  filter.setResponseFilterCallbacks(responseFilterCallbacks);
+    EnvoyHTTPFilterCallbacksImpl *responseFilterCallbacks =
+        [[EnvoyHTTPFilterCallbacksImpl alloc] initWithCallbacks:callbacks];
+    filter.setResponseFilterCallbacks(responseFilterCallbacks);
+  }
 }
 
 static void ios_http_filter_on_cancel(const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onCancel == nil) {
-    return;
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onCancel == nil) {
+      return;
+    }
+    filter.onCancel();
   }
-  filter.onCancel();
 }
 
 static void ios_http_filter_on_error(envoy_error error, const void *context) {
-  EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-  if (filter.onError == nil) {
-    error.message.release(error.message.context);
-    return;
-  }
-  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
-  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
-  // autorelease loop here.
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
-    NSString *errorMessage = to_ios_string(error.message);
+    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
+    if (filter.onError == nil) {
+      error.message.release(error.message.context);
+      return;
+    }
+
+    NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
+                                                      length:error.message.length
+                                                    encoding:NSUTF8StringEncoding];
+
+    error.message.release(error.message.context);
     filter.onError(error.error_code, errorMessage, error.attempt_count);
   }
 }
