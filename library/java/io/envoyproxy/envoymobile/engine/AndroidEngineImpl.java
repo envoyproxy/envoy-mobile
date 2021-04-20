@@ -2,6 +2,7 @@ package io.envoyproxy.envoymobile.engine;
 
 import android.content.Context;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
+import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
@@ -41,6 +42,7 @@ public class AndroidEngineImpl implements EnvoyEngine {
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
   }
 
+  @Override
   public void terminate() { envoyEngine.terminate(); }
 
   @Override

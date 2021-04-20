@@ -43,6 +43,8 @@ static void jvm_on_engine_running(void* context) {
   env->DeleteGlobalRef(j_context);
 }
 
+static void jvm_on_log(void* context)
+
 static void jvm_on_exit(void*) {
   jni_log("[Envoy]", "library is exiting");
   // Note that this is not dispatched because the thread that
