@@ -11,4 +11,7 @@ public protocol Gauge: AnyObject {
 
   /// Subtract the given amount from the gauge.
   func sub(amount: Int)
+
+  /// Gets a gauge with tags attached.
+  func attach(tags: [Tag]) -> Gauge
 }

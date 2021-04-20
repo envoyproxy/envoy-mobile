@@ -1,8 +1,11 @@
 package io.envoyproxy.envoymobile
 
 /** A time-series distribution of duration measurements. */
-interface Timer {
+interface Timer : Stats {
 
-  /** Record a new duration to add to the timer. */
+  /** Records a new duration to add to the timer. */
   fun completeWithDuration(durationMs: Int)
+
+  /** Gets a timer with the list of tags attached. */
+  fun attach(tags: List<Tag>): Timer
 }

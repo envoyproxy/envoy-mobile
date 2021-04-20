@@ -5,6 +5,9 @@ import Foundation
 public protocol Counter: AnyObject {
   /// Increment the counter by the given count.
   func increment(count: Int)
+
+  /// Gets a counter with tags attached.
+  func attach(tags: [Tag]) -> Counter
 }
 
 extension Counter {

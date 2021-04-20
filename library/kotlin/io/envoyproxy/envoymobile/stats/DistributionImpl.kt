@@ -7,15 +7,27 @@ import java.lang.ref.WeakReference
  * Envoy implementation of a `Distribution` for measurements of quantile data for int values
  */
 internal class DistributionImpl : Distribution {
-  internal val envoyEngine: WeakReference<EnvoyEngine>
-  internal val elements: String
+  var envoyEngine: WeakReference<EnvoyEngine>
+  var series: String
+  var tags: Map<String, String>
 
-  internal constructor(engine: EnvoyEngine, elements: List<Element>) {
+  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: List<Tag>) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
-    this.elements = elements.joinToString(separator = ".") { it.value }
+    this.series = elements.joinToString(separator = ".") { it.value }
+    this.tags = convert(tags)
+  }
+
+  private constructor(engine: WeakReference<EnvoyEngine>, series: String, tags: List<Tag>) {
+    this.envoyEngine = engine
+    this.series = series
+    this.tags = convert(tags)
   }
 
   override fun recordValue(value: Int) {
-    envoyEngine.get()?.recordHistogramValue(elements, emptyMap<String, String>(), value)
+    envoyEngine.get()?.recordHistogramValue(series, tags, value)
+  }
+
+  override fun attach(tags: List<Tag>): Distribution {
+    return DistributionImpl(envoyEngine, series, tags)
   }
 }
