@@ -5,7 +5,7 @@ package io.envoyproxy.envoymobile
  */
 interface Counter : Stats {
   /**
-   * Increment the counter by the given count.
+   * Increments the counter by the given count.
    */
   fun increment(count: Int = 1)
 

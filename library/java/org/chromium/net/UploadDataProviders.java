@@ -75,7 +75,9 @@ public final class UploadDataProviders {
    */
   public static UploadDataProvider create(byte[] data) { return create(data, 0, data.length); }
 
-  private interface FileChannelProvider { FileChannel getChannel() throws IOException; }
+  private interface FileChannelProvider {
+    FileChannel getChannel() throws IOException;
+  }
 
   private static final class FileUploadProvider extends UploadDataProvider {
     private volatile FileChannel mChannel;
