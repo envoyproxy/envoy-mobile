@@ -19,13 +19,13 @@ jobs:
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           submodules: true
       - id: check_context
         name: 'Check whether to run'
         run: |
-          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only main | grep -q common/ ; then
+          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only origin/main | grep -q common/ ; then
             echo "Coverage will run."
             echo "::set-output name=run_coverage::true"
           else
