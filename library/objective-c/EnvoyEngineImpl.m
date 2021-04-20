@@ -21,11 +21,11 @@ static void ios_on_exit(void *context) { NSLog(@"[Envoy] library is exiting"); }
 static void ios_on_log(envoy_data data, void *context) {
   EnvoyLogger *logger = (__bridge EnvoyLogger *)context;
 
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
   @autoreleasepool {
-    NSString *logMessage = [[NSString alloc] initWithBytes:data.bytes
-                                                      length:data.length
-                                                    encoding:NSUTF8StringEncoding];
-    data.release(data.context);
+    NSString *logMessage = to_ios_string(data);
     logger.log(logMessage);
   }
 }
@@ -92,11 +92,16 @@ ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const
                                          /*headers*/ headers};
   }
 
-  EnvoyHeaders *platformHeaders = to_ios_headers(headers);
-  // TODO(goaway): consider better solution for compound return
-  NSArray *result = filter.onRequestHeaders(platformHeaders, end_stream);
-  return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
-                                       /*headers*/ toNativeHeaders(result[1])};
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    EnvoyHeaders *platformHeaders = to_ios_headers(headers);
+    // TODO(goaway): consider better solution for compound return
+    NSArray *result = filter.onRequestHeaders(platformHeaders, end_stream);
+    return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
+                                         /*headers*/ toNativeHeaders(result[1])};
+  }
 }
 
 static envoy_filter_headers_status
@@ -108,10 +113,15 @@ ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, cons
                                          /*headers*/ headers};
   }
 
-  EnvoyHeaders *platformHeaders = to_ios_headers(headers);
-  NSArray *result = filter.onResponseHeaders(platformHeaders, end_stream);
-  return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
-                                       /*headers*/ toNativeHeaders(result[1])};
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    EnvoyHeaders *platformHeaders = to_ios_headers(headers);
+    NSArray *result = filter.onResponseHeaders(platformHeaders, end_stream);
+    return (envoy_filter_headers_status){/*status*/ [result[0] intValue],
+                                         /*headers*/ toNativeHeaders(result[1])};
+  }
 }
 
 static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data, bool end_stream,
@@ -123,14 +133,19 @@ static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data,
                                       /*pending_headers*/ NULL};
   }
 
-  NSData *platformData = to_ios_data(data);
-  NSArray *result = filter.onRequestData(platformData, end_stream);
-  // Result is typically a pair of status and entity, but uniquely in the case of
-  // ResumeIteration it will (optionally) contain additional pending elements.
-  envoy_headers *pending_headers = toNativeHeadersPtr(result.count == 3 ? result[2] : nil);
-  return (envoy_filter_data_status){/*status*/ [result[0] intValue],
-                                    /*data*/ toNativeData(result[1]),
-                                    /*pending_headers*/ pending_headers};
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    NSData *platformData = to_ios_data(data);
+    NSArray *result = filter.onRequestData(platformData, end_stream);
+    // Result is typically a pair of status and entity, but uniquely in the case of
+    // ResumeIteration it will (optionally) contain additional pending elements.
+    envoy_headers *pending_headers = toNativeHeadersPtr(result.count == 3 ? result[2] : nil);
+    return (envoy_filter_data_status){/*status*/ [result[0] intValue],
+                                      /*data*/ toNativeData(result[1]),
+                                      /*pending_headers*/ pending_headers};
+  }
 }
 
 static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream,
@@ -142,14 +157,19 @@ static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data
                                       /*pending_headers*/ NULL};
   }
 
-  NSData *platformData = to_ios_data(data);
-  NSArray *result = filter.onResponseData(platformData, end_stream);
-  // Result is typically a pair of status and entity, but uniquely in the case of
-  // ResumeIteration it will (optionally) contain additional pending elements.
-  envoy_headers *pending_headers = toNativeHeadersPtr(result.count == 3 ? result[2] : nil);
-  return (envoy_filter_data_status){/*status*/ [result[0] intValue],
-                                    /*data*/ toNativeData(result[1]),
-                                    /*pending_headers*/ pending_headers};
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    NSData *platformData = to_ios_data(data);
+    NSArray *result = filter.onResponseData(platformData, end_stream);
+    // Result is typically a pair of status and entity, but uniquely in the case of
+    // ResumeIteration it will (optionally) contain additional pending elements.
+    envoy_headers *pending_headers = toNativeHeadersPtr(result.count == 3 ? result[2] : nil);
+    return (envoy_filter_data_status){/*status*/ [result[0] intValue],
+                                      /*data*/ toNativeData(result[1]),
+                                      /*pending_headers*/ pending_headers};
+  }
 }
 
 static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers,
@@ -162,20 +182,25 @@ static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_he
                                           /*pending_trailers*/ NULL};
   }
 
-  EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
-  NSArray *result = filter.onRequestTrailers(platformTrailers);
-  envoy_headers *pending_headers = NULL;
-  envoy_data *pending_data = NULL;
-  // Result is typically a pair of status and entity, but uniquely in the case of
-  // ResumeIteration it will (optionally) contain additional pending elements.
-  if (result.count == 4) {
-    pending_headers = toNativeHeadersPtr(result[2]);
-    pending_data = toNativeDataPtr(result[3]);
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
+    NSArray *result = filter.onRequestTrailers(platformTrailers);
+    envoy_headers *pending_headers = NULL;
+    envoy_data *pending_data = NULL;
+    // Result is typically a pair of status and entity, but uniquely in the case of
+    // ResumeIteration it will (optionally) contain additional pending elements.
+    if (result.count == 4) {
+      pending_headers = toNativeHeadersPtr(result[2]);
+      pending_data = toNativeDataPtr(result[3]);
+    }
+    return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
+                                          /*trailers*/ toNativeHeaders(result[1]),
+                                          /*pending_headers*/ pending_headers,
+                                          /*pending_data*/ pending_data};
   }
-  return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
-                                        /*trailers*/ toNativeHeaders(result[1]),
-                                        /*pending_headers*/ pending_headers,
-                                        /*pending_data*/ pending_data};
 }
 
 static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_headers trailers,
@@ -188,20 +213,25 @@ static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_h
                                           /*pending_data*/ NULL};
   }
 
-  EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
-  NSArray *result = filter.onResponseTrailers(platformTrailers);
-  envoy_headers *pending_headers = NULL;
-  envoy_data *pending_data = NULL;
-  // Result is typically a pair of status and entity, but uniquely in the case of
-  // ResumeIteration it will (optionally) contain additional pending elements.
-  if (result.count == 4) {
-    pending_headers = toNativeHeadersPtr(result[2]);
-    pending_data = toNativeDataPtr(result[3]);
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    EnvoyHeaders *platformTrailers = to_ios_headers(trailers);
+    NSArray *result = filter.onResponseTrailers(platformTrailers);
+    envoy_headers *pending_headers = NULL;
+    envoy_data *pending_data = NULL;
+    // Result is typically a pair of status and entity, but uniquely in the case of
+    // ResumeIteration it will (optionally) contain additional pending elements.
+    if (result.count == 4) {
+      pending_headers = toNativeHeadersPtr(result[2]);
+      pending_data = toNativeDataPtr(result[3]);
+    }
+    return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
+                                          /*trailers*/ toNativeHeaders(result[1]),
+                                          /*pending_headers*/ pending_headers,
+                                          /*pending_data*/ pending_data};
   }
-  return (envoy_filter_trailers_status){/*status*/ [result[0] intValue],
-                                        /*trailers*/ toNativeHeaders(result[1]),
-                                        /*pending_headers*/ pending_headers,
-                                        /*pending_data*/ pending_data};
 }
 
 static envoy_filter_resume_status
@@ -215,15 +245,20 @@ ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envo
                                         /*pending_trailers*/ trailers};
   }
 
-  EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
-  NSData *pendingData = data ? to_ios_data(*data) : nil;
-  EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
-  NSArray *result =
-      filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers, end_stream);
-  return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
-                                      /*pending_headers*/ toNativeHeadersPtr(result[1]),
-                                      /*pending_data*/ toNativeDataPtr(result[2]),
-                                      /*pending_trailers*/ toNativeHeadersPtr(result[3])};
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
+    NSData *pendingData = data ? to_ios_data(*data) : nil;
+    EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
+    NSArray *result =
+        filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers, end_stream);
+    return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
+                                        /*pending_headers*/ toNativeHeadersPtr(result[1]),
+                                        /*pending_data*/ toNativeDataPtr(result[2]),
+                                        /*pending_trailers*/ toNativeHeadersPtr(result[3])};
+  }
 }
 
 static envoy_filter_resume_status
@@ -237,15 +272,20 @@ ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
                                         /*pending_trailers*/ trailers};
   }
 
-  EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
-  NSData *pendingData = data ? to_ios_data(*data) : nil;
-  EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
-  NSArray *result =
-      filter.onResumeResponse(pendingHeaders, pendingData, pendingTrailers, end_stream);
-  return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
-                                      /*pending_headers*/ toNativeHeadersPtr(result[1]),
-                                      /*pending_data*/ toNativeDataPtr(result[2]),
-                                      /*pending_trailers*/ toNativeHeadersPtr(result[3])};
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
+  @autoreleasepool {
+    EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
+    NSData *pendingData = data ? to_ios_data(*data) : nil;
+    EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
+    NSArray *result =
+        filter.onResumeResponse(pendingHeaders, pendingData, pendingTrailers, end_stream);
+    return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
+                                        /*pending_headers*/ toNativeHeadersPtr(result[1]),
+                                        /*pending_data*/ toNativeDataPtr(result[2]),
+                                        /*pending_trailers*/ toNativeHeadersPtr(result[3])};
+  }
 }
 
 static void ios_http_filter_set_request_callbacks(envoy_http_filter_callbacks callbacks,
@@ -286,12 +326,11 @@ static void ios_http_filter_on_error(envoy_error error, const void *context) {
     error.message.release(error.message.context);
     return;
   }
+  // Allocation of Objective-C objects in this codepath happens inside the Envoy's event loop which
+  // does not have an automatic autorelease loop. Therefore, we have to explicitly create an
+  // autorelease loop here.
   @autoreleasepool {
-    NSString *errorMessage = [[NSString alloc] initWithBytes:error.message.bytes
-                                                      length:error.message.length
-                                                    encoding:NSUTF8StringEncoding];
-
-    error.message.release(error.message.context);
+    NSString *errorMessage = to_ios_string(error.message);
     filter.onError(error.error_code, errorMessage, error.attempt_count);
   }
 }
