@@ -19,7 +19,7 @@ jobs:
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
         with:
           submodules: true
       - id: check_context
