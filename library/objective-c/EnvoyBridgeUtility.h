@@ -74,11 +74,13 @@ static inline NSData *to_ios_data(envoy_data data) {
 }
 
 static inline NSString *to_ios_string(envoy_data data) {
-  NSString *platformString = [[NSString alloc] initWithBytes:data.bytes
-                                                      length:data.length
-                                                    encoding:NSUTF8StringEncoding];
-  data.release(data.context);
-  return platformString;
+  @autoreleasepool {
+    NSString *platformString = [[NSString alloc] initWithBytes:data.bytes
+                                                        length:data.length
+                                                      encoding:NSUTF8StringEncoding];
+    data.release(data.context);
+    return platformString;
+  }
 }
 
 static inline EnvoyHeaders *to_ios_headers(envoy_headers headers) {
