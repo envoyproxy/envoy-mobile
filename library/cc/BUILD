@@ -66,6 +66,7 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "envoy_engine_cc_lib",
+    repository = "@envoy",
     deps = [
         ":envoy_engine_cc_lib_no_stamp",
         "//library/common:envoy_mobile_main_common_lib_stamped",
