@@ -160,7 +160,7 @@ open class EngineBuilder(
    *
    * @return This builder.
    */
-  fun setLogger(closure: (String)->Unit): EngineBuilder {
+  fun setLogger(closure: () -> Unit): EngineBuilder {
     this.logger = closure
     return this
   }
