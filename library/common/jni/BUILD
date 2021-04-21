@@ -49,7 +49,7 @@ cc_binary(
 ## Targets for local execution
 # OS X binary (.jnilib) for NDK testing
 envoy_mobile_so_to_jni_lib(
-    name = "ndk_envoy_lib.jnilib",
+    name = "libndk_envoy_jni.jnilib",
     native_dep = "libndk_envoy_jni.so",
 )
 
