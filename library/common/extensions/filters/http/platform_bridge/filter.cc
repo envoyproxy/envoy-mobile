@@ -490,18 +490,12 @@ void PlatformBridgeFilter::FilterBase::onResume() {
       on_resume_(pending_headers, pending_data, pending_trailers, stream_complete_,
                  parent_.platform_filter_.instance_context);
   if (result.status == kEnvoyFilterResumeStatusStopIteration) {
-    if (result.pending_headers != nullptr) {
-      release_envoy_headers(*result.pending_headers);
-      free(result.pending_headers);
-    }
-    if (result.pending_data != nullptr) {
-      result.pending_data->release(result.pending_data->context);
-      free(result.pending_data);
-    }
-    if (result.pending_trailers != nullptr) {
-      release_envoy_headers(*result.pending_trailers);
-      free(result.pending_trailers);
-    }
+    RELEASE_ASSERT(!result.pending_headers, "invalid filter state: headers must not be present on "
+                                            "stopping filter iteration on async resume");
+    RELEASE_ASSERT(!result.pending_data, "invalid filter state: data must not be present on "
+                                         "stopping filter iteration on async resume");
+    RELEASE_ASSERT(!result.pending_trailers, "invalid filter state: trailers must not be present on"
+                                             " stopping filter iteration on async resume");
     return;
   }
 

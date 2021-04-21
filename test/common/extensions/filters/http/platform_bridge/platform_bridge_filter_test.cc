@@ -1145,24 +1145,12 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenDontResumeOnR
     EXPECT_EQ(Data::Utility::copyToString(pending_trailers->entries[0].value), "test trailer");
     EXPECT_TRUE(end_stream);
 
-    envoy_headers* modified_headers =
-        static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_headers =
-        make_envoy_headers({{":authority", "test.code"}, {"x-async-resumed", "Very Yes"}});
     release_envoy_headers(*pending_headers);
-    Buffer::OwnedImpl final_buffer = Buffer::OwnedImpl("C");
-    envoy_data* modified_data = static_cast<envoy_data*>(safe_malloc(sizeof(envoy_data)));
-    *modified_data = Data::Utility::toBridgeData(final_buffer);
     pending_data->release(pending_data->context);
-    envoy_headers* modified_trailers =
-        static_cast<envoy_headers*>(safe_malloc(sizeof(envoy_headers)));
-    *modified_trailers =
-        make_envoy_headers({{"x-test-trailer", "test trailer"}, {"x-async-resumed", "yes"}});
     release_envoy_headers(*pending_trailers);
 
     invocations->on_resume_request_calls++;
-    return {kEnvoyFilterResumeStatusStopIteration, modified_headers, modified_data,
-            modified_trailers};
+    return {kEnvoyFilterResumeStatusStopIteration, nullptr, nullptr, nullptr};
   };
 
   Buffer::OwnedImpl decoding_buffer;
