@@ -458,7 +458,7 @@ void PlatformBridgeFilter::resumeEncoding() {
 }
 
 void PlatformBridgeFilter::FilterBase::onResume() {
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})::onResume", parent_.filter_name_);
+  ENVOY_LOG(debug, "PlatformBridgeFilter({})::onResume", parent_.filter_name_);
 
   if (iteration_state_ == IterationState::Ongoing) {
     return;
@@ -485,7 +485,7 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     pending_trailers = &bridged_trailers;
   }
 
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_resume_*", parent_.filter_name_);
+  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_*", parent_.filter_name_);
   envoy_filter_resume_status result =
       on_resume_(pending_headers, pending_data, pending_trailers, stream_complete_,
                  parent_.platform_filter_.instance_context);
@@ -493,14 +493,18 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     return;
   }
 
+  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process headers", parent_.filter_name_);
   if (pending_headers_) {
     RELEASE_ASSERT(result.pending_headers, "invalid filter state: headers are pending and must be "
                                            "returned to resume filter iteration");
     replaceHeaders(*pending_headers_, *result.pending_headers);
     pending_headers_ = nullptr;
+    ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process headers free#1",
+              parent_.filter_name_);
     free(result.pending_headers);
   }
 
+  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process data", parent_.filter_name_);
   if (internal_buffer) {
     RELEASE_ASSERT(
         result.pending_data,
@@ -508,20 +512,29 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     internal_buffer->drain(internal_buffer->length());
     internal_buffer->addBufferFragment(
         *Buffer::BridgeFragment::createBridgeFragment(*result.pending_data));
+    ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process data free#1",
+              parent_.filter_name_);
     free(result.pending_data);
   } else if (result.pending_data) {
     addData(*result.pending_data);
+    ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process data free#2",
+              parent_.filter_name_);
     free(result.pending_data);
   }
 
+  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process trailers", parent_.filter_name_);
   if (pending_trailers_) {
     RELEASE_ASSERT(result.pending_trailers, "invalid filter state: trailers are pending and must "
                                             "be returned to resume filter iteration");
     replaceHeaders(*pending_trailers_, *result.pending_trailers);
     pending_trailers_ = nullptr;
+    ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process trailers free#1",
+              parent_.filter_name_);
     free(result.pending_trailers);
   } else if (result.pending_trailers) {
     addTrailers(*result.pending_trailers);
+    ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process trailers free#2",
+              parent_.filter_name_);
   }
 
   iteration_state_ = IterationState::Ongoing;
