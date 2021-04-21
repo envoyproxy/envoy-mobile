@@ -37,6 +37,11 @@ public:
   envoy_status_t run(std::string config, std::string log_level);
 
   /**
+   * Immediately terminate the engine, if running.
+   */
+  envoy_status_t terminate();
+
+  /**
    * Accessor for the provisional event dispatcher.
    * @return Event::ProvisionalDispatcher&, the engine dispatcher.
    */

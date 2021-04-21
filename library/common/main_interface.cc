@@ -170,4 +170,8 @@ envoy_status_t run_engine(envoy_engine_t, const char* config, const char* log_le
   return ENVOY_FAILURE;
 }
 
-void terminate_engine(envoy_engine_t) { strong_engine_.reset(); }
+void terminate_engine(envoy_engine_t) {
+  auto e = strong_engine_;
+  strong_engine_.reset();
+  e->terminate();
+}

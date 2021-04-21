@@ -75,6 +75,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
     // When we improve synchronous failure handling and/or move to dynamic forwarding, we only need
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
+
     postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
@@ -110,14 +111,13 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
 
-Engine::~Engine() {
-  // If we're already on the main thread, it should be safe to simply destruct.
+envoy_status_t Engine::terminate() {
+  // If main_thread_ has finished (or hasn't started), there's nothing more to do.
   if (!main_thread_.joinable()) {
-    return;
+    return ENVOY_FAILURE;
   }
 
-  // If we're not on the main thread, we need to be sure that MainCommon is finished being
-  // constructed so we can dispatch shutdown.
+  // We need to be sure that MainCommon is finished being constructed so we can dispatch shutdown.
   {
     Thread::LockGuard lock(mutex_);
 
@@ -129,14 +129,22 @@ Engine::~Engine() {
 
     // Exit the event loop and finish up in Engine::run(...)
     if (std::this_thread::get_id() == main_thread_.get_id()) {
-      event_dispatcher_->shutdown();
+      // TODO(goaway): figure out some way to support this.
+      PANIC("Terminating the engine from its own main thread is unsupported.");
     } else {
       event_dispatcher_->exit();
     }
-  } // _mutex
+  } // lock(_mutex)
 
-  // Now detach the main thread to let it wrap things up.
-  main_thread_.detach();
+  if (std::this_thread::get_id() != main_thread_.get_id()) {
+    main_thread_.join();
+  }
+
+  return ENVOY_SUCCESS;
+}
+
+Engine::~Engine() {
+  terminate();
 }
 
 envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,
