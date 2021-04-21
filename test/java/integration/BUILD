@@ -6,8 +6,7 @@ envoy_mobile_android_test(
         "AndroidEnvoyEngineStartUpTest.java",
     ],
     native_deps = [
-        "//library/common/jni:ndk_envoy_lib.so",
-        "//library/common/jni:ndk_envoy_lib.jnilib",
+        "//library/common/jni:libndk_envoy_jni.so",
     ],
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",

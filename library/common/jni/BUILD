@@ -50,12 +50,12 @@ cc_binary(
 # OS X binary (.jnilib) for NDK testing
 envoy_mobile_so_to_jni_lib(
     name = "ndk_envoy_lib.jnilib",
-    native_dep = "ndk_envoy_lib.so",
+    native_dep = "libndk_envoy_jni.so",
 )
 
 # Base binary (.so) for NDK testing
 cc_binary(
-    name = "ndk_envoy_lib.so",
+    name = "libndk_envoy_jni.so",
     srcs = [
         "android_test_jni_interface.cc",
         "jni_interface.cc",
