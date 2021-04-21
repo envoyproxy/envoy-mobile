@@ -1,7 +1,7 @@
-#include <android/log.h>
 #include <ares.h>
 #include <jni.h>
 
+#include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
 #include "library/common/main_interface.h"
 
@@ -26,6 +26,6 @@ extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIEnv* env,
                                                                             jclass, // class
                                                                             jint network) {
-  __android_log_write(ANDROID_LOG_INFO, "[Envoy]", "setting preferred network");
+  jni_log("[Envoy]", "setting preferred network");
   return set_preferred_network(static_cast<envoy_network_t>(network));
 }
