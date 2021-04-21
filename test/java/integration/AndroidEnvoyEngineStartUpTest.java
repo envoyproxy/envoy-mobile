@@ -15,15 +15,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 public class AndroidEnvoyEngineStartUpTest {
-  static { AndroidJniLibrary.loadTestLibrary(); }
+  static {
+    System.out.println("~~~~~~~~~~~~~~~~~");
+    System.out.println(System.getProperty("user.dir"));
+    System.out.println("~~~~~~~~~~~~~~~~~");
+    AndroidJniLibrary.loadTestLibrary();
+  }
 
   private final Context appContext = ApplicationProvider.getApplicationContext();
 
   @Test
   public void ensure_engine_starts_and_terminates() throws InterruptedException {
-    Engine engine = new AndroidEngineBuilder(appContext).build();
-    Thread.sleep(1000);
-    engine.terminate();
-    assertThat(true).isTrue();
+//    Engine engine = new AndroidEngineBuilder(appContext).build();
+//    Thread.sleep(1000);
+//    engine.terminate();
+    assertThat(true).isFalse();
   }
 }

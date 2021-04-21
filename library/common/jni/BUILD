@@ -77,12 +77,12 @@ cc_binary(
 # OS X binary (.jnilib) for JVM testing
 envoy_mobile_so_to_jni_lib(
     name = "java_jni_lib.jnilib",
-    native_dep = "java_jni_lib.so",
+    native_dep = "libjava_jni_lib.so",
 )
 
 # Base binary (.so) for JVM testing
 cc_binary(
-    name = "java_jni_lib.so",
+    name = "libjava_jni_lib.so",
     srcs = ["jni_interface.cc"],
     copts = ["-std=c++17"],
     linkopts = [

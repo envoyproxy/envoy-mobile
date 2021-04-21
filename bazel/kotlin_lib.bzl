@@ -48,7 +48,8 @@ def envoy_mobile_so_to_jni_lib(name, native_dep):
         so_file="lib{}.so"
         if [ ! -f $$so_file ]; then
             dir=$$(dirname $@)
-            cp $< $$dir/lib{}.so
+            # This is to ensure we copy the so file if it's not present
+            cp $< $$dir/lib{}.so 2>/dev/null || :
             chmod 755 $$dir/lib{}.so
         fi
 
