@@ -39,7 +39,7 @@ def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = []):
         data = native_deps,
         jvm_flags = [
             "-Djava.library.path=library/common/jni",
-            "-Denvoy_jni_library_name={}".format(lib_name[3:]),
+            "-Denvoy_jni_library_name={}".format(lib_name),
         ],
     )
 
@@ -98,6 +98,6 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
         jvm_flags = [
             "-Djava.library.path=library/common/jni",
-            "-Denvoy_jni_library_name={}".format(lib_name[3:]),
+            "-Denvoy_jni_library_name={}".format(lib_name),
         ],
     )
