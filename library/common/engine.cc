@@ -143,9 +143,7 @@ envoy_status_t Engine::terminate() {
   return ENVOY_SUCCESS;
 }
 
-Engine::~Engine() {
-  terminate();
-}
+Engine::~Engine() { terminate(); }
 
 envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,
                                         uint64_t count) {
