@@ -70,7 +70,6 @@ NSString *_REQUEST_SCHEME = @"https";
 }
 - (void)timerFired {
   [self performRequest];
-  [self recordStats];
 }
 
 - (void)performRequest {

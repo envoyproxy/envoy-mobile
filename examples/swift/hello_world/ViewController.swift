@@ -51,7 +51,6 @@ final class ViewController: UITableViewController {
   private func startRequests() {
     self.timer = .scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
       self?.performRequest()
-      self?.recordStats()
     }
   }
 
