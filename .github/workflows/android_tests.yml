@@ -7,7 +7,29 @@ on:
   pull_request:
 
 jobs:
-  kotlintests:
+  kotlintestsosx:
+    name: kotlin_tests_new
+    runs-on: macOS-latest
+    timeout-minutes: 90
+    container:
+      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+      env:
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - run: bazel test --test_output=all --build_tests_only //test/kotlin/...
+        name: 'Run Kotlin library tests'
+  kotlintestslinux:
     name: kotlin_tests_new
     runs-on: ubuntu-18.04
     timeout-minutes: 90
@@ -25,10 +47,11 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-#      - run: ./ci/mac_ci_setup.sh
-#        name: 'Install dependencies'
+      #      - run: ./ci/mac_ci_setup.sh
+      #        name: 'Install dependencies'
       - run: bazel test --test_output=all --build_tests_only //test/kotlin/...
         name: 'Run Kotlin library tests'
+
   javatests:
     name: java_tests_new
     runs-on: macOS-latest
