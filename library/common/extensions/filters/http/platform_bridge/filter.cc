@@ -485,7 +485,7 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     pending_trailers = &bridged_trailers;
   }
 
-  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_*", parent_.filter_name_);
+  ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_resume_*", parent_.filter_name_);
   envoy_filter_resume_status result =
       on_resume_(pending_headers, pending_data, pending_trailers, stream_complete_,
                  parent_.platform_filter_.instance_context);
@@ -499,7 +499,6 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     return;
   }
 
-  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process headers", parent_.filter_name_);
   if (pending_headers_) {
     RELEASE_ASSERT(result.pending_headers, "invalid filter state: headers are pending and must be "
                                            "returned to resume filter iteration");
@@ -510,7 +509,6 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     free(result.pending_headers);
   }
 
-  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process data", parent_.filter_name_);
   if (internal_buffer) {
     RELEASE_ASSERT(
         result.pending_data,
@@ -528,7 +526,6 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     free(result.pending_data);
   }
 
-  ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process trailers", parent_.filter_name_);
   if (pending_trailers_) {
     RELEASE_ASSERT(result.pending_trailers, "invalid filter state: trailers are pending and must "
                                             "be returned to resume filter iteration");
