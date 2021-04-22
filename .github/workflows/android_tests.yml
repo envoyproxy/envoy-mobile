@@ -11,11 +11,6 @@ jobs:
     name: kotlin_tests_new
     runs-on: macOS-latest
     timeout-minutes: 90
-    container:
-      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
-      env:
-        CC: /opt/llvm/bin/clang
-        CXX: /opt/llvm/bin/clang++
     steps:
       - uses: actions/checkout@v1
         with:
