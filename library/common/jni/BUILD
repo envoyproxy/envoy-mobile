@@ -66,7 +66,7 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
-        "java_jni_lib",
+        "base_java_jni_lib",
         ":java_jni_support",
         "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
@@ -89,11 +89,11 @@ cc_binary(
         "-lm",
     ],
     linkshared = True,
-    deps = ["java_jni_lib"],
+    deps = ["base_java_jni_lib"],
 )
 
 cc_library(
-    name = "java_jni_lib",
+    name = "base_java_jni_lib",
     srcs = [
         "jni_utility.cc",
         "jni_version.cc",
