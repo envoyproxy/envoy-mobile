@@ -8,7 +8,7 @@ on:
 
 jobs:
   kotlintestsosx:
-    name: kotlin_tests_new
+    name: kotlin_tests_osx
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
@@ -23,12 +23,48 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - run: |
-          bazel build //test/kotlin/integration/...
-          ls bazel-out/k8-fastbuild/bin/test/kotlin/integration/engine_start_test.runfiles/envoy_mobile/library/common/jni
-          bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
+          # /test/kotlin/integration is excluded since it is run on a separate job
+          bazelisk query //test/kotlin/... except //test/kotlin/integration/... | xargs bazelisk test --test_output=all
         name: 'Run Kotlin library tests'
-  kotlintestslinux:
-    name: kotlin_tests_linux
+  javatestsosx:
+    name: java_tests_osx
+    runs-on: macOS-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - run: |
+          # /test/kotlin/integration is excluded since it is run on a separate job
+          bazelisk query //test/java/... except //test/java/integration/... | xargs bazelisk test --test_output=all
+        name: 'Run Java library tests'
+  kotlinintegrationtestsosx:
+    name: kotlin_integration_tests_osx
+    runs-on: macOS-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - run: |
+          bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
+        name: 'Run Kotlin library integration tests'
+  kotlinintegrationtestslinux:
+    name: kotlin_integration_tests_linux
     runs-on: ubuntu-18.04
     timeout-minutes: 90
     container:
@@ -46,12 +82,10 @@ jobs:
           java-package: jdk
           architecture: x64
       - run: |
-          bazel build //test/kotlin/integration/...
-          ls bazel-out/k8-fastbuild/bin/test/kotlin/integration/engine_start_test.runfiles/envoy_mobile/library/common/jni
           bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
-        name: 'Run Kotlin library tests'
-  javatests:
-    name: java_tests_new
+        name: 'Run Kotlin library integration tests'
+  javaintegrationtestsosx:
+    name: java_integration_tests_osx
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
@@ -65,5 +99,27 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - run: bazel test --test_output=all --build_tests_only //test/java/integration/...
-        name: 'Run Java library tests'
+      - run: |
+          bazel test --test_output=all --build_tests_only //test/java/integration/...
+        name: 'Run Java library integration tests'
+  javaintegrationtestslinux:
+    name: java_integration_tests_linux
+    runs-on: ubuntu-18.04
+    timeout-minutes: 90
+    container:
+      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+      env:
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: |
+          bazel test --test_output=all --build_tests_only //test/java/integration/...
+        name: 'Run Java library integration tests'
