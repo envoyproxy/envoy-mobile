@@ -62,7 +62,7 @@ envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
 }
 
 jstring native_data_to_string(JNIEnv* env, envoy_data data) {
-  jstring jstrBuf = env->NewStringUTF((char*)data.bytes);
+  jstring jstrBuf = env->NewStringUTF(static_cast<char*>(data.bytes));
   return jstrBuf;
 }
 
