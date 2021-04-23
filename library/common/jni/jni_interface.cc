@@ -52,15 +52,16 @@ static void jvm_on_log(envoy_data data, void* context) {
   jstring str = native_data_to_string(env, data);
 
   jobject j_context = static_cast<jobject>(context);
-  jclass jcls_JvmonLogContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmonLogContext, "invokeOnEngineRunning",
+  jclass jcls_JvmLoggerContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmLoggerContext, "invokeOnEngineRunning",
                                           "(Ljava/lang/String;)Ljava/lang/Object;");
   env->CallObjectMethod(j_context, jmid_onLog, str);
 
-  env->DeleteLocalRef(jcls_JvmonLogContext);
+  env->DeleteLocalRef(str)
+  env->DeleteLocalRef(jcls_JvmLoggerContext);
 }
 
-static void jvm_on_log_exit(void* context) {
+static void jvm_logger_release(void* context) {
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   env->DeleteGlobalRef(j_context);

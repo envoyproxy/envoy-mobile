@@ -15,7 +15,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
 
   private final long engineHandle;
   private EnvoyOnEngineRunning onEngineRunning;
-  private EnvoyLogger envoyLogger;
+  private EnvoyLogger logger;
 
   /**
    * @param runningCallback Called when the engine finishes its async startup and begins running.
