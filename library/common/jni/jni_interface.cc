@@ -53,8 +53,7 @@ static void jvm_on_log(envoy_data data, void* context) {
 
   jobject j_context = static_cast<jobject>(context);
   jclass jcls_JvmLoggerContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmLoggerContext, "log",
-                                          "(Ljava/lang/String;)V");
+  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmLoggerContext, "log", "(Ljava/lang/String;)V");
   env->CallVoidMethod(j_context, jmid_onLog, str);
 
   env->DeleteLocalRef(str);
