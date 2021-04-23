@@ -10,7 +10,7 @@ jobs:
   kotlintestsmac:
     name: kotlin_tests_mac
     runs-on: macOS-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v1
         with:
