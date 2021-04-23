@@ -85,9 +85,9 @@ envoy_status_t record_counter_inc(envoy_engine_t, const char* elements, envoy_st
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([elements, tags, count]() -> void {
+    return e->dispatcher().post([name = std::string(elements), tags, count]() -> void {
       if (auto e = engine())
-        e->recordCounterInc(std::string(elements), tags, count);
+        e->recordCounterInc(name, tags, count);
     });
   }
   return ENVOY_FAILURE;
@@ -98,9 +98,9 @@ envoy_status_t record_gauge_set(envoy_engine_t, const char* elements, envoy_stat
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([elements, tags, value]() -> void {
+    return e->dispatcher().post([name = std::string(elements), tags, value]() -> void {
       if (auto e = engine())
-        e->recordGaugeSet(std::string(elements), tags, value);
+        e->recordGaugeSet(name, tags, value);
     });
   }
   return ENVOY_FAILURE;
@@ -111,9 +111,9 @@ envoy_status_t record_gauge_add(envoy_engine_t, const char* elements, envoy_stat
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([elements, tags, amount]() -> void {
+    return e->dispatcher().post([name = std::string(elements), tags, amount]() -> void {
       if (auto e = engine())
-        e->recordGaugeAdd(std::string(elements), tags, amount);
+        e->recordGaugeAdd(name, tags, amount);
     });
   }
   return ENVOY_FAILURE;
@@ -124,9 +124,9 @@ envoy_status_t record_gauge_sub(envoy_engine_t, const char* elements, envoy_stat
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([elements, tags, amount]() -> void {
+    return e->dispatcher().post([name = std::string(elements), tags, amount]() -> void {
       if (auto e = engine())
-        e->recordGaugeSub(std::string(elements), tags, amount);
+        e->recordGaugeSub(name, tags, amount);
     });
   }
   return ENVOY_FAILURE;
@@ -137,10 +137,11 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, envo
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
-    return e->dispatcher().post([elements, tags, value, unit_measure]() -> void {
-      if (auto e = engine())
-        e->recordHistogramValue(std::string(elements), tags, value, unit_measure);
-    });
+    return e->dispatcher().post(
+        [name = std::string(elements), tags, value, unit_measure]() -> void {
+          if (auto e = engine())
+            e->recordHistogramValue(name, tags, value, unit_measure);
+        });
   }
   return ENVOY_FAILURE;
 }

@@ -151,10 +151,8 @@ envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, count]() -> void {
-      Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(name)}, tags_vctr)
-          .add(count);
-    });
+    Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(name)}, tags_vctr)
+        .add(count);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -166,11 +164,9 @@ envoy_status_t Engine::recordGaugeSet(const std::string& elements, envoy_stats_t
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, value]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
-          .set(value);
-    });
+    Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                      Stats::Gauge::ImportMode::NeverImport, tags_vctr)
+        .set(value);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -182,11 +178,9 @@ envoy_status_t Engine::recordGaugeAdd(const std::string& elements, envoy_stats_t
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, amount]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
-          .add(amount);
-    });
+    Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                      Stats::Gauge::ImportMode::NeverImport, tags_vctr)
+        .add(amount);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -198,11 +192,9 @@ envoy_status_t Engine::recordGaugeSub(const std::string& elements, envoy_stats_t
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, amount]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
-          .sub(amount);
-    });
+    Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                      Stats::Gauge::ImportMode::NeverImport, tags_vctr)
+        .sub(amount);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -231,11 +223,9 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_s
       break;
     }
 
-    server_->dispatcher().post([this, name, tags_vctr, value, envoy_unit_measure]() -> void {
-      Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                            envoy_unit_measure, tags_vctr)
-          .recordValue(value);
-    });
+    Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                          envoy_unit_measure, tags_vctr)
+        .recordValue(value);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
