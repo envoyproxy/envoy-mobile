@@ -4,10 +4,10 @@ import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.JniLibrary
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 
 private const val apiListenerType =
   "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
@@ -68,7 +68,6 @@ class SetLoggerTest {
         }
       }
       .setOnEngineRunning {
-
       }
       .build()
       .streamClient()
