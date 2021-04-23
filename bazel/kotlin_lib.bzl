@@ -50,9 +50,6 @@ def envoy_mobile_so_to_jni_lib(name, native_dep):
             dir=$$(dirname $@)
             cp $< $$dir/{}.so 2>/dev/null || :
             chmod 755 $$dir/{}.so
-            echo "~~~~~~~~~~~~~~~~~~~~"
-            ls $$dir
-            echo "~~~~~~~~~~~~~~~~~~~~"
         fi
 
         cp $< $@
