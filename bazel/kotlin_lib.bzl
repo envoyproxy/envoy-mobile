@@ -36,6 +36,16 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
     )
 
 # Basic macro which uses a genrule to generate a jnilib file from an so file
+#
+# The native dep passed in should be the cc_binary target of the name
+# lib{}.so since linux platforms expect the .so file to be named in that form.
+# The resulting output will be lib{}.jnilib for the OS X platforms.
+#
+# Example usage:
+# envoy_mobile_so_to_jni_lib(
+#     name = "java_jni_lib.jnilib",
+#     native_dep = "libjava_jni_lib.so",
+# )
 def envoy_mobile_so_to_jni_lib(name, native_dep):
     lib_name = native_lib_name(native_dep)
     output = "{}.jnilib".format(lib_name)
