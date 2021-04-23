@@ -49,17 +49,21 @@ static void jvm_on_log(envoy_data data, void* context) {
   }
 
   JNIEnv* env = get_env();
-//  jstring str = native_data_to_string(env, data);
+  jstring str = native_data_to_string(env, data);
 
   jobject j_context = static_cast<jobject>(context);
   jclass jcls_JvmonLogContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmonLogContext, "invokeOnEngineRunning", "()Ljava/lang/Object;");
-  env->CallObjectMethod(j_context, jmid_onLog);
+  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmonLogContext, "invokeOnEngineRunning",
+                                          "(Ljava/lang/String;)Ljava/lang/Object;");
+  env->CallObjectMethod(j_context, jmid_onLog, str);
 
   env->DeleteLocalRef(jcls_JvmonLogContext);
-  // TODO(goaway): This isn't re-used by other engine callbacks, so it's safe to delete here.
-  // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
-//  env->DeleteGlobalRef(j_context);
+}
+
+static void jvm_on_log_exit(void* context) {
+  JNIEnv* env = get_env();
+  jobject j_context = static_cast<jobject>(context);
+  env->DeleteGlobalRef(j_context);
 }
 
 static void jvm_on_exit(void*) {

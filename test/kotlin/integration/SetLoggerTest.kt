@@ -63,10 +63,11 @@ class SetLoggerTest {
     val countDownLatch = CountDownLatch(1)
     EngineBuilder(Custom(config))
       .addLogLevel(LogLevel.TRACE)
-      .setLogger {
-//        result = msg
-        countDownLatch.countDown()
-        1
+      .setLogger { msg ->
+        if (msg.contains("starting main dispatch loop")) {
+          result = msg
+          countDownLatch.countDown()
+        }
       }
       .setOnEngineRunning {
 
