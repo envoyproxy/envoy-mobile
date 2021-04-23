@@ -9,10 +9,10 @@ import org.junit.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-const val apiListenerType =
+private const val apiListenerType =
   "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
-const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
-const val config =
+private const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
+private const val config =
   """
     static_resources:
       listeners:
@@ -59,13 +59,11 @@ class SetLoggerTest {
 
   @Test
   fun `set logger`() {
-    var result: String? = null
     val countDownLatch = CountDownLatch(1)
     EngineBuilder(Custom(config))
       .addLogLevel(LogLevel.TRACE)
       .setLogger { msg ->
         if (msg.contains("starting main dispatch loop")) {
-          result = msg
           countDownLatch.countDown()
         }
       }
@@ -74,9 +72,8 @@ class SetLoggerTest {
       }
       .build()
       .streamClient()
-    Thread.sleep(15000)
-    countDownLatch.await(15, TimeUnit.SECONDS)
-    assertThat(result).contains("starting main dispatch loop")
-    assertThat(false).isTrue()
+
+    countDownLatch.await(30, TimeUnit.SECONDS)
+    assertThat(countDownLatch.count).isEqualTo(0)
   }
 }
