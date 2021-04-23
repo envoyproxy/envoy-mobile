@@ -57,7 +57,7 @@ class SetLoggerTest {
     JniLibrary.loadTestLibrary()
   }
 
-  @Test
+  @Test(timeout = 30_000)
   fun `set logger`() {
     val countDownLatch = CountDownLatch(1)
     EngineBuilder(Custom(config))
@@ -67,12 +67,10 @@ class SetLoggerTest {
           countDownLatch.countDown()
         }
       }
-      .setOnEngineRunning {
-      }
       .build()
       .streamClient()
 
-    countDownLatch.await(30, TimeUnit.SECONDS)
+    countDownLatch.await(15, TimeUnit.SECONDS)
     assertThat(countDownLatch.count).isEqualTo(0)
   }
 }
