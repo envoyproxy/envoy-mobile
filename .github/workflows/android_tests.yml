@@ -23,8 +23,9 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - run: |
-          bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
+          bazel build //test/kotlin/integration/...
           ls bazel-out/k8-fastbuild/bin/test/kotlin/integration/engine_start_test.runfiles/envoy_mobile/library/common/jni
+          bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
         name: 'Run Kotlin library tests'
   kotlintestslinux:
     name: kotlin_tests_linux
@@ -45,8 +46,9 @@ jobs:
           java-package: jdk
           architecture: x64
       - run: |
-          bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
+          bazel build //test/kotlin/integration/...
           ls bazel-out/k8-fastbuild/bin/test/kotlin/integration/engine_start_test.runfiles/envoy_mobile/library/common/jni
+          bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
         name: 'Run Kotlin library tests'
   javatests:
     name: java_tests_new
