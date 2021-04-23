@@ -61,16 +61,15 @@ class SetLoggerTest {
   fun `set logger`() {
     val countDownLatch = CountDownLatch(1)
     val client = EngineBuilder(Custom(config))
-      .addLogLevel(LogLevel.TRACE)
+      .addLogLevel(LogLevel.DEBUG)
       .setLogger { msg ->
         if (msg.contains("starting main dispatch loop")) {
           countDownLatch.countDown()
         }
       }
+      .setOnEngineRunning {}
       .build()
 
-    // Sleep is needed to allow Envoy to start up and avoid test timeouts.
-    Thread.sleep(10)
     countDownLatch.await(30, TimeUnit.SECONDS)
     client.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
