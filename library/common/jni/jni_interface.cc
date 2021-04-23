@@ -57,7 +57,7 @@ static void jvm_on_log(envoy_data data, void* context) {
                                           "(Ljava/lang/String;)Ljava/lang/Object;");
   env->CallObjectMethod(j_context, jmid_onLog, str);
 
-  env->DeleteLocalRef(str)
+  env->DeleteLocalRef(str);
   env->DeleteLocalRef(jcls_JvmLoggerContext);
 }
 
