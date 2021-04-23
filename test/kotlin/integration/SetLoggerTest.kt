@@ -57,10 +57,10 @@ class SetLoggerTest {
     JniLibrary.loadTestLibrary()
   }
 
-  @Test(timeout = 30_000)
+  @Test
   fun `set logger`() {
     val countDownLatch = CountDownLatch(1)
-    EngineBuilder(Custom(config))
+    val client = EngineBuilder(Custom(config))
       .addLogLevel(LogLevel.TRACE)
       .setLogger { msg ->
         if (msg.contains("starting main dispatch loop")) {
@@ -68,9 +68,11 @@ class SetLoggerTest {
         }
       }
       .build()
-      .streamClient()
 
-    countDownLatch.await(15, TimeUnit.SECONDS)
+    // Sleep is needed to allow Envoy to start up and avoid test timeouts.
+    Thread.sleep(10)
+    countDownLatch.await(30, TimeUnit.SECONDS)
+    client.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
   }
 }
