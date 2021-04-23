@@ -38,18 +38,18 @@ def envoy_mobile_kt_library(name, visibility = None, srcs = [], deps = []):
 # Basic macro which uses a genrule to generate a jnilib file from an so file
 def envoy_mobile_so_to_jni_lib(name, native_dep):
     lib_name = native_lib_name(native_dep)
-    output = "lib{}.jnilib".format(lib_name)
+    output = "{}.jnilib".format(lib_name)
 
     return native.genrule(
         name = name,
         outs = [output],
         srcs = [native_dep],
         cmd = """
-        so_file="lib{}.so"
+        so_file="{}.so"
         if [ ! -f $$so_file ]; then
             dir=$$(dirname $@)
-            cp $< $$dir/lib{}.so 2>/dev/null || :
-            chmod 755 $$dir/lib{}.so
+            cp $< $$dir/{}.so 2>/dev/null || :
+            chmod 755 $$dir/{}.so
             echo "~~~~~~~~~~~~~~~~~~~~"
             ls $$dir
             echo "~~~~~~~~~~~~~~~~~~~~"
