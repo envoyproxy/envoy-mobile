@@ -4,10 +4,10 @@ import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.JniLibrary
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 private const val apiListenerType =
   "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
@@ -70,6 +70,22 @@ class SetLoggerTest {
       .setOnEngineRunning {}
       .build()
 
+    countDownLatch.await(30, TimeUnit.SECONDS)
+    client.terminate()
+    assertThat(countDownLatch.count).isEqualTo(0)
+  }
+
+  @Test
+  fun `engine should continue to run if no logger is set`() {
+    val countDownLatch = CountDownLatch(1)
+    val client = EngineBuilder(Custom(config))
+      .addLogLevel(LogLevel.DEBUG)
+      .setOnEngineRunning {
+        countDownLatch.countDown()
+      }
+      .build()
+
+    Thread.sleep(100)
     countDownLatch.await(30, TimeUnit.SECONDS)
     client.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
