@@ -1,3 +1,6 @@
+// NOLINT(namespace-envoy)
+// NOLINT(spelling)
+
 /**
  * Default certificates.
  */
