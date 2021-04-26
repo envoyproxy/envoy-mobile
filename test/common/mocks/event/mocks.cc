@@ -14,7 +14,5 @@ using testing::ReturnPointee;
 using testing::SaveArg;
 
 namespace Envoy {
-namespace Event {
-
-} // namespace Event
+namespace Event {} // namespace Event
 } // namespace Envoy
