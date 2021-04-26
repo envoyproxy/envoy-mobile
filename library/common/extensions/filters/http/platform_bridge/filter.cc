@@ -500,8 +500,9 @@ void PlatformBridgeFilter::FilterBase::onResume() {
   }
 
   if (pending_headers_) {
-    RELEASE_ASSERT(result.pending_headers, "invalid filter state: headers are pending and must be "
-                                           "returned to resume filter iteration");
+    RELEASE_ASSERT(
+        result.pending_headers && result.pending_headers != envoy_noheaders,
+        "invalid filter state: headers are pending and must be returned to resume filter iteration");
     replaceHeaders(*pending_headers_, *result.pending_headers);
     pending_headers_ = nullptr;
     ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process headers free#1",
@@ -511,7 +512,7 @@ void PlatformBridgeFilter::FilterBase::onResume() {
 
   if (internal_buffer) {
     RELEASE_ASSERT(
-        result.pending_data,
+        result.pending_data && result.pending_data != envoy_nodata,
         "invalid filter state: data is pending and must be returned to resume filter iteration");
     internal_buffer->drain(internal_buffer->length());
     internal_buffer->addBufferFragment(
@@ -527,8 +528,9 @@ void PlatformBridgeFilter::FilterBase::onResume() {
   }
 
   if (pending_trailers_) {
-    RELEASE_ASSERT(result.pending_trailers, "invalid filter state: trailers are pending and must "
-                                            "be returned to resume filter iteration");
+    RELEASE_ASSERT(
+        result.pending_trailers && result.pending_trailers != envoy_noheaders,
+        "invalid filter state: trailers are pending and must be returned to resume filter iteration");
     replaceHeaders(*pending_trailers_, *result.pending_trailers);
     pending_trailers_ = nullptr;
     ENVOY_LOG(debug, "PlatformBridgeFilter({})->on_resume_ process trailers free#1",
