@@ -2049,11 +2049,6 @@ platform_filter_name: StopOnRequestHeadersThenResumeOnResumeDecoding
   filter_->resumeDecoding();
   resume_post_cb();
   EXPECT_EQ(invocations.on_resume_request_calls, 1);
-
-  EXPECT_FALSE(request_headers.get(Http::LowerCaseString("x-async-resumed")).empty());
-  EXPECT_EQ(
-      request_headers.get(Http::LowerCaseString("x-async-resumed"))[0]->value().getStringView(),
-      "Very Yes");
 }
 
 } // namespace
