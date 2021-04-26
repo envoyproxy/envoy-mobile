@@ -2,6 +2,7 @@
 
 #include "envoy/server/lifecycle_notifier.h"
 
+#include "common/common/logger.h"
 #include "common/upstream/logical_dns_cluster.h"
 
 #include "absl/base/call_once.h"
@@ -13,7 +14,7 @@
 
 namespace Envoy {
 
-class Engine {
+class Engine : public Logger::Loggable<Logger::Id::main> {
 public:
   /**
    * Constructor for a new engine instance.

@@ -147,6 +147,7 @@ Engine::~Engine() { terminate(); }
 
 envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,
                                         uint64_t count) {
+  ENVOY_LOG(trace, "[pulse.{}] recordCounterInc", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
@@ -160,6 +161,7 @@ envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats
 
 envoy_status_t Engine::recordGaugeSet(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t value) {
+  ENVOY_LOG(trace, "[pulse.{}] recordGaugeSet", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
@@ -174,6 +176,7 @@ envoy_status_t Engine::recordGaugeSet(const std::string& elements, envoy_stats_t
 
 envoy_status_t Engine::recordGaugeAdd(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t amount) {
+  ENVOY_LOG(trace, "[pulse.{}] recordGaugeAdd", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
@@ -188,6 +191,7 @@ envoy_status_t Engine::recordGaugeAdd(const std::string& elements, envoy_stats_t
 
 envoy_status_t Engine::recordGaugeSub(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t amount) {
+  ENVOY_LOG(trace, "[pulse.{}] recordGaugeSub", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
@@ -203,6 +207,7 @@ envoy_status_t Engine::recordGaugeSub(const std::string& elements, envoy_stats_t
 envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_stats_tags tags,
                                             uint64_t value,
                                             envoy_histogram_stat_unit_t unit_measure) {
+  ENVOY_LOG(trace, "[pulse.{}] recordHistogramValue", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
