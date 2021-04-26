@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  kotlinintegrationtestsosx:
-    name: kotlin_integration_tests_osx
+  kotlinintegrationtestsmac:
+    name: kotlin_integration_tests_mac
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
@@ -46,8 +46,8 @@ jobs:
       - run: |
           bazel test --test_output=all --build_tests_only //test/kotlin/integration/...
         name: 'Run Kotlin library integration tests'
-  javaintegrationtestsosx:
-    name: java_integration_tests_osx
+  javaintegrationtestsmac:
+    name: java_integration_tests_mac
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:

@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  kotlintestsosx:
-    name: kotlin_tests_osx
+  kotlintestsmac:
+    name: kotlin_tests_mac
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
@@ -26,8 +26,8 @@ jobs:
           # /test/kotlin/integration is excluded since it is run on a separate job
           bazelisk query //test/kotlin/... except //test/kotlin/integration/... | xargs bazelisk test --test_output=all
         name: 'Run Kotlin library tests'
-  javatestsosx:
-    name: java_tests_osx
+  javatestsmac:
+    name: java_tests_mac
     runs-on: macOS-latest
     timeout-minutes: 90
     steps:
