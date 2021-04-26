@@ -45,4 +45,8 @@ class EngineImpl internal constructor(
   override fun pulseClient(): PulseClient {
     return pulseClient
   }
+
+  override fun terminate() {
+    envoyEngine.terminate()
+  }
 }

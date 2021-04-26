@@ -4,14 +4,24 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
 import java.nio.ByteBuffer;
 
-class JniLibrary {
+public class JniLibrary {
 
-  private static final String ENVOY_JNI = "envoy_jni";
+  private static String envoyLibraryName = "envoy_jni";
 
   // Internal reference to helper object used to load and initialize the native
   // library.
   // Volatile to ensure double-checked locking works correctly.
   private static volatile JavaLoader loader = null;
+
+  // Load test libraries based on the jvm_flag `envoy_jni_library_name`.
+  // WARNING: This should only be used for testing.
+  public static void loadTestLibrary() {
+    if (System.getProperty("envoy_jni_library_name") != null) {
+      envoyLibraryName = System.getProperty("os.name").startsWith("Linux")
+                             ? System.getProperty("envoy_jni_library_name").substring(3)
+                             : System.getProperty("envoy_jni_library_name");
+    }
+  }
 
   // Load and initialize Envoy and its dependencies, but only once.
   public static void load() {
@@ -33,7 +43,7 @@ class JniLibrary {
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
 
-    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
+    private JavaLoader() { System.loadLibrary(envoyLibraryName); }
   }
 
   /**
@@ -52,7 +62,7 @@ class JniLibrary {
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure
-   *         status.
+   * status.
    */
   protected static native int startStream(long stream, JvmCallbackContext context);
 
@@ -152,7 +162,7 @@ class JniLibrary {
    * Envoy.
    *
    * @return A template that may be used as a starting point for constructing
-   *         configurations.
+   * configurations.
    */
   public static native String templateString();
 
@@ -231,7 +241,7 @@ class JniLibrary {
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         platform filter configuration.
+   * platform filter configuration.
    */
   public static native String platformFilterTemplateString();
 
@@ -240,7 +250,7 @@ class JniLibrary {
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         native filter configuration.
+   * native filter configuration.
    */
   public static native String nativeFilterTemplateString();
 
@@ -248,7 +258,7 @@ class JniLibrary {
    * Register a string accessor to get strings from the platform.
    *
    * @param accessorName, unique name identifying this accessor.
-   * @param context,    context containing logic necessary to invoke the accessor.
+   * @param context,      context containing logic necessary to invoke the accessor.
    * @return int, the resulting status of the operation.
    */
   protected static native int registerStringAccessor(String accessorName,

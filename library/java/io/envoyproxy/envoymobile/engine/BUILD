@@ -1,5 +1,4 @@
 load("@rules_java//java:defs.bzl", "java_library")
-load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 
 licenses(["notice"])  # Apache 2
 
@@ -17,6 +16,7 @@ android_library(
     deps = [
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
+        "@maven//:androidx_core_core",
     ],
 )
 
