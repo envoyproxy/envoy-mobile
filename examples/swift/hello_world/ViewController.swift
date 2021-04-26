@@ -18,6 +18,7 @@ final class ViewController: UITableViewController {
     super.viewDidLoad()
 
     let engine = EngineBuilder()
+      .addLogLevel(.debug)
       .addPlatformFilter(factory: DemoFilter.init)
       .addPlatformFilter(factory: BufferDemoFilter.init)
       .addPlatformFilter(factory: AsyncDemoFilter.init)
@@ -117,7 +118,7 @@ final class ViewController: UITableViewController {
     counter.increment()
     counter.increment(count: 5)
 
-    let gauge = pulseClient.gauge(elements: ["foo", "bar", "counter"])
+    let gauge = pulseClient.gauge(elements: ["foo", "bar", "gauge"])
     gauge.set(value: 5)
     gauge.add(amount: 10)
     gauge.sub(amount: 1)

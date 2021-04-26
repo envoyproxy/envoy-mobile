@@ -1,20 +1,27 @@
 package io.envoyproxy.envoymobile.engine;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
 
-class JniLibrary {
+public class JniLibrary {
 
-  private static final String ENVOY_JNI = "envoy_jni";
+  private static String envoyLibraryName = "envoy_jni";
 
   // Internal reference to helper object used to load and initialize the native
   // library.
   // Volatile to ensure double-checked locking works correctly.
   private static volatile JavaLoader loader = null;
+
+  // Load test libraries based on the jvm_flag `envoy_jni_library_name`.
+  // WARNING: This should only be used for testing.
+  public static void loadTestLibrary() {
+    if (System.getProperty("envoy_jni_library_name") != null) {
+      envoyLibraryName = System.getProperty("os.name").startsWith("Linux")
+                             ? System.getProperty("envoy_jni_library_name").substring(3)
+                             : System.getProperty("envoy_jni_library_name");
+    }
+  }
 
   // Load and initialize Envoy and its dependencies, but only once.
   public static void load() {
@@ -36,7 +43,7 @@ class JniLibrary {
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
 
-    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
+    private JavaLoader() { System.loadLibrary(envoyLibraryName); }
   }
 
   /**
@@ -55,7 +62,7 @@ class JniLibrary {
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure
-   *         status.
+   * status.
    */
   protected static native int startStream(long stream, JvmCallbackContext context);
 
@@ -126,9 +133,10 @@ class JniLibrary {
   /**
    * Initialize an engine for handling network streams.
    *
+   * @param runninCallback, called when the engine finishes its async startup and begins running.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine();
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback);
 
   /**
    * External entry point for library.
@@ -136,11 +144,16 @@ class JniLibrary {
    * @param engine,          the engine to run.
    * @param config,          the configuration blob to run envoy with.
    * @param logLevel,        the logging level to run envoy with.
-   * @param onEngineRunning, called when the engine finishes its async startup and begins running.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel,
-                                        EnvoyOnEngineRunning onEngineRunning);
+  protected static native int runEngine(long engine, String config, String logLevel);
+
+  /**
+   * Terminate the engine.
+   *
+   * @param engine handle for the engine to terminate.
+   */
+  protected static native void terminateEngine(long engine);
 
   // Other native methods
 
@@ -149,7 +162,7 @@ class JniLibrary {
    * Envoy.
    *
    * @return A template that may be used as a starting point for constructing
-   *         configurations.
+   * configurations.
    */
   public static native String templateString();
 
@@ -158,65 +171,77 @@ class JniLibrary {
    *
    * @param engine,  handle to the engine that owns the counter.
    * @param elements Elements of the counter stat.
+   * @param tags Tags of the counter.
    * @param count Amount to add to the counter.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordCounterInc(long engine, String elements, int count);
+  protected static native int recordCounterInc(long engine, String elements, byte[][] tags,
+                                               int count);
 
   /**
    * Set a gauge of a given string of elements with the given value.
    *
    * @param engine,  handle to the engine that owns the gauge.
    * @param elements Elements of the gauge stat.
+   * @param tags Tags of the gauge.
    * @param value Value to set to the gauge.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordGaugeSet(long engine, String elements, int value);
+  protected static native int recordGaugeSet(long engine, String elements, byte[][] tags,
+                                             int value);
 
   /**
    * Add the gauge with the given string of elements and by the given amount.
    *
    * @param engine,  handle to the engine that owns the gauge.
    * @param elements Elements of the gauge stat.
+   * @param tags Tags of the gauge.
    * @param amount Amount to add to the gauge.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordGaugeAdd(long engine, String elements, int amount);
+  protected static native int recordGaugeAdd(long engine, String elements, byte[][] tags,
+                                             int amount);
 
   /**
    * Subtract from the gauge with the given string of elements and by the given amount.
    *
    * @param engine,  handle to the engine that owns the gauge.
    * @param elements Elements of the gauge stat.
+   * @param tags Tags of the gauge.
    * @param amount Amount to subtract from the gauge.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordGaugeSub(long engine, String elements, int amount);
+  protected static native int recordGaugeSub(long engine, String elements, byte[][] tags,
+                                             int amount);
 
   /**
    * Add another recorded duration in ms to the timer histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
+   * @param tags Tags of the histogram.
    * @param durationMs Duration value to record in the histogram timer distribution.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordHistogramDuration(long engine, String elements, int durationMs);
+  protected static native int recordHistogramDuration(long engine, String elements, byte[][] tags,
+                                                      int durationMs);
 
   /**
    * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
+   * @param tags Tags of the histogram.
    * @param value Amount to record as a new value for the histogram distribution.
    * @return A status indicating if the action was successful.
    */
-  protected static native int recordHistogramValue(long engine, String elements, int value);
+  protected static native int recordHistogramValue(long engine, String elements, byte[][] tags,
+                                                   int value);
 
   /**
    * Provides a configuration template that may be used for building platform
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         platform filter configuration.
+   * platform filter configuration.
    */
   public static native String platformFilterTemplateString();
 
@@ -225,7 +250,7 @@ class JniLibrary {
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         native filter configuration.
+   * native filter configuration.
    */
   public static native String nativeFilterTemplateString();
 
@@ -233,7 +258,7 @@ class JniLibrary {
    * Register a string accessor to get strings from the platform.
    *
    * @param accessorName, unique name identifying this accessor.
-   * @param context,    context containing logic necessary to invoke the accessor.
+   * @param context,      context containing logic necessary to invoke the accessor.
    * @return int, the resulting status of the operation.
    */
   protected static native int registerStringAccessor(String accessorName,

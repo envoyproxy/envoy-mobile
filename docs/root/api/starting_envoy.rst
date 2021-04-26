@@ -203,6 +203,36 @@ will be queued automatically, and this function is typically used purely for obs
   // Swift
   builder.setOnEngineRunning { /*do something*/ }
 
+~~~~~~~~~~~~~
+``setLogger``
+~~~~~~~~~~~~~
+
+Specify a closure to be called when Envoy's engine emits a log message.
+
+**Example**::
+
+  // Kotlin
+  // This interface is pending for Kotlin
+
+  // Swift
+  builder.setLogger { msg in
+    NSLog("Envoy log: \(msg)")
+  }
+
+~~~~~~~~~~~~~~~~~~~~~
+``addStringAccessor``
+~~~~~~~~~~~~~~~~~~~~~
+
+Specify a closure to be called by Envoy to access arbitrary strings from Platform runtime.
+
+**Example**::
+
+  // Kotlin
+  builder.addStringAccessor("demo-accessor", { "PlatformString" })
+
+  // Swift
+  builder.addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
+
 ----------------------
 Advanced configuration
 ----------------------

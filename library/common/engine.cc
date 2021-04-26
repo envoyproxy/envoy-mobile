@@ -4,28 +4,34 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
 
-Engine::Engine(envoy_engine_callbacks callbacks, const char* config, const char* log_level,
+Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
                std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks) {
+    : callbacks_(callbacks), logger_(logger),
+      dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
+      preferred_network_(preferred_network) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
-
-  // Create the Http::Dispatcher first since it contains initial queueing logic.
-  // TODO: consider centralizing initial queueing in this class.
-  // https://github.com/lyft/envoy-mobile/issues/720
-  http_dispatcher_ = std::make_unique<Http::Dispatcher>(preferred_network);
-
-  // Start the Envoy on a dedicated thread.
-  main_thread_ = std::thread(&Engine::run, this, std::string(config), std::string(log_level));
 }
 
 envoy_status_t Engine::run(const std::string config, const std::string log_level) {
+  // Start the Envoy on the dedicated thread. Note: due to how the assignment operator works with
+  // std::thread, main_thread_ is the same object after this call, but its state is replaced with
+  // that of the temporary. The temporary object's state becomes the default state, which does
+  // nothing.
+  main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level));
+  return ENVOY_SUCCESS;
+}
+
+envoy_status_t Engine::main(const std::string config, const std::string log_level) {
+  // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
+  std::unique_ptr<MobileMainCommon> main_common;
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -34,17 +40,23 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
       const std::string log_flag = "-l";
       const std::string concurrency_option = "--concurrency";
       const std::string concurrency_arg = "0";
-      const char* envoy_argv[] = {name.c_str(),
-                                  config_flag.c_str(),
-                                  config.c_str(),
-                                  concurrency_option.c_str(),
-                                  concurrency_arg.c_str(),
-                                  log_flag.c_str(),
-                                  log_level.c_str(),
-                                  nullptr};
+      std::vector<const char*> envoy_argv = {name.c_str(),
+                                             config_flag.c_str(),
+                                             config.c_str(),
+                                             concurrency_option.c_str(),
+                                             concurrency_arg.c_str(),
+                                             log_flag.c_str(),
+                                             log_level.c_str(),
+                                             nullptr};
 
-      main_common_ = std::make_unique<MobileMainCommon>(5, envoy_argv);
-      event_dispatcher_ = &main_common_->server()->dispatcher();
+      main_common = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
+      server_ = main_common->server();
+      event_dispatcher_ = &server_->dispatcher();
+      if (logger_.log) {
+        lambda_logger_ =
+            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
+      }
+
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
@@ -63,9 +75,9 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
     // When we improve synchronous failure handling and/or move to dynamic forwarding, we only need
     // to wait until the dispatcher is running (and can drain by enqueueing a drain callback on it,
     // as we did previously).
-    postinit_callback_handler_ = main_common_->server()->lifecycleNotifier().registerCallback(
+
+    postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          server_ = TS_UNCHECKED_READ(main_common_)->server();
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -73,8 +85,10 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
           stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
-          http_dispatcher_->ready(server_->dispatcher(), server_->serverFactoryContext().scope(),
-                                  api_listener.value());
+          http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_,
+                                                        server_->serverFactoryContext().scope(),
+                                                        preferred_network_);
+          dispatcher_->drain(server_->dispatcher());
           if (callbacks_.on_engine_running != nullptr) {
             callbacks_.on_engine_running(callbacks_.context);
           }
@@ -82,55 +96,64 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
   } // mutex_
 
   // The main run loop must run without holding the mutex, so that the destructor can acquire it.
-  bool run_success = TS_UNCHECKED_READ(main_common_)->run();
+  bool run_success = main_common->run();
   // The above call is blocking; at this point the event loop has exited.
 
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
-  TS_UNCHECKED_READ(main_common_).reset(nullptr);
+  lambda_logger_.reset(nullptr);
+  main_common.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
 
-Engine::~Engine() {
-  // If we're already on the main thread, it should be safe to simply destruct.
+envoy_status_t Engine::terminate() {
+  // If main_thread_ has finished (or hasn't started), there's nothing more to do.
   if (!main_thread_.joinable()) {
-    return;
+    return ENVOY_FAILURE;
   }
 
-  // If we're not on the main thread, we need to be sure that MainCommon is finished being
-  // constructed so we can dispatch shutdown.
+  // We need to be sure that MainCommon is finished being constructed so we can dispatch shutdown.
   {
     Thread::LockGuard lock(mutex_);
 
-    if (!main_common_) {
+    if (!event_dispatcher_) {
       cv_.wait(mutex_);
     }
 
-    ASSERT(main_common_);
+    ASSERT(event_dispatcher_);
 
     // Exit the event loop and finish up in Engine::run(...)
-    event_dispatcher_->exit();
-  } // _mutex
+    if (std::this_thread::get_id() == main_thread_.get_id()) {
+      // TODO(goaway): figure out some way to support this.
+      PANIC("Terminating the engine from its own main thread is currently unsupported.");
+    } else {
+      event_dispatcher_->exit();
+    }
+  } // lock(_mutex)
 
-  // Now we wait for the main thread to wrap things up.
-  main_thread_.join();
+  if (std::this_thread::get_id() != main_thread_.get_id()) {
+    main_thread_.join();
+  }
+
+  return ENVOY_SUCCESS;
 }
+
+Engine::~Engine() { terminate(); }
 
 envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,
                                         uint64_t count) {
+  ENVOY_LOG(trace, "[pulse.{}] recordCounterInc", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, count]() -> void {
-      Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(name)}, tags_vctr)
-          .add(count);
-    });
+    Stats::Utility::counterFromElements(*client_scope_, {Stats::DynamicName(name)}, tags_vctr)
+        .add(count);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -138,15 +161,14 @@ envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats
 
 envoy_status_t Engine::recordGaugeSet(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t value) {
+  ENVOY_LOG(trace, "[pulse.{}] recordGaugeSet", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, value]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
-          .set(value);
-    });
+    Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                      Stats::Gauge::ImportMode::NeverImport, tags_vctr)
+        .set(value);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -154,15 +176,14 @@ envoy_status_t Engine::recordGaugeSet(const std::string& elements, envoy_stats_t
 
 envoy_status_t Engine::recordGaugeAdd(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t amount) {
+  ENVOY_LOG(trace, "[pulse.{}] recordGaugeAdd", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, amount]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
-          .add(amount);
-    });
+    Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                      Stats::Gauge::ImportMode::NeverImport, tags_vctr)
+        .add(amount);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -170,15 +191,14 @@ envoy_status_t Engine::recordGaugeAdd(const std::string& elements, envoy_stats_t
 
 envoy_status_t Engine::recordGaugeSub(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t amount) {
+  ENVOY_LOG(trace, "[pulse.{}] recordGaugeSub", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
     std::string name = Stats::Utility::sanitizeStatsName(elements);
-    server_->dispatcher().post([this, name, tags_vctr, amount]() -> void {
-      Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                        Stats::Gauge::ImportMode::NeverImport, tags_vctr)
-          .sub(amount);
-    });
+    Stats::Utility::gaugeFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                      Stats::Gauge::ImportMode::NeverImport, tags_vctr)
+        .sub(amount);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
@@ -187,6 +207,7 @@ envoy_status_t Engine::recordGaugeSub(const std::string& elements, envoy_stats_t
 envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_stats_tags tags,
                                             uint64_t value,
                                             envoy_histogram_stat_unit_t unit_measure) {
+  ENVOY_LOG(trace, "[pulse.{}] recordHistogramValue", elements);
   if (server_ && client_scope_ && stat_name_set_) {
     Stats::StatNameTagVector tags_vctr =
         Stats::Utility::transformToStatNameTagVector(tags, stat_name_set_);
@@ -207,16 +228,20 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_s
       break;
     }
 
-    server_->dispatcher().post([this, name, tags_vctr, value, envoy_unit_measure]() -> void {
-      Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
-                                            envoy_unit_measure, tags_vctr)
-          .recordValue(value);
-    });
+    Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
+                                          envoy_unit_measure, tags_vctr)
+        .recordValue(value);
     return ENVOY_SUCCESS;
   }
   return ENVOY_FAILURE;
 }
 
-Http::Dispatcher& Engine::httpDispatcher() { return *http_dispatcher_; }
+Event::ProvisionalDispatcher& Engine::dispatcher() { return *dispatcher_; }
+
+Http::Client& Engine::httpClient() {
+  RELEASE_ASSERT(dispatcher_->isThreadSafe(),
+                 "httpClient must be accessed from dispatcher's context");
+  return *http_client_;
+}
 
 } // namespace Envoy

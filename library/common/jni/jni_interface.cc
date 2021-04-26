@@ -24,16 +24,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 // JniLibrary
 
-extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
-    JNIEnv* env,
-    jclass // class
-) {
-  return init_engine();
-}
-
 static void jvm_on_engine_running(void* context) {
-  jni_log("[Envoy]", "jvm_on_engine_running");
+  if (context == nullptr) {
+    return;
+  }
 
+  jni_log("[Envoy]", "jvm_on_engine_running");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
   jclass jcls_JvmonEngineRunningContext = env->GetObjectClass(j_context);
@@ -56,12 +52,24 @@ static void jvm_on_exit(void*) {
   jvm_detach_thread();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
-    JNIEnv* env, jclass, jlong engine, jstring config, jstring jvm_log_level, jobject context) {
+extern "C" JNIEXPORT jlong JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env, jclass, jobject context) {
   jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
   envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
-  return run_engine(engine, native_callbacks, env->GetStringUTFChars(config, nullptr),
-                    env->GetStringUTFChars(jvm_log_level, nullptr));
+  // TODO(junr03): wire up once Android support lands.
+  envoy_logger logger = {nullptr, nullptr, nullptr};
+  return init_engine(native_callbacks, logger);
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
+    JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
+  return run_engine(engine, env->GetStringUTFChars(config, nullptr),
+                    env->GetStringUTFChars(log_level, nullptr));
+}
+
+extern "C" JNIEXPORT void JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_terminateEngine(
+    JNIEnv* env, jclass, jlong engine_handle) {
+  terminate_engine(static_cast<envoy_engine_t>(engine_handle));
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -91,34 +99,33 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplateString(JNIE
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
     JNIEnv* env,
     jclass, // class
-    jlong engine, jstring elements, jint count) {
-  // TODO: update to use tags passed from the downstream layer (java) when it's ready.
-  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
-                            count);
+    jlong engine, jstring elements, jobjectArray tags, jint count) {
+  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr),
+                            to_native_tags(env, tags), count);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(
     JNIEnv* env,
     jclass, // class
-    jlong engine, jstring elements, jint value) {
-  return record_gauge_set(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
-                          value);
+    jlong engine, jstring elements, jobjectArray tags, jint value) {
+  return record_gauge_set(engine, env->GetStringUTFChars(elements, nullptr),
+                          to_native_tags(env, tags), value);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeAdd(
     JNIEnv* env,
     jclass, // class
-    jlong engine, jstring elements, jint amount) {
-  return record_gauge_add(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
-                          amount);
+    jlong engine, jstring elements, jobjectArray tags, jint amount) {
+  return record_gauge_add(engine, env->GetStringUTFChars(elements, nullptr),
+                          to_native_tags(env, tags), amount);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSub(
     JNIEnv* env,
     jclass, // class
-    jlong engine, jstring elements, jint amount) {
-  return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr), envoy_stats_notags,
-                          amount);
+    jlong engine, jstring elements, jobjectArray tags, jint amount) {
+  return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr),
+                          to_native_tags(env, tags), amount);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -126,9 +133,10 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv*
                                                                          jclass, // class
                                                                          jlong engine,
                                                                          jstring elements,
+                                                                         jobjectArray tags,
                                                                          jint durationMs) {
   return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr),
-                                envoy_stats_notags, durationMs, MILLISECONDS);
+                                to_native_tags(env, tags), durationMs, MILLISECONDS);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -136,9 +144,10 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* en
                                                                       jclass, // class
                                                                       jlong engine,
                                                                       jstring elements,
+                                                                      jobjectArray tags,
                                                                       jint value) {
   return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr),
-                                envoy_stats_notags, value, UNSPECIFIED);
+                                to_native_tags(env, tags), value, UNSPECIFIED);
 }
 
 // JvmCallbackContext
@@ -606,14 +615,14 @@ static const void* jvm_http_filter_init(const void* context) {
   envoy_http_filter* c_filter = static_cast<envoy_http_filter*>(const_cast<void*>(context));
   jobject j_context = static_cast<jobject>(const_cast<void*>(c_filter->static_context));
 
-  jni_log("[Envoy]", "j_context: %p", j_context);
+  jni_log_fmt("[Envoy]", "j_context: %p", j_context);
 
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
   jmethodID jmid_create = env->GetMethodID(jcls_JvmFilterFactoryContext, "create",
                                            "()Lio/envoyproxy/envoymobile/engine/JvmFilterContext;");
 
   jobject j_filter = env->CallObjectMethod(j_context, jmid_create);
-  jni_log("[Envoy]", "j_filter: %p", j_filter);
+  jni_log_fmt("[Envoy]", "j_filter: %p", j_filter);
   jobject retained_filter = env->NewGlobalRef(j_filter);
 
   env->DeleteLocalRef(jcls_JvmFilterFactoryContext);
@@ -681,10 +690,10 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* e
   // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
   jni_log("[Envoy]", "registerFilterFactory");
-  jni_log("[Envoy]", "j_context: %p", j_context);
+  jni_log_fmt("[Envoy]", "j_context: %p", j_context);
   jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
   jobject retained_context = env->NewGlobalRef(j_context);
-  jni_log("[Envoy]", "retained_context: %p", retained_context);
+  jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
   envoy_http_filter* api = (envoy_http_filter*)safe_malloc(sizeof(envoy_http_filter));
   api->init_filter = jvm_http_filter_init;
   api->on_request_headers = jvm_http_filter_on_request_headers;

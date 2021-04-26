@@ -26,8 +26,10 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":envoy_mobile_main_common_lib",
+        "//library/common/common:lambda_logger_delegate_lib",
         "//library/common/data:utility_lib",
-        "//library/common/http:dispatcher_lib",
+        "//library/common/event:provisional_dispatcher_lib",
+        "//library/common/http:client_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/stats:utility_lib",
         "//library/common/types:c_types_lib",
@@ -42,6 +44,7 @@ envoy_cc_library(
     hdrs = ["envoy_mobile_main_common.h"],
     repository = "@envoy",
     deps = [
+        "@envoy//source/common/common:minimal_logger_lib",
         "@envoy//source/common/common:random_generator_lib",
         "@envoy//source/common/runtime:runtime_lib",
         "@envoy//source/exe:main_common_lib",
