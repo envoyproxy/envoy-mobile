@@ -16,7 +16,7 @@ envoy_cc_library(
 envoy_cc_library(
     name = "envoy_main_interface_lib_no_stamp",
     srcs = [
-        "certificates.inc",
+        "certificates.cc",
         "config_template.cc",
         "engine.cc",
         "engine.h",

@@ -39,8 +39,8 @@ public class EnvoyConfiguration {
    * @param appId                        the App ID of the App using this Envoy Client.
    * @param virtualClusters              the JSON list of virtual cluster configs.
    * @param nativeFilterChain            the configuration for native filters.
-   * @param httpPlatformFilterFactories          the configuration for platform filters.
-   * @param stringAccesssors             platform string accessors to register.
+   * @param httpPlatformFilterFactories  the configuration for platform filters.
+   * @param stringAccessors              platform string accessors to register.
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
@@ -69,12 +69,13 @@ public class EnvoyConfiguration {
    * @param templateYAML the template configuration to resolve.
    * @param platformFilterTemplateYAML helper template to build platform http filters.
    * @param nativeFilterTemplateYAML helper template to build native http filters.
+   * @param certificates certs in JSON format, following the envoy.config.core.v?.DataSource proto.
    * @return String, the resolved template.
    * @throws ConfigurationException, when the template provided is not fully
    *                                 resolved.
    */
-  String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
-                         final String nativeFilterTemplateYAML) {
+  public String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
+                         final String nativeFilterTemplateYAML, final String certificates) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
       String filterConfig = platformFilterTemplateYAML.replace("{{ platform_filter_name }}",
@@ -106,7 +107,8 @@ public class EnvoyConfiguration {
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)
             .replace("{{ virtual_clusters }}", virtualClusters)
-            .replace("{{ native_filter_chain }}", nativeFilterConfigChain);
+            .replace("{{ native_filter_chain }}", nativeFilterConfigChain)
+            .replace("{{ certificates }}", certificates);
 
     final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);
     if (unresolvedKeys.find()) {

@@ -98,11 +98,7 @@ static_resources:
         common_tls_context:
           validation_context:
             trusted_ca:
-              inline_string: |
-)"
-#include "certificates.inc"
-
-                              R"(
+              {{ certificates }}
     upstream_connection_options: &upstream_opts
       tcp_keepalive:
         keepalive_interval: 8

@@ -83,6 +83,14 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_templateString(JNIEnv* env,
 }
 
 extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_defaultCertificates(JNIEnv* env,
+                                                                     jclass // class
+) {
+  jstring result = env->NewStringUTF(certificates);
+  return result;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_platformFilterTemplateString(JNIEnv* env,
                                                                               jclass // class
 ) {

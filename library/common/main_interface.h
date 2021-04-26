@@ -20,6 +20,11 @@ extern "C" { // functions
 extern const char* config_template;
 
 /**
+ * Default CA Certificates. Subject to change as certificates expire.
+ */
+extern const char* certificates;
+
+/**
  * Template configuration used for dynamic creation of the platform-bridged filter chain.
  */
 extern const char* platform_filter_template;

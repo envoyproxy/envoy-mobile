@@ -1,4 +1,8 @@
-R"certs(
+/**
+ * Default certificates.
+ */
+const char* certificates = R"certs(
+              inline_string: |
                 # $OpenBSD: cert.pem,v 1.22 2021/02/12 12:16:53 sthen Exp $
                 ### /C=ES/CN=Autoridad de Certificacion Firmaprofesional CIF A62634068
 
@@ -6305,4 +6309,4 @@ R"certs(
                 i6mx5O+aGtA9aZnuqCij4Tyz8LIRnM98QObd50N9otg6tamN8jSZxNQQ4Qb9CYQQ
                 O+7ETPTsJ3xCwnR8gooJybQDJbw=
                 -----END CERTIFICATE-----
-)certs"
+)certs";

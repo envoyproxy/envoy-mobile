@@ -25,6 +25,20 @@ mock_template:
   virtual_clusters: {{ virtual_clusters }}
 """
 
+private const val TEST_CERTIFICATES =
+  """
+inline_string: |
+  Certificate:
+      Signature Algorithm: sha1WithRSAEncryption
+          Validity
+              Not Before: May 20 08:38:15 2009 GMT
+
+  SHA1 Fingerprint=AE:C5:FB:3F:C8:E1:BF:C4:E5:4F:03:07:5A:9A:E8:00:B7:F7:B6:FA
+  -----BEGIN CERTIFICATE-----
+  MIIGFDCCA/ygAwIBAgIIU+w77vuySF8wDQYJKoZIhvcNAQEFBQAwUTELMAkGA1UE
+  -----END CERTIFICATE-----
+"""
+
 private const val PLATFORM_FILTER_CONFIG =
 """
     - platform_filter_name: {{ platform_filter_name }}
@@ -46,7 +60,7 @@ class EnvoyConfigurationTest {
       emptyList(), emptyMap()
     )
 
-    val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG)
+    val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, TEST_CERTIFICATES)
     assertThat(resolvedTemplate).contains("stats_domain: stats.foo.com")
     assertThat(resolvedTemplate).contains("connect_timeout: 123s")
     assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
@@ -69,7 +83,7 @@ class EnvoyConfigurationTest {
     )
 
     try {
-      envoyConfiguration.resolveTemplate("{{ missing }}", "", "")
+      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "")
       fail("Unresolved configuration keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")

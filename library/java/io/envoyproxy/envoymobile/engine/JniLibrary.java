@@ -18,8 +18,8 @@ public class JniLibrary {
   public static void loadTestLibrary() {
     if (System.getProperty("envoy_jni_library_name") != null) {
       envoyLibraryName = System.getProperty("os.name").startsWith("Linux")
-                             ? System.getProperty("envoy_jni_library_name").substring(3)
-                             : System.getProperty("envoy_jni_library_name");
+          ? System.getProperty("envoy_jni_library_name").substring(3)
+          : System.getProperty("envoy_jni_library_name");
     }
   }
 
@@ -166,6 +166,14 @@ public class JniLibrary {
    * configurations.
    */
   public static native String templateString();
+
+  /**
+   * Provides default CA certificates in JSON format, which respect the structure of the
+   * envoy.config.core.v?.DataSource proto.
+   *
+   * @return A DataSource proto in JSON format which inlines or points to the CA certificates.
+   */
+  public static native String defaultCertificates();
 
   /**
    * Increment a counter with the given count.
