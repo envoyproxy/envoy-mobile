@@ -9,8 +9,7 @@ namespace Platform {
 Engine::Engine(envoy_engine_t engine, const std::string& configuration, LogLevel log_level)
     : engine_(engine), terminated_(false) {
 
-  run_engine(this->engine_, configuration.c_str(),
-             log_level_to_string(log_level).c_str());
+  run_engine(this->engine_, configuration.c_str(), log_level_to_string(log_level).c_str());
 
   this->stream_client_ = std::make_shared<StreamClient>(this->engine_);
   this->pulse_client_ = std::make_shared<PulseClient>();

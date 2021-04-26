@@ -116,7 +116,8 @@ EngineSharedPtr EngineBuilder::build() {
       .context = this->callbacks_.get(),
   };
 
-  Engine* engine = new Engine(init_engine(envoy_callbacks, null_logger), config_str, this->log_level_);
+  Engine* engine =
+      new Engine(init_engine(envoy_callbacks, null_logger), config_str, this->log_level_);
   return EngineSharedPtr(engine);
 }
 
