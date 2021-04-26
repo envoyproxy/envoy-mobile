@@ -172,6 +172,7 @@ envoy_status_t run_engine(envoy_engine_t, const char* config, const char* log_le
 }
 
 void terminate_engine(envoy_engine_t) {
+  // Reset the primary handle to the engine, but retain it long enough to synchronously terminate.
   auto e = strong_engine_;
   strong_engine_.reset();
   e->terminate();

@@ -130,7 +130,7 @@ envoy_status_t Engine::terminate() {
     // Exit the event loop and finish up in Engine::run(...)
     if (std::this_thread::get_id() == main_thread_.get_id()) {
       // TODO(goaway): figure out some way to support this.
-      PANIC("Terminating the engine from its own main thread is unsupported.");
+      PANIC("Terminating the engine from its own main thread is currently unsupported.");
     } else {
       event_dispatcher_->exit();
     }

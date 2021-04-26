@@ -47,6 +47,7 @@ static_resources:
 
 
 class TestSendHeaders(unittest.TestCase):
+    # FIXME(goaway): re-enable test
     def test_send_headers(self):
          assert True
 #        engine_running = threading.Event()
