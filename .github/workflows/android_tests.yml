@@ -46,6 +46,8 @@ jobs:
           bazelisk query //test/java/...
         name: 'Run Java library tests'
   kotlintestslinux:
+    # Only kotlin tests are executed since with linux:
+    # https://github.com/envoyproxy/envoy-mobile/issues/1418.
     name: kotlin_tests_linux
     runs-on: ubuntu-18.04
     timeout-minutes: 90
