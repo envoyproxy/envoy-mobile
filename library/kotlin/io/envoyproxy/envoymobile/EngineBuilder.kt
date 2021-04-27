@@ -20,7 +20,7 @@ open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
   protected var onEngineRunning: (() -> Unit) = {}
-  protected var logger: ((String) -> Unit)? = {}
+  protected var logger: ((String) -> Unit)? = null
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning, logger) }
   private var logLevel = LogLevel.INFO
   private var statsDomain = "0.0.0.0"

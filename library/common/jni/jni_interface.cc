@@ -83,7 +83,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
                                              retained_on_start_context};
 
   jobject retained_logger_context = env->NewGlobalRef(envoy_logger_context);
-  envoy_logger logger = {jvm_on_log, jvm_logger_release, retained_logger_context};
+  envoy_logger logger = {nullptr, nullptr, nullptr};
+  if (envoy_logger_context != nullptr) {
+    logger = {jvm_on_log, jvm_logger_release, retained_logger_context};
+  }
   return init_engine(native_callbacks, logger);
 }
 
