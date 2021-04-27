@@ -15,7 +15,8 @@ public class AndroidEngineImpl implements EnvoyEngine {
   /**
    * @param runningCallback Called when the engine finishes its async startup and begins running.
    */
-  public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback, EnvoyLogger logger) {
+  public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback,
+                           EnvoyLogger logger) {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
@@ -43,7 +44,9 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public void terminate() { envoyEngine.terminate(); }
+  public void terminate() {
+    envoyEngine.terminate();
+  }
 
   @Override
   public int recordCounterInc(String elements, Map<String, String> tags, int count) {
