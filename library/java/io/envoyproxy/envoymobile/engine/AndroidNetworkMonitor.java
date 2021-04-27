@@ -1,12 +1,10 @@
 package io.envoyproxy.envoymobile.engine;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.NetworkCallback;
 import android.net.Network;
@@ -14,9 +12,6 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
-import androidx.core.content.ContextCompat;
-
-import java.util.Collections;
 
 /**
  * This class makes use of some deprecated APIs, but it's only current purpose is to attempt to
@@ -25,8 +20,6 @@ import java.util.Collections;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidNetworkMonitor extends BroadcastReceiver {
-  private static final String PERMISSION_DENIED_STATS_ELEMENT =
-      "android_permissions.network_state_denied";
   private static final int ENVOY_NET_GENERIC = 0;
   private static final int ENVOY_NET_WWAN = 1;
   private static final int ENVOY_NET_WLAN = 2;
@@ -37,7 +30,7 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   private NetworkCallback networkCallback;
   private NetworkRequest networkRequest;
 
-  public static void load(Context context, EnvoyEngine envoyEngine) {
+  public static void load(Context context) {
     if (instance != null) {
       return;
     }
@@ -46,22 +39,11 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       if (instance != null) {
         return;
       }
-      instance = new AndroidNetworkMonitor(context, envoyEngine);
+      instance = new AndroidNetworkMonitor(context);
     }
   }
 
-  private AndroidNetworkMonitor(Context context, EnvoyEngine envoyEngine) {
-    int permission =
-        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
-    if (permission == PackageManager.PERMISSION_DENIED) {
-      try {
-        envoyEngine.recordCounterInc(PERMISSION_DENIED_STATS_ELEMENT, Collections.emptyMap(), 1);
-      } catch (Throwable t) {
-        // no-op if this errors out and return
-      }
-      return;
-    }
-
+  private AndroidNetworkMonitor(Context context) {
     connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     networkRequest = new NetworkRequest.Builder()
