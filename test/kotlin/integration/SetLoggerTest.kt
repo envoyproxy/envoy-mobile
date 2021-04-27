@@ -85,7 +85,6 @@ class SetLoggerTest {
       }
       .build()
 
-    Thread.sleep(100)
     countDownLatch.await(30, TimeUnit.SECONDS)
     client.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
