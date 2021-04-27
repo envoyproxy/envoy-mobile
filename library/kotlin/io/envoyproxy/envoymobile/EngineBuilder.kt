@@ -20,8 +20,8 @@ open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
   protected var onEngineRunning: (() -> Unit) = {}
-  private var logger: ((String) -> Unit)? = {}
-  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning) }
+  protected var logger: ((String) -> Unit)? = {}
+  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning, logger) }
   private var logLevel = LogLevel.INFO
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30

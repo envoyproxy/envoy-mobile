@@ -76,11 +76,13 @@ static void jvm_on_exit(void*) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env, jclass, jobject context) {
-  jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
-  envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
-  // TODO(junr03): wire up once Android support lands.
-  envoy_logger logger = {nullptr, nullptr, nullptr};
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env, jclass,
+    jobject on_start_context, jobject envoy_logger_context) {
+  jobject retained_on_start_context = env->NewGlobalRef(on_start_context); // Required to keep context in memory
+  envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_on_start_context};
+
+  jobject retained_logger_context = env->NewGlobalRef(envoy_logger_context);
+  envoy_logger logger = {jvm_on_log, jvm_logger_release, retained_logger_context};
   return init_engine(native_callbacks, logger);
 }
 
