@@ -69,7 +69,7 @@ class EnvoyConfigurationTest {
     )
 
     try {
-      envoyConfiguration.resolveTemplate("{{ missing }}", "", "")
+      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "")
       fail("Unresolved configuration keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")
