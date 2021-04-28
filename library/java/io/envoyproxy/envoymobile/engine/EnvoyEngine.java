@@ -29,7 +29,7 @@ public interface EnvoyEngine {
    * @param logLevel          The log level to use when starting Envoy.
    * @return A status indicating if the action was successful.
    */
-  int runWithConfig(String configurationYAML, String logLevel);
+  int runWithConfig(EnvoyConfiguration envoyConfiguration, String configurationYAML, String logLevel);
 
   /**
    * Run the Envoy engine with the provided EnvoyConfiguration and log level.

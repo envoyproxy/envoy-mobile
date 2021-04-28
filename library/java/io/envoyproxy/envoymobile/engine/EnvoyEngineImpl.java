@@ -55,13 +55,24 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(String configurationYAML, String logLevel) {
-    try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel);
-    } catch (Throwable throwable) {
-      // TODO: Need to have a way to log the exception somewhere.
-      return ENVOY_FAILURE;
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String configurationYAML, String logLevel) {
+    for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
+      JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
+              new JvmFilterFactoryContext(filterFactory));
     }
+
+    for (Map.Entry<String, EnvoyStringAccessor> entry :
+            envoyConfiguration.stringAccessors.entrySet()) {
+      JniLibrary.registerStringAccessor(entry.getKey(),
+              new JvmStringAccessorContext(entry.getValue()));
+    }
+
+    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
+            configurationYAML,
+            JniLibrary.statsSinkTemplateString(),
+            JniLibrary.platformFilterTemplateString(),
+            JniLibrary.nativeFilterTemplateString()),
+            logLevel);
   }
 
   /**
@@ -84,11 +95,21 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                         new JvmStringAccessorContext(entry.getValue()));
     }
 
-    return runWithConfig(envoyConfiguration.resolveTemplate(
-                             JniLibrary.templateString(), JniLibrary.statsSinkTemplateString(),
+    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
+                             JniLibrary.templateString(),
+                             JniLibrary.statsSinkTemplateString(),
                              JniLibrary.platformFilterTemplateString(),
                              JniLibrary.nativeFilterTemplateString()),
                          logLevel);
+  }
+
+  private int runWithResolvedYAML(String configurationYAML, String logLevel) {
+    try {
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel);
+    } catch (Throwable throwable) {
+      // TODO: Need to have a way to log the exception somewhere.
+      return ENVOY_FAILURE;
+    }
   }
 
   /**

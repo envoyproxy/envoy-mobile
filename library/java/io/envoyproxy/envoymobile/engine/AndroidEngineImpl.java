@@ -27,12 +27,11 @@ public class AndroidEngineImpl implements EnvoyEngine {
     return envoyEngine.startStream(callbacks);
   }
 
-  @Override
-  public int runWithConfig(String configurationYAML, String logLevel) {
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration,String configurationYAML, String logLevel) {
     // re-enable lifecycle-based stat flushing when https://github.com/lyft/envoy-mobile/issues/748
     // gets fixed. AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
     // application.registerActivityLifecycleCallbacks(monitor);
-    return envoyEngine.runWithConfig(configurationYAML, logLevel);
+    return envoyEngine.runWithConfig(envoyConfiguration, configurationYAML, logLevel);
   }
 
   @Override

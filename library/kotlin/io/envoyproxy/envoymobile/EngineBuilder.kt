@@ -123,9 +123,9 @@ open class EngineBuilder(
    */
   fun addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () -> Filter):
     EngineBuilder {
-      this.platformFilterChain.add(FilterFactory(name, factory))
-      return this
-    }
+    this.platformFilterChain.add(FilterFactory(name, factory))
+    return this
+  }
 
   /**
    * Add an HTTP filter config used to create native filters for streams sent by this client.
@@ -139,9 +139,9 @@ open class EngineBuilder(
    */
   fun addNativeFilter(name: String = UUID.randomUUID().toString(), typedConfig: String):
     EngineBuilder {
-      this.nativeFilterChain.add(EnvoyNativeFilterConfig(name, typedConfig))
-      return this
-    }
+    this.nativeFilterChain.add(EnvoyNativeFilterConfig(name, typedConfig))
+    return this
+  }
 
   /**
    * Set a closure to be called when the engine finishes its async startup and begins running.
@@ -223,7 +223,17 @@ open class EngineBuilder(
   fun build(): Engine {
     return when (configuration) {
       is Custom -> {
-        EngineImpl(engineType(), configuration.yaml, logLevel)
+        EngineImpl(
+          engineType(),
+          EnvoyConfiguration(
+            statsDomain, connectTimeoutSeconds,
+            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
+            platformFilterChain, stringAccessors
+          ),
+          configuration.yaml,
+          logLevel
+        )
       }
       is Standard -> {
         EngineImpl(

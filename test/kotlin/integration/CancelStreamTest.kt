@@ -6,14 +6,18 @@ import io.envoyproxy.envoymobile.EnvoyError
 import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
+import io.envoyproxy.envoymobile.RequestHeadersBuilder
+import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 
 
 private const val hcmType =
@@ -117,34 +121,33 @@ class CancelStreamTest {
   fun `cancel stream calls onCancel callback`() {
     val engine = EngineBuilder(Custom(config))
       .addPlatformFilter(
-        name = filterName,
+        name = "cancel_validation_filter",
         factory = { CancelValidationFilter(filterExpectation) }
       )
       .setOnEngineRunning {}
       .build()
 
-//    val client = engine.streamClient()
-//
-//    val requestHeaders = RequestHeadersBuilder(
-//      method = RequestMethod.GET,
-//      scheme = "https",
-//      authority = "example.com",
-//      path = "/test"
-//    )
-//      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
-//      .build()
-//
-//    client.newStreamPrototype()
-//      .setOnCancel {
-//        runExpectation.countDown()
-//      }
-//      .start(Executors.newSingleThreadExecutor())
-//      .sendHeaders(requestHeaders, false)
-//      .cancel()
+    val client = engine.streamClient()
+
+    val requestHeaders = RequestHeadersBuilder(
+      method = RequestMethod.GET,
+      scheme = "https",
+      authority = "example.com",
+      path = "/test"
+    )
+      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
+      .build()
+
+    client.newStreamPrototype()
+      .setOnCancel {
+        runExpectation.countDown()
+      }
+      .start(Executors.newSingleThreadExecutor())
+      .sendHeaders(requestHeaders, false)
+      .cancel()
 
     engine.terminate()
-//    filterExpectation.await(10, TimeUnit.SECONDS)
-//    runExpectation.await(10, TimeUnit.SECONDS)
+//    filterExp?ation.await(10, TimeUnit.SECONDS)
     assertThat(filterExpectation.count).isEqualTo(0)
     assertThat(runExpectation.count).isEqualTo(0)
   }
