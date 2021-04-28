@@ -345,19 +345,19 @@ const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
 const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
 
 const char* BaseClusters[] = {
-  "base",
-  "base_wlan",
-  "base_wwan",
+    "base",
+    "base_wlan",
+    "base_wwan",
 };
 const char* H2Clusters[] = {
-  "base_h2",
-  "base_wlan_h2",
-  "base_wwan_h2",
+    "base_h2",
+    "base_wlan_h2",
+    "base_wwan_h2",
 };
 const char* ClearTextClusters[] = {
-  "base_clear",
-  "base_wlan_clear",
-  "base_wwan_clear",
+    "base_clear",
+    "base_wlan_clear",
+    "base_wwan_clear",
 };
 
 } // namespace
