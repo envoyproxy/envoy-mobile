@@ -367,26 +367,31 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // - Use TLS by default.
   // - Use http/2 if requested explicitly via x-envoy-mobile-upstream-protocol.
   // - Force http/1.1 if request scheme is http (cleartext).
-  std::string cluster;
+  const char* cluster{};
   auto h2_header = headers.get(H2UpstreamHeader);
+  auto network = preferred_network_.load();
+  ASSERT(network >= 0 && network < 3, "preferred_network_ must be valid index into cluster array");
 
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    cluster = ClearTextClusters[preferred_network_.load()];
+    cluster = ClearTextClusters[network];
   } else if (!h2_header.empty()) {
     ASSERT(h2_header.size() == 1);
     const auto value = h2_header[0]->value().getStringView();
     if (value == "http2") {
-      cluster = H2Clusters[preferred_network_.load()];
+      cluster = H2Clusters[network];
     } else {
       RELEASE_ASSERT(value == "http1", fmt::format("using unsupported protocol version {}", value));
-      cluster = BaseClusters[preferred_network_.load()];
+      cluster = BaseClusters[network];
     }
-    headers.remove(H2UpstreamHeader);
   } else {
-    cluster = BaseClusters[preferred_network_.load()];
+    cluster = BaseClusters[network];
   }
 
-  headers.addReference(ClusterHeader, cluster);
+  if (!h2_header.empty()) {
+    headers.remove(H2UpstreamHeader);
+  }
+
+  headers.addCopy(ClusterHeader, std::string{cluster});
 }
 
 } // namespace Http
