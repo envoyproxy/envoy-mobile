@@ -20,7 +20,7 @@ envoy_mobile_jni_kt_test(
         "SetLoggerTest.kt",
     ],
     native_deps = [
-        "//library/common/jni:java_jni_lib.so",
+        "//library/common/jni:libjava_jni_lib.so",
         "//library/common/jni:java_jni_lib.jnilib",
     ],
     deps = [
