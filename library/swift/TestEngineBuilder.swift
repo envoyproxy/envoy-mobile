@@ -6,7 +6,7 @@ import Foundation
 public final class TestEngineBuilder: EngineBuilder {
   public override init() {
     super.init()
-    self.addStatsDomain("127.0.0.1")
+    self.statsEnabled = false
   }
 
   /// Adds a direct response configuration which will be used when starting the engine.

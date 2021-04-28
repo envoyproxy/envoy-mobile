@@ -9,6 +9,7 @@
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                       statsEnabled:(BOOL)statsEnabled
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
@@ -29,6 +30,7 @@
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
+  self.statsEnabled = statsEnabled;
   self.statsFlushSeconds = statsFlushSeconds;
   self.appVersion = appVersion;
   self.appId = appId;
@@ -75,6 +77,16 @@
                                                            withString:listenerTemplate];
   } else {
     templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"{{ fake_remote_listener }}"
+                                                           withString:@""];
+  }
+
+  if (self.statsEnabled) {
+    templateYAML = [templateYAML
+        stringByReplacingOccurrencesOfString:@"{{ stats_sinks }}"
+                                  withString:[[NSString alloc]
+                                                 initWithUTF8String:stats_sink_template]];
+  } else {
+    templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"{{ stats_sink_template }}"
                                                            withString:@""];
   }
 

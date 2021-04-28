@@ -220,6 +220,7 @@ public class EngineBuilder: NSObject {
       dnsRefreshSeconds: self.dnsRefreshSeconds,
       dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
+      statsEnabled: self.statsEnabled,
       statsFlushSeconds: self.statsFlushSeconds,
       appVersion: self.appVersion,
       appId: self.appId,
@@ -244,6 +245,9 @@ public class EngineBuilder: NSObject {
   }
 
   // MARK: - Internal
+
+  /// Whether stats should be enabled at all. Able to be disabled internally for testing.
+  var statsEnabled = true
 
   /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
   /// A new instance of this engine will be created when `build()` is called.
