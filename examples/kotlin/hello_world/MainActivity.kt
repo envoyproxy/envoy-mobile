@@ -47,7 +47,6 @@ class MainActivity : Activity() {
 
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.DEBUG)
-      .addStatsDomain("0.0.0.0")
       .addPlatformFilter { DemoFilter() }
       .addPlatformFilter { BufferDemoFilter() }
       .addPlatformFilter { AsyncDemoFilter() }

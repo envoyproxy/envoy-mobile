@@ -19,7 +19,6 @@ final class ViewController: UITableViewController {
 
     let engine = EngineBuilder()
       .addLogLevel(.debug)
-      .addStatsDomain("0.0.0.0")
       .addPlatformFilter(factory: DemoFilter.init)
       .addPlatformFilter(factory: BufferDemoFilter.init)
       .addPlatformFilter(factory: AsyncDemoFilter.init)
