@@ -13,12 +13,12 @@ import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.engine.JniLibrary
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
-
+import java.util.concurrent.TimeUnit
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 
 private const val hcmType =
   "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
@@ -147,7 +147,8 @@ class CancelStreamTest {
       .cancel()
 
     engine.terminate()
-//    filterExp?ation.await(10, TimeUnit.SECONDS)
+    filterExpectation.await(10, TimeUnit.SECONDS)
+    runExpectation.await(10, TimeUnit.SECONDS)
     assertThat(filterExpectation.count).isEqualTo(0)
     assertThat(runExpectation.count).isEqualTo(0)
   }
