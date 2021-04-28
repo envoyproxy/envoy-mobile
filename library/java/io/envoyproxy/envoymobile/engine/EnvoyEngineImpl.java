@@ -55,16 +55,17 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String configurationYAML, String logLevel) {
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String configurationYAML,
+                           String logLevel) {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
-              new JvmFilterFactoryContext(filterFactory));
+                                       new JvmFilterFactoryContext(filterFactory));
     }
 
     for (Map.Entry<String, EnvoyStringAccessor> entry :
-            envoyConfiguration.stringAccessors.entrySet()) {
+         envoyConfiguration.stringAccessors.entrySet()) {
       JniLibrary.registerStringAccessor(entry.getKey(),
-              new JvmStringAccessorContext(entry.getValue()));
+                                        new JvmStringAccessorContext(entry.getValue()));
     }
 
     return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
