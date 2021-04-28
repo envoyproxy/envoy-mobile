@@ -4,11 +4,6 @@ import Foundation
 /// which have the added functionality of returning "direct" responses to
 /// requests over a local connection. This can be particularly useful for mocking/testing.
 public final class TestEngineBuilder: EngineBuilder {
-  public override init() {
-    super.init()
-    self.statsEnabled = false
-  }
-
   /// Adds a direct response configuration which will be used when starting the engine.
   /// Doing so will cause Envoy to clear its route cache for each stream in order to allow
   /// filters to mutate headers (which can subsequently affect routing).

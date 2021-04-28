@@ -95,7 +95,8 @@ public class EnvoyConfiguration {
     String nativeFilterConfigChain = nativeFilterConfigBuilder.toString();
 
     String resolvedConfiguration =
-        templateYAML.replace("{{ stats_domain }}", statsDomain)
+        templateYAML.replace("{{ stats_domain }}", statsDomain != null ? statsDomain : "")
+            .replace("{{ stats_sink }}", statsDomain != null ? statsSinkTemplateYAML : "")
             .replace("{{ platform_filter_chain }}", filterConfigChain)
             .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
@@ -114,7 +115,6 @@ public class EnvoyConfiguration {
             .replace("{{ fake_remote_cluster }}", "")
             .replace("{{ fake_remote_listener }}", "")
             .replace("{{ route_reset_filter }}", "")
-            .replace("{{ stats_sinks }}", statsSinkTemplateYAML)
             .replace("{{ native_filter_chain }}", nativeFilterConfigChain);
 
     final Matcher unresolvedKeys = UNRESOLVED_KEY_PATTERN.matcher(resolvedConfiguration);

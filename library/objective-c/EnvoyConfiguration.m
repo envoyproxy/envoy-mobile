@@ -4,12 +4,11 @@
 
 @implementation EnvoyConfiguration
 
-- (instancetype)initWithStatsDomain:(NSString *)statsDomain
+- (instancetype)initWithStatsDomain:(nullable NSString *)statsDomain
               connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
         dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                       statsEnabled:(BOOL)statsEnabled
                   statsFlushSeconds:(UInt32)statsFlushSeconds
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
@@ -30,7 +29,6 @@
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
-  self.statsEnabled = statsEnabled;
   self.statsFlushSeconds = statsFlushSeconds;
   self.appVersion = appVersion;
   self.appId = appId;
@@ -80,19 +78,12 @@
                                                            withString:@""];
   }
 
-  if (self.statsEnabled) {
-    templateYAML = [templateYAML
-        stringByReplacingOccurrencesOfString:@"{{ stats_sinks }}"
-                                  withString:[[NSString alloc]
-                                                 initWithUTF8String:stats_sink_template]];
-  } else {
-    templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"{{ stats_sink_template }}"
-                                                           withString:@""];
-  }
-
   NSDictionary<NSString *, NSString *> *templateKeysToValues = @{
     @"platform_filter_chain" : platformFilterConfigChain,
-    @"stats_domain" : self.statsDomain,
+    @"stats_domain" : self.statsDomain ?: @"",
+    @"stats_sink" : self.statsDomain != nil
+        ? [[NSString alloc] initWithUTF8String:stats_sink_template]
+        : @"",
     @"connect_timeout_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],
     @"dns_refresh_rate_seconds" :

@@ -57,7 +57,7 @@ const char* fake_remote_cluster_template = R"(
               socket_address: { address: 127.0.0.1, port_value: 10101 }
 )";
 
-extern const char* stats_sink_template R"(
+const char* stats_sink_template = R"(
 stats_sinks:
   - name: envoy.metrics_service
     typed_config:
@@ -258,7 +258,7 @@ static_resources:
     transport_socket: *base_transport_socket
     type: LOGICAL_DNS
 stats_flush_interval: {{ stats_flush_interval_seconds }}s
-{{ stats_sinks }}
+{{ stats_sink }}
 stats_config:
   stats_matcher:
     inclusion_list:
