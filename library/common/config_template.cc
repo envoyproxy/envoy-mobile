@@ -237,7 +237,7 @@ stats_config:
             google_re2: {}
             regex: '^vhost.api.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
   use_all_default_tags:
-    true
+    false
 watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
