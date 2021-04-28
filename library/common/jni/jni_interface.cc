@@ -43,6 +43,29 @@ static void jvm_on_engine_running(void* context) {
   env->DeleteGlobalRef(j_context);
 }
 
+static void jvm_on_log(envoy_data data, void* context) {
+  if (context == nullptr) {
+    return;
+  }
+
+  JNIEnv* env = get_env();
+  jstring str = native_data_to_string(env, data);
+
+  jobject j_context = static_cast<jobject>(context);
+  jclass jcls_JvmLoggerContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onLog = env->GetMethodID(jcls_JvmLoggerContext, "log", "(Ljava/lang/String;)V");
+  env->CallVoidMethod(j_context, jmid_onLog, str);
+
+  env->DeleteLocalRef(str);
+  env->DeleteLocalRef(jcls_JvmLoggerContext);
+}
+
+static void jvm_logger_release(void* context) {
+  JNIEnv* env = get_env();
+  jobject j_context = static_cast<jobject>(context);
+  env->DeleteGlobalRef(j_context);
+}
+
 static void jvm_on_exit(void*) {
   jni_log("[Envoy]", "library is exiting");
   // Note that this is not dispatched because the thread that
@@ -52,12 +75,18 @@ static void jvm_on_exit(void*) {
   jvm_detach_thread();
 }
 
-extern "C" JNIEXPORT jlong JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(JNIEnv* env, jclass, jobject context) {
-  jobject retained_context = env->NewGlobalRef(context); // Required to keep context in memory
-  envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit, retained_context};
-  // TODO(junr03): wire up once Android support lands.
+extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
+    JNIEnv* env, jclass, jobject on_start_context, jobject envoy_logger_context) {
+  jobject retained_on_start_context =
+      env->NewGlobalRef(on_start_context); // Required to keep context in memory
+  envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit,
+                                             retained_on_start_context};
+
+  jobject retained_logger_context = env->NewGlobalRef(envoy_logger_context);
   envoy_logger logger = {nullptr, nullptr, nullptr};
+  if (envoy_logger_context != nullptr) {
+    logger = {jvm_on_log, jvm_logger_release, retained_logger_context};
+  }
   return init_engine(native_callbacks, logger);
 }
 
@@ -108,32 +137,40 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jobjectArray tags, jint count) {
-  return record_counter_inc(engine, env->GetStringUTFChars(elements, nullptr),
-                            to_native_tags(env, tags), count);
+  const char* native_elements = env->GetStringUTFChars(elements, nullptr);
+  jint result = record_counter_inc(engine, native_elements, to_native_tags(env, tags), count);
+  env->ReleaseStringUTFChars(elements, native_elements);
+  return result;
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSet(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jobjectArray tags, jint value) {
-  return record_gauge_set(engine, env->GetStringUTFChars(elements, nullptr),
-                          to_native_tags(env, tags), value);
+  const char* native_elements = env->GetStringUTFChars(elements, nullptr);
+  jint result = record_gauge_set(engine, native_elements, to_native_tags(env, tags), value);
+  env->ReleaseStringUTFChars(elements, native_elements);
+  return result;
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeAdd(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jobjectArray tags, jint amount) {
-  return record_gauge_add(engine, env->GetStringUTFChars(elements, nullptr),
-                          to_native_tags(env, tags), amount);
+  const char* native_elements = env->GetStringUTFChars(elements, nullptr);
+  jint result = record_gauge_add(engine, native_elements, to_native_tags(env, tags), amount);
+  env->ReleaseStringUTFChars(elements, native_elements);
+  return result;
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordGaugeSub(
     JNIEnv* env,
     jclass, // class
     jlong engine, jstring elements, jobjectArray tags, jint amount) {
-  return record_gauge_sub(engine, env->GetStringUTFChars(elements, nullptr),
-                          to_native_tags(env, tags), amount);
+  const char* native_elements = env->GetStringUTFChars(elements, nullptr);
+  jint result = record_gauge_sub(engine, native_elements, to_native_tags(env, tags), amount);
+  env->ReleaseStringUTFChars(elements, native_elements);
+  return result;
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -143,8 +180,11 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv*
                                                                          jstring elements,
                                                                          jobjectArray tags,
                                                                          jint durationMs) {
-  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr),
-                                to_native_tags(env, tags), durationMs, MILLISECONDS);
+  const char* native_elements = env->GetStringUTFChars(elements, nullptr);
+  jint result = record_histogram_value(engine, native_elements, to_native_tags(env, tags),
+                                       durationMs, MILLISECONDS);
+  env->ReleaseStringUTFChars(elements, native_elements);
+  return result;
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -154,8 +194,11 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* en
                                                                       jstring elements,
                                                                       jobjectArray tags,
                                                                       jint value) {
-  return record_histogram_value(engine, env->GetStringUTFChars(elements, nullptr),
-                                to_native_tags(env, tags), value, UNSPECIFIED);
+  const char* native_elements = env->GetStringUTFChars(elements, nullptr);
+  jint result = record_histogram_value(engine, native_elements, to_native_tags(env, tags), value,
+                                       UNSPECIFIED);
+  env->ReleaseStringUTFChars(elements, native_elements);
+  return result;
 }
 
 // JvmCallbackContext
