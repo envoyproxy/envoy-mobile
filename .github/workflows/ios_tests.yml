@@ -24,7 +24,8 @@ jobs:
           else
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
-          fi      - name: 'Install dependencies'
+          fi
+      - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Run swift library tests'
         if: steps.check_context.outputs.run_tests == 'true'
