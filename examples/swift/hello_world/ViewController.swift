@@ -27,7 +27,7 @@ final class ViewController: UITableViewController {
       // swiftlint:disable:next line_length
       .addNativeFilter(name: "envoy.filters.http.test_accessor", typedConfig: "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_accessor.TestAccessor\",\"accessor_name\":\"demo-accessor\",\"expected_string\":\"PlatformString\"}")
       .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
-      .addStringAccessor(name: "string_accessor", accessor: { return "DemoStringAccessor" })
+      .addStringAccessor(name: "demo-accessor", accessor: { return "DemoStringAccessor" })
       .build()
     self.streamClient = engine.streamClient()
     self.pulseClient = engine.pulseClient()
