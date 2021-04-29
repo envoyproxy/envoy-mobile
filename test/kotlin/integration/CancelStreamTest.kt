@@ -146,9 +146,11 @@ class CancelStreamTest {
       .sendHeaders(requestHeaders, false)
       .cancel()
 
-    engine.terminate()
     filterExpectation.await(10, TimeUnit.SECONDS)
     runExpectation.await(10, TimeUnit.SECONDS)
+
+    engine.terminate()
+
     assertThat(filterExpectation.count).isEqualTo(0)
     assertThat(runExpectation.count).isEqualTo(0)
   }
