@@ -60,9 +60,9 @@ class EnvoyConfigurationTest {
       emptyList(), emptyMap()
     )
 
-    val resolvedTemplate = envoyConfiguration.resolveTemplate(TEST_CONFIG, STATS_SINK_CONFIG,
-                                                              PLATFORM_FILTER_CONFIG,
-                                                              NATIVE_FILTER_CONFIG)
+    val resolvedTemplate = envoyConfiguration.resolveTemplate(
+      TEST_CONFIG, STATS_SINK_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG
+    )
     assertThat(resolvedTemplate).contains("stats_domain: stats.foo.com")
     assertThat(resolvedTemplate).contains("connect_timeout: 123s")
     assertThat(resolvedTemplate).contains("dns_refresh_rate: 234s")
