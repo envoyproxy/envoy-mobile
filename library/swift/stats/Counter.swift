@@ -6,8 +6,8 @@ public protocol Counter: AnyObject {
   /// Increment the counter by the given count.
   func increment(count: Int)
 
-  /// Gets a counter with tags attached.
-  func attach(tags: [Tag]) -> Counter
+  /// Increment the counter by the given count and along with tags.
+  func increment(tags: Tags, count: Int)
 }
 
 extension Counter {

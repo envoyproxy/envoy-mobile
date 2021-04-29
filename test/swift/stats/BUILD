@@ -13,16 +13,6 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
-    name = "distribution_impl_tests",
-    srcs = [
-        "DistributionImplTests.swift",
-    ],
-    deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
-    ],
-)
-
-envoy_mobile_swift_test(
     name = "element_tests",
     srcs = [
         "ElementTests.swift",
@@ -30,21 +20,8 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
-    name = "gauge_impl_tests",
+    name = "tags_builder_tests",
     srcs = [
-        "GaugeImplTests.swift",
-    ],
-    deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
-    ],
-)
-
-envoy_mobile_swift_test(
-    name = "timer_impl_tests",
-    srcs = [
-        "TimerImplTests.swift",
-    ],
-    deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
+        "TagsBuilderTests.swift",
     ],
 )

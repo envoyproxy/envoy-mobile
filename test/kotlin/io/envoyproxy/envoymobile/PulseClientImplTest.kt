@@ -44,7 +44,7 @@ class PulseClientImplTest {
     val pulseClient = PulseClientImpl(envoyEngine)
     val counter = pulseClient.counter(
       Element("test"), Element("stat"),
-      tags = listOf(Tag("testKey1", "testValue1"), Tag("testKey2", "testValue2"))
+      tags = TagsBuilder().add("testKey1", "testValue1").add("testKey2", "testValue2").build()
     )
     counter.increment(5)
     val countCaptor = ArgumentCaptor.forClass(Int::class.java)
@@ -64,7 +64,7 @@ class PulseClientImplTest {
     val pulseClient = PulseClientImpl(envoyEngine)
     val gauge = pulseClient.gauge(
       Element("test"), Element("stat"),
-      tags = listOf(Tag("testKey1", "testValue1"), Tag("testKey2", "testValue2"))
+      tags = TagsBuilder().add("testKey1", "testValue1").add("testKey2", "testValue2").build()
     )
     gauge.set(5)
     val valueCaptor = ArgumentCaptor.forClass(Int::class.java)
@@ -84,7 +84,7 @@ class PulseClientImplTest {
     val pulseClient = PulseClientImpl(envoyEngine)
     val gauge = pulseClient.gauge(
       Element("test"), Element("stat"),
-      tags = listOf(Tag("testKey1", "testValue1"), Tag("testKey2", "testValue2"))
+      tags = TagsBuilder().add("testKey1", "testValue1").add("testKey2", "testValue2").build()
     )
     gauge.add(5)
     val amountCaptor = ArgumentCaptor.forClass(Int::class.java)
@@ -104,7 +104,7 @@ class PulseClientImplTest {
     val pulseClient = PulseClientImpl(envoyEngine)
     val gauge = pulseClient.gauge(
       Element("test"), Element("stat"),
-      tags = listOf(Tag("testKey1", "testValue1"), Tag("testKey2", "testValue2"))
+      tags = TagsBuilder().add("testKey1", "testValue1").add("testKey2", "testValue2").build()
     )
     gauge.add(5)
     gauge.sub(5)
@@ -125,7 +125,7 @@ class PulseClientImplTest {
     val pulseClient = PulseClientImpl(envoyEngine)
     val timer = pulseClient.timer(
       Element("test"), Element("stat"),
-      tags = listOf(Tag("testKey1", "testValue1"), Tag("testKey2", "testValue2"))
+      tags = TagsBuilder().add("testKey1", "testValue1").add("testKey2", "testValue2").build()
     )
 
     timer.completeWithDuration(5)
@@ -147,7 +147,7 @@ class PulseClientImplTest {
     val pulseClient = PulseClientImpl(envoyEngine)
     val distribution = pulseClient.distribution(
       Element("test"), Element("stat"),
-      tags = listOf(Tag("testKey1", "testValue1"), Tag("testKey2", "testValue2"))
+      tags = TagsBuilder().add("testKey1", "testValue1").add("testKey2", "testValue2").build()
     )
 
     distribution.recordValue(5)

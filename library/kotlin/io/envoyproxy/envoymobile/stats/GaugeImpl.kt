@@ -9,33 +9,35 @@ import java.lang.ref.WeakReference
 internal class GaugeImpl : Gauge {
   var envoyEngine: WeakReference<EnvoyEngine>
   var series: String
-  var tags: Map<String, String>
+  var tags: Tags
 
-  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: List<Tag>) {
+  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: Tags = TagsBuilder().build()) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
     this.series = elements.joinToString(separator = ".") { it.value }
-    this.tags = convert(tags)
-  }
-
-  private constructor(engine: WeakReference<EnvoyEngine>, series: String, tags: List<Tag>) {
-    this.envoyEngine = engine
-    this.series = series
-    this.tags = convert(tags)
+    this.tags = tags
   }
 
   override fun set(value: Int) {
-    envoyEngine.get()?.recordGaugeSet(series, tags, value)
+    envoyEngine.get()?.recordGaugeSet(series, this.tags.allTags(), value)
+  }
+
+  override fun set(tags: Tags, value: Int) {
+    envoyEngine.get()?.recordGaugeSet(series, tags.allTags(), value)
   }
 
   override fun add(amount: Int) {
-    envoyEngine.get()?.recordGaugeAdd(series, tags, amount)
+    envoyEngine.get()?.recordGaugeAdd(series, this.tags.allTags(), amount)
+  }
+
+  override fun add(tags: Tags, amount: Int) {
+    envoyEngine.get()?.recordGaugeAdd(series, tags.allTags(), amount)
   }
 
   override fun sub(amount: Int) {
-    envoyEngine.get()?.recordGaugeSub(series, tags, amount)
+    envoyEngine.get()?.recordGaugeSub(series, this.tags.allTags(), amount)
   }
 
-  override fun attach(tags: List<Tag>): Gauge {
-    return GaugeImpl(envoyEngine, series, tags)
+  override fun sub(tags: Tags, amount: Int) {
+    envoyEngine.get()?.recordGaugeSub(series, tags.allTags(), amount)
   }
 }

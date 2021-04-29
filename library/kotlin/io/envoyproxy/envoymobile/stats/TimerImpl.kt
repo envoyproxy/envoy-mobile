@@ -9,25 +9,19 @@ import java.lang.ref.WeakReference
 internal class TimerImpl : Timer {
   var envoyEngine: WeakReference<EnvoyEngine>
   var series: String
-  var tags: Map<String, String>
+  var tags: Tags
 
-  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: List<Tag>) {
+  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: Tags = TagsBuilder().build()) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
     this.series = elements.joinToString(separator = ".") { it.value }
-    this.tags = convert(tags)
-  }
-
-  private constructor(engine: WeakReference<EnvoyEngine>, series: String, tags: List<Tag>) {
-    this.envoyEngine = engine
-    this.series = series
-    this.tags = convert(tags)
+    this.tags = tags
   }
 
   override fun completeWithDuration(durationMs: Int) {
-    envoyEngine.get()?.recordHistogramDuration(series, tags, durationMs)
+    envoyEngine.get()?.recordHistogramDuration(series, this.tags.allTags(), durationMs)
   }
 
-  override fun attach(tags: List<Tag>): Timer {
-    return TimerImpl(envoyEngine, series, tags)
+  override fun completeWithDuration(tags: Tags, durationMs: Int) {
+    envoyEngine.get()?.recordHistogramDuration(series, tags.allTags(), durationMs)
   }
 }

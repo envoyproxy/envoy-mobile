@@ -21,7 +21,9 @@ final class PulseClientImplTests: XCTestCase {
     let mockEngine = MockEnvoyEngine()
     let pulseClient = PulseClientImpl(engine: mockEngine)
     let counter = pulseClient.counter(
-      elements: ["test", "stat"], tags: [Tag(key: "testKey", value: "testValue")])
+      elements: ["test", "stat"],
+      tags: TagsBuilder().add(name: "testKey", value: "testValue").build()
+    )
     counter.increment()
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualTags, ["testKey": "testValue"])
@@ -72,7 +74,9 @@ final class PulseClientImplTests: XCTestCase {
     let mockEngine = MockEnvoyEngine()
     let pulseClient = PulseClientImpl(engine: mockEngine)
     let gauge = pulseClient.gauge(
-      elements: ["test", "stat"], tags: [Tag(key: "testKey", value: "testValue")])
+      elements: ["test", "stat"],
+      tags: TagsBuilder().add(name: "testKey", value: "testValue").build()
+    )
     gauge.set(value: 5)
     XCTAssertEqual(actualSeries, "test.stat")
     XCTAssertEqual(actualTags, ["testKey": "testValue"])
@@ -129,7 +133,9 @@ final class PulseClientImplTests: XCTestCase {
 
     let pulseClient = PulseClientImpl(engine: mockEngine)
     let timer = pulseClient.timer(
-      elements: ["test", "stat"], tags: [Tag(key: "testKey", value: "testValue")])
+      elements: ["test", "stat"],
+      tags: TagsBuilder().add(name: "testKey", value: "testValue").build()
+    )
     timer.completeWithDuration(durationMs: 5)
 
     XCTAssertEqual(actualSeries, "test.stat")
@@ -151,7 +157,9 @@ final class PulseClientImplTests: XCTestCase {
 
     let pulseClient = PulseClientImpl(engine: mockEngine)
     let distribution = pulseClient.distribution(
-      elements: ["test", "stat"], tags: [Tag(key: "testKey", value: "testValue")])
+      elements: ["test", "stat"],
+      tags: TagsBuilder().add(name: "testKey", value: "testValue").build()
+    )
     distribution.recordValue(value: 5)
 
     XCTAssertEqual(actualSeries, "test.stat")

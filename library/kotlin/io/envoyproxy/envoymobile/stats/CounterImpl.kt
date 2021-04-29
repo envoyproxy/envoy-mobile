@@ -9,26 +9,20 @@ import java.lang.ref.WeakReference
 internal class CounterImpl : Counter {
   var envoyEngine: WeakReference<EnvoyEngine>
   var series: String
-  var tags: Map<String, String>
+  var tags: Tags
 
-  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: List<Tag>) {
+  internal constructor(engine: EnvoyEngine, elements: List<Element>, tags: Tags = TagsBuilder().build()) {
     this.envoyEngine = WeakReference<EnvoyEngine>(engine)
     this.series = elements.joinToString(separator = ".") { it.value }
-    this.tags = convert(tags)
-  }
-
-  private constructor(engine: WeakReference<EnvoyEngine>, series: String, tags: List<Tag>) {
-    this.envoyEngine = engine
-    this.series = series
-    this.tags = convert(tags)
+    this.tags = tags
   }
 
   // TODO: potentially raise error to platform if the operation is not successful.
   override fun increment(count: Int) {
-    envoyEngine.get()?.recordCounterInc(series, tags, count)
+    envoyEngine.get()?.recordCounterInc(series, this.tags.allTags(), count)
   }
 
-  override fun attach(tags: List<Tag>): Counter {
-    return CounterImpl(this.envoyEngine, this.series, tags)
+  override fun increment(tags: Tags, count: Int) {
+    envoyEngine.get()?.recordCounterInc(series, tags.allTags(), count)
   }
 }

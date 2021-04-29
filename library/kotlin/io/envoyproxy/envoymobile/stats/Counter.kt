@@ -3,12 +3,15 @@ package io.envoyproxy.envoymobile
 /**
  * A time series counter.
  */
-interface Counter : Stats {
+interface Counter {
+
   /**
    * Increments the counter by the given count.
    */
   fun increment(count: Int = 1)
 
-  /** Gets a counter with tags attached. */
-  fun attach(tags: List<Tag>): Counter
+  /**
+   * Increments the counter by the given count and tags.
+   */
+  fun increment(tags: Tags = TagsBuilder().build(), count: Int = 1)
 }

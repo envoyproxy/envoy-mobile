@@ -6,6 +6,6 @@ public protocol Distribution: AnyObject {
   /// Record a new value to add to the integer distribution.
   func recordValue(value: Int)
 
-  /// Gets a distribution with tags attached.
-  func attach(tags: [Tag]) -> Distribution
+  /// Record a new value to add to the integer distribution with tags.
+  func recordValue(tags: Tags, value: Int)
 }

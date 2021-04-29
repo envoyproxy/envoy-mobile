@@ -14,31 +14,31 @@ interface PulseClient {
   fun counter(vararg elements: Element): Counter
 
   /**
-   * @return A counter based on the joined elements with list of tags.
+   * @return A counter based on the joined elements with tags.
    */
-  fun counter(vararg elements: Element, tags: List<Tag>): Counter
+  fun counter(vararg elements: Element, tags: Tags): Counter
 
   /** @return A gauge based on the joined elements. */
   fun gauge(vararg elements: Element): Gauge
 
   /**
-   * @return A gauge based on the joined elements with list of tags.
+   * @return A gauge based on the joined elements with tags.
    */
-  fun gauge(vararg elements: Element, tags: List<Tag>): Gauge
+  fun gauge(vararg elements: Element, tags: Tags): Gauge
 
   /** @return A timer based on the joined elements that can track distribution of durations. */
   fun timer(vararg elements: Element): Timer
 
-  /** @return A timer based on the joined elements with list of tags.
+  /** @return A timer based on the joined elements with tags.
    *          It tracks distribution of durations.
    */
-  fun timer(vararg elements: Element, tags: List<Tag>): Timer
+  fun timer(vararg elements: Element, tags: Tags): Timer
 
   /** @return A distribution based on the joined elements tracking the quantile stats of values. */
   fun distribution(vararg elements: Element): Distribution
 
-  /** @return A distribution based on the joined elements with list of tags.
+  /** @return A distribution based on the joined elements with tags.
    *          It tracks the quantile stats of values.
    */
-  fun distribution(vararg elements: Element, tags: List<Tag>): Distribution
+  fun distribution(vararg elements: Element, tags: Tags): Distribution
 }
