@@ -4,7 +4,7 @@
 
 @implementation EnvoyConfiguration
 
-- (instancetype)initWithStatsDomain:(NSString *)statsDomain
+- (instancetype)initWithStatsDomain:(nullable NSString *)statsDomain
               connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
@@ -80,7 +80,10 @@
 
   NSDictionary<NSString *, NSString *> *templateKeysToValues = @{
     @"platform_filter_chain" : platformFilterConfigChain,
-    @"stats_domain" : self.statsDomain,
+    @"stats_domain" : self.statsDomain != nil ? self.statsDomain : @"",
+    @"stats_sink" : self.statsDomain != nil
+        ? [[NSString alloc] initWithUTF8String:stats_sink_template]
+        : @"",
     @"connect_timeout_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],
     @"dns_refresh_rate_seconds" :

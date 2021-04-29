@@ -13,7 +13,7 @@ public class EngineBuilder: NSObject {
     case custom(String)
   }
 
-  private var statsDomain: String = "0.0.0.0"
+  private var statsDomain: String?
   private var connectTimeoutSeconds: UInt32 = 30
   private var dnsRefreshSeconds: UInt32 = 60
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
@@ -45,12 +45,13 @@ public class EngineBuilder: NSObject {
   }
 
   /// Add a stats domain for Envoy to flush stats to.
+  /// Passing nil disables stats emission.
   ///
-  /// - parameter statsDomain: the domain to use.
+  /// - parameter statsDomain: The domain to use for stats.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addStatsDomain(_ statsDomain: String) -> Self {
+  public func addStatsDomain(_ statsDomain: String?) -> Self {
     self.statsDomain = statsDomain
     return self
   }

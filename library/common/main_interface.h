@@ -51,6 +51,11 @@ extern const char* fake_remote_cluster_template;
 extern const char* fake_remote_listener_template;
 
 /**
+ * Template used for setting up the stats sink.
+ */
+extern const char* stats_sink_template;
+
+/**
  * Initialize an underlying HTTP stream.
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.

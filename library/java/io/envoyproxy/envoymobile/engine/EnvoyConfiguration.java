@@ -67,13 +67,15 @@ public class EnvoyConfiguration {
    * configuration.
    *
    * @param templateYAML the template configuration to resolve.
+   * @param statsSinkTemplateYAML helper template to add the stats sink.
    * @param platformFilterTemplateYAML helper template to build platform http filters.
    * @param nativeFilterTemplateYAML helper template to build native http filters.
    * @return String, the resolved template.
    * @throws ConfigurationException, when the template provided is not fully
    *                                 resolved.
    */
-  String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
+  String resolveTemplate(final String templateYAML, final String statsSinkTemplateYAML,
+                         final String platformFilterTemplateYAML,
                          final String nativeFilterTemplateYAML) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -93,7 +95,8 @@ public class EnvoyConfiguration {
     String nativeFilterConfigChain = nativeFilterConfigBuilder.toString();
 
     String resolvedConfiguration =
-        templateYAML.replace("{{ stats_domain }}", statsDomain)
+        templateYAML.replace("{{ stats_domain }}", statsDomain != null ? statsDomain : "")
+            .replace("{{ stats_sink }}", statsDomain != null ? statsSinkTemplateYAML : "")
             .replace("{{ platform_filter_chain }}", filterConfigChain)
             .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))
