@@ -95,7 +95,7 @@ public class EnvoyConfiguration {
     String nativeFilterConfigChain = nativeFilterConfigBuilder.toString();
 
     String resolvedConfiguration =
-        templateYAML.replace("{{ stats_domain }}", statsDomain != null ? statsDomain : "")
+        templateYAML.replace("{{ stats_domain }}", statsDomain != null ? statsDomain : "0.0.0.0")
             .replace("{{ stats_sink }}", statsDomain != null ? statsSinkTemplateYAML : "")
             .replace("{{ platform_filter_chain }}", filterConfigChain)
             .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
