@@ -25,6 +25,9 @@ public interface EnvoyEngine {
   /**
    * Run the Envoy engine with the provided yaml string and log level.
    *
+   * The envoyConfiguration is used to resolve the configurationYAML.
+   *
+   * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param configurationYAML The configuration yaml with which to start Envoy.
    * @param logLevel          The log level to use when starting Envoy.
    * @return A status indicating if the action was successful.
