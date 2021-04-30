@@ -128,7 +128,6 @@ public class CronvoyEngineTest {
           public void onResponseStarted(UrlRequest urlRequest, UrlResponseInfo info) {
             ByteBuffer buffer = buffers.peek();
             if (buffer == null) {
-              System.out.println("Bad buffer");
               throw new IllegalStateException("No response buffer provided.");
             }
             urlRequest.read(buffer);
