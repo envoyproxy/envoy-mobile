@@ -2,9 +2,9 @@ package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
+import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
-
 import java.util.Map;
 
 /* Concrete implementation of the `EnvoyEngine` interface. */
@@ -14,11 +14,18 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   private static final int ENVOY_FAILURE = 1;
 
   private final long engineHandle;
-  private EnvoyOnEngineRunning onEngineRunning = () -> { return null; };
+  private EnvoyOnEngineRunning onEngineRunning;
+  private EnvoyLogger logger;
 
-  public EnvoyEngineImpl() {
+  /**
+   * @param runningCallback Called when the engine finishes its async startup and begins running.
+   * @param logger          The logging interface.
+   */
+  public EnvoyEngineImpl(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger) {
     JniLibrary.load();
-    this.engineHandle = JniLibrary.initEngine();
+    this.onEngineRunning = runningCallback;
+    this.logger = logger;
+    this.engineHandle = JniLibrary.initEngine(onEngineRunning, logger);
   }
 
   /**
@@ -45,16 +52,12 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    *
    * @param configurationYAML The configuration yaml with which to start Envoy.
    * @param logLevel           The log level to use when starting Envoy.
-   * @param onEngineRunning    Called when the engine finishes its async startup and begins running.
    * @return A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(String configurationYAML, String logLevel,
-                           EnvoyOnEngineRunning onEngineRunning) {
-    this.onEngineRunning = onEngineRunning;
+  public int runWithConfig(String configurationYAML, String logLevel) {
     try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel,
-                                  this.onEngineRunning);
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;
@@ -66,13 +69,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    *
    * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param logLevel           The log level to use when starting Envoy.
-   * @param onEngineRunning    Called when the engine finishes its async startup and begins running.
    * @return int A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
-                           EnvoyOnEngineRunning onEngineRunning) {
-
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
                                        new JvmFilterFactoryContext(filterFactory));
@@ -87,7 +87,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     return runWithConfig(envoyConfiguration.resolveTemplate(
                              JniLibrary.templateString(), JniLibrary.platformFilterTemplateString(),
                              JniLibrary.nativeFilterTemplateString()),
-                         logLevel, onEngineRunning);
+                         logLevel);
   }
 
   /**

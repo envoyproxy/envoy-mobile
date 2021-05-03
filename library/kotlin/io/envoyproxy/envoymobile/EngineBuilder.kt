@@ -19,10 +19,10 @@ class Custom(val yaml: String) : BaseConfiguration()
 open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
+  protected var onEngineRunning: (() -> Unit) = {}
+  protected var logger: ((String) -> Unit)? = null
+  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning, logger) }
   private var logLevel = LogLevel.INFO
-  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl() }
-  private var onEngineRunning: (() -> Unit)? = null
-
   private var statsDomain = "0.0.0.0"
   private var connectTimeoutSeconds = 30
   private var dnsRefreshSeconds = 60
@@ -155,6 +155,17 @@ open class EngineBuilder(
   }
 
   /**
+   * Set a closure to be called when the engine's logger logs.
+   * @param closure: The closure to be called.
+   *
+   * @return This builder.
+   */
+  fun setLogger(closure: (String) -> Unit): EngineBuilder {
+    this.logger = closure
+    return this
+  }
+
+  /**
    * Add a string accessor to this Envoy Client.
    *
    * @param name the name of the accessor.
@@ -211,7 +222,7 @@ open class EngineBuilder(
   fun build(): Engine {
     return when (configuration) {
       is Custom -> {
-        EngineImpl(engineType(), configuration.yaml, logLevel, onEngineRunning)
+        EngineImpl(engineType(), configuration.yaml, logLevel)
       }
       is Standard -> {
         EngineImpl(
@@ -222,7 +233,7 @@ open class EngineBuilder(
             statsFlushSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
             platformFilterChain, stringAccessors
           ),
-          logLevel, onEngineRunning
+          logLevel
         )
       }
     }
