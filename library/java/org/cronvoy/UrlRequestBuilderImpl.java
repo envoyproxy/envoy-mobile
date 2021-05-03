@@ -4,6 +4,7 @@ import android.util.Log;
 import android.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Executor;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.ExperimentalUrlRequest;
@@ -31,7 +32,7 @@ final class UrlRequestBuilderImpl extends ExperimentalUrlRequest.Builder {
   // HTTP method (e.g. GET, POST etc).
   private String method;
   // List of request headers, stored as header field name and value pairs.
-  private final ArrayList<Pair<String, String>> requestHeaders = new ArrayList<>();
+  private final List<Pair<String, String>> requestHeaders = new ArrayList<>();
   // Disable the cache for just this request.
   private boolean disableCache;
   // Disable connection migration for just this request.

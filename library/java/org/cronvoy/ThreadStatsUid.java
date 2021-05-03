@@ -28,9 +28,7 @@ public class ThreadStatsUid {
   public static void set(int uid) {
     try {
       sSetThreadStatsUid.invoke(null, uid); // Pass null for "this" as it's a static method.
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException("TrafficStats.setThreadStatsUid failed", e);
-    } catch (InvocationTargetException e) {
+    } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("TrafficStats.setThreadStatsUid failed", e);
     }
   }
@@ -38,9 +36,7 @@ public class ThreadStatsUid {
   public static void clear() {
     try {
       sClearThreadStatsUid.invoke(null); // Pass null for "this" as it's a static method.
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException("TrafficStats.clearThreadStatsUid failed", e);
-    } catch (InvocationTargetException e) {
+    } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException("TrafficStats.clearThreadStatsUid failed", e);
     }
   }

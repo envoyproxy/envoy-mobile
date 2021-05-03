@@ -3,6 +3,7 @@ package org.cronvoy;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import org.chromium.net.BidirectionalStream;
@@ -25,7 +26,7 @@ final class BidirectionalStreamBuilderImpl extends ExperimentalBidirectionalStre
   // Executor on which callbacks will be invoked.
   private final Executor executor;
   // List of request headers, stored as header field nbame and value pairs.
-  private final ArrayList<Map.Entry<String, String>> requestHeaders = new ArrayList<>();
+  private final List<Map.Entry<String, String>> requestHeaders = new ArrayList<>();
 
   // HTTP method for the request. Default to POST.
   private String httpMethod = "POST";
