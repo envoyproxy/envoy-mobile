@@ -42,7 +42,7 @@ final class CronvoyEngine extends CronvoyEngineBase {
   private final CronvoyEngineBuilderImpl builder;
   private final AtomicReference<Runnable> initializationCompleter = new AtomicReference<Runnable>();
 
-  public CronvoyEngine(CronvoyEngineBuilderImpl builder) {
+  CronvoyEngine(CronvoyEngineBuilderImpl builder) {
     this.builder = builder;
     // On android, all background threads (and all threads that are part
     // of background processes) are put in a cgroup that is allowed to
@@ -53,8 +53,6 @@ final class CronvoyEngine extends CronvoyEngineBase {
     final int threadPriority =
         builder.threadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
     this.userAgent = builder.getUserAgent();
-    // EngineBuilder engineBuilder = new EngineBuilder();
-    // engine = engineBuilder.build();
     engine = new AndroidEngineBuilder(builder.getContext())
                  .setOnEngineRunning(() -> {
                    Runnable taskToExecuteWhenInitializationIsCompleted =
@@ -65,20 +63,13 @@ final class CronvoyEngine extends CronvoyEngineBase {
                    return null;
                  })
                  .build();
-    this.executorService = new ThreadPoolExecutor(
-        2, 10, 50, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
-          @Override
-          public Thread newThread(final Runnable r) {
-            return Executors.defaultThreadFactory().newThread(new Runnable() {
-              @Override
-              public void run() {
-                Thread.currentThread().setName("EnvoyCronetEngine");
-                android.os.Process.setThreadPriority(threadPriority);
-                r.run();
-              }
-            });
-          }
-        });
+    this.executorService =
+        new ThreadPoolExecutor(2, 10, 50, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+                               r -> Executors.defaultThreadFactory().newThread(() -> {
+                                 Thread.currentThread().setName("EnvoyCronetEngine");
+                                 android.os.Process.setThreadPriority(threadPriority);
+                                 r.run();
+                               }));
   }
 
   Engine getEnvoyEngine() { return engine; }
@@ -127,7 +118,7 @@ final class CronvoyEngine extends CronvoyEngineBase {
 
   @Override
   public String getVersionString() {
-    // TODO(cleborgne): replace with something similar to original Cronet
+    // TODO(carloseltuerto): replace with something similar to original Cronet
     return "CronetHttpURLConnection/"
         + "ImplVersion.getCronetVersionWithLastChange()";
   }
