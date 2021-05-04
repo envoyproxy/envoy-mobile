@@ -76,6 +76,11 @@ typedef void (*envoy_release_f)(void* context);
  */
 void envoy_noop_release(void* context);
 
+/**
+ * Const version of no-op release callback.
+ */
+void envoy_noop_const_release(const void* context);
+
 #ifdef __cplusplus
 } // release function
 #endif
