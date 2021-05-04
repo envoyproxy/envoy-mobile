@@ -25,7 +25,7 @@ build --define cxxopts=-std=c++17
 build --incompatible_objc_compile_info_migration
 # Unset per_object_debug_info. Causes failures on Android Linux release builds.
 build --features=-per_object_debug_info
-# Suppress deprecated call warnings due to extensive noise from protobuf
+# Suppress deprecated declaration warnings due to extensive transitive noise from protobuf.
 build --copt -Wno-deprecated-declarations
 build --@envoy//bazel:http3=False
 
