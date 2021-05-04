@@ -438,7 +438,8 @@ TEST(EngineTest, Logger) {
                         }
                       } /* log */,
                       [](const void* context) -> void {
-                        auto* test_context = static_cast<engine_test_context*>(const_cast<void*>(context));
+                        auto* test_context =
+                            static_cast<engine_test_context*>(const_cast<void*>(context));
                         test_context->on_logger_release.Notify();
                       } /* release */,
                       &test_context};
