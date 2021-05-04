@@ -51,7 +51,7 @@ final class BidirectionalStreamBuilderImpl extends ExperimentalBidirectionalStre
    *
    * @param url the URL for the generated stream
    * @param callback the {@link BidirectionalStream.Callback} object that gets invoked upon
-   *     different events occuring
+   *     different events occurring
    * @param executor the {@link Executor} on which {@code callback} methods will be invoked
    * @param cronetEngine the {@link CronetEngine} used to create the stream
    */
