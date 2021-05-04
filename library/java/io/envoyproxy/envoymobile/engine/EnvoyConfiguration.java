@@ -74,8 +74,7 @@ public class EnvoyConfiguration {
    * @throws ConfigurationException, when the template provided is not fully
    *                                 resolved.
    */
-  String resolveTemplate(final String templateYAML,
-                         final String statsSinkTemplateYAML,
+  String resolveTemplate(final String templateYAML, final String statsSinkTemplateYAML,
                          final String platformFilterTemplateYAML,
                          final String nativeFilterTemplateYAML) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
