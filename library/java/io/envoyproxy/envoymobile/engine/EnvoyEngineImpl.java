@@ -52,14 +52,14 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    *
    * The envoyConfiguration is used to resolve the configurationYAML.
    *
-   * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param configurationYAML The configuration yaml with which to start Envoy.
+   * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param logLevel          The log level to use when starting Envoy.
    * @return A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String configurationYAML,
-                           String logLevel) {
+  public int runWithTemplate(String configurationYAML, EnvoyConfiguration envoyConfiguration,
+                             String logLevel) {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
                                        new JvmFilterFactoryContext(filterFactory));
