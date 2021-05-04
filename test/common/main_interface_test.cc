@@ -430,14 +430,15 @@ TEST(EngineTest, Logger) {
                                     &test_context /*context*/};
 
   envoy_logger logger{[](envoy_data data, const void* context) -> void {
-                        auto* test_context = static_cast<engine_test_context*>(context);
+                        auto* test_context =
+                            static_cast<engine_test_context*>(const_cast<void*>(context));
                         data.release(data.context);
                         if (!test_context->on_log.HasBeenNotified()) {
                           test_context->on_log.Notify();
                         }
                       } /* log */,
                       [](const void* context) -> void {
-                        auto* test_context = static_cast<engine_test_context*>(context);
+                        auto* test_context = static_cast<engine_test_context*>(const_cast<void*>(context));
                         test_context->on_logger_release.Notify();
                       } /* release */,
                       &test_context};
