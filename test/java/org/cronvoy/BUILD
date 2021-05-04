@@ -5,24 +5,11 @@ licenses(["notice"])  # Apache 2
 
 envoy_package()
 
-EXTERNAL_DEPS = [
-    "@maven//:androidx_annotation_annotation",
-    "@maven//:androidx_test_core",
-    "@maven//:androidx_test_ext_junit",
-    "@maven//:androidx_test_runner",
-    "@maven//:androidx_test_monitor",
-    "@maven//:androidx_test_rules",
-    "@maven//:org_assertj_assertj_core",
-    "@maven//:org_mockito_mockito_core",
-    "@maven//:org_mockito_mockito_inline",
-    "@maven//:org_robolectric_robolectric",
-    "@robolectric//bazel:android-all",
-]
-
 envoy_mobile_android_test(
     name = "cronvoy_test",
     srcs = [
         "CronvoyEngineTest.java",
+        "UrlRequestCallbackTester.java",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",

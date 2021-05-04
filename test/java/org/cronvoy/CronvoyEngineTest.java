@@ -1,6 +1,7 @@
 package org.cronvoy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
@@ -13,7 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.chromium.net.CronetException;
@@ -65,23 +67,24 @@ public class CronvoyEngineTest {
   }
 
   @Test
-  public void simpleGet() throws Exception {
+  public void get_simple() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
-    Request request = new Request().addResponseBuffer(12);
+    RequestScenario requestScenario = new RequestScenario().addResponseBuffers(13);
 
-    Response response = sendRequest(request);
+    Response response = sendRequest(requestScenario);
 
     assertThat(response.getBodyAsString()).isEqualTo("hello, world");
   }
 
   @Test
-  public void simpleGet_noBody() throws Exception {
+  public void get_noBody() throws Exception {
     mockWebServer.enqueue(new MockResponse().setResponseCode(200));
     mockWebServer.start();
-    Request request = new Request().addResponseBuffer(1); // At least one byte must be available.
+    RequestScenario requestScenario =
+        new RequestScenario().addResponseBuffers(1); // At least one byte must be available.
 
-    Response response = sendRequest(request);
+    Response response = sendRequest(requestScenario);
 
     assertThat(response.getResponseCode()).isEqualTo(200);
     assertThat(response.getBodyAsString()).isEmpty();
@@ -89,153 +92,182 @@ public class CronvoyEngineTest {
   }
 
   @Test
-  public void simpleGet_withSmallBuffers() throws Exception {
+  public void get_withSmallBuffers() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
-    Request request = new Request().addResponseBuffer(4).addResponseBuffer(3).addResponseBuffer(5);
+    RequestScenario requestScenario = new RequestScenario()
+                                          .addResponseBuffers(4)
+                                          .addResponseBuffers(3)
+                                          .addResponseBuffers(5)
+                                          .addResponseBuffers(1);
 
-    Response response = sendRequest(request);
+    Response response = sendRequest(requestScenario);
 
     assertThat(response.getBodyAsString()).isEqualTo("hello, world");
   }
 
   @Test
-  public void simpleGet_withNotEnoughBuffer() throws Exception {
+  public void get_withNotEnoughBuffer() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
-    Request request = new Request().addResponseBuffer(11);
+    RequestScenario requestScenario = new RequestScenario().addResponseBuffers(11);
 
-    Response response = sendRequest(request);
-
-    assertThat(response.getCronetException()).hasCauseInstanceOf(IllegalStateException.class);
-    assertThat(response.getCronetException().getCause()).hasMessageContaining("No more buffer");
-    assertThat(response.getBodyAsString()).isEqualTo("hello, worl"); // One byte short.
+    // Message comes from Preconditions.checkHasRemaining()
+    assertThatThrownBy(() -> sendRequest(requestScenario)).hasMessageContaining("already full");
   }
 
-  private Response sendRequest(Request request) {
-    ConcurrentLinkedQueue<ByteBuffer> buffers = new ConcurrentLinkedQueue<>(request.responseBody);
-    LinkedBlockingQueue<Response> blockedResponse = new LinkedBlockingQueue<>(1);
+  @Test
+  public void get_withThrottledBodyResponse() throws Exception {
+    // Note: throttle must be long enough to trickle the chunking.
+    mockWebServer.enqueue(
+        new MockResponse().throttleBody(5, 1, TimeUnit.SECONDS).setBody("hello, world"));
+    mockWebServer.start();
+    RequestScenario requestScenario = new RequestScenario().addResponseBuffers(13);
 
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getCronetException()).isNull();
+    assertThat(response.getBodyAsString()).isEqualTo("hello, world");
+    assertThat(response.getNbResponseChunks()).isEqualTo(3); // 5 bytes, 5 bytes, and 2 bytes
+  }
+
+  private Response sendRequest(RequestScenario requestScenario) {
+    UrlRequestCallbackTester<Response> urlRequestCallbackTester = new UrlRequestCallbackTester<>();
+    UrlRequestCallback testCallback =
+        new UrlRequestCallback(requestScenario.responseBody, urlRequestCallbackTester);
     ExperimentalUrlRequest.Builder builder = cronvoyEngine.newUrlRequestBuilder(
-        mockWebServer.url(request.urlPath).toString(), new UrlRequest.Callback() {
-          @Override
-          public void onRedirectReceived(UrlRequest urlRequest, UrlResponseInfo info,
-                                         String newLocationUrl) {
-            throw new UnsupportedOperationException("Not yet supported");
-          }
+        mockWebServer.url(requestScenario.urlPath).toString(),
+        urlRequestCallbackTester.getWrappedUrlRequestCallback(testCallback),
+        Executors.newSingleThreadExecutor());
 
-          @Override
-          public void onResponseStarted(UrlRequest urlRequest, UrlResponseInfo info) {
-            ByteBuffer buffer = buffers.peek();
-            if (buffer == null) {
-              throw new IllegalStateException("No response buffer provided.");
-            }
-            urlRequest.read(buffer);
-          }
-
-          @Override
-          public void onReadCompleted(UrlRequest urlRequest, UrlResponseInfo info,
-                                      ByteBuffer byteBuffer) {
-            ByteBuffer buffer = buffers.peek();
-            if (buffer == null) {
-              throw new IllegalStateException("Can't happen...");
-            }
-            if (!buffer.hasRemaining()) {
-              buffers.poll();
-              buffer = buffers.peek();
-              if (buffer == null) {
-                throw new IllegalStateException("No more buffer");
-              }
-            }
-            urlRequest.read(buffer);
-          }
-
-          @Override
-          public void onSucceeded(UrlRequest urlRequest, UrlResponseInfo info) {
-            try {
-              blockedResponse.put(new Response(info).setBody(request.responseBody));
-            } catch (InterruptedException e) {
-              throw new RuntimeException(e);
-            }
-          }
-
-          @Override
-          public void onFailed(UrlRequest urlRequest, UrlResponseInfo info, CronetException error) {
-            try {
-              blockedResponse.put(
-                  new Response(info).setCronetException(error).setBody(request.responseBody));
-            } catch (InterruptedException e) {
-              throw new RuntimeException(e);
-            }
-          }
-
-          @Override
-          public void onCanceled(UrlRequest urlRequest, UrlResponseInfo info) {
-            try {
-              blockedResponse.put(new Response(info).setBody(request.responseBody).setCancelled());
-            } catch (InterruptedException e) {
-              throw new RuntimeException(e);
-            }
-          }
-        }, Executors.newSingleThreadExecutor());
-
-    if (request.requestBody != null) {
-      builder.setUploadDataProvider(UploadDataProviders.create(request.requestBody),
+    if (requestScenario.requestBody != null) {
+      builder.setUploadDataProvider(UploadDataProviders.create(requestScenario.requestBody),
                                     Executors.newSingleThreadExecutor());
     }
 
-    for (Map.Entry<String, String> entry : request.header) {
+    for (Map.Entry<String, String> entry : requestScenario.header) {
       builder.addHeader(entry.getKey(), entry.getValue());
     }
+    UrlRequest urlRequest = builder.setHttpMethod(requestScenario.httpMethod).build();
 
-    builder.setHttpMethod(request.httpMethod).build().start();
+    return urlRequestCallbackTester.waitForResponse(urlRequest);
+  }
 
-    try {
-      return blockedResponse.take();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+  private static class UrlRequestCallback extends UrlRequest.Callback {
+    private final UrlRequestCallbackTester<Response> urlRequestCallbackTester;
+    private final List<ByteBuffer> responseBodyBuffers;
+    private final ConcurrentLinkedQueue<ByteBuffer> buffers;
+    private final AtomicInteger nbChunks = new AtomicInteger(0);
+    private final AtomicInteger bufferLastRemaining = new AtomicInteger();
+
+    private UrlRequestCallback(List<ByteBuffer> responseBodyBuffers,
+                               UrlRequestCallbackTester<Response> urlRequestCallbackTester) {
+      this.responseBodyBuffers = responseBodyBuffers;
+      this.urlRequestCallbackTester = urlRequestCallbackTester;
+      buffers = new ConcurrentLinkedQueue<>(responseBodyBuffers);
+    }
+
+    @Override
+    public void onRedirectReceived(UrlRequest urlRequest, UrlResponseInfo info,
+                                   String newLocationUrl) {
+      throw new UnsupportedOperationException("Not yet supported");
+    }
+
+    @Override
+    public void onResponseStarted(UrlRequest urlRequest, UrlResponseInfo info) {
+      ByteBuffer buffer = buffers.peek();
+      if (buffer == null) {
+        throw new IllegalStateException("No response buffer provided.");
+      }
+      bufferLastRemaining.set(buffer.remaining());
+      urlRequest.read(buffer);
+    }
+
+    @Override
+    public void onReadCompleted(UrlRequest urlRequest, UrlResponseInfo info,
+                                ByteBuffer byteBuffer) {
+      ByteBuffer buffer = buffers.peek();
+      if (byteBuffer != buffer) {
+        throw new AssertionError("Can't happen...");
+      }
+      if (buffer.remaining() < bufferLastRemaining.get()) {
+        nbChunks.incrementAndGet();
+      }
+      if (!buffer.hasRemaining()) {
+        buffers.poll();
+        buffer = buffers.peek();
+        if (buffer == null) {
+          buffer = ByteBuffer.allocateDirect(0); // This should crash urlRequest.read(buffer)
+        }
+      }
+      bufferLastRemaining.set(buffer.remaining());
+      urlRequest.read(buffer);
+    }
+
+    @Override
+    public void onSucceeded(UrlRequest urlRequest, UrlResponseInfo info) {
+      ByteBuffer buffer = buffers.peek();
+      if (buffer != null && buffer.remaining() < bufferLastRemaining.get()) {
+        nbChunks.incrementAndGet();
+      }
+      urlRequestCallbackTester.setResponse(
+          new Response(info).setBody(responseBodyBuffers).setNbResponseChunks(nbChunks.get()));
+    }
+
+    @Override
+    public void onFailed(UrlRequest urlRequest, UrlResponseInfo info, CronetException error) {
+      urlRequestCallbackTester.setResponse(
+          new Response(info).setCronetException(error).setBody(responseBodyBuffers));
+    }
+
+    @Override
+    public void onCanceled(UrlRequest urlRequest, UrlResponseInfo info) {
+      urlRequestCallbackTester.setResponse(
+          new Response(info).setBody(responseBodyBuffers).setCancelled());
     }
   }
 
-  private static class Request {
+  private static class RequestScenario {
     String httpMethod = "GET";
     String urlPath = TEST_URL_PATH;
     byte[] requestBody = null;
     final List<Map.Entry<String, String>> header = new ArrayList<>();
     final List<ByteBuffer> responseBody = new ArrayList<>();
 
-    Request setHttpMethod(String httpMethod) {
+    RequestScenario setHttpMethod(String httpMethod) {
       this.httpMethod = httpMethod;
       return this;
     }
 
-    Request setUrlPath(String urlPath) {
+    RequestScenario setUrlPath(String urlPath) {
       this.urlPath = urlPath;
       return this;
     }
 
-    Request setRequestBody(byte[] requestBody) {
+    RequestScenario setRequestBody(byte[] requestBody) {
       this.requestBody = requestBody;
       return this;
     }
 
-    Request addHeader(String key, String value) {
+    RequestScenario addHeader(String key, String value) {
       header.add(new SimpleImmutableEntry<>(key, value));
       return this;
     }
 
-    Request addResponseBuffer(int size) {
-      responseBody.add(ByteBuffer.allocateDirect(size));
+    RequestScenario addResponseBuffers(int... sizes) {
+      for (int size : sizes) {
+        responseBody.add(ByteBuffer.allocateDirect(size));
+      }
       return this;
     }
   }
 
   private static class Response {
-
     private final UrlResponseInfo urlResponseInfo;
     private CronetException cronetException;
     private byte[] body;
     private boolean cancelled = false;
+    private int nbResponseChunks = 0;
 
     Response(UrlResponseInfo urlResponseInfo) { this.urlResponseInfo = urlResponseInfo; }
 
@@ -262,6 +294,11 @@ public class CronvoyEngineTest {
       return this;
     }
 
+    Response setNbResponseChunks(int nbResponseChunks) {
+      this.nbResponseChunks = nbResponseChunks;
+      return this;
+    }
+
     CronetException getCronetException() { return cronetException; }
 
     UrlResponseInfo getUrlResponseInfo() { return urlResponseInfo; }
@@ -271,5 +308,7 @@ public class CronvoyEngineTest {
     int getResponseCode() { return urlResponseInfo.getHttpStatusCode(); }
 
     String getBodyAsString() { return new String(body); }
+
+    int getNbResponseChunks() { return nbResponseChunks; }
   }
 }
