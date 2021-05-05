@@ -44,9 +44,7 @@ def envoy_mobile_objc_test(name, srcs, data = [], deps = []):
         name = test_lib_name,
         srcs = srcs,
         data = data,
-        deps = [
-            "//library/swift:ios_framework_archive",
-        ] + deps,
+        deps = deps,
         visibility = ["//visibility:private"],
     )
 
