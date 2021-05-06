@@ -8,6 +8,7 @@ from envoy_engine import LogLevel
 
 
 class Engine:
+    log_level: LogLevel = LogLevel.Error
     config_template_override: Optional[str] = None
     _handle: Optional[EnvoyEngine] = None
 
@@ -20,7 +21,7 @@ class Engine:
 
         engine_running = Event()
         cls._handle = (
-            engine_builder.add_log_level(LogLevel.Error).set_on_engine_running(
+            engine_builder.add_log_level(cls.log_level).set_on_engine_running(
                 lambda: engine_running.set()
             )
         ).build()
