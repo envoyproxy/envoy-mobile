@@ -11,11 +11,14 @@ import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Test
+import java.nio.ByteBuffer
 
-private const val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+private const val apiListenerType =
+  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 private const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
+private const val assertionResponseBody = "response_body"
 private const val config =
-"""
+  """
     static_resources:
       listeners:
       - name: base_api_listener
@@ -40,7 +43,7 @@ private const val config =
                       direct_response:
                         status: 200
                         body:
-                          inline_string: response_body
+                          inline_string: $assertionResponseBody
             http_filters:
               - name: envoy.filters.http.assertion
                 typed_config:
@@ -63,8 +66,6 @@ class ReceiveDataTest {
 
   @Test
   fun `response headers and response data call onResponseHeaders and onResponseData`() {
-    val headersExpectation = CountDownLatch(1)
-    val dataExpectation = CountDownLatch(1)
 
     val engine = EngineBuilder(Custom(config)).build()
     val client = engine.streamClient()
@@ -78,10 +79,21 @@ class ReceiveDataTest {
       .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
 
+    val headersExpectation = CountDownLatch(1)
+    val dataExpectation = CountDownLatch(1)
+
+    var status: Int? = null
+    var body: ByteBuffer? = null
     client.newStreamPrototype()
-      .setOnResponseHeaders { _, _ -> headersExpectation.countDown() }
-      .setOnResponseData { _, _ -> dataExpectation.countDown() }
-      .setOnError { fail("") }
+      .setOnResponseHeaders { responseHeaders, _ ->
+        status = responseHeaders.httpStatus
+        headersExpectation.countDown()
+      }
+      .setOnResponseData { data, _ ->
+        body = data
+        dataExpectation.countDown()
+      }
+      .setOnError { fail("Unexpected error") }
       .start()
       .sendHeaders(requestHeaders, true)
 
@@ -91,5 +103,8 @@ class ReceiveDataTest {
 
     assertThat(headersExpectation.count).isEqualTo(0)
     assertThat(dataExpectation.count).isEqualTo(0)
+
+    assertThat(status).isEqualTo(200)
+    assertThat(body!!.array().toString(Charsets.UTF_8)).isEqualTo(assertionResponseBody)
   }
 }
