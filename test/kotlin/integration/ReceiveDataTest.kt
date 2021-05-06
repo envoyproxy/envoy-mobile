@@ -1,11 +1,11 @@
 package test.kotlin.integration
 
 import io.envoyproxy.envoymobile.Custom
-import io.envoyproxy.envoymobile.engine.JniLibrary
 import io.envoyproxy.envoymobile.EngineBuilder
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
+import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
