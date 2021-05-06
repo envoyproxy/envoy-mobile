@@ -12,6 +12,7 @@ import io.envoyproxy.envoymobile.RequestHeadersBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
 import io.envoyproxy.envoymobile.ResponseHeaders;
 import io.envoyproxy.envoymobile.ResponseTrailers;
+import io.envoyproxy.envoymobile.LogLevel;
 import io.envoyproxy.envoymobile.Stream;
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
@@ -71,6 +72,7 @@ public class AndroidEnvoyFlowTest {
                      latch.countDown();
                      return null;
                    })
+                   .addLogLevel(LogLevel.DEBUG)
                    .build();
       latch.await(); // Don't launch a request before initialization has completed.
     }
