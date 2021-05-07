@@ -19,7 +19,7 @@ protected:
   const RawHeaderMap& allHeaders() const;
 
 private:
-  bool isRestrictedHeader_(const std::string& name) const;
+  bool isRestrictedHeader(const std::string& name) const;
 
   RawHeaderMap headers_;
 };

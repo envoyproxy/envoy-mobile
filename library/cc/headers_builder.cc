@@ -4,7 +4,7 @@ namespace Envoy {
 namespace Platform {
 
 HeadersBuilder& HeadersBuilder::add(const std::string& name, const std::string& value) {
-  if (this->isRestrictedHeader_(name)) {
+  if (this->isRestrictedHeader(name)) {
     return *this;
   }
   this->headers_[name].push_back(value);
@@ -13,7 +13,7 @@ HeadersBuilder& HeadersBuilder::add(const std::string& name, const std::string& 
 
 HeadersBuilder& HeadersBuilder::set(const std::string& name,
                                     const std::vector<std::string>& values) {
-  if (this->isRestrictedHeader_(name)) {
+  if (this->isRestrictedHeader(name)) {
     return *this;
   }
   this->headers_[name] = values;
@@ -21,7 +21,7 @@ HeadersBuilder& HeadersBuilder::set(const std::string& name,
 }
 
 HeadersBuilder& HeadersBuilder::remove(const std::string& name) {
-  if (this->isRestrictedHeader_(name)) {
+  if (this->isRestrictedHeader(name)) {
     return *this;
   }
   this->headers_.erase(name);
@@ -38,7 +38,7 @@ HeadersBuilder& HeadersBuilder::internalSet(const std::string& name,
 
 const RawHeaderMap& HeadersBuilder::allHeaders() const { return this->headers_; }
 
-bool HeadersBuilder::isRestrictedHeader_(const std::string& name) const {
+bool HeadersBuilder::isRestrictedHeader(const std::string& name) const {
   return name.find(":") == 0 || name.find("x-envoy-mobile") == 0;
 }
 
