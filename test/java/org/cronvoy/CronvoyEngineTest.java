@@ -5,19 +5,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
+import io.envoyproxy.envoymobile.RequestMethod;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.chromium.net.CronetException;
 import org.chromium.net.ExperimentalUrlRequest;
 import org.chromium.net.UploadDataProviders;
@@ -70,11 +74,14 @@ public class CronvoyEngineTest {
   public void get_simple() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
+    // HttpMethod is not set on purpose - should default to "GET" because there is no request body.
     RequestScenario requestScenario = new RequestScenario().addResponseBuffers(13);
 
     Response response = sendRequest(requestScenario);
 
+    assertThat(response.getResponseCode()).isEqualTo(200);
     assertThat(response.getBodyAsString()).isEqualTo("hello, world");
+    assertThat(response.getCronetException()).isNull();
   }
 
   @Test
@@ -95,11 +102,7 @@ public class CronvoyEngineTest {
   public void get_withSmallBuffers() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
-    RequestScenario requestScenario = new RequestScenario()
-                                          .addResponseBuffers(4)
-                                          .addResponseBuffers(3)
-                                          .addResponseBuffers(5)
-                                          .addResponseBuffers(1);
+    RequestScenario requestScenario = new RequestScenario().addResponseBuffers(4, 3, 5, 1);
 
     Response response = sendRequest(requestScenario);
 
@@ -131,10 +134,74 @@ public class CronvoyEngineTest {
     assertThat(response.getNbResponseChunks()).isEqualTo(3); // 5 bytes, 5 bytes, and 2 bytes
   }
 
+  @Test
+  public void get_cancelOnResponseStarted() throws Exception {
+    mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
+    mockWebServer.start();
+    RequestScenario requestScenario = new RequestScenario().cancelOnResponseStarted();
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.isCancelled()).isTrue();
+    assertThat(response.getCronetException()).isNull();
+    assertThat(response.getBodyAsString()).isEmpty();
+  }
+
+  @Test
+  public void post_simple() throws Exception {
+    mockWebServer.setDispatcher(new Dispatcher() {
+      @Override
+      public MockResponse dispatch(RecordedRequest recordedRequest) {
+        assertThat(recordedRequest.getMethod()).isEqualTo(RequestMethod.POST.name());
+        assertThat(recordedRequest.getBody().readUtf8()).isEqualTo("This is the request Body");
+        return new MockResponse().setBody("This is the response Body");
+      }
+    });
+    mockWebServer.start();
+    // HttpMethod is not set on purpose - should default to "POST" because there is a request body.
+    RequestScenario requestScenario = new RequestScenario()
+                                          .addResponseBuffers(30)
+                                          .addHeader("content-type", "text/html")
+                                          .setRequestBody("This is the request Body");
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getResponseCode()).isEqualTo(200);
+    assertThat(response.getBodyAsString()).isEqualTo("This is the response Body");
+    assertThat(response.getCronetException()).isNull();
+  }
+
+  @Test
+  public void post_chunked() throws Exception {
+    // This is getting chunked every 8192 bytes.
+    byte[] requestBody = new byte[20_000];
+    Arrays.fill(requestBody, (byte)'A');
+    mockWebServer.setDispatcher(new Dispatcher() {
+      @Override
+      public MockResponse dispatch(RecordedRequest recordedRequest) {
+        assertThat(recordedRequest.getMethod()).isEqualTo(RequestMethod.POST.name());
+        assertThat(recordedRequest.getBody().readByteArray()).isEqualTo(requestBody);
+        return new MockResponse().setBody("This is the response Body");
+      }
+    });
+    mockWebServer.start();
+    RequestScenario requestScenario = new RequestScenario()
+                                          .addResponseBuffers(30)
+                                          .setHttpMethod(RequestMethod.POST)
+                                          .addHeader("content-type", "text/html")
+                                          .setRequestBody(requestBody);
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getResponseCode()).isEqualTo(200);
+    assertThat(response.getBodyAsString()).isEqualTo("This is the response Body");
+    assertThat(response.getCronetException()).isNull();
+  }
+
   private Response sendRequest(RequestScenario requestScenario) {
     UrlRequestCallbackTester<Response> urlRequestCallbackTester = new UrlRequestCallbackTester<>();
-    UrlRequestCallback testCallback =
-        new UrlRequestCallback(requestScenario.responseBody, urlRequestCallbackTester);
+    UrlRequestCallback testCallback = new UrlRequestCallback(
+        requestScenario.responseBody, urlRequestCallbackTester, requestScenario);
     ExperimentalUrlRequest.Builder builder = cronvoyEngine.newUrlRequestBuilder(
         mockWebServer.url(requestScenario.urlPath).toString(),
         urlRequestCallbackTester.getWrappedUrlRequestCallback(testCallback),
@@ -148,9 +215,11 @@ public class CronvoyEngineTest {
     for (Map.Entry<String, String> entry : requestScenario.header) {
       builder.addHeader(entry.getKey(), entry.getValue());
     }
-    UrlRequest urlRequest = builder.setHttpMethod(requestScenario.httpMethod).build();
+    if (requestScenario.httpMethod != null) {
+      builder.setHttpMethod(requestScenario.httpMethod);
+    }
 
-    return urlRequestCallbackTester.waitForResponse(urlRequest);
+    return urlRequestCallbackTester.waitForResponse(builder.build());
   }
 
   private static class UrlRequestCallback extends UrlRequest.Callback {
@@ -159,11 +228,14 @@ public class CronvoyEngineTest {
     private final ConcurrentLinkedQueue<ByteBuffer> buffers;
     private final AtomicInteger nbChunks = new AtomicInteger(0);
     private final AtomicInteger bufferLastRemaining = new AtomicInteger();
+    private final RequestScenario requestScenario;
 
     private UrlRequestCallback(List<ByteBuffer> responseBodyBuffers,
-                               UrlRequestCallbackTester<Response> urlRequestCallbackTester) {
+                               UrlRequestCallbackTester<Response> urlRequestCallbackTester,
+                               RequestScenario requestScenario) {
       this.responseBodyBuffers = responseBodyBuffers;
       this.urlRequestCallbackTester = urlRequestCallbackTester;
+      this.requestScenario = requestScenario;
       buffers = new ConcurrentLinkedQueue<>(responseBodyBuffers);
     }
 
@@ -175,6 +247,10 @@ public class CronvoyEngineTest {
 
     @Override
     public void onResponseStarted(UrlRequest urlRequest, UrlResponseInfo info) {
+      if (requestScenario.cancelOnResponseStarted) {
+        urlRequest.cancel();
+        return;
+      }
       ByteBuffer buffer = buffers.peek();
       if (buffer == null) {
         throw new IllegalStateException("No response buffer provided.");
@@ -228,14 +304,15 @@ public class CronvoyEngineTest {
   }
 
   private static class RequestScenario {
-    String httpMethod = "GET";
+    String httpMethod = null; // Cronet has defaults - it is optional
     String urlPath = TEST_URL_PATH;
     byte[] requestBody = null;
     final List<Map.Entry<String, String>> header = new ArrayList<>();
     final List<ByteBuffer> responseBody = new ArrayList<>();
+    boolean cancelOnResponseStarted = false;
 
-    RequestScenario setHttpMethod(String httpMethod) {
-      this.httpMethod = httpMethod;
+    RequestScenario setHttpMethod(RequestMethod httpMethod) {
+      this.httpMethod = httpMethod.name();
       return this;
     }
 
@@ -249,6 +326,10 @@ public class CronvoyEngineTest {
       return this;
     }
 
+    RequestScenario setRequestBody(String requestBody) {
+      return setRequestBody(requestBody.getBytes());
+    }
+
     RequestScenario addHeader(String key, String value) {
       header.add(new SimpleImmutableEntry<>(key, value));
       return this;
@@ -258,6 +339,11 @@ public class CronvoyEngineTest {
       for (int size : sizes) {
         responseBody.add(ByteBuffer.allocateDirect(size));
       }
+      return this;
+    }
+
+    RequestScenario cancelOnResponseStarted() {
+      cancelOnResponseStarted = true;
       return this;
     }
   }

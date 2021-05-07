@@ -245,13 +245,17 @@ final class CronvoyUrlRequest extends UrlRequestBase {
 
     @Override
     protected int processSuccessfulRead(ByteBuffer buffer, boolean finalChunk) {
-      int remaining = buffer.remaining();
+      if (buffer.capacity() != buffer.remaining()) {
+        // Unfortunately, Envoy-Mobile does not care about the buffer limit - buffer must get
+        // copied to the correct size.
+        buffer = ByteBuffer.allocateDirect(buffer.remaining()).put(buffer);
+      }
       if (finalChunk) {
         stream.close(buffer);
       } else {
-        stream.sendData(buffer); // TODO(cleborgne) Verify that this is "auto-flushed".
+        stream.sendData(buffer);
       }
-      return remaining;
+      return buffer.capacity() ;
     }
 
     @Override
@@ -366,7 +370,6 @@ final class CronvoyUrlRequest extends UrlRequestBase {
       String headerKey = headerEntry.getKey();
       String value = headerEntry.getValue().get(0);
       if (value == null) {
-        System.out.println("Null receive header " + headerKey);
         continue;
       }
       if (X_ANDROID_SELECTED_TRANSPORT.equalsIgnoreCase(headerKey)) {

@@ -74,12 +74,7 @@ abstract class CronvoyUploadDataSinkBase extends UploadDataSink {
       if (writtenBytes < totalBytes || (totalBytes == -1 && !finalChunk)) {
         buffer.clear();
         sinkState.set(SinkState.AWAITING_READ_RESULT);
-        executeOnUploadExecutor(new Executors.CheckedRunnable() {
-          @Override
-          public void run() throws Exception {
-            uploadProvider.read(CronvoyUploadDataSinkBase.this, buffer);
-          }
-        });
+        executeOnUploadExecutor(() -> uploadProvider.read(CronvoyUploadDataSinkBase.this, buffer));
       } else if (totalBytes == -1) {
         finish();
       } else if (totalBytes == writtenBytes) {
@@ -114,12 +109,7 @@ abstract class CronvoyUploadDataSinkBase extends UploadDataSink {
   private void startRead() {
     executor.execute(getErrorSettingRunnable(() -> {
       sinkState.set(SinkState.AWAITING_READ_RESULT);
-      executeOnUploadExecutor(new Executors.CheckedRunnable() {
-        @Override
-        public void run() throws Exception {
-          uploadProvider.read(CronvoyUploadDataSinkBase.this, buffer);
-        }
-      });
+      executeOnUploadExecutor(() -> uploadProvider.read(CronvoyUploadDataSinkBase.this, buffer));
     }));
   }
 
