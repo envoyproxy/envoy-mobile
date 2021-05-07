@@ -255,7 +255,7 @@ final class CronvoyUrlRequest extends UrlRequestBase {
       } else {
         stream.sendData(buffer);
       }
-      return buffer.capacity() ;
+      return buffer.capacity();
     }
 
     @Override
