@@ -10,7 +10,7 @@ ResponseHeadersBuilder& ResponseHeadersBuilder::addHttpStatus(int status) {
 
 ResponseHeadersSharedPtr ResponseHeadersBuilder::build() const {
   ResponseHeaders* headers = new ResponseHeaders(this->allHeaders());
-  return std::shared_ptr<ResponseHeaders>(headers);
+  return ResponseHeadersSharedPtr(headers);
 }
 
 } // namespace Platform
