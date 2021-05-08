@@ -24,11 +24,14 @@ def kotlin_dependencies():
             # Kotlin
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
             "androidx.recyclerview:recyclerview:1.1.0",
+            "androidx.core:core:1.3.2",
             # Test artifacts
             "org.assertj:assertj-core:3.12.0",
             "junit:junit:4.12",
             "org.mockito:mockito-inline:2.28.2",
             "org.mockito:mockito-core:2.28.2",
+            "com.squareup.okhttp3:okhttp:4.9.1",
+            "com.squareup.okhttp3:mockwebserver:4.9.1",
             # Android test artifacts
             "androidx.test:core:1.3.0",
             "androidx.test:rules:1.3.0",

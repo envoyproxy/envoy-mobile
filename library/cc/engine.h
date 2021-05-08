@@ -15,8 +15,8 @@ using StreamClientSharedPtr = std::shared_ptr<StreamClient>;
 
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
-  StreamClientSharedPtr stream_client();
-  PulseClientSharedPtr pulse_client();
+  StreamClientSharedPtr streamClient();
+  PulseClientSharedPtr pulseClient();
 
   void terminate();
 

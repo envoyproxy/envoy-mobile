@@ -32,7 +32,7 @@ struct StreamCallbacks {
   absl::optional<OnCompleteCallback> on_complete;
   absl::optional<OnCancelCallback> on_cancel;
 
-  envoy_http_callbacks as_envoy_http_callbacks();
+  envoy_http_callbacks asEnvoyHttpCallbacks();
 
   StreamSharedPtr parent;
 };

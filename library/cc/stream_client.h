@@ -18,7 +18,7 @@ class StreamClient {
 public:
   StreamClient(EngineWeakPtr engine);
 
-  StreamPrototypeSharedPtr new_stream_prototype();
+  StreamPrototypeSharedPtr newStreamPrototype();
 
 private:
   EngineWeakPtr engine_;

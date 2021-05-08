@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
 import java.nio.ByteBuffer;
@@ -40,7 +41,6 @@ public class JniLibrary {
   // its
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
-
     private JavaLoader() { System.loadLibrary(envoyLibraryName); }
   }
 
@@ -131,9 +131,11 @@ public class JniLibrary {
   /**
    * Initialize an engine for handling network streams.
    *
+   * @param runningCallback, called when the engine finishes its async startup and begins running.
+   * @param logger,          the logging interface.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine();
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger);
 
   /**
    * External entry point for library.
@@ -141,11 +143,9 @@ public class JniLibrary {
    * @param engine,          the engine to run.
    * @param config,          the configuration blob to run envoy with.
    * @param logLevel,        the logging level to run envoy with.
-   * @param onEngineRunning, called when the engine finishes its async startup and begins running.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel,
-                                        EnvoyOnEngineRunning onEngineRunning);
+  protected static native int runEngine(long engine, String config, String logLevel);
 
   /**
    * Terminate the engine.
@@ -252,6 +252,15 @@ public class JniLibrary {
    * native filter configuration.
    */
   public static native String nativeFilterTemplateString();
+
+  /**
+   * Provides a configuration template that may be used for building native
+   * filter config chains.
+   *
+   * @return A template that may be used as a starting point for constructing
+   * native filter configuration.
+   */
+  public static native String statsSinkTemplateString();
 
   /**
    * Register a string accessor to get strings from the platform.

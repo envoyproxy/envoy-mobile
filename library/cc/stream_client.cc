@@ -5,7 +5,7 @@ namespace Platform {
 
 StreamClient::StreamClient(EngineWeakPtr engine) : engine_(engine) {}
 
-StreamPrototypeSharedPtr StreamClient::new_stream_prototype() {
+StreamPrototypeSharedPtr StreamClient::newStreamPrototype() {
   if (auto engine = this->engine_.lock()) {
     return std::make_shared<StreamPrototype>(engine);
   } else {

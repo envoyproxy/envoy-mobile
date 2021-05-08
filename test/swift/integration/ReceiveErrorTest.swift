@@ -4,13 +4,14 @@ import Foundation
 import XCTest
 
 final class ReceiveErrorTests: XCTestCase {
-  func testReceiveError() throws {
+  func testReceiveError() {
     // swiftlint:disable:next line_length
     let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
     // swiftlint:disable:next line_length
     let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
     // swiftlint:disable:next line_length
     let localErrorFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+    let filterName = "error_validation_filter"
     let config =
     """
     static_resources:
@@ -34,7 +35,7 @@ final class ReceiveErrorTests: XCTestCase {
             - name: envoy.filters.http.platform_bridge
               typed_config:
                 "@type": \(pbfType)
-                platform_filter_name: error_validation_filter
+                platform_filter_name: \(filterName)
             - name: envoy.filters.http.local_error
               typed_config:
                 "@type": \(localErrorFilterType)
@@ -72,10 +73,10 @@ final class ReceiveErrorTests: XCTestCase {
     let runExpectation = self.expectation(description: "Run called with expected error")
     let filterExpectation = self.expectation(description: "Filter called with expected error")
 
-    let client = try EngineBuilder(yaml: config)
+    let client = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
-        name: "error_validation_filter",
+        name: filterName,
         factory: { ErrorValidationFilter(expectation: filterExpectation) }
       )
       .build()
@@ -94,7 +95,7 @@ final class ReceiveErrorTests: XCTestCase {
       .setOnResponseData { _, _ in
         XCTFail("Data received instead of expected error")
       }
-      // The unmatched expecation will cause a local reply which gets translated in Envoy Mobile to
+      // The unmatched expectation will cause a local reply which gets translated in Envoy Mobile to
       // an error.
       .setOnError { error in
          XCTAssertEqual(error.errorCode, 2) // 503/Connection Failure

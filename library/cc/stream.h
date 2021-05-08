@@ -17,8 +17,8 @@ class Stream {
 public:
   Stream(EngineSharedPtr engine_, envoy_stream_t handle);
 
-  Stream& send_headers(RequestHeadersSharedPtr headers, bool end_stream);
-  Stream& send_data(envoy_data data);
+  Stream& sendHeaders(RequestHeadersSharedPtr headers, bool end_stream);
+  Stream& sendData(envoy_data data);
   void close(RequestTrailersSharedPtr trailers);
   void close(envoy_data data);
   void cancel();
