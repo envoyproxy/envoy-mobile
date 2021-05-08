@@ -12,7 +12,7 @@ struct EngineCallbacks {
   // unused:
   // std::function<void()> on_exit;
 
-  envoy_engine_callbacks as_envoy_engine_callbacks();
+  envoy_engine_callbacks asEnvoyEngineCallbacks();
 
   EngineSharedPtr parent;
 };

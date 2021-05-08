@@ -17,7 +17,7 @@ void c_on_exit(void* context) {
 
 } // namespace
 
-envoy_engine_callbacks EngineCallbacks::as_envoy_engine_callbacks() {
+envoy_engine_callbacks EngineCallbacks::asEnvoyEngineCallbacks() {
   return envoy_engine_callbacks{
       .on_engine_running = &c_on_engine_running,
       .on_exit = &c_on_exit,
