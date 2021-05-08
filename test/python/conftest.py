@@ -11,8 +11,6 @@ from test.python.echo_server import EchoServerHandler
 
 @pytest.fixture(scope="session")
 def http_server_url():
-    with open("test/python/test_envoy_config_template.yaml", "r") as f:
-        Engine.config_template_override = f.read()
     Engine.build()
 
     ip = "127.0.0.1"

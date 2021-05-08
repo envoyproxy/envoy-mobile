@@ -15,9 +15,6 @@ py_test(
         "test/python/",
         "-s",
     ],
-    data = [
-        "test_envoy_config_template.yaml",
-    ],
     main = "runner.py",
     python_version = "PY3",
     deps = [
@@ -37,9 +34,6 @@ py_test(
         "integration/**/*.py",
     ]),
     args = ["test/python/"],
-    data = [
-        "test_envoy_config_template.yaml",
-    ],
     main = "runner.py",
     python_version = "PY3",
     deps = [
