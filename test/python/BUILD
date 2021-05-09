@@ -45,9 +45,9 @@ py_test(
 py_test(
     name = "benchmark_envoy_vs_requests",
     srcs = [
-        "runner.py",
         "benchmark/__init__.py",
         "benchmark/envoy_vs_requests.py",
+        "runner.py",
     ],
     args = [
         "test/python/benchmark/envoy_vs_requests.py",
