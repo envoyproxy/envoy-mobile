@@ -1,17 +1,26 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
 import java.nio.ByteBuffer;
 
-class JniLibrary {
+public class JniLibrary {
 
-  private static final String ENVOY_JNI = "envoy_jni";
+  private static String envoyLibraryName = "envoy_jni";
 
   // Internal reference to helper object used to load and initialize the native
   // library.
   // Volatile to ensure double-checked locking works correctly.
   private static volatile JavaLoader loader = null;
+
+  // Load test libraries based on the jvm_flag `envoy_jni_library_name`.
+  // WARNING: This should only be used for testing.
+  public static void loadTestLibrary() {
+    if (System.getProperty("envoy_jni_library_name") != null) {
+      envoyLibraryName = System.getProperty("envoy_jni_library_name");
+    }
+  }
 
   // Load and initialize Envoy and its dependencies, but only once.
   public static void load() {
@@ -32,8 +41,7 @@ class JniLibrary {
   // its
   // dependencies are loaded and initialized at most once.
   private static class JavaLoader {
-
-    private JavaLoader() { System.loadLibrary(ENVOY_JNI); }
+    private JavaLoader() { System.loadLibrary(envoyLibraryName); }
   }
 
   /**
@@ -52,7 +60,7 @@ class JniLibrary {
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
    * @return envoy_stream, with a stream handle and a success status, or a failure
-   *         status.
+   * status.
    */
   protected static native int startStream(long stream, JvmCallbackContext context);
 
@@ -123,9 +131,11 @@ class JniLibrary {
   /**
    * Initialize an engine for handling network streams.
    *
+   * @param runningCallback, called when the engine finishes its async startup and begins running.
+   * @param logger,          the logging interface.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine();
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger);
 
   /**
    * External entry point for library.
@@ -133,11 +143,9 @@ class JniLibrary {
    * @param engine,          the engine to run.
    * @param config,          the configuration blob to run envoy with.
    * @param logLevel,        the logging level to run envoy with.
-   * @param onEngineRunning, called when the engine finishes its async startup and begins running.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel,
-                                        EnvoyOnEngineRunning onEngineRunning);
+  protected static native int runEngine(long engine, String config, String logLevel);
 
   /**
    * Terminate the engine.
@@ -153,7 +161,7 @@ class JniLibrary {
    * Envoy.
    *
    * @return A template that may be used as a starting point for constructing
-   *         configurations.
+   * configurations.
    */
   public static native String templateString();
 
@@ -232,7 +240,7 @@ class JniLibrary {
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         platform filter configuration.
+   * platform filter configuration.
    */
   public static native String platformFilterTemplateString();
 
@@ -241,15 +249,24 @@ class JniLibrary {
    * filter config chains.
    *
    * @return A template that may be used as a starting point for constructing
-   *         native filter configuration.
+   * native filter configuration.
    */
   public static native String nativeFilterTemplateString();
+
+  /**
+   * Provides a configuration template that may be used for building native
+   * filter config chains.
+   *
+   * @return A template that may be used as a starting point for constructing
+   * native filter configuration.
+   */
+  public static native String statsSinkTemplateString();
 
   /**
    * Register a string accessor to get strings from the platform.
    *
    * @param accessorName, unique name identifying this accessor.
-   * @param context,    context containing logic necessary to invoke the accessor.
+   * @param context,      context containing logic necessary to invoke the accessor.
    * @return int, the resulting status of the operation.
    */
   protected static native int registerStringAccessor(String accessorName,

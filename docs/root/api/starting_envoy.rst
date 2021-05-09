@@ -111,6 +111,8 @@ Note that only stats specified in the configuration's
 :tree:`inclusion list <83908423d46a37574e9a35627df1f3dd9634e5ec/library/common/config_template.cc#L146-L167>`
 will be emitted.
 
+Passing ``nil``/``null`` disables stats emission, and this is the default value.
+
 **Example**::
 
   // Kotlin
@@ -218,6 +220,20 @@ Specify a closure to be called when Envoy's engine emits a log message.
   builder.setLogger { msg in
     NSLog("Envoy log: \(msg)")
   }
+
+~~~~~~~~~~~~~~~~~~~~~
+``addStringAccessor``
+~~~~~~~~~~~~~~~~~~~~~
+
+Specify a closure to be called by Envoy to access arbitrary strings from Platform runtime.
+
+**Example**::
+
+  // Kotlin
+  builder.addStringAccessor("demo-accessor", { "PlatformString" })
+
+  // Swift
+  builder.addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
 
 ----------------------
 Advanced configuration

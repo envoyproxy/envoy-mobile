@@ -4,11 +4,12 @@ import Foundation
 import XCTest
 
 final class ReceiveDataTests: XCTestCase {
-  func testReceiveData() throws {
+  func testReceiveData() {
     // swiftlint:disable:next line_length
     let apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
     // swiftlint:disable:next line_length
     let assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
+    let assertionResponseBody = "response_body"
     let config =
     """
     static_resources:
@@ -35,7 +36,7 @@ final class ReceiveDataTests: XCTestCase {
                       direct_response:
                         status: 200
                         body:
-                          inline_string: response_body
+                          inline_string: \(assertionResponseBody)
             http_filters:
               - name: envoy.filters.http.assertion
                 typed_config:
@@ -49,7 +50,7 @@ final class ReceiveDataTests: XCTestCase {
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
-    let client = try EngineBuilder(yaml: config)
+    let client = EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .addPlatformFilter(factory: DemoFilter.init)
       .build()
@@ -71,7 +72,7 @@ final class ReceiveDataTests: XCTestCase {
       }
       .setOnResponseData { data, _ in
         let responseBody = String(data: data, encoding: .utf8)
-        XCTAssertEqual("response_body", responseBody)
+        XCTAssertEqual(assertionResponseBody, responseBody)
         dataExpectation.fulfill()
       }
       .setOnError { _ in

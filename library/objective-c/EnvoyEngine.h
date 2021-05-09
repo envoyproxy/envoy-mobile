@@ -9,6 +9,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// A set of headers that may be passed to/from an Envoy stream.
 typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
+typedef NSDictionary<NSString *, NSString *> EnvoyTags;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -251,7 +253,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Typed configuration that may be used for starting Envoy.
 @interface EnvoyConfiguration : NSObject
 
-@property (nonatomic, strong) NSString *statsDomain;
+@property (nonatomic, strong, nullable) NSString *statsDomain;
 @property (nonatomic, assign) UInt32 connectTimeoutSeconds;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
@@ -260,6 +262,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
 @property (nonatomic, strong) NSString *virtualClusters;
+@property (nonatomic, strong) NSString *directResponseMatchers;
+@property (nonatomic, strong) NSString *directResponses;
 @property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
 @property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
 @property (nonatomic, strong) NSDictionary<NSString *, EnvoyStringAccessor *> *stringAccessors;
@@ -267,7 +271,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /**
  Create a new instance of the configuration.
  */
-- (instancetype)initWithStatsDomain:(NSString *)statsDomain
+- (instancetype)initWithStatsDomain:(nullable NSString *)statsDomain
               connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
                   dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
        dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
@@ -276,6 +280,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                          appVersion:(NSString *)appVersion
                               appId:(NSString *)appId
                     virtualClusters:(NSString *)virtualClusters
+             directResponseMatchers:(NSString *)directResponseMatchers
+                    directResponses:(NSString *)directResponses
                   nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
                 platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                     stringAccessors:
@@ -302,23 +308,21 @@ extern const int kEnvoyFailure;
 
 /**
  Create a new instance of the engine.
- */
-- (instancetype)init;
 
+ @param onEngineRunning Closure called when the engine finishes its async startup and begins
+ running.
+ @param logger Logging interface.
+ */
+- (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
+                                 logger:(nullable void (^)(NSString *))logger;
 /**
  Run the Envoy engine with the provided configuration and log level.
 
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onEngineRunning Closure called when the engine finishes its async startup and begins
- running.
- @param logger Logging interface.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfig:(EnvoyConfiguration *)config
-            logLevel:(NSString *)logLevel
-     onEngineRunning:(nullable void (^)())onEngineRunning
-              logger:(nullable void (^)(NSString *))logger;
+- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.
@@ -326,17 +330,11 @@ extern const int kEnvoyFailure;
  @param yaml The configuration template with which to start Envoy.
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
- @param onEngineRunning Closure called when the engine finishes its async startup and begins
- running.
- @param logger Logging interface.
  @return A status indicating if the action was successful.
  */
 - (int)runWithTemplate:(NSString *)yaml
                 config:(EnvoyConfiguration *)config
-              logLevel:(NSString *)logLevel
-       onEngineRunning:(nullable void (^)())onEngineRunning
-                logger:(nullable void (^)(NSString *))logger;
-;
+              logLevel:(NSString *)logLevel;
 
 /**
  Opens a new HTTP stream attached to this engine.
@@ -352,7 +350,7 @@ extern const int kEnvoyFailure;
  @param count Amount to add to the counter.
  @return A status indicating if the action was successful.
  */
-- (int)recordCounterInc:(NSString *)elements count:(NSUInteger)count;
+- (int)recordCounterInc:(NSString *)elements tags:(EnvoyTags *)tags count:(NSUInteger)count;
 
 /**
  Set a gauge of a given string of elements with the given value.
@@ -361,7 +359,7 @@ extern const int kEnvoyFailure;
  @param value Value to set to the gauge.
  @return A status indicating if the action was successful.
  */
-- (int)recordGaugeSet:(NSString *)elements value:(NSUInteger)value;
+- (int)recordGaugeSet:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
 /**
  Add the gauge with the given string of elements and by the given amount.
@@ -370,7 +368,7 @@ extern const int kEnvoyFailure;
  @param amount Amount to add to the gauge.
  @return A status indicating if the action was successful.
  */
-- (int)recordGaugeAdd:(NSString *)elements amount:(NSUInteger)amount;
+- (int)recordGaugeAdd:(NSString *)elements tags:(EnvoyTags *)tags amount:(NSUInteger)amount;
 
 /**
  Subtract from the gauge with the given string of elements and by the given amount.
@@ -379,7 +377,7 @@ extern const int kEnvoyFailure;
  @param amount Amount to subtract from the gauge.
  @return A status indicating if the action was successful.
  */
-- (int)recordGaugeSub:(NSString *)elements amount:(NSUInteger)amount;
+- (int)recordGaugeSub:(NSString *)elements tags:(EnvoyTags *)tags amount:(NSUInteger)amount;
 
 /**
  Add another recorded duration to the timer histogram with the given string of elements.
@@ -387,7 +385,9 @@ extern const int kEnvoyFailure;
  @param durationMs The duration in milliseconds to record in the histogram distribution
  @return A status indicating if the action was successful.
  */
-- (int)recordHistogramDuration:(NSString *)elements durationMs:(NSUInteger)durationMs;
+- (int)recordHistogramDuration:(NSString *)elements
+                          tags:(EnvoyTags *)tags
+                    durationMs:(NSUInteger)durationMs;
 
 /**
  Add another recorded value to the histogram with the given string of elements.
@@ -395,7 +395,7 @@ extern const int kEnvoyFailure;
  @param value Amount to record as a new value for the histogram distribution.
  @return A status indicating if the action was successful.
  */
-- (int)recordHistogramValue:(NSString *)elements value:(NSUInteger)value;
+- (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
 @end
 

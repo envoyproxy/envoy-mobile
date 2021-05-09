@@ -4,8 +4,8 @@ namespace Envoy {
 namespace Platform {
 
 ResponseTrailersSharedPtr ResponseTrailersBuilder::build() const {
-  ResponseTrailers* trailers = new ResponseTrailers(this->all_headers());
-  return std::shared_ptr<ResponseTrailers>(trailers);
+  ResponseTrailers* trailers = new ResponseTrailers(this->allHeaders());
+  return ResponseTrailersSharedPtr(trailers);
 }
 
 } // namespace Platform
