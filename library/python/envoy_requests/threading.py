@@ -1,4 +1,5 @@
 import functools
+from queue import Empty as QueueEmpty
 from queue import Queue
 from threading import Event
 from threading import Lock
@@ -87,7 +88,10 @@ class ThreadingExecutor(Executor):
 
     def _process_callbacks(self):
         while True:
-            fn, args, kwargs = self.queue.get(block=True, timeout=0.25)
+            try:
+                fn, args, kwargs = self.queue.get(block=True, timeout=0.25)
+            except QueueEmpty:
+                continue
             if fn is None and args is None and kwargs is None:
                 break
             with self.lock:
