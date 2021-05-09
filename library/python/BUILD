@@ -58,7 +58,13 @@ py_library(
 py_wheel(
     name = "envoy_requests_whl",
     abi = python_abi(),
+    # TODO(crockeo): swap this out for better bus-factor contact info
+    author = "Cerek Hillen",
+    author_email = "chillen@lyft.com",
+    description_file = ":README.rst",
     distribution = "envoy_requests",
+    homepage = "https://github.com/envoyproxy/envoy-mobile",
+    license = "Apache-2.0",
     platform = select({
         # TODO: build these on target platforms / architectures to verify
         # that this select statement is correct
