@@ -61,7 +61,7 @@ class SendHeadersTest {
   }
 
   @Test
-  fun `response headers and response data call onResponseHeaders and onResponseData`() {
+  fun `successful sending of request headers`() {
     val headersExpectation = CountDownLatch(1)
 
     val engine = EngineBuilder(Custom(config)).build()
