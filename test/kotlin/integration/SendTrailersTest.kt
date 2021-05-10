@@ -1,9 +1,23 @@
 package test.kotlin.integration
 
-class SendTrailersTest {
-private val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
-private val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
-private val config =
+import io.envoyproxy.envoymobile.Custom
+import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.RequestHeadersBuilder
+import io.envoyproxy.envoymobile.RequestMethod
+import io.envoyproxy.envoymobile.RequestTrailersBuilder
+import io.envoyproxy.envoymobile.UpstreamHttpProtocol
+import java.nio.ByteBuffer
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
+
+
+private const val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+private const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
+private const val matcherTrailerName = "test-trailer"
+private const val matcherTrailerValue = "test.code"
+private const val config =
   """
     static_resources:
       listeners:
@@ -15,7 +29,7 @@ private val config =
             port_value: 10000
         api_listener:
           api_listener:
-            "@type": \(apiListenerType)
+            "@type": $apiListenerType
             stat_prefix: hcm
             route_config:
               name: api_router
@@ -31,12 +45,12 @@ private val config =
             http_filters:
               - name: envoy.filters.http.assertion
                 typed_config:
-                  "@type": \(assertionFilterType)
+                  "@type": $assertionFilterType
                   match_config:
                     http_request_trailers_match:
                       headers:
-                        - name: "test-trailer"
-                          exact_match: test.code
+                        - name: $matcherTrailerName
+                          exact_match: $matcherTrailerValue
               - name: envoy.filters.http.buffer
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer
@@ -45,4 +59,49 @@ private val config =
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
+class SendTrailersTest {
+  fun `successful sending of trailers`() {
+
+    val expectation = CountDownLatch(1)
+    val engine = EngineBuilder(Custom(config))
+      .setOnEngineRunning { }
+      .build()
+
+    val client = engine.streamClient()
+
+    val requestHeaders = RequestHeadersBuilder(
+      method = RequestMethod.GET,
+      scheme = "https",
+      authority = "example.com",
+      path = "/test"
+    )
+      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
+      .build()
+
+    val body = ByteBuffer.wrap("match_me".toByteArray(Charsets.UTF_8))
+    val requestTrailers = RequestTrailersBuilder()
+      .add(matcherTrailerName, matcherTrailerValue)
+      .build()
+
+    var responseStatus: Int? = null
+    client.newStreamPrototype()
+      .setOnResponseHeaders { headers, _ ->
+        responseStatus = headers.httpStatus
+        expectation.countDown()
+      }
+      .setOnError {
+        fail("Unexpected error")
+      }
+      .start()
+      .sendHeaders(requestHeaders, false)
+      .sendData(body)
+      .close(requestTrailers)
+
+    expectation.await(10, TimeUnit.SECONDS)
+
+    engine.terminate()
+
+    assertThat(expectation.count).isEqualTo(0)
+    assertThat(responseStatus).isEqualTo(200)
+  }
 }
