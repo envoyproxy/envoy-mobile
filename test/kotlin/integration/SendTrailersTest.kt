@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.RequestTrailersBuilder
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
+import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -60,6 +61,10 @@ private const val config =
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
 class SendTrailersTest {
+
+  init {
+    JniLibrary.loadTestLibrary()
+  }
 
   @Test
   fun `successful sending of trailers`() {
