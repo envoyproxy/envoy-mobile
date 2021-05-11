@@ -1,6 +1,6 @@
 load("@pip//:requirements.bzl", "requirement")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
-load("@python_abi//:abi.bzl", "python_abi")
+load("@python_abi//:abi.bzl", "abi_tag", "python_tag")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 
@@ -57,7 +57,7 @@ py_library(
 
 py_wheel(
     name = "envoy_requests_whl",
-    abi = python_abi(),
+    abi = abi_tag(),
     # TODO(crockeo): swap this out for better bus-factor contact info
     author = "Cerek Hillen",
     author_email = "chillen@lyft.com",
@@ -74,7 +74,7 @@ py_wheel(
         "//bazel:linux_aarch64": "manylinux2010_aarch64",
         "//bazel:linux_x86_64": "manylinux2010_x86_64",
     }),
-    python_tag = python_abi(),
+    python_tag = python_tag(),
     strip_path_prefixes = ["library/python"],
     version = "0.0.1a0",
     deps = [
