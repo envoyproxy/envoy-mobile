@@ -48,10 +48,9 @@ public class TagsBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func putAll(tags: [String: String]) -> Self {
-    self.tags = self.tags.merging(tags, uniquingKeysWith: { (_, last) in last })
+    self.tags = self.tags.merging(tags, uniquingKeysWith: { _, last in last })
     return self
   }
-
 
   /// Build the tags using the current builder.
   ///
