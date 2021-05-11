@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
+import org.junit.Test
 
 private const val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 private const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
@@ -59,6 +60,8 @@ private const val config =
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
     """
 class SendTrailersTest {
+
+  @Test
   fun `successful sending of trailers`() {
 
     val expectation = CountDownLatch(1)
