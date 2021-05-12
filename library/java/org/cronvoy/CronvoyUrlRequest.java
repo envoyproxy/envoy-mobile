@@ -27,6 +27,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
 import org.chromium.net.UploadDataProvider;
@@ -47,7 +48,6 @@ final class CronvoyUrlRequest extends UrlRequestBase {
 
   private final AsyncUrlRequestCallback callbackAsync;
   private final PausableSerializingExecutor cronvoyExecutor;
-  private final PausableSerializingExecutor envoyCallbackExecutor;
   private final String mUserAgent;
   private final Map<String, String> requestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private final List<String> urlChain = new ArrayList<>();
@@ -72,9 +72,11 @@ final class CronvoyUrlRequest extends UrlRequestBase {
   private String initialMethod;
   private VersionSafeCallbacks.UploadDataProviderWrapper uploadDataProvider;
   private Executor uploadExecutor;
-  private Stream stream;
   private boolean endStream;
   private final AtomicBoolean cancelCalled = new AtomicBoolean();
+  private final AtomicReference<ByteBuffer> mostRecentBufferRead = new AtomicReference<>();
+  private final AtomicReference<ByteBuffer> userCurrentReadBuffer = new AtomicReference<>();
+  private final Supplier<PausableSerializingExecutor> envoyCallbackExecutorSupplier;
 
   /**
    * Holds a subset of StatusValues - {@link State#STARTED} can represent {@link
@@ -89,11 +91,11 @@ final class CronvoyUrlRequest extends UrlRequestBase {
   @StatusValues private volatile int additionalStatusDetails = Status.INVALID;
 
   /* These change with redirects. */
+  private Stream stream;
+  private PausableSerializingExecutor envoyCallbackExecutor;
   private String currentUrl;
   private UrlResponseInfoImpl urlResponseInfo;
   private String pendingRedirectUrl;
-  private final AtomicReference<ByteBuffer> mostRecentBufferRead = new AtomicReference<>();
-  private final AtomicReference<ByteBuffer> userCurrentReadBuffer = new AtomicReference<>();
   private OutputStreamDataSink outputStreamDataSink;
 
   /**
@@ -124,8 +126,9 @@ final class CronvoyUrlRequest extends UrlRequestBase {
         trafficStatsTagSet ? trafficStatsTag : TrafficStats.getThreadStatsTag();
     this.cronvoyExecutor = createSerializedExecutor(executor, trafficStatsUidSet, trafficStatsUid,
                                                     trafficStatsTagToUse);
-    this.envoyCallbackExecutor = createSerializedExecutor(executor, trafficStatsUidSet,
-                                                          trafficStatsUid, trafficStatsTagToUse);
+    this.envoyCallbackExecutorSupplier = ()
+        -> createSerializedExecutor(executor, trafficStatsUidSet, trafficStatsUid,
+                                    trafficStatsTagToUse);
     this.currentUrl = url;
     this.mUserAgent = userAgent;
   }
@@ -389,9 +392,15 @@ final class CronvoyUrlRequest extends UrlRequestBase {
         new ArrayList<>(urlChain), responseCode,
         "HTTP " + responseHeaders.getHttpStatus(), // UrlConnection.getResponseMessage(),
         Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
-    if (responseCode >= 300 && responseCode < 400 && lastCallback) {
+    if (responseCode >= 300 && responseCode < 400) {
       List<String> locationFields = urlResponseInfo.getAllHeaders().get("location");
       if (locationFields != null) {
+        if (!lastCallback) {
+          stream.cancel(); // This is not technically needed.
+          // This deals with unwanted "setOnResponseData" callbacks. By API contract, response body
+          // on a redirect is to be silently ignored.
+          envoyCallbackExecutor.shutdown();
+        }
         fireRedirectReceived(locationFields.get(0));
         return;
       }
@@ -427,35 +436,27 @@ final class CronvoyUrlRequest extends UrlRequestBase {
   }
 
   private void fireOpenConnection() {
+    // The envoyCallbackExecutor is tied to the life cycle of the stream. If the stream is not
+    // useful anymore, so is the envoyCallbackExecutor. Only the stream can schedule tasks through
+    // that executor - this is done with the "callbacks" below.
+    envoyCallbackExecutor = envoyCallbackExecutorSupplier.get(); // get() creates a new instance.
     cronvoyExecutor.execute(errorSetting(() -> {
       // If we're cancelled, then our old connection will be disconnected for us and
       // we shouldn't open a new one.
       if (state.get() == State.CANCELLED) {
         return;
       }
-      final URL url = new URL(currentUrl);
       if (initialMethod == null) {
-        initialMethod = "GET";
+        initialMethod = RequestMethod.GET.name();
       }
-      RequestMethod requestMethod = RequestMethod.valueOf(initialMethod);
-      RequestHeadersBuilder requestHeadersBuilder = new RequestHeadersBuilder(
-          requestMethod, url.getProtocol(), url.getAuthority(), url.getPath());
-      if (!requestHeaders.containsKey(USER_AGENT)) {
-        requestHeaders.put(USER_AGENT, mUserAgent);
-      }
-      for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
-        if (entry.getValue() == null) {
-          continue;
-        }
-        requestHeadersBuilder.add(entry.getKey(), entry.getValue());
-      }
-      UpstreamHttpProtocol protocol =
-          cronvoyEngine.getBuilder().http2Enabled() && url.getProtocol().equalsIgnoreCase("https")
-              ? UpstreamHttpProtocol.HTTP2
-              : UpstreamHttpProtocol.HTTP1;
-      RequestHeaders requestHeaders =
-          requestHeadersBuilder.addUpstreamHttpProtocol(protocol).build();
+      boolean isHttp2Enabled = cronvoyEngine.getBuilder().http2Enabled();
+      URL url = new URL(currentUrl);
+      RequestHeaders envoyRequestHeaders =
+          buildEnvoyRequestHeaders(url, isHttp2Enabled, initialMethod, requestHeaders, mUserAgent);
 
+      // Note: none of these "callbacks" are getting executed immediately. The envoyCallbackExecutor
+      // is in reality a task scheduler. The execution of these tasks are serialized - concurrency
+      // issues should not be a concern here.
       stream = cronvoyEngine.getEnvoyEngine()
                    .streamClient()
                    .newStreamPrototype()
@@ -486,12 +487,37 @@ final class CronvoyUrlRequest extends UrlRequestBase {
                      return null;
                    })
                    .start(envoyCallbackExecutor)
-                   .sendHeaders(requestHeaders, uploadDataProvider == null);
+                   .sendHeaders(envoyRequestHeaders, uploadDataProvider == null);
       if (uploadDataProvider != null) {
         outputStreamDataSink = new OutputStreamDataSink();
+        // If this is not the first time, then UploadDataProvider.rewind() will be invoked first.
         outputStreamDataSink.start(/* firstTime= */ urlChain.size() == 1);
       }
     }));
+  }
+
+  private static RequestHeaders buildEnvoyRequestHeaders(URL url, boolean isHttp2Enabled,
+                                                         String initialMethod,
+                                                         Map<String, String> requestHeaders,
+                                                         String mUserAgent) {
+    RequestMethod requestMethod = RequestMethod.valueOf(initialMethod);
+    RequestHeadersBuilder requestHeadersBuilder = new RequestHeadersBuilder(
+        requestMethod, url.getProtocol(), url.getAuthority(), url.getPath());
+    if (!requestHeaders.containsKey(USER_AGENT)) {
+      requestHeaders.put(USER_AGENT, mUserAgent);
+    }
+    for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
+      if (entry.getValue() == null) {
+        continue;
+      }
+      requestHeadersBuilder.add(entry.getKey(), entry.getValue());
+    }
+    UpstreamHttpProtocol protocol = isHttp2Enabled && url.getProtocol().equalsIgnoreCase("https")
+                                        ? UpstreamHttpProtocol.HTTP2
+                                        : UpstreamHttpProtocol.HTTP1;
+    RequestHeaders envoyRequestHeaders =
+        requestHeadersBuilder.addUpstreamHttpProtocol(protocol).build();
+    return envoyRequestHeaders;
   }
 
   private Runnable errorSetting(final CheckedRunnable delegate) {
@@ -670,9 +696,12 @@ final class CronvoyUrlRequest extends UrlRequestBase {
         if (state.compareAndSet(
                 /* expect= */ State.READING,
                 /* update= */ State.AWAITING_READ)) {
-          callback.onReadCompleted(CronvoyUrlRequest.this, info, byteBuffer);
-          if (!mostRecentBufferRead.get().hasRemaining()) {
+          boolean envoyCallbackExecutorCanResume = !mostRecentBufferRead.get().hasRemaining();
+          if (envoyCallbackExecutorCanResume) {
             mostRecentBufferRead.set(null);
+          }
+          callback.onReadCompleted(CronvoyUrlRequest.this, info, byteBuffer);
+          if (envoyCallbackExecutorCanResume) {
             envoyCallbackExecutor.resume();
           }
         }
@@ -727,12 +756,12 @@ final class CronvoyUrlRequest extends UrlRequestBase {
       @Override
       public void run() {
         Runnable task;
-        synchronized (mTaskQueue) {
-          if (mRunning || mPaused) {
+        synchronized (taskQueue) {
+          if (running || paused) {
             return;
           }
-          task = mTaskQueue.pollFirst();
-          mRunning = task != null;
+          task = taskQueue.pollFirst();
+          running = task != null;
         }
         while (task != null) {
           boolean threw = true;
@@ -740,22 +769,22 @@ final class CronvoyUrlRequest extends UrlRequestBase {
             task.run();
             threw = false;
           } finally {
-            synchronized (mTaskQueue) {
+            synchronized (taskQueue) {
               if (threw) {
                 // If task.run() threw, this method will abort without looping
                 // again, so repost to keep running tasks.
-                mRunning = false;
+                running = false;
                 try {
                   underlyingExecutor.execute(runTasks);
                 } catch (RejectedExecutionException e) {
                   // Give up if a task run at shutdown throws.
                 }
-              } else if (mPaused) {
+              } else if (paused) {
                 task = null;
-                mRunning = false;
+                running = false;
               } else {
-                task = mTaskQueue.pollFirst();
-                mRunning = task != null;
+                task = taskQueue.pollFirst();
+                running = task != null;
               }
             }
           }
@@ -764,23 +793,26 @@ final class CronvoyUrlRequest extends UrlRequestBase {
     };
     // Queue of tasks to run. Tasks are added to the end and taken from the front.
     // Synchronized on itself.
-    @GuardedBy("mTaskQueue") private final ArrayDeque<Runnable> mTaskQueue = new ArrayDeque<>();
-    // Indicates if mRunTasks is actively running tasks. Synchronized on mTaskQueue.
-    @GuardedBy("mTaskQueue") private boolean mRunning;
-    @GuardedBy("mTaskQueue") private boolean mPaused;
+    @GuardedBy("taskQueue") private final ArrayDeque<Runnable> taskQueue = new ArrayDeque<>();
+    // Indicates if runTasks is actively running tasks.
+    @GuardedBy("taskQueue") private boolean running;
+    // Indicates if runTasks is temporarily disabled. Still, tasks keep accumulating as usual.
+    @GuardedBy("taskQueue") private boolean paused;
+    // Indicates if this executor can still queue/execute tasks. If shutdown is true, it can't.
+    @GuardedBy("taskQueue") private boolean shutdown;
 
     PausableSerializingExecutor(Executor underlyingExecutor) {
       this.underlyingExecutor = underlyingExecutor;
     }
 
     void pause() {
-      synchronized (mTaskQueue) { mPaused = true; }
+      synchronized (taskQueue) { paused = true; }
     }
 
     void resume() {
-      synchronized (mTaskQueue) {
-        mPaused = false;
-        if (!mTaskQueue.isEmpty()) {
+      synchronized (taskQueue) {
+        paused = false;
+        if (!taskQueue.isEmpty()) {
           try {
             underlyingExecutor.execute(runTasks);
           } catch (RejectedExecutionException e) {
@@ -790,16 +822,26 @@ final class CronvoyUrlRequest extends UrlRequestBase {
       }
     }
 
+    void shutdown() {
+      synchronized (taskQueue) {
+        shutdown = true;
+        taskQueue.clear();
+      }
+    }
+
     @Override
     public void execute(Runnable command) {
-      synchronized (mTaskQueue) {
-        mTaskQueue.addLast(command);
-        if (!mPaused && !mTaskQueue.isEmpty()) {
+      synchronized (taskQueue) {
+        if (shutdown) {
+          return;
+        }
+        taskQueue.addLast(command);
+        if (!paused && !taskQueue.isEmpty()) {
           try {
             underlyingExecutor.execute(runTasks);
           } catch (RejectedExecutionException e) {
             // Shutting down, do not add new task to the queue.
-            mTaskQueue.removeLast();
+            taskQueue.removeLast();
           }
         }
       }
