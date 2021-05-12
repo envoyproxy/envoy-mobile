@@ -1,5 +1,8 @@
 package org.cronvoy;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -79,21 +82,21 @@ public class CronvoyEngineTest {
 
     Response response = sendRequest(requestScenario);
 
-    assertThat(response.getResponseCode()).isEqualTo(200);
+    assertThat(response.getResponseCode()).isEqualTo(HTTP_OK);
     assertThat(response.getBodyAsString()).isEqualTo("hello, world");
     assertThat(response.getCronetException()).isNull();
   }
 
   @Test
   public void get_noBody() throws Exception {
-    mockWebServer.enqueue(new MockResponse().setResponseCode(200));
+    mockWebServer.enqueue(new MockResponse().setResponseCode(HTTP_OK));
     mockWebServer.start();
     RequestScenario requestScenario =
         new RequestScenario().addResponseBuffers(1); // At least one byte must be available.
 
     Response response = sendRequest(requestScenario);
 
-    assertThat(response.getResponseCode()).isEqualTo(200);
+    assertThat(response.getResponseCode()).isEqualTo(HTTP_OK);
     assertThat(response.getBodyAsString()).isEmpty();
     assertThat(response.getCronetException()).isNull();
   }
@@ -166,7 +169,7 @@ public class CronvoyEngineTest {
 
     Response response = sendRequest(requestScenario);
 
-    assertThat(response.getResponseCode()).isEqualTo(200);
+    assertThat(response.getResponseCode()).isEqualTo(HTTP_OK);
     assertThat(response.getBodyAsString()).isEqualTo("This is the response Body");
     assertThat(response.getCronetException()).isNull();
   }
@@ -193,9 +196,82 @@ public class CronvoyEngineTest {
 
     Response response = sendRequest(requestScenario);
 
-    assertThat(response.getResponseCode()).isEqualTo(200);
+    assertThat(response.getResponseCode()).isEqualTo(HTTP_OK);
     assertThat(response.getBodyAsString()).isEqualTo("This is the response Body");
     assertThat(response.getCronetException()).isNull();
+  }
+
+  @Test
+  public void get_redirect() throws Exception {
+    mockWebServer.setDispatcher(new Dispatcher() {
+      @Override
+      public MockResponse dispatch(RecordedRequest recordedRequest) {
+        switch (recordedRequest.getRequestUrl().encodedPath()) {
+        case "/get/flowers":
+          return new MockResponse()
+              .setResponseCode(HTTP_MOVED_TEMP)
+              .setHeader("Location", "/get/chocolates");
+
+        case "/get/chocolates":
+          return new MockResponse().setBody("Everything is awesome").setResponseCode(HTTP_OK);
+        }
+        return new MockResponse().setResponseCode(HTTP_BAD_REQUEST);
+      }
+    });
+    mockWebServer.start();
+    RequestScenario requestScenario = new RequestScenario()
+                                          .addResponseBuffers(30)
+                                          .setHttpMethod(RequestMethod.GET)
+                                          .setUrlPath("/get/flowers")
+                                          .addHeader("content-type", "text/html");
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getResponseCode()).isEqualTo(HTTP_OK);
+    assertThat(response.getBodyAsString()).isEqualTo("Everything is awesome");
+    assertThat(response.getCronetException()).isNull();
+    assertThat(response.getUrlResponseInfo().getUrlChain())
+        .contains("http://localhost:" + mockWebServer.getPort() + "/get/flowers",
+                  "http://localhost:" + mockWebServer.getPort() + "/get/chocolates");
+  }
+
+  @Test
+  public void post_redirect() throws Exception {
+    // This is getting chunked every 8192 bytes.
+    byte[] requestBody = new byte[20_000];
+    Arrays.fill(requestBody, (byte)'A');
+    mockWebServer.setDispatcher(new Dispatcher() {
+      @Override
+      public MockResponse dispatch(RecordedRequest recordedRequest) {
+        assertThat(recordedRequest.getBody().readByteArray()).isEqualTo(requestBody);
+        switch (recordedRequest.getRequestUrl().encodedPath()) {
+        case "/get/flowers":
+          return new MockResponse()
+              .setResponseCode(HTTP_MOVED_TEMP)
+              .setHeader("Location", "/get/chocolates");
+
+        case "/get/chocolates":
+          return new MockResponse().setBody("Everything is awesome").setResponseCode(HTTP_OK);
+        }
+        return new MockResponse().setResponseCode(HTTP_BAD_REQUEST);
+      }
+    });
+    mockWebServer.start();
+    RequestScenario requestScenario = new RequestScenario()
+                                          .addResponseBuffers(30)
+                                          .setHttpMethod(RequestMethod.POST)
+                                          .setUrlPath("/get/flowers")
+                                          .addHeader("content-type", "text/html")
+                                          .setRequestBody(requestBody);
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getResponseCode()).isEqualTo(HTTP_OK);
+    assertThat(response.getBodyAsString()).isEqualTo("Everything is awesome");
+    assertThat(response.getCronetException()).isNull();
+    assertThat(response.getUrlResponseInfo().getUrlChain())
+        .contains("http://localhost:" + mockWebServer.getPort() + "/get/flowers",
+                  "http://localhost:" + mockWebServer.getPort() + "/get/chocolates");
   }
 
   private Response sendRequest(RequestScenario requestScenario) {
@@ -242,7 +318,7 @@ public class CronvoyEngineTest {
     @Override
     public void onRedirectReceived(UrlRequest urlRequest, UrlResponseInfo info,
                                    String newLocationUrl) {
-      throw new UnsupportedOperationException("Not yet supported");
+      urlRequest.followRedirect();
     }
 
     @Override

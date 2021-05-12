@@ -389,8 +389,7 @@ final class CronvoyUrlRequest extends UrlRequestBase {
         new ArrayList<>(urlChain), responseCode,
         "HTTP " + responseHeaders.getHttpStatus(), // UrlConnection.getResponseMessage(),
         Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
-    // TODO(carloseltuerto) make this "if" a possibility with Envoy-Mobile
-    if (responseCode >= 300 && responseCode < 400) {
+    if (responseCode >= 300 && responseCode < 400 && lastCallback) {
       List<String> locationFields = urlResponseInfo.getAllHeaders().get("location");
       if (locationFields != null) {
         fireRedirectReceived(locationFields.get(0));
