@@ -8,6 +8,6 @@ envoy_mobile_objc_test(
         "EnvoyBridgeUtilityTest.m",
     ],
     deps = [
-        "//library/objective-c:envoy_objc_bridge_lib"
+        "//library/objective-c:envoy_objc_bridge_lib",
     ],
 )
