@@ -1,3 +1,7 @@
+from library.python.envoy_requests.common.engine import Engine
+from library.python.envoy_requests import get
+
+
 API_LISTENER_TYPE = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 ASSERTION_FILTER_TYPE = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
 
@@ -38,3 +42,9 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 """
+
+
+def test_send_headers():
+    Engine.config_template_override = CONFIG_TEMPLATE
+    response = get("https://example.com/test")
+    assert response.status_code == 200
