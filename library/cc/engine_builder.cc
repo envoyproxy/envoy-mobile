@@ -95,7 +95,6 @@ EngineSharedPtr EngineBuilder::build() {
       .context = nullptr,
   };
   auto envoy_engine = init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger);
-
   run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
 
   // we can't construct via std::make_shared

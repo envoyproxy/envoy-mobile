@@ -7,7 +7,7 @@
 namespace Envoy {
 namespace Platform {
 
-Stream::Stream(EngineSharedPtr engine, envoy_stream_t handle) : engine_(engine), handle_(handle) {}
+Stream::Stream(envoy_stream_t handle) : handle_(handle) {}
 
 Stream& Stream::sendHeaders(RequestHeadersSharedPtr headers, bool end_stream) {
   envoy_headers raw_headers = rawHeaderMapAsEnvoyHeaders(headers->allHeaders());

@@ -41,12 +41,6 @@ using namespace Envoy::Platform;
 PYBIND11_MODULE(envoy_engine, m) {
   m.doc() = "a thin wrapper around envoy-mobile to provide speedy networking for python";
 
-  // TODO(crockeo): if terminate is called while the Engine is only kept alive
-  // by a Stream then you can run into a deadlock around the GIL w/ multiple
-  // destructors attempting to claim the GIL at the same time
-  //
-  // find out a way to release the GIL from ~Engine so that terminate is not
-  // called with the GIL
   py::class_<Engine, EngineSharedPtr>(m, "Engine")
       .def("stream_client", &Engine::streamClient)
       .def("pulse_client", &Engine::pulseClient)

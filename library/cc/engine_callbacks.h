@@ -15,8 +15,6 @@ struct EngineCallbacks : public std::enable_shared_from_this<EngineCallbacks> {
   // std::function<void()> on_exit;
 
   envoy_engine_callbacks asEnvoyEngineCallbacks();
-
-  EngineSharedPtr parent;
 };
 
 using EngineCallbacksSharedPtr = std::shared_ptr<EngineCallbacks>;
