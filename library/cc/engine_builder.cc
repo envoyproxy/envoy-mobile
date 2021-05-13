@@ -10,7 +10,7 @@ EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {}
 
 EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
   this->log_level_ = log_level;
-  this->callbacks_ = std::make_unique<EngineCallbacks>();
+  this->callbacks_ = std::make_shared<EngineCallbacks>();
   return *this;
 }
 
@@ -89,20 +89,19 @@ EngineSharedPtr EngineBuilder::build() {
     }
   }
 
-  auto callbacks = this->callbacks_.release();
   envoy_logger null_logger{
       .log = nullptr,
       .release = envoy_noop_const_release,
       .context = nullptr,
   };
-  auto envoy_engine = init_engine(callbacks->asEnvoyEngineCallbacks(), null_logger);
-
-  Engine* engine = new Engine(envoy_engine);
-  auto engine_ptr = EngineSharedPtr(engine);
-  callbacks->parent = engine_ptr;
+  auto envoy_engine = init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger);
 
   run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
 
+  // we can't construct via std::make_shared
+  // because Engine is only constructible as a friend
+  Engine* engine = new Engine(envoy_engine);
+  auto engine_ptr = EngineSharedPtr(engine);
   return engine_ptr;
 }
 

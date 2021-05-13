@@ -31,7 +31,7 @@ public:
 
 private:
   EngineSharedPtr engine_;
-  std::unique_ptr<StreamCallbacks> callbacks_;
+  StreamCallbacksSharedPtr callbacks_;
 };
 
 using StreamPrototypeSharedPtr = std::shared_ptr<StreamPrototype>;

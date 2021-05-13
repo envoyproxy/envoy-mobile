@@ -1,13 +1,15 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include "engine.h"
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Platform {
 
-struct EngineCallbacks {
+struct EngineCallbacks : public std::enable_shared_from_this<EngineCallbacks> {
   std::function<void()> on_engine_running;
   // unused:
   // std::function<void()> on_exit;
@@ -17,7 +19,7 @@ struct EngineCallbacks {
   EngineSharedPtr parent;
 };
 
-using EngineCallbacksPtr = std::unique_ptr<EngineCallbacks>;
+using EngineCallbacksSharedPtr = std::shared_ptr<EngineCallbacks>;
 
 } // namespace Platform
 } // namespace Envoy

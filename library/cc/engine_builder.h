@@ -37,7 +37,7 @@ public:
 
 private:
   LogLevel log_level_ = LogLevel::info;
-  EngineCallbacksPtr callbacks_;
+  EngineCallbacksSharedPtr callbacks_;
 
   std::string config_template_;
   std::string stats_domain_ = "0.0.0.0";

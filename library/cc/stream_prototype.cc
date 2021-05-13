@@ -6,15 +6,13 @@ namespace Envoy {
 namespace Platform {
 
 StreamPrototype::StreamPrototype(EngineSharedPtr engine) : engine_(engine) {
-  this->callbacks_ = std::make_unique<StreamCallbacks>();
+  this->callbacks_ = std::make_shared<StreamCallbacks>();
 }
 
 StreamSharedPtr StreamPrototype::start() {
   auto envoy_stream = init_stream(this->engine_->engine_);
   auto stream = std::make_shared<Stream>(this->engine_, envoy_stream);
-  auto callbacks = this->callbacks_.release();
-  callbacks->parent = stream;
-  start_stream(envoy_stream, callbacks->asEnvoyHttpCallbacks());
+  start_stream(envoy_stream, this->callbacks_->asEnvoyHttpCallbacks());
 
   return stream;
 }

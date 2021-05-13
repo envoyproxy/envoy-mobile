@@ -24,7 +24,7 @@ using OnErrorCallback = std::function<void(EnvoyErrorSharedPtr error)>;
 using OnCompleteCallback = std::function<void()>;
 using OnCancelCallback = std::function<void()>;
 
-struct StreamCallbacks {
+struct StreamCallbacks : public std::enable_shared_from_this<StreamCallbacks> {
   absl::optional<OnHeadersCallback> on_headers;
   absl::optional<OnDataCallback> on_data;
   absl::optional<OnTrailersCallback> on_trailers;
@@ -33,8 +33,6 @@ struct StreamCallbacks {
   absl::optional<OnCancelCallback> on_cancel;
 
   envoy_http_callbacks asEnvoyHttpCallbacks();
-
-  StreamSharedPtr parent;
 };
 
 using StreamCallbacksSharedPtr = std::shared_ptr<StreamCallbacks>;
