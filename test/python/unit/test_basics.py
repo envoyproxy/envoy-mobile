@@ -70,3 +70,10 @@ def test_send_data_form_urlencoded(http_server_url: str, data):
         == "application/x-www-form-urlencoded"
     )
     assert json.get("headers", {}).get("charset") == "utf8"
+
+
+def test_envoy_error():
+    response = envoy_requests.get("http://127.0.0.1:0/fake-url")
+    assert response.envoy_error is not None
+    assert response.envoy_error.error_code != 0
+    assert response.envoy_error.message != ""
