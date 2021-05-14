@@ -15,6 +15,7 @@ mock_template:
     max_interval: {{ dns_failure_refresh_rate_seconds_max }}s
   platform_filter_chain: {{ platform_filter_chain }}
   stats_flush_interval: {{ stats_flush_interval_seconds }}s
+  stream_idle_timeout: {{ stream_idle_timeout_seconds }}s
   app_version: {{ app_version }}
   app_id: {{ app_id }}
   virtual_clusters: {{ virtual_clusters }}
