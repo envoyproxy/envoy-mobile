@@ -126,18 +126,18 @@ envoy_status_t Engine::terminate() {
       cv_.wait(mutex_);
     }
 
-    ASSERT(event_dispatcher_);
+    ASSERT(server_);
 
     // Exit the event loop and finish up in Engine::run(...)
-    if (std::this_thread::get_id() == main_thread_.get_id()) {
+    if (Thread::MainThread::isMainThread()) {
       // TODO(goaway): figure out some way to support this.
       PANIC("Terminating the engine from its own main thread is currently unsupported.");
     } else {
-      event_dispatcher_->exit();
+      event_dispatcher_->post([this]{ server_->shutdown(); });
     }
   } // lock(_mutex)
 
-  if (std::this_thread::get_id() != main_thread_.get_id()) {
+  if (!Thread::MainThread::isMainThread()) {
     main_thread_.join();
   }
 
