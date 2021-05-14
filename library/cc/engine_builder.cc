@@ -91,6 +91,7 @@ EngineSharedPtr EngineBuilder::build() {
       {"{{ stats_domain }}", this->stats_domain_},
       {"{{ stats_flush_interval_seconds }}", std::to_string(this->stats_flush_seconds_)},
       {"{{ virtual_clusters }}", this->virtual_clusters_},
+      {"{{ stream_idle_timeout_seconds }}", std::to_string(this->stream_idle_timeout_seconds_)},
       // TODO(crockeo): expose an API to these configuration options
       {"{{ fake_remote_listener }}", ""},
       {"{{ fake_cluster_matchers }}", ""},
