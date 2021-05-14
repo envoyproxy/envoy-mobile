@@ -241,8 +241,8 @@ open class EngineBuilder(
           EnvoyConfiguration(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
-            platformFilterChain, stringAccessors
+            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
+            nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -254,8 +254,8 @@ open class EngineBuilder(
           EnvoyConfiguration(
             statsDomain, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
-            platformFilterChain, stringAccessors
+            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
+            nativeFilterChain, platformFilterChain, stringAccessors
           ),
           logLevel
         )
