@@ -147,6 +147,20 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testAddingStreamIdleTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(42, config.streamIdleTimeoutSeconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addStreamIdleTimeoutSeconds(42)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testAddingAppVersionAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -225,6 +239,7 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       statsFlushSeconds: 600,
+      streamIdleTimeoutSeconds: 700,
       appVersion: "v1.2.3",
       appId: "com.envoymobile.ios",
       virtualClusters: "[test]",
@@ -246,6 +261,7 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("max_interval: 500s"))
     XCTAssertTrue(resolvedYAML.contains("filter_name: TestFilter"))
     XCTAssertTrue(resolvedYAML.contains("stats_flush_interval: 600s"))
+    XCTAssertTrue(resolvedYAML.contains("stream_idle_timeout: 700s"))
     XCTAssertTrue(resolvedYAML.contains("device_os: iOS"))
     XCTAssertTrue(resolvedYAML.contains("app_version: v1.2.3"))
     XCTAssertTrue(resolvedYAML.contains("app_id: com.envoymobile.ios"))
@@ -262,6 +278,7 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       statsFlushSeconds: 600,
+      streamIdleTimeoutSeconds: 700,
       appVersion: "v1.2.3",
       appId: "com.envoymobile.ios",
       virtualClusters: "[test]",
