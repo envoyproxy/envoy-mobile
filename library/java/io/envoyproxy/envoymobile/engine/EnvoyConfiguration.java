@@ -45,7 +45,7 @@ public class EnvoyConfiguration {
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            int statsFlushSeconds, int streamIdleTimeoutSeconds,  String appVersion,
+                            int statsFlushSeconds, int streamIdleTimeoutSeconds, String appVersion,
                             String appId, String virtualClusters,
                             List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
@@ -108,7 +108,7 @@ public class EnvoyConfiguration {
             .replace("{{ dns_failure_refresh_rate_seconds_max }}",
                      String.format("%s", dnsFailureRefreshSecondsMax))
             .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
-            .replace("{{ stream_idle_timeout_seconds }", String.format("%s", streamIdleTimeoutSeconds ))
+            .replace("{{ stream_idle_timeout_seconds }", String.format("%s", streamIdleTimeoutSeconds))
             .replace("{{ device_os }}", "Android")
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)

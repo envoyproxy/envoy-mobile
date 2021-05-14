@@ -96,7 +96,7 @@
         [NSString stringWithFormat:@"%lu", (unsigned long)self.dnsFailureRefreshSecondsMax],
     @"stats_flush_interval_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.statsFlushSeconds],
-   @"stream_idle_timeout_seconds" :
+    @"stream_idle_timeout_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.streamIdleTimeoutSeconds],
     @"device_os" : @"iOS",
     @"app_version" : self.appVersion,
