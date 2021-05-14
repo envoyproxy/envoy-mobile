@@ -35,6 +35,7 @@ public class EnvoyConfiguration {
    * @param dnsFailureRefreshSecondsBase base rate in seconds to refresh DNS on failure.
    * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on failure.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
+   * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
    * @param appVersion                   the App Version of the App using this Envoy Client.
    * @param appId                        the App ID of the App using this Envoy Client.
    * @param virtualClusters              the JSON list of virtual cluster configs.
@@ -44,8 +45,9 @@ public class EnvoyConfiguration {
    */
   public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            int statsFlushSeconds, String appVersion, String appId,
-                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
+                            int statsFlushSeconds, int streamIdleTimeoutSeconds,  String appVersion,
+                            String appId, String virtualClusters,
+                            List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
     this.statsDomain = statsDomain;
@@ -54,6 +56,7 @@ public class EnvoyConfiguration {
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
     this.statsFlushSeconds = statsFlushSeconds;
+    this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
     this.appVersion = appVersion;
     this.appId = appId;
     this.virtualClusters = virtualClusters;
@@ -105,6 +108,7 @@ public class EnvoyConfiguration {
             .replace("{{ dns_failure_refresh_rate_seconds_max }}",
                      String.format("%s", dnsFailureRefreshSecondsMax))
             .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
+            .replace("{{ stream_idle_timeout_seconds }", String.format("%s", streamIdleTimeoutSeconds ))
             .replace("{{ device_os }}", "Android")
             .replace("{{ app_version }}", appVersion)
             .replace("{{ app_id }}", appId)
