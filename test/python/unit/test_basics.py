@@ -75,5 +75,8 @@ def test_send_data_form_urlencoded(http_server_url: str, data):
 def test_envoy_error():
     response = envoy_requests.get("http://127.0.0.1:0/fake-url")
     assert response.envoy_error is not None
-    assert response.envoy_error.error_code != 0
-    assert response.envoy_error.message != ""
+    assert response.envoy_error.error_code == 2
+    assert response.envoy_error.message == (
+        "upstream connect error or disconnect/reset before headers. "
+        "reset reason: connection failure"
+    )
