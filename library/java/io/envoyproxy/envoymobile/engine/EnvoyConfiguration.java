@@ -17,6 +17,7 @@ public class EnvoyConfiguration {
   public final Integer dnsFailureRefreshSecondsMax;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
+  public final Integer streamIdleTimeoutSeconds;
   public final String appVersion;
   public final String appId;
   public final String virtualClusters;
