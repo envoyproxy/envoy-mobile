@@ -111,6 +111,10 @@ EngineSharedPtr EngineBuilder::build() {
     }
   }
 
+  if (config_str.find("{{") != std::string::npos) {
+    throw std::runtime_error("could not resolve all template keys in config:\n" + config_str);
+  }
+
   envoy_logger null_logger{
       .log = nullptr,
       .release = envoy_noop_const_release,
