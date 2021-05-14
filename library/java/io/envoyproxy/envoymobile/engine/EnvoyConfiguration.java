@@ -109,7 +109,7 @@ public class EnvoyConfiguration {
             .replace("{{ dns_failure_refresh_rate_seconds_max }}",
                      String.format("%s", dnsFailureRefreshSecondsMax))
             .replace("{{ stats_flush_interval_seconds }}", String.format("%s", statsFlushSeconds))
-            .replace("{{ stream_idle_timeout_seconds }",
+            .replace("{{ stream_idle_timeout_seconds }}",
                      String.format("%s", streamIdleTimeoutSeconds))
             .replace("{{ device_os }}", "Android")
             .replace("{{ app_version }}", appVersion)
