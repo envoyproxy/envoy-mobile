@@ -119,7 +119,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addStreamIdleTimeout(streamIdleTimeoutSeconds: Int): EngineBuilder {
+  fun addStreamIdleTimeoutSeconds(streamIdleTimeoutSeconds: Int): EngineBuilder {
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds
     return this
   }

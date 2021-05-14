@@ -121,7 +121,7 @@ public class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addStreamIdleSeconds(_ streamIdleTimeoutSeconds: UInt32) -> Self {
+  public func addStreamIdleTimeoutSeconds(_ streamIdleTimeoutSeconds: UInt32) -> Self {
     self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds
     return self
   }
