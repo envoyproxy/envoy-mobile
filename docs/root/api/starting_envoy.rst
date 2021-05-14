@@ -135,9 +135,9 @@ Specify the rate at which Envoy Mobile should flush its queued stats.
   // Swift
   builder.addStatsFlushSeconds(5)
 
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``addStreamIdleTimeoutSeconds``
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Specifies the length of time a stream should wait without a headers or data event before timing out.
 Defaults to 15 seconds.
