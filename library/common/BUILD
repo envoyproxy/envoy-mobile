@@ -13,6 +13,12 @@ envoy_cc_library(
     ],
 )
 
+cc_binary(
+    name = "envoy_main_interface_lib_shared",
+    deps = [":envoy_main_interface_lib"],
+    linkshared=True,
+)
+
 envoy_cc_library(
     name = "envoy_main_interface_lib_no_stamp",
     srcs = [

@@ -101,3 +101,12 @@ genrule(
     """,
     tools = ["@kotlin_formatter//file"],
 )
+
+genrule(
+    name = "envoy_main_interface_lib_shared",
+    srcs = ["//library/common:envoy_main_interface_lib_shared"],
+    outs = ["libenvoy_mobile.so"],
+    cmd = """
+    mv $(location //library/common:envoy_main_interface_lib_shared) $@
+    """,
+)
