@@ -1,3 +1,4 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
 
 licenses(["notice"])  # Apache 2
@@ -15,8 +16,8 @@ envoy_cc_library(
 
 cc_binary(
     name = "envoy_main_interface_lib_shared",
+    linkshared = True,
     deps = [":envoy_main_interface_lib"],
-    linkshared=True,
 )
 
 envoy_cc_library(
