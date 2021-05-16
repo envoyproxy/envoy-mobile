@@ -107,6 +107,7 @@ genrule(
     srcs = ["//library/common:envoy_main_interface_lib_shared"],
     outs = ["libenvoy_mobile.so"],
     cmd = """
-    mv $(location //library/common:envoy_main_interface_lib_shared) $@
+    mv $(location //library/common:envoy_main_interface_lib_shared) $@ && \
+    install_name_tool -id libenvoy_mobile.so $@
     """,
 )
