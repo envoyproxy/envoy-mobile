@@ -123,5 +123,5 @@ genrule(
         "//conditions:default": """
         mv $(location //library/common:envoy_main_interface_lib_shared) $@
         """,
-    })
+    }),
 )
