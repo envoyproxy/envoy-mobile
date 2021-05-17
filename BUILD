@@ -108,6 +108,6 @@ genrule(
     outs = ["libenvoy_mobile.so"],
     cmd = """
     mv $(location //library/common:envoy_main_interface_lib_shared) $@ && \
-    install_name_tool -id libenvoy_mobile.so $@
+    test $(uname) = "Darwin" && install_name_tool -id libenvoy_mobile.so $@
     """,
 )
