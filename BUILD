@@ -106,8 +106,22 @@ genrule(
     name = "envoy_main_interface_lib_shared",
     srcs = ["//library/common:envoy_main_interface_lib_shared"],
     outs = ["libenvoy_mobile.so"],
-    cmd = """
-    mv $(location //library/common:envoy_main_interface_lib_shared) $@ && \
-    test $(uname) = "Darwin" && install_name_tool -id libenvoy_mobile.so $@
-    """,
+    cmd = select({
+        # Mach-O binaries include a LC_ID_DYLIB load command which
+        # tells a program where to expect the shared object.
+        # by default Bazel populates this with the path to the build target,
+        # which would be:
+        #
+        #   bazel-out/darwin-fastbuild/bin/library/common/libenvoy_main_interface_lib_shared.so
+        #
+        # since this artifact is being built for use *outside* of Bazel,
+        # we overwrite the ID load command with the intended name of the .so
+        "//bazel:darwin": """
+        mv $(location //library/common:envoy_main_interface_lib_shared) $@ && \
+        install_name_tool -id libenvoy_mobile.so $@
+        """,
+        "//conditions:default": """
+        mv $(location //library/common:envoy_main_interface_lib_shared) $@
+        """,
+    })
 )
