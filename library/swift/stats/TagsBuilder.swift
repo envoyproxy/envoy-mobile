@@ -80,10 +80,10 @@ public class TagsBuilder: NSObject {
     super.init()
   }
 
-  /// Initialize a new builder. Subclasses should provide their own public convenience initializers.
+  /// Initialize a new builder with a tag map.
   ///
   /// - parameter tags: The tags with which to start.
-  required init(tags: [String: String]) {
+  public required init(tags: [String: String]) {
     self.tags = tags
     super.init()
   }
