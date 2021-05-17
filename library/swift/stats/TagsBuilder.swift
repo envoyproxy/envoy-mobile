@@ -75,7 +75,7 @@ public class TagsBuilder: NSObject {
 
   // Only explicitly implemented to work around a swiftinterface issue in Swift 5.1. This can be
   // removed once envoy is only built with Swift 5.2+
-  override required init() {
+  public override required init() {
     self.tags = [String: String]()
     super.init()
   }
