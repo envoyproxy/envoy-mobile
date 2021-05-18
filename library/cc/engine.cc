@@ -13,18 +13,10 @@ Engine::Engine(envoy_engine_t engine) : engine_(engine), terminated_(false) {}
 // which can't be provided from inside of the constructor
 // because of how std::enable_shared_from_this works
 StreamClientSharedPtr Engine::streamClient() {
-  if (!this->stream_client_) {
-    this->stream_client_ = std::make_shared<StreamClient>(this->weak_from_this());
-  }
-  return this->stream_client_;
+  return std::make_shared<StreamClient>(this->shared_from_this());
 }
 
-PulseClientSharedPtr Engine::pulseClient() {
-  if (!this->pulse_client_) {
-    this->pulse_client_ = std::make_shared<PulseClient>();
-  }
-  return this->pulse_client_;
-}
+PulseClientSharedPtr Engine::pulseClient() { return std::make_shared<PulseClient>(); }
 
 void Engine::terminate() {
   if (this->terminated_) {

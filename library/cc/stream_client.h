@@ -9,19 +9,19 @@ namespace Envoy {
 namespace Platform {
 
 class Engine;
-using EngineWeakPtr = std::weak_ptr<Engine>;
+using EngineSharedPtr = std::shared_ptr<Engine>;
 
 class StreamPrototype;
 using StreamPrototypeSharedPtr = std::shared_ptr<StreamPrototype>;
 
 class StreamClient {
 public:
-  StreamClient(EngineWeakPtr engine);
+  StreamClient(EngineSharedPtr engine);
 
   StreamPrototypeSharedPtr newStreamPrototype();
 
 private:
-  EngineWeakPtr engine_;
+  EngineSharedPtr engine_;
 };
 
 using StreamClientSharedPtr = std::shared_ptr<StreamClient>;
