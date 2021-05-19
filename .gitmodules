@@ -1,3 +1,4 @@
 [submodule "envoy"]
 	path = envoy
-	url = https://github.com/envoyproxy/envoy.git
+	url = https://github.com/phlax/envoy
+	branch = extensions-config
