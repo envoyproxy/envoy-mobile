@@ -225,6 +225,13 @@ public class JniLibrary {
                                                       int durationMs);
 
   /**
+   * Flush the stats sinks outside of a flushing interval. Note: stats flushing
+   * may not be synchronous. Therefore, this function may return prior to flushing
+   * taking place.
+   */
+  protected static native int flushStats(long engine);
+
+  /**
    * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
@@ -261,6 +268,8 @@ public class JniLibrary {
    * native filter configuration.
    */
   public static native String statsSinkTemplateString();
+
+  public static native String statsdSinkTemplateString();
 
   /**
    * Register a string accessor to get strings from the platform.

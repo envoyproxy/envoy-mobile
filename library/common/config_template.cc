@@ -70,6 +70,17 @@ stats_sinks:
           cluster_name: stats
 )";
 
+const char* statsd_sink_template = R"(
+stats_sinks:
+- name: envoy.stat_sinks.statsd
+  typed_config:
+    "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+    address: 
+      socket_address:
+        address: 127.0.0.1
+        port_value: {{ port }}
+)";
+
 const char* config_template = R"(
 static_resources:
   listeners:

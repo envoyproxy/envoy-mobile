@@ -24,6 +24,7 @@ open class EngineBuilder(
   private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning, logger) }
   private var logLevel = LogLevel.INFO
   private var statsDomain: String? = null
+  private var statsdPort: Int? = null
   private var connectTimeoutSeconds = 30
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
@@ -59,6 +60,11 @@ open class EngineBuilder(
    */
   fun addStatsDomain(statsDomain: String?): EngineBuilder {
     this.statsDomain = statsDomain
+    return this
+  }
+
+  fun addStatsdPort(port: Int): EngineBuilder {
+    this.statsdPort = port
     return this
   }
 
@@ -239,7 +245,7 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            statsDomain, connectTimeoutSeconds,
+            statsDomain, if (statsdPort == null) 0 else statsdPort!!, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors
@@ -252,7 +258,7 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            statsDomain, connectTimeoutSeconds,
+            statsDomain, if (statsdPort == null) 0 else statsdPort!!, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors

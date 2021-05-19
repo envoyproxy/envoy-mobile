@@ -47,6 +47,11 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     JniLibrary.terminateEngine(engineHandle);
   }
 
+  @Override
+  public void flushStats() {
+    JniLibrary.flushStats(engineHandle);
+  }
+
   /**
    * Run the Envoy engine with the provided yaml string and log level.
    *
@@ -72,9 +77,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     }
 
     return runWithResolvedYAML(
-        envoyConfiguration.resolveTemplate(configurationYAML, JniLibrary.statsSinkTemplateString(),
-                                           JniLibrary.platformFilterTemplateString(),
-                                           JniLibrary.nativeFilterTemplateString()),
+        envoyConfiguration.resolveTemplate(
+          configurationYAML, JniLibrary.statsSinkTemplateString(), JniLibrary.statsdSinkTemplateString(),
+          JniLibrary.platformFilterTemplateString(), JniLibrary.nativeFilterTemplateString()),
         logLevel);
   }
 
@@ -100,7 +105,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
 
     return runWithResolvedYAML(
         envoyConfiguration.resolveTemplate(
-            JniLibrary.templateString(), JniLibrary.statsSinkTemplateString(),
+            JniLibrary.templateString(), JniLibrary.statsSinkTemplateString(), JniLibrary.statsdSinkTemplateString(),
             JniLibrary.platformFilterTemplateString(), JniLibrary.nativeFilterTemplateString()),
         logLevel);
   }

@@ -103,4 +103,6 @@ public interface EnvoyEngine {
   int recordHistogramValue(String elements, Map<String, String> tags, int value);
 
   int registerStringAccessor(String accessor_name, EnvoyStringAccessor accessor);
+
+  void flushStats();
 }

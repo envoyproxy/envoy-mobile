@@ -20,4 +20,6 @@ interface Engine {
    * Terminates the running engine.
    */
   fun terminate()
+
+  fun flushStats()
 }
