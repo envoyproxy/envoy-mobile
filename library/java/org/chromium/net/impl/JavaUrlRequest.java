@@ -83,10 +83,10 @@ final class JavaUrlRequest extends UrlRequestBase {
   /**
    * This is the source of thread safety in this class - no other synchronization is performed.
    * By compare-and-swapping from one state to another, we guarantee that operations aren't
-   * running concurrently. Only the winner of a CAS proceeds.
+   * running concurrently. Only the winner of a compare-and-swapping proceeds.
    *
-   * <p>A caller can lose a CAS for three reasons - user error (two calls to read() without
-   * waiting for the read to succeed), runtime error (network code or user code throws an
+   * <p>A caller can lose a compare-and-swapping for three reasons - user error (two calls to read()
+   * without waiting for the read to succeed), runtime error (network code or user code throws an
    * exception), or cancellation.
    */
   private final AtomicInteger /* State */ mState = new AtomicInteger(State.NOT_STARTED);
