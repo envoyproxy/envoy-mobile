@@ -5,21 +5,6 @@
 namespace Envoy {
 namespace Platform {
 
-namespace {
-
-void c_on_engine_running(void* context) {
-  EngineCallbacks* engine_callbacks = static_cast<EngineCallbacks*>(context);
-  engine_callbacks->on_engine_running();
-}
-
-void c_on_exit(void* context) {
-  // NOTE: this function is intentionally empty
-  // as we don't actually do any post-processing on exit.
-  (void)context;
-}
-
-} // namespace
-
 EngineBuilder::EngineBuilder(std::string config_template) : config_template_(config_template) {}
 EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {}
 
@@ -91,6 +76,7 @@ EngineSharedPtr EngineBuilder::build() {
       {"{{ stats_domain }}", this->stats_domain_},
       {"{{ stats_flush_interval_seconds }}", std::to_string(this->stats_flush_seconds_)},
       {"{{ virtual_clusters }}", this->virtual_clusters_},
+      {"{{ stream_idle_timeout_seconds }}", std::to_string(this->stream_idle_timeout_seconds_)},
       // TODO(crockeo): expose an API to these configuration options
       {"{{ fake_remote_listener }}", ""},
       {"{{ fake_cluster_matchers }}", ""},
@@ -110,21 +96,23 @@ EngineSharedPtr EngineBuilder::build() {
     }
   }
 
+  if (config_str.find("{{") != std::string::npos) {
+    throw std::runtime_error("could not resolve all template keys in config:\n" + config_str);
+  }
+
   envoy_logger null_logger{
       .log = nullptr,
       .release = envoy_noop_const_release,
       .context = nullptr,
   };
+  auto envoy_engine = init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger);
+  run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
 
-  envoy_engine_callbacks envoy_callbacks{
-      .on_engine_running = &c_on_engine_running,
-      .on_exit = &c_on_exit,
-      .context = this->callbacks_.get(),
-  };
-
-  Engine* engine =
-      new Engine(init_engine(envoy_callbacks, null_logger), config_str, this->log_level_);
-  return EngineSharedPtr(engine);
+  // we can't construct via std::make_shared
+  // because Engine is only constructible as a friend
+  Engine* engine = new Engine(envoy_engine);
+  auto engine_ptr = EngineSharedPtr(engine);
+  return engine_ptr;
 }
 
 } // namespace Platform
