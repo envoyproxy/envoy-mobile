@@ -28,12 +28,12 @@ private:
 
 using TestAccessorFilterConfigSharedPtr = std::shared_ptr<TestAccessorFilterConfig>;
 
-class TestAccessorFilter final : public Http::PassThroughFilter {
+class TestAccessorFilter final : public ::Envoy::Http::PassThroughFilter {
 public:
   TestAccessorFilter(TestAccessorFilterConfigSharedPtr config) : config_(config) {}
 
   // StreamDecoderFilter
-  Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
+  ::Envoy::Http::FilterHeadersStatus decodeHeaders(::Envoy::Http::RequestHeaderMap& headers,
                                           bool end_stream) override;
 
 private:
