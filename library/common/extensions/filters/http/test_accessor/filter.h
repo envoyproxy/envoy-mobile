@@ -34,7 +34,7 @@ public:
 
   // StreamDecoderFilter
   ::Envoy::Http::FilterHeadersStatus decodeHeaders(::Envoy::Http::RequestHeaderMap& headers,
-                                          bool end_stream) override;
+                                                   bool end_stream) override;
 
 private:
   const TestAccessorFilterConfigSharedPtr config_;
