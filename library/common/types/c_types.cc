@@ -68,3 +68,7 @@ const envoy_data envoy_nodata = {0, NULL, envoy_noop_release, NULL};
 const envoy_headers envoy_noheaders = {0, NULL};
 
 const envoy_stats_tags envoy_stats_notags = {0, NULL};
+
+const envoy_response_callbacks_status_t kEnvoyCallbackStatusContinue = 0;
+
+const envoy_response_callbacks_status_t kEnvoyCallbackStatusBlock = 1;

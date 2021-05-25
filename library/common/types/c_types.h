@@ -317,6 +317,24 @@ typedef void (*envoy_logger_release_f)(const void* context);
 #endif
 
 /**
+ * Return type used for standard response callbacks.
+ * Platform implementations may opt not to expose this mechanism and simply "continue" on each
+ * callback.
+ */
+typedef int_fast8_t envoy_response_callback_status_t;
+
+/**
+ * Return code for response callbacks indicating the next callback may be dispatched when ready.
+ */
+extern const envoy_response_callback_status_t kEnvoyCallbackStatusContinue;
+
+/**
+ * Return code for response callbacks indicating further callbacks should NOT be dispatched.
+ * Where supported, stream backpressure MAY be applied.
+ */
+extern const envoy_response_callback_status_t kEnvoyCallbackStatusBlock;
+
+/**
  * Interface to handle HTTP callbacks.
  */
 typedef struct {
