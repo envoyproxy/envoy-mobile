@@ -35,6 +35,7 @@ swift_static_framework(
         "TestEngineBuilder.swift",
         "Trailers.swift",
         "UpstreamHttpProtocol.swift",
+        "Version.swift",
         "filters/*.swift",
         "grpc/*.swift",
         "mocks/*.swift",
