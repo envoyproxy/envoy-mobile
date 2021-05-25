@@ -19,6 +19,7 @@ from .response import Response
 # TODO: add better typing to this (and functions that use it)
 def request(*args, **kwargs) -> Response:
     response = Response()
+    engine_running = Event()
     stream_complete = Event()
     executor = ThreadingExecutor()
 
@@ -26,8 +27,11 @@ def request(*args, **kwargs) -> Response:
         stream_complete.set()
         executor.finish()
 
+    engine = Engine.handle(executor, lambda: stream_complete.set())
+    engine_running.wait()
+
     stream = make_stream(
-        Engine.handle(), executor, response, _set_stream_complete,
+        engine, executor, response, _set_stream_complete,
     )
     send_request(stream, *args, **kwargs)
     stream_complete.wait()
