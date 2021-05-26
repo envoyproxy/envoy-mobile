@@ -217,7 +217,7 @@ envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers,
   // https://github.com/lyft/envoy-mobile/issues/301
   if (direct_stream) {
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
-    setDestinationCluster(*internal_headers);
+    setDestinationCluster(*internal_headers, random_.bernoulli(UnitFloat(0.5f)));
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the
     // Http::ConnectionManager set the scheme to http otherwise. In the future we might want to
@@ -347,28 +347,52 @@ void Client::removeStream(envoy_stream_t stream_handle) {
 }
 
 namespace {
+
 const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
 const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
 
-const char* BaseClusters[] = {
+const char* BaseClusters[][3] = {
+  {
     "base",
     "base_wlan",
     "base_wwan",
+  },
+  {
+    "base_alt",
+    "base_wlan_alt",
+    "base_wwan_alt",
+  }
 };
-const char* H2Clusters[] = {
+
+const char* H2Clusters[][3] = {
+  {
     "base_h2",
     "base_wlan_h2",
     "base_wwan_h2",
+  },
+  {
+    "base_h2_alt",
+    "base_wlan_h2_alt",
+    "base_wwan_h2_alt",
+  }
 };
-const char* ClearTextClusters[] = {
+
+const char* ClearTextClusters[][3] = {
+  {
     "base_clear",
     "base_wlan_clear",
     "base_wwan_clear",
+  },
+  {
+    "base_clear_alt",
+    "base_wlan_clear_alt",
+    "base_wwan_clear_alt",
+  }
 };
 
 } // namespace
 
-void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
+void Client::setDestinationCluster(Http::RequestHeaderMap& headers, bool alternate) {
   // Determine upstream cluster:
   // - Use TLS by default.
   // - Use http/2 if requested explicitly via x-envoy-mobile-upstream-protocol.
@@ -377,20 +401,21 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   auto h2_header = headers.get(H2UpstreamHeader);
   auto network = preferred_network_.load();
   ASSERT(network >= 0 && network < 3, "preferred_network_ must be valid index into cluster array");
+  ASSERT(!alternate, "every time");
 
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    cluster = ClearTextClusters[network];
+    cluster = ClearTextClusters[alternate][network];
   } else if (!h2_header.empty()) {
     ASSERT(h2_header.size() == 1);
     const auto value = h2_header[0]->value().getStringView();
     if (value == "http2") {
-      cluster = H2Clusters[network];
+      cluster = H2Clusters[alternate][network];
     } else {
       RELEASE_ASSERT(value == "http1", fmt::format("using unsupported protocol version {}", value));
-      cluster = BaseClusters[network];
+      cluster = BaseClusters[alternate][network];
     }
   } else {
-    cluster = BaseClusters[network];
+    cluster = BaseClusters[alternate][network];
   }
 
   if (!h2_header.empty()) {

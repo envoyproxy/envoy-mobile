@@ -23,6 +23,7 @@
 using testing::_;
 using testing::NiceMock;
 using testing::Return;
+using testing::ReturnPointee;
 using testing::ReturnRef;
 using testing::SaveArg;
 using testing::WithArg;
@@ -60,8 +61,10 @@ public:
   NiceMock<Event::MockProvisionalDispatcher> dispatcher_;
   envoy_http_callbacks bridge_callbacks_;
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
+  bool alt_cluster_ = false;
+  NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
-  Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_};
+  Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_, random_};
 };
 
 TEST_F(ClientTest, SetDestinationCluster) {
@@ -84,6 +87,8 @@ TEST_F(ClientTest, SetDestinationCluster) {
     cc->on_complete_calls++;
     return nullptr;
   };
+
+  ON_CALL(random_, bernoulli(_)).WillByDefault(ReturnPointee(&alt_cluster_));
 
   // Create a stream.
   ON_CALL(dispatcher_, isThreadSafe()).WillByDefault(Return(true));
