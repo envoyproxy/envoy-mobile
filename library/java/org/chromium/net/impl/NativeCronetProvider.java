@@ -35,8 +35,7 @@ public class NativeCronetProvider extends CronetProvider {
 
   @Override
   public String getVersion() {
-    // TODO(carloseltuerto) please fix
-    return "ImplVersion.getCronetVersion()";
+    return ImplVersion.getCronetVersion();
   }
 
   @Override

@@ -40,7 +40,7 @@ import org.chromium.net.impl.VersionSafeCallbacks.RequestFinishedInfoListener;
  *
  * <p>Does not support yet netlogs, transferred data measurement, bidistream, cache, or priority.
  */
-final class CronetUrlRequestContext extends CronetEngineBase {
+public final class CronetUrlRequestContext extends CronetEngineBase {
 
   static final String LOG_TAG = CronetUrlRequestContext.class.getSimpleName();
 
@@ -90,7 +90,7 @@ final class CronetUrlRequestContext extends CronetEngineBase {
     mUserAgent = builder.getUserAgent();
     synchronized (mLock) {
       mEngine = new AndroidEngineBuilder(builder.getContext())
-                    .addLogLevel(LogLevel.DEBUG)
+                    .addLogLevel(builder.getLogLevel())
                     .setOnEngineRunning(() -> {
                       mNetworkThread = Thread.currentThread();
                       mInitCompleted.open();
@@ -165,9 +165,7 @@ final class CronetUrlRequestContext extends CronetEngineBase {
 
   @Override
   public String getVersionString() {
-    // TODO(carloseltuerto): replace with something similar to original Cronet
-    return "CronetHttpURLConnection/"
-        + "ImplVersion.getCronetVersionWithLastChange()";
+    return "CronetHttpURLConnection/" + ImplVersion.getCronetVersionWithLastChange();
   }
 
   @Override

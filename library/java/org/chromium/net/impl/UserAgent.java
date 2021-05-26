@@ -94,7 +94,6 @@ public final class UserAgent {
 
   private static void appendCronetVersion(StringBuilder builder) {
     builder.append(" Cronet/");
-    // TODO(carloseltuerto): replace this: ImplVersion.getCronetVersion()
-    builder.append("DummyVersion");
+    builder.append(ImplVersion.getCronetVersion());
   }
 }
