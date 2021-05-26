@@ -32,5 +32,6 @@ class Engine:
     def handle(cls, executor: Executor, set_engine_running: Callable[[], None]) -> EnvoyEngine:
         if cls._handle is None:
             cls.build(executor, set_engine_running)
-        executor.wrap(set_engine_running)()
+        else:
+            executor.wrap(set_engine_running)()
         return cls._handle
