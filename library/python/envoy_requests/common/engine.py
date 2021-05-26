@@ -29,7 +29,7 @@ class Engine:
         atexit.register(lambda: cls._handle.terminate())
 
     @classmethod
-    def handle(cls, executor: Executor, set_engine_running: Callable[[], None]):
+    def handle(cls, executor: Executor, set_engine_running: Callable[[], None]) -> EnvoyEngine:
         if cls._handle is None:
             cls.build(executor, set_engine_running)
         executor.wrap(set_engine_running)()

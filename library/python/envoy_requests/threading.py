@@ -16,6 +16,18 @@ from .common.executor import Executor
 from .response import Response
 
 
+def pre_build_engine() -> None:
+    engine_running = Event()
+    executor = ThreadingExecutor()
+
+    def _set_engine_running():
+        engine_running.set()
+        executor.finish()
+
+    Engine.handle(executor, _set_engine_running)
+    engine_running.wait()
+
+
 # TODO: add better typing to this (and functions that use it)
 def request(*args, **kwargs) -> Response:
     response = Response()

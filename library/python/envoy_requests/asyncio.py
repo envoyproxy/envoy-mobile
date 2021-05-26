@@ -12,6 +12,13 @@ from .common.executor import Executor
 from .response import Response
 
 
+async def pre_build_engine() -> None:
+    engine_running = asyncio.Event()
+    executor = AsyncioExecutor()
+    Engine.handle(executor, lambda: engine_running.set())
+    await engine_running.wait()
+
+
 # TODO: add better typing to this (and functions that use it)
 async def request(*args, **kwargs) -> Response:
     response = Response()
