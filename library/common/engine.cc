@@ -247,5 +247,4 @@ void Engine::flushStats() {
   }
 }
 
-
 } // namespace Envoy

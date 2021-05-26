@@ -27,7 +27,7 @@ public class AndroidEnvoyEngineStartUpTest {
     server.runAsync(5555);
 
     Engine engine = new AndroidEngineBuilder(appContext).addStatsdPort(5555).build();
-   
+
     // Sleep until the server boots.
     // TODO(snowp): We can probably do better here, block on stat?
     Thread.sleep(2);

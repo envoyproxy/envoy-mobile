@@ -77,9 +77,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     }
 
     return runWithResolvedYAML(
-        envoyConfiguration.resolveTemplate(
-          configurationYAML, JniLibrary.statsSinkTemplateString(), JniLibrary.statsdSinkTemplateString(),
-          JniLibrary.platformFilterTemplateString(), JniLibrary.nativeFilterTemplateString()),
+        envoyConfiguration.resolveTemplate(configurationYAML, JniLibrary.statsSinkTemplateString(),
+                                           JniLibrary.statsdSinkTemplateString(),
+                                           JniLibrary.platformFilterTemplateString(),
+                                           JniLibrary.nativeFilterTemplateString()),
         logLevel);
   }
 
@@ -105,8 +106,9 @@ public class EnvoyEngineImpl implements EnvoyEngine {
 
     return runWithResolvedYAML(
         envoyConfiguration.resolveTemplate(
-            JniLibrary.templateString(), JniLibrary.statsSinkTemplateString(), JniLibrary.statsdSinkTemplateString(),
-            JniLibrary.platformFilterTemplateString(), JniLibrary.nativeFilterTemplateString()),
+            JniLibrary.templateString(), JniLibrary.statsSinkTemplateString(),
+            JniLibrary.statsdSinkTemplateString(), JniLibrary.platformFilterTemplateString(),
+            JniLibrary.nativeFilterTemplateString()),
         logLevel);
   }
 

@@ -129,7 +129,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_statsSinkTemplateString(JNIEnv*
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_statsdSinkTemplateString(JNIEnv* env,
-                                                                         jclass // class
+                                                                          jclass // class
 ) {
   jstring result = env->NewStringUTF(statsd_sink_template);
   return result;
@@ -191,8 +191,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv*
 
 extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_flushStats(JNIEnv* env,
-                                                                         jclass, // class
-                                                                         jlong engine) {
+                                                            jclass, // class
+                                                            jlong engine) {
   flush_stats(engine);
 }
 

@@ -45,11 +45,11 @@ public class EnvoyConfiguration {
    * @param httpPlatformFilterFactories  the configuration for platform filters.
    * @param stringAccessors              platform string accessors to register.
    */
-  public EnvoyConfiguration(String statsDomain, Integer statsdPort, int connectTimeoutSeconds, int dnsRefreshSeconds,
-                            int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            int statsFlushSeconds, int streamIdleTimeoutSeconds, String appVersion,
-                            String appId, String virtualClusters,
-                            List<EnvoyNativeFilterConfig> nativeFilterChain,
+  public EnvoyConfiguration(String statsDomain, Integer statsdPort, int connectTimeoutSeconds,
+                            int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
+                            int dnsFailureRefreshSecondsMax, int statsFlushSeconds,
+                            int streamIdleTimeoutSeconds, String appVersion, String appId,
+                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
     this.statsDomain = statsDomain;
@@ -81,7 +81,7 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(final String templateYAML, final String statsSinkTemplateYAML,
-    final String statsdSinkTemplateYAML,
+                         final String statsdSinkTemplateYAML,
                          final String platformFilterTemplateYAML,
                          final String nativeFilterTemplateYAML) {
     final StringBuilder filterConfigBuilder = new StringBuilder();
@@ -103,13 +103,15 @@ public class EnvoyConfiguration {
 
     String statsSinkConfiguration = null;
     if (statsdPort != null) {
-      statsSinkConfiguration = statsdSinkTemplateYAML.replace("{{ port }}", String.valueOf(statsdPort));
-    } else if (statsDomain != null)  {
+      statsSinkConfiguration =
+          statsdSinkTemplateYAML.replace("{{ port }}", String.valueOf(statsdPort));
+    } else if (statsDomain != null) {
       statsSinkConfiguration = statsSinkTemplateYAML;
     }
     String resolvedConfiguration =
         templateYAML.replace("{{ stats_domain }}", statsDomain != null ? statsDomain : "0.0.0.0")
-            .replace("{{ stats_sink }}", statsSinkConfiguration != null ? statsSinkConfiguration : "")
+            .replace("{{ stats_sink }}",
+                     statsSinkConfiguration != null ? statsSinkConfiguration : "")
             .replace("{{ platform_filter_chain }}", filterConfigChain)
             .replace("{{ connect_timeout_seconds }}", String.format("%s", connectTimeoutSeconds))
             .replace("{{ dns_refresh_rate_seconds }}", String.format("%s", dnsRefreshSeconds))

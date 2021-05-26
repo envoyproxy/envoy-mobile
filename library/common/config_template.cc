@@ -75,7 +75,7 @@ stats_sinks:
 - name: envoy.stat_sinks.statsd
   typed_config:
     "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
-    address: 
+    address:
       socket_address:
         address: 127.0.0.1
         port_value: {{ port }}
