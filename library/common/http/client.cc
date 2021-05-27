@@ -360,44 +360,38 @@ const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
 // Long-term we will be working to generally provide more responsive connection handling within
 // Envoy itself.
 
-const char* BaseClusters[][3] = {
-  {
-    "base",
-    "base_wlan",
-    "base_wwan",
-  },
-  {
-    "base_alt",
-    "base_wlan_alt",
-    "base_wwan_alt",
-  }
-};
+const char* BaseClusters[][3] = {{
+                                     "base",
+                                     "base_wlan",
+                                     "base_wwan",
+                                 },
+                                 {
+                                     "base_alt",
+                                     "base_wlan_alt",
+                                     "base_wwan_alt",
+                                 }};
 
-const char* H2Clusters[][3] = {
-  {
-    "base_h2",
-    "base_wlan_h2",
-    "base_wwan_h2",
-  },
-  {
-    "base_h2_alt",
-    "base_wlan_h2_alt",
-    "base_wwan_h2_alt",
-  }
-};
+const char* H2Clusters[][3] = {{
+                                   "base_h2",
+                                   "base_wlan_h2",
+                                   "base_wwan_h2",
+                               },
+                               {
+                                   "base_h2_alt",
+                                   "base_wlan_h2_alt",
+                                   "base_wwan_h2_alt",
+                               }};
 
-const char* ClearTextClusters[][3] = {
-  {
-    "base_clear",
-    "base_wlan_clear",
-    "base_wwan_clear",
-  },
-  {
-    "base_clear_alt",
-    "base_wlan_clear_alt",
-    "base_wwan_clear_alt",
-  }
-};
+const char* ClearTextClusters[][3] = {{
+                                          "base_clear",
+                                          "base_wlan_clear",
+                                          "base_wwan_clear",
+                                      },
+                                      {
+                                          "base_clear_alt",
+                                          "base_wlan_clear_alt",
+                                          "base_wwan_clear_alt",
+                                      }};
 
 } // namespace
 
