@@ -61,7 +61,7 @@ public:
   NiceMock<Event::MockProvisionalDispatcher> dispatcher_;
   envoy_http_callbacks bridge_callbacks_;
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
-  bool alt_cluster_ = false;
+  uint64_t alt_cluster_ = 0;
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
   Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_, random_};
@@ -88,7 +88,7 @@ TEST_F(ClientTest, SetDestinationCluster) {
     return nullptr;
   };
 
-  ON_CALL(random_, bernoulli(_)).WillByDefault(ReturnPointee(&alt_cluster_));
+  ON_CALL(random_, random()).WillByDefault(ReturnPointee(&alt_cluster_));
 
   // Create a stream.
   ON_CALL(dispatcher_, isThreadSafe()).WillByDefault(Return(true));

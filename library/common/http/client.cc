@@ -217,7 +217,7 @@ envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers,
   // https://github.com/lyft/envoy-mobile/issues/301
   if (direct_stream) {
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
-    setDestinationCluster(*internal_headers, random_.bernoulli(UnitFloat(0.5f)));
+    setDestinationCluster(*internal_headers, random_.random() % 2);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the
     // Http::ConnectionManager set the scheme to http otherwise. In the future we might want to
