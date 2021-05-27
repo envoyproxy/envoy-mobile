@@ -131,13 +131,14 @@ TEST_F(ClientTest, SetDestinationCluster) {
   envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
 
   preferred_network_.store(ENVOY_NET_WLAN);
+  alt_cluster_ = 1;
 
   TestRequestHeaderMapImpl expected_headers2{
       {":scheme", "https"},
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wlan"},
+      {"x-envoy-mobile-cluster", "base_wlan_alt"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
@@ -149,6 +150,7 @@ TEST_F(ClientTest, SetDestinationCluster) {
   envoy_headers c_headers3 = Utility::toBridgeHeaders(headers3);
 
   preferred_network_.store(ENVOY_NET_WWAN);
+  alt_cluster_ = 0;
 
   TestRequestHeaderMapImpl expected_headers3{
       {":scheme", "https"},
@@ -191,6 +193,8 @@ TEST_F(ClientTest, SetDestinationClusterUpstreamProtocol) {
     return nullptr;
   };
 
+  ON_CALL(random_, random()).WillByDefault(ReturnPointee(&alt_cluster_));
+
   // Create a stream.
   ON_CALL(dispatcher_, isThreadSafe()).WillByDefault(Return(true));
 
@@ -214,13 +218,14 @@ TEST_F(ClientTest, SetDestinationClusterUpstreamProtocol) {
   envoy_headers c_headers1 = Utility::toBridgeHeaders(headers1);
 
   preferred_network_.store(ENVOY_NET_GENERIC);
+  alt_cluster_ = 1;
 
   TestResponseHeaderMapImpl expected_headers1{
       {":scheme", "https"},
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_h2"},
+      {"x-envoy-mobile-cluster", "base_h2_alt"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers1), false));
@@ -232,6 +237,7 @@ TEST_F(ClientTest, SetDestinationClusterUpstreamProtocol) {
   envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
 
   preferred_network_.store(ENVOY_NET_WLAN);
+  alt_cluster_ = 0;
 
   TestResponseHeaderMapImpl expected_headers2{
       {":scheme", "https"},
@@ -250,13 +256,14 @@ TEST_F(ClientTest, SetDestinationClusterUpstreamProtocol) {
   envoy_headers c_headers3 = Utility::toBridgeHeaders(headers3);
 
   preferred_network_.store(ENVOY_NET_WWAN);
+  alt_cluster_ = 1;
 
   TestResponseHeaderMapImpl expected_headers3{
       {":scheme", "https"},
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wwan_h2"},
+      {"x-envoy-mobile-cluster", "base_wwan_h2_alt"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
@@ -269,6 +276,7 @@ TEST_F(ClientTest, SetDestinationClusterUpstreamProtocol) {
   envoy_headers c_headers4 = Utility::toBridgeHeaders(headers4);
 
   preferred_network_.store(ENVOY_NET_WWAN);
+  alt_cluster_ = 0;
 
   TestResponseHeaderMapImpl expected_headers4{
       {":scheme", "https"},

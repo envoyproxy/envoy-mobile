@@ -401,7 +401,6 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers, bool alterna
   auto h2_header = headers.get(H2UpstreamHeader);
   auto network = preferred_network_.load();
   ASSERT(network >= 0 && network < 3, "preferred_network_ must be valid index into cluster array");
-  ASSERT(!alternate, "every time");
 
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
     cluster = ClearTextClusters[alternate][network];
