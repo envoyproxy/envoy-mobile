@@ -367,9 +367,7 @@ abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     return this;
   }
 
-  LogLevel getLogLevel() {
-    return mLogLevel;
-  }
+  LogLevel getLogLevel() { return mLogLevel; }
 
   /**
    * Returns {@link Context} for builder.

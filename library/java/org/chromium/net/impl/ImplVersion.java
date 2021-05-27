@@ -18,15 +18,9 @@ public final class ImplVersion {
     return CRONET_VERSION + "@" + LAST_CHANGE.substring(0, 8);
   }
 
-  public static int getApiLevel() {
-    return API_LEVEL;
-  }
+  public static int getApiLevel() { return API_LEVEL; }
 
-  public static String getCronetVersion() {
-    return CRONET_VERSION;
-  }
+  public static String getCronetVersion() { return CRONET_VERSION; }
 
-  public static String getLastChange() {
-    return LAST_CHANGE;
-  }
+  public static String getLastChange() { return LAST_CHANGE; }
 }

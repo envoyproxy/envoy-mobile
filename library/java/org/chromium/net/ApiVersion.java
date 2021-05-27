@@ -36,9 +36,7 @@ public final class ApiVersion {
    * Returns API level of the API linked into the application. This is the maximum API
    * level the application can use, even if the application is run with a newer implementation.
    */
-  public static int getMaximumAvailableApiLevel() {
-    return API_LEVEL;
-  }
+  public static int getMaximumAvailableApiLevel() { return API_LEVEL; }
 
   /**
    * The minimum API level of implementations that are compatible with this API.
@@ -49,15 +47,9 @@ public final class ApiVersion {
    * providing ImplVersion cannot be used with the Cronet API providing ApiVersion; if they are
    * used together various unexpected Errors, like AbstractMethodError, may result.
    */
-  public static int getApiLevel() {
-    return MIN_COMPATIBLE_API_LEVEL;
-  }
+  public static int getApiLevel() { return MIN_COMPATIBLE_API_LEVEL; }
 
-  public static String getCronetVersion() {
-    return CRONET_VERSION;
-  }
+  public static String getCronetVersion() { return CRONET_VERSION; }
 
-  public static String getLastChange() {
-    return LAST_CHANGE;
-  }
+  public static String getLastChange() { return LAST_CHANGE; }
 }
