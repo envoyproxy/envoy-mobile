@@ -217,6 +217,9 @@ envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers,
   // https://github.com/lyft/envoy-mobile/issues/301
   if (direct_stream) {
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
+    // The second argument here specifies whether to use an 'alternate' cluster (see discussion
+    // below in cluster definitions). Random selection avoids determinism resulting from consistent
+    // patterns in, e.g., mobile application flows.
     setDestinationCluster(*internal_headers, random_.random() % 2);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the
@@ -350,6 +353,12 @@ namespace {
 
 const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
 const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
+
+// Alternate clusters included here are a stopgap to make it less likely for a given connection
+// class to suffer "catastrophic" failure of all outbound requests due to a network blip, by
+// distributing requests across a minimum of two potential connections per connection class.
+// Long-term we will be working to generally provide more responsive connection handling within
+// Envoy itself.
 
 const char* BaseClusters[][3] = {
   {
