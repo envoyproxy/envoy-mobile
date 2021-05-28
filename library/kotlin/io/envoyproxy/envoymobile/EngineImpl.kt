@@ -45,6 +45,6 @@ class EngineImpl constructor(
   }
 
   override fun flushStats() {
-    envoyEngine.flushStats();
+    envoyEngine.flushStats()
   }
 }

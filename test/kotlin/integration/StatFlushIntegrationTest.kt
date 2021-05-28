@@ -1,17 +1,15 @@
 package test.kotlin.integration
 
-import io.envoyproxy.envoymobile.Custom
-import io.envoyproxy.envoymobile.EngineBuilder
-import io.envoyproxy.envoymobile.Engine
-import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.Element
+import io.envoyproxy.envoymobile.Engine
+import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
 import org.junit.After
-import test.kotlin.integration.TestStatsdServer
+import org.junit.Test
 
 class StatFlushIntegrationTest {
   private var engine: Engine? = null
@@ -22,8 +20,8 @@ class StatFlushIntegrationTest {
 
   @After
   fun teardown() {
-      engine?.terminate()
-      engine = null
+    engine?.terminate()
+    engine = null
   }
 
   @Test
@@ -39,12 +37,12 @@ class StatFlushIntegrationTest {
       }
       .build()
 
-    assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue();
+    assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
 
     engine!!.pulseClient().distribution(Element("something")).recordValue(100)
 
     repeat(100) {
-        engine!!.flushStats()
+      engine!!.flushStats()
     }
   }
 

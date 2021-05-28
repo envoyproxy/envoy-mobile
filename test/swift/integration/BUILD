@@ -39,6 +39,9 @@ envoy_mobile_swift_test(
     srcs = [
         "StatFlushIntegrationTest.swift",
     ],
+    deps = [
+        "//library/objective-c:envoy_engine_objc_lib",
+    ],
 )
 
 envoy_mobile_swift_test(
