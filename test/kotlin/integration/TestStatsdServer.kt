@@ -38,7 +38,6 @@ class TestStatsdServer {
         // TODO(snowp): Parse (or use a parser) so we can extract out individual metric names
         // better.
         val received = String(packet.getData(), packet.getOffset(), packet.getLength())
-        System.out.println("recevied ${received}")
         val latch = nextPacketLatch.get()
         if (latch != null && latch.getCount() == 1L) {
           latestPacket.set(received)

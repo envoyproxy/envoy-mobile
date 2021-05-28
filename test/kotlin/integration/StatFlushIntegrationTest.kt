@@ -37,7 +37,6 @@ class StatFlushIntegrationTest {
           countDownLatch.countDown()
         }
       }
-      .setOnEngineRunning {}
       .build()
 
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue();
@@ -61,9 +60,7 @@ class StatFlushIntegrationTest {
         if (msg.contains("starting main dispatch loop")) {
           countDownLatch.countDown()
         }
-        System.out.println(msg)
       }
-      .setOnEngineRunning {}
       .build()
 
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
