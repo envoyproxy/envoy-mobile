@@ -4,6 +4,7 @@
 
 #include "common/common/lock_guard.h"
 
+#include "library/common/config_template.h"
 #include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
@@ -42,7 +43,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       const std::string concurrency_arg = "0";
       std::vector<const char*> envoy_argv = {name.c_str(),
                                              config_flag.c_str(),
-                                             config.c_str(),
+                                             (config_header + config).c_str(),
                                              concurrency_option.c_str(),
                                              concurrency_arg.c_str(),
                                              log_flag.c_str(),
