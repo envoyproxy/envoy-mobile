@@ -31,7 +31,7 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
 
 envoy_status_t Engine::main(const std::string config, const std::string log_level) {
   // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
-  std::unique_ptr<MobileMainCommon> main_common;
+  std::unique_ptr<EngineCommon> main_common;
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -49,7 +49,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                              log_level.c_str(),
                                              nullptr};
 
-      main_common = std::make_unique<MobileMainCommon>(envoy_argv.size() - 1, envoy_argv.data());
+      main_common = std::make_unique<EngineCommon>(envoy_argv.size() - 1, envoy_argv.data());
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
       if (logger_.log) {
@@ -86,9 +86,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
           stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
-          http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_,
-                                                        server_->serverFactoryContext().scope(),
-                                                        preferred_network_);
+          http_client_ = std::make_unique<Http::Client>(
+              api_listener.value(), *dispatcher_, server_->serverFactoryContext().scope(),
+              preferred_network_, server_->api().randomGenerator());
           dispatcher_->drain(server_->dispatcher());
           if (callbacks_.on_engine_running != nullptr) {
             callbacks_.on_engine_running(callbacks_.context);
