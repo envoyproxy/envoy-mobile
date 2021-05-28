@@ -46,11 +46,12 @@ public class EnvoyConfiguration {
    * @param httpPlatformFilterFactories  the configuration for platform filters.
    * @param stringAccessors              platform string accessors to register.
    */
-  public EnvoyConfiguration(String statsDomain, @Nullable Integer statsdPort, int connectTimeoutSeconds,
-                            int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
-                            int dnsFailureRefreshSecondsMax, int statsFlushSeconds,
-                            int streamIdleTimeoutSeconds, String appVersion, String appId,
-                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
+  public EnvoyConfiguration(String statsDomain, @Nullable Integer statsdPort,
+                            int connectTimeoutSeconds, int dnsRefreshSeconds,
+                            int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
+                            int statsFlushSeconds, int streamIdleTimeoutSeconds, String appVersion,
+                            String appId, String virtualClusters,
+                            List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
     this.statsDomain = statsDomain;

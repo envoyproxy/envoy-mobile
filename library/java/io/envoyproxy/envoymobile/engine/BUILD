@@ -42,7 +42,7 @@ java_library(
     visibility = ["//visibility:public"],
     deps = [
         "//library/java/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
-            "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_code_findbugs_jsr305",
     ],
 )
 
