@@ -21,5 +21,10 @@ interface Engine {
    */
   fun terminate()
 
+  /**
+   * Flush the stats sinks outside of a flushing interval.
+   * Note: stats flushing may not be synchronous.
+   * Therefore, this function may return prior to flushing taking place.
+   */
   fun flushStats()
 }

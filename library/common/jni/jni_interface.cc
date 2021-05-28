@@ -120,10 +120,10 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplateString(JNIE
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_statsSinkTemplateString(JNIEnv* env,
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_gRPCStatsSinkTemplateString(JNIEnv* env,
                                                                          jclass // class
 ) {
-  jstring result = env->NewStringUTF(stats_sink_template);
+  jstring result = env->NewStringUTF(grpc_stats_sink_template);
   return result;
 }
 

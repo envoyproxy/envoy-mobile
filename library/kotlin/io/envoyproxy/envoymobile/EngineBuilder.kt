@@ -52,8 +52,10 @@ open class EngineBuilder(
 
   /**
    * Add a domain to flush stats to.
-   * Passing nil disables stats emission.
+   * Passing nil disables stats emission via the gRPC stat sink.
    *
+   * Only one of the statsd and gRPC stat sink can be enabled.
+   * 
    * @param statsDomain The domain to use for stats.
    *
    * @return this builder.
@@ -63,6 +65,16 @@ open class EngineBuilder(
     return this
   }
 
+  /**
+   * Add a loopback port to emit statsd stats to.
+   * Passing nil disables stats emission via the statsd stat sink.
+   * 
+   * Only one of the statsd and gRPC stat sink can be enabled.
+   *
+   * @param port The port to send statsd UDP packets to via loopback
+   *
+   * @return this builder.
+   */
   fun addStatsdPort(port: Int): EngineBuilder {
     this.statsdPort = port
     return this

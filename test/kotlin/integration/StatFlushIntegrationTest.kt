@@ -2,6 +2,7 @@ package test.kotlin.integration
 
 import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.Engine
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.Element
 import io.envoyproxy.envoymobile.engine.JniLibrary
@@ -9,18 +10,26 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.After
 import test.kotlin.integration.TestStatsdServer
 
 class StatFlushIntegrationTest {
+  private var engine: Engine? = null
 
   init {
     JniLibrary.loadTestLibrary()
   }
 
+  @After
+  fun teardown() {
+      engine?.terminate()
+      engine = null
+  }
+
   @Test
   fun `concurrent flushes`() {
     val countDownLatch = CountDownLatch(1)
-    val client = EngineBuilder()
+    engine = EngineBuilder()
       .addLogLevel(LogLevel.INFO)
       .addStatsFlushSeconds(1)
       .setLogger { msg ->
@@ -34,16 +43,14 @@ class StatFlushIntegrationTest {
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue();
 
     repeat(100) {
-        client.flushStats()
+        engine!!.flushStats()
     }
-
-    client.terminate()
   }
 
   @Test
   fun `flush flushes to stats sink`() {
     val countDownLatch = CountDownLatch(1)
-    val client = EngineBuilder()
+    engine = EngineBuilder()
       .addLogLevel(LogLevel.DEBUG)
       .addStatsdPort(5555)
       // Really high flush interval so it won't trigger during test execution.
@@ -59,19 +66,15 @@ class StatFlushIntegrationTest {
 
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
 
-    client.pulseClient().counter(Element("foo"), Element("bar")).increment(1)
+    engine!!.pulseClient().counter(Element("foo"), Element("bar")).increment(1)
 
-    try {
-        val statsdServer = TestStatsdServer()
-        statsdServer.runAsync(5555)
+    val statsdServer = TestStatsdServer()
+    statsdServer.runAsync(5555)
 
-        Thread.sleep(20000)
-        statsdServer.requestNextPacketCapture()
-        client.flushStats()
-        val packet = statsdServer.awaitPacketCapture()
-        assertThat(packet).contains("envoy.pulse.foo.bar:1|c")
-    } finally {
-        client.terminate()
-    }
+    statsdServer.requestNextPacketCapture()
+    engine!!.flushStats()
+    val packet = statsdServer.awaitPacketCapture()
+
+    assertThat(packet).contains("envoy.pulse.foo.bar:1|c")
   }
 }

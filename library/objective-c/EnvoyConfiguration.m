@@ -84,7 +84,7 @@
     @"platform_filter_chain" : platformFilterConfigChain,
     @"stats_domain" : self.statsDomain != nil ? self.statsDomain : @"0.0.0.0",
     @"stats_sink" : self.statsDomain != nil
-        ? [[NSString alloc] initWithUTF8String:stats_sink_template]
+        ? [[NSString alloc] initWithUTF8String:grpc_stats_sink_template]
         : @"",
     @"connect_timeout_seconds" :
         [NSString stringWithFormat:@"%lu", (unsigned long)self.connectTimeoutSeconds],
