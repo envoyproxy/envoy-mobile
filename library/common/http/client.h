@@ -45,8 +45,7 @@ public:
       : api_listener_(api_listener), dispatcher_(dispatcher),
         stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
         preferred_network_(preferred_network),
-        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()),
-        random_(random) {}
+        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
