@@ -8,8 +8,8 @@ envoy_cc_library(
     name = "envoy_main_interface_lib",
     repository = "@envoy",
     deps = [
-        ":envoy_main_interface_lib_no_stamp",
         ":engine_common_lib_stamped",
+        ":envoy_main_interface_lib_no_stamp",
     ],
 )
 
