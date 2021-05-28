@@ -9,7 +9,6 @@ envoy_mobile_android_test(
     name = "android_engine_start_test",
     srcs = [
         "AndroidEnvoyEngineStartUpTest.java",
-        "TestStatsdServer.java",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",

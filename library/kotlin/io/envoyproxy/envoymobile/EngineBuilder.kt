@@ -245,7 +245,7 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            statsDomain, if (statsdPort == null) 0 else statsdPort!!, connectTimeoutSeconds,
+            statsDomain, statsdPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors
@@ -258,7 +258,7 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            statsDomain, if (statsdPort == null) 0 else statsdPort!!, connectTimeoutSeconds,
+            statsDomain, statsdPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors

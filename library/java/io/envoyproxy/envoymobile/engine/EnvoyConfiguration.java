@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import javax.annotation.Nullable;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
@@ -45,7 +46,7 @@ public class EnvoyConfiguration {
    * @param httpPlatformFilterFactories  the configuration for platform filters.
    * @param stringAccessors              platform string accessors to register.
    */
-  public EnvoyConfiguration(String statsDomain, Integer statsdPort, int connectTimeoutSeconds,
+  public EnvoyConfiguration(String statsDomain, @Nullable Integer statsdPort, int connectTimeoutSeconds,
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, String appVersion, String appId,
