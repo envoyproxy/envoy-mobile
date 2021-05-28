@@ -10,11 +10,11 @@ import java.net.SocketTimeoutException
 
 class TestStatsdServer {
   private val shutdownLatch: CountDownLatch = CountDownLatch(1)
-  private val failureException: AtomicReference<Exception> = AtomicReference()
-  private val latestPacket: AtomicReference<String> = AtomicReference()
-  private val nextPacketLatch: AtomicReference<CountDownLatch> = AtomicReference()
+  private val awaitNextStat: AtomicReference<CountDownLatch> = AtomicReference(CountDownLatch(0))
+  private var latestStats : AtomicReference<String> = AtomicReference()
 
   private var thread: Thread? = null
+
 
   @Throws(IOException::class)
   fun runAsync(port: Int) {
@@ -31,43 +31,28 @@ class TestStatsdServer {
           // continue to next loop
           continue
         } catch (e: Exception) {
-          failureException.set(e)
+          // TODO(snowp): Bubble up this error somehow.
           return
         }
 
         // TODO(snowp): Parse (or use a parser) so we can extract out individual metric names
         // better.
         val received = String(packet.getData(), packet.getOffset(), packet.getLength())
-        val latch = nextPacketLatch.get()
-        if (latch != null && latch.getCount() == 1L) {
-          latestPacket.set(received)
-          latch.countDown()
-        }
+        latestStats.set(received)
+        awaitNextStat.get().countDown()
       }
     });
     thread!!.start();
   }
 
-  fun requestNextPacketCapture() {
-    // The idea here is to let the server thread know that it should record the next packet by
-    // resetting the latch to 1. Once a packet arrives, we set latestPacket and notify this
-    // thread by closing the latch. This works well assuming there are only two interacting threads,
-    // the server thread and another awaiting packets.
-    nextPacketLatch.set(CountDownLatch(1))
+  fun mostRecentlyReceivedStat(): String {
+    return latestStats.get();
   }
 
-  @Throws(InterruptedException::class)
-  fun awaitPacketCapture(): String {
-    if (!nextPacketLatch.get().await(20, TimeUnit.SECONDS)) {
-      throw RuntimeException("timed out")
-    }
-
-    val maybeException = failureException.get()
-    if (maybeException != null) {
-      throw RuntimeException(maybeException)
-    }
-
-    return latestPacket.get()
+  fun awaitNextStat() {
+    val latch = CountDownLatch(1)
+    awaitNextStat.set(latch)
+    latch.await()
   }
 
   @Throws(InterruptedException::class)

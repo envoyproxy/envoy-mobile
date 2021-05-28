@@ -70,10 +70,9 @@ class StatFlushIntegrationTest {
     val statsdServer = TestStatsdServer()
     statsdServer.runAsync(5555)
 
-    statsdServer.requestNextPacketCapture()
     engine!!.flushStats()
-    val packet = statsdServer.awaitPacketCapture()
 
-    assertThat(packet).contains("envoy.pulse.foo.bar:1|c")
+    statsdServer.awaitNextStat()
+    assertThat(statsdServer.mostRecentlyReceivedStat()).contains("envoy.pulse.foo.bar:1|c")
   }
 }
