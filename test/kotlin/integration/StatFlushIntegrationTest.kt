@@ -27,7 +27,7 @@ class StatFlushIntegrationTest {
   }
 
   @Test
-  fun `concurrent flushes`() {
+  fun `concurrent flushes with histograms`() {
     val countDownLatch = CountDownLatch(1)
     engine = EngineBuilder()
       .addLogLevel(LogLevel.INFO)
@@ -41,6 +41,8 @@ class StatFlushIntegrationTest {
       .build()
 
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue();
+
+    engine!!.pulseClient().distribution(Element("something")).recordValue(100)
 
     repeat(100) {
         engine!!.flushStats()

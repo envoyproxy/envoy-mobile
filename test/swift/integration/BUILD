@@ -35,6 +35,13 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
+    name = "stat_flush_integration_test",
+    srcs = [
+        "StatFlushIntegrationTest.swift",
+    ],
+)
+
+envoy_mobile_swift_test(
     name = "direct_response_filter_mutation_integration_test",
     srcs = [
         "DirectResponseFilterMutationIntegrationTest.swift",
