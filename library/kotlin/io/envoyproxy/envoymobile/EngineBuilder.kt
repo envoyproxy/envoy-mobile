@@ -55,7 +55,7 @@ open class EngineBuilder(
    * Passing nil disables stats emission via the gRPC stat sink.
    *
    * Only one of the statsd and gRPC stat sink can be enabled.
-   * 
+   *
    * @param statsDomain The domain to use for stats.
    *
    * @return this builder.
@@ -68,7 +68,7 @@ open class EngineBuilder(
   /**
    * Add a loopback port to emit statsd stats to.
    * Passing nil disables stats emission via the statsd stat sink.
-   * 
+   *
    * Only one of the statsd and gRPC stat sink can be enabled.
    *
    * @param port The port to send statsd UDP packets to via loopback
