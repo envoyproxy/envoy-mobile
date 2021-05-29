@@ -12,7 +12,6 @@ typedef struct {
   absl::Notification on_exit;
 } engine_test_context;
 
-
 const std::string MINIMAL_TEST_CONFIG = R"(
 static_resources:
   listeners:
