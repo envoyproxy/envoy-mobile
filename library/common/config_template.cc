@@ -1,6 +1,6 @@
-/**
- * Templated default configurations
- */
+// NOLINT(namespace-envoy)
+#include "library/common/config_internal.h"
+#include "library/common/config_template.h"
 
 const char* platform_filter_template = R"(
           - name: envoy.filters.http.platform_bridge
@@ -70,7 +70,7 @@ stats_sinks:
           cluster_name: stats
 )";
 
-const char* config_header = R"(
+const std::string config_header = R"(
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls
   typed_config:

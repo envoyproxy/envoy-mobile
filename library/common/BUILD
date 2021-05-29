@@ -10,7 +10,10 @@ envoy_cc_library(
         "certificates.inc",
         "config_template.cc",
     ],
-    hdrs = ["config_template.h"],
+    hdrs = [
+        "config_internal.h",
+        "config_template.h",
+    ],
     repository = "@envoy",
 )
 

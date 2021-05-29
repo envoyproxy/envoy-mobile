@@ -4,7 +4,7 @@
 
 #include "common/common/lock_guard.h"
 
-#include "library/common/config_template.h"
+#include "library/common/config_internal.h"
 #include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 

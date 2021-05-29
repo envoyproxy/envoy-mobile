@@ -3,11 +3,6 @@
 // NOLINT(namespace-envoy)
 
 /**
- * Fixed config header used in internal config processing.
- */
-extern const char* config_header;
-
-/**
  * Template configuration compiled with the Envoy Mobile library.
  * More information about Envoy's config can be found at:
  * https://www.envoyproxy.io/docs/envoy/latest/configuration/configuration
