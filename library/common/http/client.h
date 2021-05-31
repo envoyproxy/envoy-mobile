@@ -1,6 +1,7 @@
 #pragma once
 
 #include "envoy/buffer/buffer.h"
+#include "envoy/common/scope_tracker.h"
 #include "envoy/event/deferred_deletable.h"
 #include "envoy/http/api_listener.h"
 #include "envoy/http/codec.h"
@@ -101,6 +102,7 @@ public:
   envoy_status_t cancelStream(envoy_stream_t stream);
 
   const HttpClientStats& stats() const;
+  Event::ScopeTracker& scopeTracker() const { return dispatcher_; }
 
   // Used to fill response code details for streams that are cancelled via cancelStream.
   const std::string& getCancelDetails() {
@@ -161,6 +163,7 @@ private:
    */
   class DirectStream : public Stream,
                        public StreamCallbackHelper,
+                       public ScopeTrackedObject,
                        public Logger::Loggable<Logger::Id::http> {
   public:
     DirectStream(envoy_stream_t stream_handle, Client& http_client);
@@ -179,6 +182,9 @@ private:
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
     void setFlushTimeout(std::chrono::milliseconds) override {}
+
+    // ScopeTrackedObject
+    void dumpState(std::ostream& os, int indent_level = 0) const override;
 
     void setResponseDetails(absl::string_view response_details) {
       response_details_ = response_details;

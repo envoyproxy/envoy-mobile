@@ -49,5 +49,21 @@ void ProvisionalDispatcher::deferredDelete(DeferredDeletablePtr&& to_delete) {
   event_dispatcher_->deferredDelete(std::move(to_delete));
 }
 
+void ProvisionalDispatcher::pushTrackedObject(const ScopeTrackedObject* object) {
+  if (event_dispatcher_) {
+    event_dispatcher_->pushTrackedObject(object);
+  }
+}
+
+void ProvisionalDispatcher::popTrackedObject(const ScopeTrackedObject* expected_object) {
+  if (event_dispatcher_) {
+    event_dispatcher_->popTrackedObject(expected_object);
+  }
+}
+
+bool ProvisionalDispatcher::trackedObjectStackIsEmpty() const {
+  return event_dispatcher_ ? event_dispatcher_->trackedObjectStackIsEmpty() : true;
+}
+
 } // namespace Event
 } // namespace Envoy

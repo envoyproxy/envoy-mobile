@@ -1,5 +1,6 @@
 #pragma once
 
+#include "envoy/common/scope_tracker.h"
 #include "envoy/http/filter.h"
 
 #include "common/common/logger.h"
@@ -83,7 +84,7 @@ private:
    * Internal delegate for managing logic and state that exists for both the request (decoding)
    * and response (encoding) paths.
    */
-  struct FilterBase : public Logger::Loggable<Logger::Id::filter> {
+  struct FilterBase : public ScopeTrackedObject, public Logger::Loggable<Logger::Id::filter> {
     FilterBase(PlatformBridgeFilter& parent, envoy_filter_on_headers_f on_headers,
                envoy_filter_on_data_f on_data, envoy_filter_on_trailers_f on_trailers,
                envoy_filter_on_resume_f on_resume)
@@ -91,6 +92,9 @@ private:
           on_data_(on_data), on_trailers_(on_trailers), on_resume_(on_resume) {}
 
     virtual ~FilterBase() = default;
+
+    // ScopeTrackedObject
+    void dumpState(std::ostream& os, int indent_level = 0) const override;
 
     // Common handling for both request and response path.
     Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream);
@@ -151,6 +155,8 @@ private:
   };
 
   using ResponseFilterBasePtr = std::unique_ptr<ResponseFilterBase>;
+
+  Event::ScopeTracker& scopeTracker() const { return dispatcher_; }
 
   Event::Dispatcher& dispatcher_;
   const std::string filter_name_;

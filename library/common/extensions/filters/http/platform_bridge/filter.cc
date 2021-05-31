@@ -4,6 +4,7 @@
 
 #include "common/buffer/buffer_impl.h"
 #include "common/common/assert.h"
+#include "common/common/scope_tracker.h"
 #include "common/common/utility.h"
 
 #include "library/common/api/external.h"
@@ -151,8 +152,17 @@ void PlatformBridgeFilter::onDestroy() {
   platform_filter_.instance_context = nullptr;
 }
 
+void PlatformBridgeFilter::FilterBase::dumpState(std::ostream&, int) const {
+  // TODO(junr03): output to ostream - https://github.com/envoyproxy/envoy-mobile/issues/1497.
+  ENVOY_LOG(error, "PlatformBridgeFilter: {} state={} stream_complete={} error_response={}",
+            parent_.filter_name_,
+            (iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"), stream_complete_,
+            parent_.error_response_);
+}
+
 Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::HeaderMap& headers,
                                                                       bool end_stream) {
+  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
   stream_complete_ = end_stream;
 
   // Allow nullptr to act as no-op.
@@ -185,6 +195,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
 
 Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance& data,
                                                                 bool end_stream) {
+  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
   stream_complete_ = end_stream;
 
   // Allow nullptr to act as no-op.
@@ -275,6 +286,7 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
 }
 
 Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::HeaderMap& trailers) {
+  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
   stream_complete_ = true;
 
   // Allow nullptr to act as no-op.
@@ -458,6 +470,7 @@ void PlatformBridgeFilter::resumeEncoding() {
 }
 
 void PlatformBridgeFilter::FilterBase::onResume() {
+  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
   ENVOY_LOG(debug, "PlatformBridgeFilter({})::onResume", parent_.filter_name_);
 
   if (iteration_state_ == IterationState::Ongoing) {

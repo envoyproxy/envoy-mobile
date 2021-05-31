@@ -2,6 +2,7 @@
 
 #include "common/buffer/buffer_impl.h"
 #include "common/common/lock_guard.h"
+#include "common/common/scope_tracker.h"
 #include "common/http/codes.h"
 #include "common/http/headers.h"
 #include "common/http/utility.h"
@@ -31,6 +32,7 @@ Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream
 
 void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
                                                   bool end_stream) {
+  ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
 
@@ -85,6 +87,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 }
 
 void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
+  ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
 
@@ -114,6 +117,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 }
 
 void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& trailers) {
+  ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
 
@@ -143,6 +147,7 @@ void Client::DirectStreamCallbacks::onComplete() {
 }
 
 void Client::DirectStreamCallbacks::onError() {
+  ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
 
   // The stream should no longer be preset in the map, because onError() was either called from a
@@ -162,6 +167,7 @@ void Client::DirectStreamCallbacks::onError() {
 }
 
 void Client::DirectStreamCallbacks::onCancel() {
+  ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
   bridge_callbacks_.on_cancel(bridge_callbacks_.context);
@@ -185,6 +191,11 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   }
   parent_.removeStream(stream_handle_);
   callbacks_->onError();
+}
+
+void Client::DirectStream::dumpState(std::ostream&, int) const {
+  // TODO(junr03): output to ostream - https://github.com/envoyproxy/envoy-mobile/issues/1497.
+  ENVOY_LOG(error, "[S{}] dump state", stream_handle_);
 }
 
 envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
@@ -216,6 +227,7 @@ envoy_status_t Client::sendHeaders(envoy_stream_t stream, envoy_headers headers,
   // from the caller.
   // https://github.com/lyft/envoy-mobile/issues/301
   if (direct_stream) {
+    ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
     setDestinationCluster(*internal_headers);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
@@ -251,6 +263,7 @@ envoy_status_t Client::sendData(envoy_stream_t stream, envoy_data data, bool end
   // from the caller.
   // https://github.com/lyft/envoy-mobile/issues/301
   if (direct_stream) {
+    ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
     // of the InstancePtr to outlive this function call.
     Buffer::InstancePtr buf = Data::Utility::toInternalData(data);
@@ -278,6 +291,7 @@ envoy_status_t Client::sendTrailers(envoy_stream_t stream, envoy_headers trailer
   // from the caller.
   // https://github.com/lyft/envoy-mobile/issues/301
   if (direct_stream) {
+    ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestTrailerMapPtr internal_trailers = Utility::toRequestTrailers(trailers);
     ENVOY_LOG(debug, "[S{}] request trailers for stream:\n{}", stream, *internal_trailers);
     direct_stream->request_decoder_->decodeTrailers(std::move(internal_trailers));
@@ -290,6 +304,7 @@ envoy_status_t Client::cancelStream(envoy_stream_t stream) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream = getStream(stream);
   if (direct_stream) {
+    ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
 
     // Testing hook.
