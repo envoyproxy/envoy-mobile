@@ -5,13 +5,13 @@ from threading import Thread
 
 import pytest
 
-from library.python.envoy_requests.common.engine import Engine
+from library.python.envoy_requests import pre_build_engine
 from test.python.echo_server import EchoServerHandler
 
 
 @pytest.fixture(scope="session")
 def http_server_url():
-    Engine.build()
+    pre_build_engine()
 
     ip = "127.0.0.1"
     port = 9876

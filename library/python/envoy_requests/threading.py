@@ -39,7 +39,7 @@ def request(*args, **kwargs) -> Response:
         stream_complete.set()
         executor.finish()
 
-    engine = Engine.handle(executor, lambda: stream_complete.set())
+    engine = Engine.handle(executor, lambda: engine_running.set())
     engine_running.wait()
 
     stream = make_stream(
