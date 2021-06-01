@@ -3,6 +3,7 @@
 #
 # https://mypy.readthedocs.io/en/stable/config_file.html#confval-implicit_reexport
 from .response import Response as Response
+from .threading import pre_build_engine as pre_build_engine
 from .threading import request as request
 from .threading import delete as delete
 from .threading import get as get
