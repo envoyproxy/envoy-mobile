@@ -85,6 +85,7 @@ static_resources:
       api_listener:
         "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
         stat_prefix: hcm
+        stream_idle_timeout: {{ stream_idle_timeout_seconds }}s
         route_config:
           name: api_router
           virtual_hosts:
@@ -99,6 +100,7 @@ static_resources:
                     prefix: "/"
                   route:
                     cluster_header: x-envoy-mobile-cluster
+                    timeout: 0s
                     retry_policy:
                       retry_back_off:
                         base_interval: 0.25s
@@ -172,21 +174,34 @@ static_resources:
     circuit_breakers: &circuit_breakers_settings
       thresholds:
         - priority: DEFAULT
-          # n.b: with mobile clients there are scenarios where all concurrent requests might be
-          # retries (e.g., when the phone goes offline). Therefore, Envoy Mobile allows for the same
-          # amount of concurrency for retries as the default value for concurrency for requests.
-          # This configuration uses the default for max concurrent requests (1024) because there is
-          # no reasonable scenario where a mobile client should have even close to that many concurrent
-          # requests.
-          #
-          # `max_retries` could be used but maintainers advised against it, as there are plans to
-          # deprecate that setting.
-          # https://github.com/lyft/envoy-mobile/pull/811#issuecomment-619169529.
+          # Don't impose limits on concurrent retries.
           retry_budget:
             budget_percent:
               value: 100
-            min_retry_concurrency: 1024
+            min_retry_concurrency: 0xffffffff # uint32 max
+  - name: base_alt
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wlan
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+  - name: base_wlan_alt
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
@@ -208,7 +223,30 @@ static_resources:
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+  - name: base_wwan_alt
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_clear
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket:
+      name: envoy.transport_sockets.raw_buffer
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+  - name: base_clear_alt
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
@@ -232,7 +270,31 @@ static_resources:
       name: envoy.transport_sockets.raw_buffer
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+  - name: base_wlan_clear_alt
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket:
+      name: envoy.transport_sockets.raw_buffer
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wwan_clear
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket:
+      name: envoy.transport_sockets.raw_buffer
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+  - name: base_wwan_clear_alt
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
     cluster_type:
@@ -256,6 +318,18 @@ static_resources:
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+  - name: base_h2_alt
+    http2_protocol_options: {}
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wlan_h2
     http2_protocol_options: {}
     connect_timeout: {{ connect_timeout_seconds }}s
@@ -268,7 +342,31 @@ static_resources:
     transport_socket: *base_transport_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+  - name: base_wlan_h2_alt
+    http2_protocol_options: {}
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
   - name: base_wwan_h2
+    http2_protocol_options: {}
+    connect_timeout: {{ connect_timeout_seconds }}s
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_transport_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+  - name: base_wwan_h2_alt
     http2_protocol_options: {}
     connect_timeout: {{ connect_timeout_seconds }}s
     lb_policy: CLUSTER_PROVIDED
@@ -340,5 +438,5 @@ layered_runtime:
     - name: static_layer_0
       static_layer:
         overload:
-          global_downstream_max_connections: 50000
+          global_downstream_max_connections: 0xffffffff # uint32 max
 )";

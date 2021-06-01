@@ -10,6 +10,7 @@ envoy_cc_library(
         "bridge_utility.cc",
         "engine.cc",
         "engine_builder.cc",
+        "engine_callbacks.cc",
         "headers.cc",
         "headers_builder.cc",
         "log_level.cc",
@@ -33,6 +34,7 @@ envoy_cc_library(
         "bridge_utility.h",
         "engine.h",
         "engine_builder.h",
+        "engine_callbacks.h",
         "envoy_error.h",
         "headers.h",
         "headers_builder.h",
@@ -69,6 +71,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":envoy_engine_cc_lib_no_stamp",
-        "//library/common:envoy_mobile_main_common_lib_stamped",
+        "//library/common:engine_common_lib_stamped",
     ],
 )
