@@ -83,6 +83,8 @@ public:
   // ScopeTrackedObject
   void dumpState(std::ostream& os, int indent_level = 0) const override;
 
+  bool isAlive() { return alive_; }
+
 private:
   /**
    * Internal delegate for managing logic and state that exists for both the request (decoding)
@@ -171,6 +173,7 @@ private:
   envoy_http_filter_callbacks platform_request_callbacks_{};
   envoy_http_filter_callbacks platform_response_callbacks_{};
   bool error_response_{};
+  bool alive_{true};
 };
 
 using PlatformBridgeFilterSharedPtr = std::shared_ptr<PlatformBridgeFilter>;
