@@ -80,8 +80,8 @@ public:
   Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
   Http::FilterTrailersStatus encodeTrailers(Http::ResponseTrailerMap& trailers) override;
 
-    // ScopeTrackedObject
-    void dumpState(std::ostream& os, int indent_level = 0) const override;
+  // ScopeTrackedObject
+  void dumpState(std::ostream& os, int indent_level = 0) const override;
 
 private:
   /**

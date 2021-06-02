@@ -157,13 +157,29 @@ void PlatformBridgeFilter::dumpState(std::ostream&, int) const {
   ENVOY_LOG(error, "PlatformBridgeFilter: {} error_response={}", filter_name_, error_response_);
   if (request_filter_base_) {
     auto buffer = request_filter_base_->buffer();
-    ENVOY_LOG(error, "  Request Filter state={} on_headers_called={} on_data_called={} on_trailers_called={} on_resume_called={} buffer={} stream_complete={}", (request_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"), request_filter_base_->on_headers_called_, request_filter_base_->on_data_called_, request_filter_base_->on_trailers_called_,  request_filter_base_->on_resume_called_, (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"), request_filter_base_->stream_complete_);
+    ENVOY_LOG(
+        error,
+        "  Request Filter state={} on_headers_called={} on_data_called={} on_trailers_called={} "
+        "on_resume_called={} buffer={} stream_complete={}",
+        (request_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"),
+        request_filter_base_->on_headers_called_, request_filter_base_->on_data_called_,
+        request_filter_base_->on_trailers_called_, request_filter_base_->on_resume_called_,
+        (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"),
+        request_filter_base_->stream_complete_);
   } else {
     ENVOY_LOG(error, "  Request Filter absent");
   }
   if (response_filter_base_) {
     auto buffer = response_filter_base_->buffer();
-    ENVOY_LOG(error, "  Response Filter state={} on_headers_called={} on_data_called={} on_trailers_called={} on_resume_called={} buffer={} stream_complete={}", (response_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"), response_filter_base_->on_headers_called_, response_filter_base_->on_data_called_, response_filter_base_->on_trailers_called_,  response_filter_base_->on_resume_called_, (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"), response_filter_base_->stream_complete_);
+    ENVOY_LOG(error,
+              "  Response Filter state={} on_headers_called={} on_data_called={} "
+              "on_trailers_called={} on_resume_called={} buffer={} stream_complete={}",
+              (response_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing"
+                                                                                  : "stopped"),
+              response_filter_base_->on_headers_called_, response_filter_base_->on_data_called_,
+              response_filter_base_->on_trailers_called_, response_filter_base_->on_resume_called_,
+              (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"),
+              response_filter_base_->stream_complete_);
   } else {
     ENVOY_LOG(error, "  Response Filter absent");
   }
