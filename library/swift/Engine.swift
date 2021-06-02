@@ -9,4 +9,10 @@ public protocol Engine: AnyObject {
 
   /// A client for recording time series metrics.
   func pulseClient() -> PulseClient
+
+  ///
+  /// Flush the stats sinks outside of a flushing interval.
+  /// Note: stats flushing may not be synchronous.
+  /// Therefore, this function may return prior to flushing taking place.
+  func flushStats()
 }

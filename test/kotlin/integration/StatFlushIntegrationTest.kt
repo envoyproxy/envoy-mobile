@@ -41,6 +41,8 @@ class StatFlushIntegrationTest {
 
     engine!!.pulseClient().distribution(Element("something")).recordValue(100)
 
+    // Verify that we can issue multiple concurrent stat flushes. Because stat flushes
+    // are async, running it multiple times in a row ends up executing them concurrently.
     repeat(100) {
       engine!!.flushStats()
     }

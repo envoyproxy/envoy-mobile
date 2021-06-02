@@ -1,5 +1,4 @@
 import Envoy
-import EnvoyEngine
 import Foundation
 import XCTest
 
@@ -7,7 +6,7 @@ final class StatFlushIntegrationTest: XCTestCase {
   func testLotsOfFlushesWithHistograms() throws {
     let loggingExpectation = self.expectation(description: "Run used platform logger")
 
-    let client = try EngineBuilder()
+    let engine = EngineBuilder()
       .addLogLevel(.debug)
       .addStatsFlushSeconds(1)
       .setLogger { msg in
@@ -16,16 +15,18 @@ final class StatFlushIntegrationTest: XCTestCase {
         }
       }
       .build()
-      .streamClient()
 
-    XCTAssertEqual(XCTWaiter.wait(for: [engineExpectation], timeout: 1), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [loggingExpectation], timeout: 3), .completed)
 
+    let pulseClient = engine.pulseClient()
     let distribution = pulseClient.distribution(elements: ["foo", "bar", "distribution"])
 
-    distribution.recordValue(100)
+    distribution.recordValue(value: 100)
 
-    for i in 100 {
-        client.flushStats()
+    // Hit flushStats() many times in a row to make sure that there are no issues with
+    // concurrent flushing.
+    for _ in 0...100 {
+        engine.flushStats()
     }
   }
 }

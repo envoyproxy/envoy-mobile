@@ -399,6 +399,8 @@ extern const int kEnvoyFailure;
  */
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
+- (void)flushStats;
+
 @end
 
 #pragma mark - EnvoyLogger
