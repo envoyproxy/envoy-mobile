@@ -152,17 +152,26 @@ void PlatformBridgeFilter::onDestroy() {
   platform_filter_.instance_context = nullptr;
 }
 
-void PlatformBridgeFilter::FilterBase::dumpState(std::ostream&, int) const {
+void PlatformBridgeFilter::dumpState(std::ostream&, int) const {
   // TODO(junr03): output to ostream - https://github.com/envoyproxy/envoy-mobile/issues/1497.
-  ENVOY_LOG(error, "PlatformBridgeFilter: {} state={} stream_complete={} error_response={}",
-            parent_.filter_name_,
-            (iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"), stream_complete_,
-            parent_.error_response_);
+  ENVOY_LOG(error, "PlatformBridgeFilter: {} error_response={}", filter_name_, error_response_);
+  if (request_filter_base_) {
+    auto buffer = request_filter_base_->buffer();
+    ENVOY_LOG(error, "  Request Filter state={} on_headers_called={} on_data_called={} on_trailers_called={} on_resume_called={} buffer={} stream_complete={}", (request_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"), request_filter_base_->on_headers_called_, request_filter_base_->on_data_called_, request_filter_base_->on_trailers_called_,  request_filter_base_->on_resume_called_, (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"), request_filter_base_->stream_complete_);
+  } else {
+    ENVOY_LOG(error, "  Request Filter absent");
+  }
+  if (response_filter_base_) {
+    auto buffer = response_filter_base_->buffer();
+    ENVOY_LOG(error, "  Response Filter state={} on_headers_called={} on_data_called={} on_trailers_called={} on_resume_called={} buffer={} stream_complete={}", (response_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"), response_filter_base_->on_headers_called_, response_filter_base_->on_data_called_, response_filter_base_->on_trailers_called_,  response_filter_base_->on_resume_called_, (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"), response_filter_base_->stream_complete_);
+  } else {
+    ENVOY_LOG(error, "  Response Filter absent");
+  }
 }
 
 Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::HeaderMap& headers,
                                                                       bool end_stream) {
-  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
+  ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
   stream_complete_ = end_stream;
 
   // Allow nullptr to act as no-op.
@@ -174,6 +183,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_headers", parent_.filter_name_);
   envoy_filter_headers_status result =
       on_headers_(in_headers, end_stream, parent_.platform_filter_.instance_context);
+  on_headers_called_ = true;
 
   switch (result.status) {
   case kEnvoyFilterHeadersStatusContinue:
@@ -195,7 +205,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
 
 Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance& data,
                                                                 bool end_stream) {
-  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
+  ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
   stream_complete_ = end_stream;
 
   // Allow nullptr to act as no-op.
@@ -220,6 +230,7 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_data", parent_.filter_name_);
   envoy_filter_data_status result =
       on_data_(in_data, end_stream, parent_.platform_filter_.instance_context);
+  on_data_called_ = true;
 
   switch (result.status) {
   case kEnvoyFilterDataStatusContinue:
@@ -286,7 +297,7 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
 }
 
 Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::HeaderMap& trailers) {
-  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
+  ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
   stream_complete_ = true;
 
   // Allow nullptr to act as no-op.
@@ -299,6 +310,7 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_trailers", parent_.filter_name_);
   envoy_filter_trailers_status result =
       on_trailers_(in_trailers, parent_.platform_filter_.instance_context);
+  on_trailers_called_ = true;
 
   switch (result.status) {
   case kEnvoyFilterTrailersStatusContinue:
@@ -470,7 +482,7 @@ void PlatformBridgeFilter::resumeEncoding() {
 }
 
 void PlatformBridgeFilter::FilterBase::onResume() {
-  ScopeTrackerScopeState scope(this, parent_.scopeTracker());
+  ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
   ENVOY_LOG(debug, "PlatformBridgeFilter({})::onResume", parent_.filter_name_);
 
   if (iteration_state_ == IterationState::Ongoing) {
@@ -502,6 +514,8 @@ void PlatformBridgeFilter::FilterBase::onResume() {
   envoy_filter_resume_status result =
       on_resume_(pending_headers, pending_data, pending_trailers, stream_complete_,
                  parent_.platform_filter_.instance_context);
+  on_resume_called_ = true;
+
   if (result.status == kEnvoyFilterResumeStatusStopIteration) {
     RELEASE_ASSERT(!result.pending_headers, "invalid filter state: headers must not be present on "
                                             "stopping filter iteration on async resume");

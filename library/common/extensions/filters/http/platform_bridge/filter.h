@@ -49,6 +49,7 @@ enum class IterationState { Ongoing, Stopped };
  * For more information on implementing platform filters, see the docs.
  */
 class PlatformBridgeFilter final : public Http::PassThroughFilter,
+                                   public ScopeTrackedObject,
                                    public Logger::Loggable<Logger::Id::filter>,
                                    public std::enable_shared_from_this<PlatformBridgeFilter> {
 public:
@@ -79,12 +80,15 @@ public:
   Http::FilterDataStatus encodeData(Buffer::Instance& data, bool end_stream) override;
   Http::FilterTrailersStatus encodeTrailers(Http::ResponseTrailerMap& trailers) override;
 
+    // ScopeTrackedObject
+    void dumpState(std::ostream& os, int indent_level = 0) const override;
+
 private:
   /**
    * Internal delegate for managing logic and state that exists for both the request (decoding)
    * and response (encoding) paths.
    */
-  struct FilterBase : public ScopeTrackedObject, public Logger::Loggable<Logger::Id::filter> {
+  struct FilterBase : public Logger::Loggable<Logger::Id::filter> {
     FilterBase(PlatformBridgeFilter& parent, envoy_filter_on_headers_f on_headers,
                envoy_filter_on_data_f on_data, envoy_filter_on_trailers_f on_trailers,
                envoy_filter_on_resume_f on_resume)
@@ -92,9 +96,6 @@ private:
           on_data_(on_data), on_trailers_(on_trailers), on_resume_(on_resume) {}
 
     virtual ~FilterBase() = default;
-
-    // ScopeTrackedObject
-    void dumpState(std::ostream& os, int indent_level = 0) const override;
 
     // Common handling for both request and response path.
     Http::FilterHeadersStatus onHeaders(Http::HeaderMap& headers, bool end_stream);
@@ -116,9 +117,13 @@ private:
     IterationState iteration_state_;
     PlatformBridgeFilter& parent_;
     envoy_filter_on_headers_f on_headers_;
+    bool on_headers_called_{};
     envoy_filter_on_data_f on_data_;
+    bool on_data_called_{};
     envoy_filter_on_trailers_f on_trailers_;
+    bool on_trailers_called_{};
     envoy_filter_on_resume_f on_resume_;
+    bool on_resume_called_{};
     bool stream_complete_{};
     Http::HeaderMap* pending_headers_{};
     Http::HeaderMap* pending_trailers_{};
