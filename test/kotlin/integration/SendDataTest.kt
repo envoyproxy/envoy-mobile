@@ -17,7 +17,8 @@ private const val apiListenerType =
   "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 private const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
 private const val requestStringMatch = "match_me"
-private const val config = """
+private const val config =
+"""
 static_resources:
   listeners:
   - name: base_api_listener

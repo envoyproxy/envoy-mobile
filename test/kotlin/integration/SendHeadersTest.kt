@@ -15,7 +15,8 @@ import org.junit.Test
 
 private val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 private val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
-private val config = """
+private val config =
+"""
 static_resources:
   listeners:
   - name: base_api_listener

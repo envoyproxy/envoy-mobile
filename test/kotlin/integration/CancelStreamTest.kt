@@ -24,7 +24,8 @@ private const val hcmType =
   "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
 private const val filterName = "cancel_validation_filter"
-private const val config = """
+private const val config =
+"""
 static_resources:
   listeners:
   - name: fake_remote_listener

@@ -18,7 +18,8 @@ private const val apiListenerType = "type.googleapis.com/envoy.extensions.filter
 private const val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
 private const val matcherTrailerName = "test-trailer"
 private const val matcherTrailerValue = "test.code"
-private const val config = """
+private const val config =
+"""
 static_resources:
   listeners:
   - name: base_api_listener

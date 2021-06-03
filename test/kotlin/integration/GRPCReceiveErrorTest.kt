@@ -24,7 +24,8 @@ private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.
 private const val localErrorFilterType =
   "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
 private const val filterName = "error_validation_filter"
-private const val config = """
+private const val config =
+"""
 static_resources:
   listeners:
   - name: base_api_listener
