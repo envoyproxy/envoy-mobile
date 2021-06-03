@@ -3,6 +3,7 @@
 #include "envoy/stats/histogram.h"
 
 #include "common/common/lock_guard.h"
+#include "common/common/mem_block_builder.h"
 
 #include "library/common/config_internal.h"
 #include "library/common/data/utility.h"
@@ -39,10 +40,13 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   size_t header_size = config_header.size();
   size_t input_size = config.size();
   size_t composed_size = header_size + input_size + 1;
-  char* composed_config = static_cast<char*>(safe_malloc(composed_size));
-  std::memcpy(composed_config, config_header.c_str(), header_size);
-  std::memcpy(composed_config + header_size, config.c_str(), input_size);
-  composed_config[composed_size - 1] = '\0';
+
+  MemBlockBuilder<char> config_builder;
+  config_builder.setCapacity(composed_size);
+  config_builder.appendData(absl::Span{config_header.data(), header_size});
+  config_builder.appendData(absl::Span{config.data(), input_size});
+  config_builder.appendOne('\0');
+  char* composed_config = config_builder.releasePointer();
 
   const std::string log_flag = "-l";
   const std::string concurrency_option = "--concurrency";
