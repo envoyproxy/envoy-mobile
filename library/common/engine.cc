@@ -46,14 +46,14 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   config_builder.appendData(absl::Span{config_header.data(), header_size});
   config_builder.appendData(absl::Span{config.data(), input_size});
   config_builder.appendOne('\0');
-  char* composed_config = config_builder.releasePointer();
+  auto composed_config = config_builder.release();
 
   const std::string log_flag = "-l";
   const std::string concurrency_option = "--concurrency";
   const std::string concurrency_arg = "0";
   std::vector<const char*> envoy_argv = {name.c_str(),
                                          config_flag.c_str(),
-                                         composed_config,
+                                         *composed_config,
                                          concurrency_option.c_str(),
                                          concurrency_arg.c_str(),
                                          log_flag.c_str(),
@@ -72,13 +72,10 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
-      free(composed_config);
       PANIC(e.what());
     } catch (const Envoy::MalformedArgvException& e) {
-      free(composed_config);
       PANIC(e.what());
     } catch (const Envoy::EnvoyException& e) {
-      free(composed_config);
       PANIC(e.what());
     }
 
@@ -121,7 +118,6 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   main_common.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
-  free(composed_config);
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
