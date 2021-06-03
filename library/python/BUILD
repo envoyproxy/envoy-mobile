@@ -75,6 +75,9 @@ py_wheel(
         "//bazel:linux_x86_64": "manylinux2010_x86_64",
     }),
     python_tag = python_tag(),
+    requires = [
+        "protobuf==3.17.*",
+    ],
     strip_path_prefixes = ["library/python"],
     version = "0.0.1a1",
     visibility = ["//visibility:public"],
