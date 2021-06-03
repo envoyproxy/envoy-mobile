@@ -116,6 +116,8 @@ private:
     virtual void resumeIteration() PURE;
     virtual Buffer::Instance* buffer() PURE;
 
+    void dumpState(std::ostream& os, int indent_level = 0);
+
     IterationState iteration_state_;
     PlatformBridgeFilter& parent_;
     envoy_filter_on_headers_f on_headers_;

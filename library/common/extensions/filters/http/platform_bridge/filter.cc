@@ -5,6 +5,7 @@
 #include "common/buffer/buffer_impl.h"
 #include "common/common/assert.h"
 #include "common/common/scope_tracker.h"
+#include "common/common/dump_state_utils.h"
 #include "common/common/utility.h"
 
 #include "library/common/api/external.h"
@@ -154,37 +155,24 @@ void PlatformBridgeFilter::onDestroy() {
   platform_filter_.instance_context = nullptr;
 }
 
-void PlatformBridgeFilter::dumpState(std::ostream&, int) const {
-  // TODO(junr03): output to ostream - https://github.com/envoyproxy/envoy-mobile/issues/1497.
-  ENVOY_LOG(error, "PlatformBridgeFilter: {} error_response={}", filter_name_, error_response_);
+void PlatformBridgeFilter::dumpState(std::ostream&, int indent_level) const {
+  // TODO(junr03): output to ostream arg - https://github.com/envoyproxy/envoy-mobile/issues/1497.
+  std::stringstream ss;
+  const char* spaces = spacesForLevel(indent_level);
+
+  ss << spaces << "PlatformBridgeFilter" << DUMP_MEMBER(filter_name_) << DUMP_MEMBER(error_response_) << std::endl;
+
+  const char* inner_spaces = spacesForLevel(indent_level + 1);
   if (request_filter_base_) {
-    auto buffer = request_filter_base_->buffer();
-    ENVOY_LOG(
-        error,
-        "  Request Filter state={} on_headers_called={} on_data_called={} on_trailers_called={} "
-        "on_resume_called={} buffer={} stream_complete={}",
-        (request_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"),
-        request_filter_base_->on_headers_called_, request_filter_base_->on_data_called_,
-        request_filter_base_->on_trailers_called_, request_filter_base_->on_resume_called_,
-        (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"),
-        request_filter_base_->stream_complete_);
-  } else {
-    ENVOY_LOG(error, "  Request Filter absent");
+    ss << inner_spaces << "Request Filter";
+    request_filter_base_->dumpState(ss, 0);
   }
   if (response_filter_base_) {
-    auto buffer = response_filter_base_->buffer();
-    ENVOY_LOG(error,
-              "  Response Filter state={} on_headers_called={} on_data_called={} "
-              "on_trailers_called={} on_resume_called={} buffer={} stream_complete={}",
-              (response_filter_base_->iteration_state_ == IterationState::Ongoing ? "ongoing"
-                                                                                  : "stopped"),
-              response_filter_base_->on_headers_called_, response_filter_base_->on_data_called_,
-              response_filter_base_->on_trailers_called_, response_filter_base_->on_resume_called_,
-              (buffer ? fmt::format("{} bytes", buffer->length()) : "no buffer"),
-              response_filter_base_->stream_complete_);
-  } else {
-    ENVOY_LOG(error, "  Response Filter absent");
+    ss << inner_spaces << "Response Filter";
+    response_filter_base_->dumpState(ss, 0);
   }
+
+  ENVOY_LOG(error, "\n{}", ss.str());
 }
 
 Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::HeaderMap& headers,
@@ -602,6 +590,12 @@ void PlatformBridgeFilter::FilterBase::onResume() {
   iteration_state_ = IterationState::Ongoing;
   resumeIteration();
 }
+
+void PlatformBridgeFilter::FilterBase::dumpState(std::ostream& os, int indent_level) {
+  Buffer::Instance* buffer = this->buffer();
+  const char* spaces = spacesForLevel(indent_level);
+  os << spaces << DUMP_MEMBER_AS(iteration_state_, (iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped")) << DUMP_MEMBER(on_headers_called_) << DUMP_MEMBER(on_data_called_) << DUMP_MEMBER(on_trailers_called_) << DUMP_MEMBER(on_resume_called_) << DUMP_NULLABLE_MEMBER(pending_headers_, "pending") << DUMP_NULLABLE_MEMBER(buffer, fmt::format("{} bytes", buffer->length())) << DUMP_NULLABLE_MEMBER(pending_trailers_, "pending") << DUMP_MEMBER(stream_complete_) << std::endl;
+};
 
 void PlatformBridgeFilter::RequestFilterBase::addData(envoy_data data) {
   Buffer::OwnedImpl inject_data;

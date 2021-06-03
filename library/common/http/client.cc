@@ -1,6 +1,7 @@
 #include "library/common/http/client.h"
 
 #include "common/buffer/buffer_impl.h"
+#include "common/common/dump_state_utils.h"
 #include "common/common/lock_guard.h"
 #include "common/common/scope_tracker.h"
 #include "common/http/codes.h"
@@ -193,9 +194,13 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   callbacks_->onError();
 }
 
-void Client::DirectStream::dumpState(std::ostream&, int) const {
-  // TODO(junr03): output to ostream - https://github.com/envoyproxy/envoy-mobile/issues/1497.
-  ENVOY_LOG(error, "[S{}] dump state", stream_handle_);
+void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
+  // TODO(junr03): output to ostream arg - https://github.com/envoyproxy/envoy-mobile/issues/1497.
+  std::stringstream ss;
+  const char* spaces = spacesForLevel(indent_level);
+
+  ss << spaces << "DirectStream" << DUMP_MEMBER(stream_handle_) << std::endl;
+  ENVOY_LOG(error, "\n{}", ss);
 }
 
 envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
