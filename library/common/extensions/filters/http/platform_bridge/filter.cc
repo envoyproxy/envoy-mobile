@@ -4,8 +4,8 @@
 
 #include "common/buffer/buffer_impl.h"
 #include "common/common/assert.h"
-#include "common/common/scope_tracker.h"
 #include "common/common/dump_state_utils.h"
+#include "common/common/scope_tracker.h"
 #include "common/common/utility.h"
 
 #include "library/common/api/external.h"
@@ -160,7 +160,8 @@ void PlatformBridgeFilter::dumpState(std::ostream&, int indent_level) const {
   std::stringstream ss;
   const char* spaces = spacesForLevel(indent_level);
 
-  ss << spaces << "PlatformBridgeFilter" << DUMP_MEMBER(filter_name_) << DUMP_MEMBER(error_response_) << std::endl;
+  ss << spaces << "PlatformBridgeFilter" << DUMP_MEMBER(filter_name_)
+     << DUMP_MEMBER(error_response_) << std::endl;
 
   const char* inner_spaces = spacesForLevel(indent_level + 1);
   if (request_filter_base_) {
@@ -594,7 +595,15 @@ void PlatformBridgeFilter::FilterBase::onResume() {
 void PlatformBridgeFilter::FilterBase::dumpState(std::ostream& os, int indent_level) {
   Buffer::Instance* buffer = this->buffer();
   const char* spaces = spacesForLevel(indent_level);
-  os << spaces << DUMP_MEMBER_AS(iteration_state_, (iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped")) << DUMP_MEMBER(on_headers_called_) << DUMP_MEMBER(on_data_called_) << DUMP_MEMBER(on_trailers_called_) << DUMP_MEMBER(on_resume_called_) << DUMP_NULLABLE_MEMBER(pending_headers_, "pending") << DUMP_NULLABLE_MEMBER(buffer, fmt::format("{} bytes", buffer->length())) << DUMP_NULLABLE_MEMBER(pending_trailers_, "pending") << DUMP_MEMBER(stream_complete_) << std::endl;
+  os << spaces
+     << DUMP_MEMBER_AS(iteration_state_,
+                       (iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"))
+     << DUMP_MEMBER(on_headers_called_) << DUMP_MEMBER(on_data_called_)
+     << DUMP_MEMBER(on_trailers_called_) << DUMP_MEMBER(on_resume_called_)
+     << DUMP_NULLABLE_MEMBER(pending_headers_, "pending")
+     << DUMP_NULLABLE_MEMBER(buffer, fmt::format("{} bytes", buffer->length()))
+     << DUMP_NULLABLE_MEMBER(pending_trailers_, "pending") << DUMP_MEMBER(stream_complete_)
+     << std::endl;
 };
 
 void PlatformBridgeFilter::RequestFilterBase::addData(envoy_data data) {
