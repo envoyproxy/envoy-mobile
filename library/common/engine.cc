@@ -35,13 +35,21 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   std::unique_ptr<EngineCommon> main_common;
   const std::string name = "envoy";
   const std::string config_flag = "--config-yaml";
-  const std::string* composed_config = new std::string{config_header + config};
+
+  size_t header_size = config_header.size();
+  size_t input_size = config.size();
+  size_t composed_size = header_size + input_size + 1;
+  char* composed_config = static_cast<char*>(safe_malloc(composed_size));
+  std::memcpy(composed_config, config_header.c_str(), header_size);
+  std::memcpy(composed_config + header_size, config.c_str(), input_size);
+  composed_config[composed_size - 1] = '\0';
+
   const std::string log_flag = "-l";
   const std::string concurrency_option = "--concurrency";
   const std::string concurrency_arg = "0";
   std::vector<const char*> envoy_argv = {name.c_str(),
                                          config_flag.c_str(),
-                                         composed_config->c_str(),
+                                         composed_config,
                                          concurrency_option.c_str(),
                                          concurrency_arg.c_str(),
                                          log_flag.c_str(),
@@ -61,15 +69,15 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       std::cerr << e.what() << std::endl;
-      delete composed_config;
+      free(composed_config);
       return ENVOY_FAILURE;
     } catch (const Envoy::MalformedArgvException& e) {
       std::cerr << e.what() << std::endl;
-      delete composed_config;
+      free(composed_config);
       return ENVOY_FAILURE;
     } catch (const Envoy::EnvoyException& e) {
       std::cerr << e.what() << std::endl;
-      delete composed_config;
+      free(composed_config);
       return ENVOY_FAILURE;
     }
 
@@ -112,7 +120,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   main_common.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
-  delete composed_config;
+  free(composed_config);
 
   return run_success ? ENVOY_SUCCESS : ENVOY_FAILURE;
 }
