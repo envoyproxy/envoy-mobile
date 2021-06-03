@@ -3,7 +3,6 @@
 #include "envoy/stats/histogram.h"
 
 #include "common/common/lock_guard.h"
-#include "common/common/mem_block_builder.h"
 
 #include "library/common/config_internal.h"
 #include "library/common/data/utility.h"
@@ -36,24 +35,13 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   std::unique_ptr<EngineCommon> main_common;
   const std::string name = "envoy";
   const std::string config_flag = "--config-yaml";
-
-  size_t header_size = config_header.size();
-  size_t input_size = config.size();
-  size_t composed_size = header_size + input_size + 1;
-
-  MemBlockBuilder<char> config_builder;
-  config_builder.setCapacity(composed_size);
-  config_builder.appendData(absl::Span{config_header.data(), header_size});
-  config_builder.appendData(absl::Span{config.data(), input_size});
-  config_builder.appendOne('\0');
-  auto composed_config = config_builder.release();
-
+  const std::string composed_config = absl::StrCat(config_header, config);
   const std::string log_flag = "-l";
   const std::string concurrency_option = "--concurrency";
   const std::string concurrency_arg = "0";
   std::vector<const char*> envoy_argv = {name.c_str(),
                                          config_flag.c_str(),
-                                         *composed_config,
+                                         composed_config.c_str(),
                                          concurrency_option.c_str(),
                                          concurrency_arg.c_str(),
                                          log_flag.c_str(),
