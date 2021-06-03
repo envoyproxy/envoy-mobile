@@ -102,7 +102,7 @@ public:
   /**
    * Flush the stats sinks outside of a flushing interval.
    * Note: stat flushing is done asynchronously, this function will never block.
-   * This is a noop if called before the the underlying EnvoyEngine hasn't started.
+   * This is a noop if called before the underlying EnvoyEngine has started.
    */
   void flushStats();
 
