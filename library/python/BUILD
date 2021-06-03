@@ -80,7 +80,7 @@ py_wheel(
     }),
     python_tag = python_tag(),
     strip_path_prefixes = ["library/python"],
-    version = "0.0.1a1",
+    version = "0.0.1a2",
     visibility = ["//visibility:public"],
     deps = [
         ":envoy_engine.so",
