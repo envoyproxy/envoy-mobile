@@ -68,17 +68,14 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
-      std::cerr << e.what() << std::endl;
       free(composed_config);
-      return ENVOY_FAILURE;
+      PANIC(e.what());
     } catch (const Envoy::MalformedArgvException& e) {
-      std::cerr << e.what() << std::endl;
       free(composed_config);
-      return ENVOY_FAILURE;
+      PANIC(e.what());
     } catch (const Envoy::EnvoyException& e) {
-      std::cerr << e.what() << std::endl;
       free(composed_config);
-      return ENVOY_FAILURE;
+      PANIC(e.what());
     }
 
     // Note: We're waiting longer than we might otherwise to drain to the main thread's dispatcher.
