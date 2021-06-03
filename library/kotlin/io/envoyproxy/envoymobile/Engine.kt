@@ -23,8 +23,8 @@ interface Engine {
 
   /**
    * Flush the stats sinks outside of a flushing interval.
-   * Note: stats flushing may not be synchronous.
-   * Therefore, this function may return prior to flushing taking place.
+   * Note: stat flushing is done asynchronously, this function will never block.
+   * This is a noop if called before the the underlying EnvoyEngine hasn't started.
    */
   fun flushStats()
 }

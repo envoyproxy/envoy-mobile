@@ -236,7 +236,7 @@ Http::Client& Engine::httpClient() {
 }
 
 void Engine::flushStats() {
-  // The server will be null if the post-init callback has not been completed within run().
+  // The server will be null if the server has not been initialized as part of main.
   // In this case, we can simply ignore the flush.
 
   Thread::LockGuard lock(mutex_);
