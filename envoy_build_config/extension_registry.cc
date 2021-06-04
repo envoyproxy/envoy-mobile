@@ -10,7 +10,6 @@
 #include "extensions/filters/http/dynamic_forward_proxy/config.h"
 #include "extensions/filters/http/router/config.h"
 #include "extensions/filters/network/http_connection_manager/config.h"
-#include "extensions/http/original_ip_detection/xff/config.h"
 #include "extensions/stat_sinks/metrics_service/config.h"
 #include "extensions/transport_sockets/raw_buffer/config.h"
 #include "extensions/transport_sockets/tls/cert_validator/default_validator.h"
@@ -26,7 +25,6 @@ namespace Envoy {
 void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::Clusters::DynamicForwardProxy::forceRegisterClusterFactory();
   Envoy::Extensions::Compression::Gzip::Decompressor::forceRegisterGzipDecompressorLibraryFactory();
-  Envoy::Extensions::Http::OriginalIPDetection::Xff::forceRegisterXffIPDetectionFactory();
   Envoy::Extensions::HttpFilters::Assertion::forceRegisterAssertionFilterFactory();
   Envoy::Extensions::HttpFilters::Decompressor::forceRegisterDecompressorFilterFactory();
   Envoy::Extensions::HttpFilters::BufferFilter::forceRegisterBufferFilterFactory();
