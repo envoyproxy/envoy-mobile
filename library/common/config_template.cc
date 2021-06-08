@@ -1,6 +1,6 @@
-/**
- * Templated default configurations
- */
+// NOLINT(namespace-envoy)
+#include "library/common/config_internal.h"
+#include "library/common/config_template.h"
 
 const char* platform_filter_template = R"(
           - name: envoy.filters.http.platform_bridge
@@ -80,6 +80,19 @@ stats_sinks:
         address: 127.0.0.1
         port_value: {{ port }}
 )";
+
+const std::string config_header = R"(
+!ignore tls_socket_defs: &base_tls_socket
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+    common_tls_context:
+      validation_context:
+        trusted_ca:
+          inline_string: |
+)"
+#include "certificates.inc"
+;
 
 const char* config_template = R"(
 static_resources:
@@ -165,18 +178,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: &base_transport_socket
-      name: envoy.transport_sockets.tls
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-        common_tls_context:
-          validation_context:
-            trusted_ca:
-              inline_string: |
-)"
-#include "certificates.inc"
-
-                              R"(
+    transport_socket: *base_tls_socket
     upstream_connection_options: &upstream_opts
       tcp_keepalive:
         keepalive_interval: 5
@@ -198,7 +200,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wlan
@@ -209,7 +211,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wlan_alt
@@ -220,7 +222,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wwan
@@ -231,7 +233,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wwan_alt
@@ -242,7 +244,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_clear
@@ -326,7 +328,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_h2_alt
@@ -338,7 +340,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wlan_h2
@@ -350,7 +352,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wlan_h2_alt
@@ -362,7 +364,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wwan_h2
@@ -374,7 +376,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: base_wwan_h2_alt
@@ -386,7 +388,7 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
   - name: stats
@@ -401,7 +403,7 @@ static_resources:
             - endpoint:
                 address:
                   socket_address: {address: {{ stats_domain }}, port_value: 443}
-    transport_socket: *base_transport_socket
+    transport_socket: *base_tls_socket
     type: LOGICAL_DNS
 stats_flush_interval: {{ stats_flush_interval_seconds }}s
 {{ stats_sink }}
