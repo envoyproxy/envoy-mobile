@@ -26,7 +26,4 @@ class Response:
         return str(self.body, "utf8")
 
     def json(self) -> Dict[str, Any]:
-        try:
-            return json.loads(self.body)
-        except Exception as e:
-            raise Exception(self.body_raw, self.status_code, self.headers, self.trailers, self.envoy_error, e)
+        return json.loads(self.body)
