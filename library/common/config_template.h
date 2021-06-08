@@ -49,4 +49,3 @@ extern const char* grpc_stats_sink_template;
  * Template used for setting up the statsd stats sink.
  */
 extern const char* statsd_sink_template;
-
