@@ -8,6 +8,7 @@
 #include "envoy/http/header_map.h"
 #include "envoy/stats/stats_macros.h"
 
+#include "source/common/buffer/watermark_buffer.h"
 #include "source/common/common/logger.h"
 #include "source/common/http/codec_helper.h"
 
@@ -41,11 +42,13 @@ struct HttpClientStats {
 class Client : public Logger::Loggable<Logger::Id::http> {
 public:
   Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
-         std::atomic<envoy_network_t>& preferred_network, Random::RandomGenerator& random)
+         std::atomic<envoy_network_t>& preferred_network, Random::RandomGenerator& random,
+         bool async_mode = false)
       : api_listener_(api_listener), dispatcher_(dispatcher),
         stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
         preferred_network_(preferred_network),
-        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random) {}
+        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random),
+        async_mode_(async_mode) { }
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -144,7 +147,37 @@ private:
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
+    void hasBufferedData() {
+      direct_stream_.runHighWatermarkCallbacks();
+    }
+    void bufferedDataDrained() {
+      direct_stream_.runLowWatermarkCallbacks();
+    }
+
+    // To be called by mobile library when async data is on and more data is wanted.
+    // If bytes are available, the bytes available (up to the limit of
+    // bytes_to_send) will be shipped the bridge immediately.
+    //
+    // If no bytes are available, the next time data is received from the
+    // network, up to bytes_to_send bytes will be shipped to the bridge.
+    //
+    // Bytes will only be sent up once, even if the bytes available are fewer
+    // than bytes_to_send.
+    void resumeData(int32_t bytes_to_send);
+
   private:
+    void setAsyncMode() {
+      async_mode_ = true;
+      // TODO(alyssawilk) lazily create body buffer.
+      response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
+          [this]() -> void { this->hasBufferedData(); },
+          [this]() -> void { this->bufferedDataDrained(); },
+          []() -> void { });
+      response_data_->setWatermarks(1);
+    }
+    void sendDataToBridge(Buffer::Instance& data, bool end_stream);
+    void sendTrailersToBridge(const ResponseTrailerMap& trailers);
+
     DirectStream& direct_stream_;
     const envoy_http_callbacks bridge_callbacks_;
     Client& http_client_;
@@ -152,6 +185,15 @@ private:
     absl::optional<envoy_data> error_message_;
     absl::optional<int32_t> error_attempt_count_;
     bool success_{};
+    // Buffered response data for async mode.
+    Buffer::InstancePtr response_data_;
+    ResponseTrailerMapPtr response_trailers_;
+    // True if the bridge should operate in asynchronous mode, and only send
+    // data when it is requested by the caller.
+    bool async_mode_{};
+    bool end_stream_read_{};
+    bool end_stream_communicated_{};
+    uint32_t bytes_to_send_{};
   };
 
   using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
@@ -229,6 +271,10 @@ private:
   Network::Address::InstanceConstSharedPtr address_;
   Random::RandomGenerator& random_;
   Thread::ThreadSynchronizer synchronizer_;
+
+  // True if the bridge should operate in asynchronous mode, and only send
+  // data when it is requested by the caller via resumeData()
+  bool async_mode_;
 };
 
 using ClientPtr = std::unique_ptr<Client>;
