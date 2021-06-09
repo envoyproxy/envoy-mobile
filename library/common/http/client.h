@@ -116,7 +116,7 @@ public:
 
 private:
   class DirectStream;
-
+  friend class ClientTest;
   /**
    * Notifies caller of async HTTP stream status.
    * Note the HTTP stream is full-duplex, even if the local to remote stream has been ended
@@ -145,10 +145,17 @@ private:
       NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
     }
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
+
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
-    void hasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
-    void bufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
+    // TODO(alyssawilk) we can't push back immediately because HTTP/1 and HTTP/2
+    // upstreams have different semantics.
+    void hasBufferedData() {
+      direct_stream_.runHighWatermarkCallbacks();
+    }
+    void bufferedDataDrained() {
+      direct_stream_.runLowWatermarkCallbacks();
+    }
 
     // To be called by mobile library when async data is on and more data is wanted.
     // If bytes are available, the bytes available (up to the limit of
@@ -166,9 +173,10 @@ private:
       async_mode_ = true;
       // TODO(alyssawilk) lazily create body buffer.
       response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
-          [this]() -> void { this->hasBufferedData(); },
-          [this]() -> void { this->bufferedDataDrained(); }, []() -> void {});
-      response_data_->setWatermarks(1);
+          [this]() -> void { this->bufferedDataDrained(); },
+          [this]() -> void { this->hasBufferedData(); }, []() -> void {});
+      // Default to 6M per stream.
+      response_data_->setWatermarks(6000000);
     }
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);

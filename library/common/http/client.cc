@@ -28,11 +28,7 @@ Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream
                                                      envoy_http_callbacks bridge_callbacks,
                                                      Client& http_client)
     : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks),
-      http_client_(http_client) {
-  if (http_client_.async_mode_) {
-    setAsyncMode();
-  }
-}
+      http_client_(http_client), async_mode_(http_client_.async_mode_) {}
 
 void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
                                                   bool end_stream) {
@@ -124,6 +120,16 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   // If not all the bytes have been sent up, buffer any remaining data in response_data.
   if (data.length() != 0) {
     ASSERT(async_mode_);
+    if (!response_data_) {
+      response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
+          [this]() -> void { this->bufferedDataDrained(); },
+          [this]() -> void { this->hasBufferedData(); }, []() -> void {});
+      // Default to 64K per stream.
+      response_data_->setWatermarks(1000000);
+    }
+    ENVOY_LOG(debug,
+              "[S{}] buffering {} bytes due to async mode. {} total bytes buffered.",
+              direct_stream_.stream_handle_, data.length(), data.length() + response_data_->length());
     response_data_->move(data);
   }
 }
@@ -179,16 +185,20 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
 
   bytes_to_send_ = bytes_to_send;
 
+  ENVOY_LOG(debug, "[S{}] received resume data call for {} bytes", direct_stream_.stream_handle_,
+            bytes_to_send_);
+
   // If there is bufferd data, send up to bytes_to_send bytes.
   // Make sure to send end stream with data only if
   // 1) it has been received from the peer and
   // 2) there are no trailers
-  if (response_data_->length() || (end_stream_read_ && !end_stream_communicated_)) {
+  if ((response_data_.get() && response_data_->length() != 0) ||
+      (end_stream_read_ && !end_stream_communicated_)) {
     sendDataToBridge(*response_data_, end_stream_read_ && !response_trailers_.get());
   }
 
   // If all buffered data has been sent, send and free up trailers.
-  if (response_data_->length() == 0 && response_trailers_.get()) {
+  if ((!response_data_.get() || response_data_->length() == 0) && response_trailers_.get()) {
     sendTrailersToBridge(*response_trailers_);
     response_trailers_.release();
   }
