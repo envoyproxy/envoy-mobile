@@ -59,7 +59,6 @@ TEST(DataConstructorTest, FromCppToCPartial) {
   c_data.release(c_data.context);
 }
 
-
 TEST(DataConstructorTest, CopyFromCppToC) {
   std::string s = "test string";
   Buffer::OwnedImpl cpp_data = Buffer::OwnedImpl(absl::string_view(s));

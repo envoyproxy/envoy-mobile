@@ -48,7 +48,7 @@ public:
         stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
         preferred_network_(preferred_network),
         address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random),
-        async_mode_(async_mode) { }
+        async_mode_(async_mode) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -147,12 +147,8 @@ private:
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
-    void hasBufferedData() {
-      direct_stream_.runHighWatermarkCallbacks();
-    }
-    void bufferedDataDrained() {
-      direct_stream_.runLowWatermarkCallbacks();
-    }
+    void hasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
+    void bufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
 
     // To be called by mobile library when async data is on and more data is wanted.
     // If bytes are available, the bytes available (up to the limit of
@@ -171,8 +167,7 @@ private:
       // TODO(alyssawilk) lazily create body buffer.
       response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
           [this]() -> void { this->hasBufferedData(); },
-          [this]() -> void { this->bufferedDataDrained(); },
-          []() -> void { });
+          [this]() -> void { this->bufferedDataDrained(); }, []() -> void {});
       response_data_->setWatermarks(1);
     }
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
