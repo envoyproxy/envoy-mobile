@@ -234,15 +234,9 @@ Http::Client& Engine::httpClient() {
 }
 
 void Engine::flushStats() {
-  // The server will be null if the server has not been initialized as part of main.
-  // In this case, we can simply ignore the flush.
+  ASSERT(dispatcher_->isThreadSafe(), "flushStats must be called from the dispatcher's context");
 
-  Thread::LockGuard lock(mutex_);
-  if (server_) {
-    // Stats must be flushed from the main thread.
-    // Dispatching should be moved after https://github.com/lyft/envoy-mobile/issues/720
-    server_->dispatcher().post([this]() -> void { server_->flushStats(); });
-  }
+  server_->flushStats();
 }
 
 } // namespace Envoy

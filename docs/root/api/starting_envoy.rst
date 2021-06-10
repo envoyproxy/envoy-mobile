@@ -98,7 +98,7 @@ Specify the log level to be used when running the underlying Envoy engine.
   builder.addLogLevel(.warn)
 
 ~~~~~~~~~~~~~~~~~~
-``addStatsDomain``
+``addGrpcStatsDomain``
 ~~~~~~~~~~~~~~~~~~
 
 Specify a domain which implements the
@@ -116,10 +116,10 @@ Passing ``nil``/``null`` disables stats emission, and this is the default value.
 **Example**::
 
   // Kotlin
-  builder.addStatsDomain("envoy-mobile.envoyproxy.io")
+  builder.addGrpcStatsDomain("envoy-mobile.envoyproxy.io")
 
   // Swift
-  builder.addStatsDomain("envoy-mobile.envoyproxy.io")
+  builder.addGrpcStatsDomain("envoy-mobile.envoyproxy.io")
 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 ``addStatsFlushSeconds``

@@ -148,7 +148,11 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, envo
 
 void flush_stats(envoy_engine_t) {
   if (auto e = engine()) {
-    e->flushStats();
+    e->dispatcher().post([]() {
+      if (auto e = engine()) {
+        e->flushStats();
+      }
+    });
   }
 }
 

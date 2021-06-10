@@ -105,4 +105,19 @@ class EnvoyConfigurationTest {
       assertThat(e.message).contains("missing")
     }
   }
+
+  @Test
+  fun `cannot configure both statsD and gRPC stat sink`() {
+    val envoyConfiguration = EnvoyConfiguration(
+      "stats.foo.com", 5050, 123, 234, 345, 456, 567, 678, "v1.2.3", "com.mydomain.myapp", "[test]",
+      emptyList(), emptyList(), emptyMap()
+    )
+
+    try {
+      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "", "")
+      fail("Unresolved configuration keys should trigger exception.")
+    } catch (e: EnvoyConfiguration.ConfigurationException) {
+      assertThat(e.message).contains("cannot enable both statsD and gRPC metrics sink")
+    }
+  }
 }
