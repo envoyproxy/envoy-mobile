@@ -97,9 +97,9 @@ Specify the log level to be used when running the underlying Envoy engine.
   // Swift
   builder.addLogLevel(.warn)
 
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 ``addGrpcStatsDomain``
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Specify a domain which implements the
 :tree:`stats endpoint <83908423d46a37574e9a35627df1f3dd9634e5ec/library/common/config_template.cc#L139-L145>`
