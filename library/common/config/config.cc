@@ -1,17 +1,17 @@
 // NOLINT(namespace-envoy)
-#include "library/common/config_internal.h"
-#include "library/common/config_template.h"
+#include "library/common/config/internal.h"
+#include "library/common/config/templates.h"
 
-const char* platform_filter_template = R"(
+const char* platform_filter_prefix = R"(
           - name: envoy.filters.http.platform_bridge
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
-              platform_filter_name: {{ platform_filter_name }}
+              platform_filter_name: 
 )";
 
-const char* native_filter_template = R"(
-          - name: {{ native_filter_name }}
-            typed_config: {{ native_filter_typed_config }}
+const char* native_filter_prefix = R"(
+          - name: #{native_filter_name}
+            typed_config: #{native_config}
 )";
 
 const char* route_cache_reset_filter_template = R"(
@@ -20,21 +20,10 @@ const char* route_cache_reset_filter_template = R"(
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
 )";
 
-const char* custom_filter_template = R"(
-          - {{ filter_config }}
-)";
-
-const char* custom_cluster_template = R"(
-  - {{ cluster_config }}
-)";
-
-const char* custom_listener_template = R"(
-  - {{ listener_config }}
-)";
-
-const char* custom_route_template = R"(
-                - {{ route_config }}
-)";
+const int custom_cluster_indent = 2;
+const int custom_listener_indent = 2;
+const int custom_filter_indent = 10;
+const int custom_route_indent = 16;
 
 const char* fake_remote_listener_template = R"(
   - name: fake_remote_listener
@@ -52,7 +41,7 @@ const char* fake_remote_listener_template = R"(
             - name: remote_service
               domains: ["*"]
               routes:
-{{ direct_responses }}
+#{ direct_responses }
           http_filters:
           - name: envoy.router
             typed_config:
@@ -64,10 +53,11 @@ const std::string config_header = R"(
   - &connect_timeout 30s
   - &dns_refresh_rate 60s
   - &dns_fail_base_interval 2s
-  - &dns_fail_max-interval 10s
+  - &dns_fail_max_interval 10s
   - &metadata {}
   - &stats_domain 127.0.0.1
   - &stats_flush_interval 60s
+  - &stream_idle_timeout 15s
   - &virtual_clusters []
 
 !ignore stats_defs:
@@ -99,7 +89,7 @@ const char* config_template = R"(
         - lb_endpoints:
             - endpoint:
                 address:
-                  socket_address: {address: *stats_domain, port_value: 443}
+                  socket_address: { address: *stats_domain, port_value: 443 }
     transport_socket: *base_tls_socket
     type: LOGICAL_DNS
   fake_remote_cluster: &fake_remote_cluster
@@ -117,7 +107,7 @@ const char* config_template = R"(
 
 static_resources:
   listeners:
-{{ custom_listeners }}
+#{ custom_listeners }
   - name: base_api_listener
     address:
       socket_address:
@@ -138,7 +128,7 @@ static_resources:
               virtual_clusters: *virtual_clusters
               domains: ["*"]
               routes:
-{{ custom_routes }}
+#{ custom_routes }
                 - match: { prefix: "/" }
                   route:
                     cluster_header: x-envoy-mobile-cluster
@@ -148,7 +138,7 @@ static_resources:
                         base_interval: 0.25s
                         max_interval: 60s
         http_filters:
-{{ custom_filters }}
+#{ custom_filters }
           - name: envoy.filters.http.local_error
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
@@ -185,7 +175,7 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-{{ custom_clusters }}
+#{ custom_clusters }
   - *stats_cluster
   - name: base
     connect_timeout: *connect_timeout
@@ -210,7 +200,7 @@ static_resources:
               value: 100
             min_retry_concurrency: 0xffffffff # uint32 max
   - name: base_alt
-    connect_timeout: *connect_timeout_seconds
+    connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
     transport_socket: *base_tls_socket
