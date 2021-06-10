@@ -2,23 +2,23 @@
 #include "library/common/config_internal.h"
 #include "library/common/config_template.h"
 
-//const char* platform_filter_template = R"(
-//          - name: envoy.filters.http.platform_bridge
-//            typed_config:
-//              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
-//              platform_filter_name: {{ platform_filter_name }}
-//)";
-//
-//const char* native_filter_template = R"(
-//          - name: {{ native_filter_name }}
-//            typed_config: {{ native_filter_typed_config }}
-//)";
-//
-//const char* route_cache_reset_filter_template = R"(
-//          - name: envoy.filters.http.route_cache_reset
-//            typed_config:
-//              "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
-//)";
+const char* platform_filter_template = R"(
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+              platform_filter_name: {{ platform_filter_name }}
+)";
+
+const char* native_filter_template = R"(
+          - name: {{ native_filter_name }}
+            typed_config: {{ native_filter_typed_config }}
+)";
+
+const char* route_cache_reset_filter_template = R"(
+          - name: envoy.filters.http.route_cache_reset
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
+)";
 
 const char* custom_filter_template = R"(
           - {{ filter_config }}
@@ -26,6 +26,14 @@ const char* custom_filter_template = R"(
 
 const char* custom_cluster_template = R"(
   - {{ cluster_config }}
+)";
+
+const char* custom_listener_template = R"(
+  - {{ listener_config }}
+)";
+
+const char* custom_route_template = R"(
+                - {{ route_config }}
 )";
 
 const char* fake_remote_listener_template = R"(
@@ -51,7 +59,17 @@ const char* fake_remote_listener_template = R"(
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 )";
 
-const char* config_header = R"(
+const std::string config_header = R"(
+!ignore default_defs:
+  - &connect_timeout 30s
+  - &dns_refresh_rate 60s
+  - &dns_fail_base_interval 2s
+  - &dns_fail_max-interval 10s
+  - &metadata {}
+  - &stats_domain 127.0.0.1
+  - &stats_flush_interval 60s
+  - &virtual_clusters []
+
 !ignore stats_defs:
   stats_sinks_key: &stats_sinks !ignore stats_sinks
 
@@ -118,12 +136,10 @@ static_resources:
             - name: api
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
-              domains:
-                - "*"
+              domains: ["*"]
               routes:
 {{ custom_routes }}
-                - match:
-                    prefix: "/"
+                - match: { prefix: "/" }
                   route:
                     cluster_header: x-envoy-mobile-cluster
                     timeout: 0s
@@ -145,8 +161,8 @@ static_resources:
                 dns_lookup_family: V4_ONLY
                 dns_refresh_rate: *dns_refresh_rate
                 dns_failure_refresh_rate:
-                  base_interval: *dns_base_interval
-                  max_interval: *dns_max_interval
+                  base_interval: *dns_fail_base_interval
+                  max_interval: *dns_fail_max_interval
           # TODO: make this configurable for users.
           - name: envoy.filters.http.decompressor
             typed_config:
@@ -170,6 +186,7 @@ static_resources:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
 {{ custom_clusters }}
+  - *stats_cluster
   - name: base
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -317,22 +334,8 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-  - name: stats
-    connect_timeout: {{ connect_timeout_seconds }}s
-    dns_refresh_rate: {{ dns_refresh_rate_seconds }}s
-    http2_protocol_options: {}
-    lb_policy: ROUND_ROBIN
-    load_assignment:
-      cluster_name: stats
-      endpoints:
-        - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address: {address: {{ stats_domain }}, port_value: 443}
-    transport_socket: *base_tls_socket
-    type: LOGICAL_DNS
 stats_flush_interval: *stats_flush_interval
-*stats_sinks:
+stats_sinks:
   - name: envoy.metrics_service
     typed_config:
       "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
@@ -376,10 +379,7 @@ watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
 node:
-  metadata:
-    app_id: *app_id
-    app_version: *app_version
-    os: *device_os
+  metadata: *metadata
 # Needed due to warning in https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
 layered_runtime:
   layers:
