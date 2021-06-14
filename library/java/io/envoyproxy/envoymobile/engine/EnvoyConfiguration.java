@@ -95,7 +95,7 @@ public class EnvoyConfiguration {
     }
 
     String processedTemplate =
-        templateYAML.replace("#{customer_filters}", customFiltersBuilder.toString());
+        templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
