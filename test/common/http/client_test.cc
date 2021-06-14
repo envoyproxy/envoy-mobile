@@ -134,6 +134,9 @@ public:
   uint64_t alt_cluster_ = 0;
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
+  bool async_{GetParam()};
+  Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_, random_, async_};
+  envoy_stream_t stream_ = 1;
 };
 
 INSTANTIATE_TEST_SUITE_P(TestModes, ClientTest, ::testing::Bool());
@@ -396,14 +399,6 @@ TEST_P(ClientTest, BasicStreamTrailers) {
 
 TEST_P(ClientTest, MultipleDataStream) {
   cc_.end_stream_with_headers_ = false;
-
-  bridge_callbacks_.on_data = [](envoy_data data, bool, void* context) -> void* {
-    // TODO: assert end_stream and contents of c_data for multiple calls of on_data.
-    callbacks_called* cc = static_cast<callbacks_called*>(context);
-    cc->on_data_calls++;
-    data.release(data.context);
-    return nullptr;
-  };
 
   envoy_headers c_headers = defaultRequestHeaders();
 
