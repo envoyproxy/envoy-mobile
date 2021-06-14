@@ -200,7 +200,7 @@ void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
   const char* spaces = spacesForLevel(indent_level);
 
   ss << spaces << "DirectStream" << DUMP_MEMBER(stream_handle_) << std::endl;
-  ENVOY_LOG(error, "\n{}", ss);
+  ENVOY_LOG(error, "\n{}", ss.str());
 }
 
 envoy_status_t Client::startStream(envoy_stream_t new_stream_handle,
