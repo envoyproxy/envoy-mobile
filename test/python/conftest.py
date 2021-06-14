@@ -34,3 +34,12 @@ def http_server_url():
     yield f"http://{ip}:{port}/"
     kill_server.set()
     server.join()
+
+
+def pytest_configure(config):
+    markers = [
+        "asyncio",  # used for async tests
+        "standalone",  # used for tests that must run in their own process
+    ]
+    for marker in markers:
+        config.addinivalue_line("markers", marker)
