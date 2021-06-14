@@ -1,3 +1,4 @@
+import random
 import sys
 from http.server import HTTPServer
 from threading import Event
@@ -5,16 +6,21 @@ from threading import Thread
 
 import pytest
 
+import envoy_engine
+from library.python.envoy_requests.common.engine import Engine
 from library.python.envoy_requests import pre_build_engine
 from test.python.echo_server import EchoServerHandler
 
 
 @pytest.fixture(scope="session")
 def http_server_url():
+    Engine.log_level = envoy_engine.LogLevel.Debug
     pre_build_engine()
 
     ip = "127.0.0.1"
-    port = 9876
+    # multiple tests may be running at the same time
+    # and we do not want their ports to clash
+    port = random.randint(2**14, 2**16)
 
     kill_server = Event()
 
