@@ -69,13 +69,14 @@
 
   BOOL hasDirectResponses = self.directResponses.length > 0;
   if (hasDirectResponses) {
-    templateYAML =
-        [templateYAML stringByReplacingOccurrencesOfString:@"#{fake_remote_responses}"
-                                                withString:self.directResponses];
+    templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{fake_remote_responses}"
+                                                           withString:self.directResponses];
     [customClusters appendString:[[NSString alloc] initWithUTF8String:fake_remote_cluster_insert]];
-    [customListeners appendString:[[NSString alloc] initWithUTF8String:fake_remote_listener_insert]];
+    [customListeners
+        appendString:[[NSString alloc] initWithUTF8String:fake_remote_listener_insert]];
     [customRoutes appendString:self.directResponseMatchers];
-    [customFilters appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
+    [customFilters
+        appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
   }
 
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_clusters}"
@@ -87,19 +88,34 @@
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_filters}"
                                                          withString:customFilters];
 
-  NSMutableString *definitions = [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];
+  NSMutableString *definitions =
+      [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];
 
   if (self.statsDomain != nil) {
-    [definitions appendString:[NSString stringWithFormat:@"- &stats_domain %@\n", self.statsDomain]];
-    [definitions appendString:[NSString stringWithFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds]];
+    [definitions
+        appendString:[NSString stringWithFormat:@"- &stats_domain %@\n", self.statsDomain]];
+    [definitions appendString:[NSString stringWithFormat:@"- &stats_flush_interval %lus\n",
+                                                         (unsigned long)self.statsFlushSeconds]];
   }
-  [definitions appendString:[NSString stringWithFormat:@"- &connect_timeout %lus\n", (unsigned long)self.connectTimeoutSeconds]];
-  [definitions appendString:[NSString stringWithFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds]];
-  [definitions appendString:[NSString stringWithFormat:@"- &dns_fail_base_interval %lus\n", (unsigned long)self.dnsFailureRefreshSecondsBase]];
-  [definitions appendString:[NSString stringWithFormat:@"- &dns_fail_max_interval %lus\n", (unsigned long)self.dnsFailureRefreshSecondsMax]];
-  [definitions appendString:[NSString stringWithFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds]];
-  [definitions appendString:[NSString stringWithFormat:@"- &metadata \{ device_os: %@, app_version: %@, app_id: %@ \}\n", @"iOS", self.appVersion, self.appId]];
-  [definitions appendString:[NSString stringWithFormat:@"- &virtual_clusters %@\n", self.virtualClusters]];
+  [definitions appendString:[NSString stringWithFormat:@"- &connect_timeout %lus\n",
+                                                       (unsigned long)self.connectTimeoutSeconds]];
+  [definitions appendString:[NSString stringWithFormat:@"- &dns_refresh_rate %lus\n",
+                                                       (unsigned long)self.dnsRefreshSeconds]];
+  [definitions
+      appendString:[NSString stringWithFormat:@"- &dns_fail_base_interval %lus\n",
+                                              (unsigned long)self.dnsFailureRefreshSecondsBase]];
+  [definitions
+      appendString:[NSString stringWithFormat:@"- &dns_fail_max_interval %lus\n",
+                                              (unsigned long)self.dnsFailureRefreshSecondsMax]];
+  [definitions
+      appendString:[NSString stringWithFormat:@"- &stream_idle_timeout %lus\n",
+                                              (unsigned long)self.streamIdleTimeoutSeconds]];
+  [definitions
+      appendString:[NSString stringWithFormat:
+                                 @"- &metadata \{ device_os: %@, app_version: %@, app_id: %@ \}\n",
+                                 @"iOS", self.appVersion, self.appId]];
+  [definitions
+      appendString:[NSString stringWithFormat:@"- &virtual_clusters %@\n", self.virtualClusters]];
 
   [definitions appendString:templateYAML];
 
