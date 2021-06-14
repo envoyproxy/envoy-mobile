@@ -23,7 +23,7 @@ const char* route_cache_reset_filter_insert = R"(
 const int custom_cluster_indent = 2;
 const int custom_listener_indent = 2;
 const int custom_filter_indent = 8;
-const int custom_route_indent = 16;
+const int custom_route_indent = 14;
 
 const int fake_remote_response_indent = 14;
 const char* fake_remote_cluster_insert = "  - *fake_remote_cluster\n";
@@ -55,7 +55,8 @@ const std::string config_header = R"(
           inline_string: |
 )"
 #include "certificates.inc"
-    ;
+R"(
+)";
 
 const char* config_template = R"(
 !ignore custom_listener_defs:
@@ -77,7 +78,7 @@ const char* config_template = R"(
               routes:
 #{fake_remote_responses}
               - match: { prefix: "/" }
-                direct_response: { status: 404, body: "Not Found" }
+                direct_response: { status: 404, body: { inline_string: "not found" } }
           http_filters:
           - name: envoy.router
             typed_config:
@@ -93,10 +94,10 @@ const char* config_template = R"(
     load_assignment:
       cluster_name: stats
       endpoints:
-        - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address: { address: *stats_domain, port_value: 443 }
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address: { address: *stats_domain, port_value: 443 }
     transport_socket: *base_tls_socket
     type: LOGICAL_DNS
   fake_remote_cluster: &fake_remote_cluster
@@ -136,14 +137,14 @@ static_resources:
               domains: ["*"]
               routes:
 #{custom_routes}
-                - match: { prefix: "/" }
-                  route:
-                    cluster_header: x-envoy-mobile-cluster
-                    timeout: 0s
-                    retry_policy:
-                      retry_back_off:
-                        base_interval: 0.25s
-                        max_interval: 60s
+              - match: { prefix: "/" }
+                route:
+                  cluster_header: x-envoy-mobile-cluster
+                  timeout: 0s
+                  retry_policy:
+                    retry_back_off:
+                      base_interval: 0.25s
+                      max_interval: 60s
         http_filters:
 #{custom_filters}
         - name: envoy.filters.http.local_error

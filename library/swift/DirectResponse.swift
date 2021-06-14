@@ -30,32 +30,30 @@ public final class DirectResponse: NSObject {
   /// - returns: YAML that can be used for route matching in Envoy configurations.
   func resolvedRouteMatchYAML() -> String {
     return
-      """
-      \(self.resolvedMatchYAML())
-                        route: { cluster: fake_remote }
-      """
+"""
+\(self.resolvedMatchYAML())
+                route: { cluster: fake_remote }
+"""
   }
 
   /// - returns: YAML that can be used for route matching & direct responses
   ///            in Envoy configurations.
   func resolvedDirectResponseYAML() -> String {
     let formattedResponseHeaders = self.headers.map { name, value in
-      """
-                          - header:
-                              key: "\(name)"
-                              value: "\(value)"
-      """
+"""
+                - header: { key: "\(name)", value: "\(value)" }
+"""
     }.joined(separator: "\n")
 
     return
-      """
-      \(self.resolvedMatchYAML())
-                        direct_response:
-                          status: \(self.status)
-                          body: \(self.body.map { "{ inline_string: '\($0)' }" } ?? "")
-                        response_headers_to_add:
-      \(formattedResponseHeaders)
-      """
+"""
+\(self.resolvedMatchYAML())
+                direct_response:
+                  status: \(self.status)
+                  body: \(self.body.map { "{ inline_string: '\($0)' }" } ?? "")
+                response_headers_to_add:
+\(formattedResponseHeaders)
+"""
   }
 
   private func resolvedMatchYAML() -> String {
@@ -72,18 +70,18 @@ public final class DirectResponse: NSObject {
     }
 
     let formattedHeaderMatches = self.matcher.headers.map { header in
-      """
-                          headers:
-                            - name: "\(header.name)"
-                              \(header.mode.resolvedYAML(value: header.value))
-      """
+"""
+                  headers:
+                  - name: "\(header.name)"
+                    \(header.mode.resolvedYAML(value: header.value))
+"""
     }.joined(separator: "\n")
 
     return
-      """
-                      - match:
-                          \(pathMatch)
-      \(formattedHeaderMatches)
-      """
+"""
+              - match:
+                  \(pathMatch)
+\(formattedHeaderMatches)
+"""
   }
 }
