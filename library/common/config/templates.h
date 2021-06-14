@@ -20,27 +20,50 @@ extern const char* platform_filter_template;
 extern const char* native_filter_template;
 
 /**
- * Template that enables the route cache reset filter in the chain.
+ * Number of spaces to indent custom cluster entries.
+ */
+extern const int custom_cluster_indent;
+
+/**
+ * Number of spaces to indent custom listener entries.
+ */
+extern const int custom_listener_indent;
+
+/**
+ * Number of spaces to indent custom filter entries.
+ */
+extern const int custom_filter_indent;
+
+/**
+ * Number of spaces to indent custom route entries.
+ */
+extern const int custom_route_indent;
+
+/**
+ * Number of spaces to indent response entries for the (test-only) fake remote listener.
+ */
+extern const int fake_remote_response_indent;
+
+/**
+ * Test-only fake remote listener config insert.
+ */
+extern const char* fake_remote_listener_insert;
+
+/**
+ * Test-only fake remote cluster config insert.
+ */
+extern const char* fake_remote_cluster_insert;
+
+/**
+ * Test-only fake remote route config insert.
+ */
+extern const char* fake_remote_route_insert;
+
+/**
+ * Insert that enables the route cache reset filter in the filter chain.
  * Should only be added when the route cache should be cleared on every request
  * going through the filter chain between initial route resolution and the router
  * filter's invocation on the request path. Typically only used for enabling
  * direct responses to mutate headers which are then later used for routing.
  */
-extern const char* route_cache_reset_filter_template;
-
-/**
- * Template configuration used for creating "fake" remote clusters which enable
- * local responses to be returned via direct response configurations.
- */
-extern const char* fake_remote_cluster_template;
-
-/**
- * Template configuration used for creating "fake" remote listeners which enable
- * local responses to be returned via direct response configurations.
- */
-extern const char* fake_remote_listener_template;
-
-/**
- * Template used for setting up the stats sink.
- */
-extern const char* stats_sink_template;
+extern const char* route_cache_reset_filter_insert;

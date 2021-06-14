@@ -2,63 +2,45 @@
 #include "library/common/config/internal.h"
 #include "library/common/config/templates.h"
 
-const char* platform_filter_prefix = R"(
-          - name: envoy.filters.http.platform_bridge
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
-              platform_filter_name: 
+const char* platform_filter_template = R"(
+        - name: envoy.filters.http.platform_bridge
+          typed_config:
+            "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+            platform_filter_name: {{ platform_filter_name }}
 )";
 
-const char* native_filter_prefix = R"(
-          - name: #{native_filter_name}
-            typed_config: #{native_config}
+const char* native_filter_template = R"(
+        - name: {{ native_filter_name }}
+          typed_config: {{ native_filter_typed_config }}
 )";
 
-const char* route_cache_reset_filter_template = R"(
-          - name: envoy.filters.http.route_cache_reset
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
+const char* route_cache_reset_filter_insert = R"(
+        - name: envoy.filters.http.route_cache_reset
+          typed_config:
+            "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
 )";
 
 const int custom_cluster_indent = 2;
 const int custom_listener_indent = 2;
-const int custom_filter_indent = 10;
+const int custom_filter_indent = 8;
 const int custom_route_indent = 16;
 
-const char* fake_remote_listener_template = R"(
-  - name: fake_remote_listener
-    address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
-    filter_chains:
-    - filters:
-      - name: envoy.filters.network.http_connection_manager
-        typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
-#{ direct_responses }
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-)";
+const int fake_remote_response_indent = 14;
+const char* fake_remote_cluster_insert = "  - *fake_remote_cluster\n";
+const char* fake_remote_listener_insert = "  - *fake_remote_listener\n";
+const char* fake_remote_route_insert = "              - *fake_remote_route\n";
 
 const std::string config_header = R"(
 !ignore default_defs:
-  - &connect_timeout 30s
-  - &dns_refresh_rate 60s
-  - &dns_fail_base_interval 2s
-  - &dns_fail_max_interval 10s
-  - &metadata {}
-  - &stats_domain 127.0.0.1
-  - &stats_flush_interval 60s
-  - &stream_idle_timeout 15s
-  - &virtual_clusters []
+- &connect_timeout 30s
+- &dns_refresh_rate 60s
+- &dns_fail_base_interval 2s
+- &dns_fail_max_interval 10s
+- &metadata {}
+- &stats_domain 127.0.0.1
+- &stats_flush_interval 60s
+- &stream_idle_timeout 15s
+- &virtual_clusters []
 
 !ignore stats_defs:
   stats_sinks_key: &stats_sinks !ignore stats_sinks
@@ -76,7 +58,32 @@ const std::string config_header = R"(
 ;
 
 const char* config_template = R"(
-!ignore cluster_defs:
+!ignore custom_listener_defs:
+  fake_remote_listener: &fake_remote_listener
+    name: fake_remote_listener
+    address:
+      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: remote_hcm
+          route_config:
+            name: remote_route
+            virtual_hosts:
+            - name: remote_service
+              domains: ["*"]
+              routes:
+#{fake_remote_responses}
+              - match: { prefix: "/" }
+                direct_response: { status: 404, body: "Not Found" }
+          http_filters:
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+!ignore custom_cluster_defs:
   stats_cluster: &stats_cluster
     name: stats
     connect_timeout: *connect_timeout
@@ -107,7 +114,7 @@ const char* config_template = R"(
 
 static_resources:
   listeners:
-#{ custom_listeners }
+#{custom_listeners}
   - name: base_api_listener
     address:
       socket_address:
@@ -128,7 +135,7 @@ static_resources:
               virtual_clusters: *virtual_clusters
               domains: ["*"]
               routes:
-#{ custom_routes }
+#{custom_routes}
                 - match: { prefix: "/" }
                   route:
                     cluster_header: x-envoy-mobile-cluster
@@ -138,44 +145,44 @@ static_resources:
                         base_interval: 0.25s
                         max_interval: 60s
         http_filters:
-#{ custom_filters }
-          - name: envoy.filters.http.local_error
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
-          - name: envoy.filters.http.dynamic_forward_proxy
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
-              dns_cache_config: &dns_cache_config
-                name: dynamic_forward_proxy_cache_config
-                # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
-                dns_lookup_family: V4_ONLY
-                dns_refresh_rate: *dns_refresh_rate
-                dns_failure_refresh_rate:
-                  base_interval: *dns_fail_base_interval
-                  max_interval: *dns_fail_max_interval
-          # TODO: make this configurable for users.
-          - name: envoy.filters.http.decompressor
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
-              decompressor_library:
-                name: gzip
-                typed_config:
-                  "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
-                  # Maximum window bits to allow for any stream to be decompressed. Optimally this
-                  # would be set to 0. According to the zlib manual this would allow the decompressor
-                  # to use the window bits in the zlib header to perform the decompression.
-                  # Unfortunately, the proto field constraint makes this impossible currently.
-                  window_bits: 15
-              request_direction_config:
-                common_config:
-                  enabled:
-                    default_value: false
-                    runtime_key: request_decompressor_enabled
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+#{custom_filters}
+        - name: envoy.filters.http.local_error
+          typed_config:
+            "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
+        - name: envoy.filters.http.dynamic_forward_proxy
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+            dns_cache_config: &dns_cache_config
+              name: dynamic_forward_proxy_cache_config
+              # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
+              dns_lookup_family: V4_ONLY
+              dns_refresh_rate: *dns_refresh_rate
+              dns_failure_refresh_rate:
+                base_interval: *dns_fail_base_interval
+                max_interval: *dns_fail_max_interval
+        # TODO: make this configurable for users.
+        - name: envoy.filters.http.decompressor
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+            decompressor_library:
+              name: gzip
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
+                # Maximum window bits to allow for any stream to be decompressed. Optimally this
+                # would be set to 0. According to the zlib manual this would allow the decompressor
+                # to use the window bits in the zlib header to perform the decompression.
+                # Unfortunately, the proto field constraint makes this impossible currently.
+                window_bits: 15
+            request_direction_config:
+              common_config:
+                enabled:
+                  default_value: false
+                  runtime_key: request_decompressor_enabled
+        - name: envoy.router
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-#{ custom_clusters }
+#{custom_clusters}
   - *stats_cluster
   - name: base
     connect_timeout: *connect_timeout
