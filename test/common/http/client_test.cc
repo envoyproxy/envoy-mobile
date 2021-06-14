@@ -135,7 +135,8 @@ public:
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
   bool async_{GetParam()};
-  Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_, random_, async_};
+  Client http_client_{api_listener_,      dispatcher_, stats_store_,
+                      preferred_network_, random_,     async_};
   envoy_stream_t stream_ = 1;
 };
 
@@ -907,10 +908,6 @@ TEST_P(ClientTest, ResumeWithFin) {
   // Ensure that the callbacks on the bridge_callbacks_ were called.
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
-
-
-
-
 
 } // namespace Http
 } // namespace Envoy
