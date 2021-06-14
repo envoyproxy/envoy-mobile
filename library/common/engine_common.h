@@ -10,8 +10,8 @@
 #include "source/server/options_impl.h"
 
 #ifdef ENVOY_HANDLE_SIGNALS
-#include "common/signal/signal_action.h"
-#include "exe/terminate_handler.h"
+#include "source/common/signal/signal_action.h"
+#include "source/exe/terminate_handler.h"
 #endif
 
 namespace Envoy {
