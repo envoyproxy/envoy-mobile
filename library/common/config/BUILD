@@ -16,4 +16,3 @@ envoy_cc_library(
     ],
     repository = "@envoy",
 )
-
