@@ -59,12 +59,12 @@
 
   NSString *nativeFilterTemplate = [[NSString alloc] initWithUTF8String:native_filter_template];
   for (EnvoyNativeFilterConfig *filterConfig in self.nativeFilterChain) {
-    NSString *nativeFilterConfig =
+    NSString *filterConfig =
         [[nativeFilterTemplate stringByReplacingOccurrencesOfString:@"{{ native_filter_name }}"
                                                          withString:filterConfig.name]
             stringByReplacingOccurrencesOfString:@"{{ native_filter_typed_config }}"
                                       withString:filterConfig.typedConfig];
-    [customFilters appendString:nativeFilterConfig];
+    [customFilters appendString:filterConfig];
   }
 
   BOOL hasDirectResponses = self.directResponses.length > 0;
@@ -91,31 +91,24 @@
   NSMutableString *definitions =
       [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];
 
+  [definitions
+      appendFormat:@"- &connect_timeout %lus\n", (unsigned long)self.connectTimeoutSeconds];
+  [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
+  [definitions appendFormat:@"- &dns_fail_base_interval %lus\n",
+                            (unsigned long)self.dnsFailureRefreshSecondsBase];
+  [definitions appendFormat:@"- &dns_fail_max_interval %lus\n",
+                            (unsigned long)self.dnsFailureRefreshSecondsMax];
+  [definitions
+      appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
+  [definitions appendFormat:@"- &metadata \{ device_os: %@, app_version: %@, app_id: %@ \}\n",
+                            @"iOS", self.appVersion, self.appId];
+  [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
+
   if (self.statsDomain != nil) {
+    [definitions appendFormat:@"- &stats_domain %@\n", self.statsDomain];
     [definitions
-        appendString:[NSString stringWithFormat:@"- &stats_domain %@\n", self.statsDomain]];
-    [definitions appendString:[NSString stringWithFormat:@"- &stats_flush_interval %lus\n",
-                                                         (unsigned long)self.statsFlushSeconds]];
+        appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
   }
-  [definitions appendString:[NSString stringWithFormat:@"- &connect_timeout %lus\n",
-                                                       (unsigned long)self.connectTimeoutSeconds]];
-  [definitions appendString:[NSString stringWithFormat:@"- &dns_refresh_rate %lus\n",
-                                                       (unsigned long)self.dnsRefreshSeconds]];
-  [definitions
-      appendString:[NSString stringWithFormat:@"- &dns_fail_base_interval %lus\n",
-                                              (unsigned long)self.dnsFailureRefreshSecondsBase]];
-  [definitions
-      appendString:[NSString stringWithFormat:@"- &dns_fail_max_interval %lus\n",
-                                              (unsigned long)self.dnsFailureRefreshSecondsMax]];
-  [definitions
-      appendString:[NSString stringWithFormat:@"- &stream_idle_timeout %lus\n",
-                                              (unsigned long)self.streamIdleTimeoutSeconds]];
-  [definitions
-      appendString:[NSString stringWithFormat:
-                                 @"- &metadata \{ device_os: %@, app_version: %@, app_id: %@ \}\n",
-                                 @"iOS", self.appVersion, self.appId]];
-  [definitions
-      appendString:[NSString stringWithFormat:@"- &virtual_clusters %@\n", self.virtualClusters]];
 
   [definitions appendString:templateYAML];
 

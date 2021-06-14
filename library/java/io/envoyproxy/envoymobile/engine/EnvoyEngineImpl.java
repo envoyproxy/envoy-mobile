@@ -71,11 +71,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                         new JvmStringAccessorContext(entry.getValue()));
     }
 
-    return runWithResolvedYAML(
-        envoyConfiguration.resolveTemplate(configurationYAML, JniLibrary.statsSinkTemplateString(),
-                                           JniLibrary.platformFilterTemplateString(),
-                                           JniLibrary.nativeFilterTemplateString()),
-        logLevel);
+    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
+                                   configurationYAML, JniLibrary.platformFilterTemplateString(),
+                                   JniLibrary.nativeFilterTemplateString()),
+                               logLevel);
   }
 
   /**
