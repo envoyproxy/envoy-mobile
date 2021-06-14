@@ -117,6 +117,7 @@
     return nil;
   }
 
+  NSLog(@"[Envoy] debug: config:\n%@", definitions);
   return definitions;
 }
 
