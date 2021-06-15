@@ -22,6 +22,7 @@ def http_server_url():
     # and we do not want their ports to clash
     port = random.randint(2**14, 2**16)
 
+    start_server = Event()
     kill_server = Event()
 
     def _run_http_server():
@@ -31,12 +32,15 @@ def http_server_url():
             if kill_server.is_set():
                 break
             try:
+                if not start_server.is_set():
+                    start_server.set()
                 server.handle_request()
             except Exception as e:
                 print(f"Encountered exception: {str(e)}", file=sys.stderr)
 
     server = Thread(target=_run_http_server)
     server.start()
+    start_server.wait()
     yield f"http://{ip}:{port}/"
     kill_server.set()
     server.join()
