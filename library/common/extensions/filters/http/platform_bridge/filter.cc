@@ -172,7 +172,7 @@ void PlatformBridgeFilter::dumpState(std::ostream& os, int indent_level) const {
     response_filter_base_->dumpState(ss, 0);
   }
 
-  // TODO(junr03): only outptu to ostream arg
+  // TODO(junr03): only output to ostream arg
   // https://github.com/envoyproxy/envoy-mobile/issues/1497.
   ENVOY_LOG(error, "\n{}", ss.str());
   os << ss.str();
