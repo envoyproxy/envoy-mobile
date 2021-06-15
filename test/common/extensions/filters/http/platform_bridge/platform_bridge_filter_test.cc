@@ -82,9 +82,9 @@ public:
                 response_on_headers_called, response_on_headers_forwarded, response_on_data_called,
                 response_data_forwarded, response_on_trailers_called,
                 response_on_trailers_forwarded, response_on_resume_called, response_pending_headers,
-                response_buffer, response_pending_trailers, response_stream_complete)
+                response_buffer, response_pending_trailers, response_stream_complete);
 
-        EXPECT_EQ(ss.str(), expected_state);
+    EXPECT_EQ(ss.str(), expected_state);
   }
 
   typedef struct {
