@@ -50,21 +50,14 @@ public:
     filter_->setEncoderFilterCallbacks(encoder_callbacks_);
   }
 
-  void
-  checkFilterState(std::string name, std::string error_response,
-                   std::string request_iteration_state, std::string request_on_headers_called,
-                   std::string request_on_headers_forwarded, std::string request_on_data_called,
-                   std::string request_data_forwarded, std::string request_on_trailers_called,
-                   std::string request_on_trailers_forwarded, std::string request_on_resume_called,
-                   std::string request_pending_headers, std::string request_buffer,
-                   std::string request_pending_trailers, std::string request_stream_complete,
-                   std::string response_iteration_state, std::string response_on_headers_called,
-                   std::string response_on_headers_forwarded, std::string response_on_data_called,
-                   std::string response_data_forwarded, std::string response_on_trailers_called,
-                   std::string response_on_trailers_forwarded,
-                   std::string response_on_resume_called, std::string response_pending_headers,
-                   std::string response_buffer, std::string response_pending_trailers,
-                   std::string response_stream_complete) {
+  struct CheckFilterState {
+    std::string iteration_state, on_headers_called, headers_forwarded, on_data_called,
+        data_forwarded, on_trailers_called, trailers_forwarded, on_resume_called, pending_headers,
+        buffer, pending_trailers, stream_complete;
+  };
+
+  void checkFilterState(std::string name, std::string error_response, CheckFilterState request,
+                        CheckFilterState response) {
     std::stringstream ss;
     filter_->dumpState(ss, 0);
 
@@ -74,15 +67,16 @@ public:
   Response Filter, state_.iteration_state_: {}, state_.on_headers_called_: {}, state_.headers_forwarded_: {}, state_.on_data_called_: {}, state_.data_forwarded_: {}, state_.on_trailers_called_: {}, state_.trailers_forwarded_: {}, state_.on_resume_called_: {}, pending_headers_: {}, buffer: {}, pending_trailers_: {}, state_.stream_complete_: {}
 )EOF";
 
-    fmt::format(expected_state_template, name, error_response, request_iteration_state,
-                request_on_headers_called, request_on_headers_forwarded, request_on_data_called,
-                request_data_forwarded, request_on_trailers_called, request_on_trailers_forwarded,
-                request_on_resume_called, request_pending_headers, request_buffer,
-                request_pending_trailers, request_stream_complete, response_iteration_state,
-                response_on_headers_called, response_on_headers_forwarded, response_on_data_called,
-                response_data_forwarded, response_on_trailers_called,
-                response_on_trailers_forwarded, response_on_resume_called, response_pending_headers,
-                response_buffer, response_pending_trailers, response_stream_complete);
+    std::string expected_state = fmt::format(
+        expected_state_template, name, error_response, request.iteration_state,
+        request.on_headers_called, request.headers_forwarded, request.on_data_called,
+        request.data_forwarded, request.on_trailers_called, request.trailers_forwarded,
+        request.on_resume_called, request.pending_headers, request.buffer, request.pending_trailers,
+        request.stream_complete, response.iteration_state, response.on_headers_called,
+        response.headers_forwarded, response.on_data_called, response.data_forwarded,
+        response.on_trailers_called, response.trailers_forwarded, response.on_resume_called,
+        response.pending_headers, response.buffer, response.pending_trailers,
+        response.stream_complete);
 
     EXPECT_EQ(ss.str(), expected_state);
   }
@@ -132,7 +126,9 @@ TEST_F(PlatformBridgeFilterTest, NullImplementation) {
   Http::TestResponseTrailerMapImpl response_trailers{{"x-test-trailer", "test trailer"}};
   EXPECT_EQ(Http::FilterTrailersStatus::Continue, filter_->encodeTrailers(response_trailers));
 
-  checkFilterState();
+  checkFilterState("NullImplementation", "0",
+                   {"ongoing", "0", "1", "0", "1", "0", "1", "0", "null", "null", "null", "1"},
+                   {"ongoing", "0", "1", "0", "1", "0", "1", "0", "null", "null", "null", "1"});
 
   filter_->onDestroy();
 
