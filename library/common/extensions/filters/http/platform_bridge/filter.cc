@@ -138,7 +138,7 @@ void PlatformBridgeFilter::onDestroy() {
   alive_ = false;
 
   // If the filter chain is destroyed before a response is received, treat as cancellation.
-  if (!response_filter_base_->stream_complete_ && platform_filter_.on_cancel) {
+  if (!response_filter_base_->state_.stream_complete_ && platform_filter_.on_cancel) {
     ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_cancel", filter_name_);
     platform_filter_.on_cancel(platform_filter_.instance_context);
   }
@@ -179,10 +179,11 @@ void PlatformBridgeFilter::dumpState(std::ostream&, int indent_level) const {
 Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::HeaderMap& headers,
                                                                       bool end_stream) {
   ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
-  stream_complete_ = end_stream;
+  state_.stream_complete_ = end_stream;
 
   // Allow nullptr to act as no-op.
   if (on_headers_ == nullptr) {
+    state_.headers_forwarded_ = true;
     return Http::FilterHeadersStatus::Continue;
   }
 
@@ -190,16 +191,17 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_headers", parent_.filter_name_);
   envoy_filter_headers_status result =
       on_headers_(in_headers, end_stream, parent_.platform_filter_.instance_context);
-  on_headers_called_ = true;
+  state_.on_headers_called_ = true;
 
   switch (result.status) {
   case kEnvoyFilterHeadersStatusContinue:
     replaceHeaders(headers, result.headers);
+    state_.headers_forwarded_ = true;
     return Http::FilterHeadersStatus::Continue;
 
   case kEnvoyFilterHeadersStatusStopIteration:
     pending_headers_ = &headers;
-    iteration_state_ = IterationState::Stopped;
+    state_.iteration_state_ = IterationState::Stopped;
     ASSERT(result.headers.length == 0 && result.headers.entries == NULL);
     return Http::FilterHeadersStatus::StopIteration;
 
@@ -213,10 +215,11 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
 Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance& data,
                                                                 bool end_stream) {
   ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
-  stream_complete_ = end_stream;
+  state_.stream_complete_ = end_stream;
 
   // Allow nullptr to act as no-op.
   if (on_data_ == nullptr) {
+    state_.data_forwarded_ = true;
     return Http::FilterDataStatus::Continue;
   }
 
@@ -224,7 +227,7 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
   envoy_data in_data;
 
   // Decide whether to preemptively buffer data to present aggregate to platform.
-  bool prebuffer_data = iteration_state_ == IterationState::Stopped && internal_buffer &&
+  bool prebuffer_data = state_.iteration_state_ == IterationState::Stopped && internal_buffer &&
                         &data != internal_buffer && internal_buffer->length() > 0;
 
   if (prebuffer_data) {
@@ -237,14 +240,15 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_data", parent_.filter_name_);
   envoy_filter_data_status result =
       on_data_(in_data, end_stream, parent_.platform_filter_.instance_context);
-  on_data_called_ = true;
+  state_.on_data_called_ = true;
 
   switch (result.status) {
   case kEnvoyFilterDataStatusContinue:
-    RELEASE_ASSERT(iteration_state_ != IterationState::Stopped,
+    RELEASE_ASSERT(state_.iteration_state_ != IterationState::Stopped,
                    "invalid filter state: filter iteration must be resumed with ResumeIteration");
     data.drain(data.length());
     data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
+    state_.data_forwarded_ = true;
     return Http::FilterDataStatus::Continue;
 
   case kEnvoyFilterDataStatusStopIterationAndBuffer:
@@ -253,7 +257,7 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
       return Http::FilterDataStatus::StopIterationNoBuffer;
     }
     // Data will be buffered on return.
-    iteration_state_ = IterationState::Stopped;
+    state_.iteration_state_ = IterationState::Stopped;
     return Http::FilterDataStatus::StopIterationAndBuffer;
 
   case kEnvoyFilterDataStatusStopIterationNoBuffer:
@@ -267,13 +271,13 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
     if (internal_buffer) {
       internal_buffer->drain(internal_buffer->length());
     }
-    iteration_state_ = IterationState::Stopped;
+    state_.iteration_state_ = IterationState::Stopped;
     return Http::FilterDataStatus::StopIterationNoBuffer;
 
   // Resume previously-stopped iteration, possibly forwarding headers if iteration was stopped
   // during an on*Headers invocation.
   case kEnvoyFilterDataStatusResumeIteration:
-    RELEASE_ASSERT(iteration_state_ == IterationState::Stopped,
+    RELEASE_ASSERT(state_.iteration_state_ == IterationState::Stopped,
                    "invalid filter state: ResumeIteration may only be used when filter iteration "
                    "is stopped");
     // Update pending henders before resuming iteration, if needed.
@@ -293,7 +297,8 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
       data.drain(data.length());
       data.addBufferFragment(*Buffer::BridgeFragment::createBridgeFragment(result.data));
     }
-    iteration_state_ = IterationState::Ongoing;
+    state_.iteration_state_ = IterationState::Ongoing;
+    state_.data_forwarded_ = true;
     return Http::FilterDataStatus::Continue;
 
   default:
@@ -305,10 +310,11 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
 
 Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::HeaderMap& trailers) {
   ScopeTrackerScopeState scope(&parent_, parent_.scopeTracker());
-  stream_complete_ = true;
+  state_.stream_complete_ = true;
 
   // Allow nullptr to act as no-op.
   if (on_trailers_ == nullptr) {
+    state_.trailers_forwarded_ = true;
     return Http::FilterTrailersStatus::Continue;
   }
 
@@ -317,26 +323,27 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_trailers", parent_.filter_name_);
   envoy_filter_trailers_status result =
       on_trailers_(in_trailers, parent_.platform_filter_.instance_context);
-  on_trailers_called_ = true;
+  state_.on_trailers_called_ = true;
 
   switch (result.status) {
   case kEnvoyFilterTrailersStatusContinue:
-    RELEASE_ASSERT(iteration_state_ != IterationState::Stopped,
+    RELEASE_ASSERT(state_.iteration_state_ != IterationState::Stopped,
                    "invalid filter state: ResumeIteration may only be used when filter iteration "
                    "is stopped");
     replaceHeaders(trailers, result.trailers);
+    state_.trailers_forwarded_ = true;
     return Http::FilterTrailersStatus::Continue;
 
   case kEnvoyFilterTrailersStatusStopIteration:
     pending_trailers_ = &trailers;
-    iteration_state_ = IterationState::Stopped;
+    state_.iteration_state_ = IterationState::Stopped;
     ASSERT(result.trailers.length == 0 && result.trailers.entries == NULL);
     return Http::FilterTrailersStatus::StopIteration;
 
   // Resume previously-stopped iteration, possibly forwarding headers and data if iteration was
   // stopped during an on*Headers or on*Data invocation.
   case kEnvoyFilterTrailersStatusResumeIteration:
-    RELEASE_ASSERT(iteration_state_ == IterationState::Stopped,
+    RELEASE_ASSERT(state_.iteration_state_ == IterationState::Stopped,
                    "invalid filter state: ResumeIteration may only be used when filter iteration "
                    "is stopped");
     // Update pending henders before resuming iteration, if needed.
@@ -355,7 +362,8 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
       free(result.pending_data);
     }
     replaceHeaders(trailers, result.trailers);
-    iteration_state_ = IterationState::Ongoing;
+    state_.iteration_state_ = IterationState::Ongoing;
+    state_.trailers_forwarded_ = true;
     return Http::FilterTrailersStatus::Continue;
 
   default:
@@ -409,6 +417,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
     }
 
     error_response_ = true;
+    response_filter_base_->state_.headers_forwarded_ = true;
     return Http::FilterHeadersStatus::Continue;
   }
 
@@ -430,6 +439,7 @@ Http::FilterDataStatus PlatformBridgeFilter::encodeData(Buffer::Instance& data, 
 
   // Pass through if already mapped to error response.
   if (error_response_) {
+    response_filter_base_->state_.data_forwarded_ = true;
     return Http::FilterDataStatus::Continue;
   }
 
@@ -450,6 +460,7 @@ PlatformBridgeFilter::encodeTrailers(Http::ResponseTrailerMap& trailers) {
 
   // Pass through if already mapped to error response.
   if (error_response_) {
+    response_filter_base_->state_.trailers_forwarded_ = true;
     return Http::FilterTrailersStatus::Continue;
   }
 
@@ -495,7 +506,7 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     return;
   }
 
-  if (iteration_state_ == IterationState::Ongoing) {
+  if (state_.iteration_state_ == IterationState::Ongoing) {
     return;
   }
 
@@ -522,9 +533,9 @@ void PlatformBridgeFilter::FilterBase::onResume() {
 
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_resume_*", parent_.filter_name_);
   envoy_filter_resume_status result =
-      on_resume_(pending_headers, pending_data, pending_trailers, stream_complete_,
+      on_resume_(pending_headers, pending_data, pending_trailers, state_.stream_complete_,
                  parent_.platform_filter_.instance_context);
-  on_resume_called_ = true;
+  state_.on_resume_called_ = true;
 
   if (result.status == kEnvoyFilterResumeStatusStopIteration) {
     RELEASE_ASSERT(!result.pending_headers, "invalid filter state: headers must not be present on "
@@ -588,7 +599,7 @@ void PlatformBridgeFilter::FilterBase::onResume() {
     }
   }
 
-  iteration_state_ = IterationState::Ongoing;
+  state_.iteration_state_ = IterationState::Ongoing;
   resumeIteration();
 }
 
@@ -596,13 +607,14 @@ void PlatformBridgeFilter::FilterBase::dumpState(std::ostream& os, int indent_le
   Buffer::Instance* buffer = this->buffer();
   const char* spaces = spacesForLevel(indent_level);
   os << spaces
-     << DUMP_MEMBER_AS(iteration_state_,
-                       (iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"))
-     << DUMP_MEMBER(on_headers_called_) << DUMP_MEMBER(on_data_called_)
-     << DUMP_MEMBER(on_trailers_called_) << DUMP_MEMBER(on_resume_called_)
-     << DUMP_NULLABLE_MEMBER(pending_headers_, "pending")
+     << DUMP_MEMBER_AS(state_.iteration_state_,
+                       (state_.iteration_state_ == IterationState::Ongoing ? "ongoing" : "stopped"))
+     << DUMP_MEMBER(state_.on_headers_called_) << DUMP_MEMBER(state_.headers_forwarded_)
+     << DUMP_MEMBER(state_.on_data_called_) << DUMP_MEMBER(state_.data_forwarded_)
+     << DUMP_MEMBER(state_.on_trailers_called_) << DUMP_MEMBER(state_.trailers_forwarded_)
+     << DUMP_MEMBER(state_.on_resume_called_) << DUMP_NULLABLE_MEMBER(pending_headers_, "pending")
      << DUMP_NULLABLE_MEMBER(buffer, fmt::format("{} bytes", buffer->length()))
-     << DUMP_NULLABLE_MEMBER(pending_trailers_, "pending") << DUMP_MEMBER(stream_complete_)
+     << DUMP_NULLABLE_MEMBER(pending_trailers_, "pending") << DUMP_MEMBER(state_.stream_complete_)
      << std::endl;
 };
 
@@ -644,7 +656,8 @@ Buffer::Instance* PlatformBridgeFilter::RequestFilterBase::buffer() {
   // This only exists to provide a mutable buffer, and that buffer is only used when iteration is
   // stopped. We check iteration state here before returning the buffer, to ensure this filter is
   // the one that stopped iteration.
-  if (iteration_state_ == IterationState::Stopped && parent_.decoder_callbacks_->decodingBuffer()) {
+  if (state_.iteration_state_ == IterationState::Stopped &&
+      parent_.decoder_callbacks_->decodingBuffer()) {
     parent_.decoder_callbacks_->modifyDecodingBuffer(
         [&internal_buffer](Buffer::Instance& mutable_buffer) {
           internal_buffer = &mutable_buffer;
@@ -661,7 +674,8 @@ Buffer::Instance* PlatformBridgeFilter::ResponseFilterBase::buffer() {
   // This only exists to provide a mutable buffer, and that buffer is only used when iteration is
   // stopped. We check iteration state here before returning the buffer, to ensure this filter is
   // the one that stopped iteration.
-  if (iteration_state_ == IterationState::Stopped && parent_.encoder_callbacks_->encodingBuffer()) {
+  if (state_.iteration_state_ == IterationState::Stopped &&
+      parent_.encoder_callbacks_->encodingBuffer()) {
     parent_.encoder_callbacks_->modifyEncodingBuffer(
         [&internal_buffer](Buffer::Instance& mutable_buffer) {
           internal_buffer = &mutable_buffer;

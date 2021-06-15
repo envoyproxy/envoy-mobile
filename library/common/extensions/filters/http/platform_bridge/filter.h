@@ -93,8 +93,10 @@ private:
     FilterBase(PlatformBridgeFilter& parent, envoy_filter_on_headers_f on_headers,
                envoy_filter_on_data_f on_data, envoy_filter_on_trailers_f on_trailers,
                envoy_filter_on_resume_f on_resume)
-        : iteration_state_(IterationState::Ongoing), parent_(parent), on_headers_(on_headers),
-          on_data_(on_data), on_trailers_(on_trailers), on_resume_(on_resume) {}
+        : parent_(parent), on_headers_(on_headers), on_data_(on_data), on_trailers_(on_trailers),
+          on_resume_(on_resume) {
+      state_.iteration_state_ = IterationState::Ongoing;
+    }
 
     virtual ~FilterBase() = default;
 
@@ -117,17 +119,26 @@ private:
 
     void dumpState(std::ostream& os, int indent_level = 0);
 
-    IterationState iteration_state_;
+    // Struct that collects Filter state for keeping track of state transitions and to report via
+    // dumpState.
+    struct FilterState {
+      IterationState iteration_state_;
+      bool on_headers_called_{};
+      bool headers_forwarded_{};
+      bool on_data_called_{};
+      bool data_forwarded_{};
+      bool on_trailers_called_{};
+      bool trailers_forwarded_{};
+      bool on_resume_called_{};
+      bool stream_complete_{};
+    };
+
     PlatformBridgeFilter& parent_;
+    FilterState state_;
     envoy_filter_on_headers_f on_headers_;
-    bool on_headers_called_{};
     envoy_filter_on_data_f on_data_;
-    bool on_data_called_{};
     envoy_filter_on_trailers_f on_trailers_;
-    bool on_trailers_called_{};
     envoy_filter_on_resume_f on_resume_;
-    bool on_resume_called_{};
-    bool stream_complete_{};
     Http::HeaderMap* pending_headers_{};
     Http::HeaderMap* pending_trailers_{};
   };
