@@ -155,8 +155,7 @@ void PlatformBridgeFilter::onDestroy() {
   platform_filter_.instance_context = nullptr;
 }
 
-void PlatformBridgeFilter::dumpState(std::ostream&, int indent_level) const {
-  // TODO(junr03): output to ostream arg - https://github.com/envoyproxy/envoy-mobile/issues/1497.
+void PlatformBridgeFilter::dumpState(std::ostream& os, int indent_level) const {
   std::stringstream ss;
   const char* spaces = spacesForLevel(indent_level);
 
@@ -173,7 +172,10 @@ void PlatformBridgeFilter::dumpState(std::ostream&, int indent_level) const {
     response_filter_base_->dumpState(ss, 0);
   }
 
+  // TODO(junr03): only outptu to ostream arg
+  // https://github.com/envoyproxy/envoy-mobile/issues/1497.
   ENVOY_LOG(error, "\n{}", ss.str());
+  os << ss.str();
 }
 
 Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::HeaderMap& headers,

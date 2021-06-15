@@ -50,6 +50,43 @@ public:
     filter_->setEncoderFilterCallbacks(encoder_callbacks_);
   }
 
+  void
+  checkFilterState(std::string name, std::string error_response,
+                   std::string request_iteration_state, std::string request_on_headers_called,
+                   std::string request_on_headers_forwarded, std::string request_on_data_called,
+                   std::string request_data_forwarded, std::string request_on_trailers_called,
+                   std::string request_on_trailers_forwarded, std::string request_on_resume_called,
+                   std::string request_pending_headers, std::string request_buffer,
+                   std::string request_pending_trailers, std::string request_stream_complete,
+                   std::string response_iteration_state, std::string response_on_headers_called,
+                   std::string response_on_headers_forwarded, std::string response_on_data_called,
+                   std::string response_data_forwarded, std::string response_on_trailers_called,
+                   std::string response_on_trailers_forwarded,
+                   std::string response_on_resume_called, std::string response_pending_headers,
+                   std::string response_buffer, std::string response_pending_trailers,
+                   std::string response_stream_complete) {
+    std::stringstream ss;
+    filter_->dumpState(ss, 0);
+
+    std::string expected_state_template =
+        R"EOF(PlatformBridgeFilter, filter_name_: {}, error_response_: {}
+  Request Filter, state_.iteration_state_: {}, state_.on_headers_called_: {}, state_.headers_forwarded_: {}, state_.on_data_called_: {}, state_.data_forwarded_: {}, state_.on_trailers_called_: {}, state_.trailers_forwarded_: {}, state_.on_resume_called_: {}, pending_headers_: {}, buffer: {}, pending_trailers_: {}, state_.stream_complete_: {}
+  Response Filter, state_.iteration_state_: {}, state_.on_headers_called_: {}, state_.headers_forwarded_: {}, state_.on_data_called_: {}, state_.data_forwarded_: {}, state_.on_trailers_called_: {}, state_.trailers_forwarded_: {}, state_.on_resume_called_: {}, pending_headers_: {}, buffer: {}, pending_trailers_: {}, state_.stream_complete_: {}
+)EOF";
+
+    fmt::format(expected_state_template, name, error_response, request_iteration_state,
+                request_on_headers_called, request_on_headers_forwarded, request_on_data_called,
+                request_data_forwarded, request_on_trailers_called, request_on_trailers_forwarded,
+                request_on_resume_called, request_pending_headers, request_buffer,
+                request_pending_trailers, request_stream_complete, response_iteration_state,
+                response_on_headers_called, response_on_headers_forwarded, response_on_data_called,
+                response_data_forwarded, response_on_trailers_called,
+                response_on_trailers_forwarded, response_on_resume_called, response_pending_headers,
+                response_buffer, response_pending_trailers, response_stream_complete)
+
+        EXPECT_EQ(ss.str(), expected_state);
+  }
+
   typedef struct {
     unsigned int init_filter_calls;
     unsigned int on_request_headers_calls;
@@ -94,6 +131,8 @@ TEST_F(PlatformBridgeFilterTest, NullImplementation) {
 
   Http::TestResponseTrailerMapImpl response_trailers{{"x-test-trailer", "test trailer"}};
   EXPECT_EQ(Http::FilterTrailersStatus::Continue, filter_->encodeTrailers(response_trailers));
+
+  checkFilterState();
 
   filter_->onDestroy();
 
