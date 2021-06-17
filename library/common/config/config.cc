@@ -104,6 +104,7 @@ const char* config_template = R"(
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster
     name: stats
+    type: LOGICAL_DNS
     connect_timeout: *connect_timeout
     dns_refresh_rate: *dns_refresh_rate
     http2_protocol_options: {}
@@ -116,11 +117,10 @@ const char* config_template = R"(
             address:
               socket_address: { address: *stats_domain, port_value: 443 }
     transport_socket: *base_tls_socket
-    type: LOGICAL_DNS
   fake_remote_cluster: &fake_remote_cluster
     name: fake_remote
+    type: LOGICAL_DNS
     connect_timeout: *connect_timeout
-    type: STATIC
     lb_policy: ROUND_ROBIN
     load_assignment:
       cluster_name: fake_remote
