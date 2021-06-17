@@ -4,28 +4,29 @@
 
 @implementation EnvoyConfiguration
 
-- (instancetype)initWithStatsDomain:(nullable NSString *)statsDomain
-              connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                  dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-       dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-        dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                  statsFlushSeconds:(UInt32)statsFlushSeconds
-           streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                         appVersion:(NSString *)appVersion
-                              appId:(NSString *)appId
-                    virtualClusters:(NSString *)virtualClusters
-             directResponseMatchers:(NSString *)directResponseMatchers
-                    directResponses:(NSString *)directResponses
-                  nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                    stringAccessors:
-                        (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
+- (instancetype)initWithGrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+                  connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                      dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+           dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+            dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                      statsFlushSeconds:(UInt32)statsFlushSeconds
+               streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                             appVersion:(NSString *)appVersion
+                                  appId:(NSString *)appId
+                        virtualClusters:(NSString *)virtualClusters
+                 directResponseMatchers:(NSString *)directResponseMatchers
+                        directResponses:(NSString *)directResponses
+                      nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                    platformFilterChain:
+                        (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                        stringAccessors:
+                            (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
   self = [super init];
   if (!self) {
     return nil;
   }
 
-  self.statsDomain = statsDomain;
+  self.grpcStatsDomain = grpcStatsDomain;
   self.connectTimeoutSeconds = connectTimeoutSeconds;
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
@@ -108,6 +109,7 @@
     [definitions appendFormat:@"- &stats_domain %@\n", self.statsDomain];
     [definitions
         appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
+    [definitions appendString:@"- &stats_sinks: [ *base_metrics_service ]\n"];
   }
 
   [definitions appendString:templateYAML];

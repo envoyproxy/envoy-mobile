@@ -40,6 +40,8 @@ const std::string config_header = R"(
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
 - &stats_sinks []
+- &statsd_host 127.0.0.1
+- &statsd_port 8125
 - &stream_idle_timeout 15s
 - &virtual_clusters []
 
@@ -54,6 +56,12 @@ const std::string config_header = R"(
       grpc_service:
         envoy_grpc:
           cluster_name: stats
+  base_statsd: &base_statsd
+    name: envoy.stat_sinks.statsd
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+      address:
+        socket_address: { address: *statsd_host, port_value: *statsd_port }
 
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls

@@ -173,6 +173,14 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramDuration(JNIEnv*
   return result;
 }
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_flushStats(JNIEnv* env,
+                                                            jclass, // class
+                                                            jlong engine) {
+  jni_log("[Envoy]", "flushStats");
+  flush_stats(engine);
+}
+
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordHistogramValue(JNIEnv* env,
                                                                       jclass, // class

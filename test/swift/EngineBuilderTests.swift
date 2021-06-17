@@ -53,16 +53,16 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-  func testAddingStatsDomainAddsToConfigurationWhenRunningEnvoy() {
+  func testAddinggrpcStatsDomainAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual("stats.envoyproxy.io", config.statsDomain)
+      XCTAssertEqual("stats.envoyproxy.io", config.grpcStatsDomain)
       expectation.fulfill()
     }
 
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
-      .addStatsDomain("stats.envoyproxy.io")
+      .addGrpcStatsDomain("stats.envoyproxy.io")
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -224,7 +224,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(
-      statsDomain: "stats.envoyproxy.io",
+      grpcStatsDomain: "stats.envoyproxy.io",
       connectTimeoutSeconds: 200,
       dnsRefreshSeconds: 300,
       dnsFailureRefreshSecondsBase: 400,
@@ -270,7 +270,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
     let config = EnvoyConfiguration(
-      statsDomain: "stats.envoyproxy.io",
+      grpcStatsDomain: "stats.envoyproxy.io",
       connectTimeoutSeconds: 200,
       dnsRefreshSeconds: 300,
       dnsFailureRefreshSecondsBase: 400,

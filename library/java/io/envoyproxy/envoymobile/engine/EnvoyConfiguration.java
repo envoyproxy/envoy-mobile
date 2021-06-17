@@ -4,13 +4,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import javax.annotation.Nullable;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 /* Typed configuration that may be used for starting Envoy. */
 public class EnvoyConfiguration {
-  public final String statsDomain;
+  public final String grpcStatsDomain;
+  public final Integer statsdPort;
   public final Integer connectTimeoutSeconds;
   public final Integer dnsRefreshSeconds;
   public final Integer dnsFailureRefreshSecondsBase;
@@ -29,7 +31,7 @@ public class EnvoyConfiguration {
   /**
    * Create a new instance of the configuration.
    *
-   * @param statsDomain                  the domain to flush stats to.
+   * @param grpcStatsDomain              the domain to flush stats to.
    * @param connectTimeoutSeconds        timeout for new network connections to hosts in
    *                                     the cluster.
    * @param dnsRefreshSeconds            rate in seconds to refresh DNS.
@@ -44,14 +46,16 @@ public class EnvoyConfiguration {
    * @param httpPlatformFilterFactories  the configuration for platform filters.
    * @param stringAccessors              platform string accessors to register.
    */
-  public EnvoyConfiguration(String statsDomain, int connectTimeoutSeconds, int dnsRefreshSeconds,
+  public EnvoyConfiguration(String grpcStatsDomain, @Nullable Integer statsdPort,
+                            int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
                             int statsFlushSeconds, int streamIdleTimeoutSeconds, String appVersion,
                             String appId, String virtualClusters,
                             List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
-    this.statsDomain = statsDomain;
+    this.grpcStatsDomain = grpcStatsDomain;
+    this.statsdPort = statsdPort;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
@@ -109,9 +113,16 @@ public class EnvoyConfiguration {
         .append(virtualClusters)
         .append("\n");
 
-    if (statsDomain != null) {
+    // TODO(goaway): enable support for both types of sinks, since it's now much easier.
+    if (statsdPort != null && grpcStatsDomain != null) {
+      throw new ConfigurationException("cannot enable both statsD and gRPC metrics sink");
+    } else if (grpcStatsDomain != null) {
       configBuilder.append("- &stats_domain ").append(statsDomain).append("\n");
       configBuilder.append(String.format("- &stats_flush_interval %ss\n", statsFlushSeconds));
+      configBuilder.append("- &stats_sinks: [ *base_metrics_service ]\n");
+    } else if (statsdPort != null) {
+      configBuilder.append("- &statsd_port ").append(statsdPort).append("\n");
+      configBuilder.append("- &stats_sinks: [ *base_statsd ]\n");
     }
 
     configBuilder.append(processedTemplate);
