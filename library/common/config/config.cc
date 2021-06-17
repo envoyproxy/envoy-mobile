@@ -2,6 +2,16 @@
 #include "library/common/config/internal.h"
 #include "library/common/config/templates.h"
 
+const int custom_cluster_indent = 2;
+const int custom_listener_indent = 2;
+const int custom_filter_indent = 8;
+const int custom_route_indent = 14;
+
+const int fake_remote_response_indent = 14;
+const char* fake_remote_cluster_insert = "  - *fake_remote_cluster\n";
+const char* fake_remote_listener_insert = "  - *fake_remote_listener\n";
+const char* fake_remote_route_insert = "              - *fake_remote_route\n";
+
 const char* platform_filter_template = R"(
         - name: envoy.filters.http.platform_bridge
           typed_config:
@@ -20,16 +30,6 @@ const char* route_cache_reset_filter_insert = R"(
             "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
 )";
 
-const int custom_cluster_indent = 2;
-const int custom_listener_indent = 2;
-const int custom_filter_indent = 8;
-const int custom_route_indent = 14;
-
-const int fake_remote_response_indent = 14;
-const char* fake_remote_cluster_insert = "  - *fake_remote_cluster\n";
-const char* fake_remote_listener_insert = "  - *fake_remote_listener\n";
-const char* fake_remote_route_insert = "              - *fake_remote_route\n";
-
 const std::string config_header = R"(
 !ignore default_defs:
 - &connect_timeout 30s
@@ -39,11 +39,21 @@ const std::string config_header = R"(
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
+- &stats_sinks []
 - &stream_idle_timeout 15s
 - &virtual_clusters []
 
 !ignore stats_defs:
-  stats_sinks_key: &stats_sinks !ignore stats_sinks
+  base_metrics_service: &base_metrics_service
+    name: envoy.metrics_service
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
+      transport_api_version: V3
+      report_counters_as_deltas: true
+      emit_tags_as_labels: true
+      grpc_service:
+        envoy_grpc:
+          cluster_name: stats
 
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls
@@ -55,7 +65,7 @@ const std::string config_header = R"(
           inline_string: |
 )"
 #include "certificates.inc"
-    ;
+;
 
 const char* config_template = R"(
 !ignore custom_listener_defs:
@@ -332,16 +342,7 @@ static_resources:
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
 stats_flush_interval: *stats_flush_interval
-stats_sinks:
-  - name: envoy.metrics_service
-    typed_config:
-      "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
-      transport_api_version: V3
-      report_counters_as_deltas: true
-      emit_tags_as_labels: true
-      grpc_service:
-        envoy_grpc:
-          cluster_name: stats
+stats_sinks: *stats_sinks
 stats_config:
   stats_matcher:
     inclusion_list:
