@@ -101,8 +101,8 @@
                             (unsigned long)self.dnsFailureRefreshSecondsMax];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
-  [definitions appendFormat:@"- &metadata { device_os: %@, app_version: %@, app_id: %@ }\n",
-                            @"iOS", self.appVersion, self.appId];
+  [definitions appendFormat:@"- &metadata { device_os: %@, app_version: %@, app_id: %@ }\n", @"iOS",
+                            self.appVersion, self.appId];
   [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
 
   if (self.grpcStatsDomain != nil) {
