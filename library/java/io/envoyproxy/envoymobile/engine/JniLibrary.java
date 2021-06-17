@@ -261,27 +261,6 @@ public class JniLibrary {
   public static native String nativeFilterTemplateString();
 
   /**
-<<<<<<< HEAD
-=======
-   * Provides a configuration template that may be used for building a gRPC-based
-   * stat sink.
-   *
-   * @return A template that may be used as a starting point for constructing
-   * a gRPC-based stat sink.
-   */
-  public static native String gRPCStatsSinkTemplateString();
-
-  /**
-   * Provides a configuration template that may be used for building a statsd-based
-   * stat sink.
-   *
-   * @return A template that may be used as a starting point for constructing
-   * a statsd-based stat sink.
-   */
-  public static native String statsdSinkTemplateString();
-
-  /**
->>>>>>> main
    * Register a string accessor to get strings from the platform.
    *
    * @param accessorName, unique name identifying this accessor.
