@@ -73,7 +73,7 @@ const std::string config_header = R"(
           inline_string: |
 )"
 #include "certificates.inc"
-;
+    ;
 
 const char* config_template = R"(
 !ignore custom_listener_defs:
