@@ -485,7 +485,7 @@ TEST_F(ClientTest, MultipleStreams) {
         response_encoder2 = &encoder;
         return request_decoder2;
       }));
-  http_client_.startStream(stream2, bridge_callbacks_2;
+  http_client_.startStream(stream2, bridge_callbacks_2);
 
   // Send request headers.
 
