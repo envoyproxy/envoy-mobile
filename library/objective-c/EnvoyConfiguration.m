@@ -105,11 +105,11 @@
                             @"iOS", self.appVersion, self.appId];
   [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
 
-  if (self.statsDomain != nil) {
-    [definitions appendFormat:@"- &stats_domain %@\n", self.statsDomain];
+  if (self.grpcStatsDomain != nil) {
+    [definitions appendFormat:@"- &stats_domain %@\n", self.grpcStatsDomain];
     [definitions
         appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
-    [definitions appendString:@"- &stats_sinks: [ *base_metrics_service ]\n"];
+    [definitions appendString:@"- &stats_sinks [ *base_metrics_service ]\n"];
   }
 
   [definitions appendString:templateYAML];

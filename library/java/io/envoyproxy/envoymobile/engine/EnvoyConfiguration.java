@@ -119,10 +119,10 @@ public class EnvoyConfiguration {
     } else if (grpcStatsDomain != null) {
       configBuilder.append("- &stats_domain ").append(statsDomain).append("\n");
       configBuilder.append(String.format("- &stats_flush_interval %ss\n", statsFlushSeconds));
-      configBuilder.append("- &stats_sinks: [ *base_metrics_service ]\n");
+      configBuilder.append("- &stats_sinks [ *base_metrics_service ]\n");
     } else if (statsdPort != null) {
       configBuilder.append("- &statsd_port ").append(statsdPort).append("\n");
-      configBuilder.append("- &stats_sinks: [ *base_statsd ]\n");
+      configBuilder.append("- &stats_sinks [ *base_statsd ]\n");
     }
 
     configBuilder.append(processedTemplate);
