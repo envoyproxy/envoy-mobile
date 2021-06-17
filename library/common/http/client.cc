@@ -187,8 +187,7 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   callbacks_->onError();
 }
 
-void Client::startStream(envoy_stream_t new_stream_handle,
-                                   envoy_http_callbacks bridge_callbacks) {
+void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
   direct_stream->callbacks_ =
@@ -260,9 +259,7 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   }
 }
 
-void Client::sendMetadata(envoy_stream_t, envoy_headers) {
-  NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-}
+void Client::sendMetadata(envoy_stream_t, envoy_headers) { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
 void Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   ASSERT(dispatcher_.isThreadSafe());
