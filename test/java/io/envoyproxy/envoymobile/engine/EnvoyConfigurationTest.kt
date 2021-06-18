@@ -80,8 +80,8 @@ class EnvoyConfigurationTest {
     )
 
     try {
-      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "", "")
-      fail("Unresolved configuration keys should trigger exception.")
+      envoyConfiguration.resolveTemplate("", "", "")
+      fail("Conflicting stats keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("cannot enable both statsD and gRPC metrics sink")
     }
