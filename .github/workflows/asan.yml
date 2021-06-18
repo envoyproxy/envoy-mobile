@@ -23,7 +23,7 @@ jobs:
       - id: check_context
         name: 'Check whether to run'
         run: |
-          if echo ${GITHUB_REF##*/} | grep -q ^github-ref-test$ || git diff --name-only origin/main | grep -qe common/ -e bazel/ -e ^\.bazelrc$ -e ^envoy$ -e ^WORKSPACE$ ; then
+          if echo ${GITHUB_REF##*/} | grep -q ^github-test-ref$ || git diff --name-only origin/main | grep -qe common/ -e bazel/ -e ^\.bazelrc$ -e ^envoy$ -e ^WORKSPACE$ ; then
             echo ${GITHUB_REF##*/}
             echo "Tests will run."
             echo "::set-output name=run_tests::true"
