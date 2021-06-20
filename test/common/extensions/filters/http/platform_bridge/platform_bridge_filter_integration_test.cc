@@ -65,8 +65,8 @@ public:
   } filter_invocations;
 };
 
-INSTANTIATE_TEST_SUITE_P(IpVersions, PlatformBridgeIntegrationTest,
-                         testing::ValuesIn(TestEnvironment::getIpVersionsForTest()));
+// INSTANTIATE_TEST_SUITE_P(IpVersions, PlatformBridgeIntegrationTest,
+//                          testing::ValuesIn(TestEnvironment::getIpVersionsForTest()));
 
 // TEST_P(PlatformBridgeIntegrationTest, MultipleFilters) {
 //   envoy_http_filter platform_filter_1{};
