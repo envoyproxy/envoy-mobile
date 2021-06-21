@@ -172,6 +172,10 @@ static_resources:
             "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
             dns_cache_config: &dns_cache_config
               name: dynamic_forward_proxy_cache_config
+              # TODO: Support API for overriding prefetch_hostnames: https://github.com/envoyproxy/envoy-mobile/issues/1534
+              prefetch_hostnames:
+                - address: api.lyft.com
+                  port_value: 443
               # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
               dns_lookup_family: V4_ONLY
               dns_refresh_rate: *dns_refresh_rate
