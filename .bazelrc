@@ -37,6 +37,8 @@ build:ios --define=manual_stamp=manual_stamp
 
 # Default flags for builds targeting Android
 build:android --define=logger=android
+# Enable when this issue is fixed: https://github.com/envoyproxy/envoy-mobile/issues/1533
+build:android --define=signal_trace=disabled
 
 # Locally-runnable ASAN config for MacOS & Linux with standard dev environment
 # See also:
