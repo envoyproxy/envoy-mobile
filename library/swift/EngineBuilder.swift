@@ -142,7 +142,7 @@ public class EngineBuilder: NSObject {
     return self
   }
 
-  /// Add an HTTP platfom filter factory used to construct filters for streams sent by this client.
+  /// Add an HTTP platform filter factory used to construct filters for streams sent by this client.
   ///
   /// - parameter factory: Closure returning an instantiated filter. Called once per stream.
   ///
