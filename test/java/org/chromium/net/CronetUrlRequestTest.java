@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.StrictMode;
@@ -61,7 +62,10 @@ public class CronetUrlRequestTest {
 
   // URL used for base tests.
   private static final String TEST_URL = "http://127.0.0.1:8000";
-  private static final String REFERRER_HEADER_NAME = "refer" + "er"; // Avoids lint spell error
+
+  @SuppressLint("Typos")
+  @SuppressWarnings("SpellCheckingInspection")
+  private static final String REFERRER_HEADER_NAME = "referer";
 
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
