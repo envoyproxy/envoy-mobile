@@ -31,6 +31,8 @@
 #include "library/cc/stream_prototype.h"
 #include "library/cc/upstream_http_protocol.h"
 
+#include "library/common/types/c_types.h"
+
 #include "library/python/engine_builder_shim.h"
 #include "library/python/stream_shim.h"
 #include "library/python/stream_prototype_shim.h"
@@ -51,7 +53,7 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def(py::init<>())
       .def("add_log_level", &EngineBuilder::addLogLevel)
       .def("set_on_engine_running", &Envoy::Python::EngineBuilder::setOnEngineRunningShim)
-      .def("add_stats_domain", &EngineBuilder::addStatsDomain)
+      .def("add_grpc_stats_domain", &EngineBuilder::addGrpcStatsDomain)
       .def("add_connect_timeout_seconds", &EngineBuilder::addConnectTimeoutSeconds)
       .def("add_dns_refresh_seconds", &EngineBuilder::addDnsRefreshSeconds)
       .def("add_dns_failure_refresh_seconds", &EngineBuilder::addDnsFailureRefreshSeconds)
@@ -70,6 +72,13 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def_readwrite("message", &EnvoyError::message)
       .def_readwrite("attempt_count", &EnvoyError::attempt_count)
       .def_readwrite("cause", &EnvoyError::cause);
+
+  py::enum_<envoy_error_code_t>(m, "ErrorCode")
+      .value("UndefinedError", ENVOY_UNDEFINED_ERROR)
+      .value("StreamReset", ENVOY_STREAM_RESET)
+      .value("ConnectionFailure", ENVOY_CONNECTION_FAILURE)
+      .value("BufferLimitExceeded", ENVOY_BUFFER_LIMIT_EXCEEDED)
+      .value("RequestTimeout", ENVOY_REQUEST_TIMEOUT);
 
   py::enum_<LogLevel>(m, "LogLevel")
       .value("Trace", LogLevel::trace)

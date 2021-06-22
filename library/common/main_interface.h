@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "library/common/config_template.h"
+#include "library/common/config/templates.h"
 #include "library/common/types/c_types.h"
 
 // NOLINT(namespace-envoy)
@@ -132,6 +132,14 @@ envoy_status_t record_gauge_sub(envoy_engine_t engine, const char* elements, env
 envoy_status_t record_histogram_value(envoy_engine_t engine, const char* elements,
                                       envoy_stats_tags tags, uint64_t value,
                                       envoy_histogram_stat_unit_t unit_measure);
+
+/**
+ * Flush the stats sinks outside of a flushing interval.
+ * Note: flushing before the engine has started will result in a no-op.
+ * Note: stats flushing may not be synchronous.
+ * Therefore, this function may return prior to flushing taking place.
+ */
+void flush_stats(envoy_engine_t engine);
 
 /**
  * Statically register APIs leveraging platform libraries.

@@ -4,7 +4,7 @@
 
 #include "source/common/common/lock_guard.h"
 
-#include "library/common/config_internal.h"
+#include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
 
@@ -231,6 +231,12 @@ Http::Client& Engine::httpClient() {
   RELEASE_ASSERT(dispatcher_->isThreadSafe(),
                  "httpClient must be accessed from dispatcher's context");
   return *http_client_;
+}
+
+void Engine::flushStats() {
+  ASSERT(dispatcher_->isThreadSafe(), "flushStats must be called from the dispatcher's context");
+
+  server_->flushStats();
 }
 
 } // namespace Envoy

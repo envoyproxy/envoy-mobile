@@ -16,7 +16,7 @@ namespace Event {
  * versions may support correct calling semantics after the Event::Dispatcher has been
  * terminated/deleted or before it has been created.
  */
-class ProvisionalDispatcher : public Logger::Loggable<Logger::Id::main> {
+class ProvisionalDispatcher {
 public:
   ProvisionalDispatcher() = default;
   virtual ~ProvisionalDispatcher() = default;
@@ -41,7 +41,7 @@ public:
    * @return false before the Event::Dispatcher is running, otherwise the result of the
    * underlying call to Event::Dispatcher::isThreadSafe().
    */
-  virtual bool isThreadSafe();
+  virtual bool isThreadSafe() const;
 
   /**
    * Submits an item for deferred delete. Must be called from context where

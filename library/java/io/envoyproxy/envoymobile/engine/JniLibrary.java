@@ -225,6 +225,13 @@ public class JniLibrary {
                                                       int durationMs);
 
   /**
+   * Flush the stats sinks outside of a flushing interval.
+   * Note: stat flushing is done asynchronously, this function will never block.
+   * This is a noop if called before the underlying EnvoyEngine has started.
+   */
+  protected static native int flushStats(long engine);
+
+  /**
    * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
@@ -252,15 +259,6 @@ public class JniLibrary {
    * native filter configuration.
    */
   public static native String nativeFilterTemplateString();
-
-  /**
-   * Provides a configuration template that may be used for building native
-   * filter config chains.
-   *
-   * @return A template that may be used as a starting point for constructing
-   * native filter configuration.
-   */
-  public static native String statsSinkTemplateString();
 
   /**
    * Register a string accessor to get strings from the platform.
