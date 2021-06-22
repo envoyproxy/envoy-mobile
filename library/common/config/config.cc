@@ -173,7 +173,7 @@ static_resources:
             dns_cache_config: &dns_cache_config
               name: dynamic_forward_proxy_cache_config
               # TODO: Support API for overriding prefetch_hostnames: https://github.com/envoyproxy/envoy-mobile/issues/1534
-              prefetch_hostnames:
+              preresolve_hostnames:
                 - address: api.lyft.com
                   port_value: 443
               # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
