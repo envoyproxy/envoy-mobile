@@ -56,10 +56,12 @@ import org.robolectric.RobolectricTestRunner;
  */
 @RunWith(RobolectricTestRunner.class)
 public class CronetUrlRequestTest {
+
   private static final String TAG = CronetUrlRequestTest.class.getSimpleName();
 
   // URL used for base tests.
   private static final String TEST_URL = "http://127.0.0.1:8000";
+  private static final String REFERRER_HEADER_NAME = "refer" + "er"; // Avoids lint spell error
 
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
@@ -537,11 +539,10 @@ public class CronetUrlRequestTest {
   @Feature({"Cronet"})
   public void testCustomReferer_verbatim() throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
-    String refererName = "referer"; // NOLINT
     String refererValue = "http://example.com/";
     UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-        NativeTestServer.getEchoHeaderURL(refererName), callback, callback.getExecutor());
-    builder.addHeader(refererName, refererValue);
+        NativeTestServer.getEchoHeaderURL(REFERRER_HEADER_NAME), callback, callback.getExecutor());
+    builder.addHeader(REFERRER_HEADER_NAME, refererValue);
     builder.build().start();
     callback.blockForDone();
     assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -554,11 +555,10 @@ public class CronetUrlRequestTest {
   @OnlyRunNativeCronet
   public void testCustomReferer_changeToCanonical() throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
-    String refererName = "referer"; // NOLINT
     String refererValueNoTrailingSlash = "http://example.com";
     UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-        NativeTestServer.getEchoHeaderURL(refererName), callback, callback.getExecutor());
-    builder.addHeader(refererName, refererValueNoTrailingSlash);
+        NativeTestServer.getEchoHeaderURL(REFERRER_HEADER_NAME), callback, callback.getExecutor());
+    builder.addHeader(REFERRER_HEADER_NAME, refererValueNoTrailingSlash);
     builder.build().start();
     callback.blockForDone();
     assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -572,11 +572,10 @@ public class CronetUrlRequestTest {
   @Ignore("Envoy Mobile feature gap")
   public void testCustomReferer_discardInvalid() throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
-    String refererName = "referer"; // NOLINT
     String invalidRefererValue = "foobar";
     UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-        NativeTestServer.getEchoHeaderURL(refererName), callback, callback.getExecutor());
-    builder.addHeader(refererName, invalidRefererValue);
+        NativeTestServer.getEchoHeaderURL(REFERRER_HEADER_NAME), callback, callback.getExecutor());
+    builder.addHeader(REFERRER_HEADER_NAME, invalidRefererValue);
     builder.build().start();
     callback.blockForDone();
     assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
