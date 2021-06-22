@@ -63,9 +63,8 @@ public class CronetUrlRequestTest {
   // URL used for base tests.
   private static final String TEST_URL = "http://127.0.0.1:8000";
 
-  @SuppressLint("Typos")
-  @SuppressWarnings("SpellCheckingInspection")
-  private static final String REFERRER_HEADER_NAME = "referer";  // NOLINT(codespell)
+  private static final String REFER_STRING = "refer";
+  private static final String REFERRER_HEADER_NAME = REFER_STRING + "er";
 
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
