@@ -264,8 +264,12 @@ private:
   Random::RandomGenerator& random_;
   Thread::ThreadSynchronizer synchronizer_;
 
-  // True if the bridge should operate in asynchronous mode, and only send
-  // data when it is requested by the caller via resumeData()
+  // True if the bridge should operate in asynchronous mode.
+  //
+  // In async mode only one callback can be sent to the bridge until more is
+  // asked for. When a response is started this will either allow headers or an
+  // error to be sent up. Body, trailers, or further errors will not be sent
+  // until resumeData is called.
   bool async_mode_;
 };
 
