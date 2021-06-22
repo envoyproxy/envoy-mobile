@@ -141,12 +141,8 @@ private:
 
     // TODO(alyssawilk) we can't push back immediately because HTTP/1 and HTTP/2
     // upstreams have different semantics.
-    void hasBufferedData() {
-      direct_stream_.runHighWatermarkCallbacks();
-    }
-    void bufferedDataDrained() {
-      direct_stream_.runLowWatermarkCallbacks();
-    }
+    void hasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
+    void bufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
 
     // To be called by mobile library when async data is on and more data is wanted.
     // If bytes are available, the bytes available (up to the limit of
@@ -185,8 +181,10 @@ private:
     // True if the bridge should operate in asynchronous mode, and only send
     // data when it is requested by the caller.
     bool async_mode_{};
+    bool response_headers_sent_{};
     bool end_stream_read_{};
     bool end_stream_communicated_{};
+    bool deferred_error_{};
     uint32_t bytes_to_send_{};
   };
 

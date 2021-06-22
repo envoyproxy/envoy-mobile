@@ -27,8 +27,8 @@ namespace Http {
 Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream,
                                                      envoy_http_callbacks bridge_callbacks,
                                                      Client& http_client)
-    : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks),
-      http_client_(http_client), async_mode_(http_client_.async_mode_) {}
+    : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks), http_client_(http_client),
+      async_mode_(http_client_.async_mode_) {}
 
 void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
                                                   bool end_stream) {
@@ -77,6 +77,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
             direct_stream_.stream_handle_, end_stream, headers);
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
                                bridge_callbacks_.context);
+  response_headers_sent_ = true;
   if (end_stream) {
     onComplete();
   }
@@ -124,9 +125,9 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
       // Default to 64K per stream.
       response_data_->setWatermarks(1000000);
     }
-    ENVOY_LOG(debug,
-              "[S{}] buffering {} bytes due to async mode. {} total bytes buffered.",
-              direct_stream_.stream_handle_, data.length(), data.length() + response_data_->length());
+    ENVOY_LOG(debug, "[S{}] buffering {} bytes due to async mode. {} total bytes buffered.",
+              direct_stream_.stream_handle_, data.length(),
+              data.length() + response_data_->length());
     response_data_->move(data);
   }
 }
@@ -159,8 +160,8 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_));
   closeStream(); // Trailers always indicate the end of the stream.
 
-  // If there's any buffered data (aync_mode), don't send trailers.
-  if (response_data_.get() && response_data_->length() > 0) {
+  // If in async mode, don't send data unless prompted.
+  if (async_mode_ && bytes_to_send_ == 0) {
     response_trailers_ = ResponseTrailerMapImpl::create();
     HeaderMapImpl::copyFrom(*response_trailers_, trailers);
     return;
@@ -199,6 +200,11 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
     sendTrailersToBridge(*response_trailers_);
     response_trailers_.release();
   }
+
+  if (deferred_error_ && bytes_to_send_ > 0) {
+    onError();
+    deferred_error_ = false;
+  }
 }
 
 void Client::DirectStreamCallbacks::closeStream() {
@@ -221,6 +227,11 @@ void Client::DirectStreamCallbacks::onComplete() {
 
 void Client::DirectStreamCallbacks::onError() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
+
+  if (async_mode_ && response_headers_sent_ && bytes_to_send_ == 0) {
+    deferred_error_ = true;
+    return;
+  }
 
   // The stream should no longer be preset in the map, because onError() was either called from a
   // terminal callback that mapped to an error or it was called in response to a resetStream().

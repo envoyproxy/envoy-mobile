@@ -388,6 +388,7 @@ TEST_P(ClientTest, BasicStreamTrailers) {
 
   EXPECT_CALL(request_decoder_, decodeTrailers_(_));
   http_client_.sendTrailers(stream_, c_trailers);
+  resumeDataIfAsync(20);
 
   // Encode response trailers.
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
@@ -696,6 +697,7 @@ TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   // Expect that when a reset is received, the Http::Client::DirectStream fires
   // runResetCallbacks. The Http::ConnectionManager depends on the Http::Client::DirectStream
   // firing this tight loop to let the Http::ConnectionManager clean up its stream state.
+  resumeDataIfAsync(3);
   EXPECT_CALL(callbacks, onResetStream(StreamResetReason::RemoteReset, _));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   response_encoder_->getStream().resetStream(StreamResetReason::RemoteReset);
