@@ -244,8 +244,7 @@ public class CronetTestRule implements TestRule {
   public static void assertContains(String expectedSubstring, String actualString) {
     Assert.assertNotNull(actualString);
     if (!actualString.contains(expectedSubstring)) {
-      fail("String [" + actualString + "] doesn't contain substring [" + expectedSubstring +
-                  "]");
+      fail("String [" + actualString + "] doesn't contain substring [" + expectedSubstring + "]");
     }
   }
 
