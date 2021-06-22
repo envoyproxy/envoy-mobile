@@ -841,7 +841,7 @@ final class JavaUrlRequest extends UrlRequestBase {
           try {
             mResponseChannel.close();
           } catch (IOException e) {
-            e.printStackTrace();
+            // Silently ignored, willingly.
           }
           mResponseChannel = null;
         }

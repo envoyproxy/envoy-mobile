@@ -1,5 +1,8 @@
 package org.chromium.net.testing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import android.content.Context;
 import android.os.StrictMode;
 import android.util.Log;
@@ -223,25 +226,25 @@ public class CronetTestRule implements TestRule {
   }
 
   public void assertResponseEquals(UrlResponseInfo expected, UrlResponseInfo actual) {
-    Assert.assertEquals(expected.getAllHeaders(), actual.getAllHeaders());
-    Assert.assertEquals(expected.getAllHeadersAsList(), actual.getAllHeadersAsList());
-    Assert.assertEquals(expected.getHttpStatusCode(), actual.getHttpStatusCode());
-    Assert.assertEquals(expected.getHttpStatusText(), actual.getHttpStatusText());
-    Assert.assertEquals(expected.getUrlChain(), actual.getUrlChain());
-    Assert.assertEquals(expected.getUrl(), actual.getUrl());
+    assertEquals(expected.getAllHeaders(), actual.getAllHeaders());
+    assertEquals(expected.getAllHeadersAsList(), actual.getAllHeadersAsList());
+    assertEquals(expected.getHttpStatusCode(), actual.getHttpStatusCode());
+    assertEquals(expected.getHttpStatusText(), actual.getHttpStatusText());
+    assertEquals(expected.getUrlChain(), actual.getUrlChain());
+    assertEquals(expected.getUrl(), actual.getUrl());
     // Transferred bytes and proxy server are not supported in pure java
     if (!testingJavaImpl()) {
-      Assert.assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
-      Assert.assertEquals(expected.getProxyServer(), actual.getProxyServer());
+      assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
+      assertEquals(expected.getProxyServer(), actual.getProxyServer());
       // This is a place where behavior intentionally differs between native and java
-      Assert.assertEquals(expected.getNegotiatedProtocol(), actual.getNegotiatedProtocol());
+      assertEquals(expected.getNegotiatedProtocol(), actual.getNegotiatedProtocol());
     }
   }
 
   public static void assertContains(String expectedSubstring, String actualString) {
     Assert.assertNotNull(actualString);
     if (!actualString.contains(expectedSubstring)) {
-      Assert.fail("String [" + actualString + "] doesn't contain substring [" + expectedSubstring +
+      fail("String [" + actualString + "] doesn't contain substring [" + expectedSubstring +
                   "]");
     }
   }
