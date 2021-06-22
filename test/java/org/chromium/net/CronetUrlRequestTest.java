@@ -65,7 +65,7 @@ public class CronetUrlRequestTest {
 
   @SuppressLint("Typos")
   @SuppressWarnings("SpellCheckingInspection")
-  private static final String REFERRER_HEADER_NAME = "referer";
+  private static final String REFERRER_HEADER_NAME = "referer";  // NOLINT(codespell)
 
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
