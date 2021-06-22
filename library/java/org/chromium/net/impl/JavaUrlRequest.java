@@ -55,8 +55,8 @@ final class JavaUrlRequest extends UrlRequestBase {
    * </pre>
    */
   @IntDef({State.NOT_STARTED, State.STARTED, State.REDIRECT_RECEIVED,
-      State.AWAITING_FOLLOW_REDIRECT, State.AWAITING_READ, State.READING, State.ERROR,
-      State.COMPLETE, State.CANCELLED})
+           State.AWAITING_FOLLOW_REDIRECT, State.AWAITING_READ, State.READING, State.ERROR,
+           State.COMPLETE, State.CANCELLED})
   @Retention(RetentionPolicy.SOURCE)
   @interface State {
 
@@ -110,95 +110,23 @@ final class JavaUrlRequest extends UrlRequestBase {
    * risk that we'd get an inconsistent snapshot of both - however, it also happens that this value
    * is only used with the STARTED state, so it's inconsequential.
    */
-  @StatusValues
-  private volatile int mAdditionalStatusDetails = Status.INVALID;
+  @StatusValues private volatile int mAdditionalStatusDetails = Status.INVALID;
 
   /* These change with redirects. */
   private String mCurrentUrl;
-  @Nullable
-  private ReadableByteChannel mResponseChannel; // Only accessed on mExecutor.
+  @Nullable private ReadableByteChannel mResponseChannel; // Only accessed on mExecutor.
   private UrlResponseInfoImpl mUrlResponseInfo;
   private String mPendingRedirectUrl;
   private HttpURLConnection mCurrentUrlConnection;    // Only accessed on mExecutor.
   private OutputStreamDataSink mOutputStreamDataSink; // Only accessed on mExecutor.
-
-  // Executor that runs one task at a time on an underlying Executor.
-  // NOTE: Do not use to wrap user supplied Executor as lock is held while underlying execute()
-  // is called.
-  private static final class SerializingExecutor implements Executor {
-
-    private final Executor mUnderlyingExecutor;
-    private final Runnable mRunTasks = new Runnable() {
-      @Override
-      public void run() {
-        Runnable task;
-        synchronized (mTaskQueue) {
-          if (mRunning) {
-            return;
-          }
-          task = mTaskQueue.pollFirst();
-          mRunning = task != null;
-        }
-        while (task != null) {
-          boolean threw = true;
-          try {
-            task.run();
-            threw = false;
-          } finally {
-            synchronized (mTaskQueue) {
-              if (threw) {
-                // If task.run() threw, this method will abort without looping
-                // again, so repost to keep running tasks.
-                mRunning = false;
-                try {
-                  mUnderlyingExecutor.execute(mRunTasks);
-                } catch (RejectedExecutionException e) {
-                  // Give up if a task run at shutdown throws.
-                }
-              } else {
-                task = mTaskQueue.pollFirst();
-                mRunning = task != null;
-              }
-            }
-          }
-        }
-      }
-    };
-    // Queue of tasks to run. Tasks are added to the end and taken from the front.
-    // Synchronized on itself.
-    @GuardedBy("mTaskQueue")
-    private final Deque<Runnable> mTaskQueue = new ArrayDeque<>();
-    // Indicates if mRunTasks is actively running tasks. Synchronized on mTaskQueue.
-    @GuardedBy("mTaskQueue")
-    private boolean mRunning;
-
-    SerializingExecutor(Executor underlyingExecutor) {
-      mUnderlyingExecutor = underlyingExecutor;
-    }
-
-    @Override
-    public void execute(Runnable command) {
-      synchronized (mTaskQueue) {
-        mTaskQueue.addLast(command);
-        try {
-          mUnderlyingExecutor.execute(mRunTasks);
-        } catch (RejectedExecutionException e) {
-          // If shutting down, do not add new tasks to the queue.
-          mTaskQueue.removeLast();
-        }
-      }
-    }
-
-    ;
-  }
 
   /**
    * @param executor The executor used for reading and writing from sockets
    * @param userExecutor The executor used to dispatch to {@code callback}
    */
   JavaUrlRequest(Callback callback, final Executor executor, Executor userExecutor, String url,
-      String userAgent, boolean allowDirectExecutor, boolean trafficStatsTagSet,
-      int trafficStatsTag, final boolean trafficStatsUidSet, final int trafficStatsUid) {
+                 String userAgent, boolean allowDirectExecutor, boolean trafficStatsTagSet,
+                 int trafficStatsTag, final boolean trafficStatsUidSet, final int trafficStatsUid) {
     if (url == null) {
       throw new NullPointerException("URL is required");
     }
@@ -282,29 +210,29 @@ final class JavaUrlRequest extends UrlRequestBase {
     for (int i = 0; i < header.length(); i++) {
       char c = header.charAt(i);
       switch (c) {
-        case '(':
-        case ')':
-        case '<':
-        case '>':
-        case '@':
-        case ',':
-        case ';':
-        case ':':
-        case '\\':
-        case '\'':
-        case '/':
-        case '[':
-        case ']':
-        case '?':
-        case '=':
-        case '{':
-        case '}':
+      case '(':
+      case ')':
+      case '<':
+      case '>':
+      case '@':
+      case ',':
+      case ';':
+      case ':':
+      case '\\':
+      case '\'':
+      case '/':
+      case '[':
+      case ']':
+      case '?':
+      case '=':
+      case '{':
+      case '}':
+        return false;
+      default: {
+        if (Character.isISOControl(c) || Character.isWhitespace(c)) {
           return false;
-        default: {
-          if (Character.isISOControl(c) || Character.isWhitespace(c)) {
-            return false;
-          }
         }
+      }
       }
     }
     return true;
@@ -322,8 +250,8 @@ final class JavaUrlRequest extends UrlRequestBase {
     if (mInitialMethod == null) {
       mInitialMethod = "POST";
     }
-    this.mUploadDataProvider = new VersionSafeCallbacks.UploadDataProviderWrapper(
-        uploadDataProvider);
+    this.mUploadDataProvider =
+        new VersionSafeCallbacks.UploadDataProviderWrapper(uploadDataProvider);
     if (mAllowDirectExecutor) {
       this.mUploadExecutor = executor;
     } else {
@@ -339,8 +267,8 @@ final class JavaUrlRequest extends UrlRequestBase {
     private OutputStream mUrlConnectionOutputStream;
 
     OutputStreamDataSink(final Executor userExecutor, Executor executor,
-        HttpURLConnection urlConnection,
-        VersionSafeCallbacks.UploadDataProviderWrapper provider) {
+                         HttpURLConnection urlConnection,
+                         VersionSafeCallbacks.UploadDataProviderWrapper provider) {
       super(userExecutor, executor, provider);
       mUrlConnection = urlConnection;
     }
@@ -359,7 +287,7 @@ final class JavaUrlRequest extends UrlRequestBase {
 
     void closeOutputChannel() throws IOException {
       if (mOutputChannel != null && mOutputChannelClosed.compareAndSet(
-          /* expected= */ false, /* updated= */ true)) {
+                                        /* expected= */ false, /* updated= */ true)) {
         mOutputChannel.close();
       }
     }
@@ -373,9 +301,9 @@ final class JavaUrlRequest extends UrlRequestBase {
     @Override
     protected void initializeStart(long totalBytes) {
       if (totalBytes > 0 && totalBytes <= Integer.MAX_VALUE) {
-        mUrlConnection.setFixedLengthStreamingMode((int) totalBytes);
+        mUrlConnection.setFixedLengthStreamingMode((int)totalBytes);
       } else if (totalBytes > Integer.MAX_VALUE &&
-          Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
         mUrlConnection.setFixedLengthStreamingMode(totalBytes);
       } else {
         // Even if we know the length, but we're running pre-kitkat and it's larger
@@ -438,17 +366,17 @@ final class JavaUrlRequest extends UrlRequestBase {
     while (true) {
       @State int oldState = mState.get();
       switch (oldState) {
-        case State.NOT_STARTED:
-          throw new IllegalStateException("Can't enter error state before start");
-        case State.ERROR:    // fallthrough
-        case State.COMPLETE: // fallthrough
-        case State.CANCELLED:
-          return false; // Already in a terminal state
-        default: {
-          if (mState.compareAndSet(/* expected= */ oldState, /* updated= */ error)) {
-            return true;
-          }
+      case State.NOT_STARTED:
+        throw new IllegalStateException("Can't enter error state before start");
+      case State.ERROR:    // fallthrough
+      case State.COMPLETE: // fallthrough
+      case State.CANCELLED:
+        return false; // Already in a terminal state
+      default: {
+        if (mState.compareAndSet(/* expected= */ oldState, /* updated= */ error)) {
+          return true;
         }
+      }
       }
     }
   }
@@ -481,12 +409,12 @@ final class JavaUrlRequest extends UrlRequestBase {
    * @param afterTransition Callback to run after transition completes successfully.
    */
   private void transitionStates(@State int expected, @State int newState,
-      Runnable afterTransition) {
+                                Runnable afterTransition) {
     if (!mState.compareAndSet(expected, newState)) {
       @State int state = mState.get();
       if (!(state == State.CANCELLED || state == State.ERROR)) {
         throw new IllegalStateException("Invalid state transition - expected " + expected +
-            " but was " + state);
+                                        " but was " + state);
       }
     } else {
       afterTransition.run();
@@ -558,7 +486,7 @@ final class JavaUrlRequest extends UrlRequestBase {
 
   private void fireCloseUploadDataProvider() {
     if (mUploadDataProvider != null && mUploadProviderClosed.compareAndSet(
-        /* expected= */ false, /* updated= */ true)) {
+                                           /* expected= */ false, /* updated= */ true)) {
       try {
         mUploadExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
           @Override
@@ -603,7 +531,7 @@ final class JavaUrlRequest extends UrlRequestBase {
           mCurrentUrlConnection.disconnect();
           mCurrentUrlConnection = null;
         }
-        mCurrentUrlConnection = (HttpURLConnection) url.openConnection();
+        mCurrentUrlConnection = (HttpURLConnection)url.openConnection();
         mCurrentUrlConnection.setInstanceFollowRedirects(false);
         if (!mRequestHeaders.containsKey(USER_AGENT)) {
           mRequestHeaders.put(USER_AGENT, mUserAgent);
@@ -693,7 +621,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         mResponseChannel.close();
       }
       if (mState.compareAndSet(
-          /* expected= */ State.READING, /* updated= */ State.COMPLETE)) {
+              /* expected= */ State.READING, /* updated= */ State.COMPLETE)) {
         fireDisconnect();
         mCallbackAsync.onSucceeded(mUrlResponseInfo);
       }
@@ -723,28 +651,28 @@ final class JavaUrlRequest extends UrlRequestBase {
   public void cancel() {
     @State int oldState = mState.getAndSet(State.CANCELLED);
     switch (oldState) {
-      // We've just scheduled some user code to run. When they perform their next operation,
-      // they'll observe it and fail. However, if user code is cancelling in response to one
-      // of these callbacks, we'll never actually cancel!
-      // TODO(clm) figure out if it's possible to avoid concurrency in user callbacks.
-      case State.REDIRECT_RECEIVED:
-      case State.AWAITING_FOLLOW_REDIRECT:
-      case State.AWAITING_READ:
+    // We've just scheduled some user code to run. When they perform their next operation,
+    // they'll observe it and fail. However, if user code is cancelling in response to one
+    // of these callbacks, we'll never actually cancel!
+    // TODO(clm) figure out if it's possible to avoid concurrency in user callbacks.
+    case State.REDIRECT_RECEIVED:
+    case State.AWAITING_FOLLOW_REDIRECT:
+    case State.AWAITING_READ:
 
-        // User code is waiting on us - cancel away!
-      case State.STARTED:
-      case State.READING:
-        fireDisconnect();
-        fireCloseUploadDataProvider();
-        mCallbackAsync.onCanceled(mUrlResponseInfo);
-        break;
-      // The rest are all termination cases - we're too late to cancel.
-      case State.ERROR:
-      case State.COMPLETE:
-      case State.CANCELLED:
-        break;
-      default:
-        break;
+      // User code is waiting on us - cancel away!
+    case State.STARTED:
+    case State.READING:
+      fireDisconnect();
+      fireCloseUploadDataProvider();
+      mCallbackAsync.onCanceled(mUrlResponseInfo);
+      break;
+    // The rest are all termination cases - we're too late to cancel.
+    case State.ERROR:
+    case State.COMPLETE:
+    case State.CANCELLED:
+      break;
+    default:
+      break;
     }
   }
 
@@ -761,25 +689,25 @@ final class JavaUrlRequest extends UrlRequestBase {
 
     @StatusValues final int status;
     switch (state) {
-      case State.ERROR:
-      case State.COMPLETE:
-      case State.CANCELLED:
-      case State.NOT_STARTED:
-        status = Status.INVALID;
-        break;
-      case State.STARTED:
-        status = extraStatus;
-        break;
-      case State.REDIRECT_RECEIVED:
-      case State.AWAITING_FOLLOW_REDIRECT:
-      case State.AWAITING_READ:
-        status = Status.IDLE;
-        break;
-      case State.READING:
-        status = Status.READING_RESPONSE;
-        break;
-      default:
-        throw new IllegalStateException("Switch is exhaustive: " + state);
+    case State.ERROR:
+    case State.COMPLETE:
+    case State.CANCELLED:
+    case State.NOT_STARTED:
+      status = Status.INVALID;
+      break;
+    case State.STARTED:
+      status = extraStatus;
+      break;
+    case State.REDIRECT_RECEIVED:
+    case State.AWAITING_FOLLOW_REDIRECT:
+    case State.AWAITING_READ:
+      status = Status.IDLE;
+      break;
+    case State.READING:
+      status = Status.READING_RESPONSE;
+      break;
+    default:
+      throw new IllegalStateException("Switch is exhaustive: " + state);
     }
 
     mCallbackAsync.sendStatus(new VersionSafeCallbacks.UrlRequestStatusListener(listener), status);
@@ -806,7 +734,7 @@ final class JavaUrlRequest extends UrlRequestBase {
     }
 
     void sendStatus(final VersionSafeCallbacks.UrlRequestStatusListener listener,
-        final int status) {
+                    final int status) {
       mUserExecutor.execute(new Runnable() {
         @Override
         public void run() {
@@ -837,7 +765,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         @Override
         public void run() throws Exception {
           if (mState.compareAndSet(/* expected= */ State.STARTED,
-              /* updated= */ State.AWAITING_READ)) {
+                                   /* updated= */ State.AWAITING_READ)) {
             mCallback.onResponseStarted(JavaUrlRequest.this, mUrlResponseInfo);
           }
         }
@@ -849,7 +777,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         @Override
         public void run() throws Exception {
           if (mState.compareAndSet(/* expected= */ State.READING,
-              /* updated= */ State.AWAITING_READ)) {
+                                   /* updated= */ State.AWAITING_READ)) {
             mCallback.onReadCompleted(JavaUrlRequest.this, info, byteBuffer);
           }
         }
@@ -919,5 +847,69 @@ final class JavaUrlRequest extends UrlRequestBase {
         }
       }
     });
+  }
+
+  // Executor that runs one task at a time on an underlying Executor.
+  // NOTE: Do not use to wrap user supplied Executor as lock is held while underlying execute()
+  // is called.
+  private static final class SerializingExecutor implements Executor {
+
+    private final Executor mUnderlyingExecutor;
+    private final Runnable mRunTasks = new Runnable() {
+      @Override
+      public void run() {
+        Runnable task;
+        synchronized (mTaskQueue) {
+          if (mRunning) {
+            return;
+          }
+          task = mTaskQueue.pollFirst();
+          mRunning = task != null;
+        }
+        while (task != null) {
+          boolean threw = true;
+          try {
+            task.run();
+            threw = false;
+          } finally {
+            synchronized (mTaskQueue) {
+              if (threw) {
+                // If task.run() threw, this method will abort without looping
+                // again, so repost to keep running tasks.
+                mRunning = false;
+                try {
+                  mUnderlyingExecutor.execute(mRunTasks);
+                } catch (RejectedExecutionException e) {
+                  // Give up if a task run at shutdown throws.
+                }
+              } else {
+                task = mTaskQueue.pollFirst();
+                mRunning = task != null;
+              }
+            }
+          }
+        }
+      }
+    };
+    // Queue of tasks to run. Tasks are added to the end and taken from the front.
+    // Synchronized on itself.
+    @GuardedBy("mTaskQueue") private final Deque<Runnable> mTaskQueue = new ArrayDeque<>();
+    // Indicates if mRunTasks is actively running tasks. Synchronized on mTaskQueue.
+    @GuardedBy("mTaskQueue") private boolean mRunning;
+
+    SerializingExecutor(Executor underlyingExecutor) { mUnderlyingExecutor = underlyingExecutor; }
+
+    @Override
+    public void execute(Runnable command) {
+      synchronized (mTaskQueue) {
+        mTaskQueue.addLast(command);
+        try {
+          mUnderlyingExecutor.execute(mRunTasks);
+        } catch (RejectedExecutionException e) {
+          // If shutting down, do not add new tasks to the queue.
+          mTaskQueue.removeLast();
+        }
+      }
+    }
   }
 }

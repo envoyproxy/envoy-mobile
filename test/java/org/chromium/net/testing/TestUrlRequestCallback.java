@@ -77,9 +77,7 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     private final ConditionVariable mDone;
     private final AtomicReference<Throwable> mThrowableRef;
 
-    ExecutorThreadFactory(
-        ConditionVariable mDone,
-        AtomicReference<Throwable> mThrowableRef) {
+    ExecutorThreadFactory(ConditionVariable mDone, AtomicReference<Throwable> mThrowableRef) {
       this.mDone = mDone;
       this.mThrowableRef = mThrowableRef;
     }
@@ -90,18 +88,18 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
         StrictMode.ThreadPolicy threadPolicy = StrictMode.getThreadPolicy();
         try {
           StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-              .detectNetwork()
-              .penaltyLog()
-              .penaltyDeath()
-              .build());
+                                         .detectNetwork()
+                                         .penaltyLog()
+                                         .penaltyDeath()
+                                         .build());
           r.run();
         } finally {
           StrictMode.setThreadPolicy(threadPolicy);
         }
       });
       thread.setUncaughtExceptionHandler((unused, throwable) -> {
-          mThrowableRef.set(throwable);
-          mDone.open();
+        mThrowableRef.set(throwable);
+        mDone.open();
       });
       return thread;
     }
@@ -140,7 +138,7 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
   }
 
   private TestUrlRequestCallback(ExecutorService executorService, ConditionVariable done,
-      AtomicReference<Throwable> throwableRef) {
+                                 AtomicReference<Throwable> throwableRef) {
     this.mExecutorService = executorService;
     this.mDone = done;
     this.mThrowableRef = throwableRef;
@@ -149,15 +147,13 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
 
   private TestUrlRequestCallback(ConditionVariable done, AtomicReference<Throwable> throwableRef) {
     this(Executors.newSingleThreadExecutor(new ExecutorThreadFactory(done, throwableRef)), done,
-        throwableRef);
+         throwableRef);
   }
 
   /**
    * Create a {@link TestUrlRequestCallback} with a new single-threaded executor.
    */
-  public TestUrlRequestCallback() {
-    this(new ConditionVariable(), new AtomicReference<>());
-  }
+  public TestUrlRequestCallback() { this(new ConditionVariable(), new AtomicReference<>()); }
 
   /**
    * Create a {@link TestUrlRequestCallback} using a custom single-threaded executor.
@@ -167,13 +163,9 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     this(executorService, new ConditionVariable(), new AtomicReference<>());
   }
 
-  public void setAutoAdvance(boolean autoAdvance) {
-    mAutoAdvance = autoAdvance;
-  }
+  public void setAutoAdvance(boolean autoAdvance) { mAutoAdvance = autoAdvance; }
 
-  public void setAllowDirectExecutor(boolean allowed) {
-    mAllowDirectExecutor = allowed;
-  }
+  public void setAllowDirectExecutor(boolean allowed) { mAllowDirectExecutor = allowed; }
 
   public void setFailure(FailureType failureType, ResponseStep failureStep) {
     mFailureStep = failureStep;
@@ -184,10 +176,10 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     mDone.block();
     if (mThrowableRef.get() != null) {
       if (mThrowableRef.get() instanceof Error) {
-        throw (Error) mThrowableRef.get();
+        throw(Error) mThrowableRef.get();
       }
       if (mThrowableRef.get() instanceof RuntimeException) {
-        throw (RuntimeException) mThrowableRef.get();
+        throw(RuntimeException) mThrowableRef.get();
       }
       throw new RuntimeException(mThrowableRef.get());
     }
@@ -198,13 +190,9 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     mStepBlock.close();
   }
 
-  public ExecutorService getExecutor() {
-    return mExecutorService;
-  }
+  public ExecutorService getExecutor() { return mExecutorService; }
 
-  public void shutdownExecutor() {
-    mExecutorService.shutdown();
-  }
+  public void shutdownExecutor() { mExecutorService.shutdown(); }
 
   /**
    * Shuts down the ExecutorService and waits until it executes all posted tasks.
@@ -221,12 +209,11 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
   }
 
   @Override
-  public void onRedirectReceived(
-      UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
+  public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
     checkExecutorThread();
     assertFalse(request.isDone());
-    assertTrue(mResponseStep == ResponseStep.NOTHING
-        || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
+    assertTrue(mResponseStep == ResponseStep.NOTHING ||
+               mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
     assertNull(mError);
 
     mResponseStep = ResponseStep.ON_RECEIVED_REDIRECT;
@@ -243,8 +230,8 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
   public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
     checkExecutorThread();
     assertFalse(request.isDone());
-    assertTrue(mResponseStep == ResponseStep.NOTHING
-        || mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
+    assertTrue(mResponseStep == ResponseStep.NOTHING ||
+               mResponseStep == ResponseStep.ON_RECEIVED_REDIRECT);
     assertNull(mError);
 
     mResponseStep = ResponseStep.ON_RESPONSE_STARTED;
@@ -259,8 +246,8 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
   public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
     checkExecutorThread();
     assertFalse(request.isDone());
-    assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
-        || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+    assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED ||
+               mResponseStep == ResponseStep.ON_READ_COMPLETED);
     assertNull(mError);
 
     mResponseStep = ResponseStep.ON_READ_COMPLETED;
@@ -286,8 +273,8 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
   public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
     checkExecutorThread();
     assertTrue(request.isDone());
-    assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED
-        || mResponseStep == ResponseStep.ON_READ_COMPLETED);
+    assertTrue(mResponseStep == ResponseStep.ON_RESPONSE_STARTED ||
+               mResponseStep == ResponseStep.ON_READ_COMPLETED);
     assertFalse(mOnErrorCalled);
     assertFalse(mOnCanceledCalled);
     assertNull(mError);
@@ -359,9 +346,7 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     return !mDone.isBlocked();
   }
 
-  protected void openDone() {
-    mDone.open();
-  }
+  protected void openDone() { mDone.open(); }
 
   private void checkExecutorThread() {
     if (!mAllowDirectExecutor) {
@@ -393,8 +378,8 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
         request.cancel();
       }
     };
-    if (mFailureType == FailureType.CANCEL_ASYNC
-        || mFailureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE) {
+    if (mFailureType == FailureType.CANCEL_ASYNC ||
+        mFailureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE) {
       getExecutor().execute(task);
     } else {
       task.run();

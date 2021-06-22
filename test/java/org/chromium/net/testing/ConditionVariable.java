@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <p>
  * This differs from the built-in java.lang.Object wait() and notify()
- * in that this class contains the condition to wait on itself.  That means
- * open(), close() and block() are sticky.  If open() is called before block(),
+ * in that this class contains the condition to wait on itself. That means
+ * open(), close() and block() are sticky. If open() is called before block(),
  * block() will not block, and instead return immediately.
  *
  * <p>
@@ -23,9 +23,7 @@ public final class ConditionVariable {
 
   private final AtomicReference<CountDownLatch> mCountDownLatch = new AtomicReference<>();
 
-  public ConditionVariable() {
-    close();
-  }
+  public ConditionVariable() { close(); }
 
   public void open() {
     CountDownLatch latch = mCountDownLatch.getAndSet(null);
@@ -34,9 +32,7 @@ public final class ConditionVariable {
     }
   }
 
-  public void close() {
-    mCountDownLatch.compareAndSet(null, new CountDownLatch(1));
-  }
+  public void close() { mCountDownLatch.compareAndSet(null, new CountDownLatch(1)); }
 
   public void block() {
     CountDownLatch latch = mCountDownLatch.get();
@@ -53,7 +49,5 @@ public final class ConditionVariable {
     }
   }
 
-  public boolean isBlocked() {
-    return mCountDownLatch.get() != null;
-  }
+  public boolean isBlocked() { return mCountDownLatch.get() != null; }
 }
