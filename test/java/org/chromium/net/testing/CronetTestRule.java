@@ -260,7 +260,14 @@ public class CronetTestRule implements TestRule {
    */
   public void setStreamHandlerFactory(CronetEngine cronetEngine) {
     if (!testingSystemHttpURLConnection()) {
-      URL.setURLStreamHandlerFactory(cronetEngine.createURLStreamHandlerFactory());
+      try {
+        URL.setURLStreamHandlerFactory(cronetEngine.createURLStreamHandlerFactory());
+      } catch (Error e) {
+        // TODO (colibie) URL factory can only be set once in a JVM instance
+        //  Thus default test run once, then cronet tests run all through
+        //  How do I solve this?.
+        Assert.assertEquals("factory already defined", e.getMessage());
+      }
     }
   }
 
