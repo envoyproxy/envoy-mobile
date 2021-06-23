@@ -122,7 +122,9 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
       response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
           [this]() -> void { this->bufferedDataDrained(); },
           [this]() -> void { this->hasBufferedData(); }, []() -> void {});
-      // Default to 64K per stream.
+      // Default to 1M per stream. This is fairly arbitrary and will result in
+      // Envoy buffering up to 1M + flow-control-window for HTTP/2 and HTTP/2,
+      // and having local data of 1M + kernel-buffer-limit for HTTP/1.1
       response_data_->setWatermarks(1000000);
     }
     ENVOY_LOG(debug, "[S{}] buffering {} bytes due to async mode. {} total bytes buffered.",
