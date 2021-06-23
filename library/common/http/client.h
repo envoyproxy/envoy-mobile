@@ -41,11 +41,13 @@ struct HttpClientStats {
 class Client : public Logger::Loggable<Logger::Id::http> {
 public:
   Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
-         std::atomic<envoy_network_t>& preferred_network, Random::RandomGenerator& random)
+         std::atomic<envoy_network_t>& preferred_network, Random::RandomGenerator& random,
+         bool async_mode = false)
       : api_listener_(api_listener), dispatcher_(dispatcher),
         stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
         preferred_network_(preferred_network),
-        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random) {}
+        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random),
+        async_mode_(async_mode) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -104,7 +106,7 @@ public:
 
 private:
   class DirectStream;
-
+  friend class ClientTest;
   /**
    * Notifies caller of async HTTP stream status.
    * Note the HTTP stream is full-duplex, even if the local to remote stream has been ended
@@ -133,9 +135,12 @@ private:
       NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
     }
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
+
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
   private:
+    void setAsyncMode() { async_mode_ = true; }
+
     DirectStream& direct_stream_;
     const envoy_http_callbacks bridge_callbacks_;
     Client& http_client_;
@@ -143,6 +148,8 @@ private:
     absl::optional<envoy_data> error_message_;
     absl::optional<int32_t> error_attempt_count_;
     bool success_{};
+    // True if the bridge should operate in asynchronous mode.
+    bool async_mode_{};
   };
 
   using DirectStreamCallbacksPtr = std::unique_ptr<DirectStreamCallbacks>;
@@ -166,8 +173,7 @@ private:
       return parent_.address_;
     }
     absl::string_view responseDetails() override { return response_details_; }
-    // TODO: https://github.com/lyft/envoy-mobile/issues/825
-    void readDisable(bool /*disable*/) override {}
+    void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
     void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
@@ -188,6 +194,10 @@ private:
     Client& parent_;
     // Response details used by the connection manager.
     absl::string_view response_details_;
+    uint32_t read_disable_count_{};
+    // Set true in async mode if the library has sent body data and may want to
+    // send more when buffer is available.
+    bool wants_write_notification_{};
   };
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;
@@ -219,6 +229,18 @@ private:
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
   Random::RandomGenerator& random_;
+  Thread::ThreadSynchronizer synchronizer_;
+
+  // True if the bridge should operate in asynchronous mode.
+  //
+  // In async mode only one callback can be sent to the bridge until more is
+  // asked for. When a response is started this will either allow headers or an
+  // error to be sent up. Body, trailers, or further errors will not be sent
+  // until resumeData is called.
+  //
+  // For the request path, in async_mode_, after request data has been sent,
+  // onCanSendRequestData will be called when it is safe to send data.
+  bool async_mode_;
 };
 
 using ClientPtr = std::unique_ptr<Client>;

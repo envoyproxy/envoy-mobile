@@ -176,6 +176,19 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   callbacks_->onError();
 }
 
+void Client::DirectStream::readDisable(bool disable) {
+  if (disable) {
+    ++read_disable_count_;
+  } else {
+    ASSERT(read_disable_count_ > 0);
+    --read_disable_count_;
+    if (read_disable_count_ == 0 && wants_write_notification_) {
+      //      bridge_callbacks_.on_can_send_data(bridge_callbacks_.context);
+      wants_write_notification_ = false;
+    }
+  }
+}
+
 void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
@@ -245,6 +258,13 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
               data.length, end_stream);
     direct_stream->request_decoder_->decodeData(*buf, end_stream);
+
+    if (direct_stream->read_disable_count_ == 0 && direct_stream->wants_write_notification_) {
+      //      bridge_callbacks_.on_can_send_data(bridge_callbacks_.context);
+      direct_stream->wants_write_notification_ = false;
+    } else if (async_mode_) {
+      direct_stream->wants_write_notification_ = true;
+    }
   }
 }
 

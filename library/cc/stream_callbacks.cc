@@ -87,6 +87,17 @@ void* c_on_cancel(void* context) {
   return nullptr;
 }
 
+void* c_on_can_send_data(void* context) {
+  auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
+  auto stream_callbacks = *stream_callbacks_ptr;
+  if (stream_callbacks->on_can_send_data.has_value()) {
+    auto on_can_send_data = stream_callbacks->on_can_send_data.value();
+    on_can_send_data();
+  }
+  delete stream_callbacks_ptr;
+  return nullptr;
+}
+
 } // namespace
 
 envoy_http_callbacks StreamCallbacks::asEnvoyHttpCallbacks() {
