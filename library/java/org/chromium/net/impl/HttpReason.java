@@ -1,4 +1,4 @@
-package library.java.org.chromium.net.impl;
+package org.chromium.net.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
