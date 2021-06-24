@@ -39,7 +39,6 @@ public final class HttpReason {
     map.put(303, "See Other");
     map.put(304, "Not Modified");
     map.put(305, "Use Proxy");
-    map.put(306, "(Unused)");
     map.put(307, "Temporary Redirect");
     map.put(308, "Permanent Redirect");
     map.put(400, "Bad Request");
@@ -66,10 +65,8 @@ public final class HttpReason {
     map.put(424, "Failed Dependency");
     map.put(425, "Too Early");
     map.put(426, "Upgrade Required");
-    map.put(427, "Unassigned");
     map.put(428, "Precondition Required");
     map.put(429, "Too Many Requests");
-    map.put(430, "Unassigned");
     map.put(431, "Request Header Fields Too Large");
     map.put(451, "Unavailable For Legal Reasons");
     map.put(500, "Internal Server Error");
@@ -81,7 +78,6 @@ public final class HttpReason {
     map.put(506, "Variant Also Negotiates");
     map.put(507, "Insufficient Storage");
     map.put(508, "Loop Detected");
-    map.put(509, "Unassigned");
     map.put(510, "Not Extended");
     map.put(511, "Network Authentication Required");
     return Collections.unmodifiableMap(map);
