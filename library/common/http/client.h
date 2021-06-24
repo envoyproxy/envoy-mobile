@@ -139,10 +139,8 @@ private:
 
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
-    // TODO(alyssawilk) we can't push back immediately because HTTP/1 and HTTP/2
-    // upstreams have different semantics.
-    void hasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
-    void bufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
+    void onHasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
+    void onBufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
 
     // To be called by mobile library when async data is on and more data is wanted.
     // If bytes are available, the bytes available (up to the limit of
@@ -156,15 +154,9 @@ private:
     void resumeData(int32_t bytes_to_send);
 
   private:
-    void setAsyncMode() {
-      async_mode_ = true;
-      // TODO(alyssawilk) lazily create body buffer.
-      response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
-          [this]() -> void { this->bufferedDataDrained(); },
-          [this]() -> void { this->hasBufferedData(); }, []() -> void {});
-      // Default to 6M per stream.
-      response_data_->setWatermarks(6000000);
-    }
+    bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
+
+    void setAsyncMode() { async_mode_ = true; }
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
 
@@ -182,7 +174,10 @@ private:
     // data when it is requested by the caller.
     bool async_mode_{};
     bool response_headers_sent_{};
+    // Called in closeStream() to communicate that the end of the stream has
+    // been received by the DirectStreamCallbacks.
     bool end_stream_read_{};
+    // Set true when the end stream has been communicated up the bridge.
     bool end_stream_communicated_{};
     bool deferred_error_{};
     uint32_t bytes_to_send_{};

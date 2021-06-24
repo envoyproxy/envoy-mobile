@@ -111,7 +111,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 
   // Send data if in synchronous mode, or if resumeData has been called in async mode.
   if (bytes_to_send_ > 0 || !async_mode_) {
-    ASSERT(!response_data_ || response_data_->length() == 0);
+    ASSERT(!hasBufferedData());
     sendDataToBridge(data, end_stream);
   }
 
@@ -120,10 +120,10 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
     ASSERT(async_mode_);
     if (!response_data_) {
       response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
-          [this]() -> void { this->bufferedDataDrained(); },
-          [this]() -> void { this->hasBufferedData(); }, []() -> void {});
+          [this]() -> void { this->onBufferedDataDrained(); },
+          [this]() -> void { this->onHasBufferedData(); }, []() -> void {});
       // Default to 1M per stream. This is fairly arbitrary and will result in
-      // Envoy buffering up to 1M + flow-control-window for HTTP/2 and HTTP/2,
+      // Envoy buffering up to 1M + flow-control-window for HTTP/2 and HTTP/3,
       // and having local data of 1M + kernel-buffer-limit for HTTP/1.1
       response_data_->setWatermarks(1000000);
     }
@@ -192,15 +192,16 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   // Make sure to send end stream with data only if
   // 1) it has been received from the peer and
   // 2) there are no trailers
-  if ((response_data_.get() && response_data_->length() != 0) ||
-      (end_stream_read_ && !end_stream_communicated_)) {
+  if (hasBufferedData() || (end_stream_read_ && !end_stream_communicated_ && !response_trailers_)) {
     sendDataToBridge(*response_data_, end_stream_read_ && !response_trailers_.get());
+    bytes_to_send_ = 0;
   }
 
   // If all buffered data has been sent, send and free up trailers.
-  if ((!response_data_.get() || response_data_->length() == 0) && response_trailers_.get()) {
+  if (!hasBufferedData() && response_trailers_.get() && bytes_to_send_ > 0) {
     sendTrailersToBridge(*response_trailers_);
     response_trailers_.release();
+    bytes_to_send_ = 0;
   }
 
   if (deferred_error_ && bytes_to_send_ > 0) {
@@ -230,6 +231,8 @@ void Client::DirectStreamCallbacks::onComplete() {
 void Client::DirectStreamCallbacks::onError() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
 
+  // In async mode, if any response data has been sent (e.g. headers), response
+  // errors must be defered until after resumeData has been called.
   if (async_mode_ && response_headers_sent_ && bytes_to_send_ == 0) {
     deferred_error_ = true;
     return;

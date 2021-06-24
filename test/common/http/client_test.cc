@@ -359,8 +359,8 @@ TEST_P(ClientTest, BasicStreamData) {
 
   // Encode response data.
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
-  response_encoder_->encodeData(*response_data, true);
+  Buffer::OwnedImpl response_data("response body");
+  response_encoder_->encodeData(response_data, true);
   ASSERT_EQ(cc_.on_data_calls, 1);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
   ASSERT_EQ(cc_.on_complete_calls, 1);
@@ -431,15 +431,15 @@ TEST_P(ClientTest, MultipleDataStream) {
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc_.on_headers_calls, 1);
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
-  response_encoder_->encodeData(*response_data, false);
+  Buffer::OwnedImpl response_data("response body");
+  response_encoder_->encodeData(response_data, false);
   resumeDataIfAsync(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
 
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("response body2")};
-  response_encoder_->encodeData(*response_data2, true);
+  Buffer::OwnedImpl response_data2("response body2");
+  response_encoder_->encodeData(response_data2, true);
   resumeDataIfAsync(20);
   ASSERT_EQ(cc_.on_data_calls, 2);
   EXPECT_EQ("response bodyresponse body2", cc_.body_data_);
@@ -460,8 +460,8 @@ TEST_P(ClientTest, EmptyDataWithEndStream) {
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc_.on_headers_calls, 1);
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
-  response_encoder_->encodeData(*response_data, false);
+  Buffer::OwnedImpl response_data("response body");
+  response_encoder_->encodeData(response_data, false);
   resumeDataIfAsync(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
@@ -469,8 +469,8 @@ TEST_P(ClientTest, EmptyDataWithEndStream) {
   // Make sure end of stream as communicated by an empty data with fin is
   // processed correctly.
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("")};
-  response_encoder_->encodeData(*response_data2, true);
+  Buffer::OwnedImpl response_data2("");
+  response_encoder_->encodeData(response_data2, true);
   resumeDataIfAsync(20);
   ASSERT_EQ(cc_.on_data_calls, 2);
   EXPECT_EQ("response body", cc_.body_data_);
@@ -819,8 +819,8 @@ TEST_P(AsyncClientTest, ShortRead) {
   response_encoder_->encodeHeaders(response_headers, false);
 
   // Test partial reads. Get 5 bytes but only pass 3 up.
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("12345")};
-  response_encoder_->encodeData(*response_data, true);
+  Buffer::OwnedImpl response_data("12345");
+  response_encoder_->encodeData(response_data, true);
   resumeDataIfAsync(3);
   EXPECT_EQ("123", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, 0);
@@ -844,14 +844,14 @@ TEST_P(AsyncClientTest, DataArrivedWhileBufferNonempty) {
   response_encoder_->encodeHeaders(response_headers, false);
 
   // Test partial reads. Get 5 bytes but only pass 3 up.
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("12345")};
-  response_encoder_->encodeData(*response_data, false);
+  Buffer::OwnedImpl response_data("12345");
+  response_encoder_->encodeData(response_data, false);
   resumeDataIfAsync(3);
   EXPECT_EQ("123", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, 0);
 
-  Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("678910")};
-  response_encoder_->encodeData(*response_data2, true);
+  Buffer::OwnedImpl response_data2("678910");
+  response_encoder_->encodeData(response_data2, true);
 
   resumeDataIfAsync(20);
   EXPECT_EQ("12345678910", cc_.body_data_);
@@ -874,13 +874,13 @@ TEST_P(AsyncClientTest, ResumeBeforeDataArrives) {
   resumeDataIfAsync(5);
 
   // When data arrives it should be immediately passed up
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("12345")};
-  response_encoder_->encodeData(*response_data, true);
+  Buffer::OwnedImpl response_data("12345");
+  response_encoder_->encodeData(response_data, true);
   EXPECT_EQ("12345", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, true);
 }
 
-TEST_P(ClientTest, ResumeWithFin) {
+TEST_P(AsyncClientTest, ResumeWithFin) {
   cc_.end_stream_with_headers_ = false;
 
   // Create a stream, and set up request_decoder_ and response_encoder_
@@ -893,8 +893,8 @@ TEST_P(ClientTest, ResumeWithFin) {
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc_.on_headers_calls, 1);
-  Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
-  response_encoder_->encodeData(*response_data, false);
+  Buffer::OwnedImpl response_data("response body");
+  response_encoder_->encodeData(response_data, false);
   resumeDataIfAsync(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
@@ -903,11 +903,42 @@ TEST_P(ClientTest, ResumeWithFin) {
   // processed correctly if the resume is kicked off before the end stream arrives.
   resumeDataIfAsync(20);
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("")};
-  response_encoder_->encodeData(*response_data2, true);
+  Buffer::OwnedImpl response_data2("");
+  response_encoder_->encodeData(response_data2, true);
   ASSERT_EQ(cc_.on_data_calls, 2);
   EXPECT_EQ("response body", cc_.body_data_);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
+  ASSERT_EQ(cc_.on_complete_calls, 1);
+}
+
+TEST_P(AsyncClientTest, ResumeWithDataAndTrailers) {
+  cc_.end_stream_with_headers_ = false;
+
+  // Create a stream, and set up request_decoder_ and response_encoder_
+  createStream();
+  // Send request headers.
+  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
+  http_client_.sendHeaders(stream_, defaultRequestHeaders(), true);
+
+  // Encode response headers, data, and trailers.
+  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
+  response_encoder_->encodeHeaders(response_headers, false);
+  ASSERT_EQ(cc_.on_headers_calls, 1);
+  Buffer::OwnedImpl response_data("response body");
+  response_encoder_->encodeData(response_data, false);
+  TestResponseTrailerMapImpl response_trailers{{"x-test-trailer", "test_trailer"}};
+  response_encoder_->encodeTrailers(response_trailers);
+
+  // On the resume call, the data should be passed up, but not the trailers.
+  resumeDataIfAsync(20);
+  ASSERT_EQ(cc_.on_data_calls, 1);
+  ASSERT_EQ(cc_.on_trailers_calls, 0);
+  ASSERT_EQ(cc_.on_complete_calls, 0);
+  EXPECT_EQ("response body", cc_.body_data_);
+
+  // On the next resume, trailers should be sent.
+  resumeDataIfAsync(20);
+  ASSERT_EQ(cc_.on_trailers_calls, 1);
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
