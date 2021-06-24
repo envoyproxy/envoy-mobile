@@ -14,7 +14,7 @@ public final class HttpReason {
   private static final Map<Integer, String> CODE_TO_REASON = buildReasonMap();
 
   public static String getReason(int statusCode) {
-    return CODE_TO_REASON.getOrDefault(statusCode,"Unknown");
+    return CODE_TO_REASON.getOrDefault(statusCode, "Unknown");
   }
 
   private static Map<Integer, String> buildReasonMap() {
