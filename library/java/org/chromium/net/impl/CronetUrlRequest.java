@@ -69,11 +69,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     int CANCELLED = 8;
   }
 
-  private static final String X_ANDROID = "X-Android";
   private static final String X_ENVOY = "x-envoy";
-  private static final String X_ANDROID_SELECTED_TRANSPORT = "X-Android-Selected-Transport";
+  private static final String X_ENVOY_SELECTED_TRANSPORT = "x-android-selected-transport";
   private static final String TAG = CronetUrlRequest.class.getSimpleName();
   private static final String USER_AGENT = "User-Agent";
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocateDirect(0);
 
   private final AsyncUrlRequestCallback mCallbackAsync;
   private final PausableSerializingExecutor mCronvoyExecutor;
@@ -272,7 +272,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
     OutputStreamDataSink() { super(mUploadExecutor, mCronvoyExecutor, mUploadDataProvider); }
 
     @Override
-    protected void finish() {}
+    protected void finishEmptyBody() {
+      mStream.close(EMPTY_BYTE_BUFFER);
+    }
 
     @Override
     protected int processSuccessfulRead(ByteBuffer buffer, boolean finalChunk) {
@@ -400,17 +402,18 @@ public final class CronetUrlRequest extends UrlRequestBase {
     Set<Map.Entry<String, List<String>>> headers = responseHeaders.allHeaders().entrySet();
 
     for (Map.Entry<String, List<String>> headerEntry : headers) {
-      String headerKey = headerEntry.getKey();
-      String value = headerEntry.getValue().get(0);
-      if (value == null) {
+      String headerKey = headerEntry.getKey().toLowerCase();
+      if (headerEntry.getValue().get(0) == null) {
         continue;
       }
-      if (X_ANDROID_SELECTED_TRANSPORT.equalsIgnoreCase(headerKey)) {
-        selectedTransport = value;
+      if (X_ENVOY_SELECTED_TRANSPORT.equals(headerKey)) {
+        selectedTransport = headerEntry.getValue().get(0);
       }
-      if (!headerKey.startsWith(X_ANDROID) && !headerKey.startsWith(X_ENVOY) &&
-          !headerKey.equals("date") && !headerKey.equals(":status")) {
-        headerList.add(new SimpleEntry<>(headerKey.toLowerCase(), value));
+      if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
+          !headerKey.equals(":status")) {
+        for (String value : headerEntry.getValue()) {
+          headerList.add(new SimpleEntry<>(headerKey.toLowerCase(), value));
+        }
       }
     }
     int responseCode =
