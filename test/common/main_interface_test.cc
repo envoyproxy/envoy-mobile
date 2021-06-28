@@ -187,11 +187,11 @@ TEST(MainInterfaceTest, SendMetadata) {
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
-  envoy_http_callbacks stream_cbs{nullptr /* on_headers */,  nullptr /* on_data */,
-                                  nullptr /* on_metadata */, nullptr /* on_trailers */,
-                                  nullptr /* on_error */,    nullptr /* on_complete */,
-                                  nullptr /* on_cancel */,   nullptr /* on_can_send_data */,
-                                  nullptr /* context */,};
+  envoy_http_callbacks stream_cbs{
+      nullptr /* on_headers */,  nullptr /* on_data */,          nullptr /* on_metadata */,
+      nullptr /* on_trailers */, nullptr /* on_error */,         nullptr /* on_complete */,
+      nullptr /* on_cancel */,   nullptr /* on_can_send_data */, nullptr /* context */,
+  };
 
   envoy_stream_t stream = init_stream(0);
 
