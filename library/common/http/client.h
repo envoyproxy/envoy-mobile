@@ -123,6 +123,7 @@ private:
     void onComplete();
     void onCancel();
     void onError();
+    void onCanSendData();
 
     // ResponseEncoder
     void encodeHeaders(const ResponseHeaderMap& headers, bool end_stream) override;
@@ -139,6 +140,7 @@ private:
     void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
 
   private:
+    // Sets async mode true or false (see comments at the definition of Client's async_mode_).
     void setAsyncMode() { async_mode_ = true; }
 
     DirectStream& direct_stream_;
@@ -173,6 +175,12 @@ private:
       return parent_.address_;
     }
     absl::string_view responseDetails() override { return response_details_; }
+    // This is called any time upstream buffers exceed the configured flow
+    // control limit, to attempt halt the flow of data from the mobile client
+    // or to resume the flow of data when buffers have been drained.
+    //
+    // It only has an effect in async mode, where when all buffers are drained,
+    // on_can_send_data callbacks are called.
     void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
@@ -194,6 +202,9 @@ private:
     Client& parent_;
     // Response details used by the connection manager.
     absl::string_view response_details_;
+    // Tracks read disable calls. Different buffers can call read disable, and
+    // the stack should not consider itself "ready to write" untill all
+    // read-disable calls have been unwound.
     uint32_t read_disable_count_{};
     // Set true in async mode if the library has sent body data and may want to
     // send more when buffer is available.

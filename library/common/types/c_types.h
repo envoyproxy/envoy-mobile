@@ -312,6 +312,21 @@ typedef void (*envoy_logger_log_f)(envoy_data data, const void* context);
  */
 typedef void (*envoy_logger_release_f)(const void* context);
 
+/**
+ * Callback signature which notify when there is buffer available for request
+ * body upload.
+ *
+ * This is only ever called when the library is in async mode.
+ * In async mode, this will be called after the first call to decodeData, when
+ * more buffer is available locally for request body. It will be called once per
+ * decodeData call to inform the sender when it is safe to send more data.
+ *
+ * @param context, contains the necessary state to carry out platform-specific dispatch and
+ * execution.
+ * @return void*, return context (may be unused).
+ */
+typedef void* (*envoy_on_can_send_data_f)(void* context);
+
 #ifdef __cplusplus
 } // function pointers
 #endif
@@ -327,6 +342,7 @@ typedef struct {
   envoy_on_error_f on_error;
   envoy_on_complete_f on_complete;
   envoy_on_cancel_f on_cancel;
+  envoy_on_can_send_data_f on_can_send_data;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
 } envoy_http_callbacks;

@@ -109,6 +109,7 @@ envoy_http_callbacks StreamCallbacks::asEnvoyHttpCallbacks() {
       .on_error = &c_on_error,
       .on_complete = &c_on_complete,
       .on_cancel = &c_on_cancel,
+      .on_can_send_data = &c_on_can_send_data,
       .context = new StreamCallbacksSharedPtr(this->shared_from_this()),
   };
 }

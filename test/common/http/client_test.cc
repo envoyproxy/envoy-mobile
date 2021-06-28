@@ -53,6 +53,7 @@ public:
     uint32_t on_complete_calls;
     uint32_t on_error_calls;
     uint32_t on_cancel_calls;
+    uint32_t on_can_send_data_calls;
     std::string expected_status_;
     bool end_stream_with_headers_;
     std::string body_data_;
@@ -93,6 +94,11 @@ public:
       cc->on_cancel_calls++;
       return nullptr;
     };
+    bridge_callbacks_.on_can_send_data = [](void* context) -> void* {
+      callbacks_called* cc = static_cast<callbacks_called*>(context);
+      cc->on_can_send_data_calls++;
+      return nullptr;
+    };
   }
 
   envoy_headers defaultRequestHeaders() {
@@ -122,7 +128,7 @@ public:
   ResponseEncoder* response_encoder_{};
   NiceMock<Event::MockProvisionalDispatcher> dispatcher_;
   envoy_http_callbacks bridge_callbacks_;
-  callbacks_called cc_ = {0, 0, 0, 0, 0, 0, "200", true, ""};
+  callbacks_called cc_ = {0, 0, 0, 0, 0, 0, 0, "200", true, ""};
   std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
   uint64_t alt_cluster_ = 0;
   NiceMock<Random::MockRandomGenerator> random_;
@@ -426,6 +432,7 @@ TEST_P(ClientTest, MultipleDataStream) {
   response_encoder_->encodeData(*response_data, false);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
+  EXPECT_EQ(cc_.on_can_send_data_calls, async_ ? 1 : 0);
 
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("response body2")};
@@ -482,7 +489,7 @@ TEST_P(ClientTest, MultipleStreams) {
   NiceMock<MockRequestDecoder> request_decoder2;
   ResponseEncoder* response_encoder2{};
   envoy_http_callbacks bridge_callbacks_2;
-  callbacks_called cc2 = {0, 0, 0, 0, 0, 0, "200", true, ""};
+  callbacks_called cc2 = {0, 0, 0, 0, 0, 0, 0, "200", true, ""};
   bridge_callbacks_2.context = &cc2;
   bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream,
                                      void* context) -> void* {

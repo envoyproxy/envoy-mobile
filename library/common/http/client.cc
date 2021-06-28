@@ -150,6 +150,11 @@ void Client::DirectStreamCallbacks::onError() {
   bridge_callbacks_.on_error({code, message, attempt_count}, bridge_callbacks_.context);
 }
 
+void Client::DirectStreamCallbacks::onCanSendData() {
+  ENVOY_LOG(debug, "[S{}] remote can send data", direct_stream_.stream_handle_);
+  bridge_callbacks_.on_can_send_data(bridge_callbacks_.context);
+}
+
 void Client::DirectStreamCallbacks::onCancel() {
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
@@ -183,8 +188,8 @@ void Client::DirectStream::readDisable(bool disable) {
     ASSERT(read_disable_count_ > 0);
     --read_disable_count_;
     if (read_disable_count_ == 0 && wants_write_notification_) {
-      //      bridge_callbacks_.on_can_send_data(bridge_callbacks_.context);
       wants_write_notification_ = false;
+      callbacks_->onCanSendData();
     }
   }
 }
@@ -259,11 +264,17 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
               data.length, end_stream);
     direct_stream->request_decoder_->decodeData(*buf, end_stream);
 
-    if (direct_stream->read_disable_count_ == 0 && direct_stream->wants_write_notification_) {
-      //      bridge_callbacks_.on_can_send_data(bridge_callbacks_.context);
-      direct_stream->wants_write_notification_ = false;
-    } else if (async_mode_) {
-      direct_stream->wants_write_notification_ = true;
+    if (async_mode_) {
+      if (direct_stream->read_disable_count_ == 0) {
+        // If there is still buffer space after the write, notify the sender
+        // it can send more data.
+        direct_stream->wants_write_notification_ = false;
+        direct_stream->callbacks_->onCanSendData();
+      } else {
+        // Otherwise, make sure the stack will send a notification when the
+        // buffers are drained.
+        direct_stream->wants_write_notification_ = true;
+      }
     }
   }
 }
