@@ -41,7 +41,7 @@ import org.chromium.net.impl.Executors.DirectPreventingExecutor;
 
 /** UrlRequest, backed by Envoy-Mobile. */
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) // TrafficStats only available on ICS
-final class CronetUrlRequest extends UrlRequestBase {
+public final class CronetUrlRequest extends UrlRequestBase {
 
   /**
    * State interface for keeping track of the internal state of a {@link UrlRequestBase}.
@@ -69,10 +69,11 @@ final class CronetUrlRequest extends UrlRequestBase {
     int CANCELLED = 8;
   }
 
-  private static final String X_ANDROID = "X-Android";
-  private static final String X_ANDROID_SELECTED_TRANSPORT = "X-Android-Selected-Transport";
+  private static final String X_ENVOY = "x-envoy";
+  private static final String X_ENVOY_SELECTED_TRANSPORT = "x-android-selected-transport";
   private static final String TAG = CronetUrlRequest.class.getSimpleName();
   private static final String USER_AGENT = "User-Agent";
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocateDirect(0);
 
   private final AsyncUrlRequestCallback mCallbackAsync;
   private final PausableSerializingExecutor mCronvoyExecutor;
@@ -271,7 +272,9 @@ final class CronetUrlRequest extends UrlRequestBase {
     OutputStreamDataSink() { super(mUploadExecutor, mCronvoyExecutor, mUploadDataProvider); }
 
     @Override
-    protected void finish() {}
+    protected void finishEmptyBody() {
+      mStream.close(EMPTY_BYTE_BUFFER);
+    }
 
     @Override
     protected int processSuccessfulRead(ByteBuffer buffer, boolean finalChunk) {
@@ -318,7 +321,9 @@ final class CronetUrlRequest extends UrlRequestBase {
   private void enterErrorState(final CronetException error) {
     if (setTerminalState(State.ERROR)) {
       if (mCancelCalled.compareAndSet(false, true)) {
-        mStream.cancel();
+        if (mStream != null) {
+          mStream.cancel();
+        }
       }
       fireCloseUploadDataProvider();
       mCallbackAsync.onFailed(mUrlResponseInfo, error);
@@ -397,16 +402,18 @@ final class CronetUrlRequest extends UrlRequestBase {
     Set<Map.Entry<String, List<String>>> headers = responseHeaders.allHeaders().entrySet();
 
     for (Map.Entry<String, List<String>> headerEntry : headers) {
-      String headerKey = headerEntry.getKey();
-      String value = headerEntry.getValue().get(0);
-      if (value == null) {
+      String headerKey = headerEntry.getKey().toLowerCase();
+      if (headerEntry.getValue().get(0) == null) {
         continue;
       }
-      if (X_ANDROID_SELECTED_TRANSPORT.equalsIgnoreCase(headerKey)) {
-        selectedTransport = value;
+      if (X_ENVOY_SELECTED_TRANSPORT.equals(headerKey)) {
+        selectedTransport = headerEntry.getValue().get(0);
       }
-      if (!headerKey.startsWith(X_ANDROID)) {
-        headerList.add(new SimpleEntry<>(headerKey, value));
+      if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
+          !headerKey.equals(":status")) {
+        for (String value : headerEntry.getValue()) {
+          headerList.add(new SimpleEntry<>(headerKey.toLowerCase(), value));
+        }
       }
     }
     int responseCode =
@@ -416,8 +423,7 @@ final class CronetUrlRequest extends UrlRequestBase {
     // that would throw ConcurrentModificationException.
     // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1426) set receivedByteCount
     mUrlResponseInfo = new UrlResponseInfoImpl(
-        new ArrayList<>(mUrlChain), responseCode,
-        "HTTP " + responseHeaders.getHttpStatus(), // UrlConnection.getResponseMessage(),
+        new ArrayList<>(mUrlChain), responseCode, HttpReason.getReason(responseCode),
         Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
     if (responseCode >= 300 && responseCode < 400) {
       List<String> locationFields = mUrlResponseInfo.getAllHeaders().get("location");
@@ -530,7 +536,7 @@ final class CronetUrlRequest extends UrlRequestBase {
                                                          String mUserAgent) {
     RequestMethod requestMethod = RequestMethod.valueOf(initialMethod);
     RequestHeadersBuilder requestHeadersBuilder = new RequestHeadersBuilder(
-        requestMethod, url.getProtocol(), url.getAuthority(), url.getPath());
+        requestMethod, url.getProtocol(), url.getAuthority(), url.getFile());
     if (!requestHeaders.containsKey(USER_AGENT)) {
       requestHeaders.put(USER_AGENT, mUserAgent);
     }
@@ -543,9 +549,8 @@ final class CronetUrlRequest extends UrlRequestBase {
     UpstreamHttpProtocol protocol = isHttp2Enabled && url.getProtocol().equalsIgnoreCase("https")
                                         ? UpstreamHttpProtocol.HTTP2
                                         : UpstreamHttpProtocol.HTTP1;
-    RequestHeaders envoyRequestHeaders =
-        requestHeadersBuilder.addUpstreamHttpProtocol(protocol).build();
-    return envoyRequestHeaders;
+    requestHeadersBuilder.addUpstreamHttpProtocol(protocol);
+    return requestHeadersBuilder.build();
   }
 
   private Runnable errorSetting(final CheckedRunnable delegate) {
