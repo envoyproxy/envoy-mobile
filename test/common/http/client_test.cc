@@ -419,10 +419,14 @@ TEST_P(ClientTest, MultipleDataStream) {
   // Send request data.
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
   http_client_.sendData(stream_, c_data, false);
+  // The buffer is not full: expect an on_can_send_data call in async mode.
+  EXPECT_EQ(cc_.on_can_send_data_calls, async_ ? 1 : 0);
 
   // Send second request data.
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body2"), true));
   http_client_.sendData(stream_, c_data2, true);
+  // The stream is done: no further on_can_send_data calls should happen.
+  EXPECT_EQ(cc_.on_can_send_data_calls, async_ ? 1 : 0);
 
   // Encode response headers and data.
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
@@ -431,8 +435,6 @@ TEST_P(ClientTest, MultipleDataStream) {
   Buffer::InstancePtr response_data{new Buffer::OwnedImpl("response body")};
   response_encoder_->encodeData(*response_data, false);
   ASSERT_EQ(cc_.on_data_calls, 1);
-  EXPECT_EQ("response body", cc_.body_data_);
-  EXPECT_EQ(cc_.on_can_send_data_calls, async_ ? 1 : 0);
 
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::InstancePtr response_data2{new Buffer::OwnedImpl("response body2")};

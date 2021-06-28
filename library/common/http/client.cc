@@ -189,6 +189,7 @@ void Client::DirectStream::readDisable(bool disable) {
     --read_disable_count_;
     if (read_disable_count_ == 0 && wants_write_notification_) {
       wants_write_notification_ = false;
+      std::cerr << "Sending due to read disable\n";
       callbacks_->onCanSendData();
     }
   }
@@ -264,7 +265,7 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
               data.length, end_stream);
     direct_stream->request_decoder_->decodeData(*buf, end_stream);
 
-    if (async_mode_) {
+    if (async_mode_ && !end_stream) {
       if (direct_stream->read_disable_count_ == 0) {
         // If there is still buffer space after the write, notify the sender
         // it can send more data.
