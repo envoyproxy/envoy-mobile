@@ -53,8 +53,11 @@ jobs:
       - env:
           CREDENTIALS: ${{ secrets.ENGFLOW_CREDENTIALS }}
         run: |
+          echo "$CREDENTIALS"
           echo "$CREDENTIALS" > .credentials
-          GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/.credentials
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/.credentials
+          echo "$GOOGLE_APPLICATION_CREDENTIALS"
+          ls -l "$GOOGLE_APPLICATION_CREDENTIALS"
           bazelisk build --config=ios --config=remote-ci-macos //:ios_dist
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
