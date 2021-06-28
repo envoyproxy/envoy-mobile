@@ -139,6 +139,7 @@ TEST(MainInterfaceTest, BasicStream) {
         return nullptr;
       } /* on_complete */,
       nullptr /* on_cancel */,
+      nullptr /* on_can_send_data*/,
       &on_complete_notification /* context */};
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
@@ -189,7 +190,8 @@ TEST(MainInterfaceTest, SendMetadata) {
   envoy_http_callbacks stream_cbs{nullptr /* on_headers */,  nullptr /* on_data */,
                                   nullptr /* on_metadata */, nullptr /* on_trailers */,
                                   nullptr /* on_error */,    nullptr /* on_complete */,
-                                  nullptr /* on_cancel */,   nullptr /* context */};
+                                  nullptr /* on_cancel */,   nullptr /* on_can_send_data */,
+                                  nullptr /* context */,};
 
   envoy_stream_t stream = init_stream(0);
 
@@ -236,6 +238,7 @@ TEST(MainInterfaceTest, ResetStream) {
                                     on_cancel_notification->Notify();
                                     return nullptr;
                                   } /* on_cancel */,
+                                  nullptr /* on_can_send_data */,
                                   &on_cancel_notification /* context */};
 
   envoy_stream_t stream = init_stream(0);
