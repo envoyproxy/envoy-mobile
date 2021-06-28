@@ -41,7 +41,7 @@ TEST(TestConfig, ConfigIsApplied) {
 }
 
 TEST(TestConfig, RemainingTemplatesThrows) {
-  auto engine_builder = EngineBuilder("{{ template that i wont fill }}");
+  auto engine_builder = EngineBuilder("{{ template_that_i_will_not_fill }}");
   try {
     engine_builder.generateConfigStr();
     FAIL() << "Expected std::runtime_error";
