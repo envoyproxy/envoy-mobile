@@ -17,6 +17,7 @@ public class EnvoyConfiguration {
   public final Integer dnsRefreshSeconds;
   public final Integer dnsFailureRefreshSecondsBase;
   public final Integer dnsFailureRefreshSecondsMax;
+  public final Boolean enableFlowControl;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
   public final Integer streamIdleTimeoutSeconds;
@@ -37,6 +38,7 @@ public class EnvoyConfiguration {
    * @param dnsRefreshSeconds            rate in seconds to refresh DNS.
    * @param dnsFailureRefreshSecondsBase base rate in seconds to refresh DNS on failure.
    * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on failure.
+   * @param enableFlowControl            whether to enable client flow control.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
    * @param appVersion                   the App Version of the App using this Envoy Client.
@@ -49,6 +51,7 @@ public class EnvoyConfiguration {
   public EnvoyConfiguration(String grpcStatsDomain, @Nullable Integer statsdPort,
                             int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
+                            boolean enableFlowControl,
                             int statsFlushSeconds, int streamIdleTimeoutSeconds, String appVersion,
                             String appId, String virtualClusters,
                             List<EnvoyNativeFilterConfig> nativeFilterChain,
@@ -60,6 +63,7 @@ public class EnvoyConfiguration {
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
+    this.enableFlowControl = enableFlowControl;
     this.statsFlushSeconds = statsFlushSeconds;
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
     this.appVersion = appVersion;

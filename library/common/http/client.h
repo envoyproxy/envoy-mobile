@@ -188,6 +188,7 @@ private:
     Client& parent_;
     // Response details used by the connection manager.
     absl::string_view response_details_;
+    bool flow_controlled_ = false;
   };
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;

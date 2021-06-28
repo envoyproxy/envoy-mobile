@@ -22,11 +22,11 @@ static std::shared_ptr<Envoy::Engine> engine() {
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks, bool flow_controlled) {
   if (auto e = engine()) {
     return e->dispatcher().post([stream, callbacks]() -> void {
       if (auto e = engine())
-        e->httpClient().startStream(stream, callbacks);
+        e->httpClient().startStream(stream, callbacks, flowControlled);
     });
   }
   return ENVOY_FAILURE;

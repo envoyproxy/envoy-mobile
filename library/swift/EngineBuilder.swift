@@ -18,6 +18,7 @@ public class EngineBuilder: NSObject {
   private var dnsRefreshSeconds: UInt32 = 60
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
+  private var enableFlowControl: Bool = False
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var appVersion: String = "unspecified"
@@ -101,6 +102,17 @@ public class EngineBuilder: NSObject {
   public func addDNSFailureRefreshSeconds(base: UInt32, max: UInt32) -> Self {
     self.dnsFailureRefreshSecondsBase = base
     self.dnsFailureRefreshSecondsMax = max
+    return self
+  }
+
+  /// Allows client flow control to be enabled. When client flow control is on, the owner of an HTTP stream is responsible for providing a buffer to receive response body data (see HTTPStream). If the buffer is smaller than the amount of data available, response callbacks will halt, and the underlying network protocol may signal for the server to stop sending data, until more space is available. This can limit the memory consumed by a server response, but may also result in reduced overall throughput, depending on usage.
+  ///
+  /// - parameter enableFlowControl: Whether to enable client flow control.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableFlowControl(_ enableFlowControl: Bool) -> Self {
+    self.enableFlowControl = enableFlowControl
     return self
   }
 
@@ -247,6 +259,7 @@ public class EngineBuilder: NSObject {
       dnsRefreshSeconds: self.dnsRefreshSeconds,
       dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
+      enableFlowControl: self.enableFlowControl
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       appVersion: self.appVersion,

@@ -29,6 +29,7 @@ open class EngineBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
+  private var enableFlowControl: Boolean = false
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
@@ -116,6 +117,17 @@ open class EngineBuilder(
     this.dnsFailureRefreshSecondsBase = base
     this.dnsFailureRefreshSecondsMax = max
     return this
+  }
+
+  /**
+   * Allows client flow control to be enabled. When client flow control is on, the owner of an HTTP stream is responsible for providing a buffer to receive response body data (see HTTPStream). If the buffer is smaller than the amount of data available, response callbacks will halt, and the underlying network protocol may signal for the server to stop sending data, until more space is available. This can limit the memory consumed by a server response, but may also result in reduced overall throughput, depending on usage.
+   *
+   * @param enableFlowControl whether to enable client flow control.
+   *
+   * @return this builder.
+   */
+  fun enableFlowControl(enablFlowControl: Boolean): EngineBuilder {
+    this.enableFlowControl = enableFlowControl
   }
 
   /**
@@ -272,6 +284,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            enableFlowControl,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors
           ),
@@ -285,6 +298,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            enableFlowControl,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors
           ),

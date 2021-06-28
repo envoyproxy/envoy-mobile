@@ -9,6 +9,7 @@
                       dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
            dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
             dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                      enableFlowControl:(BOOL)enableFlowControl
                       statsFlushSeconds:(UInt32)statsFlushSeconds
                streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
                              appVersion:(NSString *)appVersion
@@ -31,6 +32,7 @@
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
+  self.enableFlowControl = enableFlowControl;
   self.statsFlushSeconds = statsFlushSeconds;
   self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
   self.appVersion = appVersion;
