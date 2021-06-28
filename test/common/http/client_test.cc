@@ -167,6 +167,8 @@ TEST_P(ClientTest, SetDestinationCluster) {
       {"x-envoy-mobile-cluster", "base"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers1), false));
   http_client_.sendHeaders(stream_, c_headers1, false);
 
@@ -186,6 +188,8 @@ TEST_P(ClientTest, SetDestinationCluster) {
       {"x-envoy-mobile-cluster", "base_wlan_alt"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
   http_client_.sendHeaders(stream_, c_headers2, false);
 
@@ -205,10 +209,14 @@ TEST_P(ClientTest, SetDestinationCluster) {
       {"x-envoy-mobile-cluster", "base_wwan"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
   http_client_.sendHeaders(stream_, c_headers3, true);
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -243,6 +251,8 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {"x-envoy-mobile-cluster", "base_h2_alt"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers1), false));
   http_client_.sendHeaders(stream_, c_headers1, false);
 
@@ -262,6 +272,8 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {"x-envoy-mobile-cluster", "base_wlan_h2"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
   http_client_.sendHeaders(stream_, c_headers2, false);
 
@@ -281,6 +293,8 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {"x-envoy-mobile-cluster", "base_wwan_h2_alt"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
   http_client_.sendHeaders(stream_, c_headers3, true);
 
@@ -301,10 +315,14 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {"x-envoy-mobile-cluster", "base_wwan"},
       {"x-forwarded-proto", "https"},
   };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers4), true));
   http_client_.sendHeaders(stream_, c_headers4, true);
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -320,10 +338,14 @@ TEST_P(ClientTest, BasicStreamHeaders) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -353,11 +375,15 @@ TEST_P(ClientTest, BasicStreamData) {
 
   // Send request data. Although HTTP would need headers before data this unit test only wants to
   // test data functionality.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), true));
   http_client_.sendData(stream_, c_data, true);
   resumeDataIfAsync(20);
 
   // Encode response data.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::OwnedImpl response_data("response body");
   response_encoder_->encodeData(response_data, true);
@@ -385,12 +411,15 @@ TEST_P(ClientTest, BasicStreamTrailers) {
 
   // Send request trailers. Although HTTP would need headers before trailers this unit test only
   // wants to test trailers functionality.
-
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeTrailers_(_));
   http_client_.sendTrailers(stream_, c_trailers);
   resumeDataIfAsync(20);
 
   // Encode response trailers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseTrailerMapImpl response_trailers{{"x-test-trailer", "test_trailer"}};
   response_encoder_->encodeTrailers(response_trailers);
@@ -416,18 +445,26 @@ TEST_P(ClientTest, MultipleDataStream) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, false));
   http_client_.sendHeaders(stream_, c_headers, false);
 
   // Send request data.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
   http_client_.sendData(stream_, c_data, false);
 
   // Send second request data.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body2"), true));
   http_client_.sendData(stream_, c_data2, true);
 
   // Encode response headers and data.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(3);
+  EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(3);
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc_.on_headers_calls, 1);
@@ -468,6 +505,8 @@ TEST_P(ClientTest, EmptyDataWithEndStream) {
 
   // Make sure end of stream as communicated by an empty data with fin is
   // processed correctly.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::OwnedImpl response_data2("");
   response_encoder_->encodeData(response_data2, true);
@@ -487,6 +526,8 @@ TEST_P(ClientTest, MultipleStreams) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream1, c_headers, true);
 
@@ -528,11 +569,14 @@ TEST_P(ClientTest, MultipleStreams) {
   http_client_.startStream(stream2, bridge_callbacks_2);
 
   // Send request headers.
-
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder2, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream2, c_headers2, true);
 
   // Finish stream 2.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers2{{":status", "200"}};
   response_encoder2->encodeHeaders(response_headers2, true);
@@ -541,6 +585,8 @@ TEST_P(ClientTest, MultipleStreams) {
   ASSERT_EQ(cc2.on_complete_calls, 1);
 
   // Finish stream 1.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -557,11 +603,15 @@ TEST_P(ClientTest, EnvoyLocalReplyNotAnError) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
   // 503 should have an ENVOY_CONNECTION_FAILURE error code.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "503"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -578,12 +628,16 @@ TEST_P(ClientTest, EnvoyLocalReplyNon503NotAnError) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   envoy_headers c_headers = defaultRequestHeaders();
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
   // non-503 should have an ENVOY_UNDEFINED_ERROR error code.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "504"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -610,11 +664,15 @@ TEST_P(ClientTest, EnvoyResponseWithErrorCode) {
 
   // Send request headers.
   envoy_headers c_headers = defaultRequestHeaders();
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
   // 503 should have an ENVOY_CONNECTION_FAILURE error code.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(2);
+  EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(2);
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{
       {":status", "218"},
@@ -636,6 +694,8 @@ TEST_P(ClientTest, ResetStreamLocal) {
   // Create a stream, and set up request_decoder_ and response_encoder_
   createStream();
 
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(2);
+  EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(2);
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   http_client_.cancelStream(stream_);
   ASSERT_EQ(cc_.on_cancel_calls, 1);
@@ -651,8 +711,10 @@ TEST_P(ClientTest, DoubleResetStreamLocal) {
   createStream();
 
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
-
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(2);
+  EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(2);
   http_client_.cancelStream(stream_);
+
   // Second cancel call has no effect because stream is already cancelled.
   http_client_.cancelStream(stream_);
 
@@ -685,11 +747,15 @@ TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   response_encoder_->getStream().addCallbacks(callbacks);
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   envoy_headers c_headers = defaultRequestHeaders();
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc_.on_headers_calls, 1);
@@ -698,6 +764,8 @@ TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   // runResetCallbacks. The Http::ConnectionManager depends on the Http::Client::DirectStream
   // firing this tight loop to let the Http::ConnectionManager clean up its stream state.
   resumeDataIfAsync(3);
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(callbacks, onResetStream(StreamResetReason::RemoteReset, _));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   response_encoder_->getStream().resetStream(StreamResetReason::RemoteReset);
@@ -711,11 +779,15 @@ TEST_P(ClientTest, StreamResetAfterOnComplete) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   envoy_headers c_headers = defaultRequestHeaders();
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -733,6 +805,8 @@ TEST_P(ClientTest, ResetWhenRemoteClosesBeforeLocal) {
   createStream();
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
@@ -749,6 +823,8 @@ TEST_P(ClientTest, Encode100Continue) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   envoy_headers c_headers = defaultRequestHeaders();
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
@@ -766,11 +842,15 @@ TEST_P(ClientTest, EncodeMetadata) {
   createStream();
 
   // Send request headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   envoy_headers c_headers = defaultRequestHeaders();
   EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
   http_client_.sendHeaders(stream_, c_headers, true);
 
   // Encode response headers.
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, false);
   ASSERT_EQ(cc_.on_headers_calls, 1);
