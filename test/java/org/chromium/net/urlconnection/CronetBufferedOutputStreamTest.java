@@ -10,29 +10,27 @@ import static org.junit.Assert.fail;
 
 import static org.chromium.net.testing.CronetTestRule.getContext;
 
+
 import androidx.test.filters.SmallTest;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Native;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
+
+import org.chromium.net.CronetEngine;
 import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestRule.CompareDefaultWithCronet;
 import org.chromium.net.testing.CronetTestRule.OnlyRunCronetHttpURLConnection;
 import org.chromium.net.testing.Feature;
 import org.chromium.net.testing.NativeTestServer;
-import org.chromium.net.impl.CronetUrlRequestContext;
-import org.chromium.net.impl.NativeCronetEngineBuilderImpl;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import org.robolectric.RobolectricTestRunner;
 
 /**
@@ -43,24 +41,9 @@ public class CronetBufferedOutputStreamTest {
     @Rule
     public final CronetTestRule mTestRule = new CronetTestRule();
 
-    private static CronetUrlRequestContext cronvoyEngine;
-
-    @AfterClass
-    public static void shutdown() {
-        if (cronvoyEngine != null) {
-            cronvoyEngine.shutdown();
-        }
-    }
-
-
     @Before
     public void setUp() throws Exception {
-        if (cronvoyEngine == null) {
-            cronvoyEngine = new CronetUrlRequestContext(
-                new NativeCronetEngineBuilderImpl(getContext()).setUserAgent("Cronvoy"));
-        }
-
-        mTestRule.setStreamHandlerFactory(cronvoyEngine);
+        mTestRule.setStreamHandlerFactory(new CronetEngine.Builder(getContext()).build());
         assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
@@ -131,8 +114,7 @@ public class CronetBufferedOutputStreamTest {
         assertEquals(200, connection.getResponseCode());
         try {
             out.write(TestUtil.UPLOAD_DATA);
-            // TODO (colibie) fix and uncomment
-            // fail();
+            fail();
         } catch (Exception e) {
             // Default implementation gives an IOException and says that the
             // stream is closed. Cronet gives an IllegalStateException and
@@ -368,7 +350,7 @@ public class CronetBufferedOutputStreamTest {
         out.write(TestUtil.UPLOAD_DATA);
         try {
             connection.getResponseCode();
-            // fail();
+            fail();
         } catch (IOException e) {
             // Expected.
         }
@@ -462,7 +444,7 @@ public class CronetBufferedOutputStreamTest {
             "Content-Length", Integer.toString(TestUtil.UPLOAD_DATA.length));
         OutputStream out = connection.getOutputStream();
         out.write(TestUtil.UPLOAD_DATA);
-        // assertEquals(TestUtil.UPLOAD_DATA_STRING, TestUtil.getResponseAsString(connection));
+        assertEquals(TestUtil.UPLOAD_DATA_STRING, TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
 
