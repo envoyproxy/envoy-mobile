@@ -44,12 +44,12 @@ class Client : public Logger::Loggable<Logger::Id::http> {
 public:
   Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
          std::atomic<envoy_network_t>& preferred_network, Random::RandomGenerator& random,
-         bool async_mode = false)
+         bool explicit_buffering = false)
       : api_listener_(api_listener), dispatcher_(dispatcher),
         stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
         preferred_network_(preferred_network),
         address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random),
-        async_mode_(async_mode) {}
+        explicit_buffering_(explicit_buffering) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -144,7 +144,7 @@ private:
     void onHasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
     void onBufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
 
-    // To be called by mobile library when async data is on and more data is wanted.
+    // To be called by mobile library when explicitly buffering and more data is wanted.
     // If bytes are available, the bytes available (up to the limit of
     // bytes_to_send) will be shipped the bridge immediately.
     //
@@ -158,7 +158,7 @@ private:
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
 
-    void setAsyncMode() { async_mode_ = true; }
+    void setExplicitlyBuffering() { explicit_buffering_ = true; }
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
 
@@ -169,12 +169,12 @@ private:
     absl::optional<envoy_data> error_message_;
     absl::optional<int32_t> error_attempt_count_;
     bool success_{};
-    // Buffered response data for async mode.
+    // Buffered response data when explicitly buffering.
     Buffer::InstancePtr response_data_;
     ResponseTrailerMapPtr response_trailers_;
-    // True if the bridge should operate in asynchronous mode, and only send
+    // True if the bridge should operate in explicitly buffering mode, and only send
     // data when it is requested by the caller.
-    bool async_mode_{};
+    bool explicit_buffering_{};
     bool response_headers_sent_{};
     // Called in closeStream() to communicate that the end of the stream has
     // been received by the DirectStreamCallbacks.
@@ -263,15 +263,16 @@ private:
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
   Random::RandomGenerator& random_;
-  Thread::ThreadSynchronizer synchronizer_;
 
-  // True if the bridge should operate in asynchronous mode.
+  // True if the bridge should operate in explicit buffering mode.
   //
-  // In async mode only one callback can be sent to the bridge until more is
+  // In this mode only one callback can be sent to the bridge until more is
   // asked for. When a response is started this will either allow headers or an
   // error to be sent up. Body, trailers, or further errors will not be sent
-  // until resumeData is called.
-  bool async_mode_;
+  // until resumeData is called. This, combined with standard Envoy flow control push
+  // back, avoids excessive buffering of response bodies if the response body is
+  // read faster than the mobile caller can process it.
+  bool explicit_buffering_;
 };
 
 using ClientPtr = std::unique_ptr<Client>;

@@ -30,7 +30,7 @@ Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream
                                                      envoy_http_callbacks bridge_callbacks,
                                                      Client& http_client)
     : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks), http_client_(http_client),
-      async_mode_(http_client_.async_mode_) {}
+      explicit_buffering_(http_client_.explicit_buffering_) {}
 
 void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
                                                   bool end_stream) {
@@ -108,20 +108,16 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
     return;
   }
 
-  // Testing hook.
-  if (end_stream) {
-    http_client_.synchronizer_.syncPoint("dispatch_encode_final_data");
-  }
-
-  // Send data if in synchronous mode, or if resumeData has been called in async mode.
-  if (bytes_to_send_ > 0 || !async_mode_) {
+  // Send data if in default buffering mode, or if resumeData has been called when explicitly
+  // buffering.
+  if (bytes_to_send_ > 0 || !explicit_buffering_) {
     ASSERT(!hasBufferedData());
     sendDataToBridge(data, end_stream);
   }
 
   // If not all the bytes have been sent up, buffer any remaining data in response_data.
   if (data.length() != 0) {
-    ASSERT(async_mode_);
+    ASSERT(explicit_buffering_);
     if (!response_data_) {
       response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
           [this]() -> void { this->onBufferedDataDrained(); },
@@ -131,17 +127,17 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
       // and having local data of 1M + kernel-buffer-limit for HTTP/1.1
       response_data_->setWatermarks(1000000);
     }
-    ENVOY_LOG(debug, "[S{}] buffering {} bytes due to async mode. {} total bytes buffered.",
-              direct_stream_.stream_handle_, data.length(),
-              data.length() + response_data_->length());
+    ENVOY_LOG(
+        debug, "[S{}] buffering {} bytes due to explicitly buffering. {} total bytes buffered.",
+        direct_stream_.stream_handle_, data.length(), data.length() + response_data_->length());
     response_data_->move(data);
   }
 }
 
 void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, bool end_stream) {
-  ASSERT(!async_mode_ || bytes_to_send_ > 0);
+  ASSERT(!explicit_buffering_ || bytes_to_send_ > 0);
 
-  // Send all available bytes for sync mode, but cap by bytes_to_send_ for async mode.
+  // Cap by bytes_to_send_ iff explicitly buffering.
   uint32_t bytes_to_send = calculateBytesToSend(data, bytes_to_send_);
   // Only send end stream if all data is being sent.
   bool send_end_stream = end_stream && (bytes_to_send == data.length());
@@ -155,7 +151,8 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
   if (send_end_stream) {
     onComplete();
   }
-  // Make sure that async mode won't send more data until the next call to resumeData.
+  // Make sure that when explicitly buffering this won't send more data until the next call to
+  // resumeData.
   bytes_to_send_ = 0;
 }
 
@@ -167,8 +164,8 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_));
   closeStream(); // Trailers always indicate the end of the stream.
 
-  // If in async mode, don't send data unless prompted.
-  if (async_mode_ && bytes_to_send_ == 0) {
+  // When explicitly buffering, don't send data unless prompted.
+  if (explicit_buffering_ && bytes_to_send_ == 0) {
     response_trailers_ = ResponseTrailerMapImpl::create();
     HeaderMapImpl::copyFrom(*response_trailers_, trailers);
     return;
@@ -185,7 +182,7 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
 }
 
 void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
-  ASSERT(async_mode_);
+  ASSERT(explicit_buffering_);
   ASSERT(bytes_to_send > 0);
 
   bytes_to_send_ = bytes_to_send;
@@ -237,9 +234,9 @@ void Client::DirectStreamCallbacks::onError() {
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
 
-  // In async mode, if any response data has been sent (e.g. headers), response
+  // When explicitly buffering, if any response data has been sent (e.g. headers), response
   // errors must be defered until after resumeData has been called.
-  if (async_mode_ && response_headers_sent_ && bytes_to_send_ == 0) {
+  if (explicit_buffering_ && response_headers_sent_ && bytes_to_send_ == 0) {
     deferred_error_ = true;
     return;
   }
