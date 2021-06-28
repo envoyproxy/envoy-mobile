@@ -53,7 +53,7 @@ jobs:
       - env:
           CREDENTIALS: ${{ secrets.ENGFLOW_CREDENTIALS }}
         run: |
-          echo "$CREDENTIALS"
+          if [[ -z $CREDENTIALS ]]; then echo "Empty CREDENTIALS"; false; fi
           echo "$CREDENTIALS" > .credentials
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/.credentials
           echo "$GOOGLE_APPLICATION_CREDENTIALS"
