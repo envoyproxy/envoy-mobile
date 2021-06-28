@@ -203,7 +203,7 @@ private:
     // Response details used by the connection manager.
     absl::string_view response_details_;
     // Tracks read disable calls. Different buffers can call read disable, and
-    // the stack should not consider itself "ready to write" untill all
+    // the stack should not consider itself "ready to write" until all
     // read-disable calls have been unwound.
     uint32_t read_disable_count_{};
     // Set true in async mode if the library has sent body data and may want to

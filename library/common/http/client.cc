@@ -18,7 +18,7 @@ namespace Http {
 /**
  * IMPORTANT: stream closure semantics in envoy mobile depends on the fact that the HCM fires a
  * stream reset when the remote side of the stream is closed but the local side remains open.
- * In other words the HCM (like the rest of Envoy) dissallows locally half-open streams.
+ * In other words the HCM (like the rest of Envoy) disallows locally half-open streams.
  * If this changes in Envoy, this file will need to change as well.
  * For implementation details @see Client::DirectStreamCallbacks::closeRemote.
  */
