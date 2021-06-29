@@ -22,11 +22,11 @@ static std::shared_ptr<Envoy::Engine> engine() {
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks, bool explicit_buffering) {
   if (auto e = engine()) {
     return e->dispatcher().post([stream, callbacks]() -> void {
       if (auto e = engine())
-        e->httpClient().startStream(stream, callbacks);
+        e->httpClient().startStream(stream, callbacks, explicit_buffering);
     });
   }
   return ENVOY_FAILURE;
@@ -40,6 +40,15 @@ envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool e
     });
   }
   return ENVOY_FAILURE;
+}
+
+envoy_status_t read_data(envoy_stream_t stream, size_t bytes_to_read) {
+  if (auto e = engine()) {
+    return e->dispatcher().post([stream, bytes_to_read]() -> void {
+      if (auto e = engine())
+        e->httpClient().readData(stream, bytes_to_read);
+    });
+  }
 }
 
 envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream) {

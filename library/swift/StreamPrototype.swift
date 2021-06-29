@@ -10,6 +10,7 @@ import Foundation
 public class StreamPrototype: NSObject {
   private let engine: EnvoyEngine
   private let callbacks = StreamCallbacks()
+  private var explicitBuffering = false
 
   /// Initialize a new instance of the stream prototype.
   ///
@@ -38,6 +39,15 @@ public class StreamPrototype: NSObject {
   public func start(queue: DispatchQueue = .main) -> Stream {
     let engineStream = self.engine.startStream(with: self.createCallbacks(queue: queue))
     return Stream(underlyingStream: engineStream)
+  }
+
+  /// Allows explicit buffer management to be enabled. When explicit buffering is on, the owner of a stream is responsible for providing a buffer to receive response body data. If the buffer is smaller than the amount of data available, response callbacks will halt, and the underlying network protocol may signal for the server to stop sending data, until more space is available. This can limit the memory consumed by a server response, but may also result in reduced overall throughput, depending on usage.
+  ///
+  /// - parameter explicitBuffering: Whether explicit buffer management will be enabled for the stream.
+  /// - returns:  This stream, for chaining syntax.
+  public func enableExplicitBuffering(explicitBuffering: Bool) -> StreamPrototype {
+    self.explicitBuffering = explicitBuffering
+    return self
   }
 
   /// Specify a callback for when response headers are received by the stream.

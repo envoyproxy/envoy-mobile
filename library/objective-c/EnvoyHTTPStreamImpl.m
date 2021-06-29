@@ -112,6 +112,7 @@ static void *ios_on_error(envoy_error error, void *context) {
 @implementation EnvoyHTTPStreamImpl {
   EnvoyHTTPStreamImpl *_strongSelf;
   EnvoyHTTPCallbacks *_platformCallbacks;
+  NSMutableData *_pendingReadBuffer;
   envoy_http_callbacks _nativeCallbacks;
   envoy_stream_t _streamHandle;
 }
@@ -159,6 +160,11 @@ static void *ios_on_error(envoy_error error, void *context) {
 
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close {
   send_headers(_streamHandle, toNativeHeaders(headers), close);
+}
+
+- (void)readData:(NSMutableData *)data {
+  _pendingReadBuffer = data;
+  read_data_(_streamHandle, data.length);
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {

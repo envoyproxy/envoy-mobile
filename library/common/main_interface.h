@@ -25,9 +25,10 @@ envoy_stream_t init_stream(envoy_engine_t engine);
  * can occur.
  * @param stream, handle to the stream to be started.
  * @param callbacks, the callbacks that will run the stream callbacks.
+ * @param explicit_buffering, whether request/response buffers will be managed explicitly.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks);
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks, bool explicit_buffering);
 
 /**
  * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
@@ -38,6 +39,8 @@ envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callback
  * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream);
+
+envoy_status_t read_data(envoy_stream_t stream, size_t bytes_to_read) {
 
 /**
  * Send data over an open HTTP stream. This method can be invoked multiple times.

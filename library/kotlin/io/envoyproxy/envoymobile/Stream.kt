@@ -23,6 +23,19 @@ open class Stream(
     return this
   }
 
+ /**
+  * Read data from the stream. Returns immediately. After calling this method accessing the contents of this buffer from a context other than an onData callback is NOT threadsafe.
+  *
+  * ! This function is only valid when explicit buffering is enabled !
+  *
+  * @param data Buffer into which data should be read.
+  * @return This stream, for chaining syntax.
+  */
+  open fun readData(data: ByteBuffer): Stream {
+    underlyingStream.readData(data)
+    return this
+  }
+
   /**
    * For sending data to an associated stream.
    *

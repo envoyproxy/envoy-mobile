@@ -306,9 +306,10 @@ void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
   ENVOY_LOG(error, "\n{}", ss.str());
 }
 
-void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks) {
+void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks, bool explicit_buffering) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
+  direct_stream->explicit_buffering_ = explicit_buffering;
   direct_stream->callbacks_ =
       std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 

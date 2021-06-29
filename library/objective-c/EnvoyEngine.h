@@ -196,6 +196,13 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close;
 
 /**
+ Read data from the stream. Returns immediately.
+
+ @param data Buffer into which data should be read.
+ */
+- (void)readData:(NSMutableData *)data;
+
+/**
  Send data over the provided stream.
 
  @param data Data to send over the stream.
