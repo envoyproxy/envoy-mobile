@@ -101,7 +101,7 @@
                             (unsigned long)self.dnsFailureRefreshSecondsBase];
   [definitions appendFormat:@"- &dns_fail_max_interval %lus\n",
                             (unsigned long)self.dnsFailureRefreshSecondsMax];
-  [definitions appendFormat:@"- &dns_preresolve_hostnames %lus\n",
+  [definitions appendFormat:@"- &dns_preresolve_hostnames %@\n",
                             (unsigned long)self.dnsPreresolveHostnames];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];

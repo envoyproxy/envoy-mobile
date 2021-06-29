@@ -29,6 +29,7 @@ open class EngineBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
+  private var dnsPreresolveHostnames = "[]"
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
@@ -101,6 +102,18 @@ open class EngineBuilder(
    */
   fun addDNSRefreshSeconds(dnsRefreshSeconds: Int): EngineBuilder {
     this.dnsRefreshSeconds = dnsRefreshSeconds
+    return this
+  }
+
+  /**
+   * Add a list of hostnames to preresolve on Engine startup.
+   *
+   * @param dnsPreresolveHostnames hostnames to preresolve.
+   *
+   * @return this builder.
+   */
+  fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
+    this.dnsPreresolveHostnames = dnsPreresolveHostnames
     return this
   }
 
@@ -271,7 +284,7 @@ open class EngineBuilder(
           engineType(),
           EnvoyConfiguration(
             grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, dnsPreresolveHostnames,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors
           ),
@@ -284,7 +297,7 @@ open class EngineBuilder(
           engineType(),
           EnvoyConfiguration(
             grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, dnsPreresolveHostnames,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
             nativeFilterChain, platformFilterChain, stringAccessors
           ),

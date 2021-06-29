@@ -110,7 +110,7 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_refresh_rate %ss\n", dnsRefreshSeconds))
         .append(String.format("- &dns_fail_base_interval %ss\n", dnsFailureRefreshSecondsBase))
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
-        .append(String.format("- &dns_preresolve_hostnames %ss\n", dnsPreresolveHostnames))
+        .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",
                               "Android", appVersion, appId))
