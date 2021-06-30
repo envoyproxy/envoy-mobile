@@ -76,7 +76,8 @@ static_resources:
 
     let callbackReceivedError = self.expectation(description: "Run called with expected error")
     let filterReceivedError = self.expectation(description: "Filter called with expected error")
-    let filterNotCancelled = self.expectation(description: "Filter called with unexpected cancellation")
+    let filterNotCancelled =
+      self.expectation(description: "Filter called with unexpected cancellation")
     filterNotCancelled.isInverted = true
     let expectations = [filterReceivedError, filterNotCancelled, callbackReceivedError]
 
@@ -84,7 +85,10 @@ static_resources:
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
-        factory: { ErrorValidationFilter(receivedError: filterReceivedError, notCancelled: filterNotCancelled) }
+        factory: {
+          ErrorValidationFilter(receivedError: filterReceivedError,
+                                notCancelled: filterNotCancelled)
+        }
       )
       .build()
       .streamClient()
