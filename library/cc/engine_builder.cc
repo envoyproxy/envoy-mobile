@@ -40,7 +40,8 @@ EngineBuilder& EngineBuilder::addDnsFailureRefreshSeconds(int base, int max) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames) {
+EngineBuilder&
+EngineBuilder::addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames) {
   this->dns_preresolve_hostnames = dns_preresolve_hostnames;
   return *this;
 }
