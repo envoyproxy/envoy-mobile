@@ -137,7 +137,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, bool end_stream) {
   ASSERT(!explicit_buffering_ || bytes_to_send_ > 0);
 
-  // Cap by bytes_to_send_ iff explicitly buffering.
+  // Cap by bytes_to_send_ if and only if explicitly buffering.
   uint32_t bytes_to_send = calculateBytesToSend(data, bytes_to_send_);
   // Only send end stream if all data is being sent.
   bool send_end_stream = end_stream && (bytes_to_send == data.length());
@@ -232,7 +232,7 @@ void Client::DirectStreamCallbacks::onError() {
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
 
   // When explicitly buffering, if any response data has been sent (e.g. headers), response
-  // errors must be defered until after resumeData has been called.
+  // errors must be deferred until after resumeData has been called.
   if (explicit_buffering_ && response_headers_sent_ && bytes_to_send_ == 0) {
     deferred_error_ = true;
     return;
