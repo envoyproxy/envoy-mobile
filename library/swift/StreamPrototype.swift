@@ -37,7 +37,10 @@ public class StreamPrototype: NSObject {
   ///
   /// - returns: The new stream.
   public func start(queue: DispatchQueue = .main) -> Stream {
-    let engineStream = self.engine.startStream(with: self.createCallbacks(queue: queue))
+    let engineStream = self.engine.startStream(
+      with: self.createCallbacks(queue: queue),
+      explicitBuffering: explicitBuffering
+    )
     return Stream(underlyingStream: engineStream)
   }
 

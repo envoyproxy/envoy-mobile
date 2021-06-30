@@ -471,9 +471,10 @@ static envoy_data ios_get_string(const void *context) {
   }
 }
 
-- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks {
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks explicitBuffering:(BOOL)explicitBuffering {
   return [[EnvoyHTTPStreamImpl alloc] initWithHandle:init_stream(_engineHandle)
-                                           callbacks:callbacks];
+                                           callbacks:callbacks
+                                   explicitBuffering:explicitBuffering];
 }
 
 - (int)recordCounterInc:(NSString *)elements tags:(EnvoyTags *)tags count:(NSUInteger)count {

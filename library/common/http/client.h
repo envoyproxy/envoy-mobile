@@ -57,8 +57,9 @@ public:
    * there is no guarantee it will ever functionally represent an open stream.
    * @param stream, the stream to start.
    * @param bridge_callbacks, wrapper for callbacks for events on this stream.
+   * @param explicit_buffer, whether the stream will require explicit buffer management.
    */
-  void startStream(envoy_stream_t stream, envoy_http_callbacks bridge_callbacks);
+  void startStream(envoy_stream_t stream, envoy_http_callbacks bridge_callbacks, bool explicit_buffering);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
@@ -68,6 +69,13 @@ public:
    * @param end_stream, indicates whether to close the stream locally after sending this frame.
    */
   void sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream);
+
+  /**
+   * Notify the stream that the caller is ready to receive more data. Only used in explicit buffering
+   * mode.
+   * @param bytes_to_read, the quantity of data the caller is prepared to process.
+   */
+  void readData(envoy_stream_t /*stream*/, size_t /*bytes_to_read*/) {}
 
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple times.

@@ -117,7 +117,7 @@ static void *ios_on_error(envoy_error error, void *context) {
   envoy_stream_t _streamHandle;
 }
 
-- (instancetype)initWithHandle:(envoy_stream_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks {
+- (instancetype)initWithHandle:(envoy_stream_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks explicitBuffering:(BOOL)explicitBuffering {
   self = [super init];
   if (!self) {
     return nil;
@@ -143,7 +143,7 @@ static void *ios_on_error(envoy_error error, void *context) {
   // We need create the native-held strong ref on this stream before we call start_stream because
   // start_stream could result in a reset that would release the native ref.
   _strongSelf = self;
-  envoy_status_t result = start_stream(_streamHandle, native_callbacks);
+  envoy_status_t result = start_stream(_streamHandle, native_callbacks, explicitBuffering);
   if (result != ENVOY_SUCCESS) {
     _strongSelf = nil;
     return nil;
@@ -164,7 +164,7 @@ static void *ios_on_error(envoy_error error, void *context) {
 
 - (void)readData:(NSMutableData *)data {
   _pendingReadBuffer = data;
-  read_data_(_streamHandle, data.length);
+  read_data(_streamHandle, data.length);
 }
 
 - (void)sendData:(NSData *)data close:(BOOL)close {

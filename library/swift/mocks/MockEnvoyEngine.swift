@@ -46,8 +46,8 @@ extension MockEnvoyEngine: EnvoyEngine {
     return kEnvoySuccess
   }
 
-  func startStream(with callbacks: EnvoyHTTPCallbacks) -> EnvoyHTTPStream {
-    return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks)
+  func startStream(with callbacks: EnvoyHTTPCallbacks, explicitBuffering: Bool) -> EnvoyHTTPStream {
+    return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks, explicitBuffering: explicitBuffering)
   }
 
   func recordCounterInc(_ elements: String, tags: [String: String], count: UInt) -> Int32 {
