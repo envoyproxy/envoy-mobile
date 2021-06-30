@@ -8,8 +8,8 @@ envoy_package()
 envoy_mobile_android_test(
     name = "urlconnection_test",
     srcs = [
-        "CronetBufferedOutputStreamTest.java",
-        # "CronetChunkedOutputStreamTest.java",
+        # "CronetBufferedOutputStreamTest.java",
+        "CronetChunkedOutputStreamTest.java",
         # "CronetFixedModeOutputStreamTest.java",
         # "CronetHttpURLConnectionTest.java",
         # "CronetHttpURLStreamHandlerTest.java",
