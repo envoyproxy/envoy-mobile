@@ -653,14 +653,16 @@ TEST_F(PlatformBridgeFilterTest, BasicError) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool, const void* context) -> envoy_filter_headers_status {
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool,
+                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_response_headers_calls++;
     ADD_FAILURE() << "on_headers should not get called for an error response.";
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_response_data = [](envoy_data c_data, bool, const void* context) -> envoy_filter_data_status {
+  platform_filter.on_response_data = [](envoy_data c_data, bool,
+                                        const void* context) -> envoy_filter_data_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_response_data_calls++;
     ADD_FAILURE() << "on_data should not get called for an error response.";
@@ -683,8 +685,8 @@ platform_filter_name: BasicError
   EXPECT_EQ(invocations.init_filter_calls, 1);
 
   Http::TestResponseHeaderMapImpl response_headers{
-    {"x-internal-error-code", "0"},
-    {"x-internal-error-message", "busted"},
+      {"x-internal-error-code", "0"},
+      {"x-internal-error-message", "busted"},
   };
   EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->encodeHeaders(response_headers, false));
 
