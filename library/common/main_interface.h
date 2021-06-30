@@ -28,7 +28,8 @@ envoy_stream_t init_stream(envoy_engine_t engine);
  * @param explicit_buffering, whether request/response buffers will be managed explicitly.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks, bool explicit_buffering);
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
+                            bool explicit_buffering);
 
 /**
  * Send headers over an open HTTP stream. This method can be invoked once and needs to be called

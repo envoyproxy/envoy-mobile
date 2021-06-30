@@ -186,7 +186,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  @param callbacks The callbacks for the stream.
  @param explicitBuffering Whether explicit buffer management will be enabled for this stream.
  */
-- (instancetype)initWithHandle:(intptr_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks explicitBuffering:(BOOL)explicitBuffering;
+- (instancetype)initWithHandle:(intptr_t)handle
+                     callbacks:(EnvoyHTTPCallbacks *)callbacks
+             explicitBuffering:(BOOL)explicitBuffering;
 
 /**
  Send headers over the provided stream.
@@ -359,7 +361,8 @@ extern const int kEnvoyFailure;
  @param callbacks Handler for observing stream events.
  @param explicitBuffering Whether explicit buffering management will be enabled for the stream.
  */
-- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks explicitBuffering:(BOOL)explicitBuffering;
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks
+                              explicitBuffering:(BOOL)explicitBuffering;
 
 /**
  Increments a counter with the given count.

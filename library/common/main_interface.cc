@@ -22,7 +22,8 @@ static std::shared_ptr<Envoy::Engine> engine() {
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks, bool explicit_buffering) {
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
+                            bool explicit_buffering) {
   if (auto e = engine()) {
     return e->dispatcher().post([stream, callbacks, explicit_buffering]() -> void {
       if (auto e = engine())

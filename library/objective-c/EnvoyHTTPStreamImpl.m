@@ -117,7 +117,9 @@ static void *ios_on_error(envoy_error error, void *context) {
   envoy_stream_t _streamHandle;
 }
 
-- (instancetype)initWithHandle:(envoy_stream_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks explicitBuffering:(BOOL)explicitBuffering {
+- (instancetype)initWithHandle:(envoy_stream_t)handle
+                     callbacks:(EnvoyHTTPCallbacks *)callbacks
+             explicitBuffering:(BOOL)explicitBuffering {
   self = [super init];
   if (!self) {
     return nil;
