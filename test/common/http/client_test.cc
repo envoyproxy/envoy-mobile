@@ -93,6 +93,13 @@ public:
       cc->on_cancel_calls++;
       return nullptr;
     };
+    bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, void* context) -> void* {
+      ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
+      EXPECT_TRUE(response_trailers.get() != nullptr);
+      callbacks_called* cc = static_cast<callbacks_called*>(context);
+      cc->on_trailers_calls++;
+      return nullptr;
+    };
   }
 
   envoy_headers defaultRequestHeaders() {
@@ -1015,6 +1022,8 @@ TEST_P(ExplicitBufferTest, ResumeWithDataAndTrailers) {
   ASSERT_EQ(cc_.on_trailers_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);
   EXPECT_EQ("response body", cc_.body_data_);
+
+  EXPECT_TRUE(dispatcher_.to_delete_.empty());
 
   // On the next resume, trailers should be sent.
   resumeDataIfExplicitBuffering(20);

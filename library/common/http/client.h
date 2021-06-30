@@ -126,6 +126,9 @@ private:
     void onComplete();
     void onCancel();
     void onError();
+    // Remove the stream and clear up state if possible, else set up deferred
+    // removal path.
+    void removeStream();
 
     // ResponseEncoder
     void encodeHeaders(const ResponseHeaderMap& headers, bool end_stream) override;
@@ -154,6 +157,8 @@ private:
     // Bytes will only be sent up once, even if the bytes available are fewer
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
+
+    bool explicitBuffering() const { return explicit_buffering_; }
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
@@ -259,6 +264,7 @@ private:
   Event::ProvisionalDispatcher& dispatcher_;
   HttpClientStats stats_;
   absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
+  absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> draining_streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;

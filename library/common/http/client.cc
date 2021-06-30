@@ -177,6 +177,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMap& trailers) {
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
+
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
   onComplete();
 }
@@ -202,7 +203,7 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   // If all buffered data has been sent, send and free up trailers.
   if (!hasBufferedData() && response_trailers_.get() && bytes_to_send_ > 0) {
     sendTrailersToBridge(*response_trailers_);
-    response_trailers_.release();
+    response_trailers_.reset();
     bytes_to_send_ = 0;
   }
 
@@ -212,14 +213,10 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   }
 }
 
-void Client::DirectStreamCallbacks::closeStream() {
-  // Envoy itself does not currently allow half-open streams where the local half is open
-  // but the remote half is closed. Note that if local is open, Envoy will reset the stream.
-  http_client_.removeStream(direct_stream_.stream_handle_);
-  end_stream_read_ = true;
-}
+void Client::DirectStreamCallbacks::closeStream() { end_stream_read_ = true; }
 
 void Client::DirectStreamCallbacks::onComplete() {
+  http_client_.removeStream(direct_stream_.stream_handle_);
   end_stream_communicated_ = true;
   ENVOY_LOG(debug, "[S{}] complete stream (success={})", direct_stream_.stream_handle_, success_);
   if (success_) {
@@ -241,6 +238,7 @@ void Client::DirectStreamCallbacks::onError() {
     return;
   }
 
+  http_client_.removeStream(direct_stream_.stream_handle_);
   // The stream should no longer be preset in the map, because onError() was either called from a
   // terminal callback that mapped to an error or it was called in response to a resetStream().
   ASSERT(!http_client_.getStream(direct_stream_.stream_handle_));
@@ -277,7 +275,6 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
     // our streams_ map due to the remote closure.
     return;
   }
-  parent_.removeStream(stream_handle_);
   callbacks_->onError();
 }
 
