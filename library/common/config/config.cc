@@ -47,9 +47,9 @@ const std::string config_header = R"(
 
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
-    name: envoy.metrics_service
+    name: envoy.stat_sinks.lytehouse
     typed_config:
-      "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
+      "@type": type.googleapis.com/extensions.stat_sinks.lytehouse.LytehouseStatsSinkConfig
       transport_api_version: V3
       report_counters_as_deltas: true
       emit_tags_as_labels: true
