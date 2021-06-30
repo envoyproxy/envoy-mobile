@@ -393,6 +393,10 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
   // error callback (rather than an HTTP response).
   const auto error_code_header = headers.get(Http::InternalHeaders::get().ErrorCode);
   if (!error_code_header.empty()) {
+    // This must be set here, since we won't be delegating to FilterBase.
+    response_filter_base_->state_.stream_complete_ = end_stream;
+    error_response_ = true;
+
     envoy_error_code_t error_code;
     bool parsed_code = absl::SimpleAtoi(error_code_header[0]->value().getStringView(), &error_code);
     RELEASE_ASSERT(parsed_code, "parse error reading error code");
@@ -418,7 +422,6 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
       error_message.release(error_message.context);
     }
 
-    error_response_ = true;
     response_filter_base_->state_.headers_forwarded_ = true;
     return Http::FilterHeadersStatus::Continue;
   }
