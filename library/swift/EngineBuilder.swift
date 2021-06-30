@@ -116,7 +116,6 @@ public class EngineBuilder: NSObject {
     return self
   }
 
-
   /// Add an interval at which to flush Envoy stats.
   ///
   /// - parameter statsFlushSeconds: Interval at which to flush Envoy stats.

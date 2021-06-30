@@ -284,9 +284,9 @@ open class EngineBuilder(
           engineType(),
           EnvoyConfiguration(
             grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, dnsPreresolveHostnames,
-            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
-            nativeFilterChain, platformFilterChain, stringAccessors
+            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
+            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -297,9 +297,9 @@ open class EngineBuilder(
           engineType(),
           EnvoyConfiguration(
             grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax, dnsPreresolveHostnames,
-            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId, virtualClusters,
-            nativeFilterChain, platformFilterChain, stringAccessors
+            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
+            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           logLevel
         )
