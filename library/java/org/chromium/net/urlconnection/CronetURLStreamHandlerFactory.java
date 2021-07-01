@@ -40,30 +40,30 @@ import java.net.URLStreamHandlerFactory;
  * {@hide}
  */
 public class CronetURLStreamHandlerFactory implements URLStreamHandlerFactory {
-    private final ExperimentalCronetEngine mCronetEngine;
+  private final ExperimentalCronetEngine mCronetEngine;
 
-    /**
-     * Creates a {@link CronetURLStreamHandlerFactory} to handle HTTP and HTTPS
-     * traffic.
-     * @param cronetEngine the {@link CronetEngine} to be used.
-     * @throws NullPointerException if config is null.
-     */
-    public CronetURLStreamHandlerFactory(ExperimentalCronetEngine cronetEngine) {
-        if (cronetEngine == null) {
-            throw new NullPointerException("CronetEngine is null.");
-        }
-        mCronetEngine = cronetEngine;
+  /**
+   * Creates a {@link CronetURLStreamHandlerFactory} to handle HTTP and HTTPS
+   * traffic.
+   * @param cronetEngine the {@link CronetEngine} to be used.
+   * @throws NullPointerException if config is null.
+   */
+  public CronetURLStreamHandlerFactory(ExperimentalCronetEngine cronetEngine) {
+    if (cronetEngine == null) {
+      throw new NullPointerException("CronetEngine is null.");
     }
+    mCronetEngine = cronetEngine;
+  }
 
-    /**
-     * Returns a {@link CronetHttpURLStreamHandler} for HTTP and HTTPS, and
-     * {@code null} for other protocols.
-     */
-    @Override
-    public URLStreamHandler createURLStreamHandler(String protocol) {
-        if ("http".equals(protocol) || "https".equals(protocol)) {
-            return new CronetHttpURLStreamHandler(mCronetEngine);
-        }
-        return null;
+  /**
+   * Returns a {@link CronetHttpURLStreamHandler} for HTTP and HTTPS, and
+   * {@code null} for other protocols.
+   */
+  @Override
+  public URLStreamHandler createURLStreamHandler(String protocol) {
+    if ("http".equals(protocol) || "https".equals(protocol)) {
+      return new CronetHttpURLStreamHandler(mCronetEngine);
     }
+    return null;
+  }
 }

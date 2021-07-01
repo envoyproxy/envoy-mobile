@@ -23,28 +23,28 @@ import java.net.URLStreamHandler;
  * listed {@link CronetURLStreamHandlerFactory here}.
  */
 class CronetHttpURLStreamHandler extends URLStreamHandler {
-    private final ExperimentalCronetEngine mCronetEngine;
+  private final ExperimentalCronetEngine mCronetEngine;
 
-    public CronetHttpURLStreamHandler(ExperimentalCronetEngine cronetEngine) {
-        mCronetEngine = cronetEngine;
-    }
+  public CronetHttpURLStreamHandler(ExperimentalCronetEngine cronetEngine) {
+    mCronetEngine = cronetEngine;
+  }
 
-    /**
-     * Establishes a new connection to the resource specified by the {@link URL} {@code url}.
-     * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
-     */
-    @Override
-    public URLConnection openConnection(URL url) throws IOException {
-        return mCronetEngine.openConnection(url);
-    }
+  /**
+   * Establishes a new connection to the resource specified by the {@link URL} {@code url}.
+   * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
+   */
+  @Override
+  public URLConnection openConnection(URL url) throws IOException {
+    return mCronetEngine.openConnection(url);
+  }
 
-    /**
-     * Establishes a new connection to the resource specified by the {@link URL} {@code url}
-     * using the given proxy.
-     * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
-     */
-    @Override
-    public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
-        return mCronetEngine.openConnection(url, proxy);
-    }
+  /**
+   * Establishes a new connection to the resource specified by the {@link URL} {@code url}
+   * using the given proxy.
+   * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
+   */
+  @Override
+  public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
+    return mCronetEngine.openConnection(url, proxy);
+  }
 }
