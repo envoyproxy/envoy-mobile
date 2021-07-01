@@ -4,41 +4,43 @@
 
 package org.chromium.net.urlconnection;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.chromium.net.CronetTestRule.getContext;
+import static org.chromium.net.testing.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
+import static org.hamcrest.CoreMatchers.instanceOf;
+
+import org.chromium.net.CronetEngine;
+import org.chromium.net.NetworkException;
+import org.chromium.net.impl.CallbackExceptionImpl;
+import org.chromium.net.testing.CronetTestRule;
+import org.chromium.net.testing.CronetTestRule.CompareDefaultWithCronet;
+import org.chromium.net.testing.CronetTestRule.OnlyRunCronetHttpURLConnection;
+import org.chromium.net.testing.Feature;
+import org.chromium.net.testing.NativeTestServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetEngine;
-import org.chromium.net.CronetTestRule;
-import org.chromium.net.CronetTestRule.CompareDefaultWithCronet;
-import org.chromium.net.CronetTestRule.OnlyRunCronetHttpURLConnection;
-import org.chromium.net.NativeTestServer;
-import org.chromium.net.NetworkException;
-import org.chromium.net.impl.CallbackExceptionImpl;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.junit.runners.model.Statement;
 
 /**
  * Tests {@code getOutputStream} when {@code setFixedLengthStreamingMode} is
@@ -47,7 +49,7 @@ import java.net.URL;
  * default HttpURLConnection implementation and then with Cronet's
  * HttpURLConnection implementation. Tests annotated with
  * {@code OnlyRunCronetHttpURLConnection} only run Cronet's implementation.
- * See {@link CronetTestBase#runTest()} for details.
+ * See {@link CronetTestRule#runBase()} ()} for details.
  */
 @RunWith(AndroidJUnit4.class)
 public class CronetFixedModeOutputStreamTest {
@@ -110,6 +112,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1550")
     public void testWriteAfterRequestFailed() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -141,6 +144,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1550")
     public void testGetResponseAfterWriteFailed() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         NativeTestServer.shutdownNativeTestServer();
@@ -152,6 +156,7 @@ public class CronetFixedModeOutputStreamTest {
         connection.setFixedLengthStreamingMode(1);
         try {
             OutputStream out = connection.getOutputStream();
+            out.write(1);
             out.write(1);
             // Forces OutputStream implementation to flush. crbug.com/653072
             out.flush();
@@ -256,9 +261,12 @@ public class CronetFixedModeOutputStreamTest {
             fail();
         } catch (IOException e) {
             // Expected.
-            assertEquals("expected " + (TestUtil.UPLOAD_DATA.length - 1) + " bytes but received "
-                            + TestUtil.UPLOAD_DATA.length,
-                    e.getMessage());
+            // TODO (colibie) run by cleborgne@
+            String expectedVariant = "expected " + (TestUtil.UPLOAD_DATA.length - 1) + " bytes but received "
+                + TestUtil.UPLOAD_DATA.length;
+            String expectedVariantOnAndroid10 = "too many bytes written";
+            assertTrue(expectedVariant.equals(e.getMessage())
+                || expectedVariantOnAndroid10.equals(e.getMessage()));
         }
         connection.disconnect();
     }
@@ -267,6 +275,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1553")
     public void testWriteMoreThanContentLengthWriteOneByte() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection =
@@ -341,6 +350,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/pull/1545")
     public void testFixedLengthStreamingModeLargeData() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection =
@@ -375,6 +385,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/pull/1545")
     public void testFixedLengthStreamingModeLargeDataWriteOneByte() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection =
@@ -398,6 +409,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunCronetHttpURLConnection
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/pull/1545")
     public void testJavaBufferSizeLargerThanNativeBufferSize() throws Exception {
         // Set an internal buffer of size larger than the buffer size used
         // in network stack internally.
@@ -420,6 +432,7 @@ public class CronetFixedModeOutputStreamTest {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
+    @Ignore("https://github.com/envoyproxy/envoy-mobile/pull/1545")
     public void testOneMassiveWrite() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
         HttpURLConnection connection =
