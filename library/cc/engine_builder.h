@@ -46,7 +46,7 @@ private:
   int dns_refresh_seconds_ = 60;
   int dns_failure_refresh_seconds_base_ = 2;
   int dns_failure_refresh_seconds_max_ = 10;
-  std::string dns_preresolve_hostnames = "[]";
+  std::string dns_preresolve_hostnames_ = "[]";
   int stats_flush_seconds_ = 60;
   std::string app_version_ = "unspecified";
   std::string app_id_ = "unspecified";
