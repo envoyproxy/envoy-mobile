@@ -172,7 +172,7 @@ void release_envoy_headers(envoy_headers headers);
  * Called by a receiver of envoy_error to indicate memory/resources can be released.
  * @param error, envoy_error to release.
  */
-void release_envoy_headers(envoy_error error);
+void release_envoy_error(envoy_error error);
 
 /**
  * Called by a receiver of envoy_stats_tags to indicate memory/resources can be released.
