@@ -15,56 +15,57 @@ import java.net.HttpURLConnection;
  * Helper functions and fields used in Cronet's HttpURLConnection tests.
  */
 public class TestUtil {
-    static final String UPLOAD_DATA_STRING = "Nifty upload data!";
-    static final byte[] UPLOAD_DATA = UPLOAD_DATA_STRING.getBytes();
-    static final int REPEAT_COUNT = 100000;
+  static final String UPLOAD_DATA_STRING = "Nifty upload data!";
+  static final byte[] UPLOAD_DATA = UPLOAD_DATA_STRING.getBytes();
+  static final int REPEAT_COUNT = 100000;
 
-    /**
-     * Helper method to extract response body as a string for testing.
-     */
-    static String getResponseAsString(HttpURLConnection connection) throws Exception {
-        InputStream in = connection.getInputStream();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            out.write(b);
-        }
-        return out.toString();
+  /**
+   * Helper method to extract response body as a string for testing.
+   */
+  static String getResponseAsString(HttpURLConnection connection) throws Exception {
+    InputStream in = connection.getInputStream();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    int b;
+    while ((b = in.read()) != -1) {
+      out.write(b);
     }
+    return out.toString();
+  }
 
-    /**
-     * Helper method to extract response body as a string for testing.
-     */
-    static String getResponseAsString(RecordedRequest request) throws Exception {
-        InputStream in = request.getBody().inputStream();;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        int b;
-        while ((b = in.read()) != -1) {
-            out.write(b);
-        }
-        return out.toString();
+  /**
+   * Helper method to extract response body as a string for testing.
+   */
+  static String getResponseAsString(RecordedRequest request) throws Exception {
+    InputStream in = request.getBody().inputStream();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    int b;
+    while ((b = in.read()) != -1) {
+      out.write(b);
     }
+    return out.toString();
+  }
 
-    /**
-     * Produces a byte array that contains {@code REPEAT_COUNT} of
-     * {@code UPLOAD_DATA_STRING}.
-     */
-    static byte[] getLargeData() {
-        byte[] largeData = new byte[REPEAT_COUNT * UPLOAD_DATA.length];
-        for (int i = 0; i < REPEAT_COUNT; i++) {
-            System.arraycopy(UPLOAD_DATA, 0, largeData, i * UPLOAD_DATA.length, UPLOAD_DATA.length);
-        }
-        return largeData;
+  /**
+   * Produces a byte array that contains {@code REPEAT_COUNT} of
+   * {@code UPLOAD_DATA_STRING}.
+   */
+  static byte[] getLargeData() {
+    byte[] largeData = new byte[REPEAT_COUNT * UPLOAD_DATA.length];
+    for (int i = 0; i < REPEAT_COUNT; i++) {
+      System.arraycopy(UPLOAD_DATA, 0, largeData, i * UPLOAD_DATA.length, UPLOAD_DATA.length);
     }
+    return largeData;
+  }
 
-    /**
-     * Helper function to check whether {@code data} is a concatenation of
-     * {@code REPEAT_COUNT} {@code UPLOAD_DATA_STRING} strings.
-     */
-    static void checkLargeData(String data) {
-        for (int i = 0; i < REPEAT_COUNT; i++) {
-            Assert.assertEquals(UPLOAD_DATA_STRING, data.substring(UPLOAD_DATA_STRING.length() * i,
-                                                            UPLOAD_DATA_STRING.length() * (i + 1)));
-        }
+  /**
+   * Helper function to check whether {@code data} is a concatenation of
+   * {@code REPEAT_COUNT} {@code UPLOAD_DATA_STRING} strings.
+   */
+  static void checkLargeData(String data) {
+    for (int i = 0; i < REPEAT_COUNT; i++) {
+      Assert.assertEquals(
+          UPLOAD_DATA_STRING,
+          data.substring(UPLOAD_DATA_STRING.length() * i, UPLOAD_DATA_STRING.length() * (i + 1)));
     }
+  }
 }

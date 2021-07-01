@@ -8,15 +8,13 @@ envoy_package()
 envoy_mobile_android_test(
     name = "urlconnection_test",
     srcs = [
-        "CronetBufferedOutputStreamTest.java", # works
-        "CronetChunkedOutputStreamTest.java", # works
-        "CronetFixedModeOutputStreamTest.java", #works
-        # "CronetHttpURLConnectionTest.java",
-        "CronetHttpURLStreamHandlerTest.java",  # works
-        # "CronetInputStreamTest.java", # works
-        "CronetURLStreamHandlerFactoryTest.java",  # works
-        "MessageLoopTest.java",  # works
-        # "QuicUploadTest.java",
+        "CronetBufferedOutputStreamTest.java",
+        "CronetChunkedOutputStreamTest.java",
+        "CronetFixedModeOutputStreamTest.java",
+        "CronetHttpURLStreamHandlerTest.java",
+        "CronetInputStreamTest.java",
+        "CronetURLStreamHandlerFactoryTest.java",
+        "MessageLoopTest.java",
         "TestUtil.java",
     ],
     native_deps = [

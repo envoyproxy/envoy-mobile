@@ -1,7 +1,3 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 package org.chromium.net.urlconnection;
 
 import static org.junit.Assert.assertEquals;
@@ -44,8 +40,7 @@ import java.net.URL;
  */
 @RunWith(AndroidJUnit4.class)
 public class CronetChunkedOutputStreamTest {
-  @Rule
-  public final CronetTestRule mTestRule = new CronetTestRule();
+  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
   @Before
   public void setUp() throws Exception {
@@ -64,7 +59,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testGetOutputStreamAfterConnectionMade() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -83,7 +78,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testWriteAfterReadingResponse() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -104,7 +99,7 @@ public class CronetChunkedOutputStreamTest {
   @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1550")
   public void testWriteAfterRequestFailed() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -117,9 +112,8 @@ public class CronetChunkedOutputStreamTest {
       fail();
     } catch (IOException e) {
       if (!mTestRule.testingSystemHttpURLConnection()) {
-        NetworkException requestException = (NetworkException) e;
-        assertEquals(
-            NetworkException.ERROR_CONNECTION_REFUSED, requestException.getErrorCode());
+        NetworkException requestException = (NetworkException)e;
+        assertEquals(NetworkException.ERROR_CONNECTION_REFUSED, requestException.getErrorCode());
       }
     }
     connection.disconnect();
@@ -135,7 +129,7 @@ public class CronetChunkedOutputStreamTest {
   public void testGetResponseAfterWriteFailed() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
     NativeTestServer.shutdownNativeTestServer();
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     // Set 1 byte as chunk size so internally Cronet will try upload when
@@ -153,9 +147,8 @@ public class CronetChunkedOutputStreamTest {
       }
     } catch (IOException e) {
       if (!mTestRule.testingSystemHttpURLConnection()) {
-        NetworkException requestException = (NetworkException) e;
-        assertEquals(
-            NetworkException.ERROR_CONNECTION_REFUSED, requestException.getErrorCode());
+        NetworkException requestException = (NetworkException)e;
+        assertEquals(NetworkException.ERROR_CONNECTION_REFUSED, requestException.getErrorCode());
       }
     }
     // Make sure IOException is reported again when trying to read response
@@ -166,9 +159,8 @@ public class CronetChunkedOutputStreamTest {
     } catch (IOException e) {
       // Expected.
       if (!mTestRule.testingSystemHttpURLConnection()) {
-        NetworkException requestException = (NetworkException) e;
-        assertEquals(
-            NetworkException.ERROR_CONNECTION_REFUSED, requestException.getErrorCode());
+        NetworkException requestException = (NetworkException)e;
+        assertEquals(NetworkException.ERROR_CONNECTION_REFUSED, requestException.getErrorCode());
       }
     }
     // Restarting server to run the test for a second time.
@@ -181,7 +173,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testPost() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -199,7 +191,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testTransferEncodingHeaderSet() throws Exception {
     URL url = new URL(NativeTestServer.getEchoHeaderURL("Transfer-Encoding"));
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -217,7 +209,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testPostOneMassiveWrite() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -236,7 +228,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testPostWriteOneByte() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -256,7 +248,7 @@ public class CronetChunkedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testPostOneMassiveWriteWriteOneByte() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     connection.setChunkedStreamingMode(0);
@@ -278,7 +270,7 @@ public class CronetChunkedOutputStreamTest {
   @Ignore("https://github.com/envoyproxy/envoy-mobile/pull/1545")
   public void testPostWholeNumberOfChunks() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     int totalSize = TestUtil.UPLOAD_DATA.length * TestUtil.REPEAT_COUNT;
@@ -304,7 +296,7 @@ public class CronetChunkedOutputStreamTest {
   // Regression testing for crbug.com/618872.
   public void testOneMassiveWriteLargerThanInternalBuffer() throws Exception {
     URL url = new URL(NativeTestServer.getEchoBodyURL());
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    HttpURLConnection connection = (HttpURLConnection)url.openConnection();
     connection.setDoOutput(true);
     connection.setRequestMethod("POST");
     // Use a super big chunk size so that it exceeds the UploadDataProvider
