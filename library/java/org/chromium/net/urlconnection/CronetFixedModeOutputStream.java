@@ -1,18 +1,12 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 package org.chromium.net.urlconnection;
 
 import androidx.annotation.VisibleForTesting;
-
-import org.chromium.net.UploadDataProvider;
-import org.chromium.net.UploadDataSink;
-
 import java.io.IOException;
 import java.net.HttpRetryException;
 import java.net.ProtocolException;
 import java.nio.ByteBuffer;
+import org.chromium.net.UploadDataProvider;
+import org.chromium.net.UploadDataSink;
 
 /**
  * An implementation of {@link java.io.OutputStream} to send data to a server,

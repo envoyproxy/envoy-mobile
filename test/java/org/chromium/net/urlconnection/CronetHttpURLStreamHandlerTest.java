@@ -1,30 +1,26 @@
 package org.chromium.net.urlconnection;
 
+import static org.chromium.net.testing.CronetTestRule.getContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.chromium.net.testing.CronetTestRule.getContext;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import org.chromium.net.testing.CronetTestRule;
+import org.chromium.net.testing.CronetTestRule.CronetTestFramework;
+import org.chromium.net.testing.Feature;
+import org.chromium.net.testing.NativeTestServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.chromium.net.testing.Feature;
-import org.chromium.net.testing.CronetTestRule;
-import org.chromium.net.testing.CronetTestRule.CronetTestFramework;
-import org.chromium.net.testing.NativeTestServer;
-
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
 
 /**
  * Tests for CronetHttpURLStreamHandler class.

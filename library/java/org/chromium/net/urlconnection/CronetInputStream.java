@@ -1,7 +1,3 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 package org.chromium.net.urlconnection;
 
 import java.io.IOException;
@@ -12,7 +8,7 @@ import java.nio.ByteBuffer;
  * An InputStream that is used by {@link CronetHttpURLConnection} to request
  * data from the network stack as needed.
  */
-class CronetInputStream extends InputStream {
+final class CronetInputStream extends InputStream {
   private final CronetHttpURLConnection mHttpURLConnection;
   // Indicates whether listener's onSucceeded or onFailed callback is invoked.
   private boolean mResponseDataCompleted;

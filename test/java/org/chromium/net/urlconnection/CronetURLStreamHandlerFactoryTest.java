@@ -5,13 +5,11 @@ import static org.junit.Assert.fail;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-
+import org.chromium.net.testing.CronetTestRule;
+import org.chromium.net.testing.Feature;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.chromium.net.testing.Feature;
-import org.chromium.net.testing.CronetTestRule;
 
 /**
  * Test for CronetURLStreamHandlerFactory.

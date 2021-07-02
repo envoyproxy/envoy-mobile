@@ -1,23 +1,10 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 package org.chromium.net.urlconnection;
-
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 
 import android.annotation.SuppressLint;
 import android.net.TrafficStats;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
-
-import org.chromium.net.CronetEngine;
-import org.chromium.net.CronetException;
-import org.chromium.net.ExperimentalUrlRequest;
-import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlResponseInfo;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,13 +21,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.CronetException;
+import org.chromium.net.ExperimentalUrlRequest;
+import org.chromium.net.UrlRequest;
+import org.chromium.net.UrlResponseInfo;
 
 /**
  * An implementation of {@link HttpURLConnection} that uses Cronet to send
  * requests and receive responses.
  * {@hide}
  */
-public class CronetHttpURLConnection extends HttpURLConnection {
+public final class CronetHttpURLConnection extends HttpURLConnection {
   private static final String TAG = CronetHttpURLConnection.class.getSimpleName();
   private static final String CONTENT_LENGTH = "Content-Length";
   private final CronetEngine mCronetEngine;

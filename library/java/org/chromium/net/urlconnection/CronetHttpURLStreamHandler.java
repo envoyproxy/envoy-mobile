@@ -1,16 +1,11 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 package org.chromium.net.urlconnection;
-
-import org.chromium.net.ExperimentalCronetEngine;
 
 import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import org.chromium.net.ExperimentalCronetEngine;
 
 /**
  * A {@link URLStreamHandler} that handles HTTP and HTTPS connections. One can use this class to
@@ -22,7 +17,7 @@ import java.net.URLStreamHandler;
  * <b>Note:</b> Cronet's {@code HttpURLConnection} implementation is subject to some limitations
  * listed {@link CronetURLStreamHandlerFactory here}.
  */
-class CronetHttpURLStreamHandler extends URLStreamHandler {
+final class CronetHttpURLStreamHandler extends URLStreamHandler {
   private final ExperimentalCronetEngine mCronetEngine;
 
   public CronetHttpURLStreamHandler(ExperimentalCronetEngine cronetEngine) {

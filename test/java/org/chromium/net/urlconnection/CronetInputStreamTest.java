@@ -4,7 +4,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.Callable;
+import org.chromium.net.testing.CronetTestRule;
+import org.chromium.net.testing.Feature;
+import org.chromium.net.testing.StrictModeContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,14 +19,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import org.chromium.net.testing.StrictModeContext;
-import org.chromium.net.testing.Feature;
-import org.chromium.net.testing.CronetTestRule;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.concurrent.Callable;
 
 /**
  * Test for {@link CronetInputStream}.

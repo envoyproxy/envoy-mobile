@@ -4,21 +4,21 @@
 
 package org.chromium.net.urlconnection;
 
-import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Assert;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.Assert;
 
 /**
  * Helper functions and fields used in Cronet's HttpURLConnection tests.
  */
-public class TestUtil {
+final class TestUtil {
   static final String UPLOAD_DATA_STRING = "Nifty upload data!";
   static final byte[] UPLOAD_DATA = UPLOAD_DATA_STRING.getBytes();
   static final int REPEAT_COUNT = 100000;
 
+  private TestUtil() {}
   /**
    * Helper method to extract response body as a string for testing.
    */
