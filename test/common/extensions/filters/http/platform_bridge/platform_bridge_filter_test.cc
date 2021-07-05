@@ -50,6 +50,37 @@ public:
     filter_->setEncoderFilterCallbacks(encoder_callbacks_);
   }
 
+  struct CheckFilterState {
+    std::string iteration_state, on_headers_called, headers_forwarded, on_data_called,
+        data_forwarded, on_trailers_called, trailers_forwarded, on_resume_called, pending_headers,
+        buffer, pending_trailers, stream_complete;
+  };
+
+  void checkFilterState(std::string name, std::string error_response, CheckFilterState request,
+                        CheckFilterState response) {
+    std::stringstream ss;
+    filter_->dumpState(ss, 0);
+
+    std::string expected_state_template =
+        R"EOF(PlatformBridgeFilter, filter_name_: {}, error_response_: {}
+  Request Filter, state_.iteration_state_: {}, state_.on_headers_called_: {}, state_.headers_forwarded_: {}, state_.on_data_called_: {}, state_.data_forwarded_: {}, state_.on_trailers_called_: {}, state_.trailers_forwarded_: {}, state_.on_resume_called_: {}, pending_headers_: {}, buffer: {}, pending_trailers_: {}, state_.stream_complete_: {}
+  Response Filter, state_.iteration_state_: {}, state_.on_headers_called_: {}, state_.headers_forwarded_: {}, state_.on_data_called_: {}, state_.data_forwarded_: {}, state_.on_trailers_called_: {}, state_.trailers_forwarded_: {}, state_.on_resume_called_: {}, pending_headers_: {}, buffer: {}, pending_trailers_: {}, state_.stream_complete_: {}
+)EOF";
+
+    std::string expected_state = fmt::format(
+        expected_state_template, name, error_response, request.iteration_state,
+        request.on_headers_called, request.headers_forwarded, request.on_data_called,
+        request.data_forwarded, request.on_trailers_called, request.trailers_forwarded,
+        request.on_resume_called, request.pending_headers, request.buffer, request.pending_trailers,
+        request.stream_complete, response.iteration_state, response.on_headers_called,
+        response.headers_forwarded, response.on_data_called, response.data_forwarded,
+        response.on_trailers_called, response.trailers_forwarded, response.on_resume_called,
+        response.pending_headers, response.buffer, response.pending_trailers,
+        response.stream_complete);
+
+    EXPECT_EQ(ss.str(), expected_state);
+  }
+
   typedef struct {
     unsigned int init_filter_calls;
     unsigned int on_request_headers_calls;
@@ -62,6 +93,8 @@ public:
     unsigned int on_resume_request_calls;
     unsigned int set_response_callbacks_calls;
     unsigned int on_resume_response_calls;
+    unsigned int on_cancel_calls;
+    unsigned int on_error_calls;
     unsigned int release_filter_calls;
   } filter_invocations;
 
@@ -94,6 +127,10 @@ TEST_F(PlatformBridgeFilterTest, NullImplementation) {
 
   Http::TestResponseTrailerMapImpl response_trailers{{"x-test-trailer", "test trailer"}};
   EXPECT_EQ(Http::FilterTrailersStatus::Continue, filter_->encodeTrailers(response_trailers));
+
+  checkFilterState("NullImplementation", "0",
+                   {"ongoing", "0", "1", "0", "1", "0", "1", "0", "null", "null", "null", "1"},
+                   {"ongoing", "0", "1", "0", "1", "0", "1", "0", "null", "null", "null", "1"});
 
   filter_->onDestroy();
 
@@ -603,6 +640,63 @@ platform_filter_name: StopAndBufferOnRequestData
   EXPECT_EQ(Http::FilterDataStatus::StopIterationNoBuffer, filter_->decodeData(third_chunk, false));
   // Manual update not required, because once iteration is stopped, data is added directly.
   EXPECT_EQ(invocations.on_request_data_calls, 3);
+}
+
+TEST_F(PlatformBridgeFilterTest, BasicError) {
+  envoy_http_filter platform_filter{};
+  filter_invocations invocations{};
+  platform_filter.static_context = &invocations;
+  platform_filter.init_filter = [](const void* context) -> const void* {
+    envoy_http_filter* c_filter = static_cast<envoy_http_filter*>(const_cast<void*>(context));
+    filter_invocations* invocations =
+        static_cast<filter_invocations*>(const_cast<void*>(c_filter->static_context));
+    invocations->init_filter_calls++;
+    return invocations;
+  };
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool,
+                                           const void* context) -> envoy_filter_headers_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->on_response_headers_calls++;
+    ADD_FAILURE() << "on_headers should not get called for an error response.";
+    release_envoy_headers(c_headers);
+    return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
+  };
+  platform_filter.on_response_data = [](envoy_data c_data, bool,
+                                        const void* context) -> envoy_filter_data_status {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->on_response_data_calls++;
+    ADD_FAILURE() << "on_data should not get called for an error response.";
+    c_data.release(c_data.context);
+    return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata, nullptr};
+  };
+  platform_filter.on_error = [](envoy_error c_error, const void* context) -> void {
+    filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
+    invocations->on_error_calls++;
+    EXPECT_EQ(c_error.error_code, ENVOY_UNDEFINED_ERROR);
+    EXPECT_EQ(Data::Utility::copyToString(c_error.message), "busted");
+    EXPECT_EQ(c_error.attempt_count, 1);
+    c_error.message.release(c_error.message.context);
+  };
+
+  setUpFilter(R"EOF(
+platform_filter_name: BasicError
+)EOF",
+              &platform_filter);
+  EXPECT_EQ(invocations.init_filter_calls, 1);
+
+  Http::TestResponseHeaderMapImpl response_headers{
+      {"x-internal-error-code", "0"},
+      {"x-internal-error-message", "busted"},
+  };
+  EXPECT_EQ(Http::FilterHeadersStatus::Continue, filter_->encodeHeaders(response_headers, false));
+
+  Buffer::OwnedImpl response_data = Buffer::OwnedImpl("busted");
+
+  EXPECT_EQ(Http::FilterDataStatus::Continue, filter_->encodeData(response_data, true));
+
+  EXPECT_EQ(invocations.on_response_headers_calls, 0);
+  EXPECT_EQ(invocations.on_response_data_calls, 0);
+  EXPECT_EQ(invocations.on_error_calls, 1);
 }
 
 TEST_F(PlatformBridgeFilterTest, StopAndBufferThenResumeOnRequestData) {

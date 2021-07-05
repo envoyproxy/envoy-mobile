@@ -36,6 +36,7 @@ const std::string config_header = R"(
 - &dns_refresh_rate 60s
 - &dns_fail_base_interval 2s
 - &dns_fail_max_interval 10s
+- &dns_preresolve_hostnames []
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -105,6 +106,7 @@ const char* config_template = R"(
   stats_cluster: &stats_cluster
     name: stats
     type: LOGICAL_DNS
+    wait_for_warm_on_init: false
     connect_timeout: *connect_timeout
     dns_refresh_rate: *dns_refresh_rate
     http2_protocol_options: {}
@@ -173,6 +175,8 @@ static_resources:
             "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
             dns_cache_config: &dns_cache_config
               name: dynamic_forward_proxy_cache_config
+              # TODO: Support API for overriding prefetch_hostnames: https://github.com/envoyproxy/envoy-mobile/issues/1534
+              preresolve_hostnames: *dns_preresolve_hostnames
               # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
               dns_lookup_family: V4_ONLY
               dns_refresh_rate: *dns_refresh_rate

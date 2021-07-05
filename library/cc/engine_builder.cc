@@ -43,6 +43,12 @@ EngineBuilder& EngineBuilder::addDnsFailureRefreshSeconds(int base, int max) {
   return *this;
 }
 
+EngineBuilder&
+EngineBuilder::addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames) {
+  this->dns_preresolve_hostnames_ = dns_preresolve_hostnames;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::addStatsFlushSeconds(int stats_flush_seconds) {
   this->stats_flush_seconds_ = stats_flush_seconds;
   return *this;
@@ -73,6 +79,7 @@ std::string EngineBuilder::generateConfigStr() {
       {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
       {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
       {"dns_fail_max_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_max_)},
+      {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
       {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
       {
           "metadata",

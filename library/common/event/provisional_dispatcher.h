@@ -3,7 +3,6 @@
 #include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
 
-#include "source/common/common/logger.h"
 #include "source/common/common/thread_synchronizer.h"
 
 #include "library/common/types/c_types.h"
@@ -16,10 +15,15 @@ namespace Event {
  * versions may support correct calling semantics after the Event::Dispatcher has been
  * terminated/deleted or before it has been created.
  */
-class ProvisionalDispatcher {
+class ProvisionalDispatcher : public ScopeTracker {
 public:
   ProvisionalDispatcher() = default;
   virtual ~ProvisionalDispatcher() = default;
+
+  // ScopeTracker
+  void pushTrackedObject(const ScopeTrackedObject* object) override;
+  void popTrackedObject(const ScopeTrackedObject* expected_object) override;
+  bool trackedObjectStackIsEmpty() const override;
 
   /**
    * Drains all queued callbacks to the real dispatcher. Must be called after the underlying
