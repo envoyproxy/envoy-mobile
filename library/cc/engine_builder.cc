@@ -92,9 +92,10 @@ std::string EngineBuilder::generateConfigStr() {
       {"virtual_clusters", this->virtual_clusters_},
   };
 
+  // NOTE: this does not include support for custom filters
+  // which are not yet supported in the C++ platform implementation
   std::ostringstream config_builder;
   config_builder << "!ignore platform_defs:" << std::endl;
-  // TODO: build header
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
