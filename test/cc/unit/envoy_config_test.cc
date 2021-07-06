@@ -13,10 +13,11 @@ using namespace Platform;
 
 TEST(TestConfig, ConfigIsApplied) {
   auto engine_builder = EngineBuilder();
-  engine_builder.addStatsDomain("asdf.fake.website")
+  engine_builder.addGrpcStatsDomain("asdf.fake.website")
       .addConnectTimeoutSeconds(123)
       .addDnsRefreshSeconds(456)
       .addDnsFailureRefreshSeconds(789, 987)
+      .addDnsPreresolveHostnames("[hostname]")
       .addStatsFlushSeconds(654)
       .addVirtualClusters("[virtual-clusters]")
       .setAppVersion("1.2.3")
@@ -30,6 +31,7 @@ TEST(TestConfig, ConfigIsApplied) {
       "- &dns_refresh_rate 456s",
       "- &dns_fail_base_interval 789s",
       "- &dns_fail_max_interval 987s",
+      "- &dns_preresolve_hostnames [hostnames]",
       "- &stats_flush_interval 654s",
       "- &virtual_clusters [virtual-clusters]",
       ("- &metadata { device_os: probably-ubuntu-on-CI, "
