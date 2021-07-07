@@ -80,7 +80,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
             direct_stream_.stream_handle_, end_stream, headers);
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
                                bridge_callbacks_.context);
-  response_headers_sent_ = true;
+  response_headers_forwarded_ = true;
   if (end_stream) {
     onComplete();
   }
@@ -195,8 +195,9 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   // Make sure to send end stream with data only if
   // 1) it has been received from the peer and
   // 2) there are no trailers
-  if (hasBufferedData() || (end_stream_read_ && !end_stream_communicated_ && !response_trailers_)) {
-    sendDataToBridge(*response_data_, end_stream_read_ && !response_trailers_.get());
+  if (hasBufferedData() ||
+      (end_stream_received_ && !end_stream_forwarded_ && !response_trailers_)) {
+    sendDataToBridge(*response_data_, end_stream_received_ && !response_trailers_.get());
     bytes_to_send_ = 0;
   }
 
@@ -213,11 +214,11 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   }
 }
 
-void Client::DirectStreamCallbacks::closeStream() { end_stream_read_ = true; }
+void Client::DirectStreamCallbacks::closeStream() { end_stream_received_ = true; }
 
 void Client::DirectStreamCallbacks::onComplete() {
   http_client_.removeStream(direct_stream_.stream_handle_);
-  end_stream_communicated_ = true;
+  end_stream_forwarded_ = true;
   ENVOY_LOG(debug, "[S{}] complete stream (success={})", direct_stream_.stream_handle_, success_);
   if (success_) {
     http_client_.stats().stream_success_.inc();
@@ -233,7 +234,7 @@ void Client::DirectStreamCallbacks::onError() {
 
   // When explicitly buffering, if any response data has been sent (e.g. headers), response
   // errors must be deferred until after resumeData has been called.
-  if (explicit_buffering_ && response_headers_sent_ && bytes_to_send_ == 0) {
+  if (explicit_buffering_ && response_headers_forwarded_ && bytes_to_send_ == 0) {
     deferred_error_ = true;
     return;
   }

@@ -180,12 +180,13 @@ private:
     // True if the bridge should operate in explicitly buffering mode, and only send
     // data when it is requested by the caller.
     bool explicit_buffering_{};
-    bool response_headers_sent_{};
+    // Set true when the response headers have been forwarded to the bridge.
+    bool response_headers_forwarded_{};
     // Called in closeStream() to communicate that the end of the stream has
     // been received by the DirectStreamCallbacks.
-    bool end_stream_read_{};
-    // Set true when the end stream has been communicated up the bridge.
-    bool end_stream_communicated_{};
+    bool end_stream_received_{};
+    // Set true when the end stream has been forwarded to the bridge.
+    bool end_stream_forwarded_{};
     bool deferred_error_{};
     uint32_t bytes_to_send_{};
   };
@@ -264,7 +265,6 @@ private:
   Event::ProvisionalDispatcher& dispatcher_;
   HttpClientStats stats_;
   absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
-  absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> draining_streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
