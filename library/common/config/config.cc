@@ -356,6 +356,88 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+  - name: base_alpn
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        auto_config:
+          http2_protocol_options: {}
+          http_protocol_options: {}
+  - name: base_alpn_alt
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        auto_config:
+          http2_protocol_options: {}
+          http_protocol_options: {}
+  - name: base_wlan_alpn
+    http2_protocol_options: {}
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        auto_config:
+          http2_protocol_options: {}
+          http_protocol_options: {}
+  - name: base_wlan_alpn_alt
+    http2_protocol_options: {}
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        auto_config:
+          http2_protocol_options: {}
+          http_protocol_options: {}
+  - name: base_wwan_alpn
+    http2_protocol_options: {}
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        auto_config:
+          http2_protocol_options: {}
+          http_protocol_options: {}
+  - name: base_wwan_alpn_alt
+    http2_protocol_options: {}
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        auto_config:
+          http2_protocol_options: {}
+          http_protocol_options: {}
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
