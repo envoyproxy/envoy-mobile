@@ -2,7 +2,6 @@
 
 #include "source/common/buffer/buffer_impl.h"
 #include "source/common/common/dump_state_utils.h"
-#include "source/common/common/lock_guard.h"
 #include "source/common/common/scope_tracker.h"
 #include "source/common/http/codes.h"
 #include "source/common/http/header_map_impl.h"
@@ -13,7 +12,6 @@
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
-#include "library/common/thread/lock_guard.h"
 
 namespace Envoy {
 namespace Http {
@@ -61,11 +59,13 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
           Data::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
     }
 
-    uint32_t attempt_count;
-    if (headers.EnvoyAttemptCount() &&
-        absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count)) {
-      error_attempt_count_ = attempt_count;
+    uint32_t attempt_count = 1;
+    if (headers.EnvoyAttemptCount()) {
+      RELEASE_ASSERT(
+          absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count),
+          "parse error reading attempt count");
     }
+    error_attempt_count_ = attempt_count;
 
     if (end_stream) {
       onError();
