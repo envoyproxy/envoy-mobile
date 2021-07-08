@@ -1,6 +1,7 @@
 #include "library/common/http/header_utility.h"
 
 #include "source/common/http/header_map_impl.h"
+#include "source/extensions/http/header_formatters/preserve_case/preserve_case_formatter.h"
 
 #include "library/common/data/utility.h"
 
@@ -9,11 +10,16 @@ namespace Http {
 namespace Utility {
 
 RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
-  RequestHeaderMapPtr transformed_headers = RequestHeaderMapImpl::create();
+  auto transformed_headers = RequestHeaderMapImpl::create();
+  transformed_headers->setFormatter(
+      std::make_unique<
+          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>());
+  Envoy::Http::StatefulHeaderKeyFormatter& formatter = transformed_headers->formatter().value();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
-    transformed_headers->addCopy(
-        LowerCaseString(Data::Utility::copyToString(headers.entries[i].key)),
-        Data::Utility::copyToString(headers.entries[i].value));
+    std::string key = Data::Utility::copyToString(headers.entries[i].key);
+    formatter.processKey(key);
+    transformed_headers->addCopy(LowerCaseString(key),
+                                 Data::Utility::copyToString(headers.entries[i].value));
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(headers);
@@ -39,15 +45,21 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map) {
   transformed_headers.length = 0;
   transformed_headers.entries = headers;
 
-  header_map.iterate([&transformed_headers](const HeaderEntry& header) -> HeaderMap::Iterate {
-    envoy_data key = Data::Utility::copyToBridgeData(header.key().getStringView());
-    envoy_data value = Data::Utility::copyToBridgeData(header.value().getStringView());
+  header_map.iterate(
+      [&transformed_headers, &header_map](const HeaderEntry& header) -> HeaderMap::Iterate {
+        std::string key_val = std::string(header.key().getStringView());
+        if (header_map.formatter().has_value()) {
+          const Envoy::Http::StatefulHeaderKeyFormatter& formatter = header_map.formatter().value();
+          key_val = formatter.format(key_val);
+        }
+        envoy_data key = Data::Utility::copyToBridgeData(key_val);
+        envoy_data value = Data::Utility::copyToBridgeData(header.value().getStringView());
 
-    transformed_headers.entries[transformed_headers.length] = {key, value};
-    transformed_headers.length++;
+        transformed_headers.entries[transformed_headers.length] = {key, value};
+        transformed_headers.length++;
 
-    return HeaderMap::Iterate::Continue;
-  });
+        return HeaderMap::Iterate::Continue;
+      });
   return transformed_headers;
 }
 

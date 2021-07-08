@@ -229,6 +229,17 @@ static_resources:
             budget_percent:
               value: 100
             min_retry_concurrency: 0xffffffff # uint32 max
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http_protocol_options:
+            header_key_format:
+              stateful_formatter:
+                name: preserve_case
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.Pr
+eserveCaseFormatterConfig
   - name: base_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
