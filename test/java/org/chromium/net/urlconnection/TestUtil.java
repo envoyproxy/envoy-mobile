@@ -3,7 +3,6 @@ package org.chromium.net.urlconnection;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.Assert;
 
 /**
@@ -20,19 +19,6 @@ final class TestUtil {
    */
   static String getResponseAsString(HttpURLConnection connection) throws Exception {
     InputStream in = connection.getInputStream();
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    int b;
-    while ((b = in.read()) != -1) {
-      out.write(b);
-    }
-    return out.toString();
-  }
-
-  /**
-   * Helper method to extract response body as a string for testing.
-   */
-  static String getResponseAsString(RecordedRequest request) throws Exception {
-    InputStream in = request.getBody().inputStream();
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     int b;
     while ((b = in.read()) != -1) {

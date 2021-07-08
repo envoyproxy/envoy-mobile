@@ -62,7 +62,7 @@ public class CronetBufferedOutputStreamTest {
 
   /**
    * Tests write after connect. Strangely, the default implementation allows
-   * writing after being connected, so this test only runs against Cronet's
+   * writing after being connected, so this test only runs against Cronet 's
    * implementation.
    */
   @Test
@@ -78,7 +78,7 @@ public class CronetBufferedOutputStreamTest {
     out.write(TestUtil.UPLOAD_DATA);
     connection.connect();
     try {
-      // Attemp to write some more.
+      // Attempt to write some more.
       out.write(TestUtil.UPLOAD_DATA);
       fail();
     } catch (IllegalStateException e) {
@@ -206,7 +206,7 @@ public class CronetBufferedOutputStreamTest {
   @CompareDefaultWithCronet
   public void testPostZeroByteWithoutContentLength() throws Exception {
     // Make sure both implementation sets the Content-Length header to 0.
-    // TODO(colibie) added the if-statment because sdk 29 impl does not set content-Length to zero
+    // TODO(colibie) added the if-statement because sdk 29 impl does not set content-Length to zero
     if (!mTestRule.testingSystemHttpURLConnection()) {
       URL url = new URL(NativeTestServer.getEchoHeaderURL("Content-Length"));
       HttpURLConnection connection = (HttpURLConnection)url.openConnection();

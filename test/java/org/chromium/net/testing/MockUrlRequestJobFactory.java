@@ -72,7 +72,5 @@ public final class MockUrlRequestJobFactory {
   /**
    * Constructs a mock URL that will hang when try to read response body from the remote.
    */
-  public static String getMockUrlForHangingRead() {
-    return "To be implemented";
-  }
+  public static String getMockUrlForHangingRead() { return "To be implemented"; }
 }
