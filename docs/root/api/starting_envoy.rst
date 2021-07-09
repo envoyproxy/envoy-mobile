@@ -83,6 +83,20 @@ Specify the interval at which Envoy should forcefully refresh DNS.
   // Swift
   builder.addDNSRefreshSeconds(60)
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addDNSQueryTimeoutSeconds``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify the interval at which Envoy should timeout a DNS query.
+
+**Example**::
+
+  // Kotlin
+  builder.addDNSQueryTimeoutSeconds(60L)
+
+  // Swift
+  builder.addDNSQueryTimeoutSeconds(60)
+
 ~~~~~~~~~~~~~~~
 ``addLogLevel``
 ~~~~~~~~~~~~~~~
