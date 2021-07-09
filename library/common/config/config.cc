@@ -183,6 +183,7 @@ static_resources:
               dns_failure_refresh_rate:
                 base_interval: *dns_fail_base_interval
                 max_interval: *dns_fail_max_interval
+              dns_query_timeout: 25s
         # TODO: make this configurable for users.
         - name: envoy.filters.http.decompressor
           typed_config:
