@@ -53,10 +53,10 @@ public class EnvoyConfiguration {
   public EnvoyConfiguration(String grpcStatsDomain, @Nullable Integer statsdPort,
                             int connectTimeoutSeconds, int dnsRefreshSeconds,
                             int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
-                            int dnsQueryTimeoutSeconds,
-                            String dnsPreresolveHostnames, int statsFlushSeconds,
-                            int streamIdleTimeoutSeconds, String appVersion, String appId,
-                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
+                            int dnsQueryTimeoutSeconds, String dnsPreresolveHostnames,
+                            int statsFlushSeconds, int streamIdleTimeoutSeconds, String appVersion,
+                            String appId, String virtualClusters,
+                            List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
     this.grpcStatsDomain = grpcStatsDomain;
