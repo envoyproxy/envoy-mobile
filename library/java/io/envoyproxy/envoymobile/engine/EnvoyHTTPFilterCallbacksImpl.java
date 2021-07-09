@@ -39,7 +39,7 @@ final class EnvoyHTTPFilterCallbacksImpl
    * @param object, pass this object so that the JNI retains it, preventing it from potentially
    *                being concurrently garbage-collected while the native call is executing.
    */
-  private native void callResetIdleTImeout(long callbackHandle, EnvoyHTTPFilterCallbacksImpl object);
+  private native void callResetIdleTimeout(long callbackHandle, EnvoyHTTPFilterCallbacksImpl object);
 
   private static native void callReleaseCallbacks(long callbackHandle);
 }
