@@ -19,6 +19,7 @@ fixture_template:
 
 private struct TestFilter: Filter {}
 
+// swiftlint:disable:next type_body_length
 final class EngineBuilderTests: XCTestCase {
   override func tearDown() {
     super.tearDown()

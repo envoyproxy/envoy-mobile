@@ -17,7 +17,7 @@ public class EnvoyConfiguration {
   public final Integer dnsRefreshSeconds;
   public final Integer dnsFailureRefreshSecondsBase;
   public final Integer dnsFailureRefreshSecondsMax;
-  public final Integer dnsQuerySeconds;
+  public final Integer dnsQueryTimeoutSeconds;
   public final String dnsPreresolveHostnames;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
