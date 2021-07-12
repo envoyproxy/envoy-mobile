@@ -36,7 +36,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
 
-  ASSERT(http_client_.getStream(direct_stream_.stream_handle_));
+  ASSERT(http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
   if (end_stream) {
     closeStream();
   }
@@ -98,7 +98,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
 
-  ASSERT(http_client_.getStream(direct_stream_.stream_handle_));
+  ASSERT(http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
   if (end_stream) {
     closeStream();
   }
@@ -161,7 +161,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
 
-  ASSERT(http_client_.getStream(direct_stream_.stream_handle_));
+  ASSERT(http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
   closeStream(); // Trailers always indicate the end of the stream.
 
   // When explicitly buffering, don't send data unless prompted.
@@ -242,7 +242,8 @@ void Client::DirectStreamCallbacks::onError() {
   http_client_.removeStream(direct_stream_.stream_handle_);
   // The stream should no longer be preset in the map, because onError() was either called from a
   // terminal callback that mapped to an error or it was called in response to a resetStream().
-  ASSERT(!http_client_.getStream(direct_stream_.stream_handle_));
+  ASSERT(
+      !http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
   int32_t attempt_count = error_attempt_count_.value_or(-1);
@@ -270,7 +271,7 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   // line with upstream expectations.
   // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
   runResetCallbacks(reason);
-  if (!parent_.getStream(stream_handle_)) {
+  if (!parent_.getStream(stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
     // while still open locally. In this case the stream will already have been removed from
     // our streams_ map due to the remote closure.
@@ -305,7 +306,8 @@ void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks 
 
 void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
   ASSERT(dispatcher_.isThreadSafe());
-  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream, Permissions::ALLOW_ONLY_FOR_OPEN_STREAMS);
   // If direct_stream is not found, it means the stream has already closed or been reset
   // and the appropriate callback has been issued to the caller. There's nothing to do here
   // except silently swallow this.
@@ -342,7 +344,8 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
 
 void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   ASSERT(dispatcher_.isThreadSafe());
-  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream, Permissions::ALLOW_ONLY_FOR_OPEN_STREAMS);
   // If direct_stream is not found, it means the stream has already closed or been reset
   // and the appropriate callback has been issued to the caller. There's nothing to do here
   // except silently swallow this.
@@ -366,7 +369,8 @@ void Client::sendMetadata(envoy_stream_t, envoy_headers) { NOT_IMPLEMENTED_GCOVR
 
 void Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   ASSERT(dispatcher_.isThreadSafe());
-  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream, Permissions::ALLOW_ONLY_FOR_OPEN_STREAMS);
   // If direct_stream is not found, it means the stream has already closed or been reset
   // and the appropriate callback has been issued to the caller. There's nothing to do here
   // except silently swallow this.
@@ -384,7 +388,11 @@ void Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
 
 void Client::cancelStream(envoy_stream_t stream) {
   ASSERT(dispatcher_.isThreadSafe());
-  Client::DirectStreamSharedPtr direct_stream = getStream(stream);
+  // This is the one place where downstream->upstream communication is allowed
+  // for closed streams: if the client cancels the stream it should be canceled
+  // whether it was closed or not.
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream, Permissions::ALLOW_FOR_ALL_STREAMS);
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
@@ -407,8 +415,15 @@ void Client::cancelStream(envoy_stream_t stream) {
 
 const HttpClientStats& Client::stats() const { return stats_; }
 
-Client::DirectStreamSharedPtr Client::getStream(envoy_stream_t stream) {
+Client::DirectStreamSharedPtr Client::getStream(envoy_stream_t stream, Permissions permissions) {
   auto direct_stream_pair_it = streams_.find(stream);
+  if (direct_stream_pair_it == streams_.end()) {
+    return nullptr;
+  }
+  if (permissions == ALLOW_ONLY_FOR_OPEN_STREAMS &&
+      direct_stream_pair_it->second->callbacks_->streamClosed()) {
+    return nullptr;
+  }
   // Returning will copy the shared_ptr and increase the ref count.
   return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second : nullptr;
 }
@@ -418,7 +433,8 @@ void Client::removeStream(envoy_stream_t stream_handle) {
       dispatcher_.isThreadSafe(),
       fmt::format("[S{}] stream removeStream must be performed on the dispatcher_'s thread.",
                   stream_handle));
-  Client::DirectStreamSharedPtr direct_stream = getStream(stream_handle);
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream_handle, Permissions::ALLOW_FOR_ALL_STREAMS);
   RELEASE_ASSERT(
       direct_stream,
       fmt::format(
