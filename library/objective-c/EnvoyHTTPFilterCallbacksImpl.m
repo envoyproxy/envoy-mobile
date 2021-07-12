@@ -20,7 +20,7 @@
   _callbacks.resume_iteration(_callbacks.callback_context);
 }
 
-- (void)resetIdleTimeout {
+- (void)resetIdleTimer {
   _callbacks.reset_idle(_callbacks.callback_context);
 }
 

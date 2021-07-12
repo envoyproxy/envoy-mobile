@@ -15,5 +15,5 @@ public protocol ResponseFilterCallbacks {
   /// This may be useful if a filter stops iteration for an extended period of time, since ordinarily
   /// timeouts will still apply. This may be called periodically to continue to indicate "activity"
   /// on the stream.
-  func resetIdleTimeout()
+  func resetIdleTimer()
 }

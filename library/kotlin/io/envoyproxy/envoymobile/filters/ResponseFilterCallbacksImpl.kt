@@ -13,7 +13,7 @@ internal class ResponseFilterCallbacksImpl constructor(
     callbacks.resumeIteration()
   }
 
-  override fun resetIdleTimeout() {
-    callbacks.resetIdleTimeout()
+  override fun resetIdleTimer() {
+    callbacks.resetIdleTimer()
   }
 }

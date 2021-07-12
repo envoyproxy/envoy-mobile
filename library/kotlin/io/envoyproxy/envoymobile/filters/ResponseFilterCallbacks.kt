@@ -21,5 +21,5 @@ interface ResponseFilterCallbacks {
    * timeouts will still apply. This may be called periodically to continue to indicate "activity"
    * on the stream.
    */
-  fun resetIdleTimeout()
+  fun resetIdleTimer()
 }

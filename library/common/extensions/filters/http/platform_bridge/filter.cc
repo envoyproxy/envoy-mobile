@@ -59,7 +59,7 @@ static void envoy_filter_reset_idle(const void* context) {
   PlatformBridgeFilterWeakPtr* weak_filter =
       static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
   if (auto filter = weak_filter->lock()) {
-    filter->resetIdleTimeout();
+    filter->resetIdleTimer();
   }
 }
 
@@ -514,14 +514,14 @@ void PlatformBridgeFilter::resumeEncoding() {
   });
 }
 
-void PlatformBridgeFilter::resetIdleTimeout() {
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})::resumeEncoding", filter_name_);
+void PlatformBridgeFilter::resetIdleTimer() {
+  ENVOY_LOG(trace, "PlatformBridgeFilter({})::resetIdleTimer", filter_name_);
 
   auto weak_self = weak_from_this();
   dispatcher_.post([weak_self]() -> void {
     if (auto self = weak_self.lock()) {
       // Stream idle timeout is nondirectional.
-      //self->decoder_callbacks_->resetStreamIdleTimeout();
+      //self->decoder_callbacks_->resetIdleTimer();
     }
   });
 }

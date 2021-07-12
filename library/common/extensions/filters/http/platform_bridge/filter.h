@@ -63,7 +63,7 @@ public:
   void resumeEncoding();
 
   // Asynchronously reset the stream idle timeout. Does not affect other timeouts.
-  void resetIdleTimeout();
+  void resetIdleTimer();
 
   // StreamFilterBase
   void onDestroy() override;

@@ -16,7 +16,7 @@ extension ResponseFilterCallbacksImpl: ResponseFilterCallbacks {
     self.callbacks.resumeIteration()
   }
 
-  func resetIdleTimeout() {
-    self.callbacks.resetIdleTimeout()
+  func resetIdleTimer() {
+    self.callbacks.resetIdleTimer()
   }
 }
