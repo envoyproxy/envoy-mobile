@@ -124,8 +124,8 @@ public:
     http_client_.startStream(stream_, bridge_callbacks_);
   }
 
-  void resumeDataIfExplicitBuffering(int32_t bytes) {
-    if (explicit_buffering_) {
+  void resumeDataIfExplicitFlowControl(int32_t bytes) {
+    if (explicit_flow_control_) {
       auto callbacks = dynamic_cast<Client::DirectStreamCallbacks*>(response_encoder_);
       callbacks->resumeData(bytes);
     }
@@ -141,9 +141,9 @@ public:
   uint64_t alt_cluster_ = 0;
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
-  bool explicit_buffering_{GetParam()};
+  bool explicit_flow_control_{GetParam()};
   Client http_client_{api_listener_,      dispatcher_, stats_store_,
-                      preferred_network_, random_,     explicit_buffering_};
+                      preferred_network_, random_,     explicit_flow_control_};
   envoy_stream_t stream_ = 1;
 };
 
@@ -386,7 +386,7 @@ TEST_P(ClientTest, BasicStreamData) {
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), true));
   http_client_.sendData(stream_, c_data, true);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
 
   // Encode response data.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -422,7 +422,7 @@ TEST_P(ClientTest, BasicStreamTrailers) {
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeTrailers_(_));
   http_client_.sendTrailers(stream_, c_trailers);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
 
   // Encode response trailers.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -477,14 +477,14 @@ TEST_P(ClientTest, MultipleDataStream) {
   ASSERT_EQ(cc_.on_headers_calls, 1);
   Buffer::OwnedImpl response_data("response body");
   response_encoder_->encodeData(response_data, false);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
 
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::OwnedImpl response_data2("response body2");
   response_encoder_->encodeData(response_data2, true);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_data_calls, 2);
   EXPECT_EQ("response bodyresponse body2", cc_.body_data_);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
@@ -506,7 +506,7 @@ TEST_P(ClientTest, EmptyDataWithEndStream) {
   ASSERT_EQ(cc_.on_headers_calls, 1);
   Buffer::OwnedImpl response_data("response body");
   response_encoder_->encodeData(response_data, false);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
 
@@ -517,7 +517,7 @@ TEST_P(ClientTest, EmptyDataWithEndStream) {
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::OwnedImpl response_data2("");
   response_encoder_->encodeData(response_data2, true);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_data_calls, 2);
   EXPECT_EQ("response body", cc_.body_data_);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
@@ -770,7 +770,7 @@ TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   // Expect that when a reset is received, the Http::Client::DirectStream fires
   // runResetCallbacks. The Http::ConnectionManager depends on the Http::Client::DirectStream
   // firing this tight loop to let the Http::ConnectionManager clean up its stream state.
-  resumeDataIfExplicitBuffering(3);
+  resumeDataIfExplicitFlowControl(3);
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(callbacks, onResetStream(StreamResetReason::RemoteReset, _));
@@ -890,10 +890,10 @@ TEST_P(ClientTest, NullAccessors) {
   EXPECT_FALSE(response_encoder_->streamErrorOnInvalidHttpMessage());
 }
 
-using ExplicitBufferTest = ClientTest;
-INSTANTIATE_TEST_SUITE_P(TestExplicitBuffering, ExplicitBufferTest, testing::Values(true));
+using ExplicitFlowControlTest = ClientTest;
+INSTANTIATE_TEST_SUITE_P(TestExplicitFlowControl, ExplicitFlowControlTest, testing::Values(true));
 
-TEST_P(ExplicitBufferTest, ShortRead) {
+TEST_P(ExplicitFlowControlTest, ShortRead) {
   cc_.end_stream_with_headers_ = false;
 
   // Create a stream, and set up request_decoder_ and response_encoder_
@@ -908,17 +908,17 @@ TEST_P(ExplicitBufferTest, ShortRead) {
   // Test partial reads. Get 5 bytes but only pass 3 up.
   Buffer::OwnedImpl response_data("12345");
   response_encoder_->encodeData(response_data, true);
-  resumeDataIfExplicitBuffering(3);
+  resumeDataIfExplicitFlowControl(3);
   EXPECT_EQ("123", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, 0);
 
   // Kick off more data, and the other two and the FIN should arrive.
-  resumeDataIfExplicitBuffering(3);
+  resumeDataIfExplicitFlowControl(3);
   EXPECT_EQ("12345", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
-TEST_P(ExplicitBufferTest, DataArrivedWhileBufferNonempty) {
+TEST_P(ExplicitFlowControlTest, DataArrivedWhileBufferNonempty) {
   cc_.end_stream_with_headers_ = false;
 
   // Create a stream, and set up request_decoder_ and response_encoder_
@@ -933,19 +933,19 @@ TEST_P(ExplicitBufferTest, DataArrivedWhileBufferNonempty) {
   // Test partial reads. Get 5 bytes but only pass 3 up.
   Buffer::OwnedImpl response_data("12345");
   response_encoder_->encodeData(response_data, false);
-  resumeDataIfExplicitBuffering(3);
+  resumeDataIfExplicitFlowControl(3);
   EXPECT_EQ("123", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, 0);
 
   Buffer::OwnedImpl response_data2("678910");
   response_encoder_->encodeData(response_data2, true);
 
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   EXPECT_EQ("12345678910", cc_.body_data_);
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
-TEST_P(ExplicitBufferTest, ResumeBeforeDataArrives) {
+TEST_P(ExplicitFlowControlTest, ResumeBeforeDataArrives) {
   cc_.end_stream_with_headers_ = false;
 
   // Create a stream, and set up request_decoder_ and response_encoder_
@@ -958,7 +958,7 @@ TEST_P(ExplicitBufferTest, ResumeBeforeDataArrives) {
   response_encoder_->encodeHeaders(response_headers, false);
 
   // Ask for data before it arrives
-  resumeDataIfExplicitBuffering(5);
+  resumeDataIfExplicitFlowControl(5);
 
   // When data arrives it should be immediately passed up
   Buffer::OwnedImpl response_data("12345");
@@ -967,7 +967,7 @@ TEST_P(ExplicitBufferTest, ResumeBeforeDataArrives) {
   ASSERT_EQ(cc_.on_complete_calls, true);
 }
 
-TEST_P(ExplicitBufferTest, ResumeWithFin) {
+TEST_P(ExplicitFlowControlTest, ResumeWithFin) {
   cc_.end_stream_with_headers_ = false;
 
   // Create a stream, and set up request_decoder_ and response_encoder_
@@ -982,13 +982,13 @@ TEST_P(ExplicitBufferTest, ResumeWithFin) {
   ASSERT_EQ(cc_.on_headers_calls, 1);
   Buffer::OwnedImpl response_data("response body");
   response_encoder_->encodeData(response_data, false);
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   EXPECT_EQ("response body", cc_.body_data_);
 
   // Make sure end of stream as communicated by an empty data with end stream is
   // processed correctly if the resume is kicked off before the end stream arrives.
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   Buffer::OwnedImpl response_data2("");
   response_encoder_->encodeData(response_data2, true);
@@ -998,7 +998,7 @@ TEST_P(ExplicitBufferTest, ResumeWithFin) {
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
-TEST_P(ExplicitBufferTest, ResumeWithDataAndTrailers) {
+TEST_P(ExplicitFlowControlTest, ResumeWithDataAndTrailers) {
   cc_.end_stream_with_headers_ = false;
 
   // Create a stream, and set up request_decoder_ and response_encoder_
@@ -1017,7 +1017,7 @@ TEST_P(ExplicitBufferTest, ResumeWithDataAndTrailers) {
   response_encoder_->encodeTrailers(response_trailers);
 
   // On the resume call, the data should be passed up, but not the trailers.
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_data_calls, 1);
   ASSERT_EQ(cc_.on_trailers_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);
@@ -1026,7 +1026,7 @@ TEST_P(ExplicitBufferTest, ResumeWithDataAndTrailers) {
   EXPECT_TRUE(dispatcher_.to_delete_.empty());
 
   // On the next resume, trailers should be sent.
-  resumeDataIfExplicitBuffering(20);
+  resumeDataIfExplicitFlowControl(20);
   ASSERT_EQ(cc_.on_trailers_calls, 1);
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
