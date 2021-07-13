@@ -194,7 +194,7 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   ENVOY_LOG(debug, "[S{}] received resume data call for {} bytes", direct_stream_.stream_handle_,
             bytes_to_send_);
 
-  // If there is bufferd data, send up to bytes_to_send bytes.
+  // If there is buffered data, send up to bytes_to_send bytes.
   // Make sure to send end stream with data only if
   // 1) it has been received from the peer and
   // 2) there are no trailers
