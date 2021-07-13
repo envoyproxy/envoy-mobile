@@ -70,7 +70,6 @@ public:
     });
 
     bridge_callbacks_.context = &cc_;
-    // Setup bridge_callbacks_ to handle the response.
     bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, void* context) -> void* {
       Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
@@ -236,7 +235,6 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
           Http::TestResponseHeaderMapImpl({{":status", "503"}, {"content-length", "0"}})));
 
   envoy_stream_t stream = 1;
-  // Setup bridge_callbacks_ to handle the response.
   // Build a set of request headers.
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
@@ -298,6 +296,7 @@ TEST_P(ClientIntegrationTest, BasicReset) {
 // fired from the Http:ConnectionManager rather than the Http::Client. This cannot be done in
 // unit tests because the Http::ConnectionManager is mocked using a mock response encoder.
 
+// Test header key case sensitivity.
 TEST_P(ClientIntegrationTest, CaseSensitive) {
   config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
     ConfigHelper::HttpProtocolOptions protocol_options;

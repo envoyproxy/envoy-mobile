@@ -17,6 +17,7 @@ RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
   Envoy::Http::StatefulHeaderKeyFormatter& formatter = transformed_headers->formatter().value();
   for (envoy_map_size_t i = 0; i < headers.length; i++) {
     std::string key = Data::Utility::copyToString(headers.entries[i].key);
+    // Make sure the formatter knows the original case.
     formatter.processKey(key);
     transformed_headers->addCopy(LowerCaseString(key),
                                  Data::Utility::copyToString(headers.entries[i].value));
