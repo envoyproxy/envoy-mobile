@@ -389,16 +389,15 @@ const char* ClearTextClusters[][3] = {{
                                       }};
 
 const char* AlpnClusters[][3] = {{
-                                   "base_alpn",
-                                   "base_wlan_alpn",
-                                   "base_wwan_alpn",
-                               },
-                               {
-                                   "base_alpn_alt",
-                                   "base_wlan_alpn_alt",
-                                   "base_wwan_alpn_alt",
-                               }};
-
+                                     "base_alpn",
+                                     "base_wlan_alpn",
+                                     "base_wwan_alpn",
+                                 },
+                                 {
+                                     "base_alpn_alt",
+                                     "base_wlan_alpn_alt",
+                                     "base_wwan_alpn_alt",
+                                 }};
 
 } // namespace
 
