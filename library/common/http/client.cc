@@ -36,7 +36,8 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
   ENVOY_LOG(debug, "[S{}] response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
 
-  ASSERT(http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
+  ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
+                                GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
   if (end_stream) {
     closeStream();
   }
@@ -98,7 +99,8 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
 
-  ASSERT(http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
+  ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
+                                GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
   if (end_stream) {
     closeStream();
   }
@@ -161,7 +163,8 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
   ENVOY_LOG(debug, "[S{}] response trailers for stream:\n{}", direct_stream_.stream_handle_,
             trailers);
 
-  ASSERT(http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
+  ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
+                                GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
   closeStream(); // Trailers always indicate the end of the stream.
 
   // When explicitly buffering, don't send data unless prompted.
@@ -196,8 +199,8 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
   // 1) it has been received from the peer and
   // 2) there are no trailers
   if (hasBufferedData() ||
-      (end_stream_received_ && !end_stream_forwarded_ && !response_trailers_)) {
-    sendDataToBridge(*response_data_, end_stream_received_ && !response_trailers_.get());
+      (remote_end_stream_received_ && !remote_end_stream_forwarded_ && !response_trailers_)) {
+    sendDataToBridge(*response_data_, remote_end_stream_received_ && !response_trailers_.get());
     bytes_to_send_ = 0;
   }
 
@@ -208,17 +211,27 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
     bytes_to_send_ = 0;
   }
 
-  if (deferred_error_ && bytes_to_send_ > 0) {
+  if (error_code_.has_value() && bytes_to_send_ > 0) {
     onError();
-    deferred_error_ = false;
   }
 }
 
-void Client::DirectStreamCallbacks::closeStream() { end_stream_received_ = true; }
+void Client::DirectStreamCallbacks::closeStream() {
+  remote_end_stream_received_ = true;
+
+  auto& client = direct_stream_.parent_;
+  auto stream = client.getStream(direct_stream_.stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS);
+  ASSERT(stream != nullptr);
+  if (stream) {
+    client.closed_streams_.emplace(direct_stream_.stream_handle_, std::move(stream));
+    size_t erased = client.streams_.erase(direct_stream_.stream_handle_);
+    ASSERT(erased == 1, "closeStream should always remove one entry from the streams map");
+  }
+}
 
 void Client::DirectStreamCallbacks::onComplete() {
   http_client_.removeStream(direct_stream_.stream_handle_);
-  end_stream_forwarded_ = true;
+  remote_end_stream_forwarded_ = true;
   ENVOY_LOG(debug, "[S{}] complete stream (success={})", direct_stream_.stream_handle_, success_);
   if (success_) {
     http_client_.stats().stream_success_.inc();
@@ -235,15 +248,14 @@ void Client::DirectStreamCallbacks::onError() {
   // When explicitly buffering, if any response data has been sent (e.g. headers), response
   // errors must be deferred until after resumeData has been called.
   if (explicit_buffering_ && response_headers_forwarded_ && bytes_to_send_ == 0) {
-    deferred_error_ = true;
     return;
   }
 
   http_client_.removeStream(direct_stream_.stream_handle_);
   // The stream should no longer be preset in the map, because onError() was either called from a
   // terminal callback that mapped to an error or it was called in response to a resetStream().
-  ASSERT(
-      !http_client_.getStream(direct_stream_.stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS));
+  ASSERT(!http_client_.getStream(direct_stream_.stream_handle_,
+                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
   envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
   envoy_data message = error_message_.value_or(envoy_nodata);
   int32_t attempt_count = error_attempt_count_.value_or(-1);
@@ -251,6 +263,11 @@ void Client::DirectStreamCallbacks::onError() {
   ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
+
+  error_code_ = {};
+  error_message_ = {};
+  error_attempt_count_ = {};
+
   bridge_callbacks_.on_error({code, message, attempt_count}, bridge_callbacks_.context);
 }
 
@@ -271,10 +288,10 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   // line with upstream expectations.
   // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
   runResetCallbacks(reason);
-  if (!parent_.getStream(stream_handle_, Permissions::ALLOW_FOR_ALL_STREAMS)) {
+  if (!parent_.getStream(stream_handle_, GetStreamFilters::ALLOW_FOR_ALL_STREAMS)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
     // while still open locally. In this case the stream will already have been removed from
-    // our streams_ map due to the remote closure.
+    // our stream maps due to the remote closure.
     return;
   }
   callbacks_->onError();
@@ -307,7 +324,7 @@ void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks 
 void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream =
-      getStream(stream, Permissions::ALLOW_ONLY_FOR_OPEN_STREAMS);
+      getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS);
   // If direct_stream is not found, it means the stream has already closed or been reset
   // and the appropriate callback has been issued to the caller. There's nothing to do here
   // except silently swallow this.
@@ -345,7 +362,7 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
 void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream =
-      getStream(stream, Permissions::ALLOW_ONLY_FOR_OPEN_STREAMS);
+      getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS);
   // If direct_stream is not found, it means the stream has already closed or been reset
   // and the appropriate callback has been issued to the caller. There's nothing to do here
   // except silently swallow this.
@@ -370,7 +387,7 @@ void Client::sendMetadata(envoy_stream_t, envoy_headers) { NOT_IMPLEMENTED_GCOVR
 void Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream =
-      getStream(stream, Permissions::ALLOW_ONLY_FOR_OPEN_STREAMS);
+      getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS);
   // If direct_stream is not found, it means the stream has already closed or been reset
   // and the appropriate callback has been issued to the caller. There's nothing to do here
   // except silently swallow this.
@@ -392,7 +409,7 @@ void Client::cancelStream(envoy_stream_t stream) {
   // for closed streams: if the client cancels the stream it should be canceled
   // whether it was closed or not.
   Client::DirectStreamSharedPtr direct_stream =
-      getStream(stream, Permissions::ALLOW_FOR_ALL_STREAMS);
+      getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
@@ -415,17 +432,19 @@ void Client::cancelStream(envoy_stream_t stream) {
 
 const HttpClientStats& Client::stats() const { return stats_; }
 
-Client::DirectStreamSharedPtr Client::getStream(envoy_stream_t stream, Permissions permissions) {
+Client::DirectStreamSharedPtr Client::getStream(envoy_stream_t stream,
+                                                GetStreamFilters get_stream_filters) {
   auto direct_stream_pair_it = streams_.find(stream);
-  if (direct_stream_pair_it == streams_.end()) {
-    return nullptr;
+  if (direct_stream_pair_it != streams_.end()) {
+    return direct_stream_pair_it->second;
   }
-  if (permissions == ALLOW_ONLY_FOR_OPEN_STREAMS &&
-      direct_stream_pair_it->second->callbacks_->streamClosed()) {
-    return nullptr;
+  if (direct_stream_pair_it == streams_.end() && get_stream_filters == ALLOW_FOR_ALL_STREAMS) {
+    direct_stream_pair_it = closed_streams_.find(stream);
+    if (direct_stream_pair_it != closed_streams_.end()) {
+      return direct_stream_pair_it->second;
+    }
   }
-  // Returning will copy the shared_ptr and increase the ref count.
-  return (direct_stream_pair_it != streams_.end()) ? direct_stream_pair_it->second : nullptr;
+  return nullptr;
 }
 
 void Client::removeStream(envoy_stream_t stream_handle) {
@@ -434,7 +453,7 @@ void Client::removeStream(envoy_stream_t stream_handle) {
       fmt::format("[S{}] stream removeStream must be performed on the dispatcher_'s thread.",
                   stream_handle));
   Client::DirectStreamSharedPtr direct_stream =
-      getStream(stream_handle, Permissions::ALLOW_FOR_ALL_STREAMS);
+      getStream(stream_handle, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
   RELEASE_ASSERT(
       direct_stream,
       fmt::format(
@@ -452,6 +471,9 @@ void Client::removeStream(envoy_stream_t stream_handle) {
   // However, the entry in the map should not exist after removeStream.
   // Hence why it is synchronously erased from the streams map.
   size_t erased = streams_.erase(stream_handle);
+  if (erased != 1) {
+    erased = closed_streams_.erase(stream_handle);
+  }
   ASSERT(erased == 1, "removeStream should always remove one entry from the streams map");
   ENVOY_LOG(debug, "[S{}] erased stream from streams container", stream_handle);
 }

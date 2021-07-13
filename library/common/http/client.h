@@ -159,7 +159,6 @@ private:
     void resumeData(int32_t bytes_to_send);
 
     bool explicitBuffering() const { return explicit_buffering_; }
-    bool streamClosed() const { return end_stream_received_; }
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
@@ -185,10 +184,9 @@ private:
     bool response_headers_forwarded_{};
     // Called in closeStream() to communicate that the end of the stream has
     // been received by the DirectStreamCallbacks.
-    bool end_stream_received_{};
+    bool remote_end_stream_received_{};
     // Set true when the end stream has been forwarded to the bridge.
-    bool end_stream_forwarded_{};
-    bool deferred_error_{};
+    bool remote_end_stream_forwarded_{};
     uint32_t bytes_to_send_{};
   };
 
@@ -258,7 +256,7 @@ private:
 
   using DirectStreamWrapperPtr = std::unique_ptr<DirectStreamWrapper>;
 
-  enum Permissions {
+  enum GetStreamFilters {
     // If a stream has been finished from upstream, but stream completion has
     // not yet been communicated, the downstream mobile library should not be
     // allowed to access the stream. getStream takes an argument to ensure that
@@ -271,14 +269,19 @@ private:
     // data for the stream).
     ALLOW_FOR_ALL_STREAMS,
   };
-  DirectStreamSharedPtr getStream(envoy_stream_t stream_handle, Permissions permissions);
+  DirectStreamSharedPtr getStream(envoy_stream_t stream_handle, GetStreamFilters filters);
   void removeStream(envoy_stream_t stream_handle);
   void setDestinationCluster(RequestHeaderMap& headers, bool alternate);
 
   ApiListener& api_listener_;
   Event::ProvisionalDispatcher& dispatcher_;
   HttpClientStats stats_;
+  // The set of open streams, which can safely have request data sent on them
+  // or response data received.
   absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> streams_;
+  // The set of closed streams, where end stream has been received from upstream
+  // but not yet communicated to the mobile library.
+  absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> closed_streams_;
   std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
