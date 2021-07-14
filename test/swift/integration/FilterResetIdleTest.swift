@@ -155,9 +155,7 @@ static_resources:
         return .stopIteration
       }
 
-      func onError(_ error: EnvoyError) {
-        // This should actually get called, but won't until the new error path is set up.
-      }
+      func onError(_ error: EnvoyError) {}
 
       func onCancel() {
         XCTFail("Unexpected call to onCancel filter callback")
