@@ -65,6 +65,18 @@ const std::string config_header = R"(
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
 
+!ignore protocol_defs: &base_protocol_options_defs
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      auto_config:
+        http2_protocol_options: {}
+        http_protocol_options:
+          header_key_format:
+            stateful_formatter:
+              name: preserve_case
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls
   typed_config:
@@ -363,12 +375,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: &protocol_options
-      envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-        auto_config:
-          http2_protocol_options: {}
-          http_protocol_options: {}
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_alpn_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -376,7 +383,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extensiion_protocol_options: *protocol_options
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wlan_alpn
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -385,7 +392,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extensiion_protocol_options: *protocol_options
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wlan_alpn_alt
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -394,7 +401,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extensiion_protocol_options: *protocol_options
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wwan_alpn
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -403,7 +410,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extensiion_protocol_options: *protocol_options
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wwan_alpn_alt
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -412,7 +419,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extensiion_protocol_options: *protocol_options
+    typed_extension_protocol_options: *base_protocol_options_defs
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:

@@ -16,5 +16,6 @@ EXTENSIONS = {
     "envoy.stat_sinks.metrics_service":               "//source/extensions/stat_sinks/metrics_service:config",
     "envoy.transport_sockets.raw_buffer":             "//source/extensions/transport_sockets/raw_buffer:config",
     "envoy.transport_sockets.tls":                    "//source/extensions/transport_sockets/tls:config",
+    "envoy.http.stateful_header_formatters.preserve_case": "//source/extensions/http/header_formatters/preserve_case:preserve_case_formatter",
 }
 WINDOWS_EXTENSIONS = {}
