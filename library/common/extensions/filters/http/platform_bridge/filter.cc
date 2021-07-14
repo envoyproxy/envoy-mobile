@@ -31,6 +31,20 @@ void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers) {
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(c_headers);
 }
+
+envoy_error_code_t mapHttpStatusToError(Http::Code status) {
+  switch (status) {
+  case Http::Code::RequestTimeout:
+    return ENVOY_REQUEST_TIMEOUT;
+  case Http::Code::PayloadTooLarge:
+    return ENVOY_BUFFER_LIMIT_EXCEEDED;
+  case Http::Code::ServiceUnavailable:
+    return ENVOY_CONNECTION_FAILURE;
+  default:
+    return ENVOY_UNDEFINED_ERROR;
+  }
+}
+
 } // namespace
 
 static void envoy_filter_release_callbacks(const void* context) {
@@ -163,6 +177,24 @@ void PlatformBridgeFilter::onDestroy() {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->release_filter", filter_name_);
   platform_filter_.release_filter(platform_filter_.instance_context);
   platform_filter_.instance_context = nullptr;
+}
+
+Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& reply) {
+  ENVOY_LOG(trace, "PlatformBridgeFilter({})::onLocalReply", filter_name_);
+  response_filter_base_->state_.stream_complete_ = true;
+  auto& info = decoder_callbacks_->streamInfo();
+  ASSERT(static_cast<uint32_t>(reply.code_) == info.responseCode());
+  ASSERT(reply.details_ == info.responseCodeDetails());
+
+  if (platform_filter_.on_error) {
+    envoy_error_code_t error_code = mapHttpStatusToError(reply.code_);
+    envoy_data error_message = Data::Utility::copyToBridgeData(reply.details_);
+    int32_t attempts = static_cast<int32_t>(info.attemptCount().value_or(0));
+    platform_filter_.on_error({error_code, error_message, attempts},
+                              streamIntel(), platform_filter_.instance_context);
+  }
+
+  return Http::LocalErrorStatus::ContinueAndResetStream;
 }
 
 envoy_stream_intel PlatformBridgeFilter::streamIntel() {
