@@ -4,13 +4,13 @@ import Foundation
 import XCTest
 
 final class FilterResetIdleTests: XCTestCase {
-
   func testFilterResetIdle() {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
     let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
     // swiftlint:disable:next line_length
     let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
+    // swiftlint:disable:next line_length
     let localErrorFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
     let filterName = "reset_idle_test_filter"
     let config =
@@ -90,7 +90,9 @@ static_resources:
         if resetCount < 3 {
           self.resetCount += 1
           self.queue.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-            guard let strongSelf = self else { return }
+            guard let strongSelf = self else {
+              return
+            }
             strongSelf.callbacks.resetIdleTimer()
             strongSelf.signalActivity()
           }
@@ -181,7 +183,7 @@ static_resources:
 
     client
       .newStreamPrototype()
-      .setOnError() { error in
+      .setOnError { _ in
         timeoutExpectation.fulfill()
       }
       .start()
