@@ -14,5 +14,8 @@ envoy_cc_library(
         "internal.h",
         "templates.h",
     ],
+    deps = [
+        "@envoy//source/extensions/http/header_formatters/preserve_case:preserve_case_formatter",
+    ],
     repository = "@envoy",
 )
