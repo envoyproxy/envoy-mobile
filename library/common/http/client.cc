@@ -15,6 +15,17 @@
 namespace Envoy {
 namespace Http {
 
+namespace {
+  envoy_response_callback_status_t captureStatus(void* callback_status) {
+    if (!callback_status) {
+      return kEnvoyResponseCallbackStatusContinue;
+    }
+    auto status = *static_cast<envoy_response_callback_status_t*>(callback_status);
+    free(callback_status);
+    return status;
+  }
+}
+
 /**
  * IMPORTANT: stream closure semantics in envoy mobile depends on the fact that the HCM fires a
  * stream reset when the remote side of the stream is closed but the local side remains open.
@@ -77,8 +88,8 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
-  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
-                               bridge_callbacks_.context);
+  auto status = captureStatus(bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers),
+                              end_stream, bridge_callbacks_.context);
   if (end_stream) {
     onComplete();
   }
