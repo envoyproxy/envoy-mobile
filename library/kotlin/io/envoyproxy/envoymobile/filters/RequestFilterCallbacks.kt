@@ -22,4 +22,9 @@ interface RequestFilterCallbacks {
    * on the stream.
    */
   fun resetIdleTimer()
+
+
+  fun pauseRequestTimeout()
+
+  fun resumeRequestTimeout()
 }
