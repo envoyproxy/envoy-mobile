@@ -66,15 +66,9 @@ SDKMANAGER=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
 
 $SDKMANAGER --uninstall "ndk-bundle"
 
-echo "--- $SDKMANAGER"
-ls $SDKMANAGER
-
 $SDKMANAGER --install "ndk;21.3.6528147"
 
-echo "--- $ANDROID_HOME/tools/bin/"
-ls $ANDROID_HOME/tools/bin/
-
-echo "--- $ANDROID_HOME/ndk/"
-ls $ANDROID_HOME/ndk/
+$SDKMANAGER --uninstall "build-tools;31.0.0"
+$SDKMANAGER --install "build-tools;30.0.3"
 
 export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.3.6528147
