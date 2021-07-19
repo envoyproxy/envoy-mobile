@@ -11,6 +11,9 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 typedef NSDictionary<NSString *, NSString *> EnvoyTags;
 
+/// A set of key-value pairs describing an event.
+typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -88,6 +91,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Resume filter iteration asynchronously. This will result in an on-resume invocation of the
 /// filter.
 - (void)resumeIteration;
+
+/// Reset the underlying stream idle timeout to its configured threshold. This may be useful if
+/// a filter stops iteration for an extended period of time, since ordinarily timeouts will still
+/// apply. This may be called periodically to continue to indicate "activity" on the stream.
+- (void)resetIdleTimer;
 
 @end
 
@@ -301,6 +309,18 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
+#pragma mark - EnvoyEventTracker
+
+// Tracking events interface
+
+@interface EnvoyEventTracker : NSObject
+
+@property (nonatomic, copy, nullable) void (^track)(EnvoyEvent *);
+
+- (instancetype)initWithEventTrackingClosure:(nullable void (^)(EnvoyEvent *))track;
+
+@end
+
 #pragma mark - EnvoyEngine
 
 /// Return codes for Engine interface. @see /library/common/types/c_types.h
@@ -316,9 +336,11 @@ extern const int kEnvoyFailure;
  @param onEngineRunning Closure called when the engine finishes its async startup and begins
  running.
  @param logger Logging interface.
+ @param eventTracker Event tracking interface.
  */
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
-                                 logger:(nullable void (^)(NSString *))logger;
+                                 logger:(nullable void (^)(NSString *))logger
+                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker;
 /**
  Run the Envoy engine with the provided configuration and log level.
 
@@ -402,6 +424,8 @@ extern const int kEnvoyFailure;
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
 - (void)flushStats;
+
+- (void)terminate;
 
 @end
 

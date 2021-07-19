@@ -83,6 +83,27 @@ Specify the interval at which Envoy should forcefully refresh DNS.
   // Swift
   builder.addDNSRefreshSeconds(60)
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addDNSPreresolveHostnames``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add a list of hostnames to preresolve on Engine startup.
+The configuration is expected as a JSON list.
+
+.. attention::
+
+    This API is non-ideal as it exposes lower-level internals of Envoy than desired by this
+    project.
+    :issue:`#1581 <1581>` tracks enhancing this API.
+
+**Example**::
+
+  // Kotlin
+  builder.addDNSPreresolveHostnames("[{\"address\": \"foo.com", \"port_value\": 443}]")
+
+  // Swift
+  builder.addDNSPreresolveHostnames("[{\"address\": \"foo.com", \"port_value\": 443}]")
+
 ~~~~~~~~~~~~~~~
 ``addLogLevel``
 ~~~~~~~~~~~~~~~
@@ -236,6 +257,22 @@ Specify a closure to be called when Envoy's engine emits a log message.
   // Swift
   builder.setLogger { msg in
     NSLog("Envoy log: \(msg)")
+  }
+
+~~~~~~~~~~~~~~~~~~~
+``setEventTracker``
+~~~~~~~~~~~~~~~~~~~
+
+Specify a closure to be called when Envoy's engine emits an event.
+
+**Example**::
+
+  // Kotlin
+  // This interface is pending for Kotlin
+
+  // Swift
+  builder.setEventTracker { event in
+    NSLog("Envoy log: \(event)")
   }
 
 ~~~~~~~~~~~~~~~~~~~~~

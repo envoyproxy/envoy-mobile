@@ -1,5 +1,4 @@
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library", "kt_jvm_test")
-load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
 load("//bazel:kotlin_lib.bzl", "native_lib_name")
 
 def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = []):
@@ -95,6 +94,8 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = []):
             "@maven//:com_squareup_okhttp3_okhttp",
             "@maven//:com_squareup_okhttp3_mockwebserver",
             "@maven//:com_squareup_okio_okio",
+            "@maven//:org_hamcrest_hamcrest",
+            "@maven//:com_google_truth_truth",
         ],
         manifest = "//bazel:test_manifest.xml",
         custom_package = "io.envoyproxy.envoymobile.tests",
