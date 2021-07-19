@@ -55,6 +55,14 @@ static void envoy_filter_callback_resume_encoding(const void* context) {
   }
 }
 
+static void envoy_filter_reset_idle(const void* context) {
+  PlatformBridgeFilterWeakPtr* weak_filter =
+      static_cast<PlatformBridgeFilterWeakPtr*>(const_cast<void*>(context));
+  if (auto filter = weak_filter->lock()) {
+    filter->resetIdleTimer();
+  }
+}
+
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
     : filter_name_(proto_config.platform_filter_name()),
@@ -100,6 +108,7 @@ void PlatformBridgeFilter::setDecoderFilterCallbacks(
   // heap allocation below occurs when it could be avoided.
   if (platform_filter_.set_request_callbacks) {
     platform_request_callbacks_.resume_iteration = envoy_filter_callback_resume_decoding;
+    platform_request_callbacks_.reset_idle = envoy_filter_reset_idle;
     platform_request_callbacks_.release_callbacks = envoy_filter_release_callbacks;
     // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
     // The weak_ptr is heap-allocated, because it must be managed (and eventually released) by
@@ -121,6 +130,7 @@ void PlatformBridgeFilter::setEncoderFilterCallbacks(
   // heap allocation below occurs when it could be avoided.
   if (platform_filter_.set_response_callbacks) {
     platform_response_callbacks_.resume_iteration = envoy_filter_callback_resume_encoding;
+    platform_response_callbacks_.reset_idle = envoy_filter_reset_idle;
     platform_response_callbacks_.release_callbacks = envoy_filter_release_callbacks;
     // We use a weak_ptr wrapper for the filter to ensure presence before dispatching callbacks.
     // The weak_ptr is heap-allocated, because it must be managed (and eventually released) by
@@ -392,39 +402,42 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
   // Presence of internal error header indicates an error that should be surfaced as an
   // error callback (rather than an HTTP response).
   const auto error_code_header = headers.get(Http::InternalHeaders::get().ErrorCode);
-  if (!error_code_header.empty()) {
-    envoy_error_code_t error_code;
-    bool parsed_code = absl::SimpleAtoi(error_code_header[0]->value().getStringView(), &error_code);
-    RELEASE_ASSERT(parsed_code, "parse error reading error code");
-
-    envoy_data error_message = envoy_nodata;
-    const auto error_message_header = headers.get(Http::InternalHeaders::get().ErrorMessage);
-    if (!error_message_header.empty()) {
-      error_message =
-          Data::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
-    }
-
-    int32_t attempt_count;
-    if (headers.EnvoyAttemptCount()) {
-      bool parsed_attempts =
-          absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count);
-      RELEASE_ASSERT(parsed_attempts, "parse error reading attempt count");
-    }
-
-    if (platform_filter_.on_error) {
-      platform_filter_.on_error({error_code, error_message, attempt_count},
-                                platform_filter_.instance_context);
-    } else {
-      error_message.release(error_message.context);
-    }
-
-    error_response_ = true;
-    response_filter_base_->state_.headers_forwarded_ = true;
-    return Http::FilterHeadersStatus::Continue;
+  if (error_code_header.empty()) {
+    // No error, so delegate to base implementation for request and response path.
+    return response_filter_base_->onHeaders(headers, end_stream);
   }
 
-  // Delegate to base implementation for request and response path.
-  return response_filter_base_->onHeaders(headers, end_stream);
+  // Update stream state, since we won't be delegating to FilterBase.
+  response_filter_base_->state_.stream_complete_ = end_stream;
+  error_response_ = true;
+
+  envoy_error_code_t error_code;
+  bool parsed_code = absl::SimpleAtoi(error_code_header[0]->value().getStringView(), &error_code);
+  RELEASE_ASSERT(parsed_code, "parse error reading error code");
+
+  envoy_data error_message = envoy_nodata;
+  const auto error_message_header = headers.get(Http::InternalHeaders::get().ErrorMessage);
+  if (!error_message_header.empty()) {
+    error_message =
+        Data::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
+  }
+
+  int32_t attempt_count = 1;
+  if (headers.EnvoyAttemptCount()) {
+    bool parsed_attempts =
+        absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count);
+    RELEASE_ASSERT(parsed_attempts, "parse error reading attempt count");
+  }
+
+  if (platform_filter_.on_error) {
+    platform_filter_.on_error({error_code, error_message, attempt_count},
+                              platform_filter_.instance_context);
+  } else {
+    release_envoy_data(error_message);
+  }
+
+  response_filter_base_->state_.headers_forwarded_ = true;
+  return Http::FilterHeadersStatus::Continue;
 }
 
 Http::FilterDataStatus PlatformBridgeFilter::decodeData(Buffer::Instance& data, bool end_stream) {
@@ -497,6 +510,18 @@ void PlatformBridgeFilter::resumeEncoding() {
     if (auto self = weak_self.lock()) {
       // Delegate to base implementation for request and response path.
       self->response_filter_base_->onResume();
+    }
+  });
+}
+
+void PlatformBridgeFilter::resetIdleTimer() {
+  ENVOY_LOG(trace, "PlatformBridgeFilter({})::resetIdleTimer", filter_name_);
+
+  auto weak_self = weak_from_this();
+  dispatcher_.post([weak_self]() -> void {
+    if (auto self = weak_self.lock()) {
+      // Stream idle timeout is nondirectional.
+      self->decoder_callbacks_->resetIdleTimer();
     }
   });
 }

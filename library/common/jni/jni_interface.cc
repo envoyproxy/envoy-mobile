@@ -309,7 +309,7 @@ static void* jvm_on_data(const char* method, envoy_data data, bool end_stream, v
   jobject result =
       env->CallObjectMethod(j_context, jmid_onData, j_data, end_stream ? JNI_TRUE : JNI_FALSE);
 
-  data.release(data.context);
+  release_envoy_data(data);
   env->DeleteLocalRef(j_data);
   env->DeleteLocalRef(jcls_JvmCallbackContext);
 
@@ -609,7 +609,7 @@ static void* call_jvm_on_error(envoy_error error, void* context) {
   jobject result = env->CallObjectMethod(j_context, jmid_onError, error.error_code, j_error_message,
                                          error.attempt_count);
 
-  error.message.release(error.message.context);
+  release_envoy_error(error);
   env->DeleteLocalRef(jcls_JvmObserverContext);
   env->DeleteLocalRef(j_error_message);
   return result;
@@ -772,6 +772,19 @@ Java_io_envoyproxy_envoymobile_engine_EnvoyHTTPFilterCallbacksImpl_callResumeIte
   envoy_http_filter_callbacks* callbacks =
       reinterpret_cast<envoy_http_filter_callbacks*>(callback_handle);
   callbacks->resume_iteration(callbacks->callback_context);
+  env->DeleteGlobalRef(retained_context);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_EnvoyHTTPFilterCallbacksImpl_callResetIdleTimer(
+    JNIEnv* env, jclass, jlong callback_handle, jobject j_context) {
+  jni_log("[Envoy]", "callResetIdleTimer");
+  // Context is only passed here to ensure it's not inadvertently gc'd during execution of this
+  // function. To be extra safe, do an explicit retain with a GlobalRef.
+  jobject retained_context = env->NewGlobalRef(j_context);
+  envoy_http_filter_callbacks* callbacks =
+      reinterpret_cast<envoy_http_filter_callbacks*>(callback_handle);
+  callbacks->reset_idle(callbacks->callback_context);
   env->DeleteGlobalRef(retained_context);
 }
 

@@ -89,6 +89,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// filter.
 - (void)resumeIteration;
 
+/// Reset the underlying stream idle timeout to its configured threshold. This may be useful if
+/// a filter stops iteration for an extended period of time, since ordinarily timeouts will still
+/// apply. This may be called periodically to continue to indicate "activity" on the stream.
+- (void)resetIdleTimer;
+
 @end
 
 @interface EnvoyHTTPFilter : NSObject
@@ -258,6 +263,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
+@property (nonatomic, strong) NSString *dnsPreresolveHostnames;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, assign) UInt32 streamIdleTimeoutSeconds;
 @property (nonatomic, strong) NSString *appVersion;
@@ -278,6 +284,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+          dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
                statsFlushSeconds:(UInt32)statsFlushSeconds
         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
                       appVersion:(NSString *)appVersion
@@ -400,6 +407,8 @@ extern const int kEnvoyFailure;
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
 - (void)flushStats;
+
+- (void)terminate;
 
 @end
 
