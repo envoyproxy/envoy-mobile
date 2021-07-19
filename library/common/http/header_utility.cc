@@ -9,21 +9,25 @@ namespace Envoy {
 namespace Http {
 namespace Utility {
 
+void toEnvoyHeaders(HeaderMap& transformed_headers, envoy_headers headers) {
+  Envoy::Http::StatefulHeaderKeyFormatter& formatter = transformed_headers.formatter().value();
+  for (envoy_map_size_t i = 0; i < headers.length; i++) {
+    std::string key = Data::Utility::copyToString(headers.entries[i].key);
+    // Make sure the formatter knows the original case.
+    formatter.processKey(key);
+    transformed_headers.addCopy(LowerCaseString(key),
+                                Data::Utility::copyToString(headers.entries[i].value));
+  }
+  // The C envoy_headers struct can be released now because the headers have been copied.
+  release_envoy_headers(headers);
+}
+
 RequestHeaderMapPtr toRequestHeaders(envoy_headers headers) {
   auto transformed_headers = RequestHeaderMapImpl::create();
   transformed_headers->setFormatter(
       std::make_unique<
           Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>());
-  Envoy::Http::StatefulHeaderKeyFormatter& formatter = transformed_headers->formatter().value();
-  for (envoy_map_size_t i = 0; i < headers.length; i++) {
-    std::string key = Data::Utility::copyToString(headers.entries[i].key);
-    // Make sure the formatter knows the original case.
-    formatter.processKey(key);
-    transformed_headers->addCopy(LowerCaseString(key),
-                                 Data::Utility::copyToString(headers.entries[i].value));
-  }
-  // The C envoy_headers struct can be released now because the headers have been copied.
-  release_envoy_headers(headers);
+  toEnvoyHeaders(*transformed_headers, headers);
   return transformed_headers;
 }
 

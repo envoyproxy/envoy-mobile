@@ -26,15 +26,7 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
   transformed_headers->setFormatter(
       std::make_unique<
           Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>());
-  Envoy::Http::StatefulHeaderKeyFormatter& formatter = transformed_headers->formatter().value();
-  for (envoy_map_size_t i = 0; i < headers.length; i++) {
-    std::string key = Data::Utility::copyToString(headers.entries[i].key);
-    formatter.processKey(key);
-    transformed_headers->addCopy(Http::LowerCaseString(key),
-                                 Data::Utility::copyToString(headers.entries[i].value));
-  }
-  // The C envoy_headers struct can be released now because the headers have been copied.
-  release_envoy_headers(headers);
+  Http::Utility::toEnvoyHeaders(*transformed_headers, headers);
   return transformed_headers;
 }
 
