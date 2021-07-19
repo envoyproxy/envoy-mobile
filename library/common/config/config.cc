@@ -364,7 +364,10 @@ stats_config:
       patterns:
         - safe_regex:
             google_re2: {}
-            regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
+            regex: '^cluster\.[\w]+?\.update_[\w]+'
+        - safe_regex:
+            google_re2: {}
+            regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
         - safe_regex:
             google_re2: {}
             regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
@@ -383,6 +386,9 @@ stats_config:
         - safe_regex:
             google_re2: {}
             regex: '^pulse.*'
+        - safe_regex:
+            google_re2: {}
+            regex: '^vhost.api.vcluster\.[\w]+?\.update_[\w]+'
         - safe_regex:
             google_re2: {}
             regex: '^vhost.api.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
