@@ -57,11 +57,18 @@ pip3 install slackclient
 sudo xcode-select --switch /Applications/Xcode_12.4.app
 
 # Download and set up ndk 21. Github upgraded to ndk 22 for their Mac image.
+ls $ANDROID_SDK_ROOT
+echo "---"
+ls $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
 ANDROID_HOME=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/
 SDKMANAGER=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
 
 $SDKMANAGER --uninstall "ndk-bundle"
 
+ls $SDKMANAGER
+
 $SDKMANAGER --install "ndk;21.3.6528147"
+
+ls $ANDROID_HOME/tools/bin/
 
 export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.3.6528147
