@@ -60,7 +60,7 @@ sudo xcode-select --switch /Applications/Xcode_12.4.app
 ls $ANDROID_SDK_ROOT
 echo "---"
 ls $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
-ANDROID_HOME=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/
+ANDROID_HOME=$ANDROID_SDK_ROOT
 SDKMANAGER=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
 
 $SDKMANAGER --uninstall "ndk-bundle"
