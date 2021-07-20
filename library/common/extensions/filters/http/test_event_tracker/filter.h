@@ -28,6 +28,8 @@ private:
 
 using TestEventTrackerFilterConfigSharedPtr = std::shared_ptr<TestEventTrackerFilterConfig>;
 
+// The filter that emits preconfigured events. It's supposed to be used for
+// testing of event tracking functionality only.
 class TestEventTrackerFilter final : public ::Envoy::Http::PassThroughFilter {
 public:
   TestEventTrackerFilter(TestEventTrackerFilterConfigSharedPtr config) : config_(config) {}

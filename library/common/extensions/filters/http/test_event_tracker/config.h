@@ -14,7 +14,7 @@ namespace HttpFilters {
 namespace TestEventTracker {
 
 /**
- * Config registration for the EventTracker filter. @see NamedHttpFilterConfigFactory.
+ * Config registration for the TestEventTracker filter. @see NamedHttpFilterConfigFactory.
  */
 class TestEventTrackerFilterFactory
     : public Common::FactoryBase<
