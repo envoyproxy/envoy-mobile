@@ -335,9 +335,9 @@ typedef void (*envoy_logger_release_f)(const void* context);
  *
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
- * @return void*, return context (may be unused).
+ * @return void, return context (may be unused).
  */
-typedef void* (*envoy_on_can_send_data_f)(void* context);
+typedef void (*envoy_on_can_send_data_f)(void* context);
 
 #ifdef __cplusplus
 } // function pointers

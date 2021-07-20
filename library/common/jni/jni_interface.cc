@@ -651,9 +651,7 @@ static void jvm_http_filter_on_cancel(const void* context) {
 }
 
 // TODO(goaway) switch this to call_jvm_on_can_send_more_data
-static void jvm_on_can_send_more_data,(const void* context) {
-  call_jvm_on_cancel(const_cast<void*>(context));
-}
+static void jvm_on_can_send_more_data(void* context) { call_jvm_on_cancel(context); }
 
 // JvmFilterFactoryContext
 
