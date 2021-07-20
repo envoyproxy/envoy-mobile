@@ -3,7 +3,7 @@
 #include "library/common/data/utility.h"
 
 namespace Envoy {
-namespace Types {
+namespace Bridge {
 
 envoy_map makeEnvoyMap(std::vector<std::pair<std::string, std::string>> pairs) {
   envoy_map_entry* fields =
@@ -23,5 +23,5 @@ envoy_map makeEnvoyMap(std::vector<std::pair<std::string, std::string>> pairs) {
   return new_event;
 }
 
-} // namespace Types
+} // namespace Bridge
 } // namespace Envoy

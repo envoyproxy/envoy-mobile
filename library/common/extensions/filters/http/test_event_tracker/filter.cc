@@ -1,7 +1,7 @@
 #include "library/common/extensions/filters/http/test_event_tracker/filter.h"
 
 #include "library/common/api/external.h"
-#include "library/common/types/utility.h"
+#include "library/common/bridge/utility.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -21,7 +21,7 @@ TestEventTrackerFilterConfig::TestEventTrackerFilterConfig(
 }
 
 Http::FilterHeadersStatus TestEventTrackerFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
-  config_->track(Envoy::Types::makeEnvoyMap(config_->attributes()));
+  config_->track(Envoy::Bridge::makeEnvoyMap(config_->attributes()));
   return Http::FilterHeadersStatus::Continue;
 }
 

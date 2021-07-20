@@ -5,16 +5,13 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
-    name = "c_types_lib",
-    srcs = [
-        "c_types.cc",
-    ],
-    hdrs = [
-        "c_types.h",
-    ],
+    name = "utility_lib",
+    srcs = ["utility.cc"],
+    hdrs = ["utility.h"],
     repository = "@envoy",
     visibility = ["//visibility:public"],
     deps = [
-        "@envoy//source/common/common:assert_lib",
+        "//library/common/types:c_types_lib",
+        "@envoy_mobile//library/common/data:utility_lib",
     ],
 )
