@@ -12,24 +12,6 @@ const char* fake_remote_cluster_insert = "  - *fake_remote_cluster\n";
 const char* fake_remote_listener_insert = "  - *fake_remote_listener\n";
 const char* fake_remote_route_insert = "              - *fake_remote_route\n";
 
-const char* platform_filter_template = R"(
-        - name: envoy.filters.http.platform_bridge
-          typed_config:
-            "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
-            platform_filter_name: {{ platform_filter_name }}
-)";
-
-const char* native_filter_template = R"(
-        - name: {{ native_filter_name }}
-          typed_config: {{ native_filter_typed_config }}
-)";
-
-const char* route_cache_reset_filter_insert = R"(
-        - name: envoy.filters.http.route_cache_reset
-          typed_config:
-            "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
-)";
-
 const std::string config_header = R"(
 !ignore default_defs:
 - &connect_timeout 30s
