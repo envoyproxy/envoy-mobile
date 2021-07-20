@@ -9,6 +9,6 @@ envoy_cc_test(
     srcs = ["utility_test.cc"],
     repository = "@envoy",
     deps = [
-        "//library/common/types:utility_lib",
+        "//library/common/bridge:utility_lib",
     ],
 )
