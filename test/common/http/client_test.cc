@@ -94,10 +94,9 @@ public:
       cc->on_cancel_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_can_send_data = [](void* context) -> void* {
+    bridge_callbacks_.on_can_send_data = [](void* context) -> void {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_can_send_data_calls++;
-      return nullptr;
     };
     bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, void* context) -> void* {
       ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
