@@ -15,11 +15,11 @@
                              appVersion:(NSString *)appVersion
                                   appId:(NSString *)appId
                         virtualClusters:(NSString *)virtualClusters
-                 directResponseMatchers:(NSString *)directResponseMatchers
-                        directResponses:(NSString *)directResponses
-                      nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                    platformFilterChain:
-                        (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                       testServerRoutes:(NSString *)directResponseMatchers
+                    testServerResponses:(NSString *)directResponses
+                            filterChain:(NSArray<NSString *> *)filterChain
+                        filterFactories:
+                            (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                         stringAccessors:
                             (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
   self = [super init];
@@ -38,10 +38,10 @@
   self.appVersion = appVersion;
   self.appId = appId;
   self.virtualClusters = virtualClusters;
-  self.directResponseMatchers = directResponseMatchers;
-  self.directResponses = directResponses;
-  self.nativeFilterChain = nativeFilterChain;
-  self.httpPlatformFilterFactories = httpPlatformFilterFactories;
+  self.testServerRoutes = testServerRoutes;
+  self.testServerResponses = testServerResponses;
+  self.filterChain = filterChain;
+  self.filterFactories = filterFactories;
   self.stringAccessors = stringAccessors;
   return self;
 }

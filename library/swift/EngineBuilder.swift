@@ -26,10 +26,13 @@ public class EngineBuilder: NSObject {
   private var virtualClusters: String = "[]"
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
-  private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
-  private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
+  private var filterChain: [FilterConfiguration] = []
+  private var filterFactories: [EnvoyHTTPFilterFactory] = []
+  private var customClusters: [Encodable] = []
+  private var customStatsSinks: [Encodable] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
-  private var directResponses: [DirectResponse] = []
+  private var testServerRoutes: [Encodable]
+  private var testServerResponses: [Encodable]
 
   // MARK: - Public
 
@@ -253,6 +256,7 @@ public class EngineBuilder: NSObject {
   ///
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger)
+    let encoder = JSONEncoder()
     let config = EnvoyConfiguration(
       grpcStatsDomain: self.grpcStatsDomain,
       connectTimeoutSeconds: self.connectTimeoutSeconds,
@@ -265,14 +269,13 @@ public class EngineBuilder: NSObject {
       appVersion: self.appVersion,
       appId: self.appId,
       virtualClusters: self.virtualClusters,
-      directResponseMatchers: self.directResponses
-        .map { $0.resolvedRouteMatchYAML() }
-        .joined(separator: "\n"),
-      directResponses: self.directResponses
-        .map { $0.resolvedDirectResponseYAML() }
-        .joined(separator: "\n"),
-      nativeFilterChain: self.nativeFilterChain,
-      platformFilterChain: self.platformFilterChain,
+      testServerRoutes: self.testServerRoutes
+        .map { String(data: try! encoder.encode($0), encoding: .utf8) },
+      testServerResponses: self.testServerResponses
+        .map { String(data: try! encoder.encode($0), encoding: .utf8) },
+      filterChain: self.filterChain
+        .map { String(data: try! encoder.encode($0), encoding: .utf8) },
+      filterFactories: self.filterFactories,
       stringAccessors: self.stringAccessors
     )
 
