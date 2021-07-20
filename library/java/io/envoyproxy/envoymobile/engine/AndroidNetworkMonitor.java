@@ -15,6 +15,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
 import androidx.core.content.ContextCompat;
+import org.assertj.core.internal.bytebuddy.implementation.bytecode.Throw;
 
 import java.util.Collections;
 
@@ -87,11 +88,17 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       }
     };
 
-    connectivityManager.registerNetworkCallback(networkRequest, networkCallback);
+    try {
+      connectivityManager.registerNetworkCallback(networkRequest, networkCallback);
 
-    context.registerReceiver(this, new IntentFilter() {
-      { addAction(ConnectivityManager.CONNECTIVITY_ACTION); }
-    });
+      context.registerReceiver(this, new IntentFilter() {
+        {
+          addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        }
+      });
+    } catch(Throwable t) {
+      // no-op
+    }
   }
 
   @Override
