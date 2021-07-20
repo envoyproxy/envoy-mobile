@@ -15,7 +15,6 @@ import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
 import androidx.core.content.ContextCompat;
-import org.assertj.core.internal.bytebuddy.implementation.bytecode.Throw;
 
 import java.util.Collections;
 
