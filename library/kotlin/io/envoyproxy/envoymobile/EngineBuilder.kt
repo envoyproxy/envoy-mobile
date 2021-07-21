@@ -29,7 +29,7 @@ open class EngineBuilder(
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
-  private var dnsQuerySeconds = 25
+  private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
