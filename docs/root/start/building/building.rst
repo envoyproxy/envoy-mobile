@@ -150,6 +150,7 @@ existing `selective extensions system <https://github.com/envoyproxy/envoy/blob/
 
   Envoy Mobile requires force registration
   of extensions in the extension_registry.cc/h files due to static linking.
+  For example, installing the XffIpDetection extension in this `PR <https://github.com/envoyproxy/envoy-mobile/pull/1481/files#diff-267d81747f176dadc207207f586f1924c0d472d182a5ba041c077454764b4449>`_.
 
 In order to override the extensions built into Envoy Mobile create an ``envoy_build_config`` directory
 and include the following in the WORKSPACE file::
