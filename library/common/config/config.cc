@@ -97,26 +97,24 @@ const char* config_template = R"(
       socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
     filter_chains:
     - filters:
-      - name: envoy.filters.network.http_connection_manager
+      - name: envoy.filters.network.envoy_mobile_http_connection_manager
         typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager
+          config:
+            stat_prefix: remote_hcm
+            route_config:
+              name: remote_route
+              virtual_hosts:
+              - name: remote_service
+                domains: ["*"]
+                routes:
 #{fake_remote_responses}
-              - match: { prefix: "/" }
-                direct_response: { status: 404, body: { inline_string: "not found" } }
-                request_headers_to_remove:
-                - x-forwarded-proto
-                - x-envoy-mobile-cluster
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                - match: { prefix: "/" }
+                  direct_response: { status: 404, body: { inline_string: "not found" } }
+            http_filters:
+            - name: envoy.router
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster
@@ -160,67 +158,68 @@ static_resources:
     per_connection_buffer_limit_bytes: 10485760 # 10MB
     api_listener:
       api_listener:
-        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-        stat_prefix: hcm
-        server_header_transformation: PASS_THROUGH
-        stream_idle_timeout: *stream_idle_timeout
-        route_config:
-          name: api_router
-          virtual_hosts:
-            - name: api
-              include_attempt_count_in_response: true
-              virtual_clusters: *virtual_clusters
-              domains: ["*"]
-              routes:
+        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager
+        config:
+          stat_prefix: hcm
+          server_header_transformation: PASS_THROUGH
+          stream_idle_timeout: *stream_idle_timeout
+          route_config:
+            name: api_router
+            virtual_hosts:
+              - name: api
+                include_attempt_count_in_response: true
+                virtual_clusters: *virtual_clusters
+                domains: ["*"]
+                routes:
 #{custom_routes}
-              - match: { prefix: "/" }
-                route:
-                  cluster_header: x-envoy-mobile-cluster
-                  timeout: 0s
-                  retry_policy:
-                    retry_back_off:
-                      base_interval: 0.25s
-                      max_interval: 60s
-        http_filters:
+                - match: { prefix: "/" }
+                  route:
+                    cluster_header: x-envoy-mobile-cluster
+                    timeout: 0s
+                    retry_policy:
+                      retry_back_off:
+                        base_interval: 0.25s
+                        max_interval: 60s
+          http_filters:
 #{custom_filters}
-        - name: envoy.filters.http.local_error
-          typed_config:
-            "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
-        - name: envoy.filters.http.dynamic_forward_proxy
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
-            dns_cache_config: &dns_cache_config
-              name: dynamic_forward_proxy_cache_config
-              # TODO: Support API for overriding prefetch_hostnames: https://github.com/envoyproxy/envoy-mobile/issues/1534
-              preresolve_hostnames: *dns_preresolve_hostnames
-              # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
-              dns_lookup_family: V4_ONLY
-              dns_refresh_rate: *dns_refresh_rate
-              dns_failure_refresh_rate:
-                base_interval: *dns_fail_base_interval
-                max_interval: *dns_fail_max_interval
-              dns_query_timeout: *dns_query_timeout
-        # TODO: make this configurable for users.
-        - name: envoy.filters.http.decompressor
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
-            decompressor_library:
-              name: gzip
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
-                # Maximum window bits to allow for any stream to be decompressed. Optimally this
-                # would be set to 0. According to the zlib manual this would allow the decompressor
-                # to use the window bits in the zlib header to perform the decompression.
-                # Unfortunately, the proto field constraint makes this impossible currently.
-                window_bits: 15
-            request_direction_config:
-              common_config:
-                enabled:
-                  default_value: false
-                  runtime_key: request_decompressor_enabled
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+          - name: envoy.filters.http.local_error
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
+          - name: envoy.filters.http.dynamic_forward_proxy
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+              dns_cache_config: &dns_cache_config
+                name: dynamic_forward_proxy_cache_config
+                # TODO: Support API for overriding prefetch_hostnames: https://github.com/envoyproxy/envoy-mobile/issues/1534
+                preresolve_hostnames: *dns_preresolve_hostnames
+                # TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
+                dns_lookup_family: V4_ONLY
+                dns_refresh_rate: *dns_refresh_rate
+                dns_failure_refresh_rate:
+                  base_interval: *dns_fail_base_interval
+                  max_interval: *dns_fail_max_interval
+                dns_query_timeout: *dns_query_timeout
+          # TODO: make this configurable for users.
+          - name: envoy.filters.http.decompressor
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+              decompressor_library:
+                name: gzip
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
+                  # Maximum window bits to allow for any stream to be decompressed. Optimally this
+                  # would be set to 0. According to the zlib manual this would allow the decompressor
+                  # to use the window bits in the zlib header to perform the decompression.
+                  # Unfortunately, the proto field constraint makes this impossible currently.
+                  window_bits: 15
+              request_direction_config:
+                common_config:
+                  enabled:
+                    default_value: false
+                    runtime_key: request_decompressor_enabled
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
 #{custom_clusters}
   - *stats_cluster

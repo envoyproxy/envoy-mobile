@@ -21,7 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
 private const val hcmType =
-  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyHttpConnectionManager"
 private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
 private const val filterName = "cancel_validation_filter"
 private const val config =
@@ -36,19 +36,20 @@ static_resources:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
           "@type": $hcmType
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                direct_response: { status: 200 }
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+          config:
+            stat_prefix: remote_hcm
+            route_config:
+              name: remote_route
+              virtual_hosts:
+              - name: remote_service
+                domains: ["*"]
+                routes:
+                - match: { prefix: "/" }
+                  direct_response: { status: 200 }
+            http_filters:
+            - name: envoy.router
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   - name: base_api_listener
     address:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
