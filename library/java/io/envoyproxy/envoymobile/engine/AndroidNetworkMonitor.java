@@ -93,7 +93,7 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       context.registerReceiver(this, new IntentFilter() {
         { addAction(ConnectivityManager.CONNECTIVITY_ACTION); }
       });
-    } catch(Throwable t) {
+    } catch (Throwable t) {
       // no-op
     }
   }
