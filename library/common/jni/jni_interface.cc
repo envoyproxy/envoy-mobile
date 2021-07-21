@@ -650,6 +650,9 @@ static void jvm_http_filter_on_cancel(const void* context) {
   call_jvm_on_cancel(const_cast<void*>(context));
 }
 
+// TODO(goaway) switch this to call_jvm_on_can_send_more_data
+static void jvm_on_can_send_more_data(void* context) { call_jvm_on_cancel(context); }
+
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
@@ -715,6 +718,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_error,
                                            jvm_on_complete,
                                            jvm_on_cancel,
+                                           jvm_on_can_send_more_data,
                                            retained_context};
   envoy_status_t result =
       start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks);

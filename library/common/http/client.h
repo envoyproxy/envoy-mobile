@@ -126,6 +126,8 @@ private:
     void onComplete();
     void onCancel();
     void onError();
+    void onCanSendData();
+
     // Remove the stream and clear up state if possible, else set up deferred
     // removal path.
     void removeStream();
@@ -171,6 +173,7 @@ private:
     absl::optional<envoy_data> error_message_;
     absl::optional<int32_t> error_attempt_count_;
     bool success_{};
+
     // Buffered response data when in explicit flow control mode.
     Buffer::InstancePtr response_data_;
     ResponseTrailerMapPtr response_trailers_;
@@ -209,8 +212,13 @@ private:
       return parent_.address_;
     }
     absl::string_view responseDetails() override { return response_details_; }
-    // TODO: https://github.com/lyft/envoy-mobile/issues/825
-    void readDisable(bool /*disable*/) override {}
+    // This is called any time upstream buffers exceed the configured flow
+    // control limit, to attempt halt the flow of data from the mobile client
+    // or to resume the flow of data when buffers have been drained.
+    //
+    // It only has an effect in explicit flow control mode, where when all buffers are drained,
+    // on_can_send_data callbacks are called.
+    void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
     void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
@@ -234,6 +242,13 @@ private:
     Client& parent_;
     // Response details used by the connection manager.
     absl::string_view response_details_;
+    // Tracks read disable calls. Different buffers can call read disable, and
+    // the stack should not consider itself "ready to write" until all
+    // read-disable calls have been unwound.
+    uint32_t read_disable_count_{};
+    // Set true in explicit flow control mode if the library has sent body data and may want to
+    // send more when buffer is available.
+    bool wants_write_notification_{};
   };
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;
