@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
  */
 open class StreamPrototype(private val engine: EnvoyEngine) {
   private val callbacks = StreamCallbacks()
-  private val explicitBuffering = false
+  private val explicitFlowControl = false
 
   /**
    * Start a new stream.
@@ -24,18 +24,18 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return The new stream.
    */
   open fun start(executor: Executor = Executors.newSingleThreadExecutor()): Stream {
-    val engineStream = engine.startStream(createCallbacks(executor), explicitBuffering)
+    val engineStream = engine.startStream(createCallbacks(executor), explicitFlowControl)
     return Stream(engineStream)
   }
 
   /**
-   * Allows explicit buffer management to be enabled. When explicit buffering is on, the owner of a stream is responsible for providing a buffer to receive response body data. If the buffer is smaller than the amount of data available, response callbacks will halt, and the underlying network protocol may signal for the server to stop sending data, until more space is available. This can limit the memory consumed by a server response, but may also result in reduced overall throughput, depending on usage.
+   * Allows explicit flow control to be enabled. When flow control is enabled, the owner of a stream is responsible for providing a buffer to receive response body data. If the buffer is smaller than the amount of data available, response callbacks will halt, and the underlying network protocol may signal for the server to stop sending data, until more space is available. This can limit the memory consumed by a server response, but may also result in reduced overall throughput, depending on usage.
    *
-   * @param explicitBuffering Whether explicit buffer management will be enabled for the stream.
+   * @param explicitFlowControl Whether explicit flow control will be enabled for the stream.
    * @return This stream, for chaining syntax.
    */
-  fun enableExplicitBuffering(explicitBuffering: Boolean): StreamPrototype {
-    this.explicitBuffering = explicitBuffering
+  fun enableExplicitBuffering(explicitFlowControl: Boolean): StreamPrototype {
+    this.explicitFlowControl = explicitFlowControl
     return this
   }
 

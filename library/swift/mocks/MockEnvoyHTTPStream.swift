@@ -5,11 +5,11 @@ import Foundation
 final class MockEnvoyHTTPStream: EnvoyHTTPStream {
   /// Callbacks associated with the stream.
   let callbacks: EnvoyHTTPCallbacks
-  let explicitBuffering: Bool
+  let explicitFLowControl: Bool
 
-  init(handle: Int, callbacks: EnvoyHTTPCallbacks, explicitBuffering: Bool) {
+  init(handle: Int, callbacks: EnvoyHTTPCallbacks, explicitFLowControl: Bool) {
     self.callbacks = callbacks
-    self.explicitBuffering = explicitBuffering
+    self.explicitFLowControl = explicitFLowControl
   }
 
   func sendHeaders(_ headers: [String: [String]], close: Bool) {}

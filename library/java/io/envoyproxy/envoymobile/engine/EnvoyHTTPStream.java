@@ -10,20 +10,24 @@ import java.util.Map;
 
 public class EnvoyHTTPStream {
   private final long streamHandle;
+  private final boolean explicitFlowControl;
   private final JvmCallbackContext callbacksContext;
 
   /**
    * Start the stream via the JNI library.
    */
-  void start() { JniLibrary.startStream(streamHandle, callbacksContext); }
+  void start() { JniLibrary.startStream(streamHandle, callbacksContext, explicitFlowControl); }
 
   /**
    * Initialize a new stream.
    * @param streamHandle Underlying handle of the HTTP stream owned by an Envoy engine.
    * @param callbacks The callbacks for the stream.
+   * @param explicitFlowControl Whether explicit flow control will be enabled for this stream.
    */
-  public EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks) {
+  public EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks,
+                         boolean explicitFlowControl) {
     this.streamHandle = streamHandle;
+    this.explicitFlowControl = explicitFlowControl;
     callbacksContext = new JvmCallbackContext(callbacks);
   }
 

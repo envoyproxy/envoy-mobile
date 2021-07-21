@@ -59,13 +59,13 @@ public class JniLibrary {
    * @param stream,  handle to the stream to be started.
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
-   * @param explicitBuffering, whether explicit buffer management should be enabled
-   *                           for the stream.
+   * @param explicitFlowControl, whether explicit flow control should be enabled
+   *                             for the stream.
    * @return envoy_stream, with a stream handle and a success status, or a failure
    * status.
    */
   protected static native int startStream(long stream, JvmCallbackContext context,
-                   boolean explicitBuffering);
+                   boolean explicitFlowControl);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and
