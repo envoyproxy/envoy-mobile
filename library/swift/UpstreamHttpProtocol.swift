@@ -24,7 +24,7 @@ public enum UpstreamHttpProtocol: Int, CaseIterable {
   /// - parameter stringValue: Case-insensitive string value to use for initialization.
   init(stringValue: String) {
     switch stringValue.lowercased() {
-    case "alpn"
+    case "alpn":
       self = .alpn
     case "http1":
       self = .http1
