@@ -3,12 +3,15 @@ import Foundation
 /// Available upstream HTTP protocols.
 @objc
 public enum UpstreamHttpProtocol: Int, CaseIterable {
+  case alpn
   case http1
   case http2
 
   /// String representation of the protocol.
   var stringValue: String {
     switch self {
+    case .alpn:
+      return "alpn"
     case .http1:
       return "http1"
     case .http2:
@@ -21,6 +24,8 @@ public enum UpstreamHttpProtocol: Int, CaseIterable {
   /// - parameter stringValue: Case-insensitive string value to use for initialization.
   init(stringValue: String) {
     switch stringValue.lowercased() {
+    case "alpn"
+      self = .alpn
     case "http1":
       self = .http1
     case "http2":
