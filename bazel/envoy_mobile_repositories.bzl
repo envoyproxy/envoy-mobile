@@ -66,8 +66,8 @@ def swift_repos():
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "cea22c0616d797e494d7844a9b604520c87f53c81de49613a7e679ec5b821620",
-        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.14.0/rules_swift.0.14.0.tar.gz",
+        sha256 = "a228a8e41fdc165a2c55924b728c466e0086f3e638a05d6da98aa6222cbb19c1",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.16.1/rules_swift.0.16.1.tar.gz",
     )
 
 def kotlin_repos():

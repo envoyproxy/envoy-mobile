@@ -5,7 +5,7 @@ load("//bazel:swift_header_collector.bzl", "swift_header_collector")
 licenses(["notice"])  # Apache 2
 
 swift_library(
-    name = "lib",
+    name = "ios_lib",
     srcs = glob([
         "DirectResponse.swift",
         "Engine.swift",
@@ -48,15 +48,15 @@ swift_library(
 )
 
 swift_header_collector(
-    name = "lib_headers",
-    library = "lib",
+    name = "ios_lib_headers",
+    library = "ios_lib",
 )
 
 ios_static_framework(
     name = "ios_framework",
-    hdrs = ["lib_headers"],
+    hdrs = ["ios_lib_headers"],
     bundle_name = "Envoy",
     minimum_os_version = "11.0",
     visibility = ["//visibility:public"],
-    deps = ["lib"],
+    deps = ["ios_lib"],
 )
