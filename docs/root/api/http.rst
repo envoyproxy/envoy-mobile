@@ -145,6 +145,13 @@ For full documentation of how these retry rules perform, see Envoy's documentati
 - `Automatic retries <https://www.envoyproxy.io/learn/automatic-retries>`_
 - `Retry semantics <https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/http/http_routing.html?highlight=exponential#retry-semantics>`_
 
+------------------------
+``UpstreamHttpProtocol``
+------------------------
+
+The ``UpstreamHttpProtocol`` enum specifies the protocol used for a specific request. By default, Envoy Mobile uses auto-http or ALPN to determine
+HTTP1.1 or HTTP2. To specify a protocol, use the `RequestHeadersBuilder` method `addUpstreamHttpProtocol(...)`.
+
 ----------
 ``Stream``
 ----------
