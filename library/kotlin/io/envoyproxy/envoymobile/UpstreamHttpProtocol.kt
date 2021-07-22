@@ -13,7 +13,7 @@ enum class UpstreamHttpProtocol(internal val stringValue: String) {
   companion object {
     internal fun enumValue(stringRepresentation: String): UpstreamHttpProtocol {
       return when (stringRepresentation) {
-        "alpn"  -> UpstreamHttpProtocol.ALPN
+        "alpn" -> UpstreamHttpProtocol.ALPN
         "http1" -> UpstreamHttpProtocol.HTTP1
         "http2" -> UpstreamHttpProtocol.HTTP2
         else -> throw IllegalArgumentException("invalid value $stringRepresentation")
