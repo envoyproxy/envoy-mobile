@@ -199,11 +199,12 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close;
 
 /**
- Read data from the stream. Returns immediately.
+ Read data from the response stream. Returns immediately.
+ Has no effect if explicit flow control is not enabled.
 
- @param data Buffer into which data should be read.
+ @param byteCount Maximum number of bytes that may be be passed by the next data callback.
  */
-- (void)readData:(NSMutableData *)data;
+- (void)readData:(size_t)byteCount;
 
 /**
  Send data over the provided stream.

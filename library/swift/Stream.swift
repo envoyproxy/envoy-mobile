@@ -30,15 +30,14 @@ public class Stream: NSObject {
     return self
   }
 
-  /// Read data from the stream. Returns immediately. After calling this method accessing the contents of this buffer from a context other than an onData callback is NOT threadsafe.
+  /// Read data from the response stream. Returns immediately.
+  /// Has no effect if explicit flow control is not enabled.
   ///
-  /// ! This function is only valid when explicit buffering is enabled !
-  ///
-  /// - parameter data: Buffer into which data should be read.
+  /// - parameter byteCount: Maximum number of bytes that may be be passed by the next data callback.
   ///
   /// - returns: This stream, for chaining syntax.
-  public func readData(_ data: NSMutableData) -> Stream {
-    self.underlyingStream.read(data)
+  public func readData(_ byteCount: size_t) -> Stream {
+    self.underlyingStream.readData(byteCount)
     return self
   }
 

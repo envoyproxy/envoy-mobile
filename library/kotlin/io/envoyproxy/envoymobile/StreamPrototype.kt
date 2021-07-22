@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
  */
 open class StreamPrototype(private val engine: EnvoyEngine) {
   private val callbacks = StreamCallbacks()
-  private val explicitFlowControl = false
+  private var explicitFlowControl = false
 
   /**
    * Start a new stream.

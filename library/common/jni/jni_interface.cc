@@ -716,8 +716,8 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_complete,
                                            jvm_on_cancel,
                                            retained_context};
-  envoy_status_t result =
-      start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks, explicit_flow_control);
+  envoy_status_t result = start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks,
+                                       explicit_flow_control);
   if (result != ENVOY_SUCCESS) {
     env->DeleteGlobalRef(retained_context); // No callbacks are fired and we need to release
   }
@@ -799,6 +799,14 @@ Java_io_envoyproxy_envoymobile_engine_EnvoyHTTPFilterCallbacksImpl_callReleaseCa
 }
 
 // EnvoyHTTPStream
+
+// Note: JLL is the mangled signature of the java method.
+// https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_readData__JLL(
+    JNIEnv* env, jclass, jlong stream_handle, jlong byte_count) {
+
+  return read_data(static_cast<envoy_stream_t>(stream_handle), byte_count);
+}
 
 // Note: JLjava_nio_ByteBuffer_2Z is the mangled signature of the java method.
 // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html

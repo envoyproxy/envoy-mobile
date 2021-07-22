@@ -24,15 +24,13 @@ open class Stream(
   }
 
  /**
-  * Read data from the stream. Returns immediately. After calling this method accessing the contents of this buffer from a context other than an onData callback is NOT threadsafe.
+  * Read data from the response stream. Returns immediately.
   *
-  * ! This function is only valid when explicit buffering is enabled !
-  *
-  * @param data Buffer into which data should be read.
+  * @param byteCount Maximum number of bytes that may be be passed by the next data callback.
   * @return This stream, for chaining syntax.
   */
-  open fun readData(data: ByteBuffer): Stream {
-    underlyingStream.readData(data)
+  open fun readData(byteCount: Long): Stream {
+    underlyingStream.readData(byteCount)
     return this
   }
 

@@ -63,6 +63,19 @@ public class EnvoyHTTPStream {
   }
 
   /**
+   * Read data from the response stream. Returns immediately.
+   *
+   * @param byteCount, Maximum number of bytes that may be be passed by the next data callback.
+   * @throws UnsupportedOperationException - if explicit flow control is not enabled.
+   */
+  public void readData(long byteCount) {
+    if (!explicitFlowControl) {
+      throw new UnsupportedOperationException("Called readData without explicit flow control.");
+    }
+    JniLibrary.readData(streamHandle, byteCount);
+  }
+
+  /**
    * Send trailers over an open HTTP streamHandle. This method can only be invoked
    * once per streamHandle. Note that this method implicitly ends the
    * streamHandle.

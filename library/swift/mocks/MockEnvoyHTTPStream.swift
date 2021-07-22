@@ -5,16 +5,16 @@ import Foundation
 final class MockEnvoyHTTPStream: EnvoyHTTPStream {
   /// Callbacks associated with the stream.
   let callbacks: EnvoyHTTPCallbacks
-  let explicitFLowControl: Bool
+  let explicitFlowControl: Bool
 
-  init(handle: Int, callbacks: EnvoyHTTPCallbacks, explicitFLowControl: Bool) {
+  init(handle: Int, callbacks: EnvoyHTTPCallbacks, explicitFlowControl: Bool) {
     self.callbacks = callbacks
-    self.explicitFLowControl = explicitFLowControl
+    self.explicitFlowControl = explicitFlowControl
   }
 
   func sendHeaders(_ headers: [String: [String]], close: Bool) {}
 
-  func read(_ data: NSMutableData) {}
+  func readData(_ byteCount: size_t) {}
 
   func send(_ data: Data, close: Bool) {}
 
