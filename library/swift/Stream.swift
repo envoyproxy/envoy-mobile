@@ -33,7 +33,8 @@ public class Stream: NSObject {
   /// Read data from the response stream. Returns immediately.
   /// Has no effect if explicit flow control is not enabled.
   ///
-  /// - parameter byteCount: Maximum number of bytes that may be be passed by the next data callback.
+  /// - parameter byteCount: Maximum number of bytes that may be be passed by the next data
+  ///                        callback.
   ///
   /// - returns: This stream, for chaining syntax.
   public func readData(_ byteCount: size_t) -> Stream {

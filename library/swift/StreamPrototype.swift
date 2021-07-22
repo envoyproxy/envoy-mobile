@@ -44,7 +44,12 @@ public class StreamPrototype: NSObject {
     return Stream(underlyingStream: engineStream)
   }
 
-  /// Allows explicit flow control to be enabled. When explicit flow control is enabled, the owner of a stream is responsible for providing a buffer to receive response body data. If the buffer is smaller than the amount of data available, response callbacks will halt, and the underlying network protocol may signal for the server to stop sending data, until more space is available. This can limit the memory consumed by a server response, but may also result in reduced overall throughput, depending on usage.
+  /// Allows explicit flow control to be enabled. When explicit flow control is enabled, the owner
+  /// of a stream is responsible for providing a buffer to receive response body data. If the buffer
+  /// is smaller than the amount of data available, response callbacks will halt, and the underlying
+  /// network protocol may signal for the server to stop sending data, until more space is
+  /// available. This can limit the memory consumed by a server response, but may also result in
+  /// reduced overall throughput, depending on usage.
   ///
   /// - parameter explicitFlowControl: Whether explicit flow control will be enabled for the stream.
   /// - returns:  This stream, for chaining syntax.
