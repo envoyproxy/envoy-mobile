@@ -167,7 +167,7 @@ void release_envoy_data(envoy_data data);
 
 /**
  * Called by a receiver of envoy_map to indicate memory/resources can be released.
- * @param data, envoy_map to release.
+ * @param map, envoy_map to release.
  */
 void release_envoy_map(envoy_map map);
 
