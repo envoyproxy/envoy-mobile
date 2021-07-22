@@ -9,7 +9,7 @@ on:
 jobs:
   swifttests:
     name: swift_tests_new
-    runs-on: macOS-11
+    runs-on: macOS-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v1
