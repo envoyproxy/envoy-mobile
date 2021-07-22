@@ -96,7 +96,7 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-  func testAddingDNSRefreshSecondsAddsToConfigurationWhenRunningEnvoy() {
+  func testAddingDNSQueryTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
       XCTAssertEqual(234, config.dnsQueryTimeoutSeconds)

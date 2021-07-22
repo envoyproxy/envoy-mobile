@@ -127,7 +127,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addDnsQueryTimeoutSeconds(dnsQueryTimeoutSeconds: Int): EngineBuilder {
+  fun addDNSQueryTimeoutSeconds(dnsQueryTimeoutSeconds: Int): EngineBuilder {
     this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds
     return this
   }
