@@ -6,6 +6,7 @@ namespace Envoy {
 namespace Platform {
 
 static const std::pair<UpstreamHttpProtocol, std::string> UPSTREAM_HTTP_PROTOCOL_LOOKUP[]{
+    {UpstreamHttpProtocol::ALPN, "alpn"},
     {UpstreamHttpProtocol::HTTP1, "http1"},
     {UpstreamHttpProtocol::HTTP2, "http2"},
 };

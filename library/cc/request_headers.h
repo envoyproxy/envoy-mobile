@@ -21,7 +21,7 @@ public:
   const std::string& authority() const;
   const std::string& path() const;
   absl::optional<RetryPolicy> retryPolicy() const;
-  absl::optional<UpstreamHttpProtocol> upstreamHttpProtocol() const;
+  UpstreamHttpProtocol upstreamHttpProtocol() const;
 
   RequestHeadersBuilder toRequestHeadersBuilder() const;
 

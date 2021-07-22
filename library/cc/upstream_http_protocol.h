@@ -6,6 +6,7 @@ namespace Envoy {
 namespace Platform {
 
 enum UpstreamHttpProtocol {
+  ALPN,
   HTTP1,
   HTTP2,
 };
