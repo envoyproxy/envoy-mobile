@@ -61,7 +61,7 @@ class EngineBuilderTest {
   }
 
   @Test
-  fun `specifying DNS refresh overrides default`() {
+  fun `specifying DNS query timeout overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
     engineBuilder.addDNSQueryTimeoutSeconds(1234)
