@@ -42,10 +42,10 @@ swift_library(
         "mocks/*.swift",
         "stats/*.swift",
     ]),
+    features = ["swift.enable_library_evolution"],
     module_name = "Envoy",
     private_deps = ["//library/objective-c:envoy_engine_objc_lib"],
     visibility = ["//visibility:public"],
-    features = ["swift.enable_library_evolution"],
 )
 
 swift_header_collector(
