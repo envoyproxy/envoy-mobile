@@ -54,7 +54,7 @@ public class StreamPrototype: NSObject {
   /// - parameter enabled: Whether explicit flow control will be enabled for the stream.
   /// - returns:  This stream, for chaining syntax.
   public func setExplicitFlowControl(enabled: Bool) -> StreamPrototype {
-    self.explicitFlowControl = explicitFlowControl
+    self.explicitFlowControl = enabled
     return self
   }
 

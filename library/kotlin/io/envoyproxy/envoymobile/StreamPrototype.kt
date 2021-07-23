@@ -35,7 +35,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setExplicitFlowControl(enabled: Boolean): StreamPrototype {
-    this.explicitFlowControl = explicitFlowControl
+    this.explicitFlowControl = enabled
     return this
   }
 
