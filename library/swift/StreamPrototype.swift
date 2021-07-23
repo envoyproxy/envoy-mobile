@@ -51,9 +51,9 @@ public class StreamPrototype: NSObject {
   /// available. This can limit the memory consumed by a server response, but may also result in
   /// reduced overall throughput, depending on usage.
   ///
-  /// - parameter explicitFlowControl: Whether explicit flow control will be enabled for the stream.
+  /// - parameter enabled: Whether explicit flow control will be enabled for the stream.
   /// - returns:  This stream, for chaining syntax.
-  public func enableExplicitBuffering(explicitFlowControl: Bool) -> StreamPrototype {
+  public func setExplicitFlowControl(enabled: Bool) -> StreamPrototype {
     self.explicitFlowControl = explicitFlowControl
     return self
   }
