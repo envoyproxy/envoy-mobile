@@ -8,11 +8,11 @@ routing PRs, questions, etc. to the right place.
 * Alan Chiu ([buildbreaker](https://github.com/buildbreaker)) (achiu@lyft.com)
   * Android (kotlin/java) platform bindings.
 * Jose Nino ([junr03](https://github.com/junr03)) (jnino@lyft.com)
-  * Envoy mobile core.
+  * Envoy mobile core, C bridge layer, C++ extensions, build system, Envoy upstream.
 * Michael Rebello ([rebello95](https://github.com/rebello95)) (mrebello@lyft.com)
   * iOS (swift/objective-c) platform bindings.
 * Mike Schore ([goaway](https://github.com/goaway)) (mschore@lyft.com)
-  * Envoy mobile core.
+  * General.
 
 # Friends of Envoy Mobile
 
