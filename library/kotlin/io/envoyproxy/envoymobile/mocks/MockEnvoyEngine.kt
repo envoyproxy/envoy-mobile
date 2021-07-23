@@ -21,7 +21,7 @@ internal class MockEnvoyEngine : EnvoyEngine {
   override fun startStream(
     callbacks: EnvoyHTTPCallbacks?,
     explicitFlowControl: Boolean
-  ) : EnvoyHTTPStream {
+  ): EnvoyHTTPStream {
     return MockEnvoyHTTPStream(callbacks!!, explicitFlowControl)
   }
 
