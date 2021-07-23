@@ -702,7 +702,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_startStream(
-    JNIEnv* env, jclass, jlong stream_handle, jboolean explicit_flow_control, jobject j_context) {
+    JNIEnv* env, jclass, jlong stream_handle, jobject j_context, jboolean explicit_flow_control) {
 
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
 
@@ -800,9 +800,7 @@ Java_io_envoyproxy_envoymobile_engine_EnvoyHTTPFilterCallbacksImpl_callReleaseCa
 
 // EnvoyHTTPStream
 
-// Note: JLL is the mangled signature of the java method.
-// https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_readData__JLL(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_readData(
     JNIEnv* env, jclass, jlong stream_handle, jlong byte_count) {
 
   return read_data(static_cast<envoy_stream_t>(stream_handle), byte_count);
