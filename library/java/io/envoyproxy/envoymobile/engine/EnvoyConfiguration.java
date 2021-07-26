@@ -39,7 +39,7 @@ public class EnvoyConfiguration {
    * @param dnsRefreshSeconds            rate in seconds to refresh DNS.
    * @param dnsFailureRefreshSecondsBase base rate in seconds to refresh DNS on failure.
    * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on failure.
-   * @param dnsQueryTimeoutSeconds            rate in seconds to timeout DNS queries.
+   * @param dnsQueryTimeoutSeconds       rate in seconds to timeout DNS queries.
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
