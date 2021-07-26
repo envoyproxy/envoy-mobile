@@ -185,12 +185,12 @@ static_resources:
               routes:
 #{custom_routes}
               - match: { prefix: "/" }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                - x-envoy-mobile-cluster
                 route:
                   cluster_header: x-envoy-mobile-cluster
                   timeout: 0s
-                  request_headers_to_remove:
-                  - x-forwarded-proto
-                  - x-envoy-mobile-cluster
                   retry_policy:
                     retry_back_off:
                       base_interval: 0.25s
