@@ -51,7 +51,7 @@ static_resources:
     let engineExpectation = self.expectation(description: "Run started engine")
     let loggingExpectation = self.expectation(description: "Run used platform logger")
 
-    EngineBuilder(yaml: config)
+    _ = EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .setLogger { msg in
         if msg.contains("starting main dispatch loop") {
