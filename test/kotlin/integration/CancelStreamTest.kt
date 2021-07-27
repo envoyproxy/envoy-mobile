@@ -30,27 +30,6 @@ private const val config =
 """
 static_resources:
   listeners:
-  - name: fake_remote_listener
-    address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
-    filter_chains:
-    - filters:
-      - name: envoy.filters.network.http_connection_manager
-        typed_config:
-          "@type": $hcmType
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                direct_response: { status: 200 }
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   - name: base_api_listener
     address:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }

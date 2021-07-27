@@ -6,7 +6,7 @@ import XCTest
 final class LoggerTests: XCTestCase {
   func testSetLogger() throws {
     // swiftlint:disable:next line_length
-    let apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
+    let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
     // swiftlint:disable:next line_length
     let assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
     let config =
@@ -21,9 +21,9 @@ static_resources:
         port_value: 10000
     api_listener:
       api_listener:
-        "@type": \(apiListenerType)
-        stat_prefix: hcm
+        "@type": \(emhcmType)
         config:
+          stat_prefix: hcm
           route_config:
             name: api_router
             virtual_hosts:
