@@ -61,7 +61,7 @@ def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = [], repository
 #     ],
 # )
 def envoy_mobile_kt_test(name, srcs, deps = [], repository = ""):
-    _internal_kt_test(name, srcs, deps, repository = repository,)
+    _internal_kt_test(name, srcs, deps, repository = repository)
 
 # A basic macro to run android based (robolectric) tests with native dependencies
 def envoy_mobile_android_test(name, srcs, deps = [], native_deps = [], repository = ""):
