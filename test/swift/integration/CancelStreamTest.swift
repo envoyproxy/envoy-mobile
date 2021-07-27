@@ -19,7 +19,7 @@ static_resources:
       socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
     filter_chains:
     - filters:
-      - name: envoy.filters.network.http_connection_manager
+      - name: envoy.filters.network.envoy_mobile_http_connection_manager
         typed_config:
           "@type": \(hcmType)
           config:
