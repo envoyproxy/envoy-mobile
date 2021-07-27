@@ -879,7 +879,6 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerEventTracker(JNIEnv* en
   event_tracker->track = NULL;
   event_tracker->context = NULL;
 
-  envoy_status_t result =
-      register_platform_api(envoy_event_tracker_api_name, event_tracker);
+  envoy_status_t result = register_platform_api(envoy_event_tracker_api_name, event_tracker);
   return result;
 }
