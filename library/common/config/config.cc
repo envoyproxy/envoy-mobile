@@ -65,6 +65,17 @@ const std::string config_header = R"(
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
 
+!ignore http1_protocol_defs: &http1_protocol_options_defs
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicit_http_config:
+        http_protocol_options:
+          header_key_format:
+            stateful_formatter:
+              name: preserve_case
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+
 !ignore protocol_defs: &base_protocol_options_defs
     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
@@ -173,6 +184,9 @@ static_resources:
                 routes:
 #{custom_routes}
                 - match: { prefix: "/" }
+                  request_headers_to_remove:
+                  - x-forwarded-proto
+                  - x-envoy-mobile-cluster
                   route:
                     cluster_header: x-envoy-mobile-cluster
                     timeout: 0s
@@ -245,6 +259,7 @@ static_resources:
             budget_percent:
               value: 100
             min_retry_concurrency: 0xffffffff # uint32 max
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -252,6 +267,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wlan
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -259,6 +275,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wlan_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -266,6 +283,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wwan
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -273,6 +291,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wwan_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -280,6 +299,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -287,6 +307,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_clear_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -294,6 +315,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wlan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -301,6 +323,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wlan_clear_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -308,6 +331,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wwan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -315,6 +339,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wwan_clear_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -322,6 +347,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout

@@ -13,7 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 
-private val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyHttpConnectionManager"
+private val apiListenerType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
 private val assertionFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion"
 private val config =
 """
