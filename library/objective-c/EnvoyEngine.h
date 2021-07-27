@@ -377,7 +377,7 @@ extern const int kEnvoyFailure;
  Opens a new HTTP stream attached to this engine.
 
  @param callbacks Handler for observing stream events.
- @param explicitFlowControl Whether explicit buffering management will be enabled for the stream.
+ @param explicitFlowControl Whether explicit flow control will be enabled for the stream.
  */
 - (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks
                             explicitFlowControl:(BOOL)explicitFlowControl;
