@@ -92,8 +92,8 @@ const std::string config_header = R"(
 !ignore admin_interface_defs: &admin_interface
     address:
       socket_address:
-        address: 0.0.0.0
-        port_value: 6000
+        address: 127.0.0.1
+        port_value: 9901
 
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls

@@ -29,7 +29,6 @@ final class ViewController: UITableViewController {
       .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
       .addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
       .setEventTracker { NSLog("Envoy event emitted: \($0)") }
-      .enableAdminInterface(onPort: 6000)
       .build()
     self.streamClient = engine.streamClient()
     self.pulseClient = engine.pulseClient()

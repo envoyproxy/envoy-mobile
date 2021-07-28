@@ -13,7 +13,7 @@ public class EngineBuilder: NSObject {
     case custom(String)
   }
 
-  private var adminInterfacePort: UInt32 = 0
+  private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String?
   private var connectTimeoutSeconds: UInt32 = 30
   private var dnsRefreshSeconds: UInt32 = 60
@@ -280,8 +280,8 @@ public class EngineBuilder: NSObject {
   ///
   /// returns: This builder.
   @discardableResult
-  public func enableAdminInterface(onPort port: UInt32) -> Self {
-    self.adminInterfacePort = port
+  public func enableAdminInterface() -> Self {
+    self.adminInterfaceEnabled = true
     return self
   }
 
@@ -291,7 +291,7 @@ public class EngineBuilder: NSObject {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
                                       eventTracker: self.eventTracker)
     let config = EnvoyConfiguration(
-      adminInterfacePort: self.adminInterfacePort,
+      adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
       connectTimeoutSeconds: self.connectTimeoutSeconds,
       dnsRefreshSeconds: self.dnsRefreshSeconds,
