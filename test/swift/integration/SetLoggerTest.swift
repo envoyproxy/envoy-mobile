@@ -52,7 +52,7 @@ static_resources:
     let engineExpectation = self.expectation(description: "Run started engine")
     let loggingExpectation = self.expectation(description: "Run used platform logger")
 
-    let client = try EngineBuilder(yaml: config)
+    let engine = EngineBuilder(yaml: config)
       .addLogLevel(.debug)
       .setLogger { msg in
         if msg.contains("starting main dispatch loop") {
@@ -63,9 +63,10 @@ static_resources:
         engineExpectation.fulfill()
       }
       .build()
-      .streamClient()
 
     XCTAssertEqual(XCTWaiter.wait(for: [engineExpectation], timeout: 1), .completed)
     XCTAssertEqual(XCTWaiter.wait(for: [loggingExpectation], timeout: 1), .completed)
+
+    engine.terminate()
   }
 }
