@@ -281,8 +281,8 @@ public class EngineBuilder: NSObject {
   /// returns: This builder.
   @discardableResult
   public func enableAdminInterface(onPort port: UInt32) -> Self {
-    self.adminPort = port;
-    return self;
+    self.adminInterfacePort = port
+    return self
   }
 
   /// Builds and runs a new `Engine` instance with the provided configuration.

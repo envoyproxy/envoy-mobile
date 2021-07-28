@@ -88,6 +88,13 @@ const std::string config_header = R"(
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
 
+!ignore admin_interface_defs: &admin_interface
+  admin:
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: *admin_interface_port
+
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls
   typed_config:

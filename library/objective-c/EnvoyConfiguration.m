@@ -29,7 +29,7 @@
     return nil;
   }
 
-  self.adminInterfacePort = adminInterfacePort
+  self.adminInterfacePort = adminInterfacePort;
   self.grpcStatsDomain = grpcStatsDomain;
   self.connectTimeoutSeconds = connectTimeoutSeconds;
   self.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -113,6 +113,7 @@
   [definitions appendFormat:@"- &metadata { device_os: %@, app_version: %@, app_id: %@ }\n", @"iOS",
                             self.appVersion, self.appId];
   [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
+  [definitions appendFormat:@"- &admin_interface_port %u\n", self.adminInterfacePort];
 
   if (self.grpcStatsDomain != nil) {
     [definitions appendFormat:@"- &stats_domain %@\n", self.grpcStatsDomain];
@@ -122,7 +123,6 @@
   }
 
   if (self.adminInterfacePort != 0) {
-    [definitions appendFormat:@"- &admin_port %@\n", self.adminInterfacePort];
     [definitions appendString:@"- &admin [ *admin_interface ]\n"];
   }
 
