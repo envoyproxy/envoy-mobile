@@ -48,13 +48,6 @@ const std::string config_header = R"(
 - &virtual_clusters []
 - &admin_interface {}
 
-!ignore admin_interface_defs: &admin_interface
-  admin:
-    address:
-      socket_address:
-        address: 0.0.0.0
-        port_value: *admin_interface_port
-
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
     name: envoy.metrics_service
