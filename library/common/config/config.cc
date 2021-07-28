@@ -46,6 +46,14 @@ const std::string config_header = R"(
 - &statsd_port 8125
 - &stream_idle_timeout 15s
 - &virtual_clusters []
+- &admin_interface {}
+
+!ignore admin_interface_defs: &admin_interface
+  admin:
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: *admin_interface_port
 
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
@@ -89,11 +97,10 @@ const std::string config_header = R"(
                 "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
 
 !ignore admin_interface_defs: &admin_interface
-  admin:
     address:
       socket_address:
         address: 0.0.0.0
-        port_value: *admin_interface_port
+        port_value: 6000
 
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls
@@ -458,6 +465,7 @@ static_resources:
     typed_extension_protocol_options: *base_protocol_options_defs
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
+admin: *admin_interface
 stats_config:
   stats_matcher:
     inclusion_list:

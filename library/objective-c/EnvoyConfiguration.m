@@ -123,7 +123,8 @@
   }
 
   if (self.adminInterfacePort != 0) {
-    [definitions appendString:@"- &admin [ *admin_interface ]\n"];
+        // [definitions appendString:@"- &admin_interface *admin_interface\n"];
+    // templateYAML = [templateYAML stringByAppendingString:@"- &admin [ *admin_interface ]\n"];
   }
 
   [definitions appendString:templateYAML];
