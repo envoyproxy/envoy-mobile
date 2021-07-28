@@ -25,7 +25,7 @@ envoy_stream_t init_stream(envoy_engine_t engine);
  * can occur.
  * @param stream, handle to the stream to be started.
  * @param callbacks, the callbacks that will run the stream callbacks.
- * @param explicit_flow_control, whether request/response buffers will be managed explicitly.
+ * @param explicit_flow_control, whether to enable explicit flow control on the response stream.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
