@@ -22,7 +22,7 @@ static_resources:
         port_value: 10000
     api_listener:
       api_listener:
-        "@type": \(emHcmType)
+        "@type": \(emhcmType)
         config:
           stat_prefix: hcm
           route_config:

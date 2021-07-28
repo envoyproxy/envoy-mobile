@@ -108,24 +108,26 @@ const char* config_template = R"(
       socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
     filter_chains:
     - filters:
-      - name: envoy.filters.network.envoy_mobile_http_connection_manager
+      - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager
-          config:
-            stat_prefix: remote_hcm
-            route_config:
-              name: remote_route
-              virtual_hosts:
-              - name: remote_service
-                domains: ["*"]
-                routes:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: remote_hcm
+          route_config:
+            name: remote_route
+            virtual_hosts:
+            - name: remote_service
+              domains: ["*"]
+              routes:
 #{fake_remote_responses}
-                - match: { prefix: "/" }
-                  direct_response: { status: 404, body: { inline_string: "not found" } }
-            http_filters:
-            - name: envoy.router
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+              - match: { prefix: "/" }
+                direct_response: { status: 404, body: { inline_string: "not found" } }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                - x-envoy-mobile-cluster
+          http_filters:
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster
