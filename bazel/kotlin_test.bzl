@@ -30,7 +30,7 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], reposito
 
 # A basic macro to make it easier to declare and run kotlin tests which depend on a JNI lib
 # This will create the native .so binary (for linux) and a .jnilib (for OS X) look up
-def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = [], repository = ""):
+def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = [], library_path = "library/common/jni", repository = ""):
     lib_name = native_lib_name(native_deps[0])[3:]
     _internal_kt_test(
         name,
@@ -38,7 +38,7 @@ def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = [], repository
         deps,
         data = native_deps,
         jvm_flags = [
-            "-Djava.library.path=library/common/jni",
+            "-Djava.library.path={}".format(library_path),
             "-Denvoy_jni_library_name={}".format(lib_name),
         ],
         repository = repository,
