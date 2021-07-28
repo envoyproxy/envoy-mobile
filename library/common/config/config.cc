@@ -458,7 +458,6 @@ static_resources:
     typed_extension_protocol_options: *base_protocol_options_defs
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
-admin: *admin_interface
 stats_config:
   stats_matcher:
     inclusion_list:
