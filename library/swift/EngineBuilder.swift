@@ -274,9 +274,7 @@ public class EngineBuilder: NSObject {
     return self
   }
 
-  /// Enable admin interface on a localhost on a given port.
-  ///
-  /// - parameter port: A port to enabled admin endpoints on.
+  /// Enable admin interface on 127.0.0.1:9901 address.
   ///
   /// returns: This builder.
   @discardableResult
