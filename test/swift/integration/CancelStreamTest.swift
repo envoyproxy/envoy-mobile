@@ -13,6 +13,7 @@ final class CancelStreamTests: XCTestCase {
     let config =
 """
 static_resources:
+  listeners:
   - name: base_api_listener
     address:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
