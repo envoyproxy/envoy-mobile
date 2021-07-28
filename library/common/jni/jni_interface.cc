@@ -876,8 +876,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerEventTracker(JNIEnv* en
   envoy_event_tracker* event_tracker =
       (envoy_event_tracker*)safe_malloc(sizeof(envoy_event_tracker));
   // TODO(Augustyniak): Allow for the registration of a "real" (no no-op) event tracker.
-  event_tracker->track = NULL;
-  event_tracker->context = NULL;
+  event_tracker->track = nullptr;
+  event_tracker->context = nullptr;
 
   envoy_status_t result = register_platform_api(envoy_event_tracker_api_name, event_tracker);
   return result;
