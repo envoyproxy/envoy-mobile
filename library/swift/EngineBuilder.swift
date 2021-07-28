@@ -18,6 +18,7 @@ public class EngineBuilder: NSObject {
   private var dnsRefreshSeconds: UInt32 = 60
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
+  private var dnsQueryTimeoutSeconds: UInt32 = 25
   private var dnsPreresolveHostnames: String = "[]"
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
@@ -26,6 +27,7 @@ public class EngineBuilder: NSObject {
   private var virtualClusters: String = "[]"
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
+  private var eventTracker: (([String: String]) -> Void)?
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
@@ -102,6 +104,17 @@ public class EngineBuilder: NSObject {
   public func addDNSFailureRefreshSeconds(base: UInt32, max: UInt32) -> Self {
     self.dnsFailureRefreshSecondsBase = base
     self.dnsFailureRefreshSecondsMax = max
+    return self
+  }
+
+  /// Add a rate at which to timeout DNS queries.
+  ///
+  /// - parameter dnsQueryTimeoutSeconds: Rate in seconds to timeout DNS queries.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addDNSQueryTimeoutSeconds(_ dnsQueryTimeoutSeconds: UInt32) -> Self {
+    self.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds
     return self
   }
 
@@ -216,6 +229,17 @@ public class EngineBuilder: NSObject {
     return self
   }
 
+  /// Set a closure to be called when the engine emits an event.
+  ///
+  /// - parameter closure: The closure to be called.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func setEventTracker(closure: @escaping ([String: String]) -> Void) -> Self {
+    self.eventTracker = closure
+    return self
+  }
+
   /// Add the App Version of the App using this Envoy Client.
   ///
   /// - parameter appVersion: The version.
@@ -252,13 +276,15 @@ public class EngineBuilder: NSObject {
   /// Builds and runs a new `Engine` instance with the provided configuration.
   ///
   public func build() -> Engine {
-    let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger)
+    let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
+                                      eventTracker: self.eventTracker)
     let config = EnvoyConfiguration(
       grpcStatsDomain: self.grpcStatsDomain,
       connectTimeoutSeconds: self.connectTimeoutSeconds,
       dnsRefreshSeconds: self.dnsRefreshSeconds,
       dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
+      dnsQueryTimeoutSeconds: self.dnsQueryTimeoutSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,

@@ -11,6 +11,9 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 typedef NSDictionary<NSString *, NSString *> EnvoyTags;
 
+/// A set of key-value pairs describing an event.
+typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -263,6 +266,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
+@property (nonatomic, assign) UInt32 dnsQueryTimeoutSeconds;
 @property (nonatomic, strong) NSString *dnsPreresolveHostnames;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, assign) UInt32 streamIdleTimeoutSeconds;
@@ -284,6 +288,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+          dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
                statsFlushSeconds:(UInt32)statsFlushSeconds
         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
@@ -306,6 +311,18 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
+#pragma mark - EnvoyEventTracker
+
+// Tracking events interface
+
+@interface EnvoyEventTracker : NSObject
+
+@property (nonatomic, copy, nullable) void (^track)(EnvoyEvent *);
+
+- (instancetype)initWithEventTrackingClosure:(nullable void (^)(EnvoyEvent *))track;
+
+@end
+
 #pragma mark - EnvoyEngine
 
 /// Return codes for Engine interface. @see /library/common/types/c_types.h
@@ -321,9 +338,11 @@ extern const int kEnvoyFailure;
  @param onEngineRunning Closure called when the engine finishes its async startup and begins
  running.
  @param logger Logging interface.
+ @param eventTracker Event tracking interface.
  */
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
-                                 logger:(nullable void (^)(NSString *))logger;
+                                 logger:(nullable void (^)(NSString *))logger
+                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker;
 /**
  Run the Envoy engine with the provided configuration and log level.
 
@@ -407,6 +426,8 @@ extern const int kEnvoyFailure;
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
 - (void)flushStats;
+
+- (void)terminate;
 
 @end
 

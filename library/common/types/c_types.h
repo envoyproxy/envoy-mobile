@@ -63,6 +63,9 @@ typedef enum {
   ENVOY_NET_WWAN = 2,
 } envoy_network_t;
 
+// The name used to registered event tracker api.
+extern const char* envoy_event_tracker_api_name;
+
 #ifdef __cplusplus
 extern "C" { // release function
 #endif
@@ -163,22 +166,28 @@ void* safe_calloc(size_t count, size_t size);
 void release_envoy_data(envoy_data data);
 
 /**
+ * Called by a receiver of envoy_map to indicate memory/resources can be released.
+ * @param map, envoy_map to release.
+ */
+void release_envoy_map(envoy_map map);
+
+/**
  * Called by a receiver of envoy_headers to indicate memory/resources can be released.
  * @param headers, envoy_headers to release.
  */
 void release_envoy_headers(envoy_headers headers);
 
 /**
+ * Called by a receiver of envoy_stats_tags to indicate memory/resources can be released.
+ * @param stats_tags, envoy_stats_tags to release.
+ */
+void release_envoy_stats_tags(envoy_stats_tags stats_tags);
+
+/**
  * Called by a receiver of envoy_error to indicate memory/resources can be released.
  * @param error, envoy_error to release.
  */
 void release_envoy_error(envoy_error error);
-
-/**
- * Called by a receiver of envoy_stats_tags to indicate memory/resources can be released.
- * @param headers, envoy_stats_tags to release.
- */
-void release_envoy_stats_tags(envoy_stats_tags stats_tags);
 
 /**
  * Helper function to copy envoy_headers.
@@ -324,6 +333,15 @@ typedef void (*envoy_logger_log_f)(envoy_data data, const void* context);
  */
 typedef void (*envoy_logger_release_f)(const void* context);
 
+/**
+ * Called when envoy's event tracker tracks an event.
+ *
+ * @param event, the dictionary with attributes that describe the event.
+ * @param context, contains the necessary state to carry out platform-specific dispatch and
+ * execution.
+ */
+typedef void (*envoy_event_tracker_track_f)(envoy_map event, const void* context);
+
 #ifdef __cplusplus
 } // function pointers
 #endif
@@ -362,3 +380,12 @@ typedef struct {
   // Context passed through to callbacks to provide dispatch and execution state.
   const void* context;
 } envoy_logger;
+
+/**
+ * Interface for event tracking.
+ */
+typedef struct {
+  envoy_event_tracker_track_f track;
+  // Context passed through to callbacks to provide dispatch and execution state.
+  const void* context;
+} envoy_event_tracker;

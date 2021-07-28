@@ -43,6 +43,11 @@ EngineBuilder& EngineBuilder::addDnsFailureRefreshSeconds(int base, int max) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::addDnsQueryTimeoutSeconds(int dns_query_timeout_seconds) {
+  this->dns_query_timeout_seconds_ = dns_query_timeout_seconds;
+  return *this;
+}
+
 EngineBuilder&
 EngineBuilder::addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames) {
   this->dns_preresolve_hostnames_ = dns_preresolve_hostnames;
@@ -81,6 +86,7 @@ std::string EngineBuilder::generateConfigStr() {
       {"dns_fail_max_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_max_)},
       {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
       {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
+      {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},
       {
           "metadata",
           fmt::format("{{ device_os: {}, app_version: {}, app_id: {} }}", this->device_os_,
@@ -109,12 +115,12 @@ std::string EngineBuilder::generateConfigStr() {
 }
 
 EngineSharedPtr EngineBuilder::build() {
+  envoy_logger null_logger;
+  null_logger.log = nullptr;
+  null_logger.release = envoy_noop_const_release;
+  null_logger.context = nullptr;
+
   auto config_str = this->generateConfigStr();
-  envoy_logger null_logger{
-      .log = nullptr,
-      .release = envoy_noop_const_release,
-      .context = nullptr,
-  };
   auto envoy_engine = init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger);
   run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
 
