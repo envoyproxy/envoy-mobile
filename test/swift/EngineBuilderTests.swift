@@ -54,6 +54,34 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testAdminInterfaceIsDisabledByDefault() {
+    let expectation = self.expectation(description: "Run called with disabled admin interface")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertFalse(config.adminInterfaceEnabled)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enableAdminInterface()
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testEnablingAdminInterfaceAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with enabled admin interface")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.adminInterfaceEnabled)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enableAdminInterface()
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testAddinggrpcStatsDomainAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in

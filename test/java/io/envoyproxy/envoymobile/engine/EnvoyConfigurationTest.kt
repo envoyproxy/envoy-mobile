@@ -28,7 +28,7 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(
-      "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", 567, 678, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", 567, 678, "v1.2.3", "com.mydomain.myapp", "[test]",
       listOf<EnvoyNativeFilterConfig>(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(), emptyMap()
     )
@@ -37,6 +37,8 @@ class EnvoyConfigurationTest {
       TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG
     )
     assertThat(resolvedTemplate).contains("&connect_timeout 123s")
+
+    assertThat(resolvedTemplate).not(contains("admin: *admin_interface"))
 
     // DNS
     assertThat(resolvedTemplate).contains("&dns_refresh_rate 234s")

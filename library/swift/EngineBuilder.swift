@@ -274,7 +274,9 @@ public class EngineBuilder: NSObject {
     return self
   }
 
-  /// Enable admin interface on 127.0.0.1:9901 address.
+  /// Enable admin interface on 127.0.0.1:9901 address. Admin interface is intended to be
+  /// used for development/debugging purposes only. Enabling it in production may open
+  /// your app to security vulnerabilities.
   ///
   /// returns: This builder.
   @discardableResult
