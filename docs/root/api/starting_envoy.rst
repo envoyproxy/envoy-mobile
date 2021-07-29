@@ -237,7 +237,7 @@ This functionality is used for stat segmentation.
   builder.addVirtualClusters("[{\"name\":\"vcluster\",\"headers\":[{\"name\":\":path\",\"exact_match\":\"/v1/vcluster\"}]}]")
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-``enabledAdminInterface``
+``enableAdminInterface``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Enable admin interface on 127.0.0.1:9901 address.
@@ -250,10 +250,10 @@ Enable admin interface on 127.0.0.1:9901 address.
 **Example**::
 
   // Kotlin
-  builder.enabledAdminInterface()
+  builder.enableAdminInterface()
 
   // Swift
-  builder.enabledAdminInterface()
+  builder.enableAdminInterface()
 
 ~~~~~~~~~~~~~~~~~~~~~~
 ``setOnEngineRunning``
