@@ -46,7 +46,6 @@ const std::string config_header = R"(
 - &statsd_port 8125
 - &stream_idle_timeout 15s
 - &virtual_clusters []
-- &admin_interface {}
 
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
