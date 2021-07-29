@@ -5,7 +5,7 @@
 @implementation EnvoyConfiguration
 
 - (instancetype)
-    initWithAdminInterfaceEnabled:(Boolean)adminInterfaceEnabled
+    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
                   GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
             connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
                 dnsRefreshSeconds:(UInt32)dnsRefreshSeconds

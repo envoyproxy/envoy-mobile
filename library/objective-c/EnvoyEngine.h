@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#include <MacTypes.h>
 
 #import "library/common/types/c_types.h"
 
@@ -262,7 +261,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Typed configuration that may be used for starting Envoy.
 @interface EnvoyConfiguration : NSObject
 
-@property (nonatomic, assign) Boolean adminInterfaceEnabled;
+@property (nonatomic, assign) BOOL adminInterfaceEnabled;
 @property (nonatomic, strong, nullable) NSString *grpcStatsDomain;
 @property (nonatomic, assign) UInt32 connectTimeoutSeconds;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
@@ -285,7 +284,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  Create a new instance of the configuration.
  */
 - (instancetype)
-    initWithAdminInterfaceEnabled:(Boolean)adminInterfaceEnabled
+    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
                   GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
             connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
                 dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
