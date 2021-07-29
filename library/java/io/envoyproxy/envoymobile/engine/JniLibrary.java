@@ -282,4 +282,8 @@ public class JniLibrary {
    */
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
+  /**
+   * Register a no-op event tracker.
+   */
+  protected static native int registerEventTracker();
 }
