@@ -361,6 +361,18 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
   }
 }
 
+void Client::readData(envoy_stream_t stream, size_t bytes_to_read) {
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
+  // If direct_stream is not found, it means the stream has already closed or been reset
+  // and the appropriate callback has been issued to the caller. There's nothing to do here
+  // except silently swallow this.
+  if (direct_stream) {
+    direct_stream->callbacks_->resumeData(bytes_to_read);
+  }
+}
+
 void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream =

@@ -74,7 +74,7 @@ public:
    * used in explicit flow control mode.
    * @param bytes_to_read, the quantity of data the caller is prepared to process.
    */
-  void readData(envoy_stream_t /*stream*/, size_t /*bytes_to_read*/) {}
+  void readData(envoy_stream_t stream, size_t bytes_to_read);
 
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple times.
