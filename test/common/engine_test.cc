@@ -79,7 +79,7 @@ TEST_F(EngineTest, EarlyExit) {
                                    &test_context /*context*/};
 
   engine_ = std::make_unique<EngineHandle>(callbacks, level);
-  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(1)));
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   engine_.reset();
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
