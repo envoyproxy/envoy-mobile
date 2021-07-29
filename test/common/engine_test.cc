@@ -43,7 +43,7 @@ layered_runtime:
 // RAII wrapper for the engine, ensuring that we properly shut down the engine. If the engine
 // thread is not torn down, we end up with TSAN failures during shutdown due to a data race
 // between the main thread and the engine thread both writing to the
-// Envoy::Logger::current_log_conetxt global.
+// Envoy::Logger::current_log_context global.
 struct EngineHandle {
   EngineHandle(envoy_engine_callbacks callbacks, const std::string& level) {
     init_engine(callbacks, {});
