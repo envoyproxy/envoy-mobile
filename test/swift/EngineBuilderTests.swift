@@ -321,6 +321,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
     let config = EnvoyConfiguration(
+      adminInterfaceEnabled: true,
       grpcStatsDomain: "stats.envoyproxy.io",
       connectTimeoutSeconds: 200,
       dnsRefreshSeconds: 300,
