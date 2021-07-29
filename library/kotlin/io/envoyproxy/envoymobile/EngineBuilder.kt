@@ -294,7 +294,7 @@ open class EngineBuilder(
    * @return this builder.
    */
   fun enableAdminInterface(): EngineBuilder {
-    this.adminInterfaceEnabled = true;
+    this.adminInterfaceEnabled = true
     return this
   }
 
