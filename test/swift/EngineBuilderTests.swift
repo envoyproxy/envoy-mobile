@@ -267,6 +267,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(
+      adminInterfaceEnabled: false,
       grpcStatsDomain: "stats.envoyproxy.io",
       connectTimeoutSeconds: 200,
       dnsRefreshSeconds: 300,
@@ -298,6 +299,8 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
+
+    XCTAssertFalse(resolvedYAML.contains("admin: *admin_interface"))
 
     // Metadata
     XCTAssertTrue(resolvedYAML.contains("device_os: iOS"))
