@@ -92,7 +92,5 @@ build:remote-ci-macos --remote_executor=grpcs://envoy.cluster.engflow.com
 build:remote-ci-macos --bes_backend=grpcs://envoy.cluster.engflow.com/
 build:remote-ci-macos --bes_results_url=https://envoy.cluster.engflow.com/invocation/
 build:remote-ci-macos --bes_lifecycle_events
-build:remote-ci-macos --jobs=72
+build:remote-ci-macos --jobs=40
 build:remote-ci-macos --verbose_failures
-build:remote-ci-macos --google_default_credentials
-build:remote-ci-macos --google_auth_scopes=email
