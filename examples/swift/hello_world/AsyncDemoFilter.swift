@@ -10,7 +10,7 @@ final class AsyncDemoFilter: AsyncResponseFilter {
   func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
     -> FilterHeadersStatus<ResponseHeaders>
   {
-    if (endStream) {
+    if endStream {
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
         self?.callbacks.resumeResponse()
       }
