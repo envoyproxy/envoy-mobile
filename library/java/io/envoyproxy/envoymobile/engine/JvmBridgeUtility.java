@@ -49,8 +49,9 @@ class JvmBridgeUtility {
     }
 
     // These headers may contain commas in single values, in contravention of the RFC.
-    if (headerKey.equals("cookie") || headerKey.equals("proxy-authenticate") ||
-        headerKey.equals("set-cookie") || headerKey.equals("www-authenticate")) {
+    if (headerKey.equalsIgnoreCase​("cookie") || headerKey.equalsIgnoreCase​("proxy-authenticate") ||
+        headerKey.equalsIgnoreCase​("set-cookie") || headerKey.equalsIgnoreCase​("www-authenticate") ||
+        headerKey.equalsIgnoreCase​("x-location")) {
       values.add(headerValue);
     } else {
       // Add trimmed, comma-separated values as individual members of the list.

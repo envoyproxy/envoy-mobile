@@ -138,7 +138,8 @@ static inline EnvoyHeaders *to_ios_headers(envoy_headers headers) {
     if ([headerKey caseInsensitiveCompare:@"cookie"] == NSOrderedSame ||
         [headerKey caseInsensitiveCompare:@"proxy-authenticate"] == NSOrderedSame ||
         [headerKey caseInsensitiveCompare:@"set-cookie"] == NSOrderedSame ||
-        [headerKey caseInsensitiveCompare:@"www-authenticate"] == NSOrderedSame) {
+        [headerKey caseInsensitiveCompare:@"www-authenticate"] == NSOrderedSame ||
+        [headerKey caseInsensitiveCompare:@"x-location"] == NSOrderedSame) {
       [headerValueList addObject:headerValue];
     } else {
       // Add trimmed, comma-separated values as individual members of the list.
