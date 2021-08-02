@@ -55,6 +55,7 @@
   NSMutableString *customListeners = [[NSMutableString alloc] init];
   NSMutableString *customRoutes = [[NSMutableString alloc] init];
   NSMutableString *customFilters = [[NSMutableString alloc] init];
+  NSString *customAdminInterface = [[NSString alloc] init];
 
   NSString *platformFilterTemplate = [[NSString alloc] initWithUTF8String:platform_filter_template];
   for (EnvoyHTTPFilterFactory *filterFactory in self.httpPlatformFilterFactories) {
@@ -86,6 +87,10 @@
         appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
   }
 
+  if (self.adminInterfaceEnabled) {
+    customAdminInterface = @"admin: *admin_interface\n";
+  }
+
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_clusters}"
                                                          withString:customClusters];
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_listeners}"
@@ -94,6 +99,9 @@
                                                          withString:customRoutes];
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_filters}"
                                                          withString:customFilters];
+
+  templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{admin_interface}"
+                                                         withString:customAdminInterface];
 
   NSMutableString *definitions =
       [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];
@@ -113,10 +121,6 @@
   [definitions appendFormat:@"- &metadata { device_os: %@, app_version: %@, app_id: %@ }\n", @"iOS",
                             self.appVersion, self.appId];
   [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
-
-  if (self.adminInterfaceEnabled) {
-    [definitions appendString:@"admin: *admin_interface\n"];
-  }
 
   if (self.grpcStatsDomain != nil) {
     [definitions appendFormat:@"- &stats_domain %@\n", self.grpcStatsDomain];
