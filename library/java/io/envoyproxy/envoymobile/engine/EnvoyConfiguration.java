@@ -113,9 +113,9 @@ public class EnvoyConfiguration {
       customAdminInterface = "admin: *admin_interface\n";
     }
 
-    String processedTemplate = templateYAML
-      .replace("#{custom_filters}", customFiltersBuilder.toString())
-      .replace("#{admin_interface}", customAdminInterface);
+    String processedTemplate =
+        templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString())
+            .replace("#{admin_interface}", customAdminInterface);
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
