@@ -94,7 +94,6 @@ public class EnvoyConfiguration {
   String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
                          final String nativeFilterTemplateYAML) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
-    String customAdminInterface = "";
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
       String filterConfig = platformFilterTemplateYAML.replace("{{ platform_filter_name }}",
@@ -109,13 +108,8 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(filterConfig);
     }
 
-    if (adminInterfaceEnabled) {
-      customAdminInterface = "admin: *admin_interface\n";
-    }
-
     String processedTemplate =
-        templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString())
-            .replace("#{admin_interface}", customAdminInterface);
+        templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
@@ -141,6 +135,10 @@ public class EnvoyConfiguration {
     } else if (statsdPort != null) {
       configBuilder.append("- &statsd_port ").append(statsdPort).append("\n");
       configBuilder.append("- &stats_sinks [ *base_statsd ]\n");
+    }
+
+    if (adminInterfaceEnabled) {
+      configBuilder.append("admin: *admin_interface\n");
     }
 
     configBuilder.append(processedTemplate);

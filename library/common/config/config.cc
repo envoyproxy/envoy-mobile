@@ -455,7 +455,6 @@ static_resources:
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *base_protocol_options_defs
-#{admin_interface}
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
