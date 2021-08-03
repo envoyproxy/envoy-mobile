@@ -14,6 +14,9 @@ typedef NSDictionary<NSString *, NSString *> EnvoyTags;
 /// A set of key-value pairs describing an event.
 typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
 
+/// Contains internal HTTP stream metrics, context, and other details.
+typedef envoy_stream_intel EnvoyStreamIntel;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -29,7 +32,7 @@ typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
  */
-@property (nonatomic, copy) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
@@ -37,20 +40,20 @@ typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
  * @param data the data received.
  * @param endStream whether the data is the last data frame.
  */
-@property (nonatomic, copy) void (^onData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) void (^onData)(NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
  */
-@property (nonatomic, copy) void (^onTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) void (^onTrailers)(EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when the async HTTP stream has an error.
  */
 @property (nonatomic, copy) void (^onError)
-    (uint64_t errorCode, NSString *message, int32_t attemptCount);
+    (uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when the async HTTP stream is canceled.
@@ -58,7 +61,7 @@ typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
  * response is already complete. It will fire no more than once, and no other callbacks for the
  * stream will be issued afterwards.
  */
-@property (nonatomic, copy) void (^onCancel)(void);
+@property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
 
 @end
 
