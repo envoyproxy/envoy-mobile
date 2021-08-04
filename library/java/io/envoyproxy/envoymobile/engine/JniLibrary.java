@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
@@ -283,7 +284,10 @@ public class JniLibrary {
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
   /**
-   * Register a no-op event tracker.
+   * Register an event tracker.
+   *
+   * @param context,  context containing logic necessary to invoke the event tracker.
+   * @return int, the resulting status of the operation.
    */
-  protected static native int registerEventTracker();
+  protected static native int registerEventTracker(EnvoyEventTracker eventTracker);
 }
