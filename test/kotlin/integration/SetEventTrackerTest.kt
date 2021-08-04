@@ -74,7 +74,7 @@ class SetEventTrackerTest {
       }
       .setOnEngineRunning {}
       .build()
-    
+
     val client = engine.streamClient()
 
     val requestHeaders = RequestHeadersBuilder(
@@ -84,12 +84,12 @@ class SetEventTrackerTest {
       path = "/test"
     )
      .build()
-                                              
+
     client
       .newStreamPrototype()
       .start()
       .sendHeaders(requestHeaders, true)
-    
+
     engine.terminate()
   }
 

@@ -286,7 +286,7 @@ public class JniLibrary {
   /**
    * Register an event tracker.
    *
-   * @param context,  context containing logic necessary to invoke the event tracker.
+   * @param eventTracker,  the event tracker to be registered.
    * @return int, the resulting status of the operation.
    */
   protected static native int registerEventTracker(EnvoyEventTracker eventTracker);
