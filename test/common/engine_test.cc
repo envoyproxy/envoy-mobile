@@ -84,6 +84,6 @@ TEST_F(EngineTest, EarlyExit) {
   engine_.reset();
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  start_stream(0, {});
+  start_stream(0, {}, false);
 }
 } // namespace Envoy
