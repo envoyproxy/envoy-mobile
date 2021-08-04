@@ -4,7 +4,6 @@ import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
-import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
@@ -24,7 +23,8 @@ open class EngineBuilder(
   protected var logger: ((String) -> Unit)? = null
   protected var eventTracker: ((Map<String, String>) -> Unit)? = null
   private var engineType: () -> EnvoyEngine = {
-    EnvoyEngineImpl(onEngineRunning, logger, eventTracker) }
+    EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
+  }
   private var logLevel = LogLevel.INFO
   private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String? = null

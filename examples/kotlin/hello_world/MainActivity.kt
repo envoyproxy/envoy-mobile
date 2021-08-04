@@ -18,7 +18,6 @@ import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.shared.Failure
 import io.envoyproxy.envoymobile.shared.ResponseRecyclerViewAdapter
 import io.envoyproxy.envoymobile.shared.Success
-import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker
 import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -55,10 +54,9 @@ class MainActivity : Activity() {
       .addNativeFilter("envoy.filters.http.test_accessor", "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_accessor.TestAccessor\",\"accessor_name\":\"demo-accessor\",\"expected_string\":\"PlatformString\"}")
       .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
-      .setEventTracker ({
+      .setEventTracker({
         for (entry in it.entries) {
-          Log.d("MainActivity",
-            String.format("Event emitted: %s1, %s2", entry.key, entry.value))
+          Log.d("MainActivity", String.format("Event emitted: %s1, %s2", entry.key, entry.value))
         }
       })
       .addNativeFilter(
