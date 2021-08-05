@@ -41,7 +41,9 @@ class JvmCallbackContext {
     final Map headers = bridgeUtility.retrieveHeaders();
 
     callbacks.getExecutor().execute(new Runnable() {
-      public void run() { callbacks.onHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel)); }
+      public void run() {
+        callbacks.onHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel));
+      }
     });
 
     return null;
@@ -94,7 +96,8 @@ class JvmCallbackContext {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         String errorMessage = new String(message);
-        callbacks.onError(errorCode, errorMessage, attemptCount, new EnvoyStreamIntelImpl(streamIntel));
+        callbacks.onError(errorCode, errorMessage, attemptCount,
+                          new EnvoyStreamIntelImpl(streamIntel));
       }
     });
 

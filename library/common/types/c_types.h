@@ -245,7 +245,8 @@ extern "C" { // function pointers
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_headers_f)(envoy_headers headers, bool end_stream, envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_headers_f)(envoy_headers headers, bool end_stream,
+                                    envoy_stream_intel stream_intel, void* context);
 
 /**
  * Callback signature for data on an HTTP stream.
@@ -259,7 +260,8 @@ typedef void* (*envoy_on_headers_f)(envoy_headers headers, bool end_stream, envo
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_data_f)(envoy_data data, bool end_stream, envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_data_f)(envoy_data data, bool end_stream, envoy_stream_intel stream_intel,
+                                 void* context);
 
 /**
  * Callback signature for metadata on an HTTP stream.
@@ -272,7 +274,8 @@ typedef void* (*envoy_on_data_f)(envoy_data data, bool end_stream, envoy_stream_
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_metadata_f)(envoy_headers metadata, envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_metadata_f)(envoy_headers metadata, envoy_stream_intel stream_intel,
+                                     void* context);
 
 /**
  * Callback signature for trailers on an HTTP stream.
@@ -285,7 +288,8 @@ typedef void* (*envoy_on_metadata_f)(envoy_headers metadata, envoy_stream_intel 
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, envoy_stream_intel stream_intel,
+                                     void* context);
 
 /**
  * Callback signature for errors with an HTTP stream.
@@ -298,7 +302,8 @@ typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, envoy_stream_intel 
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_intel,
+                                  void* context);
 
 /**
  * Callback signature for when an HTTP stream bi-directionally completes without error.

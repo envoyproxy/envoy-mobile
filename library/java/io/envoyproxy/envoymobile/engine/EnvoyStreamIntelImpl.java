@@ -14,11 +14,17 @@ class EnvoyStreamIntelImpl implements EnvoyStreamIntel {
   }
 
   @Override
-  public long getStreamId() { return streamId; }
+  public long getStreamId() {
+    return streamId;
+  }
 
   @Override
-  public long getConnectionId() { return connectionId; }
+  public long getConnectionId() {
+    return connectionId;
+  }
 
   @Override
-  public long getAttemptCount() { return attemptCount; }
+  public long getAttemptCount() {
+    return attemptCount;
+  }
 }

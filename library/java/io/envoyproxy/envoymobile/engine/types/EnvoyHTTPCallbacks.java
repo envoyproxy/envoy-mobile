@@ -16,7 +16,8 @@ public interface EnvoyHTTPCallbacks {
    * @param endStream,   whether the response is headers-only.
    * @param streamIntel, contains internal HTTP stream metrics, context, and other details.
    */
-  void onHeaders(Map<String, List<String>> headers, boolean endStream, EnvoyStreamIntel streamIntel);
+  void onHeaders(Map<String, List<String>> headers, boolean endStream,
+                 EnvoyStreamIntel streamIntel);
 
   /**
    * Called when a data frame gets received on the async HTTP stream. This

@@ -79,8 +79,8 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
-  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
-                               envoy_stream_intel{}, bridge_callbacks_.context);
+  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream, envoy_stream_intel{},
+                               bridge_callbacks_.context);
   response_headers_forwarded_ = true;
   if (end_stream) {
     onComplete();

@@ -21,7 +21,8 @@ typedef struct {
 
 #pragma mark - C callbacks
 
-static void *ios_on_headers(envoy_headers headers, bool end_stream, envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_headers(envoy_headers headers, bool end_stream, envoy_stream_intel stream_intel,
+                            void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
@@ -32,7 +33,8 @@ static void *ios_on_headers(envoy_headers headers, bool end_stream, envoy_stream
   return NULL;
 }
 
-static void *ios_on_data(envoy_data data, bool end_stream, envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_data(envoy_data data, bool end_stream, envoy_stream_intel stream_intel,
+                         void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
@@ -43,9 +45,13 @@ static void *ios_on_data(envoy_data data, bool end_stream, envoy_stream_intel st
   return NULL;
 }
 
-static void *ios_on_metadata(envoy_headers metadata, envoy_stream_intel stream_intel, void *context) { return NULL; }
+static void *ios_on_metadata(envoy_headers metadata, envoy_stream_intel stream_intel,
+                             void *context) {
+  return NULL;
+}
 
-static void *ios_on_trailers(envoy_headers trailers, envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_trailers(envoy_headers trailers, envoy_stream_intel stream_intel,
+                             void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   dispatch_async(callbacks.dispatchQueue, ^{
