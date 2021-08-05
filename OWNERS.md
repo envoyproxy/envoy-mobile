@@ -13,6 +13,8 @@ routing PRs, questions, etc. to the right place.
   * iOS (swift/objective-c) platform bindings.
 * Mike Schore ([goaway](https://github.com/goaway)) (mschore@lyft.com)
   * General.
+* Snow Pettersen ([snowp](https://github.com/snowp)) (aickck@gmail.com)
+  * General.
 
 # Friends of Envoy Mobile
 
