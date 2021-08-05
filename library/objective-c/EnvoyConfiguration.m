@@ -4,30 +4,32 @@
 
 @implementation EnvoyConfiguration
 
-- (instancetype)initWithGrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-                  connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                      dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-           dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-            dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                 dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
-                 dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-                      statsFlushSeconds:(UInt32)statsFlushSeconds
-               streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                             appVersion:(NSString *)appVersion
-                                  appId:(NSString *)appId
-                        virtualClusters:(NSString *)virtualClusters
-                 directResponseMatchers:(NSString *)directResponseMatchers
-                        directResponses:(NSString *)directResponses
-                      nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                    platformFilterChain:
-                        (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                        stringAccessors:
-                            (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
+- (instancetype)
+    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                statsFlushSeconds:(UInt32)statsFlushSeconds
+         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                       appVersion:(NSString *)appVersion
+                            appId:(NSString *)appId
+                  virtualClusters:(NSString *)virtualClusters
+           directResponseMatchers:(NSString *)directResponseMatchers
+                  directResponses:(NSString *)directResponses
+                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                  stringAccessors:
+                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
   self = [super init];
   if (!self) {
     return nil;
   }
 
+  self.adminInterfaceEnabled = adminInterfaceEnabled;
   self.grpcStatsDomain = grpcStatsDomain;
   self.connectTimeoutSeconds = connectTimeoutSeconds;
   self.dnsRefreshSeconds = dnsRefreshSeconds;
@@ -117,6 +119,10 @@
     [definitions
         appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
     [definitions appendString:@"- &stats_sinks [ *base_metrics_service ]\n"];
+  }
+
+  if (self.adminInterfaceEnabled) {
+    [definitions appendString:@"admin: *admin_interface\n"];
   }
 
   [definitions appendString:templateYAML];
