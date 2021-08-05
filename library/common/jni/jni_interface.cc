@@ -242,11 +242,14 @@ static void* jvm_on_headers(const char* method, envoy_headers headers, bool end_
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
   jmethodID jmid_onHeaders =
       env->GetMethodID(jcls_JvmCallbackContext, method, "(JZ)Ljava/lang/Object;");
+
+  jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
   jobject result = env->CallObjectMethod(j_context, jmid_onHeaders, (jlong)headers.length,
-                                         end_stream ? JNI_TRUE : JNI_FALSE);
+                                         end_stream ? JNI_TRUE : JNI_FALSE, j_stream_intel);
 
+  env->DeleteLocalRef(j_stream_intel);
   env->DeleteLocalRef(jcls_JvmCallbackContext);
 
   return result;
@@ -396,10 +399,13 @@ static void* jvm_on_trailers(const char* method, envoy_headers trailers, envoy_s
   jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
   jmethodID jmid_onTrailers =
       env->GetMethodID(jcls_JvmCallbackContext, method, "(J)Ljava/lang/Object;");
+
+  jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
   // Note: be careful of JVM types. Before we casted to jlong we were getting integer problems.
   // TODO: make this cast safer.
-  jobject result = env->CallObjectMethod(j_context, jmid_onTrailers, (jlong)trailers.length);
+  jobject result = env->CallObjectMethod(j_context, jmid_onTrailers, (jlong)trailers.length, j_stream_intel);
 
+  env->DeleteLocalRef(j_stream_intel);
   env->DeleteLocalRef(jcls_JvmCallbackContext);
 
   return result;
@@ -592,7 +598,7 @@ jvm_http_filter_on_resume_response(envoy_headers* headers, envoy_data* data,
                                    context);
 }
 
-static void* jvm_on_complete(envoy_stream_intel stream_intel, void* context) {
+static void* jvm_on_complete(envoy_stream_intel, void* context) {
   jni_delete_global_ref(context);
   return NULL;
 }
@@ -607,13 +613,15 @@ static void* call_jvm_on_error(envoy_error error, envoy_stream_intel stream_inte
       env->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI)Ljava/lang/Object;");
 
   jbyteArray j_error_message = native_data_to_array(env, error.message);
+  jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
 
   jobject result = env->CallObjectMethod(j_context, jmid_onError, error.error_code, j_error_message,
-                                         error.attempt_count);
+                                         error.attempt_count, j_stream_intel);
 
-  release_envoy_error(error);
-  env->DeleteLocalRef(jcls_JvmObserverContext);
+  env->DeleteLocalRef(j_stream_intel);
   env->DeleteLocalRef(j_error_message);
+  env->DeleteLocalRef(jcls_JvmObserverContext);
+  release_envoy_error(error);
   return result;
 }
 
@@ -623,7 +631,7 @@ static void* jvm_on_error(envoy_error error, envoy_stream_intel stream_intel, vo
   return result;
 }
 
-static void* call_jvm_on_cancel(envoy_stream_intel steram_intel, void* context) {
+static void* call_jvm_on_cancel(envoy_stream_intel stream_intel, void* context) {
   jni_log("[Envoy]", "jvm_on_cancel");
 
   JNIEnv* env = get_env();
@@ -632,8 +640,12 @@ static void* call_jvm_on_cancel(envoy_stream_intel steram_intel, void* context) 
   jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
   jmethodID jmid_onCancel =
       env->GetMethodID(jcls_JvmObserverContext, "onCancel", "()Ljava/lang/Object;");
-  jobject result = env->CallObjectMethod(j_context, jmid_onCancel);
 
+  jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
+
+  jobject result = env->CallObjectMethod(j_context, jmid_onCancel, j_stream_intel);
+
+  env->DeleteLocalRef(j_stream_intel);
   env->DeleteLocalRef(jcls_JvmObserverContext);
   return result;
 }

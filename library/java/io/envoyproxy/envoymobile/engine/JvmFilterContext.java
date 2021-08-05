@@ -49,7 +49,7 @@ class JvmFilterContext {
    * @param endStream,   whether this header block is the final remote frame.
    * @return Object[],   pair of HTTP filter status and optional modified headers.
    */
-  public Object onRequestHeaders(long headerCount, boolean endStream) {
+  public Object onRequestHeaders(long headerCount, boolean endStream, long[] ignored) {
     assert headerUtility.validateCount(headerCount);
     final Map headers = headerUtility.retrieveHeaders();
     return toJniFilterHeadersStatus(filter.onRequestHeaders(headers, endStream));
@@ -62,7 +62,7 @@ class JvmFilterContext {
    * @param endStream, indicates this is the last remote frame of the stream.
    * @return Object[], pair of HTTP filter status and optional modified data.
    */
-  public Object onRequestData(byte[] data, boolean endStream) {
+  public Object onRequestData(byte[] data, boolean endStream, long[] ignored) {
     ByteBuffer dataBuffer = ByteBuffer.wrap(data);
     return toJniFilterDataStatus(filter.onRequestData(dataBuffer, endStream));
   }
@@ -73,7 +73,7 @@ class JvmFilterContext {
    * @param trailerCount, the total number of trailers included in this header block.
    * @return Object[],    pair of HTTP filter status and optional modified trailers.
    */
-  public Object onRequestTrailers(long trailerCount) {
+  public Object onRequestTrailers(long trailerCount, long[] ignored) {
     assert headerUtility.validateCount(trailerCount);
     final Map trailers = headerUtility.retrieveHeaders();
     return toJniFilterTrailersStatus(filter.onRequestTrailers(trailers));
@@ -86,7 +86,7 @@ class JvmFilterContext {
    * @param endStream,   whether this header block is the final remote frame.
    * @return Object[],   pair of HTTP filter status and optional modified headers.
    */
-  public Object onResponseHeaders(long headerCount, boolean endStream) {
+  public Object onResponseHeaders(long headerCount, boolean endStream, long[] ignored) {
     assert headerUtility.validateCount(headerCount);
     final Map headers = headerUtility.retrieveHeaders();
     return toJniFilterHeadersStatus(filter.onResponseHeaders(headers, endStream));
@@ -99,7 +99,7 @@ class JvmFilterContext {
    * @param endStream, indicates this is the last remote frame of the stream.
    * @return Object[], pair of HTTP filter status and optional modified data.
    */
-  public Object onResponseData(byte[] data, boolean endStream) {
+  public Object onResponseData(byte[] data, boolean endStream, long[] ignored) {
     ByteBuffer dataBuffer = ByteBuffer.wrap(data);
     return toJniFilterDataStatus(filter.onResponseData(dataBuffer, endStream));
   }
@@ -110,7 +110,7 @@ class JvmFilterContext {
    * @param trailerCount, the total number of trailers included in this header block.
    * @return Object[],    pair of HTTP filter status and optional modified trailers.
    */
-  public Object onResponseTrailers(long trailerCount) {
+  public Object onResponseTrailers(long trailerCount, long[] ignored) {
     assert headerUtility.validateCount(trailerCount);
     final Map trailers = headerUtility.retrieveHeaders();
     return toJniFilterTrailersStatus(filter.onResponseTrailers(trailers));
@@ -198,7 +198,7 @@ class JvmFilterContext {
    * @param attemptCount, the number of times an operation was attempted before firing this error.
    * @return Object,      not used in HTTP filters.
    */
-  public Object onError(int errorCode, byte[] message, int attemptCount) {
+  public Object onError(int errorCode, byte[] message, int attemptCount, long[] ignored) {
     String errorMessage = new String(message);
     filter.onError(errorCode, errorMessage, attemptCount);
     return null;
@@ -209,7 +209,7 @@ class JvmFilterContext {
    *
    * @return Object, not used in HTTP filters.
    */
-  public Object onCancel() {
+  public Object onCancel(long[] ignored) {
     filter.onCancel();
     return null;
   }

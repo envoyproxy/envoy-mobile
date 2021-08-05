@@ -1,7 +1,7 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-/// Exposes internal HTTP stream metrics, context, and other details
+/// Exposes internal HTTP stream metrics, context, and other details.
 @objcMembers
 public final class StreamIntel: NSObject, Error {
   // An internal identifier for the stream.

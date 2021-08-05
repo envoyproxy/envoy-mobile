@@ -36,12 +36,12 @@ class JvmCallbackContext {
    * @param endStream,   whether this header block is the final remote frame.
    * @return Object,     not used for response callbacks.
    */
-  public Object onResponseHeaders(long headerCount, boolean endStream) {
+  public Object onResponseHeaders(long headerCount, boolean endStream, long[] streamIntel) {
     assert bridgeUtility.validateCount(headerCount);
     final Map headers = bridgeUtility.retrieveHeaders();
 
     callbacks.getExecutor().execute(new Runnable() {
-      public void run() { callbacks.onHeaders(headers, endStream); }
+      public void run() { callbacks.onHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel)); }
     });
 
     return null;
@@ -53,12 +53,12 @@ class JvmCallbackContext {
    * @param trailerCount, the total number of trailers included in this header block.
    * @return Object,      not used for response callbacks.
    */
-  public Object onResponseTrailers(long trailerCount) {
+  public Object onResponseTrailers(long trailerCount, long[] streamIntel) {
     assert bridgeUtility.validateCount(trailerCount);
     final Map trailers = bridgeUtility.retrieveHeaders();
 
     callbacks.getExecutor().execute(new Runnable() {
-      public void run() { callbacks.onTrailers(trailers); }
+      public void run() { callbacks.onTrailers(trailers, new EnvoyStreamIntelImpl(streamIntel)); }
     });
 
     return null;
@@ -71,11 +71,11 @@ class JvmCallbackContext {
    * @param endStream, indicates this is the last remote frame of the stream.
    * @return Object,   not used for response callbacks.
    */
-  public Object onResponseData(byte[] data, boolean endStream) {
+  public Object onResponseData(byte[] data, boolean endStream, long[] streamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);
-        callbacks.onData(dataBuffer, endStream);
+        callbacks.onData(dataBuffer, endStream, new EnvoyStreamIntelImpl(streamIntel));
       }
     });
 
@@ -90,11 +90,11 @@ class JvmCallbackContext {
    * @param attemptCount, the number of times an operation was attempted before firing this error.
    * @return Object,      not used for response callbacks.
    */
-  public Object onError(int errorCode, byte[] message, int attemptCount) {
+  public Object onError(int errorCode, byte[] message, int attemptCount, long[] streamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         String errorMessage = new String(message);
-        callbacks.onError(errorCode, errorMessage, attemptCount);
+        callbacks.onError(errorCode, errorMessage, attemptCount, new EnvoyStreamIntelImpl(streamIntel));
       }
     });
 
@@ -106,11 +106,11 @@ class JvmCallbackContext {
    *
    * @return Object, not used for response callbacks.
    */
-  public Object onCancel() {
+  public Object onCancel(long[] streamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         // This call is atomically gated at the call-site and will only happen once.
-        callbacks.onCancel();
+        callbacks.onCancel(new EnvoyStreamIntelImpl(streamIntel));
       }
     });
 
