@@ -1,6 +1,5 @@
 package test.kotlin.integration
 
-import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod

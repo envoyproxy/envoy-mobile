@@ -887,6 +887,7 @@ static void jvm_on_track(envoy_map events, const void* context) {
   jmethodID jmid_onTrack = env->GetMethodID(jcls_EnvoyEventTracker, "track", "(Ljava/util/Map;)V");
   env->CallVoidMethod(j_context, jmid_onTrack, events_hashmap);
 
+  release_envoy_map(events);
   env->DeleteLocalRef(events_hashmap);
   env->DeleteLocalRef(jcls_EnvoyEventTracker);
 }
