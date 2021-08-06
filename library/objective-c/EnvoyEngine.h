@@ -31,6 +31,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
  * Called when all headers get received on the async HTTP stream.
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onHeaders)
     (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
@@ -40,6 +41,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
  * This callback can be invoked multiple times if the data gets streamed.
  * @param data the data received.
  * @param endStream whether the data is the last data frame.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onData)
     (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
@@ -49,6 +51,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onTrailers)
     (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
@@ -56,6 +59,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
 
 /**
  * Called when the async HTTP stream has an error.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onError)
     (uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel);
@@ -65,6 +69,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
  * Note this callback will ALWAYS be fired if a stream is canceled, even if the request and/or
  * response is already complete. It will fire no more than once, and no other callbacks for the
  * stream will be issued afterwards.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
 
