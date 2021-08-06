@@ -82,15 +82,31 @@ build:coverage --instrumentation_filter="//library/common[/:]"
 build:coverage --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
 build:coverage --javabase=@bazel_tools//tools/jdk:remote_jdk11
 
-# Experimental EngFlow Remote Execution Config
-# --config=remote also sets --auth_enabled=true to enable GCP authentication.
-# We are not using GCP authentication for the MacOS remote execution cluster,
-# so we have to override it to false here.
-build:remote-ci-macos --config=remote
+#############################################################################
+# Experimental EngFlow Remote Execution Configs                             
+#############################################################################
+# remote-ci: These options are valid for any platform, use the configs below
+# to add platform-specific options
+#############################################################################
+build:remote-ci --config=remote
+build:remote-ci --remote_executor=grpcs://envoy.cluster.engflow.com
+build:remote-ci --bes_backend=grpcs://envoy.cluster.engflow.com/
+build:remote-ci --bes_results_url=https://envoy.cluster.engflow.com/invocation/
+build:remote-ci --bes_lifecycle_events
+build:remote-ci --jobs=40
+build:remote-ci --verbose_failures
+#############################################################################
+# remote-ci-linux: These options are linux-only
+#############################################################################
+build:remote-ci-linux --config=remote
+#############################################################################
+# remote-ci-macos: These options are macOS-only
+#############################################################################
+build:remote-ci-macos --config=remote-ci
+# --config=remote sets --auth_enabled=true to enable GCP authentication,
+# however, the MacOS remote execution cluster doesn't use GCP auth
+# so we have to override it to 'false' here.
 build:remote-ci-macos --auth_enabled=false
-build:remote-ci-macos --remote_executor=grpcs://envoy.cluster.engflow.com
-build:remote-ci-macos --bes_backend=grpcs://envoy.cluster.engflow.com/
-build:remote-ci-macos --bes_results_url=https://envoy.cluster.engflow.com/invocation/
-build:remote-ci-macos --bes_lifecycle_events
-build:remote-ci-macos --jobs=40
-build:remote-ci-macos --verbose_failures
+#############################################################################
+# Experimental EngFlow Remote Execution Configs                             
+#############################################################################
