@@ -84,11 +84,8 @@ NSString *_REQUEST_SCHEME = @"https";
 
   __weak ViewController *weakSelf = self;
   StreamPrototype *prototype = [self.streamClient newStreamPrototype];
-  [prototype setOnResponseHeadersWithClosure:^(
-    ResponseHeaders *headers,
-    BOOL endStream,
-    StreamIntel *ignored
-  ) {
+  [prototype setOnResponseHeadersWithClosure:^(ResponseHeaders *headers, BOOL endStream,
+                                               StreamIntel *ignored) {
     int statusCode = [[[headers valueForName:@":status"] firstObject] intValue];
     NSString *message = [NSString stringWithFormat:@"received headers with status %i", statusCode];
 

@@ -49,8 +49,8 @@ typedef envoy_stream_intel EnvoyStreamIntel;
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
  */
-@property (nonatomic, copy) void (^onTrailers)(EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel)
-    ;
+@property (nonatomic, copy) void (^onTrailers)
+    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when the async HTTP stream has an error.
@@ -156,9 +156,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 1 - EnvoyHeaders *, optional pending headers
 /// 2 - NSData *, optional pending data
 /// 3 - EnvoyHeaders *, optional pending trailers
-@property (nonatomic, copy)
-    NSArray * (^onResumeRequest)(EnvoyHeaders *_Nullable headers, NSData *_Nullable data,
-                                 EnvoyHeaders *_Nullable trailers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResumeRequest)
+    (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
+     BOOL endStream);
 
 @property (nonatomic, copy) void (^setResponseFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
@@ -168,9 +168,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 1 - EnvoyHeaders *, optional pending headers
 /// 2 - NSData *, optional pending data
 /// 3 - EnvoyHeaders *, optional pending trailers
-@property (nonatomic, copy)
-    NSArray * (^onResumeResponse)(EnvoyHeaders *_Nullable headers, NSData *_Nullable data,
-                                  EnvoyHeaders *_Nullable trailers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResumeResponse)
+    (EnvoyHeaders *_Nullable headers, NSData *_Nullable data,  EnvoyHeaders *_Nullable trailers,
+     BOOL endStream);
 
 @end
 

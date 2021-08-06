@@ -7,7 +7,9 @@ import Foundation
 ///
 /// `StreamCallbacks` are bridged through to `EnvoyHTTPCallbacks` to communicate with the engine.
 final class StreamCallbacks {
-  var onHeaders: ((_ headers: ResponseHeaders, _ endStream: Bool, _ streamIntel: StreamIntel) -> Void)?
+  var onHeaders: (
+    (_ headers: ResponseHeaders, _ endStream: Bool, _ streamIntel: StreamIntel) -> Void
+  )?
   var onData: ((_ body: Data, _ endStream: Bool, _ streamIntel: StreamIntel) -> Void)?
   var onTrailers: ((_ trailers: ResponseTrailers, _ streamIntel: StreamIntel) -> Void)?
   var onCancel: ((_ streamIntel: StreamIntel) -> Void)?
