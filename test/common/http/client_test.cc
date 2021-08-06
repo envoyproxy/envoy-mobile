@@ -67,8 +67,8 @@ public:
       cc->on_complete_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                      envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+                                      void* context) -> void* {
       ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       EXPECT_EQ(end_stream, cc->end_stream_with_headers_);
@@ -81,7 +81,8 @@ public:
       cc->on_error_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_data = [](envoy_data c_data, bool, envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_data = [](envoy_data c_data, bool, envoy_stream_intel,
+                                   void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_data_calls++;
       cc->body_data_ += Data::Utility::copyToString(c_data);
@@ -93,7 +94,8 @@ public:
       cc->on_cancel_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
+                                       void* context) -> void* {
       ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
       EXPECT_TRUE(response_trailers.get() != nullptr);
       callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -385,7 +387,8 @@ TEST_P(ClientTest, BasicStreamHeaders) {
 TEST_P(ClientTest, BasicStreamData) {
   cc_.end_stream_with_headers_ = false;
 
-  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, envoy_stream_intel, void* context) -> void* {
+  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, envoy_stream_intel,
+                                 void* context) -> void* {
     EXPECT_TRUE(end_stream);
     EXPECT_EQ(Data::Utility::copyToString(c_data), "response body");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -421,7 +424,8 @@ TEST_P(ClientTest, BasicStreamData) {
 }
 
 TEST_P(ClientTest, BasicStreamTrailers) {
-  bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel, void* context) -> void* {
+  bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
+                                     void* context) -> void* {
     ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
     EXPECT_EQ(response_trailers->get(LowerCaseString("x-test-trailer"))[0]->value().getStringView(),
               "test_trailer");
@@ -566,8 +570,8 @@ TEST_P(ClientTest, MultipleStreams) {
   envoy_http_callbacks bridge_callbacks_2;
   callbacks_called cc2 = {0, 0, 0, 0, 0, 0, "200", true, ""};
   bridge_callbacks_2.context = &cc2;
-  bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream,
-                                     envoy_stream_intel, void* context) -> void* {
+  bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+                                     void* context) -> void* {
     EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
