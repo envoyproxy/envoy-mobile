@@ -98,7 +98,7 @@ build:remote-ci --verbose_failures
 #############################################################################
 # remote-ci-linux: These options are linux-only
 #############################################################################
-build:remote-ci-linux --config=remote
+build:remote-ci-linux --config=remote-ci
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 #############################################################################
