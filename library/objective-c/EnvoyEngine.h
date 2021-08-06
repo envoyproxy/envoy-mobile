@@ -174,7 +174,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, copy) NSArray * (^onResumeResponse)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
      BOOL endStream);
-//clang-format on
+// clang-format on
 
 @end
 
