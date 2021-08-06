@@ -34,6 +34,7 @@ class JvmCallbackContext {
    *
    * @param headerCount, the total number of headers included in this header block.
    * @param endStream,   whether this header block is the final remote frame.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
    * @return Object,     not used for response callbacks.
    */
   public Object onResponseHeaders(long headerCount, boolean endStream, long[] streamIntel) {
@@ -53,6 +54,7 @@ class JvmCallbackContext {
    * Invokes onTrailers callback using trailers passed via passHeaders.
    *
    * @param trailerCount, the total number of trailers included in this header block.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object,      not used for response callbacks.
    */
   public Object onResponseTrailers(long trailerCount, long[] streamIntel) {
@@ -69,9 +71,10 @@ class JvmCallbackContext {
   /**
    * Dispatches data received from the JNI layer up to the platform.
    *
-   * @param data,      chunk of body data from the HTTP response.
-   * @param endStream, indicates this is the last remote frame of the stream.
-   * @return Object,   not used for response callbacks.
+   * @param data,        chunk of body data from the HTTP response.
+   * @param endStream,   indicates this is the last remote frame of the stream.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
+   * @return Object,     not used for response callbacks.
    */
   public Object onResponseData(byte[] data, boolean endStream, long[] streamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
@@ -90,6 +93,7 @@ class JvmCallbackContext {
    * @param errorCode,    the error code.
    * @param message,      the error message.
    * @param attemptCount, the number of times an operation was attempted before firing this error.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object,      not used for response callbacks.
    */
   public Object onError(int errorCode, byte[] message, int attemptCount, long[] streamIntel) {
@@ -107,6 +111,7 @@ class JvmCallbackContext {
   /**
    * Dispatches cancellation notice up to the platform
    *
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
    * @return Object, not used for response callbacks.
    */
   public Object onCancel(long[] streamIntel) {
