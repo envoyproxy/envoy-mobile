@@ -104,7 +104,7 @@ class MainActivity : Activity() {
     engine
       .streamClient()
       .newStreamPrototype()
-      .setOnResponseHeaders { responseHeaders, _ ->
+      .setOnResponseHeaders { responseHeaders, _, _ ->
         val status = responseHeaders.httpStatus ?: 0L
         val message = "received headers with status $status"
 
@@ -127,7 +127,7 @@ class MainActivity : Activity() {
           recyclerView.post { viewAdapter.add(Failure(message)) }
         }
       }
-      .setOnError { error ->
+      .setOnError { error, _ ->
         val attemptCount = error.attemptCount ?: -1
         val message = "failed with error after $attemptCount attempts: ${error.message}"
         Log.d("MainActivity", message)
