@@ -14,7 +14,9 @@ typealias StreamIntel = EnvoyStreamIntel
  * `StreamCallbacks` are bridged through to `EnvoyHTTPCallbacks` to communicate with the engine.
  */
 internal class StreamCallbacks {
-  var onHeaders: ((headers: ResponseHeaders, endStream: Boolean, streamIntel: StreamIntel) -> Unit)? = null
+  var onHeaders: (
+    (headers: ResponseHeaders, endStream: Boolean, streamIntel: StreamIntel) -> Unit
+  )? = null
   var onData: ((data: ByteBuffer, endStream: Boolean, streamIntel: StreamIntel) -> Unit)? = null
   var onTrailers: ((trailers: ResponseTrailers, streamIntel: StreamIntel) -> Unit)? = null
   var onCancel: ((streamIntel: StreamIntel) -> Unit)? = null
@@ -33,7 +35,11 @@ internal class EnvoyHTTPCallbacksAdapter(
     return executor
   }
 
-  override fun onHeaders(headers: Map<String, List<String>>, endStream: Boolean, streamIntel: StreamIntel) {
+  override fun onHeaders(
+    headers: Map<String, List<String>>,
+    endStream: Boolean,
+    streamIntel: StreamIntel
+  ) {
     callbacks.onHeaders?.invoke(ResponseHeaders(headers), endStream, streamIntel)
   }
 
@@ -45,7 +51,12 @@ internal class EnvoyHTTPCallbacksAdapter(
     callbacks.onTrailers?.invoke(ResponseTrailers((trailers)), streamIntel)
   }
 
-  override fun onError(errorCode: Int, message: String, attemptCount: Int, streamIntel: StreamIntel) {
+  override fun onError(
+    errorCode: Int,
+    message: String,
+    attemptCount: Int,
+    streamIntel: StreamIntel
+  ) {
     callbacks.onError?.invoke(EnvoyError(errorCode, message, attemptCount), streamIntel)
   }
 
