@@ -53,13 +53,13 @@ build:asan-dev --linkopt -fsanitize=address
 build:asan-dev --platform_suffix=-asan
 
 # Basic ASAN/UBSAN that works for gcc
-build:emasan --action_env=ENVOY_ASAN=1
+build:em-asan --action_env=ENVOY_ASAN=1
 build:em-asan --config=sanitizer
 # ASAN install its signal handler, disable ours so the stacktrace will be printed by ASAN
 build:em-asan --define signal_trace=disabled
 build:em-asan --define ENVOY_CONFIG_ASAN=1
-build:em-asan --copt -fsanitize=address,undefined
-build:em-asan --linkopt -fsanitize=address,undefined
+build:em-asan --copt -fsanitize=address
+build:em-asan --linkopt -fsanitize=address
 build:em-asan --copt -fno-sanitize=vptr,function
 build:em-asan --linkopt -fno-sanitize=vptr,function
 build:em-asan --copt -DADDRESS_SANITIZER=1
@@ -70,6 +70,8 @@ build:em-asan --test_env=ASAN_SYMBOLIZER_PATH
 # ASAN needs -O1 to get reasonable performance.
 build:em-asan --copt -O1
 build:em-asan --copt -fno-optimize-sibling-calls
+
+# Clang ASAN/UBSAN
 build:em-clang-asan --config=em-asan
 build:em-clang-asan --linkopt -fuse-ld=lld
 
