@@ -169,7 +169,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 2 - NSData *, optional pending data
 /// 3 - EnvoyHeaders *, optional pending trailers
 @property (nonatomic, copy) NSArray * (^onResumeResponse)
-    (EnvoyHeaders *_Nullable headers, NSData *_Nullable data,  EnvoyHeaders *_Nullable trailers,
+    (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
      BOOL endStream);
 
 @end
