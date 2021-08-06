@@ -52,28 +52,7 @@ build:asan-dev --copt -fsanitize=address
 build:asan-dev --linkopt -fsanitize=address
 build:asan-dev --platform_suffix=-asan
 
-# Basic ASAN/UBSAN that works for gcc
-build:em-asan --action_env=ENVOY_ASAN=1
-build:em-asan --config=sanitizer
-# ASAN install its signal handler, disable ours so the stacktrace will be printed by ASAN
-build:em-asan --define signal_trace=disabled
-build:em-asan --define ENVOY_CONFIG_ASAN=1
-build:em-asan --copt -fsanitize=address
-build:em-asan --linkopt -fsanitize=address
-build:em-asan --copt -fno-sanitize=vptr,function
-build:em-asan --linkopt -fno-sanitize=vptr,function
-build:em-asan --copt -DADDRESS_SANITIZER=1
-build:em-asan --copt -D__SANITIZE_ADDRESS__
-build:em-asan --test_env=ASAN_OPTIONS=handle_abort=1:allow_addr2line=true:check_initialization_order=true:strict_init_order=true:detect_odr_violation=1
-build:em-asan --test_env=UBSAN_OPTIONS=halt_on_error=true:print_stacktrace=1
-build:em-asan --test_env=ASAN_SYMBOLIZER_PATH
-# ASAN needs -O1 to get reasonable performance.
-build:em-asan --copt -O1
-build:em-asan --copt -fno-optimize-sibling-calls
-
-# Clang ASAN/UBSAN
-build:em-clang-asan --config=em-asan
-build:em-clang-asan --linkopt -fuse-ld=lld
+build:clang-asan --linkopt --rtlib=compiler=rt
 
 # Locally-runnable TSAN config
 build:tsan-dev --features=tsan
