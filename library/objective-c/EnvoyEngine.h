@@ -44,6 +44,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
 @property (nonatomic, copy) void (^onData)
     (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
+// clang-format off
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
@@ -51,6 +52,7 @@ typedef envoy_stream_intel EnvoyStreamIntel;
  */
 @property (nonatomic, copy) void (^onTrailers)
     (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
+// clang-format on
 
 /**
  * Called when the async HTTP stream has an error.
@@ -151,6 +153,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, copy) void (^setRequestFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
 
+// clang-format off
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, optional pending headers
@@ -171,6 +174,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, copy) NSArray * (^onResumeResponse)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
      BOOL endStream);
+//clang-format on
 
 @end
 
