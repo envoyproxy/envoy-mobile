@@ -27,7 +27,13 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Install dependencies'
-      - run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_dist
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --config=ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //:ios_dist
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
   swifthelloworld:
@@ -50,7 +56,13 @@ jobs:
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Short-circuit'
-      - run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --config=ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //examples/swift/hello_world:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
       - run: bazelisk run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app &> /tmp/envoy.log &
@@ -80,10 +92,22 @@ jobs:
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Short-circuit'
-      - run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --config=ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //examples/objective-c/hello_world:app
         name: 'Build objective-c app'
       # Run the app in the background and redirect logs.
-      - run: bazelisk run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app &> /tmp/envoy.log &
+      - env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --config=ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //examples/objective-c/hello_world:app &> /tmp/envoy.log &
         name: 'Run objective-c app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'
