@@ -11,4 +11,7 @@ envoy_cc_test(
     deps = [
         "//library/cc:envoy_engine_cc_lib_no_stamp",
     ],
+    exec_properties = create_rbe_exec_properties_dict(
+            pool = "linux",
+        ),
 )
