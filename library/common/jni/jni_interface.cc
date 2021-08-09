@@ -920,6 +920,11 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerEventTracker(JNIEnv* en
                                                                       jobject j_event_tracker) {
   jni_log("[Envoy]", "register event tracker");
 
+  if (j_event_tracker == nullptr) {
+    // It's allowed to run envoy w/o an event tracker, therefore return success.
+    return ENVOY_SUCCESS;
+  }
+
   // TODO(goaway): The retained_context leaks, but it's tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332.
   jobject retained_context = env->NewGlobalRef(j_event_tracker);
