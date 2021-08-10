@@ -96,7 +96,7 @@ static_resources:
 
     client
       .newStreamPrototype()
-      .setOnCancel {
+      .setOnCancel { _ in
          runExpectation.fulfill()
       }
       .start()

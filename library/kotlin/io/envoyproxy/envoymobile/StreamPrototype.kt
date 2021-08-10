@@ -15,6 +15,7 @@ import java.util.concurrent.Executors
  */
 open class StreamPrototype(private val engine: EnvoyEngine) {
   private val callbacks = StreamCallbacks()
+  private var explicitFlowControl = false
 
   /**
    * Start a new stream.
@@ -23,8 +24,24 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return The new stream.
    */
   open fun start(executor: Executor = Executors.newSingleThreadExecutor()): Stream {
-    val engineStream = engine.startStream(createCallbacks(executor))
+    val engineStream = engine.startStream(createCallbacks(executor), explicitFlowControl)
     return Stream(engineStream)
+  }
+
+  /**
+   * Allows explicit flow control to be enabled. When flow control is enabled, the owner of a stream
+   * is responsible for providing a buffer to receive response body data. If the buffer is smaller
+   * than the amount of data available, response callbacks will halt, and the underlying network
+   * protocol may signal for the server to stop sending data, until more space is available. This
+   * can limit the memory consumed by a server response, but may also result in reduced overall
+   * throughput, depending on usage.
+   *
+   * @param enabled Whether explicit flow control will be enabled for the stream.
+   * @return This stream, for chaining syntax.
+   */
+  fun setExplicitFlowControl(enabled: Boolean): StreamPrototype {
+    this.explicitFlowControl = enabled
+    return this
   }
 
   /**
@@ -35,7 +52,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseHeaders(
-    closure: (headers: ResponseHeaders, endStream: Boolean) -> Unit
+    closure: (headers: ResponseHeaders, endStream: Boolean, streamIntel: StreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onHeaders = closure
     return this
@@ -50,7 +67,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseData(
-    closure: (data: ByteBuffer, endStream: Boolean) -> Unit
+    closure: (data: ByteBuffer, endStream: Boolean, streamIntel: StreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onData = closure
     return this
@@ -64,7 +81,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnResponseTrailers(
-    closure: (trailers: ResponseTrailers) -> Unit
+    closure: (trailers: ResponseTrailers, streamIntel: StreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onTrailers = closure
     return this
@@ -78,7 +95,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError) -> Unit
+    closure: (error: EnvoyError, streamIntel: StreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onError = closure
     return this
@@ -92,7 +109,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnCancel(
-    closure: () -> Unit
+    closure: (streamIntel: StreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onCancel = closure
     return this

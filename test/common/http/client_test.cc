@@ -62,12 +62,12 @@ public:
     bridge_callbacks_.context = &cc_;
 
     // Set up default bridge callbacks. Indivividual tests can override.
-    bridge_callbacks_.on_complete = [](void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_complete_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool end_stream,
+    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
                                       void* context) -> void* {
       ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
       callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -76,24 +76,26 @@ public:
       cc->on_headers_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error, void* context) -> void* {
+    bridge_callbacks_.on_error = [](envoy_error, envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_error_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_data = [](envoy_data c_data, bool, void* context) -> void* {
+    bridge_callbacks_.on_data = [](envoy_data c_data, bool, envoy_stream_intel,
+                                   void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_data_calls++;
       cc->body_data_ += Data::Utility::copyToString(c_data);
       release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_cancel = [](void* context) -> void* {
+    bridge_callbacks_.on_cancel = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_cancel_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, void* context) -> void* {
+    bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
+                                       void* context) -> void* {
       ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
       EXPECT_TRUE(response_trailers.get() != nullptr);
       callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -121,7 +123,7 @@ public:
           response_encoder_ = &encoder;
           return request_decoder_;
         }));
-    http_client_.startStream(stream_, bridge_callbacks_);
+    http_client_.startStream(stream_, bridge_callbacks_, explicit_flow_control_);
   }
 
   void resumeDataIfExplicitFlowControl(int32_t bytes) {
@@ -142,8 +144,7 @@ public:
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
   bool explicit_flow_control_{GetParam()};
-  Client http_client_{api_listener_,      dispatcher_, stats_store_,
-                      preferred_network_, random_,     explicit_flow_control_};
+  Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_, random_};
   envoy_stream_t stream_ = 1;
 };
 
@@ -386,7 +387,8 @@ TEST_P(ClientTest, BasicStreamHeaders) {
 TEST_P(ClientTest, BasicStreamData) {
   cc_.end_stream_with_headers_ = false;
 
-  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
+  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, envoy_stream_intel,
+                                 void* context) -> void* {
     EXPECT_TRUE(end_stream);
     EXPECT_EQ(Data::Utility::copyToString(c_data), "response body");
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -422,7 +424,8 @@ TEST_P(ClientTest, BasicStreamData) {
 }
 
 TEST_P(ClientTest, BasicStreamTrailers) {
-  bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, void* context) -> void* {
+  bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
+                                     void* context) -> void* {
     ResponseHeaderMapPtr response_trailers = toResponseHeaders(c_trailers);
     EXPECT_EQ(response_trailers->get(LowerCaseString("x-test-trailer"))[0]->value().getStringView(),
               "test_trailer");
@@ -567,7 +570,7 @@ TEST_P(ClientTest, MultipleStreams) {
   envoy_http_callbacks bridge_callbacks_2;
   callbacks_called cc2 = {0, 0, 0, 0, 0, 0, "200", true, ""};
   bridge_callbacks_2.context = &cc2;
-  bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream,
+  bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
                                      void* context) -> void* {
     EXPECT_TRUE(end_stream);
     ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
@@ -576,7 +579,7 @@ TEST_P(ClientTest, MultipleStreams) {
     *on_headers_called2 = true;
     return nullptr;
   };
-  bridge_callbacks_2.on_complete = [](void* context) -> void* {
+  bridge_callbacks_2.on_complete = [](envoy_stream_intel, void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
     return nullptr;
@@ -595,7 +598,7 @@ TEST_P(ClientTest, MultipleStreams) {
         response_encoder2 = &encoder;
         return request_decoder2;
       }));
-  http_client_.startStream(stream2, bridge_callbacks_2);
+  http_client_.startStream(stream2, bridge_callbacks_2, explicit_flow_control_);
 
   // Send request headers.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -679,7 +682,7 @@ TEST_P(ClientTest, EnvoyLocalReplyNon503NotAnError) {
 TEST_P(ClientTest, EnvoyResponseWithErrorCode) {
   cc_.expected_status_ = "218";
   // Override the on_error default with some custom checks.
-  bridge_callbacks_.on_error = [](envoy_error error, void* context) -> void* {
+  bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
     EXPECT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
     EXPECT_EQ(error.attempt_count, 123);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -755,7 +758,7 @@ TEST_P(ClientTest, DoubleResetStreamLocal) {
 TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   cc_.end_stream_with_headers_ = false;
 
-  bridge_callbacks_.on_error = [](envoy_error error, void* context) -> void* {
+  bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
     EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
     EXPECT_EQ(error.message.length, 0);
     EXPECT_EQ(error.attempt_count, -1);
@@ -906,7 +909,7 @@ TEST_P(ClientTest, NullAccessors) {
         response_encoder_ = &encoder;
         return request_decoder_;
       }));
-  http_client_.startStream(stream, bridge_callbacks);
+  http_client_.startStream(stream, bridge_callbacks, explicit_flow_control_);
 
   EXPECT_FALSE(response_encoder_->http1StreamEncoderOptions().has_value());
   EXPECT_FALSE(response_encoder_->streamErrorOnInvalidHttpMessage());

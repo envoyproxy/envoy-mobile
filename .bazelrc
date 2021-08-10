@@ -52,6 +52,9 @@ build:asan-dev --copt -fsanitize=address
 build:asan-dev --linkopt -fsanitize=address
 build:asan-dev --platform_suffix=-asan
 
+build:clang-asan --linkopt --rtlib=compiler-rt
+build:clang-asan --linkopt --unwindlib=libgcc
+
 # Locally-runnable TSAN config
 build:tsan-dev --features=tsan
 build:tsan-dev --copt -fsanitize=thread
@@ -82,17 +85,23 @@ build:coverage --instrumentation_filter="//library/common[/:]"
 build:coverage --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
 build:coverage --javabase=@bazel_tools//tools/jdk:remote_jdk11
 
-# Experimental EngFlow Remote Execution Config
-# TODO: Use --config=remote if that makes sense.
-build:remote-ci-macos --spawn_strategy=remote,sandboxed,local
-build:remote-ci-macos --strategy=Javac=remote,sandboxed,local
-build:remote-ci-macos --strategy=Closure=remote,sandboxed,local
-build:remote-ci-macos --strategy=Genrule=remote,sandboxed,local
+#############################################################################
+# Experimental EngFlow Remote Execution Configs
+#############################################################################
+# remote-ci-macos: Flags to run CI using Engflow's remote execution. This
+# config is used for MacOS-specific flags.
+#############################################################################
+# --config=remote sets --auth_enabled=true to enable GCP authentication,
+# however, the MacOS remote execution cluster doesn't use GCP auth
+# so we have to override it to 'false' here.
+build:remote-ci-macos --config=remote
+build:remote-ci-macos --auth_enabled=false
 build:remote-ci-macos --remote_executor=grpcs://envoy.cluster.engflow.com
 build:remote-ci-macos --bes_backend=grpcs://envoy.cluster.engflow.com/
 build:remote-ci-macos --bes_results_url=https://envoy.cluster.engflow.com/invocation/
 build:remote-ci-macos --bes_lifecycle_events
-build:remote-ci-macos --jobs=72
+build:remote-ci-macos --jobs=40
 build:remote-ci-macos --verbose_failures
-build:remote-ci-macos --google_default_credentials
-build:remote-ci-macos --google_auth_scopes=email
+#############################################################################
+# Experimental EngFlow Remote Execution Configs
+#############################################################################

@@ -67,12 +67,12 @@ static_resources:
 
     client
       .newStreamPrototype()
-      .setOnResponseHeaders { responseHeaders, endStream in
+      .setOnResponseHeaders { responseHeaders, endStream, _ in
          XCTAssertEqual(200, responseHeaders.httpStatus)
          XCTAssertTrue(endStream)
          expectation.fulfill()
       }
-      .setOnError { _ in
+      .setOnError { _, _ in
         XCTFail("Unexpected error")
       }
       .start()
