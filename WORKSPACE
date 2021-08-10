@@ -46,3 +46,23 @@ declare_python_abi(name = "python_abi", python_version = "3")
 # Note: proguard is failing for API 30+
 android_sdk_repository(name = "androidsdk", api_level = 29)
 android_ndk_repository(name = "androidndk", path = "/Users/runner/Library/Android/sdk/ndk/21.3.6528147", api_level = 21)
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "bazel_toolchains",
+    commit = "810ac3490df9113cfaa50a4ee3d204a29c81a24c",
+    remote = "https://github.com/bazelbuild/bazel-toolchains.git",
+)
+
+# Perform auto-detection of the C++ and Java toolchains, which can take about
+# a minute.
+load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+rbe_autoconfig(
+    name = "engflow_remote_config",
+    detect_java_home = True,
+    digest = "sha256:9236915d10004a35f2439ce4a1c33c1dbb06f95f84c4a4497d4e4f95cdc9e07f",
+    registry = "registry.hub.docker.com",
+    repository = "envoyproxy/envoy-build",
+    use_legacy_platform_definition = False,
+)
