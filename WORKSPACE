@@ -55,14 +55,11 @@ git_repository(
     remote = "https://github.com/bazelbuild/bazel-toolchains.git",
 )
 
-# Perform auto-detection of the C++ and Java toolchains, which can take about
-# a minute.
 load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+
 rbe_autoconfig(
     name = "engflow_remote_config",
-    detect_java_home = True,
-    digest = "sha256:9236915d10004a35f2439ce4a1c33c1dbb06f95f84c4a4497d4e4f95cdc9e07f",
-    registry = "registry.hub.docker.com",
-    repository = "envoyproxy/envoy-build",
-    use_legacy_platform_definition = False,
+    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    registry = "docker.io",
+    repository = "envoyproxy/envoy-build-ubuntu",
 )
