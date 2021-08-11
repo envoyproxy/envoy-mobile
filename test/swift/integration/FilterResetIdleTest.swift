@@ -7,77 +7,80 @@ final class FilterResetIdleTests: XCTestCase {
   func skipped_testFilterResetIdle() {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
-    let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    let hcmType =
+      "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
     // swiftlint:disable:next line_length
-    let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
+    let pbfType =
+      "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
     // swiftlint:disable:next line_length
-    let localErrorFilterType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+    let localErrorFilterType =
+      "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
     let filterName = "reset_idle_test_filter"
     let config =
-"""
-static_resources:
-  listeners:
-  - name: fake_remote_listener
-    address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
-    filter_chains:
-    - filters:
-      - name: envoy.filters.network.http_connection_manager
-        typed_config:
-          "@type": \(hcmType)
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                direct_response: { status: 200 }
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-  - name: base_api_listener
-    address:
-      socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
-    api_listener:
-      api_listener:
-        "@type": \(hcmType)
-        stat_prefix: api_hcm
-        stream_idle_timeout: \(idleTimeout)
-        route_config:
-          name: api_router
-          virtual_hosts:
-          - name: api
-            domains: ["*"]
-            routes:
-            - match: { prefix: "/" }
-              route: { cluster: fake_remote }
-        http_filters:
-        - name: envoy.filters.http.platform_bridge
-          typed_config:
-            "@type": \(pbfType)
-            platform_filter_name: \(filterName)
-        - name: envoy.filters.http.local_error
-          typed_config:
-            "@type": \(localErrorFilterType)
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-  clusters:
-  - name: fake_remote
-    connect_timeout: 0.25s
-    type: STATIC
-    lb_policy: ROUND_ROBIN
-    load_assignment:
-      cluster_name: fake_remote
-      endpoints:
-      - lb_endpoints:
-        - endpoint:
-            address:
-              socket_address: { address: 127.0.0.1, port_value: 10101 }
-"""
+      """
+      static_resources:
+        listeners:
+        - name: fake_remote_listener
+          address:
+            socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
+          filter_chains:
+          - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": \(hcmType)
+                stat_prefix: remote_hcm
+                route_config:
+                  name: remote_route
+                  virtual_hosts:
+                  - name: remote_service
+                    domains: ["*"]
+                    routes:
+                    - match: { prefix: "/" }
+                      direct_response: { status: 200 }
+                http_filters:
+                - name: envoy.router
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        - name: base_api_listener
+          address:
+            socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
+          api_listener:
+            api_listener:
+              "@type": \(hcmType)
+              stat_prefix: api_hcm
+              stream_idle_timeout: \(idleTimeout)
+              route_config:
+                name: api_router
+                virtual_hosts:
+                - name: api
+                  domains: ["*"]
+                  routes:
+                  - match: { prefix: "/" }
+                    route: { cluster: fake_remote }
+              http_filters:
+              - name: envoy.filters.http.platform_bridge
+                typed_config:
+                  "@type": \(pbfType)
+                  platform_filter_name: \(filterName)
+              - name: envoy.filters.http.local_error
+                typed_config:
+                  "@type": \(localErrorFilterType)
+              - name: envoy.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        clusters:
+        - name: fake_remote
+          connect_timeout: 0.25s
+          type: STATIC
+          lb_policy: ROUND_ROBIN
+          load_assignment:
+            cluster_name: fake_remote
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address: { address: 127.0.0.1, port_value: 10101 }
+      """
 
     class ResetIdleTestFilter: AsyncRequestFilter, ResponseFilter {
       let queue = DispatchQueue(label: "io.envoyproxy.async")
@@ -134,7 +137,8 @@ static_resources:
       }
 
       func onRequestTrailers(_ trailers: RequestTrailers)
-          -> FilterTrailersStatus<RequestHeaders, RequestTrailers> {
+        -> FilterTrailersStatus<RequestHeaders, RequestTrailers>
+      {
         XCTFail("Unexpected call to onRequestTrailers filter callback")
         return .stopIteration
       }
@@ -152,7 +156,8 @@ static_resources:
       }
 
       func onResponseTrailers(_ trailers: ResponseTrailers)
-          -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+        -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
+      {
         XCTFail("Unexpected call to onResponseTrailers filter callback")
         return .stopIteration
       }
@@ -166,22 +171,28 @@ static_resources:
 
     let resetExpectation = self.expectation(description: "Stream idle timer reset 3 times")
     let timeoutExpectation = self.expectation(description: "Stream idle timeout triggered")
-    let cancelExpectation = self.expectation(description: "Stream cancellation triggered incorrectly")
+    let cancelExpectation = self.expectation(
+      description: "Stream cancellation triggered incorrectly")
     cancelExpectation.isInverted = true
 
     let client = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
-        factory: { ResetIdleTestFilter(resetExpectation: resetExpectation, cancelExpectation: cancelExpectation) }
+        factory: {
+          ResetIdleTestFilter(
+            resetExpectation: resetExpectation, cancelExpectation: cancelExpectation)
+        }
       )
       .build()
       .streamClient()
 
-    let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",
-                                               authority: "example.com", path: "/test")
-      .addUpstreamHttpProtocol(.http2)
-      .build()
+    let requestHeaders = RequestHeadersBuilder(
+      method: .get, scheme: "https",
+      authority: "example.com", path: "/test"
+    )
+    .addUpstreamHttpProtocol(.http2)
+    .build()
 
     client
       .newStreamPrototype()
