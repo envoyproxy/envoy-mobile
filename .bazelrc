@@ -108,31 +108,31 @@ build:engflow --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:engflow --javabase=@engflow_remote_config//java:jdk
 build:engflow --platforms=@engflow_remote_config//config:platform
 #############################################################################
-# _remote-ci: These options are valid for any platform, use the configs below
+# remote-ci-common: These options are valid for any platform, use the configs below
 # to add platform-specific options. Avoid using this config directly and
 # instead use a platform-specific config
 #############################################################################
 # --config=remote sets --auth_enabled=true to enable GCP authentication,
 # however, the remote execution cluster doesn't use GCP auth (it uses
 # GITHUB_TOKEN auth) so we have to override it to 'false' here.
-build:_remote-ci --config=remote
-build:_remote-ci --auth_enabled=false
-build:_remote-ci --remote_executor=grpcs://envoy.cluster.engflow.com
-build:_remote-ci --bes_backend=grpcs://envoy.cluster.engflow.com/
-build:_remote-ci --bes_results_url=https://envoy.cluster.engflow.com/invocation/
-build:_remote-ci --bes_lifecycle_events
-build:_remote-ci --jobs=40
-build:_remote-ci --verbose_failures
+build:remote-ci-common --config=remote
+build:remote-ci-common --auth_enabled=false
+build:remote-ci-common --remote_executor=grpcs://envoy.cluster.engflow.com
+build:remote-ci-common --bes_backend=grpcs://envoy.cluster.engflow.com/
+build:remote-ci-common --bes_results_url=https://envoy.cluster.engflow.com/invocation/
+build:remote-ci-common --bes_lifecycle_events
+build:remote-ci-common --jobs=40
+build:remote-ci-common --verbose_failures
 #############################################################################
 # remote-ci-linux: These options are linux-only
 #############################################################################
 build:remote-ci-linux --config=engflow
-build:remote-ci-linux --config=_remote-ci
+build:remote-ci-linux --config=remote-ci-common
 build:remote-ci-linux --remote_default_exec_properties=Pool=linux
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 #############################################################################
-build:remote-ci-macos --config=_remote-ci
+build:remote-ci-macos --config=remote-ci-common
 build:remote-ci-macos --remote_default_exec_properties=Pool=macos
 #############################################################################
 # Experimental EngFlow Remote Execution Configs
