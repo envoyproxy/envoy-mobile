@@ -88,6 +88,26 @@ build:coverage --javabase=@bazel_tools//tools/jdk:remote_jdk11
 #############################################################################
 # Experimental EngFlow Remote Execution Configs
 #############################################################################
+# Common engflow flags
+build:engflow --define=EXECUTOR=remote
+build:engflow --disk_cache=
+build:engflow --experimental_inmemory_dotd_files
+build:engflow --experimental_inmemory_jdeps_files
+build:engflow --incompatible_strict_action_env=true
+build:engflow --remote_timeout=600
+build:engflow --spawn_strategy=remote,local
+# Platform and toolchain flags
+build:engflow --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:engflow --crosstool_top=@engflow_remote_config//cc:toolchain
+build:engflow --extra_execution_platforms=@engflow_remote_config//config:platform
+build:engflow --extra_toolchains=@engflow_remote_config//config:cc-toolchain
+build:engflow --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:engflow --host_javabase=@engflow_remote_config//java:jdk
+build:engflow --host_platform=@engflow_remote_config//config:platform
+build:engflow --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:engflow --javabase=@engflow_remote_config//java:jdk
+build:engflow --platforms=@engflow_remote_config//config:platform
+#############################################################################
 # _remote-ci: These options are valid for any platform, use the configs below
 # to add platform-specific options. Avoid using this config directly and
 # instead use a platform-specific config
@@ -106,6 +126,7 @@ build:_remote-ci --verbose_failures
 #############################################################################
 # remote-ci-linux: These options are linux-only
 #############################################################################
+build:remote-ci-linux --config=engflow
 build:remote-ci-linux --config=_remote-ci
 build:remote-ci-linux --remote_default_exec_properties=Pool=linux
 #############################################################################
