@@ -95,8 +95,8 @@ build:coverage --javabase=@bazel_tools//tools/jdk:remote_jdk11
 # --config=remote sets --auth_enabled=true to enable GCP authentication,
 # however, the remote execution cluster doesn't use GCP auth (it uses
 # GITHUB_TOKEN auth) so we have to override it to 'false' here.
-build:_remote-ci --auth_enabled=false
 build:_remote-ci --config=remote
+build:_remote-ci --auth_enabled=false
 build:_remote-ci --remote_executor=grpcs://envoy.cluster.engflow.com
 build:_remote-ci --bes_backend=grpcs://envoy.cluster.engflow.com/
 build:_remote-ci --bes_results_url=https://envoy.cluster.engflow.com/invocation/
