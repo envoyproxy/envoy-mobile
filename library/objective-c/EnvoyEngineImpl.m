@@ -96,7 +96,8 @@ static const void *ios_http_filter_init(const void *context) {
 }
 
 static envoy_filter_headers_status
-ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, envoy_stream_intel stream_intel, const void *context) {
+ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream,
+                                   envoy_stream_intel stream_intel, const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
@@ -116,7 +117,8 @@ ios_http_filter_on_request_headers(envoy_headers headers, bool end_stream, envoy
 }
 
 static envoy_filter_headers_status
-ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, envoy_stream_intel stream_intel, const void *context) {
+ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream,
+                                    envoy_stream_intel stream_intel, const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
@@ -134,7 +136,8 @@ ios_http_filter_on_response_headers(envoy_headers headers, bool end_stream, envo
   }
 }
 
-static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data, bool end_stream, envoy_stream_intel stream_intel,
+static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data, bool end_stream,
+                                                                envoy_stream_intel stream_intel,
                                                                 const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
@@ -157,7 +160,8 @@ static envoy_filter_data_status ios_http_filter_on_request_data(envoy_data data,
   }
 }
 
-static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream, envoy_stream_intel stream_intel,
+static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data, bool end_stream,
+                                                                 envoy_stream_intel stream_intel,
                                                                  const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
@@ -180,8 +184,9 @@ static envoy_filter_data_status ios_http_filter_on_response_data(envoy_data data
   }
 }
 
-static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_headers trailers, envoy_stream_intel stream_intel,
-                                                                        const void *context) {
+static envoy_filter_trailers_status
+ios_http_filter_on_request_trailers(envoy_headers trailers, envoy_stream_intel stream_intel,
+                                    const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
@@ -210,8 +215,9 @@ static envoy_filter_trailers_status ios_http_filter_on_request_trailers(envoy_he
   }
 }
 
-static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_headers trailers, envoy_stream_intel stream_intel,
-                                                                         const void *context) {
+static envoy_filter_trailers_status
+ios_http_filter_on_response_trailers(envoy_headers trailers, envoy_stream_intel stream_intel,
+                                     const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
@@ -242,7 +248,8 @@ static envoy_filter_trailers_status ios_http_filter_on_response_trailers(envoy_h
 
 static envoy_filter_resume_status
 ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envoy_headers *trailers,
-                                  bool end_stream, envoy_stream_intel stream_intel, const void *context) {
+                                  bool end_stream, envoy_stream_intel stream_intel,
+                                  const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
@@ -257,8 +264,8 @@ ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envo
     EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
     NSData *pendingData = data ? to_ios_data(*data) : nil;
     EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
-    NSArray *result =
-        filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers, end_stream, stream_intel);
+    NSArray *result = filter.onResumeRequest(pendingHeaders, pendingData, pendingTrailers,
+                                             end_stream, stream_intel);
     return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
                                         /*pending_headers*/ toNativeHeadersPtr(result[1]),
                                         /*pending_data*/ toNativeDataPtr(result[2]),
@@ -268,7 +275,8 @@ ios_http_filter_on_resume_request(envoy_headers *headers, envoy_data *data, envo
 
 static envoy_filter_resume_status
 ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
-                                   envoy_headers *trailers, bool end_stream, envoy_stream_intel stream_intel, const void *context) {
+                                   envoy_headers *trailers, bool end_stream,
+                                   envoy_stream_intel stream_intel, const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
@@ -283,8 +291,8 @@ ios_http_filter_on_resume_response(envoy_headers *headers, envoy_data *data,
     EnvoyHeaders *pendingHeaders = headers ? to_ios_headers(*headers) : nil;
     NSData *pendingData = data ? to_ios_data(*data) : nil;
     EnvoyHeaders *pendingTrailers = trailers ? to_ios_headers(*trailers) : nil;
-    NSArray *result =
-        filter.onResumeResponse(pendingHeaders, pendingData, pendingTrailers, end_stream, stream_intel);
+    NSArray *result = filter.onResumeResponse(pendingHeaders, pendingData, pendingTrailers,
+                                              end_stream, stream_intel);
     return (envoy_filter_resume_status){/*status*/ [result[0] intValue],
                                         /*pending_headers*/ toNativeHeadersPtr(result[1]),
                                         /*pending_data*/ toNativeDataPtr(result[2]),
@@ -336,7 +344,8 @@ static void ios_http_filter_on_cancel(envoy_stream_intel stream_intel, const voi
   }
 }
 
-static void ios_http_filter_on_error(envoy_error error, envoy_stream_intel stream_intel, const void *context) {
+static void ios_http_filter_on_error(envoy_error error, envoy_stream_intel stream_intel,
+                                     const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {

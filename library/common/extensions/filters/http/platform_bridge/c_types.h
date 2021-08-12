@@ -130,12 +130,9 @@ typedef envoy_filter_trailers_status (*envoy_filter_on_trailers_f)(envoy_headers
  * Function signature for filter invocation after asynchronous resumption. Passes a
  * snapshot of all HTTP state that has not yet been forwarded along the filter chain.
  */
-typedef envoy_filter_resume_status (*envoy_filter_on_resume_f)(envoy_headers* headers,
-                                                               envoy_data* data,
-                                                               envoy_headers* trailers,
-                                                               bool end_stream,
-                                                               envoy_stream_intel stream_intel,
-                                                               const void* context);
+typedef envoy_filter_resume_status (*envoy_filter_on_resume_f)(
+    envoy_headers* headers, envoy_data* data, envoy_headers* trailers, bool end_stream,
+    envoy_stream_intel stream_intel, const void* context);
 
 /**
  * Function signature for on-cancellation filter invocations.
