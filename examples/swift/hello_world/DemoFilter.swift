@@ -13,12 +13,15 @@ struct DemoFilter: ResponseFilter {
 
   func setResponseFilterCallbacks(_ callbacks: ResponseFilterCallbacks, streamIntel: StreamIntel) {}
 
-  func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
+  func onResponseData(_ body: Data, endStream: Bool, streamIntel: StreamIntel)
+    -> FilterDataStatus<ResponseHeaders>
+  {
     return .continue(data: body)
   }
 
   func onResponseTrailers(_ trailers: ResponseTrailers, streamIntel: StreamIntel)
-      -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+    -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
+  {
     return .continue(trailers: trailers)
   }
 
