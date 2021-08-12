@@ -1,3 +1,5 @@
+licenses(["notice"])  # Apache 2
+
 xcode_version(
     name = "xcode_12_4",
     default_ios_sdk_version = "14.4",
