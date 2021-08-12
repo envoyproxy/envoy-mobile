@@ -1,7 +1,7 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
 
-fileprivate let kNullIntel = StreamIntel(streamId: 0, connectionId: 0, attemptCount: 0)
+private let kNullIntel = StreamIntel(streamId: 0, connectionId: 0, attemptCount: 0)
 
 /// Interface representing a filter. See `RequestFilter` and `ResponseFilter` for more details.
 public protocol Filter {
