@@ -12,9 +12,3 @@ envoy_cc_test(
         "//library/cc:envoy_engine_cc_lib_no_stamp",
     ],
 )
-
-sh_test(
-    name = "sh",
-    srcs = ["sh_test.sh"],
-    deps = [],
-)
