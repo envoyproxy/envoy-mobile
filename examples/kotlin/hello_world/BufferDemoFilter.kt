@@ -20,7 +20,8 @@ class BufferDemoFilter : ResponseFilter {
 
   override fun onResponseHeaders(
     headers: ResponseHeaders,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterHeadersStatus<ResponseHeaders> {
     this.headers = headers
     return FilterHeadersStatus.StopIteration()
@@ -28,7 +29,8 @@ class BufferDemoFilter : ResponseFilter {
 
   override fun onResponseData(
     body: ByteBuffer,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterDataStatus<ResponseHeaders> {
     // Since we request buffering, each invocation will include all data buffered so far.
     this.body = body
@@ -43,7 +45,8 @@ class BufferDemoFilter : ResponseFilter {
   }
 
   override fun onResponseTrailers(
-    trailers: ResponseTrailers
+    trailers: ResponseTrailers,
+    streamIntel: StreamIntel
   ): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
     // Trailers imply end of stream; resume processing of the (now fully-buffered) response.
     val builder = headers.toResponseHeadersBuilder()
@@ -52,10 +55,10 @@ class BufferDemoFilter : ResponseFilter {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onError(error: EnvoyError) {
+  override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onCancel() {
+  override fun onCancel(streamIntel: StreamIntel) {
   }
 }

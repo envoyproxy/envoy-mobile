@@ -23,7 +23,8 @@ class AsyncDemoFilter : AsyncResponseFilter {
 
   override fun onResponseHeaders(
     headers: ResponseHeaders,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterHeadersStatus<ResponseHeaders> {
     // If this is the end of the stream, asynchronously resume response processing via callback.
     if (endStream) {
@@ -36,7 +37,8 @@ class AsyncDemoFilter : AsyncResponseFilter {
 
   override fun onResponseData(
     body: ByteBuffer,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterDataStatus<ResponseHeaders> {
     // If this is the end of the stream, asynchronously resume response processing via callback.
     if (endStream) {
@@ -48,7 +50,8 @@ class AsyncDemoFilter : AsyncResponseFilter {
   }
 
   override fun onResponseTrailers(
-    trailers: ResponseTrailers
+    trailers: ResponseTrailers,
+    streamIntel: StreamIntel
   ): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
     // Trailers imply end of stream, so asynchronously resume response processing via callbacka
     Timer("AsyncResume", false).schedule(100) {
@@ -65,7 +68,8 @@ class AsyncDemoFilter : AsyncResponseFilter {
     headers: ResponseHeaders?,
     data: ByteBuffer?,
     trailers: ResponseTrailers?,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterResumeStatus<ResponseHeaders, ResponseTrailers> {
     val builder = headers!!.toResponseHeadersBuilder()
       .add("async-filter-demo", "1")
@@ -73,10 +77,10 @@ class AsyncDemoFilter : AsyncResponseFilter {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onError(error: EnvoyError) {
+  override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onCancel() {
+  override fun onCancel(streamIntel: StreamIntel) {
   }
 }
