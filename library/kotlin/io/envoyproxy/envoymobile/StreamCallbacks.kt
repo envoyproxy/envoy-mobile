@@ -55,7 +55,10 @@ internal class EnvoyHTTPCallbacksAdapter(
     attemptCount: Int,
     streamIntel: EnvoyStreamIntel
   ) {
-    callbacks.onError?.invoke(EnvoyError(errorCode, message, attemptCount), StreamIntel(streamIntel))
+    callbacks.onError?.invoke(
+      EnvoyError(errorCode, message, attemptCount),
+      StreamIntel(streamIntel)
+    )
   }
 
   override fun onCancel(streamIntel: EnvoyStreamIntel) {
