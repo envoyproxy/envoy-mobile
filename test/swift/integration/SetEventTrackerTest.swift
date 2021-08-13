@@ -4,7 +4,7 @@ import Foundation
 import XCTest
 
 final class SetEventTrackerTest: XCTestCase {
-  func testSetEventTracker() throws {
+  func testEmitEventWithoutSettingEventTracker() throws {
     let eventExpectation =
       self.expectation(description: "Passed event tracker receives an event")
 

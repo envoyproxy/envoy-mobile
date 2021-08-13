@@ -53,7 +53,7 @@ class SetEventTrackerTest {
   }
 
   @Test
-  fun `engine should continue to run if no eventTracker is set`() {
+  fun `engine should continue to run if no eventTracker is set and event is emitted`() {
     val countDownLatch = CountDownLatch(1)
     val engine = EngineBuilder()
       .addNativeFilter(
