@@ -135,6 +135,7 @@ public class UploadDataProvidersTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
   // Tests that ByteBuffer's limit cannot be changed by the caller.
+  // TODO (colibie) speak to charles
   public void testUploadChangeBufferLimit() throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
     UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
