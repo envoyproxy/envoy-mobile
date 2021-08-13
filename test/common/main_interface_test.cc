@@ -115,7 +115,7 @@ TEST(MainInterfaceTest, BasicStream) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, BUFFERED_TEST_CONFIG.c_str(), level.c_str());
 
   ASSERT_TRUE(
@@ -180,7 +180,7 @@ TEST(MainInterfaceTest, SendMetadata) {
 
   // There is nothing functional about the config used to run the engine, as the created stream is
   // only used for send_metadata.
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
@@ -217,7 +217,7 @@ TEST(MainInterfaceTest, ResetStream) {
 
   // There is nothing functional about the config used to run the engine, as the created stream is
   // immediately reset.
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
@@ -288,7 +288,7 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
                                     &engine_cbs_context /*context*/};
 
   // Using the minimal envoy mobile config that allows for running the engine.
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(
@@ -339,7 +339,7 @@ TEST(EngineTest, RecordCounter) {
                                     } /*on_exit*/,
                                     &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_counter_inc(0, "counter", envoy_stats_notags, 1));
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   EXPECT_EQ(ENVOY_SUCCESS, record_counter_inc(0, "counter", envoy_stats_notags, 1));
@@ -361,7 +361,7 @@ TEST(EngineTest, SetGauge) {
                                     } /*on_exit*/,
                                     &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_set(0, "gauge", envoy_stats_notags, 1));
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
@@ -386,7 +386,7 @@ TEST(EngineTest, AddToGauge) {
                                     &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_add(0, "gauge", envoy_stats_notags, 30));
 
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
@@ -410,7 +410,7 @@ TEST(EngineTest, SubFromGauge) {
                                     &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_sub(0, "gauge", envoy_stats_notags, 30));
 
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
@@ -437,7 +437,7 @@ TEST(EngineTest, RecordHistogramValue) {
   EXPECT_EQ(ENVOY_FAILURE,
             record_histogram_value(0, "histogram", envoy_stats_notags, 99, MILLISECONDS));
 
-  init_engine(engine_cbs, {});
+  init_engine(engine_cbs, {}, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
@@ -479,7 +479,7 @@ TEST(EngineTest, Logger) {
                       } /* release */,
                       &test_context};
 
-  init_engine(engine_cbs, logger);
+  init_engine(engine_cbs, logger, {});
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
