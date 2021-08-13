@@ -8,8 +8,9 @@ envoy_package()
 envoy_mobile_android_test(
     name = "net_tests",
     srcs = [
-                "CronetUrlRequestTest.java",
+        "CronetUrlRequestTest.java",
         "UploadDataProvidersTest.java",
+        "UrlResponseInfoTest.java",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
