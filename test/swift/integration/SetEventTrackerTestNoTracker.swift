@@ -5,7 +5,7 @@ import XCTest
 
 final class SetEventTrackerTestNoTracker: XCTestCase {
   func testSetEventTracker() throws {
-    let responseHeadersReceivedExpectation = self.expectation(description: "Response headers received")
+    let expectation = self.expectation(description: "Response headers received")
 
     let client = EngineBuilder()
       .addNativeFilter(
@@ -22,11 +22,11 @@ final class SetEventTrackerTestNoTracker: XCTestCase {
     client
       .newStreamPrototype()
       .setOnResponseHeaders { _, _, _ in
-        responseHeadersReceivedExpectation.fulfill()
+        expectation.fulfill()
       }
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    XCTAssertEqual(XCTWaiter.wait(for: [responseHeadersReceivedExpectation], timeout: 10), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 10), .completed)
   }
 }

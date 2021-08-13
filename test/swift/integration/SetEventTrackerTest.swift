@@ -5,13 +5,13 @@ import XCTest
 
 final class SetEventTrackerTest: XCTestCase {
   func testSetEventTracker() throws {
-    let eventTrackingExpectation =
+    let eventExpectation =
       self.expectation(description: "Passed event tracker receives an event")
 
     let client = EngineBuilder()
       .setEventTracker { event in
         XCTAssertEqual("bar", event["foo"])
-        eventTrackingExpectation.fulfill()
+        eventExpectation.fulfill()
       }
 
       .addNativeFilter(
@@ -30,6 +30,6 @@ final class SetEventTrackerTest: XCTestCase {
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    XCTAssertEqual(XCTWaiter.wait(for: [eventTrackingExpectation], timeout: 10), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [eventExpectation], timeout: 10), .completed)
   }
 }
