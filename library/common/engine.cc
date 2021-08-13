@@ -4,16 +4,16 @@
 
 #include "source/common/common/lock_guard.h"
 
+#include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
-#include "library/common/bridge/utility.h"
 
 namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
-               std::unique_ptr<envoy_event_tracker> event_tracker, std::atomic<envoy_network_t>& preferred_network)
-    : callbacks_(callbacks), logger_(logger), event_tracker_(std::move(event_tracker)),
+               envoy_event_tracker event_tracker, std::atomic<envoy_network_t>& preferred_network)
+    : callbacks_(callbacks), logger_(logger), event_tracker_(event_tracker),
       dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
       preferred_network_(preferred_network) {
   // Ensure static factory registration occurs on time.
@@ -21,18 +21,19 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
   // https://github.com/lyft/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
 
-  Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), event_tracker_.get());
-  assert_handler_registration_ = Assert::addDebugAssertionFailureRecordAction(
-      [this](const char* location) {
-        if (event_tracker_->track == nullptr) {
+  // TODO(Augustyniak): Capturing an address of event_tracker_ and registering it in the API
+  // registry may lead to crashes at Engine shutdown. To be figured out as part of
+  // https://github.com/lyft/envoy-mobile/issues/332
+  Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
+  assert_handler_registration_ =
+      Assert::addDebugAssertionFailureRecordAction([this](const char* location) {
+        if (this->event_tracker_.track == nullptr) {
           return;
         }
 
-        const auto event = Bridge::makeEnvoyMap({
-          {"name", "envoy_assertion"},
-          {"location", std::string(location)}
-        });
-        event_tracker_->track(event, event_tracker_->context);
+        const auto event = Bridge::makeEnvoyMap(
+            {{"name", "envoy_assertion"}, {"location", std::string(location)}});
+        this->event_tracker_.track(event, this->event_tracker_.context);
       });
 }
 

@@ -24,6 +24,7 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         ":engine_common_lib",
+        "//library/common/bridge:utility_lib",
         "//library/common/common:lambda_logger_delegate_lib",
         "//library/common/config:config_lib",
         "//library/common/data:utility_lib",
@@ -31,7 +32,6 @@ envoy_cc_library(
         "//library/common/http:client_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/stats:utility_lib",
-        "//library/common/bridge:utility_lib",
         "//library/common/types:c_types_lib",
         "@envoy//envoy/server:lifecycle_notifier_interface",
         "@envoy_build_config//:extension_registry",

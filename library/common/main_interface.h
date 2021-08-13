@@ -167,7 +167,7 @@ envoy_status_t register_platform_api(const char* name, void* api);
  * @return envoy_engine_t, handle to the underlying engine.
  */
 envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
-                           envoy_event_tracker* event_tracker);
+                           envoy_event_tracker event_tracker);
 
 /**
  * External entry point for library.

@@ -400,13 +400,12 @@ static void ios_track_event(envoy_map map, const void *context) {
 
   // TODO(Augustyniak): Everything here leaks, but it's all tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332.
-  envoy_event_tracker* native_event_tracker = safe_malloc(sizeof(envoy_event_tracker));
-  memset(native_event_tracker, 0, sizeof(envoy_event_tracker));
+  envoy_event_tracker native_event_tracker = {NULL, NULL};
   if (eventTracker) {
     EnvoyEventTracker *objcEventTracker =
-      [[EnvoyEventTracker alloc] initWithEventTrackingClosure:eventTracker];
-    native_event_tracker->track = ios_track_event;
-    native_event_tracker->context = CFBridgingRetain(objcEventTracker);
+        [[EnvoyEventTracker alloc] initWithEventTrackingClosure:eventTracker];
+    native_event_tracker.track = ios_track_event;
+    native_event_tracker.context = CFBridgingRetain(objcEventTracker);
   }
 
   _engineHandle = init_engine(native_callbacks, native_logger, native_event_tracker);

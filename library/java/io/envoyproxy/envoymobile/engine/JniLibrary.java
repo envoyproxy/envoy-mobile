@@ -150,7 +150,8 @@ public class JniLibrary {
    * @param eventTracker     the event tracking interface.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger, EnvoyEventTracker eventTracker);
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger,
+                                          EnvoyEventTracker eventTracker);
 
   /**
    * External entry point for library.

@@ -23,8 +23,7 @@ public:
    * @param event_tracker, the event tracker to use for the emission of events.
    * @param preferred_network, hook to obtain the preferred network for new streams.
    */
-  Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
-         std::unique_ptr<envoy_event_tracker> event_tracker,
+  Engine(envoy_engine_callbacks callbacks, envoy_logger logger, envoy_event_tracker event_tracker,
          std::atomic<envoy_network_t>& preferred_network);
 
   /**
@@ -116,7 +115,7 @@ private:
   Stats::StatNameSetPtr stat_name_set_;
   envoy_engine_callbacks callbacks_;
   envoy_logger logger_;
-  std::unique_ptr<envoy_event_tracker> event_tracker_;
+  envoy_event_tracker event_tracker_;
   Assert::ActionRegistrationPtr assert_handler_registration_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;

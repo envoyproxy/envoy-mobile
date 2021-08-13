@@ -315,7 +315,7 @@ TEST(MainInterfaceTest, InitEngineReturns1) {
                                       exit->on_exit.Notify();
                                     } /*on_exit*/,
                                     &test_context /*context*/};
-  ASSERT_EQ(1, init_engine(engine_cbs, {}));
+  ASSERT_EQ(1, init_engine(engine_cbs, {}, {}));
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   terminate_engine(0);

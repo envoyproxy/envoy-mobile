@@ -89,7 +89,8 @@ static void jvm_on_track(envoy_map events, const void* context) {
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_initEngine(
-    JNIEnv* env, jclass, jobject on_start_context, jobject envoy_logger_context, jobject j_event_tracker) {
+    JNIEnv* env, jclass, jobject on_start_context, jobject envoy_logger_context,
+    jobject j_event_tracker) {
   jobject retained_on_start_context =
       env->NewGlobalRef(on_start_context); // Required to keep context in memory
   envoy_engine_callbacks native_callbacks = {jvm_on_engine_running, jvm_on_exit,
@@ -106,11 +107,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
   jobject retained_context = env->NewGlobalRef(j_event_tracker);
   jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
 
-  envoy_event_tracker* event_tracker = (envoy_event_tracker*)safe_malloc(sizeof(envoy_event_tracker));
-  memset(event_tracker, 0, sizeof(envoy_event_tracker));
+  envoy_event_tracker event_tracker = {NULL, NULL};
   if (j_event_tracker != nullptr) {
-    event_tracker->track = jvm_on_track;
-    event_tracker->context = retained_context;
+    event_tracker.track = jvm_on_track;
+    event_tracker.context = retained_context;
   }
 
   return init_engine(native_callbacks, logger, event_tracker);
