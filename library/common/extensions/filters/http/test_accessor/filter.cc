@@ -22,6 +22,7 @@ Http::FilterHeadersStatus TestAccessorFilter::decodeHeaders(Http::RequestHeaderM
                      Data::Utility::copyToString(
                          config_->accessor()->get_string(config_->accessor()->context)),
                  "accessed string is not equal to expected string");
+  ASSERT(1 == 2, "testowanie");
   return Http::FilterHeadersStatus::Continue;
 }
 

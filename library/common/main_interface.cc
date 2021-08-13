@@ -1,6 +1,7 @@
 #include "library/common/main_interface.h"
 
 #include <atomic>
+#include <memory>
 #include <string>
 
 #include "library/common/api/external.h"
@@ -172,10 +173,13 @@ envoy_status_t register_platform_api(const char* name, void* api) {
   return ENVOY_SUCCESS;
 }
 
-envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger) {
+envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
+                           envoy_event_tracker* event_tracker) {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger, preferred_network_);
+  strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger,
+                                                   std::make_unique(*event_tracker),
+                                                   preferred_network_);
   engine_ = strong_engine_;
   return 1;
 }

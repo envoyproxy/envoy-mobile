@@ -147,9 +147,10 @@ public class JniLibrary {
    *
    * @param runningCallback, called when the engine finishes its async startup and begins running.
    * @param logger,          the logging interface.
+   * @param eventTracker     the event tracking interface.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger);
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger, EnvoyEventTracker eventTracker);
 
   /**
    * External entry point for library.
