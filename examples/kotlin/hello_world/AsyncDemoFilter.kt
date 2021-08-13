@@ -9,6 +9,7 @@ import io.envoyproxy.envoymobile.FilterTrailersStatus
 import io.envoyproxy.envoymobile.ResponseFilterCallbacks
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import java.nio.ByteBuffer
 import java.util.Timer
 import kotlin.concurrent.schedule

@@ -7,6 +7,7 @@ import io.envoyproxy.envoymobile.FilterTrailersStatus
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import java.nio.ByteBuffer
 
 /**
