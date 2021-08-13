@@ -11,8 +11,8 @@ import io.envoyproxy.envoymobile.GRPCRequestHeadersBuilder
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import io.envoyproxy.envoymobile.engine.JniLibrary
-import io.envoyproxy.envoymobile.engine.types.StreamIntel
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit

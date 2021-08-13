@@ -10,6 +10,7 @@ import io.envoyproxy.envoymobile.GRPCRequestHeadersBuilder
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch

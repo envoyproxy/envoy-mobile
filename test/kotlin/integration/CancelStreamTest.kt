@@ -11,6 +11,7 @@ import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer

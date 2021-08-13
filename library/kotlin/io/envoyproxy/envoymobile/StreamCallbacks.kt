@@ -1,11 +1,8 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
-
-typealias StreamIntel = EnvoyStreamIntel
 
 /**
  * A collection of platform-level callbacks that are specified by consumers
