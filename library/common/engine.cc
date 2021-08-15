@@ -25,16 +25,6 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
   // registry may lead to crashes at Engine shutdown. To be figured out as part of
   // https://github.com/lyft/envoy-mobile/issues/332
   Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
-  assert_handler_registration_ =
-      Assert::addDebugAssertionFailureRecordAction([this](const char* location) {
-        if (this->event_tracker_.track == nullptr) {
-          return;
-        }
-
-        const auto event = Bridge::makeEnvoyMap(
-            {{"name", "envoy_assertion"}, {"location", std::string(location)}});
-        this->event_tracker_.track(event, this->event_tracker_.context);
-      });
 }
 
 envoy_status_t Engine::run(const std::string config, const std::string log_level) {
@@ -66,6 +56,15 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   {
     Thread::LockGuard lock(mutex_);
     try {
+      if (event_tracker_.track != nullptr) {
+        assert_handler_registration_ =
+            Assert::addDebugAssertionFailureRecordAction([this](const char* location) {
+              const auto event = Bridge::makeEnvoyMap(
+                  {{"name", "assertion"}, {"location", std::string(location)}});
+              this->event_tracker_.track(event, this->event_tracker_.context);
+            });
+      }
+
       main_common = std::make_unique<EngineCommon>(envoy_argv.size() - 1, envoy_argv.data());
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
@@ -120,6 +119,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   stat_name_set_.reset();
   lambda_logger_.reset(nullptr);
   main_common.reset(nullptr);
+  assert_handler_registration_.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
 
