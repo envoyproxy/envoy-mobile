@@ -285,11 +285,4 @@ public class JniLibrary {
    */
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
-  /**
-   * Register an event tracker.
-   *
-   * @param eventTracker,  the event tracker to be registered.
-   * @return int, the resulting status of the operation.
-   */
-  protected static native int registerEventTracker(EnvoyEventTracker eventTracker);
 }
