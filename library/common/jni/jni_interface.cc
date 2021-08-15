@@ -102,13 +102,12 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
     logger = envoy_logger{jvm_on_log, jni_delete_const_global_ref, retained_logger_context};
   }
 
-  // TODO(goaway): The retained_context leaks, but it's tied to the life of the engine.
-  // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332.
-  jobject retained_context = env->NewGlobalRef(j_event_tracker);
-  jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
-
-  envoy_event_tracker event_tracker = {NULL, NULL};
+  envoy_event_tracker event_tracker = {nullptr, nullptr};
   if (j_event_tracker != nullptr) {
+    // TODO(goaway): The retained_context leaks, but it's tied to the life of the engine.
+    // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332.
+    jobject retained_context = env->NewGlobalRef(j_event_tracker);
+    jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
     event_tracker.track = jvm_on_track;
     event_tracker.context = retained_context;
   }
