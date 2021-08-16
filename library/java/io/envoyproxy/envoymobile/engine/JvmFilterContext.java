@@ -129,10 +129,11 @@ class JvmFilterContext {
    * @param data,         buffered body data.
    * @param trailerCount, total pending trailers included in the trailer block.
    * @param endStream,    whether the stream is closed at this point.
+   * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
    * @return Object[],    tuple of status with updated entities to be forwarded.
    */
   public Object onResumeRequest(long headerCount, byte[] data, long trailerCount,
-                                boolean endStream) {
+                                boolean endStream, long[] streamIntel) {
     // Headers are optional in this call, and a negative length indicates omission.
     Map<String, List<String>> headers = null;
     if (headerCount >= 0) {
@@ -157,10 +158,11 @@ class JvmFilterContext {
    * @param data,         buffered body data.
    * @param trailerCount, total pending trailers included in the trailer block.
    * @param endStream,    whether the stream is closed at this point.
+   * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
    * @return Object[],    tuple of status with updated entities to be forwarded.
    */
   public Object onResumeResponse(long headerCount, byte[] data, long trailerCount,
-                                 boolean endStream) {
+                                 boolean endStream, long[] streamIntel) {
     // Headers are optional in this call, and a negative length indicates omission.
     Map<String, List<String>> headers = null;
     if (headerCount >= 0) {
