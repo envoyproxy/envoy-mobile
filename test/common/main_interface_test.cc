@@ -101,7 +101,7 @@ static inline std::map<std::string, std::string> toMap(envoy_map map) {
     envoy_map_entry header = map.entries[i];
     const auto key = Data::Utility::copyToString(header.key);
     const auto value = Data::Utility::copyToString(header.value);
-    new_map.insert({key, value});
+    new_map.insert({std::move(key), std::move(value)});
   }
 
   release_envoy_map(map);
@@ -529,15 +529,15 @@ TEST(EngineTest, EventTrackerRegistersDefaultAPI) {
   // A default event tracker is registered in external API registry.
   const auto registered_event_tracker =
       static_cast<envoy_event_tracker*>(Api::External::retrieveApi(envoy_event_tracker_api_name));
-  ASSERT_TRUE(registered_event_tracker != nullptr);
-  ASSERT_TRUE(registered_event_tracker->track == nullptr);
-  ASSERT_TRUE(registered_event_tracker->context == nullptr);
+  EXPECT_TRUE(registered_event_tracker != nullptr);
+  EXPECT_TRUE(registered_event_tracker->track == nullptr);
+  EXPECT_TRUE(registered_event_tracker->context == nullptr);
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  // Verify that no crash if the assertion fails when no real event
-  // tracker is passed at engine's initialization time.
   // Simulate a failed assertion by invoking a debug assertion failure
   // record action.
+  // Verify that no crash if the assertion fails when no real event
+  // tracker is passed at engine's initialization time.
   Assert::invokeDebugAssertionFailureRecordActionForAssertMacroUseOnly("foo_location");
 
   terminate_engine(0);
@@ -556,7 +556,7 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
 
   envoy_event_tracker event_tracker{[](envoy_map map, const void* context) -> void {
                                       const auto new_map = toMap(map);
-                                      ASSERT_EQ("bar", new_map.at("foo"));
+                                      EXPECT_EQ("bar", new_map.at("foo"));
                                       auto* test_context = static_cast<engine_test_context*>(
                                           const_cast<void*>(context));
                                       test_context->on_event.Notify();
@@ -568,9 +568,9 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
 
   const auto registered_event_tracker =
       static_cast<envoy_event_tracker*>(Api::External::retrieveApi(envoy_event_tracker_api_name));
-  ASSERT_TRUE(registered_event_tracker != nullptr);
-  ASSERT_EQ(event_tracker.track, registered_event_tracker->track);
-  ASSERT_EQ(event_tracker.context, registered_event_tracker->context);
+  EXPECT_TRUE(registered_event_tracker != nullptr);
+  EXPECT_EQ(event_tracker.track, registered_event_tracker->track);
+  EXPECT_EQ(event_tracker.context, registered_event_tracker->context);
 
   event_tracker.track(Envoy::Bridge::makeEnvoyMap({{"foo", "bar"}}),
                       registered_event_tracker->context);
@@ -596,8 +596,8 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
 
   envoy_event_tracker event_tracker{[](envoy_map map, const void* context) -> void {
                                       const auto new_map = toMap(map);
-                                      ASSERT_EQ(new_map.at("name"), "assertion");
-                                      ASSERT_EQ(new_map.at("location"), "foo_location");
+                                      EXPECT_EQ(new_map.at("name"), "assertion");
+                                      EXPECT_EQ(new_map.at("location"), "foo_location");
                                       auto* test_context = static_cast<engine_test_context*>(
                                           const_cast<void*>(context));
                                       test_context->on_event.Notify();
@@ -608,10 +608,10 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  // Verify that an envoy event is emitted when an event tracker is passed
-  // at engine's initialization time.
   // Simulate a failed assertion by invoking a debug assertion failure
   // record action.
+  // Verify that an envoy event is emitted when an event tracker is passed
+  // at engine's initialization time.
   Assert::invokeDebugAssertionFailureRecordActionForAssertMacroUseOnly("foo_location");
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));

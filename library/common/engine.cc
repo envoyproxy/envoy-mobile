@@ -61,7 +61,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
             Assert::addDebugAssertionFailureRecordAction([this](const char* location) {
               const auto event = Bridge::makeEnvoyMap(
                   {{"name", "assertion"}, {"location", std::string(location)}});
-              this->event_tracker_.track(event, this->event_tracker_.context);
+              event_tracker_.track(event, event_tracker_.context);
             });
       }
 
