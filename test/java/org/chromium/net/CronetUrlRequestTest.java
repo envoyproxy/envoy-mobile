@@ -54,7 +54,7 @@ import org.robolectric.RobolectricTestRunner;
 /**
  * Test functionality of CronetUrlRequest.
  */
-@Ignore("ignoreing due to https://github.com/envoyproxy/envoy-mobile/pull/1710")
+@Ignore("ignoring due to https://github.com/envoyproxy/envoy-mobile/pull/1710")
 @RunWith(RobolectricTestRunner.class)
 public class CronetUrlRequestTest {
 
