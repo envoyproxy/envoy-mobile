@@ -261,7 +261,7 @@ static void* jvm_on_response_headers(envoy_headers headers, bool end_stream,
 }
 
 static envoy_filter_headers_status
-jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, const void* context) {
+jvm_http_filter_on_request_headers(envoy_headers headers, bool end_stream, envoy_stream_intel stream_intel, const void* context) {
   JNIEnv* env = get_env();
   jobjectArray result = static_cast<jobjectArray>(jvm_on_headers(
       "onRequestHeaders", headers, end_stream, envoy_stream_intel{}, const_cast<void*>(context)));
