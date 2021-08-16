@@ -13,7 +13,8 @@ public interface EnvoyHTTPFilter {
    * @param endStream,   whether the response is headers-only.
    * @param streamIntel, contains internal HTTP stream metrics, context, and other details.
    */
-  Object[] onRequestHeaders(Map<String, List<String>> headers, boolean endStream, EnvoyStreamIntel streamIntel);
+  Object[] onRequestHeaders(Map<String, List<String>> headers, boolean endStream,
+                            EnvoyStreamIntel streamIntel);
 
   /**
    * Called when a request data frame is sent on the HTTP stream. This
@@ -40,7 +41,8 @@ public interface EnvoyHTTPFilter {
    * @param endStream,   whether the response is headers-only.
    * @param streamIntel, contains internal HTTP stream metrics, context, and other details.
    */
-  Object[] onResponseHeaders(Map<String, List<String>> headers, boolean endStream, EnvoyStreamIntel streamIntel);
+  Object[] onResponseHeaders(Map<String, List<String>> headers, boolean endStream,
+                             EnvoyStreamIntel streamIntel);
 
   /**
    * Called when a data frame is received on the HTTP stream. This
@@ -76,7 +78,8 @@ public interface EnvoyHTTPFilter {
    * @param streamIntel, contains internal HTTP stream metrics, context, and other details.
    */
   Object[] onResumeRequest(Map<String, List<String>> headers, ByteBuffer data,
-                           Map<String, List<String>> trailers, boolean endStream, EnvoyStreamIntel streamIntel);
+                           Map<String, List<String>> trailers, boolean endStream,
+                           EnvoyStreamIntel streamIntel);
 
   /**
    * Provides asynchronous callbacks to implementations that elect to use them.
@@ -94,7 +97,8 @@ public interface EnvoyHTTPFilter {
    * @param streamIntel, contains internal HTTP stream metrics, context, and other details.
    */
   Object[] onResumeResponse(Map<String, List<String>> headers, ByteBuffer data,
-                            Map<String, List<String>> trailers, boolean endStream, EnvoyStreamIntel streamIntel);
+                            Map<String, List<String>> trailers, boolean endStream,
+                            EnvoyStreamIntel streamIntel);
 
   /**
    * Called when the async HTTP stream has an error.

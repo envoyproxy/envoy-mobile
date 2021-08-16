@@ -53,7 +53,8 @@ class JvmFilterContext {
   public Object onRequestHeaders(long headerCount, boolean endStream, long[] streamIntel) {
     assert headerUtility.validateCount(headerCount);
     final Map headers = headerUtility.retrieveHeaders();
-    return toJniFilterHeadersStatus(filter.onRequestHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterHeadersStatus(
+        filter.onRequestHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -66,7 +67,8 @@ class JvmFilterContext {
    */
   public Object onRequestData(byte[] data, boolean endStream, long[] streamIntel) {
     ByteBuffer dataBuffer = ByteBuffer.wrap(data);
-    return toJniFilterDataStatus(filter.onRequestData(dataBuffer, endStream, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterDataStatus(
+        filter.onRequestData(dataBuffer, endStream, new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -79,7 +81,8 @@ class JvmFilterContext {
   public Object onRequestTrailers(long trailerCount, long[] streamIntel) {
     assert headerUtility.validateCount(trailerCount);
     final Map trailers = headerUtility.retrieveHeaders();
-    return toJniFilterTrailersStatus(filter.onRequestTrailers(trailers, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterTrailersStatus(
+        filter.onRequestTrailers(trailers, new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -93,7 +96,8 @@ class JvmFilterContext {
   public Object onResponseHeaders(long headerCount, boolean endStream, long[] streamIntel) {
     assert headerUtility.validateCount(headerCount);
     final Map headers = headerUtility.retrieveHeaders();
-    return toJniFilterHeadersStatus(filter.onResponseHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterHeadersStatus(
+        filter.onResponseHeaders(headers, endStream, new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -106,7 +110,8 @@ class JvmFilterContext {
    */
   public Object onResponseData(byte[] data, boolean endStream, long[] streamIntel) {
     ByteBuffer dataBuffer = ByteBuffer.wrap(data);
-    return toJniFilterDataStatus(filter.onResponseData(dataBuffer, endStream, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterDataStatus(
+        filter.onResponseData(dataBuffer, endStream, new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -119,7 +124,8 @@ class JvmFilterContext {
   public Object onResponseTrailers(long trailerCount, long[] streamIntel) {
     assert headerUtility.validateCount(trailerCount);
     final Map trailers = headerUtility.retrieveHeaders();
-    return toJniFilterTrailersStatus(filter.onResponseTrailers(trailers, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterTrailersStatus(
+        filter.onResponseTrailers(trailers, new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -132,8 +138,8 @@ class JvmFilterContext {
    * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
    * @return Object[],    tuple of status with updated entities to be forwarded.
    */
-  public Object onResumeRequest(long headerCount, byte[] data, long trailerCount,
-                                boolean endStream, long[] streamIntel) {
+  public Object onResumeRequest(long headerCount, byte[] data, long trailerCount, boolean endStream,
+                                long[] streamIntel) {
     // Headers are optional in this call, and a negative length indicates omission.
     Map<String, List<String>> headers = null;
     if (headerCount >= 0) {
@@ -147,8 +153,8 @@ class JvmFilterContext {
       assert trailerUtility.validateCount(trailerCount);
       trailers = trailerUtility.retrieveHeaders();
     }
-    return toJniFilterResumeStatus(
-        filter.onResumeRequest(headers, dataBuffer, trailers, endStream, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterResumeStatus(filter.onResumeRequest(headers, dataBuffer, trailers, endStream,
+                                                          new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
@@ -176,8 +182,8 @@ class JvmFilterContext {
       assert trailerUtility.validateCount(trailerCount);
       trailers = trailerUtility.retrieveHeaders();
     }
-    return toJniFilterResumeStatus(
-        filter.onResumeResponse(headers, dataBuffer, trailers, endStream, new EnvoyStreamIntelImpl(streamIntel)));
+    return toJniFilterResumeStatus(filter.onResumeResponse(headers, dataBuffer, trailers, endStream,
+                                                           new EnvoyStreamIntelImpl(streamIntel)));
   }
 
   /**
