@@ -33,7 +33,9 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Install dependencies'
-      - run: bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bazelisk build --fat_apk_cpu=x86 --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:android_dist_ci
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build envoy.aar distributable'
   javahelloworld:
@@ -66,8 +68,10 @@ jobs:
       # Return to using:
       #   bazelisk mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
       # When https://github.com/lyft/envoy-mobile/issues/853 is fixed.
-      - run: |
-          bazelisk build --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --fat_apk_cpu=x86 --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/java/hello_world:hello_envoy
           adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
         name: 'Start java app'
@@ -103,8 +107,10 @@ jobs:
       # Return to using:
       #   bazelisk mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/lyft/envoy-mobile/issues/853 is fixed.
-      - run: |
-          bazelisk build --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+      - env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --fat_apk_cpu=x86 --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/kotlin/hello_world:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin/.MainActivity
         name: 'Start kotlin app'
