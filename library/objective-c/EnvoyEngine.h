@@ -145,7 +145,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 0 - NSNumber *,filter status
 /// 1 - NSData *, forward data
 /// 2 - EnvoyHeaders *, optional pending headers
-@property (nonatomic, copy)NSArray * (^onResponseData)
+@property (nonatomic, copy) NSArray * (^onResponseData)
     (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
@@ -153,7 +153,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 1 - EnvoyHeaders *, forward trailers
 /// 2 - EnvoyHeaders *, optional pending headers
 /// 3 - NSData *, optional pending data
-@property (nonatomic, copy)NSArray * (^onResponseTrailers)
+@property (nonatomic, copy) NSArray * (^onResponseTrailers)
     (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 @property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
