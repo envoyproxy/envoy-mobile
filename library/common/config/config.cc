@@ -185,23 +185,23 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-              - name: api
-                include_attempt_count_in_response: true
-                virtual_clusters: *virtual_clusters
-                domains: ["*"]
-                routes:
+            - name: api
+              include_attempt_count_in_response: true
+              virtual_clusters: *virtual_clusters
+              domains: ["*"]
+              routes:
 #{custom_routes}
-                - match: { prefix: "/" }
-                  request_headers_to_remove:
-                  - x-forwarded-proto
-                  - x-envoy-mobile-cluster
-                  route:
-                    cluster_header: x-envoy-mobile-cluster
-                    timeout: 0s
-                    retry_policy:
-                      retry_back_off:
-                        base_interval: 0.25s
-                        max_interval: 60s
+              - match: { prefix: "/" }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                - x-envoy-mobile-cluster
+                route:
+                  cluster_header: x-envoy-mobile-cluster
+                  timeout: 0s
+                  retry_policy:
+                    retry_back_off:
+                      base_interval: 0.25s
+                      max_interval: 60s
           http_filters:
 #{custom_filters}
           - name: envoy.filters.http.local_error
