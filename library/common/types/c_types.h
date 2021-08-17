@@ -368,11 +368,12 @@ typedef void (*envoy_logger_release_f)(const void* context);
  * more buffer is available locally for request body. It will be called once per
  * decodeData call to inform the sender when it is safe to send more data.
  *
+ * @param stream_intel, contains internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
- * @return void, return context (may be unused).
+ * @return void*, return context (may be unused).
  */
-typedef void (*envoy_on_can_send_data_f)(void* context);
+typedef void* (*envoy_on_can_send_data_f)(envoy_stream_intel stream_intel, void* context);
 
 /**
  * Called when envoy's event tracker tracks an event.

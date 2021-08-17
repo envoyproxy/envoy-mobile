@@ -275,7 +275,7 @@ void Client::DirectStreamCallbacks::onError() {
 
 void Client::DirectStreamCallbacks::onCanSendData() {
   ENVOY_LOG(debug, "[S{}] remote can send data", direct_stream_.stream_handle_);
-  bridge_callbacks_.on_can_send_data(bridge_callbacks_.context);
+  bridge_callbacks_.on_can_send_data(streamIntel(), bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onCancel() {

@@ -672,7 +672,11 @@ static void jvm_http_filter_on_cancel(const void* context) {
 }
 
 // TODO(goaway) switch this to call_jvm_on_can_send_more_data
-static void jvm_on_can_send_more_data(void* context) { call_jvm_on_cancel(context); }
+static void* jvm_on_can_send_more_data(envoy_stream_intel stream_intel, void* context) {
+  void* result = call_jvm_on_cancel(envoy_stream_intel{}, const_cast<void*>(context));
+  jni_delete_global_ref(context);
+  return result;
+}
 
 // JvmFilterFactoryContext
 
