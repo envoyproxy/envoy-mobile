@@ -9,7 +9,10 @@ import io.envoyproxy.envoymobile.FilterTrailersStatus
 import io.envoyproxy.envoymobile.ResponseFilterCallbacks
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import java.nio.ByteBuffer
+import java.util.Timer
+import kotlin.concurrent.schedule
 
 /**
  * Example of a more complex HTTP filter that pauses processing on the response filter chain,
@@ -21,28 +24,40 @@ class AsyncDemoFilter : AsyncResponseFilter {
 
   override fun onResponseHeaders(
     headers: ResponseHeaders,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterHeadersStatus<ResponseHeaders> {
+    // If this is the end of the stream, asynchronously resume response processing via callback.
+    if (endStream) {
+      Timer("AsyncResume", false).schedule(100) {
+        callbacks.resumeResponse()
+      }
+    }
     return FilterHeadersStatus.StopIteration()
   }
 
   override fun onResponseData(
     body: ByteBuffer,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterDataStatus<ResponseHeaders> {
     // If this is the end of the stream, asynchronously resume response processing via callback.
     if (endStream) {
-      callbacks.resumeResponse()
+      Timer("AsyncResume", false).schedule(100) {
+        callbacks.resumeResponse()
+      }
     }
     return FilterDataStatus.StopIterationAndBuffer()
   }
 
   override fun onResponseTrailers(
-    trailers: ResponseTrailers
+    trailers: ResponseTrailers,
+    streamIntel: StreamIntel
   ): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
     // Trailers imply end of stream, so asynchronously resume response processing via callbacka
-    // Note this call is re-entrant (but legal/safe).
-    callbacks.resumeResponse()
+    Timer("AsyncResume", false).schedule(100) {
+      callbacks.resumeResponse()
+    }
     return FilterTrailersStatus.StopIteration()
   }
 
@@ -54,7 +69,8 @@ class AsyncDemoFilter : AsyncResponseFilter {
     headers: ResponseHeaders?,
     data: ByteBuffer?,
     trailers: ResponseTrailers?,
-    endStream: Boolean
+    endStream: Boolean,
+    streamIntel: StreamIntel
   ): FilterResumeStatus<ResponseHeaders, ResponseTrailers> {
     val builder = headers!!.toResponseHeadersBuilder()
       .add("async-filter-demo", "1")
@@ -62,10 +78,10 @@ class AsyncDemoFilter : AsyncResponseFilter {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onError(error: EnvoyError) {
+  override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onCancel() {
+  override fun onCancel(streamIntel: StreamIntel) {
   }
 }

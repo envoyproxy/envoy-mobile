@@ -21,14 +21,19 @@ open class EngineBuilder(
 ) {
   protected var onEngineRunning: (() -> Unit) = {}
   protected var logger: ((String) -> Unit)? = null
-  private var engineType: () -> EnvoyEngine = { EnvoyEngineImpl(onEngineRunning, logger) }
+  protected var eventTracker: ((Map<String, String>) -> Unit)? = null
+  private var engineType: () -> EnvoyEngine = {
+    EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
+  }
   private var logLevel = LogLevel.INFO
+  private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String? = null
   private var statsDPort: Int? = null
   private var connectTimeoutSeconds = 30
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
+  private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
@@ -106,18 +111,6 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a list of hostnames to preresolve on Engine startup.
-   *
-   * @param dnsPreresolveHostnames hostnames to preresolve.
-   *
-   * @return this builder.
-   */
-  fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
-    this.dnsPreresolveHostnames = dnsPreresolveHostnames
-    return this
-  }
-
-  /**
    * Add a rate at which to refresh DNS in case of DNS failure.
    *
    * @param base rate in seconds.
@@ -128,6 +121,30 @@ open class EngineBuilder(
   fun addDNSFailureRefreshSeconds(base: Int, max: Int): EngineBuilder {
     this.dnsFailureRefreshSecondsBase = base
     this.dnsFailureRefreshSecondsMax = max
+    return this
+  }
+
+  /**
+   * Add a rate at which to timeout DNS queries.
+   *
+   * @param dnsQueryTimeoutSeconds rate in seconds to timeout DNS queries.
+   *
+   * @return this builder.
+   */
+  fun addDNSQueryTimeoutSeconds(dnsQueryTimeoutSeconds: Int): EngineBuilder {
+    this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds
+    return this
+  }
+
+  /**
+   * Add a list of hostnames to preresolve on Engine startup.
+   *
+   * @param dnsPreresolveHostnames hostnames to preresolve.
+   *
+   * @return this builder.
+   */
+  fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
+    this.dnsPreresolveHostnames = dnsPreresolveHostnames
     return this
   }
 
@@ -224,6 +241,13 @@ open class EngineBuilder(
   }
 
   /**
+   * Set event tracker for the engine to call when it emits an event.
+   */
+  fun setEventTracker(eventTracker: (Map<String, String>) -> Unit): EngineBuilder {
+    this.eventTracker = eventTracker
+    return this
+  }
+  /**
    * Add a string accessor to this Envoy Client.
    *
    * @param name the name of the accessor.
@@ -273,6 +297,18 @@ open class EngineBuilder(
   }
 
   /**
+   * Enable admin interface on 127.0.0.1:9901 address. Admin interface is intended to be
+   * used for development/debugging purposes only. Enabling it in production may open
+   * your app to security vulnerabilities.
+   *
+   * @return this builder.
+   */
+  fun enableAdminInterface(): EngineBuilder {
+    this.adminInterfaceEnabled = true
+    return this
+  }
+
+  /**
    * Builds and runs a new Engine instance with the provided configuration.
    *
    * @return A new instance of Envoy.
@@ -283,8 +319,9 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            grpcStatsDomain, statsDPort, connectTimeoutSeconds,
+            adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            dnsQueryTimeoutSeconds,
             dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
@@ -296,8 +333,9 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            grpcStatsDomain, statsDPort, connectTimeoutSeconds,
+            adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
+            dnsQueryTimeoutSeconds,
             dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),

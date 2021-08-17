@@ -14,9 +14,11 @@ import io.envoyproxy.envoymobile.Stream;
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -25,7 +27,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,12 +74,13 @@ public final class CronetUrlRequest extends UrlRequestBase {
   private static final String X_ENVOY_SELECTED_TRANSPORT = "x-android-selected-transport";
   private static final String TAG = CronetUrlRequest.class.getSimpleName();
   private static final String USER_AGENT = "User-Agent";
+  private static final String CONTENT_TYPE = "Content-Type";
   private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocateDirect(0);
 
   private final AsyncUrlRequestCallback mCallbackAsync;
   private final PausableSerializingExecutor mCronvoyExecutor;
   private final String mUserAgent;
-  private final Map<String, String> mRequestHeaders = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  private final HeadersList mRequestHeaders = new HeadersList();
   private final List<String> mUrlChain = new ArrayList<>();
   private final CronetUrlRequestContext mCronvoyEngine;
 
@@ -209,12 +211,19 @@ public final class CronetUrlRequest extends UrlRequestBase {
   @Override
   public void addHeader(String header, String value) {
     checkNotStarted();
+    if (header == null) {
+      throw new NullPointerException("Invalid header name.");
+    }
+    if (value == null) {
+      throw new NullPointerException("Invalid header value.");
+    }
     if (!isValidHeaderName(header) || value.contains("\r\n")) {
       throw new IllegalArgumentException("Invalid header " + header + "=" + value);
     }
-    mRequestHeaders.put(header, value);
+    mRequestHeaders.add(new AbstractMap.SimpleImmutableEntry<>(header, value));
   }
 
+  // TODO(carloseltuerto): Remove. See: https://github.com/envoyproxy/envoy-mobile/issues/1559
   private boolean isValidHeaderName(String header) {
     for (int i = 0; i < header.length(); i++) {
       char c = header.charAt(i);
@@ -252,10 +261,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
     if (uploadDataProvider == null) {
       throw new NullPointerException("Invalid UploadDataProvider.");
     }
-    if (!mRequestHeaders.containsKey("Content-Type")) {
-      throw new IllegalArgumentException("Requests with upload data must have a Content-Type.");
-    }
-    checkNotStarted();
     if (mInitialMethod == null) {
       mInitialMethod = "POST";
     }
@@ -398,11 +403,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
       return;
     }
     final List<Map.Entry<String, String>> headerList = new ArrayList<>();
-    String selectedTransport = "http/1.1"; // TODO(carloseltuerto) looks dubious
+    String selectedTransport = "unknown";
     Set<Map.Entry<String, List<String>>> headers = responseHeaders.allHeaders().entrySet();
 
     for (Map.Entry<String, List<String>> headerEntry : headers) {
-      String headerKey = headerEntry.getKey().toLowerCase();
+      String headerKey = headerEntry.getKey();
       if (headerEntry.getValue().get(0) == null) {
         continue;
       }
@@ -412,7 +417,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
           !headerKey.equals(":status")) {
         for (String value : headerEntry.getValue()) {
-          headerList.add(new SimpleEntry<>(headerKey.toLowerCase(), value));
+          headerList.add(new SimpleEntry<>(headerKey, value));
         }
       }
     }
@@ -422,9 +427,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     // the list ourselves, user code might iterate over it while we're redirecting, and
     // that would throw ConcurrentModificationException.
     // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1426) set receivedByteCount
+    // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1622) support proxy
+    // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1546) negotiated protocol
     mUrlResponseInfo = new UrlResponseInfoImpl(
         new ArrayList<>(mUrlChain), responseCode, HttpReason.getReason(responseCode),
-        Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
+        Collections.unmodifiableList(headerList), false, selectedTransport, ":0", 0);
     if (responseCode >= 300 && responseCode < 400) {
       List<String> locationFields = mUrlResponseInfo.getAllHeaders().get("location");
       if (locationFields != null) {
@@ -470,6 +477,12 @@ public final class CronetUrlRequest extends UrlRequestBase {
   }
 
   private void fireOpenConnection() {
+    if (mInitialMethod == null) {
+      mInitialMethod = RequestMethod.GET.name();
+    }
+    RequestHeaders envoyRequestHeaders =
+        buildEnvoyRequestHeaders(mInitialMethod, mRequestHeaders, mUploadDataProvider, mUserAgent,
+                                 mCurrentUrl, mCronvoyEngine.getBuilder().http2Enabled());
     // The envoyCallbackExecutor is tied to the life cycle of the stream. If the stream is not
     // useful anymore, so is the envoyCallbackExecutor. Only the stream can schedule tasks through
     // that executor - this is done with the "callbacks" below.
@@ -480,13 +493,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (mState.get() == State.CANCELLED) {
         return;
       }
-      if (mInitialMethod == null) {
-        mInitialMethod = RequestMethod.GET.name();
-      }
-      boolean isHttp2Enabled = mCronvoyEngine.getBuilder().http2Enabled();
-      URL url = new URL(mCurrentUrl);
-      RequestHeaders envoyRequestHeaders = buildEnvoyRequestHeaders(
-          url, isHttp2Enabled, mInitialMethod, mRequestHeaders, mUserAgent);
 
       // Note: none of these "callbacks" are getting executed immediately. The envoyCallbackExecutor
       // is in reality a task scheduler. The execution of these tasks are serialized - concurrency
@@ -494,11 +500,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
       mStream = mCronvoyEngine.getEnvoyEngine()
                     .streamClient()
                     .newStreamPrototype()
-                    .setOnResponseHeaders((responseHeaders, lastCallback) -> {
+                    .setOnResponseHeaders((responseHeaders, lastCallback, ignored) -> {
                       onResponseHeaders(responseHeaders, lastCallback);
                       return null;
                     })
-                    .setOnResponseData((data, lastCallback) -> {
+                    .setOnResponseData((data, lastCallback, ignored) -> {
                       mEnvoyCallbackExecutor.pause();
                       mEndStream = lastCallback;
                       if (!mMostRecentBufferRead.compareAndSet(null, data)) {
@@ -507,7 +513,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
                       processReadResult();
                       return null;
                     })
-                    .setOnError(error -> {
+                    .setOnError((error, ignored) -> {
                       String message = "failed with error after " + error.getAttemptCount() +
                                        " attempts. Message=[" + error.getMessage() + "] Code=[" +
                                        error.getErrorCode() + "]";
@@ -515,7 +521,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
                       mCronvoyExecutor.execute(() -> enterCronetErrorState(throwable));
                       return null;
                     })
-                    .setOnCancel(() -> {
+                    .setOnCancel((ignored) -> {
                       mCancelCalled.set(true);
                       cancel();
                       return null;
@@ -530,21 +536,34 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }));
   }
 
-  private static RequestHeaders buildEnvoyRequestHeaders(URL url, boolean isHttp2Enabled,
-                                                         String initialMethod,
-                                                         Map<String, String> requestHeaders,
-                                                         String mUserAgent) {
+  private static RequestHeaders buildEnvoyRequestHeaders(String initialMethod,
+                                                         HeadersList headersList,
+                                                         UploadDataProvider uploadDataProvider,
+                                                         String userAgent, String currentUrl,
+                                                         boolean isHttp2Enabled) {
+    final URL url;
+    try {
+      url = new URL(currentUrl);
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Invalid URL", e);
+    }
     RequestMethod requestMethod = RequestMethod.valueOf(initialMethod);
     RequestHeadersBuilder requestHeadersBuilder = new RequestHeadersBuilder(
         requestMethod, url.getProtocol(), url.getAuthority(), url.getFile());
-    if (!requestHeaders.containsKey(USER_AGENT)) {
-      requestHeaders.put(USER_AGENT, mUserAgent);
+    boolean hasUserAgent = false;
+    boolean hasContentType = false;
+    for (Map.Entry<String, String> header : headersList) {
+      hasUserAgent = hasUserAgent ||
+                     (header.getKey().equalsIgnoreCase(USER_AGENT) && !header.getValue().isEmpty());
+      hasContentType = hasContentType || (header.getKey().equalsIgnoreCase(CONTENT_TYPE) &&
+                                          !header.getValue().isEmpty());
+      requestHeadersBuilder.add(header.getKey(), header.getValue());
     }
-    for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
-      if (entry.getValue() == null) {
-        continue;
-      }
-      requestHeadersBuilder.add(entry.getKey(), entry.getValue());
+    if (!hasUserAgent) {
+      requestHeadersBuilder.add(USER_AGENT, userAgent);
+    }
+    if (!hasContentType && uploadDataProvider != null) {
+      throw new IllegalArgumentException("Requests with upload data must have a Content-Type.");
     }
     UpstreamHttpProtocol protocol = isHttp2Enabled && url.getProtocol().equalsIgnoreCase("https")
                                         ? UpstreamHttpProtocol.HTTP2
@@ -778,6 +797,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
     }
   }
+
+  private static final class HeadersList extends ArrayList<Map.Entry<String, String>> {}
 
   // Executor that runs one task at a time on an underlying Executor. It can be paused/resumed.
   // NOTE: Do not use to wrap user supplied Executor as lock is held while underlying execute()

@@ -11,6 +11,12 @@ typedef NSDictionary<NSString *, NSArray<NSString *> *> EnvoyHeaders;
 
 typedef NSDictionary<NSString *, NSString *> EnvoyTags;
 
+/// A set of key-value pairs describing an event.
+typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
+
+/// Contains internal HTTP stream metrics, context, and other details.
+typedef envoy_stream_intel EnvoyStreamIntel;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -25,37 +31,47 @@ typedef NSDictionary<NSString *, NSString *> EnvoyTags;
  * Called when all headers get received on the async HTTP stream.
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) void (^onHeaders)
+    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
  * This callback can be invoked multiple times if the data gets streamed.
  * @param data the data received.
  * @param endStream whether the data is the last data frame.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) void (^onData)
+    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
+// clang-format off
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) void (^onTrailers)
+    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
+// clang-format on
 
 /**
  * Called when the async HTTP stream has an error.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onError)
-    (uint64_t errorCode, NSString *message, int32_t attemptCount);
+    (uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when the async HTTP stream is canceled.
  * Note this callback will ALWAYS be fired if a stream is canceled, even if the request and/or
  * response is already complete. It will fire no more than once, and no other callbacks for the
  * stream will be issued afterwards.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onCancel)(void);
+@property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
 
 @end
 
@@ -88,6 +104,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Resume filter iteration asynchronously. This will result in an on-resume invocation of the
 /// filter.
 - (void)resumeIteration;
+
+/// Reset the underlying stream idle timeout to its configured threshold. This may be useful if
+/// a filter stops iteration for an extended period of time, since ordinarily timeouts will still
+/// apply. This may be called periodically to continue to indicate "activity" on the stream.
+- (void)resetIdleTimer;
 
 @end
 
@@ -137,6 +158,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, copy) void (^setRequestFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
 
+// clang-format off
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, optional pending headers
@@ -157,6 +179,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, copy) NSArray * (^onResumeResponse)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
      BOOL endStream);
+// clang-format on
 
 @end
 
@@ -179,8 +202,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
  @param handle Underlying handle of the HTTP stream owned by an Envoy engine.
  @param callbacks The callbacks for the stream.
+ @param explicitFlowControl Whether explicit flow control will be enabled for this stream.
  */
-- (instancetype)initWithHandle:(intptr_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
+- (instancetype)initWithHandle:(intptr_t)handle
+                     callbacks:(EnvoyHTTPCallbacks *)callbacks
+           explicitFlowControl:(BOOL)explicitFlowControl;
 
 /**
  Send headers over the provided stream.
@@ -189,6 +215,14 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  @param close True if the stream should be closed after sending.
  */
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close;
+
+/**
+ Read data from the response stream. Returns immediately.
+ Has no effect if explicit flow control is not enabled.
+
+ @param byteCount Maximum number of bytes that may be be passed by the next data callback.
+ */
+- (void)readData:(size_t)byteCount;
 
 /**
  Send data over the provided stream.
@@ -253,11 +287,13 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Typed configuration that may be used for starting Envoy.
 @interface EnvoyConfiguration : NSObject
 
+@property (nonatomic, assign) BOOL adminInterfaceEnabled;
 @property (nonatomic, strong, nullable) NSString *grpcStatsDomain;
 @property (nonatomic, assign) UInt32 connectTimeoutSeconds;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsBase;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
+@property (nonatomic, assign) UInt32 dnsQueryTimeoutSeconds;
 @property (nonatomic, strong) NSString *dnsPreresolveHostnames;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, assign) UInt32 streamIdleTimeoutSeconds;
@@ -274,22 +310,25 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  Create a new instance of the configuration.
  */
 - (instancetype)
-         initWithGrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-           connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-               dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-    dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-     dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-          dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-               statsFlushSeconds:(UInt32)statsFlushSeconds
-        streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                      appVersion:(NSString *)appVersion
-                           appId:(NSString *)appId
-                 virtualClusters:(NSString *)virtualClusters
-          directResponseMatchers:(NSString *)directResponseMatchers
-                 directResponses:(NSString *)directResponses
-               nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-             platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                 stringAccessors:(NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
+    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                statsFlushSeconds:(UInt32)statsFlushSeconds
+         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                       appVersion:(NSString *)appVersion
+                            appId:(NSString *)appId
+                  virtualClusters:(NSString *)virtualClusters
+           directResponseMatchers:(NSString *)directResponseMatchers
+                  directResponses:(NSString *)directResponses
+                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                  stringAccessors:
+                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -298,6 +337,18 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  @return The resolved template. Nil if the template fails to fully resolve.
  */
 - (nullable NSString *)resolveTemplate:(NSString *)templateYAML;
+
+@end
+
+#pragma mark - EnvoyEventTracker
+
+// Tracking events interface
+
+@interface EnvoyEventTracker : NSObject
+
+@property (nonatomic, copy, nullable) void (^track)(EnvoyEvent *);
+
+- (instancetype)initWithEventTrackingClosure:(nullable void (^)(EnvoyEvent *))track;
 
 @end
 
@@ -316,9 +367,11 @@ extern const int kEnvoyFailure;
  @param onEngineRunning Closure called when the engine finishes its async startup and begins
  running.
  @param logger Logging interface.
+ @param eventTracker Event tracking interface.
  */
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
-                                 logger:(nullable void (^)(NSString *))logger;
+                                 logger:(nullable void (^)(NSString *))logger
+                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker;
 /**
  Run the Envoy engine with the provided configuration and log level.
 
@@ -344,8 +397,10 @@ extern const int kEnvoyFailure;
  Opens a new HTTP stream attached to this engine.
 
  @param callbacks Handler for observing stream events.
+ @param explicitFlowControl Whether explicit flow control will be enabled for the stream.
  */
-- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks;
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks
+                            explicitFlowControl:(BOOL)explicitFlowControl;
 
 /**
  Increments a counter with the given count.
@@ -402,6 +457,8 @@ extern const int kEnvoyFailure;
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
 - (void)flushStats;
+
+- (void)terminate;
 
 @end
 

@@ -73,6 +73,16 @@ envoy_mobile_swift_test(
 )
 
 envoy_mobile_swift_test(
+    name = "filter_reset_idle_test",
+    srcs = [
+        "FilterResetIdleTest.swift",
+    ],
+    deps = [
+        "//library/objective-c:envoy_engine_objc_lib",
+    ],
+)
+
+envoy_mobile_swift_test(
     name = "receive_data_test",
     srcs = [
         "DemoFilter.swift",
@@ -142,6 +152,16 @@ envoy_mobile_swift_test(
     name = "set_logger_test",
     srcs = [
         "SetLoggerTest.swift",
+    ],
+    deps = [
+        "//library/objective-c:envoy_engine_objc_lib",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "set_event_tracker_test",
+    srcs = [
+        "SetEventTrackerTest.swift",
     ],
     deps = [
         "//library/objective-c:envoy_engine_objc_lib",

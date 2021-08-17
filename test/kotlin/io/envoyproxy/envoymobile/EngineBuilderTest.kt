@@ -30,6 +30,16 @@ class EngineBuilderTest {
   }
 
   @Test
+  fun `enabling admin interface overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableAdminInterface()
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.adminInterfaceEnabled).isTrue()
+  }
+
+  @Test
   fun `specifying connection timeout overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
@@ -58,6 +68,16 @@ class EngineBuilderTest {
     val engine = engineBuilder.build() as EngineImpl
     assertThat(engine.envoyConfiguration!!.dnsFailureRefreshSecondsBase).isEqualTo(1234)
     assertThat(engine.envoyConfiguration!!.dnsFailureRefreshSecondsMax).isEqualTo(5678)
+  }
+
+  @Test
+  fun `specifying DNS query timeout overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addDNSQueryTimeoutSeconds(1234)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.dnsQueryTimeoutSeconds).isEqualTo(1234)
   }
 
   @Test

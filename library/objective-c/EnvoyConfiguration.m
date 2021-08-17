@@ -4,34 +4,38 @@
 
 @implementation EnvoyConfiguration
 
-- (instancetype)initWithGrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-                  connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                      dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-           dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-            dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-                 dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-                      statsFlushSeconds:(UInt32)statsFlushSeconds
-               streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                             appVersion:(NSString *)appVersion
-                                  appId:(NSString *)appId
-                        virtualClusters:(NSString *)virtualClusters
-                 directResponseMatchers:(NSString *)directResponseMatchers
-                        directResponses:(NSString *)directResponses
-                      nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-                    platformFilterChain:
-                        (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                        stringAccessors:
-                            (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
+- (instancetype)
+    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                statsFlushSeconds:(UInt32)statsFlushSeconds
+         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                       appVersion:(NSString *)appVersion
+                            appId:(NSString *)appId
+                  virtualClusters:(NSString *)virtualClusters
+           directResponseMatchers:(NSString *)directResponseMatchers
+                  directResponses:(NSString *)directResponses
+                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                  stringAccessors:
+                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors {
   self = [super init];
   if (!self) {
     return nil;
   }
 
+  self.adminInterfaceEnabled = adminInterfaceEnabled;
   self.grpcStatsDomain = grpcStatsDomain;
   self.connectTimeoutSeconds = connectTimeoutSeconds;
   self.dnsRefreshSeconds = dnsRefreshSeconds;
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
+  self.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
   self.dnsPreresolveHostnames = dnsPreresolveHostnames;
   self.statsFlushSeconds = statsFlushSeconds;
   self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
@@ -102,7 +106,8 @@
   [definitions appendFormat:@"- &dns_fail_max_interval %lus\n",
                             (unsigned long)self.dnsFailureRefreshSecondsMax];
   [definitions
-      appendFormat:@"- &dns_preresolve_hostnames %@\n", (unsigned long)self.dnsPreresolveHostnames];
+      appendFormat:@"- &dns_query_timeout %lus\n", (unsigned long)self.dnsQueryTimeoutSeconds];
+  [definitions appendFormat:@"- &dns_preresolve_hostnames %@\n", self.dnsPreresolveHostnames];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
   [definitions appendFormat:@"- &metadata { device_os: %@, app_version: %@, app_id: %@ }\n", @"iOS",
@@ -114,6 +119,10 @@
     [definitions
         appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
     [definitions appendString:@"- &stats_sinks [ *base_metrics_service ]\n"];
+  }
+
+  if (self.adminInterfaceEnabled) {
+    [definitions appendString:@"admin: *admin_interface\n"];
   }
 
   [definitions appendString:templateYAML];

@@ -88,7 +88,7 @@ static inline NSData *to_ios_data(envoy_data data) {
   // TODO: we are copying from envoy_data to NSData.
   // https://github.com/lyft/envoy-mobile/issues/398
   NSData *platformData = [NSData dataWithBytes:(void *)data.bytes length:data.length];
-  data.release(data.context);
+  release_envoy_data(data);
   return platformData;
 }
 
@@ -96,8 +96,25 @@ static inline NSString *to_ios_string(envoy_data data) {
   NSString *platformString = [[NSString alloc] initWithBytes:data.bytes
                                                       length:data.length
                                                     encoding:NSUTF8StringEncoding];
-  data.release(data.context);
+  release_envoy_data(data);
   return platformString;
+}
+
+static inline EnvoyEvent *to_ios_map(envoy_map map) {
+  NSMutableDictionary *newMap = [NSMutableDictionary new];
+  for (envoy_map_size_t i = 0; i < map.length; i++) {
+    envoy_map_entry header = map.entries[i];
+    NSString *headerKey = [[NSString alloc] initWithBytes:header.key.bytes
+                                                   length:header.key.length
+                                                 encoding:NSUTF8StringEncoding];
+    NSString *headerValue = [[NSString alloc] initWithBytes:header.value.bytes
+                                                     length:header.value.length
+                                                   encoding:NSUTF8StringEncoding];
+    newMap[headerKey] = headerValue;
+  }
+
+  release_envoy_map(map);
+  return newMap;
 }
 
 static inline EnvoyHeaders *to_ios_headers(envoy_headers headers) {

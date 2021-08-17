@@ -123,7 +123,7 @@ TEST(MainInterfaceTest, BasicStream) {
 
   absl::Notification on_complete_notification;
   envoy_http_callbacks stream_cbs{
-      [](envoy_headers c_headers, bool end_stream, void*) -> void* {
+      [](envoy_headers c_headers, bool end_stream, envoy_stream_intel, void*) -> void* {
         auto response_headers = toResponseHeaders(c_headers);
         EXPECT_EQ(response_headers->Status()->value().getStringView(), "200");
         EXPECT_TRUE(end_stream);
@@ -133,7 +133,7 @@ TEST(MainInterfaceTest, BasicStream) {
       nullptr /* on_metadata */,
       nullptr /* on_trailers */,
       nullptr /* on_error */,
-      [](void* context) -> void* {
+      [](envoy_stream_intel, void* context) -> void* {
         auto* on_complete_notification = static_cast<absl::Notification*>(context);
         on_complete_notification->Notify();
         return nullptr;
@@ -152,7 +152,7 @@ TEST(MainInterfaceTest, BasicStream) {
 
   envoy_stream_t stream = init_stream(0);
 
-  start_stream(stream, stream_cbs);
+  start_stream(stream, stream_cbs, false);
 
   send_headers(stream, c_headers, false);
   send_data(stream, c_data, false);
@@ -193,7 +193,7 @@ TEST(MainInterfaceTest, SendMetadata) {
 
   envoy_stream_t stream = init_stream(0);
 
-  start_stream(stream, stream_cbs);
+  start_stream(stream, stream_cbs, false);
 
   EXPECT_EQ(ENVOY_FAILURE, send_metadata(stream, {}));
 
@@ -230,7 +230,7 @@ TEST(MainInterfaceTest, ResetStream) {
                                   nullptr /* on_trailers */,
                                   nullptr /* on_error */,
                                   nullptr /* on_complete */,
-                                  [](void* context) -> void* {
+                                  [](envoy_stream_intel, void* context) -> void* {
                                     auto* on_cancel_notification =
                                         static_cast<absl::Notification*>(context);
                                     on_cancel_notification->Notify();
@@ -240,7 +240,7 @@ TEST(MainInterfaceTest, ResetStream) {
 
   envoy_stream_t stream = init_stream(0);
 
-  start_stream(stream, stream_cbs);
+  start_stream(stream, stream_cbs, false);
 
   reset_stream(stream);
 
@@ -270,7 +270,7 @@ TEST(MainInterfaceTest, UsingMainInterfaceWithoutARunningEngine) {
 
   // Release memory
   release_envoy_headers(c_headers);
-  c_data.release(c_data.context);
+  release_envoy_data(c_data);
   release_envoy_headers(c_trailers);
 }
 
@@ -467,7 +467,7 @@ TEST(EngineTest, Logger) {
   envoy_logger logger{[](envoy_data data, const void* context) -> void {
                         auto* test_context =
                             static_cast<engine_test_context*>(const_cast<void*>(context));
-                        data.release(data.context);
+                        release_envoy_data(data);
                         if (!test_context->on_log.HasBeenNotified()) {
                           test_context->on_log.Notify();
                         }
