@@ -252,6 +252,11 @@ static_resources:
             budget_percent:
               value: 100
             min_retry_concurrency: 0xffffffff # uint32 max
+    outlier_detection: &base_outlier_detection
+      consecutive_5xx: 3
+      base_ejection_time: 0.001s
+      max_ejection_time: 0.001s
+      interval: 1s
   - name: base_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -259,6 +264,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wlan
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -266,6 +272,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wlan_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -273,6 +280,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wwan
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -280,6 +288,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wwan_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -287,6 +296,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -294,6 +304,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_clear_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -301,6 +312,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wlan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -308,6 +320,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wlan_clear_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -315,6 +328,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wwan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -322,6 +336,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wwan_clear_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -329,6 +344,7 @@ static_resources:
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -337,6 +353,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_h2_alt
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -345,6 +362,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wlan_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -353,6 +371,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wlan_h2_alt
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -361,6 +380,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wwan_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -369,6 +389,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_wwan_h2_alt
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -377,6 +398,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
   - name: base_alpn
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -384,6 +406,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_alpn_alt
     connect_timeout: *connect_timeout
@@ -392,6 +415,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wlan_alpn
     http2_protocol_options: {}
@@ -401,6 +425,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wlan_alpn_alt
     http2_protocol_options: {}
@@ -410,6 +435,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wwan_alpn
     http2_protocol_options: {}
@@ -419,6 +445,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wwan_alpn_alt
     http2_protocol_options: {}
@@ -428,6 +455,7 @@ static_resources:
     transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
+    outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
