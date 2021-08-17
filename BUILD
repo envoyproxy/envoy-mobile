@@ -112,5 +112,6 @@ platform(
 	parents = ["//config:platform"],
 	exec_properties = create_rbe_exec_properties_dict(
 		pool = "linux",
-	),
+        container_image = "docker://docker.io/envoyproxy/envoy-build-ubuntu:2144d692c47e4fc5f4d4e2dab27f08a084c5b346"
+   ),
 )
