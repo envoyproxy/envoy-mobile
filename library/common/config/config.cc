@@ -252,6 +252,10 @@ static_resources:
             budget_percent:
               value: 100
             min_retry_concurrency: 0xffffffff # uint32 max
+    # Used to reap dead connections. In mobile devices it is less important to keep a "host" ejected
+    # a long period and more important to be able to cycle connections assigned to given hosts.
+    # Therefore, the ejection time is short and the interval for unejection is tight, but not too
+    # tight to cause unnecessary churn.
     outlier_detection: &base_outlier_detection
       consecutive_5xx: 3
       base_ejection_time: 0.001s
