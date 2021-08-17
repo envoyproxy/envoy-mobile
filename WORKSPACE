@@ -47,23 +47,15 @@ declare_python_abi(name = "python_abi", python_version = "3")
 android_sdk_repository(name = "androidsdk", api_level = 29)
 android_ndk_repository(name = "androidndk", path = "/Users/runner/Library/Android/sdk/ndk/21.3.6528147", api_level = 21)
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-git_repository(
-    name = "bazel_toolchains",
-    commit = "810ac3490df9113cfaa50a4ee3d204a29c81a24c",
-    remote = "https://github.com/bazelbuild/bazel-toolchains.git",
+http_archive(
+	name = "bazel_toolchains",
+	urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/dac71231098d891e5c4b74a2078fe9343feef510.tar.gz"],
+	strip_prefix = "bazel-toolchains-dac71231098d891e5c4b74a2078fe9343feef510",
+	sha256 = "56d5370eb99559b4c74f334f81bc8a298f728bd16d5a4333c865c2ad10fae3bc",
 )
 
-load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
+load("@bazel_toolchains//repositories:repositories.bzl", bazel_toolchains_repositories = "repositories")
+bazel_toolchains_repositories()
 
-rbe_autoconfig(
-    name = "engflow_remote_config",
-    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
-    registry = "docker.io",
-    repository = "envoyproxy/envoy-build-ubuntu",
-    use_legacy_platform_definition = False,
-    exec_properties = {
-        "Pool": "linux",
-    },
-)

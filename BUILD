@@ -104,3 +104,13 @@ genrule(
     """,
     tools = ["@kotlin_formatter//file"],
 )
+
+load("@bazel_toolchains//rules/exec_properties:exec_properties.bzl", "create_rbe_exec_properties_dict")
+
+platform(
+	name = "linux_platform",
+	parents = ["//config:platform"],
+	exec_properties = create_rbe_exec_properties_dict(
+		pool = "linux",
+	),
+)

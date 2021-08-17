@@ -120,15 +120,15 @@ build:remote-ci-linux --remote_timeout=600
 build:remote-ci-linux --spawn_strategy=remote,local
 # Platform and toolchain flags
 build:remote-ci-linux --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
-build:remote-ci-linux --crosstool_top=@engflow_remote_config//cc:toolchain
-build:remote-ci-linux --extra_execution_platforms=@engflow_remote_config//config:platform
-build:remote-ci-linux --extra_toolchains=@engflow_remote_config//config:cc-toolchain
+build:remote-ci-linux --crosstool_top=//cc:toolchain
+build:remote-ci-linux --extra_execution_platforms=//config:platform
+build:remote-ci-linux --extra_toolchains=//config:cc-toolchain
 build:remote-ci-linux --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux --host_javabase=@engflow_remote_config//java:jdk
-build:remote-ci-linux --host_platform=@engflow_remote_config//config:platform
+build:remote-ci-linux --host_javabase=//java:jdk
+build:remote-ci-linux --host_platform=//config:platform
 build:remote-ci-linux --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux --javabase=@engflow_remote_config//java:jdk
-build:remote-ci-linux --platforms=@engflow_remote_config//config:platform
+build:remote-ci-linux --javabase=//java:jdk
+build:remote-ci-linux --platforms=//:linux-platform
 build:remote-ci-linux --config=remote-ci-common
 #############################################################################
 # remote-ci-macos: These options are macOS-only
