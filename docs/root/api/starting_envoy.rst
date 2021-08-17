@@ -84,19 +84,31 @@ Specify the interval at which Envoy should forcefully refresh DNS.
   builder.addDNSRefreshSeconds(60)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addDNSQueryTimeoutSeconds``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify the interval at which Envoy should timeout a DNS query.
+
+**Example**::
+
+  // Kotlin
+  builder.addDNSQueryTimeoutSeconds(60L)
+
+  // Swift
+  builder.addDNSQueryTimeoutSeconds(60)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``addDNSPreresolveHostnames``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Add a list of hostnames to preresolve on Engine startup.
-The configuration is expected as a JSON list.
-
 .. attention::
 
-    This API is non-ideal as it exposes lower-level internals of Envoy than desired by this
-    project.
-    :issue:`#1581 <1581>` tracks enhancing this API.
+  This API is non-ideal as it exposes lower-level internals of Envoy than desired by this
+  project.
+  :issue:`#1581 <1581>` tracks enhancing this API.
 
-**Example**::
+Add a list of hostnames to preresolve on Engine startup.
+The configuration is expected as a JSON list.
 
   // Kotlin
   builder.addDNSPreresolveHostnames("[{\"address\": \"foo.com", \"port_value\": 443}]")
@@ -224,6 +236,25 @@ This functionality is used for stat segmentation.
   // Swift
   builder.addVirtualClusters("[{\"name\":\"vcluster\",\"headers\":[{\"name\":\":path\",\"exact_match\":\"/v1/vcluster\"}]}]")
 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableAdminInterface``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enable admin interface on 127.0.0.1:9901 address.
+
+.. attention::
+
+    Admin interface is intended to be used for development/debugging purposes only.
+    Enabling it in production may open your app to security vulnerabilities.
+
+**Example**::
+
+  // Kotlin
+  builder.enableAdminInterface()
+
+  // Swift
+  builder.enableAdminInterface()
+
 ~~~~~~~~~~~~~~~~~~~~~~
 ``setOnEngineRunning``
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -268,7 +299,9 @@ Specify a closure to be called when Envoy's engine emits an event.
 **Example**::
 
   // Kotlin
-  // This interface is pending for Kotlin
+  builder.setEventTracker ({
+    // Track the events. Events are passed in as Map<String, String>.
+  })
 
   // Swift
   builder.setEventTracker { event in

@@ -19,6 +19,7 @@ fixture_template:
 
 private struct TestFilter: Filter {}
 
+// swiftlint:disable:next type_body_length
 final class EngineBuilderTests: XCTestCase {
   override func tearDown() {
     super.tearDown()
@@ -49,6 +50,33 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addLogLevel(.trace)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAdminInterfaceIsDisabledByDefault() {
+    let expectation = self.expectation(description: "Run called with disabled admin interface")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertFalse(config.adminInterfaceEnabled)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testEnablingAdminInterfaceAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with enabled admin interface")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.adminInterfaceEnabled)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enableAdminInterface()
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -91,6 +119,20 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addDNSRefreshSeconds(23)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingDNSQueryTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(234, config.dnsQueryTimeoutSeconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addDNSQueryTimeoutSeconds(234)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -224,11 +266,13 @@ final class EngineBuilderTests: XCTestCase {
 
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(
+      adminInterfaceEnabled: false,
       grpcStatsDomain: "stats.envoyproxy.io",
       connectTimeoutSeconds: 200,
       dnsRefreshSeconds: 300,
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
+      dnsQueryTimeoutSeconds: 800,
       dnsPreresolveHostnames: "[test]",
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
@@ -250,9 +294,12 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_refresh_rate 300s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_base_interval 400s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_max_interval 500s"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
+
+    XCTAssertFalse(resolvedYAML.contains("admin: *admin_interface"))
 
     // Metadata
     XCTAssertTrue(resolvedYAML.contains("device_os: iOS"))
@@ -273,11 +320,13 @@ final class EngineBuilderTests: XCTestCase {
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
     let config = EnvoyConfiguration(
+      adminInterfaceEnabled: true,
       grpcStatsDomain: "stats.envoyproxy.io",
       connectTimeoutSeconds: 200,
       dnsRefreshSeconds: 300,
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
+      dnsQueryTimeoutSeconds: 800,
       dnsPreresolveHostnames: "[test]",
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,

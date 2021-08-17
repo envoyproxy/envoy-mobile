@@ -70,7 +70,18 @@ const std::string config_header = R"(
       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
       auto_config:
         http2_protocol_options: {}
-        http_protocol_options: {}
+        http_protocol_options:
+          header_key_format:
+            stateful_formatter:
+              name: preserve_case
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+
+!ignore admin_interface_defs: &admin_interface
+    address:
+      socket_address:
+        address: 127.0.0.1
+        port_value: 9901
 
 !ignore tls_socket_defs: &base_tls_socket
   name: envoy.transport_sockets.tls
@@ -105,6 +116,9 @@ const char* config_template = R"(
 #{fake_remote_responses}
               - match: { prefix: "/" }
                 direct_response: { status: 404, body: { inline_string: "not found" } }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                - x-envoy-mobile-cluster
           http_filters:
           - name: envoy.router
             typed_config:
@@ -451,6 +465,8 @@ watchdog:
   megamiss_timeout: 60s
   miss_timeout: 60s
 node:
+  id: envoy-mobile
+  cluster: envoy-mobile
   metadata: *metadata
 # Needed due to warning in https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
 layered_runtime:

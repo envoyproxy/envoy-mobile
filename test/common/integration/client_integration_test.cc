@@ -62,27 +62,29 @@ public:
     });
 
     bridge_callbacks_.context = &cc_;
-    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, void* context) -> void* {
+    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, envoy_stream_intel,
+                                      void* context) -> void* {
       Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_headers_calls++;
       cc_->status = response_headers->Status()->value().getStringView();
       return nullptr;
     };
-    bridge_callbacks_.on_data = [](envoy_data c_data, bool, void* context) -> void* {
+    bridge_callbacks_.on_data = [](envoy_data c_data, bool, envoy_stream_intel,
+                                   void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_data_calls++;
-      c_data.release(c_data.context);
+      release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_complete = [](void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_complete_calls++;
       cc_->terminal_callback->setReady();
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error error, void* context) -> void* {
-      error.message.release(error.message.context);
+    bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
+      release_envoy_error(error);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_error_calls++;
       cc_->terminal_callback->setReady();
@@ -161,7 +163,8 @@ TEST_P(ClientIntegrationTest, Basic) {
   server_started.waitReady();
 
   envoy_stream_t stream = 1;
-  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
+  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, envoy_stream_intel,
+                                 void* context) -> void* {
     if (end_stream) {
       EXPECT_EQ(Data::Utility::copyToString(c_data), "");
     } else {
@@ -169,7 +172,7 @@ TEST_P(ClientIntegrationTest, Basic) {
     }
     callbacks_called* cc_ = static_cast<callbacks_called*>(context);
     cc_->on_data_calls++;
-    c_data.release(c_data.context);
+    release_envoy_data(c_data);
     return nullptr;
   };
 
@@ -191,7 +194,7 @@ TEST_P(ClientIntegrationTest, Basic) {
 
   // Create a stream.
   dispatcher_->post([&]() -> void {
-    http_client_->startStream(stream, bridge_callbacks_);
+    http_client_->startStream(stream, bridge_callbacks_, false);
     http_client_->sendHeaders(stream, c_headers, false);
     http_client_->sendData(stream, c_data, false);
     http_client_->sendTrailers(stream, c_trailers);
@@ -234,7 +237,7 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
 
   // Create a stream.
   dispatcher_->post([&]() -> void {
-    http_client_->startStream(stream, bridge_callbacks_);
+    http_client_->startStream(stream, bridge_callbacks_, false);
     http_client_->sendHeaders(stream, c_headers, true);
   });
   terminal_callback_.waitReady();
@@ -273,7 +276,7 @@ TEST_P(ClientIntegrationTest, BasicReset) {
 
   // Create a stream.
   dispatcher_->post([&]() -> void {
-    http_client_->startStream(stream, bridge_callbacks_);
+    http_client_->startStream(stream, bridge_callbacks_, false);
     http_client_->sendHeaders(stream, c_headers, true);
   });
   terminal_callback_.waitReady();
@@ -319,7 +322,8 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   server_started.waitReady();
 
   envoy_stream_t stream = 1;
-  bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, void* context) -> void* {
+  bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, envoy_stream_intel,
+                                    void* context) -> void* {
     Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     callbacks_called* cc_ = static_cast<callbacks_called*>(context);
     cc_->on_headers_calls++;
@@ -340,7 +344,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
 
   // Create a stream.
   dispatcher_->post([&]() -> void {
-    http_client_->startStream(stream, bridge_callbacks_);
+    http_client_->startStream(stream, bridge_callbacks_, false);
     http_client_->sendHeaders(stream, c_headers, true);
   });
 

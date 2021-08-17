@@ -403,11 +403,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
       return;
     }
     final List<Map.Entry<String, String>> headerList = new ArrayList<>();
-    String selectedTransport = "http/1.1"; // TODO(carloseltuerto) looks dubious
+    String selectedTransport = "unknown";
     Set<Map.Entry<String, List<String>>> headers = responseHeaders.allHeaders().entrySet();
 
     for (Map.Entry<String, List<String>> headerEntry : headers) {
-      String headerKey = headerEntry.getKey().toLowerCase();
+      String headerKey = headerEntry.getKey();
       if (headerEntry.getValue().get(0) == null) {
         continue;
       }
@@ -417,7 +417,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
           !headerKey.equals(":status")) {
         for (String value : headerEntry.getValue()) {
-          headerList.add(new SimpleEntry<>(headerKey.toLowerCase(), value));
+          headerList.add(new SimpleEntry<>(headerKey, value));
         }
       }
     }
@@ -427,9 +427,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     // the list ourselves, user code might iterate over it while we're redirecting, and
     // that would throw ConcurrentModificationException.
     // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1426) set receivedByteCount
+    // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1622) support proxy
+    // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1546) negotiated protocol
     mUrlResponseInfo = new UrlResponseInfoImpl(
         new ArrayList<>(mUrlChain), responseCode, HttpReason.getReason(responseCode),
-        Collections.unmodifiableList(headerList), false, selectedTransport, "", 0);
+        Collections.unmodifiableList(headerList), false, selectedTransport, ":0", 0);
     if (responseCode >= 300 && responseCode < 400) {
       List<String> locationFields = mUrlResponseInfo.getAllHeaders().get("location");
       if (locationFields != null) {
@@ -498,11 +500,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
       mStream = mCronvoyEngine.getEnvoyEngine()
                     .streamClient()
                     .newStreamPrototype()
-                    .setOnResponseHeaders((responseHeaders, lastCallback) -> {
+                    .setOnResponseHeaders((responseHeaders, lastCallback, ignored) -> {
                       onResponseHeaders(responseHeaders, lastCallback);
                       return null;
                     })
-                    .setOnResponseData((data, lastCallback) -> {
+                    .setOnResponseData((data, lastCallback, ignored) -> {
                       mEnvoyCallbackExecutor.pause();
                       mEndStream = lastCallback;
                       if (!mMostRecentBufferRead.compareAndSet(null, data)) {
@@ -511,7 +513,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
                       processReadResult();
                       return null;
                     })
-                    .setOnError(error -> {
+                    .setOnError((error, ignored) -> {
                       String message = "failed with error after " + error.getAttemptCount() +
                                        " attempts. Message=[" + error.getMessage() + "] Code=[" +
                                        error.getErrorCode() + "]";
@@ -519,7 +521,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
                       mCronvoyExecutor.execute(() -> enterCronetErrorState(throwable));
                       return null;
                     })
-                    .setOnCancel(() -> {
+                    .setOnCancel((ignored) -> {
                       mCancelCalled.set(true);
                       cancel();
                       return null;
