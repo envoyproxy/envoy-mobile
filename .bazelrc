@@ -128,7 +128,7 @@ build:remote-ci-linux --host_javabase=//java:jdk
 build:remote-ci-linux --host_platform=//config:platform
 build:remote-ci-linux --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux --javabase=//java:jdk
-build:remote-ci-linux --platforms=//:linux-platform
+build:remote-ci-linux --platforms=//:linux_platform
 build:remote-ci-linux --config=remote-ci-common
 #############################################################################
 # remote-ci-macos: These options are macOS-only
