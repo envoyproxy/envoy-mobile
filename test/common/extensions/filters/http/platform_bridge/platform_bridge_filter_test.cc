@@ -191,7 +191,8 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnRequestHeaders) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -225,7 +226,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnData) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -282,7 +284,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecoding)
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -293,9 +296,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecoding)
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                         envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                         const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":authority");
@@ -348,7 +351,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecodingW
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -359,9 +363,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecodingW
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                         envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                         const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":authority");
@@ -418,7 +422,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecodingW
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -429,9 +434,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecodingW
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                         envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                         const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":authority");
@@ -495,7 +500,8 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeDecodingIsNoopAfterPreviousResume) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -517,7 +523,8 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeDecodingIsNoopAfterPreviousResume) {
     *modified_headers = make_envoy_headers({{":authority", "test.code"}, {"content-length", "12"}});
     return {kEnvoyFilterDataStatusResumeIteration, c_data, modified_headers};
   };
-  platform_filter.on_resume_request = [](envoy_headers*, envoy_data*, envoy_headers*, bool, envoy_stream_intel,
+  platform_filter.on_resume_request = [](envoy_headers*, envoy_data*, envoy_headers*, bool,
+                                         envoy_stream_intel,
                                          const void*) -> envoy_filter_resume_status {
     ADD_FAILURE() << "on_resume_request should not get called when iteration is already ongoing.";
     return {kEnvoyFilterResumeStatusResumeIteration, nullptr, nullptr, nullptr};
@@ -669,7 +676,8 @@ TEST_F(PlatformBridgeFilterTest, BasicError) {
     release_envoy_data(c_data);
     return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata, nullptr};
   };
-  platform_filter.on_error = [](envoy_error c_error, envoy_stream_intel, const void* context) -> void {
+  platform_filter.on_error = [](envoy_error c_error, envoy_stream_intel,
+                                const void* context) -> void {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_error_calls++;
     EXPECT_EQ(c_error.error_code, ENVOY_UNDEFINED_ERROR);
@@ -780,7 +788,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnData)
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -952,7 +961,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnTrail
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1054,7 +1064,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnResum
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1086,9 +1097,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenResumeOnResum
     invocations->on_request_trailers_calls++;
     return {kEnvoyFilterTrailersStatusStopIteration, envoy_noheaders, nullptr, nullptr};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                         envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                         const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":authority");
@@ -1194,7 +1205,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenDontResumeOnR
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1226,9 +1238,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenBufferThenDontResumeOnR
     invocations->on_request_trailers_calls++;
     return {kEnvoyFilterTrailersStatusStopIteration, envoy_noheaders, nullptr, nullptr};
   };
-  platform_filter.on_resume_request = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                         envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                         const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_request =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":authority");
@@ -1308,7 +1320,8 @@ TEST_F(PlatformBridgeFilterTest, BasicContinueOnResponseHeaders) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1342,7 +1355,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnData) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1399,7 +1413,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnResumeEncoding
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1410,9 +1425,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenResumeOnResumeEncoding
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                          envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                          const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_response =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":status");
@@ -1465,7 +1480,8 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterPreviousResume) {
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1487,7 +1503,8 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterPreviousResume) {
     *modified_headers = make_envoy_headers({{":status", "test.code"}, {"content-length", "13"}});
     return {kEnvoyFilterDataStatusResumeIteration, c_data, modified_headers};
   };
-  platform_filter.on_resume_response = [](envoy_headers*, envoy_data*, envoy_headers*, bool, envoy_stream_intel,
+  platform_filter.on_resume_response = [](envoy_headers*, envoy_data*, envoy_headers*, bool,
+                                          envoy_stream_intel,
                                           const void*) -> envoy_filter_resume_status {
     ADD_FAILURE() << "on_resume_response should not get called when iteration is already ongoing.";
     return {kEnvoyFilterResumeStatusResumeIteration, nullptr, nullptr, nullptr};
@@ -1534,7 +1551,8 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterFilterIsPendingDe
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1545,7 +1563,8 @@ TEST_F(PlatformBridgeFilterTest, AsyncResumeEncodingIsNoopAfterFilterIsPendingDe
     release_envoy_headers(c_headers);
     return {kEnvoyFilterHeadersStatusStopIteration, envoy_noheaders};
   };
-  platform_filter.on_resume_response = [](envoy_headers*, envoy_data*, envoy_headers*, bool, envoy_stream_intel,
+  platform_filter.on_resume_response = [](envoy_headers*, envoy_data*, envoy_headers*, bool,
+                                          envoy_stream_intel,
                                           const void*) -> envoy_filter_resume_status {
     ADD_FAILURE() << "on_resume_response should not get called when filter is pending destruction.";
     return {kEnvoyFilterResumeStatusResumeIteration, nullptr, nullptr, nullptr};
@@ -1756,7 +1775,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnData
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -1927,7 +1947,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnTrai
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -2029,7 +2050,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_response_headers = [](envoy_headers c_headers, bool end_stream,
+                                           envoy_stream_intel,
                                            const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
@@ -2061,9 +2083,9 @@ TEST_F(PlatformBridgeFilterTest, StopOnResponseHeadersThenBufferThenResumeOnResu
     invocations->on_response_trailers_calls++;
     return {kEnvoyFilterTrailersStatusStopIteration, envoy_noheaders, nullptr, nullptr};
   };
-  platform_filter.on_resume_response = [](envoy_headers* pending_headers, envoy_data* pending_data,
-                                          envoy_headers* pending_trailers, bool end_stream, envoy_stream_intel,
-                                          const void* context) -> envoy_filter_resume_status {
+  platform_filter.on_resume_response =
+      [](envoy_headers* pending_headers, envoy_data* pending_data, envoy_headers* pending_trailers,
+         bool end_stream, envoy_stream_intel, const void* context) -> envoy_filter_resume_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(pending_headers->length, 1);
     EXPECT_EQ(Data::Utility::copyToString(pending_headers->entries[0].key), ":status");
@@ -2169,7 +2191,8 @@ TEST_F(PlatformBridgeFilterTest, StopOnRequestHeadersThenResumeOnResumeDecodingP
     invocations->init_filter_calls++;
     return invocations;
   };
-  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
+  platform_filter.on_request_headers = [](envoy_headers c_headers, bool end_stream,
+                                          envoy_stream_intel,
                                           const void* context) -> envoy_filter_headers_status {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     EXPECT_EQ(c_headers.length, 1);
