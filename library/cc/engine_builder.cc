@@ -120,9 +120,7 @@ EngineSharedPtr EngineBuilder::build() {
   null_logger.release = envoy_noop_const_release;
   null_logger.context = nullptr;
 
-  envoy_event_tracker null_tracker;
-  null_tracker.track = nullptr;
-  null_tracker.context = nullptr;
+  envoy_event_tracker null_tracker{};
 
   auto config_str = this->generateConfigStr();
   auto envoy_engine =
