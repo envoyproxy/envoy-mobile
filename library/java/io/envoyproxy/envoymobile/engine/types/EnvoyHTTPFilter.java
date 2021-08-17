@@ -65,7 +65,7 @@ public interface EnvoyHTTPFilter {
   /**
    * Provides asynchronous callbacks to implementations that elect to use them.
    *
-   * @param callbacks,   thread-safe internal callbacks that enable asynchronous filter interaction.
+   * @param callbacks, thread-safe internal callbacks that enable asynchronous filter interaction.
    */
   void setRequestFilterCallbacks(EnvoyHTTPFilterCallbacks callbacks);
 
@@ -84,7 +84,7 @@ public interface EnvoyHTTPFilter {
   /**
    * Provides asynchronous callbacks to implementations that elect to use them.
    *
-   * @param callbacks,   thread-safe internal callbacks that enable asynchronous filter interaction.
+   * @param callbacks, thread-safe internal callbacks that enable asynchronous filter interaction.
    */
   void setResponseFilterCallbacks(EnvoyHTTPFilterCallbacks callbacks);
 
@@ -116,7 +116,7 @@ public interface EnvoyHTTPFilter {
   /**
    * Called when the async HTTP stream is canceled.
    *
-   * @param streamIntel,  contains internal HTTP stream metrics, context, and other details.
+   * @param streamIntel, contains internal HTTP stream metrics, context, and other details.
    */
   void onCancel(EnvoyStreamIntel streamIntel);
 }

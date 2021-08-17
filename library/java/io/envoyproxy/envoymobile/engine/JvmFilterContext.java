@@ -47,7 +47,7 @@ class JvmFilterContext {
    *
    * @param headerCount, the total number of headers included in this header block.
    * @param endStream,   whether this header block is the final remote frame.
-   * @param streamIntel,     StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
    * @return Object[],   pair of HTTP filter status and optional modified headers.
    */
   public Object onRequestHeaders(long headerCount, boolean endStream, long[] streamIntel) {
@@ -60,10 +60,10 @@ class JvmFilterContext {
   /**
    * Dispatches data received from the JNI layer up to the platform.
    *
-   * @param data,      chunk of body data from the HTTP request.
-   * @param endStream, indicates this is the last remote frame of the stream.
-   * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
-   * @return Object[], pair of HTTP filter status and optional modified data.
+   * @param data,        chunk of body data from the HTTP request.
+   * @param endStream,   indicates this is the last remote frame of the stream.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
+   * @return Object[],   pair of HTTP filter status and optional modified data.
    */
   public Object onRequestData(byte[] data, boolean endStream, long[] streamIntel) {
     ByteBuffer dataBuffer = ByteBuffer.wrap(data);
@@ -75,7 +75,7 @@ class JvmFilterContext {
    * Invokes onTrailers callback using trailers passed via passHeaders.
    *
    * @param trailerCount, the total number of trailers included in this header block.
-   * @param streamIntel,      StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object[],    pair of HTTP filter status and optional modified trailers.
    */
   public Object onRequestTrailers(long trailerCount, long[] streamIntel) {
@@ -90,7 +90,7 @@ class JvmFilterContext {
    *
    * @param headerCount, the total number of headers included in this header block.
    * @param endStream,   whether this header block is the final remote frame.
-   * @param streamIntel,     StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
    * @return Object[],   pair of HTTP filter status and optional modified headers.
    */
   public Object onResponseHeaders(long headerCount, boolean endStream, long[] streamIntel) {
@@ -103,10 +103,10 @@ class JvmFilterContext {
   /**
    * Dispatches data received from the JNI layer up to the platform.
    *
-   * @param data,      chunk of body data from the HTTP response.
-   * @param endStream, indicates this is the last remote frame of the stream.
-   * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
-   * @return Object[], pair of HTTP filter status and optional modified data.
+   * @param data,        chunk of body data from the HTTP response.
+   * @param endStream,   indicates this is the last remote frame of the stream.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
+   * @return Object[],   pair of HTTP filter status and optional modified data.
    */
   public Object onResponseData(byte[] data, boolean endStream, long[] streamIntel) {
     ByteBuffer dataBuffer = ByteBuffer.wrap(data);
@@ -118,7 +118,7 @@ class JvmFilterContext {
    * Invokes onTrailers callback using trailers passed via passHeaders.
    *
    * @param trailerCount, the total number of trailers included in this header block.
-   * @param streamIntel,      StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object[],    pair of HTTP filter status and optional modified trailers.
    */
   public Object onResponseTrailers(long trailerCount, long[] streamIntel) {
@@ -135,7 +135,7 @@ class JvmFilterContext {
    * @param data,         buffered body data.
    * @param trailerCount, total pending trailers included in the trailer block.
    * @param endStream,    whether the stream is closed at this point.
-   * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object[],    tuple of status with updated entities to be forwarded.
    */
   public Object onResumeRequest(long headerCount, byte[] data, long trailerCount, boolean endStream,
@@ -164,7 +164,7 @@ class JvmFilterContext {
    * @param data,         buffered body data.
    * @param trailerCount, total pending trailers included in the trailer block.
    * @param endStream,    whether the stream is closed at this point.
-   * @param streamIntel,   StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object[],    tuple of status with updated entities to be forwarded.
    */
   public Object onResumeResponse(long headerCount, byte[] data, long trailerCount,
@@ -210,7 +210,7 @@ class JvmFilterContext {
    * @param errorCode,    the error code.
    * @param message,      the error message.
    * @param attemptCount, the number of times an operation was attempted before firing this error.
-   * @param streamIntel,      StreamIntel not yet supported by filter callbacks.
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
    * @return Object,      not used in HTTP filters.
    */
   public Object onError(int errorCode, byte[] message, int attemptCount, long[] streamIntel) {
@@ -222,8 +222,8 @@ class JvmFilterContext {
   /**
    * Dispatches cancellation notice up to the platform.
    *
-   * @param streamIntel  StreamIntel not yet supported by filter callbacks.
-   * @return Object, not used in HTTP filters.
+   * @param streamIntel, internal HTTP stream metrics, context, and other details.
+   * @return Object,     not used in HTTP filters.
    */
   public Object onCancel(long[] streamIntel) {
     filter.onCancel(new EnvoyStreamIntelImpl(streamIntel));
