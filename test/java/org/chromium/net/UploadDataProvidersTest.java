@@ -54,6 +54,7 @@ public class UploadDataProvidersTest {
 
   @After
   public void tearDown() {
+
     NativeTestServer.shutdownNativeTestServer();
     assertTrue(mFile.delete());
   }
@@ -101,11 +102,15 @@ public class UploadDataProvidersTest {
     UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
         NativeTestServer.getRedirectToEchoBody(), callback, callback.getExecutor());
 
+    ParcelFileDescriptor[] pipe = ParcelFileDescriptor.createPipe();
+    UploadDataProvider dataProvider = UploadDataProviders.create(pipe[0]);
+
     // mock a bad file fd
     ParcelFileDescriptor mockFd = Mockito.mock(ParcelFileDescriptor.class);
     Mockito.when(mockFd.getStatSize()).thenReturn((long) -1);
 
-    UploadDataProvider dataProvider = UploadDataProviders.create(mockFd);
+
+
     builder.setUploadDataProvider(dataProvider, callback.getExecutor());
     builder.addHeader("Content-Type", "useless/string");
     builder.build().start();
