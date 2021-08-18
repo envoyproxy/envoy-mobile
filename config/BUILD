@@ -39,7 +39,7 @@ platform(
     constraint_values = [
         "@bazel_tools//platforms:linux",
         "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//tools/cpp:gcc",
+        "@bazel_tools//tools/cpp:clang",
     ],
     exec_properties = {
         "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
