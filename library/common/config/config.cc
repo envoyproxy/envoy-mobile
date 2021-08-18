@@ -203,10 +203,10 @@ static_resources:
                 name: dynamic_forward_proxy_cache_config
 )"              // TODO: Support API for overriding prefetch_hostnames:
                 // https://github.com/envoyproxy/envoy-mobile/issues/1534
-R("
+R"(
                 preresolve_hostnames: *dns_preresolve_hostnames
 )"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
-R("
+R"(
                 dns_lookup_family: V4_ONLY
                 dns_refresh_rate: *dns_refresh_rate
                 dns_failure_refresh_rate:
@@ -225,7 +225,7 @@ R("
                   // would be set to 0. According to the zlib manual this would allow the decompressor
                   // to use the window bits in the zlib header to perform the decompression.
                   // Unfortunately, the proto field constraint makes this impossible currently.
-R("
+R"(
                   window_bits: 15
               request_direction_config:
                 common_config:
@@ -264,7 +264,7 @@ R("
     // a long period and more important to be able to cycle connections assigned to given hosts.
     // Therefore, the ejection time is short and the interval for unejection is tight, but not too
     // tight to cause unnecessary churn.
-R("
+R"(
     outlier_detection: &base_outlier_detection
       consecutive_5xx: 3
       base_ejection_time: 0.001s
@@ -515,7 +515,7 @@ node:
 )"
 // Needed due to warning in
 // https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
-R("
+R"(
 layered_runtime:
   layers:
     - name: static_layer_0
