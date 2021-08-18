@@ -30,6 +30,7 @@ const char* route_cache_reset_filter_insert = R"(
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
 )";
 
+// clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
 - &connect_timeout 30s
@@ -93,7 +94,7 @@ const std::string config_header = R"(
           inline_string: |
 )"
 #include "certificates.inc"
-    ;
+;
 
 const char* config_template = R"(
 !ignore custom_listener_defs:
@@ -523,3 +524,4 @@ layered_runtime:
         overload:
           global_downstream_max_connections: 0xffffffff # uint32 max
 )";
+// clang-format on
