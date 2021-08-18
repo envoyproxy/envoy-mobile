@@ -141,7 +141,6 @@ public class GetStatusTest {
   @SmallTest
   @Feature({"Cronet"})
   @Ignore("Not used in Cronvoy")
-  // TODO (colibie) speak to charles
   public void testInvalidLoadState() throws Exception {
     try {
       // UrlRequestBase.convertLoadState(LoadState.WAITING_FOR_APPCACHE);
@@ -160,8 +159,7 @@ public class GetStatusTest {
   @Feature({"Cronet"})
   // Regression test for crbug.com/606872.
   @OnlyRunNativeCronet
-  @Ignore("Cronvoy impl different, state switches from NOT STARTED to STARTED, no IDLE in between")
-  // TODO (colibie) speak to charles
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1519")
   public void testGetStatusForUpload() throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
     UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
