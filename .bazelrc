@@ -124,10 +124,9 @@ build:remote-ci-linux --crosstool_top=//cc:toolchain
 build:remote-ci-linux --extra_execution_platforms=//config:platform
 build:remote-ci-linux --extra_toolchains=//config:cc-toolchain
 build:remote-ci-linux --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux --host_javabase=//java:jdk
+# build:remote-ci-linux --host_javabase=//java:jdk
 build:remote-ci-linux --host_platform=//config:platform
 build:remote-ci-linux --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-# build:remote-ci-linux --javabase=@engflow_remote_config//java:jdk
 build:remote-ci-linux --platforms=//config:platform
 build:remote-ci-linux --config=remote-ci-common
 #############################################################################
