@@ -31,10 +31,10 @@ def upstream_envoy_overrides():
     http_archive(
         name = "com_google_absl",
         patches = ["@envoy_mobile//bazel:abseil.patch"],
-        sha256 = "635367c5cac4bbab95d0485ba9e68fa422546b06ce050190c99be7e23aba3ce3",
-        strip_prefix = "abseil-cpp-8f1c34a77a2ba04512b7f9cbc6013d405e6a0b31",
-        # 2020-08-08
-        urls = ["https://github.com/abseil/abseil-cpp/archive/8f1c34a77a2ba04512b7f9cbc6013d405e6a0b31.tar.gz"],
+        sha256 = "2e4ace2ed32a4ccfd29e856ad72b4fd1eae2ec060d3ba8646857fa170d6e8269",
+        strip_prefix = "abseil-cpp-17c954d90d5661e27db8fc5f086085690a8372d9",
+        # 2021-06-03
+        urls = ["https://github.com/abseil/abseil-cpp/archive/17c954d90d5661e27db8fc5f086085690a8372d9.tar.gz"],
     )
 
     # This should be kept in sync with Envoy itself, we just need to apply this patch
@@ -42,9 +42,9 @@ def upstream_envoy_overrides():
     http_archive(
         name = "boringssl",
         patches = ["@envoy_mobile//bazel:boringssl.patch"],
-        sha256 = "d78f7b11b8665feea1b6def8e6f235ad8671db8de950f5429f1bf2b3503b3894",
-        strip_prefix = "boringssl-b049eae83d25977661556dcd913b35fbafb3a93a",
-        urls = ["https://github.com/google/boringssl/archive/b049eae83d25977661556dcd913b35fbafb3a93a.tar.gz"],
+        sha256 = "70e9d8737e35d67f94b9e742ca59c02c36f30f1d822d5a3706511a23798d8049",
+        strip_prefix = "boringssl-75edea1922aefe415e0e60ac576116634b0a94f8",
+        urls = ["https://github.com/google/boringssl/archive/75edea1922aefe415e0e60ac576116634b0a94f8.tar.gz"],
     )
 
     # Envoy uses rules_python v0.1.0, which does not include tooling for packaging Python.  The

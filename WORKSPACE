@@ -54,4 +54,3 @@ git_repository(
     commit = "810ac3490df9113cfaa50a4ee3d204a29c81a24c",
     remote = "https://github.com/bazelbuild/bazel-toolchains.git",
 )
-

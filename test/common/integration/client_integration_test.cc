@@ -62,26 +62,28 @@ public:
     });
 
     bridge_callbacks_.context = &cc_;
-    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, void* context) -> void* {
+    bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, envoy_stream_intel,
+                                      void* context) -> void* {
       Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_headers_calls++;
       cc_->status = response_headers->Status()->value().getStringView();
       return nullptr;
     };
-    bridge_callbacks_.on_data = [](envoy_data c_data, bool, void* context) -> void* {
+    bridge_callbacks_.on_data = [](envoy_data c_data, bool, envoy_stream_intel,
+                                   void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_data_calls++;
       release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_complete = [](void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_complete_calls++;
       cc_->terminal_callback->setReady();
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error error, void* context) -> void* {
+    bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
       release_envoy_error(error);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_error_calls++;
@@ -112,25 +114,26 @@ address:
     port_value: 1
 api_listener:
   api_listener:
-    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-    stat_prefix: hcm
-    route_config:
-      virtual_hosts:
-        name: integration
-        routes:
-          route:
-            cluster: cluster_0
-          match:
-            prefix: "/"
-        domains: "*"
-      name: route_config_0
-    http_filters:
-      - name: envoy.filters.http.local_error
-        typed_config:
-          "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
-      - name: envoy.router
-        typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+    "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager
+    config:
+      stat_prefix: hcm
+      route_config:
+        virtual_hosts:
+          name: integration
+          routes:
+            route:
+              cluster: cluster_0
+            match:
+              prefix: "/"
+          domains: "*"
+        name: route_config_0
+      http_filters:
+        - name: envoy.filters.http.local_error
+          typed_config:
+            "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
+        - name: envoy.router
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
       )EOF";
   }
 
@@ -161,7 +164,8 @@ TEST_P(ClientIntegrationTest, Basic) {
   server_started.waitReady();
 
   envoy_stream_t stream = 1;
-  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, void* context) -> void* {
+  bridge_callbacks_.on_data = [](envoy_data c_data, bool end_stream, envoy_stream_intel,
+                                 void* context) -> void* {
     if (end_stream) {
       EXPECT_EQ(Data::Utility::copyToString(c_data), "");
     } else {
@@ -319,7 +323,8 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   server_started.waitReady();
 
   envoy_stream_t stream = 1;
-  bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, void* context) -> void* {
+  bridge_callbacks_.on_headers = [](envoy_headers c_headers, bool, envoy_stream_intel,
+                                    void* context) -> void* {
     Http::ResponseHeaderMapPtr response_headers = toResponseHeaders(c_headers);
     callbacks_called* cc_ = static_cast<callbacks_called*>(context);
     cc_->on_headers_calls++;

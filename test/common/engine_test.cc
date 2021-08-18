@@ -15,24 +15,25 @@ static_resources:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-        stat_prefix: hcm
-        route_config:
-          name: api_router
-          virtual_hosts:
-          - name: api
-            include_attempt_count_in_response: true
-            domains: ["*"]
-            routes:
-            - match: { prefix: "/" }
-              route:
-                cluster_header: x-envoy-mobile-cluster
-                retry_policy:
-                  retry_back_off: { base_interval: 0.25s, max_interval: 60s }
-        http_filters:
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager
+        config:
+          stat_prefix: hcm
+          route_config:
+            name: api_router
+            virtual_hosts:
+            - name: api
+              include_attempt_count_in_response: true
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/" }
+                route:
+                  cluster_header: x-envoy-mobile-cluster
+                  retry_policy:
+                    retry_back_off: { base_interval: 0.25s, max_interval: 60s }
+          http_filters:
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 layered_runtime:
   layers:
   - name: static_layer_0
@@ -40,7 +41,23 @@ layered_runtime:
       overload: { global_downstream_max_connections: 50000 }
 )";
 
-class EngineTest : public testing::Test {};
+// RAII wrapper for the engine, ensuring that we properly shut down the engine. If the engine
+// thread is not torn down, we end up with TSAN failures during shutdown due to a data race
+// between the main thread and the engine thread both writing to the
+// Envoy::Logger::current_log_context global.
+struct EngineHandle {
+  EngineHandle(envoy_engine_callbacks callbacks, const std::string& level) {
+    init_engine(callbacks, {}, {});
+    run_engine(0, MINIMAL_TEST_CONFIG.c_str(), level.c_str());
+  }
+
+  ~EngineHandle() { terminate_engine(0); }
+};
+
+class EngineTest : public testing::Test {
+public:
+  std::unique_ptr<EngineHandle> engine_;
+};
 
 typedef struct {
   absl::Notification on_engine_running;
@@ -62,11 +79,10 @@ TEST_F(EngineTest, EarlyExit) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
 
-  init_engine(callbacks, {});
-  run_engine(0, MINIMAL_TEST_CONFIG.c_str(), level.c_str());
+  engine_ = std::make_unique<EngineHandle>(callbacks, level);
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  terminate_engine(0);
+  engine_.reset();
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   start_stream(0, {}, false);
