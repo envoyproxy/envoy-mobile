@@ -131,6 +131,9 @@ build:remote-ci-linux --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux --javabase=//java:jdk
 build:remote-ci-linux --platforms=//:linux_platform
 build:remote-ci-linux --config=remote-ci-common
+build:remote-ci-linux --action_env=CXXFLAGS=-stdlib=libc++
+build:remote-ci-linux --action_env=LDFLAGS=-stdlib=libc++
+build:remote-ci-linux --define force_libcpp=enabled
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
