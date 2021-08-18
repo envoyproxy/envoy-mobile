@@ -11,6 +11,7 @@ import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer
@@ -20,58 +21,38 @@ import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-private const val hcmType =
-  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+private const val emhcmType =
+  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
 private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
 private const val filterName = "cancel_validation_filter"
 private const val config =
 """
 static_resources:
   listeners:
-  - name: fake_remote_listener
-    address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
-    filter_chains:
-    - filters:
-      - name: envoy.filters.network.http_connection_manager
-        typed_config:
-          "@type": $hcmType
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                direct_response: { status: 200 }
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   - name: base_api_listener
     address:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": $hcmType
-        stat_prefix: api_hcm
-        route_config:
-          name: api_router
-          virtual_hosts:
-          - name: api
-            domains: ["*"]
-            routes:
-            - match: { prefix: "/" }
-              route: { cluster: fake_remote }
-        http_filters:
-        - name: envoy.filters.http.platform_bridge
-          typed_config:
-            "@type": $pbfType
-            platform_filter_name: $filterName
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        "@type": $emhcmType
+        config:
+          stat_prefix: api_hcm
+          route_config:
+            name: api_router
+            virtual_hosts:
+            - name: api
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/" }
+                route: { cluster: fake_remote }
+          http_filters:
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": $pbfType
+              platform_filter_name: $filterName
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
   - name: fake_remote
     connect_timeout: 0.25s
@@ -98,21 +79,32 @@ class CancelStreamTest {
   class CancelValidationFilter(
     private val latch: CountDownLatch
   ) : ResponseFilter {
-    override fun onResponseHeaders(headers: ResponseHeaders, endStream: Boolean): FilterHeadersStatus<ResponseHeaders> {
+    override fun onResponseHeaders(
+      headers: ResponseHeaders,
+      endStream: Boolean,
+      streamIntel: StreamIntel
+    ): FilterHeadersStatus<ResponseHeaders> {
       return FilterHeadersStatus.Continue(headers)
     }
 
-    override fun onResponseData(body: ByteBuffer, endStream: Boolean): FilterDataStatus<ResponseHeaders> {
+    override fun onResponseData(
+      body: ByteBuffer,
+      endStream: Boolean,
+      streamIntel: StreamIntel
+    ): FilterDataStatus<ResponseHeaders> {
       return FilterDataStatus.Continue(body)
     }
 
-    override fun onResponseTrailers(trailers: ResponseTrailers): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+    override fun onResponseTrailers(
+      trailers: ResponseTrailers,
+      streamIntel: StreamIntel
+    ): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError) {}
+    override fun onError(error: EnvoyError, streamIntel: StreamIntel) {}
 
-    override fun onCancel() {
+    override fun onCancel(streamIntel: StreamIntel) {
       latch.countDown()
     }
   }
