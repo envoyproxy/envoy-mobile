@@ -5,6 +5,7 @@ licenses(["notice"])  # Apache 2
 android_library(
     name = "envoy_engine_lib",
     srcs = [
+        "AndroidAppLifecycleMonitor.java",
         "AndroidEngineImpl.java",
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",

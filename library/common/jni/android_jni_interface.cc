@@ -29,3 +29,13 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIE
   jni_log("[Envoy]", "setting preferred network");
   return set_preferred_network(static_cast<envoy_network_t>(network));
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_drainConnections(JNIEnv* env,
+                                                                         jclass // class
+) {
+  jni_log("[Envoy]", "draining connections on foreground");
+  // TODO: use specific engine once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  drain_connections(1);
+}

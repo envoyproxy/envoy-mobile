@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+import android.app.Application;
 import android.content.Context;
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
@@ -30,11 +31,15 @@ public class AndroidEngineImpl implements EnvoyEngine {
 
   public int runWithTemplate(String configurationYAML, EnvoyConfiguration envoyConfiguration,
                              String logLevel) {
+    AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
+    application.registerActivityLifecycleCallbacks(monitor);
     return envoyEngine.runWithTemplate(configurationYAML, envoyConfiguration, logLevel);
   }
 
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
+    AndroidAppLifecycleMonitor monitor = new AndroidAppLifecycleMonitor();
+    application.registerActivityLifecycleCallbacks(monitor);
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel);
   }
 
