@@ -84,7 +84,7 @@ static_resources:
       .setOnResponseHeaders { responseHeaders, endStream, _ in
          XCTAssertEqual(200, responseHeaders.httpStatus)
          XCTAssertTrue(endStream)
-         expectation1.fulfill()
+         expectation2.fulfill()
       }
       .setOnError { _, _ in
         XCTFail("Unexpected error")
