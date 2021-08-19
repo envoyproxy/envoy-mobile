@@ -200,7 +200,7 @@ void terminate_engine(envoy_engine_t) {
   e->terminate();
 }
 
-void drain_connections(envoy_engine_t) {
+envoy_status_t drain_connections(envoy_engine_t) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
   if (auto e = engine()) {
