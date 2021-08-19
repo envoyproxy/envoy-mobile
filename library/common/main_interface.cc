@@ -200,3 +200,7 @@ void terminate_engine(envoy_engine_t) {
   strong_engine_.reset();
   e->terminate();
 }
+
+// WILL CONFLICT WITH https://github.com/envoyproxy/envoy-mobile/pull/1729. Will update when that
+// merges
+envoy_status_t drain_connections(envoy_engine_t) { return ENVOY_SUCCESS; }
