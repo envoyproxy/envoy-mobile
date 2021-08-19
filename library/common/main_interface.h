@@ -180,6 +180,8 @@ envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char*
 
 void terminate_engine(envoy_engine_t engine);
 
+envoy_status_t drain_connections(envoy_engine_t) { return ENVOY_SUCCESS; }
+
 #ifdef __cplusplus
 } // functions
 #endif
