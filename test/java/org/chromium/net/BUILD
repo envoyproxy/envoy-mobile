@@ -8,9 +8,11 @@ envoy_package()
 envoy_mobile_android_test(
     name = "net_tests",
     srcs = [
+        "CronetEngineBuilderTest.java",
         "CronetStressTest.java",
         "CronetUrlRequestTest.java",
         "GetStatusTest.java",
+        "NQETest.java",
         "UploadDataProvidersTest.java",
         "UrlResponseInfoTest.java",
     ],
