@@ -540,6 +540,12 @@ static void ios_track_event(envoy_map map, const void *context) {
   flush_stats(_engineHandle);
 }
 
+- (void)dumpStats->String {
+  envoy_data data;
+  dump_stats(_engineHandle, data);
+  return to_ios_data(data);
+}
+
 - (void)terminate {
   terminate_engine(_engineHandle);
 }

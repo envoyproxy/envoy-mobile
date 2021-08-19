@@ -7,6 +7,7 @@
 #include "library/common/engine.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/http/client.h"
+#include "types/c_types.h"
 
 // NOLINT(namespace-envoy)
 
@@ -153,6 +154,47 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, envo
           if (auto e = engine())
             e->recordHistogramValue(name, tags, value, unit_measure);
         });
+  }
+  return ENVOY_FAILURE;
+}
+
+struct AdminCallContext {
+  envoy_status_t status_;
+  envoy_data response_;
+
+  absl::Mutex mutex_;
+  absl::Notification data_received_;
+};
+
+envoy_status_t stats_dump(envoy_engine_t, envoy_data& out) {
+  if (auto e = engine()) {
+    auto context = std::shared_ptr<AdminCallContext>();
+    const auto status = e->dispatcher().post([context]() -> void {
+      if (auto e = engine()) {
+        absl::MutexLock lock(&context->mutex_);
+        context->status = e->statsDump(context->response_);
+
+        context_->data_received_.Notify();
+      });
+
+      if (status == ENVOY_FAILURE) {
+        return status;
+      }
+
+      if (context->data_received_.AwaitWithTimeout(absl::Milliseconds(100))) {
+        absl::MutexLock lock(&context_->mutex_);
+
+        if (context_->status_ == ENVOY_FAILURE) {
+          return ENVOY_FAILURE;
+        }
+
+        out = context_.response_;
+
+        return ENVOY_SUCCESS;
+      } else {
+        ENVOY_LOG(warn, "timed out waiting for admin response");
+      }
+  }
   }
   return ENVOY_FAILURE;
 }

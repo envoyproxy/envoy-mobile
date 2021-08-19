@@ -8,6 +8,7 @@
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
 #include "library/common/stats/utility.h"
+#include "types/c_types.h"
 
 namespace Envoy {
 
@@ -238,6 +239,24 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_s
   Stats::Utility::histogramFromElements(*client_scope_, {Stats::DynamicName(name)},
                                         envoy_unit_measure, tags_vctr)
       .recordValue(value);
+  return ENVOY_SUCCESS;
+}
+
+envoy_status_t Engine::statsDump(envoy_data& out) {
+  ENVOY_LOG(trace, "statsDump");
+
+  ASSERT(dispatcher_->isThreadSafe(), "admin calls must be run from the dispatcher's context");
+  Http::ResponseHeaderMapImpl response_headers;
+  std::string body;
+  const auto code = server_->admin().request("/stats", "GET", response_headers, body);
+  if (code != Http::Code::Ok) {
+    return ENVOY_FAILURE;
+  }
+
+  // Unfortuantely we can't just take over ownership of the data within the returned string,
+  // so we'll make a new copy.
+  out = Data::Utility::copyToBridgeData(pair.second);
+
   return ENVOY_SUCCESS;
 }
 

@@ -100,6 +100,8 @@ public:
   envoy_status_t recordHistogramValue(const std::string& elements, envoy_stats_tags tags,
                                       uint64_t value, envoy_histogram_stat_unit_t unit_measure);
 
+  envoy_status_t statsDump(envoy_data& out);
+
   /**
    * Flush the stats sinks outside of a flushing interval.
    * Note: stat flushing is done asynchronously, this function will never block.
