@@ -554,11 +554,21 @@ static void ios_track_event(envoy_map map, const void *context) {
                          selector:@selector(terminateNotification:)
                              name:UIApplicationWillTerminateNotification
                            object:nil];
+
+  [notificationCenter addObserver:self
+                         selector:@selector(foregroundNotification:)
+                             name:UIApplicationWillEnterForegroundNotification
+                           object:nil];
 }
 
 - (void)terminateNotification:(NSNotification *)notification {
   NSLog(@"[Envoy %ld] terminating engine (%@)", _engineHandle, notification.name);
   terminate_engine(_engineHandle);
+}
+
+- (void)foregroundNotification:(NSNotification *)notification {
+  NSLog(@"[Envoy %ld] draining connections on foreground (%@)", _engineHandle, notification.name);
+  drain_connections(_engineHandle);
 }
 
 @end
