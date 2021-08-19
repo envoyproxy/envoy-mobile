@@ -14,6 +14,9 @@ typedef NSDictionary<NSString *, NSString *> EnvoyTags;
 /// A set of key-value pairs describing an event.
 typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
 
+/// Contains internal HTTP stream metrics, context, and other details.
+typedef envoy_stream_intel EnvoyStreamIntel;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
@@ -28,37 +31,47 @@ typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
  * Called when all headers get received on the async HTTP stream.
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) void (^onHeaders)
+    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
  * This callback can be invoked multiple times if the data gets streamed.
  * @param data the data received.
  * @param endStream whether the data is the last data frame.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) void (^onData)
+    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
+// clang-format off
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) void (^onTrailers)
+    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
+// clang-format on
 
 /**
  * Called when the async HTTP stream has an error.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
 @property (nonatomic, copy) void (^onError)
-    (uint64_t errorCode, NSString *message, int32_t attemptCount);
+    (uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when the async HTTP stream is canceled.
  * Note this callback will ALWAYS be fired if a stream is canceled, even if the request and/or
  * response is already complete. It will fire no more than once, and no other callbacks for the
  * stream will be issued afterwards.
+ * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onCancel)(void);
+@property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
 
 @end
 
@@ -104,47 +117,54 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward headers
-@property (nonatomic, copy) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onRequestHeaders)
+    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - NSData *, forward data
 /// 2 - EnvoyHeaders *, optional pending headers
-@property (nonatomic, copy) NSArray * (^onRequestData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onRequestData)
+    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward trailers
 /// 2 - EnvoyHeaders *, optional pending headers
 /// 3 - NSData *, optional pending data
-@property (nonatomic, copy) NSArray * (^onRequestTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) NSArray * (^onRequestTrailers)
+    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward headers
-@property (nonatomic, copy) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResponseHeaders)
+    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - NSData *, forward data
 /// 2 - EnvoyHeaders *, optional pending headers
-@property (nonatomic, copy) NSArray * (^onResponseData)(NSData *data, BOOL endStream);
+@property (nonatomic, copy) NSArray * (^onResponseData)
+    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward trailers
 /// 2 - EnvoyHeaders *, optional pending headers
 /// 3 - NSData *, optional pending data
-@property (nonatomic, copy) NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers);
+@property (nonatomic, copy) NSArray * (^onResponseTrailers)
+    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
-@property (nonatomic, copy) void (^onCancel)(void);
+@property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
 
 @property (nonatomic, copy) void (^onError)
-    (uint64_t errorCode, NSString *message, int32_t attemptCount);
+    (uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel);
 
 @property (nonatomic, copy) void (^setRequestFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
 
+// clang-format off
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, optional pending headers
@@ -152,7 +172,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 3 - EnvoyHeaders *, optional pending trailers
 @property (nonatomic, copy) NSArray * (^onResumeRequest)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
-     BOOL endStream);
+     BOOL endStream, EnvoyStreamIntel streamIntel);
 
 @property (nonatomic, copy) void (^setResponseFilterCallbacks)
     (id<EnvoyHTTPFilterCallbacks> callbacks);
@@ -164,7 +184,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// 3 - EnvoyHeaders *, optional pending trailers
 @property (nonatomic, copy) NSArray * (^onResumeResponse)
     (EnvoyHeaders *_Nullable headers, NSData *_Nullable data, EnvoyHeaders *_Nullable trailers,
-     BOOL endStream);
+     BOOL endStream, EnvoyStreamIntel streamIntel);
+// clang-format on
 
 @end
 
@@ -187,8 +208,11 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
  @param handle Underlying handle of the HTTP stream owned by an Envoy engine.
  @param callbacks The callbacks for the stream.
+ @param explicitFlowControl Whether explicit flow control will be enabled for this stream.
  */
-- (instancetype)initWithHandle:(intptr_t)handle callbacks:(EnvoyHTTPCallbacks *)callbacks;
+- (instancetype)initWithHandle:(intptr_t)handle
+                     callbacks:(EnvoyHTTPCallbacks *)callbacks
+           explicitFlowControl:(BOOL)explicitFlowControl;
 
 /**
  Send headers over the provided stream.
@@ -197,6 +221,14 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  @param close True if the stream should be closed after sending.
  */
 - (void)sendHeaders:(EnvoyHeaders *)headers close:(BOOL)close;
+
+/**
+ Read data from the response stream. Returns immediately.
+ Has no effect if explicit flow control is not enabled.
+
+ @param byteCount Maximum number of bytes that may be be passed by the next data callback.
+ */
+- (void)readData:(size_t)byteCount;
 
 /**
  Send data over the provided stream.
@@ -261,6 +293,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Typed configuration that may be used for starting Envoy.
 @interface EnvoyConfiguration : NSObject
 
+@property (nonatomic, assign) BOOL adminInterfaceEnabled;
 @property (nonatomic, strong, nullable) NSString *grpcStatsDomain;
 @property (nonatomic, assign) UInt32 connectTimeoutSeconds;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
@@ -283,23 +316,25 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
  Create a new instance of the configuration.
  */
 - (instancetype)
-         initWithGrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-           connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-               dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-    dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-     dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-          dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
-          dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-               statsFlushSeconds:(UInt32)statsFlushSeconds
-        streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                      appVersion:(NSString *)appVersion
-                           appId:(NSString *)appId
-                 virtualClusters:(NSString *)virtualClusters
-          directResponseMatchers:(NSString *)directResponseMatchers
-                 directResponses:(NSString *)directResponses
-               nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-             platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                 stringAccessors:(NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
+    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                statsFlushSeconds:(UInt32)statsFlushSeconds
+         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                       appVersion:(NSString *)appVersion
+                            appId:(NSString *)appId
+                  virtualClusters:(NSString *)virtualClusters
+           directResponseMatchers:(NSString *)directResponseMatchers
+                  directResponses:(NSString *)directResponses
+                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                  stringAccessors:
+                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -317,9 +352,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @interface EnvoyEventTracker : NSObject
 
-@property (nonatomic, copy, nullable) void (^track)(EnvoyEvent *);
+@property (nonatomic, copy, nonnull) void (^track)(EnvoyEvent *);
 
-- (instancetype)initWithEventTrackingClosure:(nullable void (^)(EnvoyEvent *))track;
+- (instancetype)initWithEventTrackingClosure:(nonnull void (^)(EnvoyEvent *))track;
 
 @end
 
@@ -368,8 +403,10 @@ extern const int kEnvoyFailure;
  Opens a new HTTP stream attached to this engine.
 
  @param callbacks Handler for observing stream events.
+ @param explicitFlowControl Whether explicit flow control will be enabled for the stream.
  */
-- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks;
+- (id<EnvoyHTTPStream>)startStreamWithCallbacks:(EnvoyHTTPCallbacks *)callbacks
+                            explicitFlowControl:(BOOL)explicitFlowControl;
 
 /**
  Increments a counter with the given count.

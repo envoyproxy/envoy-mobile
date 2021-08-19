@@ -11,6 +11,7 @@ import io.envoyproxy.envoymobile.GRPCRequestHeadersBuilder
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
+import io.envoyproxy.envoymobile.StreamIntel
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer
 import java.util.concurrent.CountDownLatch
@@ -20,7 +21,7 @@ import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 
 private const val hcmType =
-  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
 private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
 private const val localErrorFilterType =
   "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
@@ -35,26 +36,27 @@ static_resources:
     api_listener:
       api_listener:
         "@type": $hcmType
-        stat_prefix: hcm
-        route_config:
-          name: api_router
-          virtual_hosts:
-          - name: api
-            domains: ["*"]
-            routes:
-            - match: { prefix: "/" }
-              direct_response: { status: 503 }
-        http_filters:
-        - name: envoy.filters.http.platform_bridge
-          typed_config:
-            "@type": $pbfType
-            platform_filter_name: $filterName
-        - name: envoy.filters.http.local_error
-          typed_config:
-            "@type": $localErrorFilterType
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        config:
+          stat_prefix: hcm
+          route_config:
+            name: api_router
+            virtual_hosts:
+            - name: api
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/" }
+                direct_response: { status: 503 }
+          http_filters:
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": $pbfType
+              platform_filter_name: $filterName
+          - name: envoy.filters.http.local_error
+            typed_config:
+              "@type": $localErrorFilterType
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 """
 
 class GRPCReceiveErrorTest {
@@ -70,23 +72,34 @@ class GRPCReceiveErrorTest {
     private val receivedError: CountDownLatch,
     private val notCancelled: CountDownLatch
   ) : ResponseFilter {
-    override fun onResponseHeaders(headers: ResponseHeaders, endStream: Boolean): FilterHeadersStatus<ResponseHeaders> {
+    override fun onResponseHeaders(
+      headers: ResponseHeaders,
+      endStream: Boolean,
+      streamIntel: StreamIntel
+    ): FilterHeadersStatus<ResponseHeaders> {
       return FilterHeadersStatus.Continue(headers)
     }
 
-    override fun onResponseData(body: ByteBuffer, endStream: Boolean): FilterDataStatus<ResponseHeaders> {
+    override fun onResponseData(
+      body: ByteBuffer,
+      endStream: Boolean,
+      streamIntel: StreamIntel
+    ): FilterDataStatus<ResponseHeaders> {
       return FilterDataStatus.Continue(body)
     }
 
-    override fun onResponseTrailers(trailers: ResponseTrailers): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
+    override fun onResponseTrailers(
+      trailers: ResponseTrailers,
+      streamIntel: StreamIntel
+    ): FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError) {
+    override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
       receivedError.countDown()
     }
 
-    override fun onCancel() {
+    override fun onCancel(streamIntel: StreamIntel) {
       notCancelled.countDown()
     }
   }
@@ -109,9 +122,9 @@ class GRPCReceiveErrorTest {
 
     GRPCClient(engine.streamClient())
       .newGRPCStreamPrototype()
-      .setOnResponseHeaders { headers, endStream -> }
-      .setOnResponseMessage { }
-      .setOnError {
+      .setOnResponseHeaders { _, _, _ -> }
+      .setOnResponseMessage { _, _ -> }
+      .setOnError { _, _ ->
         callbackReceivedError.countDown()
       }
       .setOnCancel { fail("Unexpected call to onCancel response callback") }

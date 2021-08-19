@@ -8,7 +8,7 @@ private final class MockHeaderMutationFilter: RequestFilter {
     self.headersToAdd = headersToAdd
   }
 
-  func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool)
+  func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool, streamIntel: StreamIntel)
     -> FilterHeadersStatus<RequestHeaders>
   {
     let builder = headers.toRequestHeadersBuilder()
@@ -18,11 +18,13 @@ private final class MockHeaderMutationFilter: RequestFilter {
     return .continue(headers: builder.build())
   }
 
-  func onRequestData(_ body: Data, endStream: Bool) -> FilterDataStatus<RequestHeaders> {
+  func onRequestData(_ body: Data, endStream: Bool, streamIntel: StreamIntel)
+    -> FilterDataStatus<RequestHeaders>
+  {
     return .continue(data: body)
   }
 
-  func onRequestTrailers(_ trailers: RequestTrailers)
+  func onRequestTrailers(_ trailers: RequestTrailers, streamIntel: StreamIntel)
     -> FilterTrailersStatus<RequestHeaders, RequestTrailers>
   {
     return .continue(trailers: trailers)
@@ -61,13 +63,13 @@ final class DirectResponseFilterMutationIntegrationTest: XCTestCase {
     engine
       .streamClient()
       .newStreamPrototype()
-      .setOnResponseHeaders { headers, endStream in
+      .setOnResponseHeaders { headers, endStream, _ in
         XCTAssertEqual(200, headers.httpStatus)
         XCTAssertEqual(["aaa"], headers.value(forName: "x-response-foo"))
         XCTAssertFalse(endStream)
         headersExpectation.fulfill()
       }
-      .setOnResponseData { data, endStream in
+      .setOnResponseData { data, endStream, _ in
         responseBuffer.append(contentsOf: data)
         if endStream {
           XCTAssertEqual("hello world", String(data: responseBuffer, encoding: .utf8))

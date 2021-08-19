@@ -3,19 +3,15 @@ import EnvoyEngine
 import Foundation
 import XCTest
 
-final class EventTrackerTests: XCTestCase {
-  func testSetEventTracker() throws {
-    let engineExpectation = self.expectation(description: "Engine runs")
-    let eventTrackingExpectation =
+final class SetEventTrackerTest: XCTestCase {
+  func testEmitEventWithoutSettingEventTracker() throws {
+    let eventExpectation =
       self.expectation(description: "Passed event tracker receives an event")
 
     let client = EngineBuilder()
-      .setOnEngineRunning {
-        engineExpectation.fulfill()
-      }
       .setEventTracker { event in
         XCTAssertEqual("bar", event["foo"])
-        eventTrackingExpectation.fulfill()
+        eventExpectation.fulfill()
       }
 
       .addNativeFilter(
@@ -34,7 +30,6 @@ final class EventTrackerTests: XCTestCase {
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    let expectations = [engineExpectation, eventTrackingExpectation]
-    XCTAssertEqual(XCTWaiter.wait(for: expectations, timeout: 10, enforceOrder: true), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [eventExpectation], timeout: 10), .completed)
   }
 }

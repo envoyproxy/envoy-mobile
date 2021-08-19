@@ -28,7 +28,7 @@ Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream
                                                      envoy_http_callbacks bridge_callbacks,
                                                      Client& http_client)
     : direct_stream_(direct_stream), bridge_callbacks_(bridge_callbacks), http_client_(http_client),
-      explicit_flow_control_(http_client_.explicit_flow_control_) {}
+      explicit_flow_control_(direct_stream_.explicit_flow_control_) {}
 
 void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& headers,
                                                   bool end_stream) {
@@ -79,7 +79,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
-  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream,
+  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream, streamIntel(),
                                bridge_callbacks_.context);
   response_headers_forwarded_ = true;
   if (end_stream) {
@@ -149,7 +149,7 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
 
   bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), end_stream,
-                            bridge_callbacks_.context);
+                            streamIntel(), bridge_callbacks_.context);
   if (send_end_stream) {
     onComplete();
   }
@@ -181,7 +181,8 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
 
-  bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), bridge_callbacks_.context);
+  bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), streamIntel(),
+                                bridge_callbacks_.context);
   onComplete();
 }
 
@@ -238,7 +239,7 @@ void Client::DirectStreamCallbacks::onComplete() {
   } else {
     http_client_.stats().stream_failure_.inc();
   }
-  bridge_callbacks_.on_complete(bridge_callbacks_.context);
+  bridge_callbacks_.on_complete(streamIntel(), bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -268,14 +269,24 @@ void Client::DirectStreamCallbacks::onError() {
   error_message_ = {};
   error_attempt_count_ = {};
 
-  bridge_callbacks_.on_error({code, message, attempt_count}, bridge_callbacks_.context);
+  bridge_callbacks_.on_error({code, message, attempt_count}, streamIntel(),
+                             bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onCancel() {
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
-  bridge_callbacks_.on_cancel(bridge_callbacks_.context);
+  bridge_callbacks_.on_cancel(streamIntel(), bridge_callbacks_.context);
+}
+
+envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
+  const auto& info = direct_stream_.request_decoder_->streamInfo();
+  envoy_stream_intel stream_intel{};
+  stream_intel.connection_id = info.upstreamConnectionId().value_or(0);
+  stream_intel.stream_id = static_cast<uint64_t>(direct_stream_.stream_handle_);
+  stream_intel.attempt_count = info.attemptCount().value_or(0);
+  return stream_intel;
 }
 
 Client::DirectStream::DirectStream(envoy_stream_t stream_handle, Client& http_client)
@@ -306,9 +317,11 @@ void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
   ENVOY_LOG(error, "\n{}", ss.str());
 }
 
-void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks) {
+void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks,
+                         bool explicit_flow_control) {
   ASSERT(dispatcher_.isThreadSafe());
   Client::DirectStreamSharedPtr direct_stream{new DirectStream(new_stream_handle, *this)};
+  direct_stream->explicit_flow_control_ = explicit_flow_control;
   direct_stream->callbacks_ =
       std::make_unique<DirectStreamCallbacks>(*direct_stream, bridge_callbacks, *this);
 
@@ -356,6 +369,18 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
     ENVOY_LOG(debug, "[S{}] request headers for stream (end_stream={}):\n{}", stream, end_stream,
               *internal_headers);
     direct_stream->request_decoder_->decodeHeaders(std::move(internal_headers), end_stream);
+  }
+}
+
+void Client::readData(envoy_stream_t stream, size_t bytes_to_read) {
+  ASSERT(dispatcher_.isThreadSafe());
+  Client::DirectStreamSharedPtr direct_stream =
+      getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
+  // If direct_stream is not found, it means the stream has already closed or been reset
+  // and the appropriate callback has been issued to the caller. There's nothing to do here
+  // except silently swallow this.
+  if (direct_stream) {
+    direct_stream->callbacks_->resumeData(bytes_to_read);
   }
 }
 

@@ -22,11 +22,12 @@ static std::shared_ptr<Envoy::Engine> engine() {
 
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks) {
+envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
+                            bool explicit_flow_control) {
   if (auto e = engine()) {
-    return e->dispatcher().post([stream, callbacks]() -> void {
+    return e->dispatcher().post([stream, callbacks, explicit_flow_control]() -> void {
       if (auto e = engine())
-        e->httpClient().startStream(stream, callbacks);
+        e->httpClient().startStream(stream, callbacks, explicit_flow_control);
     });
   }
   return ENVOY_FAILURE;
@@ -37,6 +38,16 @@ envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool e
     return e->dispatcher().post([stream, headers, end_stream]() -> void {
       if (auto e = engine())
         e->httpClient().sendHeaders(stream, headers, end_stream);
+    });
+  }
+  return ENVOY_FAILURE;
+}
+
+envoy_status_t read_data(envoy_stream_t stream, size_t bytes_to_read) {
+  if (auto e = engine()) {
+    return e->dispatcher().post([stream, bytes_to_read]() -> void {
+      if (auto e = engine())
+        e->httpClient().readData(stream, bytes_to_read);
     });
   }
   return ENVOY_FAILURE;
@@ -161,10 +172,12 @@ envoy_status_t register_platform_api(const char* name, void* api) {
   return ENVOY_SUCCESS;
 }
 
-envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger) {
+envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
+                           envoy_event_tracker event_tracker) {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger, preferred_network_);
+  strong_engine_ =
+      std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker, preferred_network_);
   engine_ = strong_engine_;
   return 1;
 }

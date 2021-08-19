@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 
@@ -59,10 +60,13 @@ public class JniLibrary {
    * @param stream,  handle to the stream to be started.
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
+   * @param explicitFlowControl, whether explicit flow control should be enabled
+   *                             for the stream.
    * @return envoy_stream, with a stream handle and a success status, or a failure
    * status.
    */
-  protected static native int startStream(long stream, JvmCallbackContext context);
+  protected static native int startStream(long stream, JvmCallbackContext context,
+                                          boolean explicitFlowControl);
 
   /**
    * Send headers over an open HTTP stream. This method can be invoked once and
@@ -96,6 +100,16 @@ public class JniLibrary {
    * @return int, the resulting status of the operation.
    */
   protected static native int sendData(long stream, ByteBuffer data, boolean endStream);
+
+  /**
+   * Read data from the response stream. Returns immediately.
+   * Has no effect if explicit flow control is not enabled.
+   *
+   * @param stream,    the stream.
+   * @param byteCount, Maximum number of bytes that may be be passed by the next data callback.
+   * @return int, the resulting status of the operation.
+   */
+  protected static native int readData(long stream, long byteCount);
 
   /**
    * Send trailers over an open HTTP stream. This method can only be invoked once
@@ -133,9 +147,11 @@ public class JniLibrary {
    *
    * @param runningCallback, called when the engine finishes its async startup and begins running.
    * @param logger,          the logging interface.
+   * @param eventTracker     the event tracking interface.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger);
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger,
+                                          EnvoyEventTracker eventTracker);
 
   /**
    * External entry point for library.
@@ -269,8 +285,4 @@ public class JniLibrary {
    */
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
-  /**
-   * Register a no-op event tracker.
-   */
-  protected static native int registerEventTracker();
 }

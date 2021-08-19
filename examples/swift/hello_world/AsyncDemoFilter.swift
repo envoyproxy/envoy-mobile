@@ -7,27 +7,35 @@ import Foundation
 final class AsyncDemoFilter: AsyncResponseFilter {
   private var callbacks: ResponseFilterCallbacks!
 
-  func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
+  func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool, streamIntel: StreamIntel)
     -> FilterHeadersStatus<ResponseHeaders>
   {
+    if endStream {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        self?.callbacks.resumeResponse()
+      }
+    }
     return .stopIteration
   }
 
-  func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
-    // If this is the end of the stream, asynchronously resume response processing via callback.
-    // Note this call is re-entrant (but legal and safe).
+  func onResponseData(_ body: Data, endStream: Bool, streamIntel: StreamIntel)
+    -> FilterDataStatus<ResponseHeaders>
+  {
     if endStream {
-      callbacks.resumeResponse()
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        self?.callbacks.resumeResponse()
+      }
     }
     return .stopIterationAndBuffer
   }
 
   func onResponseTrailers(
-    _ trailers: ResponseTrailers
+    _ trailers: ResponseTrailers,
+    streamIntel: StreamIntel
   ) -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers> {
-    // Trailers imply end of stream, so asynchronously resume response processing via callback.
-    // Note this call is re-entrant (but legal and safe).
-    callbacks.resumeResponse()
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+      self?.callbacks.resumeResponse()
+    }
     return .stopIteration
   }
 
@@ -39,7 +47,8 @@ final class AsyncDemoFilter: AsyncResponseFilter {
     headers: ResponseHeaders?,
     data: Data?,
     trailers: ResponseTrailers?,
-    endStream: Bool
+    endStream: Bool,
+    streamIntel: StreamIntel
   ) -> FilterResumeStatus<ResponseHeaders, ResponseTrailers> {
     guard let headers = headers else {
       // Iteration was stopped on headers, so headers must be present.
@@ -50,7 +59,7 @@ final class AsyncDemoFilter: AsyncResponseFilter {
     return .resumeIteration(headers: builder.build(), data: data, trailers: trailers)
   }
 
-  func onError(_ error: EnvoyError) {}
+  func onError(_ error: EnvoyError, streamIntel: StreamIntel) {}
 
-  func onCancel() {}
+  func onCancel(streamIntel: StreamIntel) {}
 }
