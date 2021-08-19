@@ -47,4 +47,8 @@ class EngineImpl constructor(
   override fun flushStats() {
     envoyEngine.flushStats()
   }
+
+  override fun dumpStats(timeout_ms: Int): String {
+    return envoyEngine.dumpStats(timeout_ms)
+  }
 }

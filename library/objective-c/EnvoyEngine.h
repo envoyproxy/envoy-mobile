@@ -462,7 +462,17 @@ extern const int kEnvoyFailure;
  */
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
+/**
+ Attempt to trigger a stat flush.
+ */
 - (void)flushStats;
+
+/**
+ Retrieve the value of all active stats. Note that this function may block for some time.
+ @param timeout_ms the timeout for how long to wait when fetching stats.
+ @return The list of active stats and their values, or empty string of the operation failed
+ */
+- (NSString *)dumpStats:(NSUInteger)timeout_ms;
 
 - (void)terminate;
 

@@ -242,20 +242,20 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_s
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Engine::statsDump(envoy_data& out) {
-  ENVOY_LOG(trace, "statsDump");
+envoy_status_t Engine::makeAdminCall(absl::string_view path, absl::string_view method,
+                                     envoy_data& out) {
+  ENVOY_LOG(trace, "admin call {} {}", method, path);
 
   ASSERT(dispatcher_->isThreadSafe(), "admin calls must be run from the dispatcher's context");
-  Http::ResponseHeaderMapImpl response_headers;
+  auto response_headers = Http::ResponseHeaderMapImpl::create();
   std::string body;
-  const auto code = server_->admin().request("/stats", "GET", response_headers, body);
-  if (code != Http::Code::Ok) {
+  const auto code = server_->admin().request(path, method, *response_headers, body);
+  if (code != Http::Code::OK) {
+    ENVOY_LOG(warn, "admin call failed with status {} body {}", code, body);
     return ENVOY_FAILURE;
   }
 
-  // Unfortuantely we can't just take over ownership of the data within the returned string,
-  // so we'll make a new copy.
-  out = Data::Utility::copyToBridgeData(pair.second);
+  out = Data::Utility::copyToBridgeData(body);
 
   return ENVOY_SUCCESS;
 }

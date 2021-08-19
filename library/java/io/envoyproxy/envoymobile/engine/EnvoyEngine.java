@@ -111,4 +111,6 @@ public interface EnvoyEngine {
    * This is a noop if called before the underlying EnvoyEngine has started.
    */
   void flushStats();
+
+  String dumpStats(int timeout_ms);
 }

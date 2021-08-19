@@ -8,6 +8,7 @@
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/http/client.h"
 #include "types/c_types.h"
+#include "absl/synchronization/notification.h"
 
 // NOLINT(namespace-envoy)
 
@@ -158,44 +159,60 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, envo
   return ENVOY_FAILURE;
 }
 
+namespace {
 struct AdminCallContext {
-  envoy_status_t status_;
-  envoy_data response_;
+  envoy_status_t status_{};
+  envoy_data response_{};
 
-  absl::Mutex mutex_;
-  absl::Notification data_received_;
+  absl::Mutex mutex_{};
+  absl::Notification data_received_{};
 };
 
-envoy_status_t stats_dump(envoy_engine_t, envoy_data& out) {
+absl::optional<envoy_data> blockingAdminCall(absl::string_view path, absl::string_view method,
+                                             std::chrono::milliseconds timeout) {
   if (auto e = engine()) {
-    auto context = std::shared_ptr<AdminCallContext>();
-    const auto status = e->dispatcher().post([context]() -> void {
-      if (auto e = engine()) {
-        absl::MutexLock lock(&context->mutex_);
-        context->status = e->statsDump(context->response_);
+    // Use a shared ptr here so that we can safely exit this scope in case of a timeout,
+    // allowing the dispatched lambda to clean itself up when it's done.
+    auto context = std::make_shared<AdminCallContext>();
+    const auto status = e->dispatcher().post(
+        [context, path = std::string(path), method = std::string(method)]() -> void {
+          if (auto e = engine()) {
+            absl::MutexLock lock(&context->mutex_);
 
-        context_->data_received_.Notify();
-      });
+            context->status_ = e->makeAdminCall(path, method, context->response_);
+            context->data_received_.Notify();
+          }
+        });
 
-      if (status == ENVOY_FAILURE) {
-        return status;
+    if (status == ENVOY_FAILURE) {
+      return {};
+    }
+
+    if (context->data_received_.WaitForNotificationWithTimeout(
+            absl::Milliseconds(timeout.count()))) {
+      absl::MutexLock lock(&context->mutex_);
+
+      if (context->status_ == ENVOY_FAILURE) {
+        return {};
       }
 
-      if (context->data_received_.AwaitWithTimeout(absl::Milliseconds(100))) {
-        absl::MutexLock lock(&context_->mutex_);
-
-        if (context_->status_ == ENVOY_FAILURE) {
-          return ENVOY_FAILURE;
-        }
-
-        out = context_.response_;
-
-        return ENVOY_SUCCESS;
-      } else {
-        ENVOY_LOG(warn, "timed out waiting for admin response");
-      }
+      return context->response_;
+    } else {
+      ENVOY_LOG_MISC(warn, "timed out waiting for admin response");
+    }
   }
+
+  return {};
+}
+} // namespace
+
+envoy_status_t dump_stats(envoy_engine_t, envoy_data* out, uint64_t timeout_ms) {
+  auto maybe_data = blockingAdminCall("/stats?usedonly", "GET", std::chrono::milliseconds(timeout_ms));
+  if (maybe_data) {
+    *out = *maybe_data;
+    return ENVOY_SUCCESS;
   }
+
   return ENVOY_FAILURE;
 }
 

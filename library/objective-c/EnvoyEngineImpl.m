@@ -540,10 +540,16 @@ static void ios_track_event(envoy_map map, const void *context) {
   flush_stats(_engineHandle);
 }
 
-- (void)dumpStats->String {
+- (NSString *)dumpStats:(NSUInteger)timeout_ms {
   envoy_data data;
-  dump_stats(_engineHandle, data);
-  return to_ios_data(data);
+  envoy_status_t status = dump_stats(_engineHandle, &data, timeout_ms);
+  if (status == ENVOY_SUCCESS) {
+    NSString * string_copy =  [[NSString alloc] initWithBytes:data.bytes length:data.length encoding:NSUTF8StringEncoding];
+    release_envoy_data(data);
+    return string_copy;
+  }
+
+  return @"";
 }
 
 - (void)terminate {

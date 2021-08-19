@@ -415,12 +415,3 @@ typedef struct {
   // Context passed through to callbacks to provide dispatch and execution state.
   const void* context;
 } envoy_event_tracker;
-
-/**
- * Called with the result of an admin endpoint query.
- *
- * @param data, the body containing the response from the admin endpoint. May be empty if the call
- * failed.
- * @param status, the status of the response.
- */
-typedef void (*envoy_admin_cb_f)(envoy_data data, envoy_status_t status);

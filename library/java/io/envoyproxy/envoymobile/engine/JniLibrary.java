@@ -248,6 +248,13 @@ public class JniLibrary {
   protected static native int flushStats(long engine);
 
   /**
+   * Retrieve the value of all active stats. Note that this function may block for some time.
+   * @param timeout_ms the timeout for how long to wait when fetching stats.
+   * @return The list of active stats and their values, or empty string of the operation failed
+   */
+  protected static native String dumpStats(int timeoutMs);
+
+  /**
    * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
