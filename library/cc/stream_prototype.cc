@@ -45,8 +45,8 @@ StreamPrototype& StreamPrototype::setOnCancel(OnCancelCallback closure) {
   return *this;
 }
 
-StreamPrototype& StreamPrototype::setOnCanSendData(OnCanSendDataCallback closure) {
-  this->callbacks_->on_can_send_data = closure;
+StreamPrototype& StreamPrototype::setOnSendWindowAvailable(OnSendWindowAvailableCallback closure) {
+  this->callbacks_->on_send_window_available = closure;
   return *this;
 }
 

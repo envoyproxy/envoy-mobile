@@ -273,9 +273,9 @@ void Client::DirectStreamCallbacks::onError() {
                              bridge_callbacks_.context);
 }
 
-void Client::DirectStreamCallbacks::onCanSendData() {
-  ENVOY_LOG(debug, "[S{}] remote can send data", direct_stream_.stream_handle_);
-  bridge_callbacks_.on_can_send_data(streamIntel(), bridge_callbacks_.context);
+void Client::DirectStreamCallbacks::onSendWindowAvailable() {
+  ENVOY_LOG(debug, "[S{}] remote send window available", direct_stream_.stream_handle_);
+  bridge_callbacks_.on_send_window_available(streamIntel(), bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onCancel() {
@@ -321,7 +321,7 @@ void Client::DirectStream::readDisable(bool disable) {
     --read_disable_count_;
     if (read_disable_count_ == 0 && wants_write_notification_) {
       wants_write_notification_ = false;
-      callbacks_->onCanSendData();
+      callbacks_->onSendWindowAvailable();
     }
   }
 }
@@ -426,9 +426,9 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     if (direct_stream->explicit_flow_control_ && !end_stream) {
       if (direct_stream->read_disable_count_ == 0) {
         // If there is still buffer space after the write, notify the sender
-        // it can send more data.
+        // that send window is available.
         direct_stream->wants_write_notification_ = false;
-        direct_stream->callbacks_->onCanSendData();
+        direct_stream->callbacks_->onSendWindowAvailable();
       } else {
         // Otherwise, make sure the stack will send a notification when the
         // buffers are drained.

@@ -139,7 +139,7 @@ TEST(MainInterfaceTest, BasicStream) {
         return nullptr;
       } /* on_complete */,
       nullptr /* on_cancel */,
-      nullptr /* on_can_send_data*/,
+      nullptr /* on_send_window_available*/,
       &on_complete_notification /* context */};
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
@@ -188,9 +188,11 @@ TEST(MainInterfaceTest, SendMetadata) {
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
   envoy_http_callbacks stream_cbs{
-      nullptr /* on_headers */,  nullptr /* on_data */,          nullptr /* on_metadata */,
-      nullptr /* on_trailers */, nullptr /* on_error */,         nullptr /* on_complete */,
-      nullptr /* on_cancel */,   nullptr /* on_can_send_data */, nullptr /* context */,
+      nullptr /* on_headers */,  nullptr /* on_data */,
+      nullptr /* on_metadata */, nullptr /* on_trailers */,
+      nullptr /* on_error */,    nullptr /* on_complete */,
+      nullptr /* on_cancel */,   nullptr /* on_send_window_available */,
+      nullptr /* context */,
   };
 
   envoy_stream_t stream = init_stream(0);
@@ -238,7 +240,7 @@ TEST(MainInterfaceTest, ResetStream) {
                                     on_cancel_notification->Notify();
                                     return nullptr;
                                   } /* on_cancel */,
-                                  nullptr /* on_can_send_data */,
+                                  nullptr /* on_send_window_available */,
                                   &on_cancel_notification /* context */};
 
   envoy_stream_t stream = init_stream(0);

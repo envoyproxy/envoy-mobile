@@ -671,8 +671,8 @@ static void jvm_http_filter_on_cancel(const void* context) {
   call_jvm_on_cancel(envoy_stream_intel{}, const_cast<void*>(context));
 }
 
-// TODO(goaway) switch this to call_jvm_on_can_send_more_data
-static void* jvm_on_can_send_more_data(envoy_stream_intel stream_intel, void* context) {
+// TODO(goaway) switch this to call_jvm_on_send_window_available
+static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void* context) {
   void* result = call_jvm_on_cancel(envoy_stream_intel{}, const_cast<void*>(context));
   jni_delete_global_ref(context);
   return result;
@@ -743,7 +743,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_error,
                                            jvm_on_complete,
                                            jvm_on_cancel,
-                                           jvm_on_can_send_more_data,
+                                           jvm_on_send_window_available,
                                            retained_context};
   envoy_status_t result = start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks,
                                        explicit_flow_control);

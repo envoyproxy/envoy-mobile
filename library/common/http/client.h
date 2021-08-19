@@ -133,7 +133,7 @@ private:
     void onComplete();
     void onCancel();
     void onError();
-    void onCanSendData();
+    void onSendWindowAvailable();
 
     // Remove the stream and clear up state if possible, else set up deferred
     // removal path.
@@ -225,7 +225,7 @@ private:
     // or to resume the flow of data when buffers have been drained.
     //
     // It only has an effect in explicit flow control mode, where when all buffers are drained,
-    // on_can_send_data callbacks are called.
+    // on_send_window_available callbacks are called.
     void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable

@@ -53,7 +53,7 @@ public:
     uint32_t on_complete_calls;
     uint32_t on_error_calls;
     uint32_t on_cancel_calls;
-    uint32_t on_can_send_data_calls;
+    uint32_t on_send_window_available_calls;
     std::string expected_status_;
     bool end_stream_with_headers_;
     std::string body_data_;
@@ -95,9 +95,9 @@ public:
       cc->on_cancel_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_can_send_data = [](envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_send_window_available = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
-      cc->on_can_send_data_calls++;
+      cc->on_send_window_available_calls++;
       return nullptr;
     };
     bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
@@ -494,16 +494,16 @@ TEST_P(ClientTest, MultipleDataStream) {
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
   http_client_.sendData(stream_, c_data, false);
-  // The buffer is not full: expect an on_can_send_data call in explicit_flow_control mode.
-  EXPECT_EQ(cc_.on_can_send_data_calls, explicit_flow_control_ ? 1 : 0);
+  // The buffer is not full: expect an on_send_window_available call in explicit_flow_control mode.
+  EXPECT_EQ(cc_.on_send_window_available_calls, explicit_flow_control_ ? 1 : 0);
 
   // Send second request data.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body2"), true));
   http_client_.sendData(stream_, c_data2, true);
-  // The stream is done: no further on_can_send_data calls should happen.
-  EXPECT_EQ(cc_.on_can_send_data_calls, explicit_flow_control_ ? 1 : 0);
+  // The stream is done: no further on_send_window_available calls should happen.
+  EXPECT_EQ(cc_.on_send_window_available_calls, explicit_flow_control_ ? 1 : 0);
 
   // Encode response headers and data.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(3);

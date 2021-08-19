@@ -373,7 +373,7 @@ typedef void (*envoy_logger_release_f)(const void* context);
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_can_send_data_f)(envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_send_window_available_f)(envoy_stream_intel stream_intel, void* context);
 
 /**
  * Called when envoy's event tracker tracks an event.
@@ -399,7 +399,7 @@ typedef struct {
   envoy_on_error_f on_error;
   envoy_on_complete_f on_complete;
   envoy_on_cancel_f on_cancel;
-  envoy_on_can_send_data_f on_can_send_data;
+  envoy_on_send_window_available_f on_send_window_available;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
 } envoy_http_callbacks;
