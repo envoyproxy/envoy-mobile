@@ -6,6 +6,8 @@ import XCTest
 final class FilterResetIdleTests: XCTestCase {
   func skipped_testFilterResetIdle() {
     let idleTimeout = "0.5s"
+    // swiftlint:disable:next line_length
+    let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
     let hcmType =
       // swiftlint:disable:next line_length
       "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
@@ -44,7 +46,7 @@ final class FilterResetIdleTests: XCTestCase {
             socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
           api_listener:
             api_listener:
-              "@type": \(hcmType)
+              "@type": \(emhcmType)
               stat_prefix: api_hcm
               stream_idle_timeout: \(idleTimeout)
               route_config:
@@ -116,53 +118,58 @@ final class FilterResetIdleTests: XCTestCase {
         headers: RequestHeaders?,
         data: Data?,
         trailers: RequestTrailers?,
-        endStream: Bool
+        endStream: Bool,
+        streamIntel: StreamIntel
       ) -> FilterResumeStatus<RequestHeaders, RequestTrailers> {
         XCTFail("Unexpected call to onResumeRequest")
         return .resumeIteration(headers: nil, data: nil, trailers: nil)
       }
 
-      func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool)
+      func onRequestHeaders(_ headers: RequestHeaders, endStream: Bool, streamIntel: StreamIntel)
         -> FilterHeadersStatus<RequestHeaders>
       {
         self.signalActivity()
         return .stopIteration
       }
 
-      func onRequestData(_ body: Data, endStream: Bool) -> FilterDataStatus<RequestHeaders> {
+      func onRequestData(_ body: Data, endStream: Bool, streamIntel: StreamIntel)
+        -> FilterDataStatus<RequestHeaders>
+      {
         XCTFail("Unexpected call to onRequestData filter callback")
         return .stopIterationNoBuffer
       }
 
-      func onRequestTrailers(_ trailers: RequestTrailers)
-        -> FilterTrailersStatus<RequestHeaders, RequestTrailers>
+      func onRequestTrailers(_ trailers: RequestTrailers, streamIntel: StreamIntel)
+          -> FilterTrailersStatus<RequestHeaders, RequestTrailers>
       {
         XCTFail("Unexpected call to onRequestTrailers filter callback")
         return .stopIteration
       }
 
-      func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool)
+      func onResponseHeaders(_ headers: ResponseHeaders, endStream: Bool, streamIntel: StreamIntel)
         -> FilterHeadersStatus<ResponseHeaders>
       {
         self.signalActivity()
         return .stopIteration
       }
 
-      func onResponseData(_ body: Data, endStream: Bool) -> FilterDataStatus<ResponseHeaders> {
+      func onResponseData(_ body: Data, endStream: Bool, streamIntel: StreamIntel)
+        -> FilterDataStatus<ResponseHeaders>
+      {
         XCTFail("Unexpected call to onResponseData filter callback")
         return .stopIterationNoBuffer
       }
 
-      func onResponseTrailers(_ trailers: ResponseTrailers)
-        -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
+      func onResponseTrailers(_ trailers: ResponseTrailers, streamIntel: StreamIntel)
+          -> FilterTrailersStatus<ResponseHeaders, ResponseTrailers>
       {
         XCTFail("Unexpected call to onResponseTrailers filter callback")
         return .stopIteration
       }
 
-      func onError(_ error: EnvoyError) {}
+      func onError(_ error: EnvoyError, streamIntel: StreamIntel) {}
 
-      func onCancel() {
+      func onCancel(streamIntel: StreamIntel) {
         cancelExpectation.fulfill()
       }
     }

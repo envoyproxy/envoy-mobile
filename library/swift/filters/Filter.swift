@@ -19,9 +19,10 @@ extension EnvoyHTTPFilter {
     self.init()
 
     if let requestFilter = filter as? RequestFilter {
-      self.onRequestHeaders = { envoyHeaders, endStream in
+      self.onRequestHeaders = { envoyHeaders, endStream, streamIntel in
         let result = requestFilter.onRequestHeaders(RequestHeaders(headers: envoyHeaders),
-                                                    endStream: endStream)
+                                                    endStream: endStream,
+                                                    streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
@@ -30,8 +31,9 @@ extension EnvoyHTTPFilter {
         }
       }
 
-      self.onRequestData = { data, endStream in
-        let result = requestFilter.onRequestData(data, endStream: endStream)
+      self.onRequestData = { data, endStream, streamIntel in
+        let result = requestFilter.onRequestData(data, endStream: endStream,
+                                                 streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let data):
           return [kEnvoyFilterDataStatusContinue, data]
@@ -44,8 +46,9 @@ extension EnvoyHTTPFilter {
         }
       }
 
-      self.onRequestTrailers = { envoyTrailers in
-        let result = requestFilter.onRequestTrailers(RequestTrailers(headers: envoyTrailers))
+      self.onRequestTrailers = { envoyTrailers, streamIntel in
+        let result = requestFilter.onRequestTrailers(RequestTrailers(headers: envoyTrailers),
+                                                     streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
           return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
@@ -63,9 +66,10 @@ extension EnvoyHTTPFilter {
     }
 
     if let responseFilter = filter as? ResponseFilter {
-      self.onResponseHeaders = { envoyHeaders, endStream in
+      self.onResponseHeaders = { envoyHeaders, endStream, streamIntel in
         let result = responseFilter.onResponseHeaders(ResponseHeaders(headers: envoyHeaders),
-                                                      endStream: endStream)
+                                                      endStream: endStream,
+                                                      streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
           return [kEnvoyFilterHeadersStatusContinue, headers.headers]
@@ -74,8 +78,9 @@ extension EnvoyHTTPFilter {
         }
       }
 
-      self.onResponseData = { data, endStream in
-        let result = responseFilter.onResponseData(data, endStream: endStream)
+      self.onResponseData = { data, endStream, streamIntel in
+        let result = responseFilter.onResponseData(data, endStream: endStream,
+                                                   streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let data):
           return [kEnvoyFilterDataStatusContinue, data]
@@ -88,8 +93,9 @@ extension EnvoyHTTPFilter {
         }
       }
 
-      self.onResponseTrailers = { envoyTrailers in
-        let result = responseFilter.onResponseTrailers(ResponseTrailers(headers: envoyTrailers))
+      self.onResponseTrailers = { envoyTrailers, streamIntel in
+        let result = responseFilter.onResponseTrailers(ResponseTrailers(headers: envoyTrailers),
+                                                       streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
           return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
@@ -105,13 +111,15 @@ extension EnvoyHTTPFilter {
         }
       }
 
-      self.onError = { errorCode, message, attemptCount in
+      self.onError = { errorCode, message, attemptCount, streamIntel in
         let error = EnvoyError(errorCode: errorCode, message: message,
                                attemptCount: UInt32(exactly: attemptCount), cause: nil)
-        responseFilter.onError(error)
+        responseFilter.onError(error, streamIntel: StreamIntel(streamIntel))
       }
 
-      self.onCancel = responseFilter.onCancel
+      self.onCancel = { streamIntel in
+        responseFilter.onCancel(streamIntel: StreamIntel(streamIntel))
+      }
     }
 
     if let asyncRequestFilter = filter as? AsyncRequestFilter {
@@ -121,12 +129,13 @@ extension EnvoyHTTPFilter {
         )
       }
 
-      self.onResumeRequest = { envoyHeaders, data, envoyTrailers, endStream in
+      self.onResumeRequest = { envoyHeaders, data, envoyTrailers, endStream, streamIntel in
         let result = asyncRequestFilter.onResumeRequest(
           headers: envoyHeaders.map(RequestHeaders.init),
           data: data,
           trailers: envoyTrailers.map(RequestTrailers.init),
-          endStream: endStream)
+          endStream: endStream,
+          streamIntel: StreamIntel(streamIntel))
         switch result {
         case .resumeIteration(let headers, let data, let trailers):
           return [
@@ -146,12 +155,13 @@ extension EnvoyHTTPFilter {
         )
       }
 
-      self.onResumeResponse = { envoyHeaders, data, envoyTrailers, endStream in
+      self.onResumeResponse = { envoyHeaders, data, envoyTrailers, endStream, streamIntel in
         let result = asyncResponseFilter.onResumeResponse(
           headers: envoyHeaders.map(ResponseHeaders.init),
           data: data,
           trailers: envoyTrailers.map(ResponseTrailers.init),
-          endStream: endStream)
+          endStream: endStream,
+          streamIntel: StreamIntel(streamIntel))
         switch result {
         case .resumeIteration(let headers, let data, let trailers):
           return [
