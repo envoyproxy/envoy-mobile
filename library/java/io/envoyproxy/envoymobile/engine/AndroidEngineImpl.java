@@ -49,6 +49,11 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
+  public String dumpStats(int timeout_ms) {
+    return envoyEngine.dumpStats(timeout_ms);
+  }
+
+  @Override
   public int recordCounterInc(String elements, Map<String, String> tags, int count) {
     return envoyEngine.recordCounterInc(elements, tags, count);
   }
