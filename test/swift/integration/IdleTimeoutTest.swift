@@ -4,7 +4,6 @@ import Foundation
 import XCTest
 
 final class IdleTimeoutTests: XCTestCase {
-
   func testIdleTimeout() {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
@@ -104,7 +103,9 @@ static_resources:
         return .stopIteration
       }
 
-      func onResponseData(_ body: Data, endStream: Bool, streamIntel: StreamIntel) -> FilterDataStatus<ResponseHeaders> {
+      func onResponseData(_ body: Data, endStream: Bool, streamIntel: StreamIntel)
+        -> FilterDataStatus<ResponseHeaders>
+      {
         XCTFail("Unexpected call to onResponseData filter callback")
         return .stopIterationNoBuffer
       }
@@ -126,7 +127,8 @@ static_resources:
     }
 
     let filterExpectation = self.expectation(description: "Stream idle timeout received by filter")
-    let callbackExpectation = self.expectation(description: "Stream idle timeout received by callbacks")
+    let callbackExpectation =
+      self.expectation(description: "Stream idle timeout received by callbacks")
 
     let client = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
@@ -144,11 +146,11 @@ static_resources:
 
     client
       .newStreamPrototype()
-      .setOnError() { error, _ in
+      .setOnError { error, _ in
         XCTAssertEqual(error.errorCode, 4)
         callbackExpectation.fulfill()
       }
-      .setOnCancel() { _ in
+      .setOnCancel { _ in
         XCTFail("Unexpected call to onCancel filter callback")
       }
       .start()

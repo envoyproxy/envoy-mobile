@@ -244,8 +244,7 @@ void Client::DirectStreamCallbacks::onError() {
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
-  bridge_callbacks_.on_error(error_.value(), streamIntel(),
-                             bridge_callbacks_.context);
+  bridge_callbacks_.on_error(error_.value(), streamIntel(), bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -272,8 +271,10 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
 envoy_error Client::DirectStreamCallbacks::streamError() {
   const auto& info = direct_stream_.request_decoder_->streamInfo();
   envoy_error error{};
-  error.error_code = mapHttpStatusToError(static_cast<Http::Code>(info.responseCode().value_or(500)));
-  error.message = Data::Utility::copyToBridgeData(info.responseCodeDetails().value_or("unknown failure"));
+  error.error_code =
+      mapHttpStatusToError(static_cast<Http::Code>(info.responseCode().value_or(500)));
+  error.message =
+      Data::Utility::copyToBridgeData(info.responseCodeDetails().value_or("unknown failure"));
   error.attempt_count = info.attemptCount().value_or(0);
   return error;
 }

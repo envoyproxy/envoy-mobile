@@ -190,8 +190,8 @@ Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& 
     envoy_error_code_t error_code = mapHttpStatusToError(reply.code_);
     envoy_data error_message = Data::Utility::copyToBridgeData(reply.details_);
     int32_t attempts = static_cast<int32_t>(info.attemptCount().value_or(0));
-    platform_filter_.on_error({error_code, error_message, attempts},
-                              streamIntel(), platform_filter_.instance_context);
+    platform_filter_.on_error({error_code, error_message, attempts}, streamIntel(),
+                              platform_filter_.instance_context);
   }
 
   return Http::LocalErrorStatus::ContinueAndResetStream;
