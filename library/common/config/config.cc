@@ -91,7 +91,7 @@ const std::string config_header = R"(
     common_tls_context:
       tls_params:
         tls_maximum_protocol_version: TLSv1_3
-        cipher_suites: ["ALL:!aPSK:!ECDSA+SHA1:!kRSA:!3DES"]
+        cipher_suites: ["ALL:!aPSK:!ECDSA+SHA1:!3DES"]
         ecdh_curves:
         - P-256
         - X25519
