@@ -89,6 +89,19 @@ const std::string config_header = R"(
   typed_config:
     "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
     common_tls_context:
+      tls_params:
+        tls_maximum_protocol_version: TLSv1_3
+        cipher_suites:
+          - ECDHE-ECDSA-AES256-GCM-SHA384
+          - ECDHE-ECDSA-AES128-GCM-SHA256
+          - ECDHE-ECDSA-AES256-SHA
+          - ECDHE-ECDSA-AES128-SHA
+          - ECDHE-ECDSA-CHACHA20-POLY1305
+          - ECDHE-RSA-AES256-GCM-SHA384
+          - ECDHE-RSA-AES128-GCM-SHA256
+          - ECDHE-RSA-AES256-SHA
+          - ECDHE-RSA-AES128-SHA
+          - ECDHE-RSA-CHACHA20-POLY1305
       validation_context:
         trusted_ca:
           inline_string: |
