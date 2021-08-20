@@ -3,12 +3,12 @@
 #include <atomic>
 #include <string>
 
+#include "absl/synchronization/notification.h"
 #include "library/common/api/external.h"
 #include "library/common/engine.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/http/client.h"
 #include "types/c_types.h"
-#include "absl/synchronization/notification.h"
 
 // NOLINT(namespace-envoy)
 
@@ -207,7 +207,8 @@ absl::optional<envoy_data> blockingAdminCall(absl::string_view path, absl::strin
 } // namespace
 
 envoy_status_t dump_stats(envoy_engine_t, envoy_data* out, uint64_t timeout_ms) {
-  auto maybe_data = blockingAdminCall("/stats?usedonly", "GET", std::chrono::milliseconds(timeout_ms));
+  auto maybe_data =
+      blockingAdminCall("/stats?usedonly", "GET", std::chrono::milliseconds(timeout_ms));
   if (maybe_data) {
     *out = *maybe_data;
     return ENVOY_SUCCESS;
