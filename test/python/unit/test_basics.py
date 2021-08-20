@@ -78,5 +78,5 @@ def test_envoy_error():
     assert response.envoy_error.error_code == envoy_requests.ErrorCode.ConnectionFailure
     assert response.envoy_error.message == (
         "upstream connect error or disconnect/reset before headers. "
-        "reset reason: connection failure"
+        "reset reason: connection failure, transport failure reason: delayed connect error: 111"
     )
