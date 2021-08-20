@@ -101,8 +101,8 @@ public:
                                       uint64_t value, envoy_histogram_stat_unit_t unit_measure);
 
   /**
-   * Issue a call against the admin handler, populating the `out` parameter with the response iff
-   * the call was succesful.
+   * Issue a call against the admin handler, populating the `out` parameter with the response if
+   * the call was successful.
    * @param path the admin path to query.
    * @param method the HTTP method to use (GET or POST).
    * @param out the response body, populated if the call is successful.
