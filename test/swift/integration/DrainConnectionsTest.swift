@@ -60,7 +60,9 @@ static_resources:
       .addUpstreamHttpProtocol(.http2)
       .build()
 
-    let expectation1 = self.expectation(description: "Run called with expected http status first request")
+    let expectation1 =
+      self.expectation(description: "Run called with expected http status first request")
+
     client
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, endStream, _ in
@@ -78,7 +80,9 @@ static_resources:
 
     engine.drainConnections()
 
-    let expectation2 = self.expectation(description: "Run called with expected http status first request")
+    let expectation2 =
+      self.expectation(description: "Run called with expected http status first request")
+
     client
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, endStream, _ in
