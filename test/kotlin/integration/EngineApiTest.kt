@@ -11,7 +11,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Test
 
-class StatFlushIntegrationTest {
+class EngineApiTest {
   private var engine: Engine? = null
 
   init {
