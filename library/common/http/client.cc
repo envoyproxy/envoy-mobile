@@ -271,10 +271,19 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
 envoy_error Client::DirectStreamCallbacks::streamError() {
   const auto& info = direct_stream_.request_decoder_->streamInfo();
   envoy_error error{};
-  error.error_code =
-      mapHttpStatusToError(static_cast<Http::Code>(info.responseCode().value_or(500)));
-  error.message =
-      Data::Utility::copyToBridgeData(info.responseCodeDetails().value_or("unknown failure"));
+
+  if (info.responseCode().has_value()) {
+    error.error_code = mapHttpStatusToError(static_cast<Http::Code>(info.responseCode().value()));
+  } else {
+    error.error_code = ENVOY_STREAM_RESET;
+  }
+
+  if (info.responseCodeDetails().has_value()) {
+    error.message = Data::Utility::copyToBridgeData(info.responseCodeDetails().value());
+  } else {
+    error.message = envoy_nodata;
+  }
+
   error.attempt_count = info.attemptCount().value_or(0);
   return error;
 }
