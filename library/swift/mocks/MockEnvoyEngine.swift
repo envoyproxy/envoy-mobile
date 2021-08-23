@@ -90,7 +90,7 @@ extension MockEnvoyEngine: EnvoyEngine {
     MockEnvoyEngine.onFlushStats?()
   }
 
-  func dumpStats(_ timeout_ms: UInt) -> String {
+  func dumpStats() -> String {
     return ""
   }
 

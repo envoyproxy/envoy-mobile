@@ -112,5 +112,5 @@ public interface EnvoyEngine {
    */
   void flushStats();
 
-  String dumpStats(int timeout_ms);
+  String dumpStats();
 }

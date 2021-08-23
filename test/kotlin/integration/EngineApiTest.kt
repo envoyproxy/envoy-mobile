@@ -41,6 +41,6 @@ class StatFlushIntegrationTest {
 
     engine!!.pulseClient().counter(Element("foo"), Element("bar")).increment(1)
 
-    assertThat(engine?.dumpStats(10)).contains("pulse.foo.bar: 1")
+    assertThat(engine?.dumpStats()).contains("pulse.foo.bar: 1")
   }
 }

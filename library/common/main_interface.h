@@ -153,12 +153,10 @@ void flush_stats(envoy_engine_t engine);
 /**
  * Collect a snapshot of all active stats.
  * Note: this function may block for some time while collecting stats.
- *  Set the timeout parameter to control an upper bound how long this function blocks.
  * @param engine, the engine whose stats to dump.
  * @param data, out parameter to populate with stats data.
- * @param timeout_ms, the timeout in ms for how long to wait for stats.
  */
-envoy_status_t dump_stats(envoy_engine_t engine, envoy_data* data, uint64_t timeout_ms);
+envoy_status_t dump_stats(envoy_engine_t engine, envoy_data* data);
 
 /**
  * Statically register APIs leveraging platform libraries.

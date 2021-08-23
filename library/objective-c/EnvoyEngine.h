@@ -469,10 +469,9 @@ extern const int kEnvoyFailure;
 
 /**
  Retrieve the value of all active stats. Note that this function may block for some time.
- @param timeout_ms the timeout for how long to wait when fetching stats.
  @return The list of active stats and their values, or empty string of the operation failed
  */
-- (NSString *)dumpStats:(NSUInteger)timeout_ms;
+- (NSString *)dumpStats;
 
 - (void)terminate;
 

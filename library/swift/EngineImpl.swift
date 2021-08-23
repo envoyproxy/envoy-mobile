@@ -62,8 +62,8 @@ extension EngineImpl: Engine {
     self.engine.flushStats()
   }
 
-  func dumpStats(timeout_ms: UInt) -> String {
-    self.engine.dumpStats(timeout_ms)
+  func dumpStats() -> String {
+    self.engine.dumpStats()
   }
 
   func terminate() {

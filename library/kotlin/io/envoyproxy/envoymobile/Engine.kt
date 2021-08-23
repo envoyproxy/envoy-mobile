@@ -30,8 +30,7 @@ interface Engine {
 
   /**
    * Retrieve the value of all active stats. Note that this function may block for some time.
-   * @param timeout_ms the timeout for how long to wait when fetching stats.
    * @return The list of active stats and their values, or empty string of the operation failed
    */
-  fun dumpStats(timeout_ms: Int): String
+  fun dumpStats(): String
 }

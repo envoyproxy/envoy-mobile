@@ -49,8 +49,8 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public String dumpStats(int timeout_ms) {
-    return envoyEngine.dumpStats(timeout_ms);
+  public String dumpStats() {
+    return envoyEngine.dumpStats();
   }
 
   @Override

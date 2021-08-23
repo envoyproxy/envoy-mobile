@@ -53,8 +53,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public String dumpStats(int timeout_ms) {
-    return JniLibrary.dumpStats(timeout_ms);
+  public String dumpStats() {
+    return JniLibrary.dumpStats();
   }
 
   /**

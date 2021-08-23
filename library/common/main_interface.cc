@@ -206,9 +206,8 @@ absl::optional<envoy_data> blockingAdminCall(absl::string_view path, absl::strin
 }
 } // namespace
 
-envoy_status_t dump_stats(envoy_engine_t, envoy_data* out, uint64_t timeout_ms) {
-  auto maybe_data =
-      blockingAdminCall("/stats?usedonly", "GET", std::chrono::milliseconds(timeout_ms));
+envoy_status_t dump_stats(envoy_engine_t, envoy_data* out) {
+  auto maybe_data = blockingAdminCall("/stats?usedonly", "GET", std::chrono::milliseconds(100));
   if (maybe_data) {
     *out = *maybe_data;
     return ENVOY_SUCCESS;

@@ -15,7 +15,7 @@ public protocol Engine: AnyObject {
   /// This is a noop if called before the underlying EnvoyEngine has started.
   func flushStats()
 
-  func dumpStats(timeout_ms: UInt) -> String
+  func dumpStats() -> String
 
   /// Terminates the running engine.
   func terminate()

@@ -19,7 +19,7 @@ final class EngineApiTest: XCTestCase {
     let pulseClient = engine.pulseClient()
     pulseClient.gauge(elements: ["foo", "bar"]).set(value: 1)
 
-    XCTAssertTrue(engine.dumpStats(timeout_ms: 1000).contains("foo.bar: 1"))
+    XCTAssertTrue(engine.dumpStats().contains("foo.bar: 1"))
 
     engine.terminate()
   }

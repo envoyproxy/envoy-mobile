@@ -43,5 +43,5 @@ internal class MockEnvoyEngine : EnvoyEngine {
 
   override fun flushStats() = Unit
 
-  override fun dumpStats(timeout_ms: Int): String = ""
+  override fun dumpStats(): String = ""
 }
