@@ -184,9 +184,9 @@ Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& 
   response_filter_base_->state_.stream_complete_ = true;
   auto& info = decoder_callbacks_->streamInfo();
   // TODO(goaway): set responseCode in upstream Envoy when responseCodDetails are set.
-  //ASSERT(static_cast<uint32_t>(reply.code_) == info.responseCode());
+  // ASSERT(static_cast<uint32_t>(reply.code_) == info.responseCode());
   // TODO(goaway): follow up on the underscore discrepancy between these values.
-  //ASSERT(reply.details_ == info.responseCodeDetails());
+  // ASSERT(reply.details_ == info.responseCodeDetails());
 
   if (platform_filter_.on_error) {
     envoy_error_code_t error_code = mapHttpStatusToError(reply.code_);
