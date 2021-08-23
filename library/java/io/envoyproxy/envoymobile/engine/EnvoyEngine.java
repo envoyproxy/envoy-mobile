@@ -113,4 +113,9 @@ public interface EnvoyEngine {
   void flushStats();
 
   String dumpStats();
+
+  /**
+   * Drain all connections owned by this Engine.
+   */
+  void drainConnections();
 }

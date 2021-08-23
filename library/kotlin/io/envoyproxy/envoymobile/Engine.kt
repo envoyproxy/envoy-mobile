@@ -33,4 +33,9 @@ interface Engine {
    * @return The list of active stats and their values, or empty string of the operation failed
    */
   fun dumpStats(): String
+
+  /**
+   * Drain all connections owned by this Engine.
+   */
+  fun drainConnections()
 }

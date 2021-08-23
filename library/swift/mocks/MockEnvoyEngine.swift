@@ -95,4 +95,6 @@ extension MockEnvoyEngine: EnvoyEngine {
   }
 
   func terminate() {}
+
+  func drainConnections() {}
 }
