@@ -18,8 +18,6 @@ namespace LocalError {
 class LocalErrorFilter final : public Http::PassThroughFilter,
                                public Logger::Loggable<Logger::Id::filter> {
 public:
-  LocalErrorFilter();
-
   // StreamFilterBase
   Http::LocalErrorStatus onLocalReply(const LocalReplyData&) override;
 };

@@ -8,6 +8,7 @@ final class IdleTimeoutTests: XCTestCase {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
     let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    let lefType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
     // swiftlint:disable:next line_length
     let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
     let filterName = "idle_timeout_validation_filter"
@@ -53,6 +54,9 @@ static_resources:
             - match: { prefix: "/" }
               route: { cluster: fake_remote }
         http_filters:
+        - name: envoy.filters.http.local_error
+          typed_config:
+            "@type": \(lefType)
         - name: envoy.filters.http.platform_bridge
           typed_config:
             "@type": \(pbfType)
