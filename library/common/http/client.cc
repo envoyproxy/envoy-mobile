@@ -8,6 +8,7 @@
 #include "source/common/http/headers.h"
 #include "source/common/http/utility.h"
 
+#include "library/common/bridge/utility.h"
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
@@ -23,23 +24,6 @@ namespace Http {
  * If this changes in Envoy, this file will need to change as well.
  * For implementation details @see Client::DirectStreamCallbacks::closeRemote.
  */
-
-namespace {
-
-envoy_error_code_t mapHttpStatusToError(Http::Code status) {
-  switch (status) {
-  case Http::Code::RequestTimeout:
-    return ENVOY_REQUEST_TIMEOUT;
-  case Http::Code::PayloadTooLarge:
-    return ENVOY_BUFFER_LIMIT_EXCEEDED;
-  case Http::Code::ServiceUnavailable:
-    return ENVOY_CONNECTION_FAILURE;
-  default:
-    return ENVOY_UNDEFINED_ERROR;
-  }
-}
-
-} // namespace
 
 Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream,
                                                      envoy_http_callbacks bridge_callbacks,
@@ -226,8 +210,8 @@ void Client::DirectStreamCallbacks::onError() {
 
   // When using explicit flow control, if any response data has been sent (e.g. headers), response
   // errors must be deferred until after resumeData has been called.
-  // TODO: What is the expected behavior when an error is received, held, and then another error
-  // occurs (e.g., timeout)?
+  // TODO(goaway): What is the expected behavior when an error is received, held, and then another
+  // error occurs (e.g., timeout)?
   if (explicit_flow_control_ && response_headers_forwarded_ && bytes_to_send_ == 0) {
     return;
   }
@@ -273,7 +257,9 @@ envoy_error Client::DirectStreamCallbacks::streamError() {
   envoy_error error{};
 
   if (info.responseCode().has_value()) {
-    error.error_code = mapHttpStatusToError(static_cast<Http::Code>(info.responseCode().value()));
+    error.error_code = Bridge::Utility::errorCodeFromLocalStatus(
+      static_cast<Http::Code>(info.responseCode().value())
+    );
   } else {
     error.error_code = ENVOY_STREAM_RESET;
   }

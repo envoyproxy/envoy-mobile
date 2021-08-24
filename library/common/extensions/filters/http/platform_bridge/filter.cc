@@ -9,6 +9,7 @@
 #include "source/common/common/utility.h"
 
 #include "library/common/api/external.h"
+#include "library/common/bridge/utility.h"
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/data/utility.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_type_definitions.h"
@@ -30,19 +31,6 @@ void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers) {
   }
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(c_headers);
-}
-
-envoy_error_code_t mapHttpStatusToError(Http::Code status) {
-  switch (status) {
-  case Http::Code::RequestTimeout:
-    return ENVOY_REQUEST_TIMEOUT;
-  case Http::Code::PayloadTooLarge:
-    return ENVOY_BUFFER_LIMIT_EXCEEDED;
-  case Http::Code::ServiceUnavailable:
-    return ENVOY_CONNECTION_FAILURE;
-  default:
-    return ENVOY_UNDEFINED_ERROR;
-  }
 }
 
 } // namespace
@@ -189,7 +177,7 @@ Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& 
   // ASSERT(reply.details_ == info.responseCodeDetails());
 
   if (platform_filter_.on_error) {
-    envoy_error_code_t error_code = mapHttpStatusToError(reply.code_);
+    envoy_error_code_t error_code = Bridge::Utility::errorCodeFromLocalStatus(reply.code_);
     envoy_data error_message = Data::Utility::copyToBridgeData(reply.details_);
     int32_t attempts = static_cast<int32_t>(info.attemptCount().value_or(0));
     platform_filter_.on_error({error_code, error_message, attempts}, streamIntel(),
