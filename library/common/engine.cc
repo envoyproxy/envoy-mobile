@@ -68,9 +68,14 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       main_common = std::make_unique<EngineCommon>(envoy_argv.size() - 1, envoy_argv.data());
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
+
+      // Used by the cerr logger to ensure logs don't overwrite each other.
+      absl::Mutex log_mutex;
       if (logger_.log) {
-        lambda_logger_ =
-            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
+        log_delegate_ptr_ =
+            std::make_unique<Logger::LambdaDelegate>(logger_);
+      } else {
+        log_delegate_ptr_ = std::make_unique<Logger::DefaultDelegate>(log_mutex);
       }
 
       cv_.notifyAll();
@@ -117,7 +122,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
-  lambda_logger_.reset(nullptr);
+  log_delegate_ptr_.reset(nullptr);
   main_common.reset(nullptr);
   assert_handler_registration_.reset(nullptr);
 

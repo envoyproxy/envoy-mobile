@@ -8,7 +8,7 @@ namespace Envoy {
 namespace Logger {
 
 LambdaDelegate::LambdaDelegate(envoy_logger logger, DelegatingLogSinkSharedPtr log_sink)
-    : SinkDelegate(log_sink), logger_(logger) {
+    : EventTrackingDelegate(log_sink), logger_(logger) {
   setDelegate();
 }
 
