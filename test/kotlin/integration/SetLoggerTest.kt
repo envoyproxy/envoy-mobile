@@ -2,6 +2,9 @@ package test.kotlin.integration
 
 import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.Engine
+import io.envoyproxy.envoymobile.RequestHeadersBuilder
+import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.util.concurrent.CountDownLatch
@@ -39,6 +42,7 @@ static_resources:
                     direct_response:
                       status: 200
           http_filters:
+            - name: test_logger
             - name: envoy.filters.http.assertion
               typed_config:
                 "@type": $assertionFilterType
@@ -61,25 +65,46 @@ class SetLoggerTest {
   @Test
   fun `set logger`() {
     val countDownLatch = CountDownLatch(1)
-    val client = EngineBuilder(Custom(config))
+    val dnsResolutionLatch = CountDownLatch(1)
+    val engine = EngineBuilder(Custom(config))
       .addLogLevel(LogLevel.DEBUG)
       .setLogger { msg ->
         if (msg.contains("starting main dispatch loop")) {
           countDownLatch.countDown()
         }
       }
+      .setEventTracker { event -> 
+        System.out.println(event)
+        if (event["log_name"] == "event_name") {
+          dnsResolutionLatch.countDown()
+        }
+      }
       .setOnEngineRunning {}
       .build()
 
+
     countDownLatch.await(30, TimeUnit.SECONDS)
-    client.terminate()
+
+    sendRequest(engine)
+
+    dnsResolutionLatch.await(30, TimeUnit.SECONDS)
+
+    engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
+    assertThat(dnsResolutionLatch.count).isEqualTo(0)
   }
 
   @Test
   fun `engine should continue to run if no logger is set`() {
     val countDownLatch = CountDownLatch(1)
-    val client = EngineBuilder(Custom(config))
+    val dnsResolutionLatch = CountDownLatch(1)
+    val engine = EngineBuilder(Custom(config))
+      .setEventTracker { event -> 
+        System.out.println(event)
+        if (event["log_name"] == "event_name") {
+          dnsResolutionLatch.countDown()
+        }
+      }
       .addLogLevel(LogLevel.DEBUG)
       .setOnEngineRunning {
         countDownLatch.countDown()
@@ -87,7 +112,23 @@ class SetLoggerTest {
       .build()
 
     countDownLatch.await(30, TimeUnit.SECONDS)
-    client.terminate()
+    engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
+  }
+
+  fun sendRequest(engine: Engine) {
+    val client = engine.streamClient()
+
+    val requestHeaders = RequestHeadersBuilder(
+      method = RequestMethod.GET,
+      scheme = "https",
+      authority = "example.com",
+      path = "/test"
+    )
+      .build()
+
+    client.newStreamPrototype()
+      .start()
+      .sendHeaders(requestHeaders, true)
   }
 }

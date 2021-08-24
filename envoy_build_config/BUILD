@@ -33,5 +33,6 @@ envoy_cc_library(
         "@envoy_mobile//library/common/extensions/filters/http/route_cache_reset:config",
         "@envoy_mobile//library/common/extensions/filters/http/test_accessor:config",
         "@envoy_mobile//library/common/extensions/filters/http/test_event_tracker:config",
+        "@envoy_mobile//library/common/extensions/filters/http/test_logger:config",
     ],
 )

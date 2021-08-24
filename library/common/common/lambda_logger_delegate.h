@@ -1,12 +1,12 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 #include "source/common/common/logger.h"
 
-#include "library/common/api/external.h"
-#include <iostream>
 #include "absl/strings/string_view.h"
+#include "library/common/api/external.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -18,16 +18,8 @@ public:
       : SinkDelegate(log_sink), event_tracker_(*static_cast<envoy_event_tracker*>(
                                     Api::External::retrieveApi(envoy_event_tracker_api_name))) {}
 
-  // void logWithStableName(absl::string_view stable_name, absl::string_view level,
-  // absl::string_view component, absl::string_view msg) override {
-  //   if (event_tracker_.track == nullptr) {
-  //     return;
-  //   }
-
-  //   if (stable_name == whatever) {
-  //     event_tracker_.track(makeEnvoyMap({{"name", stable_name}, {"msg", msg}}));
-  //   }
-  // }
+  void logWithStableName(absl::string_view stable_name, absl::string_view level,
+                         absl::string_view component, absl::string_view msg) override;
 
 private:
   envoy_event_tracker& event_tracker_;

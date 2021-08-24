@@ -73,9 +73,10 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       absl::Mutex log_mutex;
       if (logger_.log) {
         log_delegate_ptr_ =
-            std::make_unique<Logger::LambdaDelegate>(logger_);
+            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
       } else {
-        log_delegate_ptr_ = std::make_unique<Logger::DefaultDelegate>(log_mutex);
+        log_delegate_ptr_ =
+            std::make_unique<Logger::DefaultDelegate>(log_mutex, Logger::Registry::getSink());
       }
 
       cv_.notifyAll();
