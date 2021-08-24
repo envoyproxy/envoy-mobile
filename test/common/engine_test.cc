@@ -87,5 +87,4 @@ TEST_F(EngineTest, EarlyExit) {
 
   start_stream(0, {}, false);
 }
-
 } // namespace Envoy
