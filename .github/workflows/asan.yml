@@ -41,4 +41,5 @@ jobs:
             --action_env=CC=/opt/llvm/bin/clang,CXX=/opt/llvm/bin/clang++ \
             --config=remote-ci-linux \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            -s \
             //test/common/...
