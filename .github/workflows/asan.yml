@@ -38,10 +38,10 @@ jobs:
           bazel test --config=clang-asan \
             --test_output=all \
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
+            --config=remote-ci-linux \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --action_env=CC=clang \
             --action_env=CXX=clang++ \
             --action_env=PATH=/usr/sbin:/usr/bin:/sbin:/bin:/opt/llvm/bin \
-            --config=remote-ci-linux \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             -s \
             //test/common/...
