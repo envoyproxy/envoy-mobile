@@ -11,8 +11,8 @@ envoy_cc_library(
     external_deps = ["abseil_optional"],
     repository = "@envoy",
     deps = [
-        "//library/common/buffer:bridge_fragment_lib",
         "//library/common/bridge:utility_lib",
+        "//library/common/buffer:bridge_fragment_lib",
         "//library/common/data:utility_lib",
         "//library/common/event:provisional_dispatcher_lib",
         "//library/common/extensions/filters/http/local_error:local_error_filter_lib",

@@ -258,8 +258,7 @@ envoy_error Client::DirectStreamCallbacks::streamError() {
 
   if (info.responseCode().has_value()) {
     error.error_code = Bridge::Utility::errorCodeFromLocalStatus(
-      static_cast<Http::Code>(info.responseCode().value())
-    );
+        static_cast<Http::Code>(info.responseCode().value()));
   } else {
     error.error_code = ENVOY_STREAM_RESET;
   }
