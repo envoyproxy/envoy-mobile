@@ -160,6 +160,7 @@ TEST(MainInterfaceTest, BasicStream) {
         return nullptr;
       } /* on_complete */,
       nullptr /* on_cancel */,
+      nullptr /* on_send_window_available*/,
       &on_complete_notification /* context */};
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
@@ -207,10 +208,13 @@ TEST(MainInterfaceTest, SendMetadata) {
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
-  envoy_http_callbacks stream_cbs{nullptr /* on_headers */,  nullptr /* on_data */,
-                                  nullptr /* on_metadata */, nullptr /* on_trailers */,
-                                  nullptr /* on_error */,    nullptr /* on_complete */,
-                                  nullptr /* on_cancel */,   nullptr /* context */};
+  envoy_http_callbacks stream_cbs{
+      nullptr /* on_headers */,  nullptr /* on_data */,
+      nullptr /* on_metadata */, nullptr /* on_trailers */,
+      nullptr /* on_error */,    nullptr /* on_complete */,
+      nullptr /* on_cancel */,   nullptr /* on_send_window_available */,
+      nullptr /* context */,
+  };
 
   envoy_stream_t stream = init_stream(0);
 
@@ -257,6 +261,7 @@ TEST(MainInterfaceTest, ResetStream) {
                                     on_cancel_notification->Notify();
                                     return nullptr;
                                   } /* on_cancel */,
+                                  nullptr /* on_send_window_available */,
                                   &on_cancel_notification /* context */};
 
   envoy_stream_t stream = init_stream(0);
@@ -619,6 +624,28 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));
   terminate_engine(0);
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
+}
+
+TEST(MainInterfaceTest, DrainConnections) {
+  engine_test_context test_context{};
+  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+                                      auto* engine_running =
+                                          static_cast<engine_test_context*>(context);
+                                      engine_running->on_engine_running.Notify();
+                                    } /*on_engine_running*/,
+                                    [](void* context) -> void {
+                                      auto* exit = static_cast<engine_test_context*>(context);
+                                      exit->on_exit.Notify();
+                                    } /*on_exit*/,
+                                    &test_context /*context*/};
+  envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+
+  ASSERT_EQ(ENVOY_SUCCESS, drain_connections(engine_handle));
+
+  terminate_engine(engine_handle);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 

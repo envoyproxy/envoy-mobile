@@ -715,6 +715,13 @@ static void jvm_http_filter_on_cancel(envoy_stream_intel stream_intel, const voi
   call_jvm_on_cancel(stream_intel, const_cast<void*>(context));
 }
 
+// TODO(goaway) switch this to call_jvm_on_send_window_available
+static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void* context) {
+  void* result = call_jvm_on_cancel(envoy_stream_intel{}, const_cast<void*>(context));
+  jni_delete_global_ref(context);
+  return result;
+}
+
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
@@ -780,6 +787,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_error,
                                            jvm_on_complete,
                                            jvm_on_cancel,
+                                           jvm_on_send_window_available,
                                            retained_context};
   envoy_status_t result = start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks,
                                        explicit_flow_control);
@@ -936,4 +944,12 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerStringAccessor(JNIEnv* 
       register_platform_api(env->GetStringUTFChars(accessor_name, nullptr), string_accessor);
   env->DeleteLocalRef(jcls_JvmStringAccessorContext);
   return result;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_drainConnections(JNIEnv* env,
+                                                                  jclass, // class
+                                                                  jlong engine) {
+  jni_log("[Envoy]", "drainConnections");
+  drain_connections(engine);
 }
