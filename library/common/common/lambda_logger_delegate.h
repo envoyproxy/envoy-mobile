@@ -14,7 +14,7 @@ namespace Logger {
 
 class EventTrackingDelegate : public SinkDelegate {
 public:
-  EventTrackingDelegate(DelegatingLogSinkSharedPtr log_sink)
+  explicit EventTrackingDelegate(DelegatingLogSinkSharedPtr log_sink)
       : SinkDelegate(log_sink), event_tracker_(*static_cast<envoy_event_tracker*>(
                                     Api::External::retrieveApi(envoy_event_tracker_api_name))) {}
 
