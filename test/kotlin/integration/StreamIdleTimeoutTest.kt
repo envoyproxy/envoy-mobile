@@ -96,7 +96,6 @@ static_resources:
               socket_address: { address: 127.0.0.1, port_value: 10101 }
 """
 
-
 class CancelStreamTest {
 
   init {
