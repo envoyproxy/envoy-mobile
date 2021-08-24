@@ -10,7 +10,6 @@ namespace Logger {
 
 void EventTrackingDelegate::logWithStableName(absl::string_view stable_name, absl::string_view,
                                               absl::string_view, absl::string_view msg) {
-  std::cout << "logging stable name " << stable_name << std::endl;
   if (event_tracker_.track == nullptr) {
     return;
   }
