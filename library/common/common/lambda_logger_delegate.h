@@ -40,7 +40,7 @@ private:
   envoy_logger logger_;
 };
 
-// A default log delegate that logs to stderr, mimicing the default used by Envoy
+// A default log delegate that logs to stderr, mimicking the default used by Envoy
 // when no logger has been installed. Using this default delegate allows us to
 // intercept the named log lines (used for analytic events) even if no platform
 // logger has been installed.
