@@ -78,6 +78,5 @@ def test_envoy_error():
     assert response.envoy_error is not None
     assert response.envoy_error.error_code == envoy_requests.ErrorCode.ConnectionFailure
     assert re.match((
-        "^upstream connect error or disconnect/reset before headers. "
-        "reset reason: connection failure, transport failure reason:"
+       "^upstream_reset_before_response_started{connection_failure"
     ), response.envoy_error.message)
