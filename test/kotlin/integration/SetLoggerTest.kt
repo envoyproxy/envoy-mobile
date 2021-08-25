@@ -65,7 +65,7 @@ class SetLoggerTest {
   @Test
   fun `set logger`() {
     val countDownLatch = CountDownLatch(1)
-    val dnsResolutionLatch = CountDownLatch(1)
+    val logEventLatch = CountDownLatch(1)
     val engine = EngineBuilder(Custom(config))
       .addLogLevel(LogLevel.DEBUG)
       .setLogger { msg ->
@@ -74,9 +74,8 @@ class SetLoggerTest {
         }
       }
       .setEventTracker { event -> 
-        System.out.println(event)
         if (event["log_name"] == "event_name") {
-          dnsResolutionLatch.countDown()
+          logEventLatch.countDown()
         }
       }
       .setOnEngineRunning {}
@@ -87,22 +86,21 @@ class SetLoggerTest {
 
     sendRequest(engine)
 
-    dnsResolutionLatch.await(30, TimeUnit.SECONDS)
+    logEventLatch.await(30, TimeUnit.SECONDS)
 
     engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
-    assertThat(dnsResolutionLatch.count).isEqualTo(0)
+    assertThat(logEventLatch.count).isEqualTo(0)
   }
 
   @Test
   fun `engine should continue to run if no logger is set`() {
     val countDownLatch = CountDownLatch(1)
-    val dnsResolutionLatch = CountDownLatch(1)
+    val logEventLatch = CountDownLatch(1)
     val engine = EngineBuilder(Custom(config))
       .setEventTracker { event -> 
-        System.out.println(event)
         if (event["log_name"] == "event_name") {
-          dnsResolutionLatch.countDown()
+          logEventLatch.countDown()
         }
       }
       .addLogLevel(LogLevel.DEBUG)
@@ -112,8 +110,13 @@ class SetLoggerTest {
       .build()
 
     countDownLatch.await(30, TimeUnit.SECONDS)
+
+    sendRequest(engine)
+    logEventLatch.await(30, TimeUnit.SECONDS)
+
     engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
+    assertThat(logEventLatch.count).isEqualTo(0)
   }
 
   fun sendRequest(engine: Engine) {
