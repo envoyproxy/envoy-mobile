@@ -8,9 +8,6 @@ final class FilterResetIdleTests: XCTestCase {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
     let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
-    let hcmType =
-      // swiftlint:disable:next line_length
-      "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
     let pbfType =
       "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
     let localErrorFilterType =
@@ -27,7 +24,7 @@ final class FilterResetIdleTests: XCTestCase {
           - filters:
             - name: envoy.filters.network.http_connection_manager
               typed_config:
-                "@type": \(hcmType)
+                "@type": \(ehcmType)
                 stat_prefix: remote_hcm
                 route_config:
                   name: remote_route

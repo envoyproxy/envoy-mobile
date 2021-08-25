@@ -7,7 +7,7 @@ final class IdleTimeoutTests: XCTestCase {
   func testIdleTimeout() {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
-    let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
     let lefType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
     // swiftlint:disable:next line_length
     let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
@@ -23,7 +23,7 @@ static_resources:
     - filters:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": \(hcmType)
+          "@type": \(ehcmType)
           stat_prefix: remote_hcm
           route_config:
             name: remote_route
