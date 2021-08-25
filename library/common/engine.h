@@ -126,6 +126,8 @@ private:
   Thread::CondVar cv_;
   Http::ClientPtr http_client_;
   Event::ProvisionalDispatcherPtr dispatcher_;
+  // Used by the cerr logger to ensure logs don't overwrite each other.
+  absl::Mutex log_mutex_;
   Logger::EventTrackingDelegatePtr log_delegate_ptr_{};
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;

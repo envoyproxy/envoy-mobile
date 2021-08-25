@@ -69,14 +69,12 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
 
-      // Used by the cerr logger to ensure logs don't overwrite each other.
-      absl::Mutex log_mutex;
       if (logger_.log) {
         log_delegate_ptr_ =
             std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
       } else {
         log_delegate_ptr_ =
-            std::make_unique<Logger::DefaultDelegate>(log_mutex, Logger::Registry::getSink());
+            std::make_unique<Logger::DefaultDelegate>(log_mutex_, Logger::Registry::getSink());
       }
 
       cv_.notifyAll();
