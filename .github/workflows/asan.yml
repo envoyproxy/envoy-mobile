@@ -41,5 +41,4 @@ jobs:
             --config=remote-ci-linux \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-clang \
-            -s \
             //test/common/...
