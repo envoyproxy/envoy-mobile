@@ -1,4 +1,5 @@
 load("@envoy_mobile//bazel:apple_test.bzl", "envoy_mobile_swift_test")
+load("@envoy_mobile//bazel:envoy_mobile_test_extensions.bzl", "TEST_EXTENSIONS")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
 
 licenses(["notice"])  # Apache 2
@@ -168,8 +169,8 @@ envoy_mobile_swift_test(
         "SetLoggerTest.swift",
     ],
     deps = [
-        "//library/objective-c:envoy_engine_objc_lib",
         ":test_extensions",
+        "//library/objective-c:envoy_engine_objc_lib",
     ],
 )
 
@@ -181,9 +182,8 @@ envoy_cc_library(
     hdrs = [
         "test_extensions.h",
     ],
-    deps = [
-        "//library/common/extensions/filters/http/test_logger:config",
-    ]
+    repository = "@envoy",
+    deps = TEST_EXTENSIONS,
 )
 
 objc_library(
@@ -192,6 +192,9 @@ objc_library(
         "TestExtensions.h",
     ],
     module_name = "TestExtensions",
+    deps = [
+        ":test_extensions_cc",
+    ],
 )
 
 envoy_mobile_swift_test(
@@ -200,6 +203,7 @@ envoy_mobile_swift_test(
         "SetEventTrackerTest.swift",
     ],
     deps = [
+        ":test_extensions",
         "//library/objective-c:envoy_engine_objc_lib",
     ],
 )

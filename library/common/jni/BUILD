@@ -1,6 +1,7 @@
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_so_to_jni_lib")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("//bazel:envoy_mobile_test_extensions.bzl", "TEST_EXTENSIONS")
 
 licenses(["notice"])  # Apache 2
 
@@ -112,9 +113,8 @@ cc_library(
         "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
-        "//library/common/extensions/filters/http/test_logger:config",
         "@envoy//source/common/common:assert_lib",
-    ],
+    ] + TEST_EXTENSIONS,
 )
 
 # Utility implementation for Java JNI

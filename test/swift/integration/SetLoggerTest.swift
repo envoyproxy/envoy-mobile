@@ -6,7 +6,7 @@ import TestExtensions
 
 final class LoggerTests: XCTestCase {
   func testSetLogger() throws {
-    force_register()
+    register_test_extensions()
 
     // swiftlint:disable:next line_length
     let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
