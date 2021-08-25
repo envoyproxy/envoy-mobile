@@ -1,8 +1,8 @@
 import Envoy
 import EnvoyEngine
 import Foundation
-import XCTest
 import TestExtensions
+import XCTest
 
 final class SetEventTrackerTest: XCTestCase {
   func testEmitEventWithoutSettingEventTracker() throws {
