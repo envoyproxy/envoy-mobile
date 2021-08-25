@@ -1,11 +1,11 @@
 package test.kotlin.integration
 
 import io.envoyproxy.envoymobile.Custom
-import io.envoyproxy.envoymobile.EngineBuilder
 import io.envoyproxy.envoymobile.Engine
+import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
-import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -80,7 +80,6 @@ class SetLoggerTest {
       }
       .setOnEngineRunning {}
       .build()
-
 
     countDownLatch.await(30, TimeUnit.SECONDS)
 
