@@ -52,7 +52,8 @@ static_resources:
 
     let engineExpectation = self.expectation(description: "Run started engine")
     let loggingExpectation = self.expectation(description: "Run used platform logger")
-    let logEventExpectation = self.expectation(description: "Run received log event via event tracker")
+    let logEventExpectation = self.expectation(
+      description: "Run received log event via event tracker")
 
     let engine = EngineBuilder(yaml: config)
       .addLogLevel(.debug)
