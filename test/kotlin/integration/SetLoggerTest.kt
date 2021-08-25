@@ -73,7 +73,7 @@ class SetLoggerTest {
           countDownLatch.countDown()
         }
       }
-      .setEventTracker { event -> 
+      .setEventTracker { event ->
         if (event["log_name"] == "event_name") {
           logEventLatch.countDown()
         }
@@ -98,7 +98,7 @@ class SetLoggerTest {
     val countDownLatch = CountDownLatch(1)
     val logEventLatch = CountDownLatch(1)
     val engine = EngineBuilder(Custom(config))
-      .setEventTracker { event -> 
+      .setEventTracker { event ->
         if (event["log_name"] == "event_name") {
           logEventLatch.countDown()
         }

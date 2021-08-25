@@ -15,8 +15,8 @@ void EventTrackingDelegate::logWithStableName(absl::string_view stable_name, abs
   }
 
   event_tracker_.track(Bridge::Utility::makeEnvoyMap({{"name", "envoy_event_log"},
-                                             {"log_name", std::string(stable_name)},
-                                             {"msg", std::string(msg)}}),
+                                                      {"log_name", std::string(stable_name)},
+                                                      {"msg", std::string(msg)}}),
                        event_tracker_.context);
 }
 
