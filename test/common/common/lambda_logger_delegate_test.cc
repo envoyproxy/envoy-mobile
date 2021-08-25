@@ -1,8 +1,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "library/common/api/external.h"
 #include "library/common/common/lambda_logger_delegate.h"
 #include "library/common/data/utility.h"
-#include "library/common/api/external.h"
 
 using testing::_;
 using testing::HasSubstr;
