@@ -42,7 +42,7 @@ static_resources:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": \(hcmType)
+        "@type": \(ehcmType)
         stat_prefix: api_hcm
         stream_idle_timeout: \(idleTimeout)
         route_config:
