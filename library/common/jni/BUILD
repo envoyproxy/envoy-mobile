@@ -112,6 +112,7 @@ cc_library(
         "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
+        "//library/common/extensions/filters/http/test_logger:config",
         "@envoy//source/common/common:assert_lib",
     ],
 )

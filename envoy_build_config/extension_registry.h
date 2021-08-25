@@ -22,7 +22,6 @@
 #include "library/common/extensions/filters/http/route_cache_reset/config.h"
 #include "library/common/extensions/filters/http/test_accessor/config.h"
 #include "library/common/extensions/filters/http/test_event_tracker/config.h"
-#include "library/common/extensions/filters/http/test_logger/config.h"
 
 namespace Envoy {
 class ExtensionRegistry {
