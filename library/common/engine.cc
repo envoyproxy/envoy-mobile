@@ -59,7 +59,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       if (event_tracker_.track != nullptr) {
         assert_handler_registration_ =
             Assert::addDebugAssertionFailureRecordAction([this](const char* location) {
-              const auto event = Bridge::makeEnvoyMap(
+              const auto event = Bridge::Utility::makeEnvoyMap(
                   {{"name", "assertion"}, {"location", std::string(location)}});
               event_tracker_.track(event, event_tracker_.context);
             });
@@ -68,9 +68,13 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       main_common = std::make_unique<EngineCommon>(envoy_argv.size() - 1, envoy_argv.data());
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
+
       if (logger_.log) {
-        lambda_logger_ =
+        log_delegate_ptr_ =
             std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
+      } else {
+        log_delegate_ptr_ =
+            std::make_unique<Logger::DefaultDelegate>(log_mutex_, Logger::Registry::getSink());
       }
 
       cv_.notifyAll();
@@ -117,7 +121,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
-  lambda_logger_.reset(nullptr);
+  log_delegate_ptr_.reset(nullptr);
   main_common.reset(nullptr);
   assert_handler_registration_.reset(nullptr);
 
@@ -253,6 +257,12 @@ void Engine::flushStats() {
   ASSERT(dispatcher_->isThreadSafe(), "flushStats must be called from the dispatcher's context");
 
   server_->flushStats();
+}
+
+void Engine::drainConnections() {
+  ASSERT(dispatcher_->isThreadSafe(),
+         "drainConnections must be called from the dispatcher's context");
+  server_->clusterManager().drainConnections();
 }
 
 } // namespace Envoy
