@@ -219,16 +219,14 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_dumpStats(JNIEnv* env,
   jni_log("[Envoy]", "dumpStats");
   envoy_data data;
   jint result = dump_stats(engine, &data);
-  if (result == ENVOY_SUCCESS) {
-    native_data_to_string(env, data);
-    jstring str = native_data_to_string(env, data);
-    release_envoy_data(data);
-
-    return str;
+  if (result != ENVOY_SUCCESS) {
+    return env->NewStringUTF("");
   }
 
-  jstring jstrBuf = env->NewStringUTF("");
-  return jstrBuf;
+  jstring str = native_data_to_string(env, data);
+  release_envoy_data(data);
+
+  return str;
 }
 
 extern "C" JNIEXPORT jint JNICALL
