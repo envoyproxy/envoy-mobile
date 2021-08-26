@@ -40,4 +40,4 @@ jobs:
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-clang \
-            //test/common:engflow //test/common:engine_common_test -s
+            //test/common:engflow //test/common:engine_common_test
