@@ -526,28 +526,28 @@ const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
 
 const size_t ClustersPerPool = 3;
 const char* BaseClusters[ClustersPerPool] = {
-                                    "base",
-                                    "base_wlan",
-                                    "base_wwan",
-                                };
+    "base",
+    "base_wlan",
+    "base_wwan",
+};
 
 const char* H2Clusters[ClustersPerPool] = {
-                                  "base_h2",
-                                  "base_wlan_h2",
-                                  "base_wwan_h2",
-                              };
+    "base_h2",
+    "base_wlan_h2",
+    "base_wwan_h2",
+};
 
 const char* ClearTextClusters[ClustersPerPool] = {
-                                         "base_clear",
-                                         "base_wlan_clear",
-                                         "base_wwan_clear",
-                                     };
+    "base_clear",
+    "base_wlan_clear",
+    "base_wwan_clear",
+};
 
 const char* AlpnClusters[ClustersPerPool] = {
-                                    "base_alpn",
-                                    "base_wlan_alpn",
-                                    "base_wwan_alpn",
-                                };
+    "base_alpn",
+    "base_wlan_alpn",
+    "base_wwan_alpn",
+};
 
 } // namespace
 
@@ -559,7 +559,8 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   const char* cluster{};
   auto h2_header = headers.get(H2UpstreamHeader);
   auto network = preferred_network_.load();
-  ASSERT(network >= 0 && network < ClustersPerPool, "preferred_network_ must be valid index into cluster array");
+  ASSERT(network >= 0 && network < ClustersPerPool,
+         "preferred_network_ must be valid index into cluster array");
 
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
     cluster = ClearTextClusters[network];
