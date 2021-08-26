@@ -42,7 +42,7 @@ class RetryPolicyMapperTest {
       maxRetryCount = 3,
       retryOn = listOf(
         RetryRule.STATUS_5XX,
-        RetryRule.GATEWAY_ERROR,
+        RetryRule.GATEWAY_ERROR
       ),
       retryStatusCodes = listOf(400, 422, 500),
       perRetryTimeoutMS = 15000,
