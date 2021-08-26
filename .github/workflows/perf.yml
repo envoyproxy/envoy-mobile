@@ -45,6 +45,8 @@ jobs:
         with:
           submodules: true
       - name: 'Build test binary'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout main && git pull origin main && git submodule update
           bazel build \
