@@ -34,4 +34,10 @@ jobs:
           python-version: '3.8'
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
-        run: bazel test --action_env=LD_LIBRARY_PATH --test_output=all //test/python/...
+        run: |
+          bazel test \
+            --action_env=LD_LIBRARY_PATH \
+            --test_output=all \
+            --config=remote-ci-linux \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/python/...
