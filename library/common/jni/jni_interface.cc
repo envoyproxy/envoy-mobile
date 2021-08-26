@@ -715,6 +715,13 @@ static void jvm_http_filter_on_cancel(envoy_stream_intel stream_intel, const voi
   call_jvm_on_cancel(stream_intel, const_cast<void*>(context));
 }
 
+// TODO(goaway) switch this to call_jvm_on_send_window_available
+static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void* context) {
+  void* result = call_jvm_on_cancel(envoy_stream_intel{}, const_cast<void*>(context));
+  jni_delete_global_ref(context);
+  return result;
+}
+
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
@@ -769,8 +776,6 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_startStream(
     JNIEnv* env, jclass, jlong stream_handle, jobject j_context, jboolean explicit_flow_control) {
 
-  jclass jcls_JvmCallbackContext = env->GetObjectClass(j_context);
-
   // TODO: To be truly safe we may need stronger guarantees of operation ordering on this ref.
   jobject retained_context = env->NewGlobalRef(j_context);
   envoy_http_callbacks native_callbacks = {jvm_on_response_headers,
@@ -780,13 +785,13 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_error,
                                            jvm_on_complete,
                                            jvm_on_cancel,
+                                           jvm_on_send_window_available,
                                            retained_context};
   envoy_status_t result = start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks,
                                        explicit_flow_control);
   if (result != ENVOY_SUCCESS) {
     env->DeleteGlobalRef(retained_context); // No callbacks are fired and we need to release
   }
-  env->DeleteLocalRef(jcls_JvmCallbackContext);
   return result;
 }
 
@@ -801,7 +806,6 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* e
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332
   jni_log("[Envoy]", "registerFilterFactory");
   jni_log_fmt("[Envoy]", "j_context: %p", j_context);
-  jclass jcls_JvmFilterFactoryContext = env->GetObjectClass(j_context);
   jobject retained_context = env->NewGlobalRef(j_context);
   jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
   envoy_http_filter* api = (envoy_http_filter*)safe_malloc(sizeof(envoy_http_filter));
@@ -823,7 +827,6 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* e
   api->instance_context = NULL;
 
   envoy_status_t result = register_platform_api(env->GetStringUTFChars(filter_name, nullptr), api);
-  env->DeleteLocalRef(jcls_JvmFilterFactoryContext);
   return result;
 }
 
@@ -924,7 +927,6 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerStringAccessor(JNIEnv* 
 
   // TODO(goaway): The retained_context leaks, but it's tied to the life of the engine.
   // This will need to be updated for https://github.com/lyft/envoy-mobile/issues/332.
-  jclass jcls_JvmStringAccessorContext = env->GetObjectClass(j_context);
   jobject retained_context = env->NewGlobalRef(j_context);
 
   envoy_string_accessor* string_accessor =
@@ -934,6 +936,13 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerStringAccessor(JNIEnv* 
 
   envoy_status_t result =
       register_platform_api(env->GetStringUTFChars(accessor_name, nullptr), string_accessor);
-  env->DeleteLocalRef(jcls_JvmStringAccessorContext);
   return result;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_drainConnections(JNIEnv* env,
+                                                                  jclass, // class
+                                                                  jlong engine) {
+  jni_log("[Envoy]", "drainConnections");
+  drain_connections(engine);
 }

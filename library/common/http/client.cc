@@ -8,6 +8,7 @@
 #include "source/common/http/headers.h"
 #include "source/common/http/utility.h"
 
+#include "library/common/bridge/utility.h"
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
@@ -19,7 +20,7 @@ namespace Http {
 /**
  * IMPORTANT: stream closure semantics in envoy mobile depends on the fact that the HCM fires a
  * stream reset when the remote side of the stream is closed but the local side remains open.
- * In other words the HCM (like the rest of Envoy) dissallows locally half-open streams.
+ * In other words the HCM (like the rest of Envoy) disallows locally half-open streams.
  * If this changes in Envoy, this file will need to change as well.
  * For implementation details @see Client::DirectStreamCallbacks::closeRemote.
  */
@@ -43,36 +44,6 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
   }
 
   uint64_t response_status = Utility::getResponseStatus(headers);
-
-  // Presence of internal error header indicates an error that should be surfaced as an
-  // error callback (rather than an HTTP response).
-  const auto error_code_header = headers.get(InternalHeaders::get().ErrorCode);
-  if (!error_code_header.empty()) {
-    envoy_error_code_t error_code;
-    bool check = absl::SimpleAtoi(error_code_header[0]->value().getStringView(), &error_code);
-    RELEASE_ASSERT(
-        check, fmt::format("[S{}] parse error reading error code", direct_stream_.stream_handle_));
-    error_code_ = error_code;
-
-    const auto error_message_header = headers.get(InternalHeaders::get().ErrorMessage);
-    if (!error_message_header.empty()) {
-      error_message_ =
-          Data::Utility::copyToBridgeData(error_message_header[0]->value().getStringView());
-    }
-
-    uint32_t attempt_count = 1;
-    if (headers.EnvoyAttemptCount()) {
-      RELEASE_ASSERT(
-          absl::SimpleAtoi(headers.EnvoyAttemptCount()->value().getStringView(), &attempt_count),
-          "parse error reading attempt count");
-    }
-    error_attempt_count_ = attempt_count;
-
-    if (end_stream) {
-      onError();
-    }
-    return;
-  }
 
   // Track success for later bookkeeping (stream could still be reset).
   success_ = CodeUtility::is2xx(response_status);
@@ -103,11 +74,6 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
   if (end_stream) {
     closeStream();
-  }
-
-  if (error_code_) {
-    onError();
-    return;
   }
 
   // Send data if in default flow control mode, or if resumeData has been called in explicit
@@ -211,10 +177,6 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
     response_trailers_.reset();
     bytes_to_send_ = 0;
   }
-
-  if (error_code_.has_value() && bytes_to_send_ > 0) {
-    onError();
-  }
 }
 
 void Client::DirectStreamCallbacks::closeStream() {
@@ -248,29 +210,30 @@ void Client::DirectStreamCallbacks::onError() {
 
   // When using explicit flow control, if any response data has been sent (e.g. headers), response
   // errors must be deferred until after resumeData has been called.
+  // TODO(goaway): What is the expected behavior when an error is received, held, and then another
+  // error occurs (e.g., timeout)?
   if (explicit_flow_control_ && response_headers_forwarded_ && bytes_to_send_ == 0) {
     return;
   }
+
+  error_ = streamError();
 
   http_client_.removeStream(direct_stream_.stream_handle_);
   // The stream should no longer be preset in the map, because onError() was either called from a
   // terminal callback that mapped to an error or it was called in response to a resetStream().
   ASSERT(!http_client_.getStream(direct_stream_.stream_handle_,
                                  GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  envoy_error_code_t code = error_code_.value_or(ENVOY_STREAM_RESET);
-  envoy_data message = error_message_.value_or(envoy_nodata);
-  int32_t attempt_count = error_attempt_count_.value_or(-1);
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
-  error_code_ = {};
-  error_message_ = {};
-  error_attempt_count_ = {};
+  bridge_callbacks_.on_error(error_.value(), streamIntel(), bridge_callbacks_.context);
+}
 
-  bridge_callbacks_.on_error({code, message, attempt_count}, streamIntel(),
-                             bridge_callbacks_.context);
+void Client::DirectStreamCallbacks::onSendWindowAvailable() {
+  ENVOY_LOG(debug, "[S{}] remote send window available", direct_stream_.stream_handle_);
+  bridge_callbacks_.on_send_window_available(streamIntel(), bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onCancel() {
@@ -289,11 +252,35 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
   return stream_intel;
 }
 
+envoy_error Client::DirectStreamCallbacks::streamError() {
+  const auto& info = direct_stream_.request_decoder_->streamInfo();
+  envoy_error error{};
+
+  if (info.responseCode().has_value()) {
+    error.error_code = Bridge::Utility::errorCodeFromLocalStatus(
+        static_cast<Http::Code>(info.responseCode().value()));
+  } else {
+    error.error_code = ENVOY_STREAM_RESET;
+  }
+
+  if (info.responseCodeDetails().has_value()) {
+    error.message = Data::Utility::copyToBridgeData(info.responseCodeDetails().value());
+  } else {
+    error.message = envoy_nodata;
+  }
+
+  error.attempt_count = info.attemptCount().value_or(0);
+  return error;
+}
+
 Client::DirectStream::DirectStream(envoy_stream_t stream_handle, Client& http_client)
     : stream_handle_(stream_handle), parent_(http_client) {}
 
 Client::DirectStream::~DirectStream() { ENVOY_LOG(debug, "[S{}] destroy stream", stream_handle_); }
 
+// Correctly receiving resetStream() for errors in Http::Client relies on at least one filter
+// resetting the stream when handling a pending local response. By default, the LocalReplyFilter
+// has this responsibility.
 void Client::DirectStream::resetStream(StreamResetReason reason) {
   // This seems in line with other codec implementations, and so the assumption is that this is in
   // line with upstream expectations.
@@ -306,6 +293,19 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
     return;
   }
   callbacks_->onError();
+}
+
+void Client::DirectStream::readDisable(bool disable) {
+  if (disable) {
+    ++read_disable_count_;
+  } else {
+    ASSERT(read_disable_count_ > 0);
+    --read_disable_count_;
+    if (read_disable_count_ == 0 && wants_write_notification_) {
+      wants_write_notification_ = false;
+      callbacks_->onSendWindowAvailable();
+    }
+  }
 }
 
 void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
@@ -404,6 +404,19 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     ENVOY_LOG(debug, "[S{}] request data for stream (length={} end_stream={})\n", stream,
               data.length, end_stream);
     direct_stream->request_decoder_->decodeData(*buf, end_stream);
+
+    if (direct_stream->explicit_flow_control_ && !end_stream) {
+      if (direct_stream->read_disable_count_ == 0) {
+        // If there is still buffer space after the write, notify the sender
+        // that send window is available.
+        direct_stream->wants_write_notification_ = false;
+        direct_stream->callbacks_->onSendWindowAvailable();
+      } else {
+        // Otherwise, make sure the stack will send a notification when the
+        // buffers are drained.
+        direct_stream->wants_write_notification_ = true;
+      }
+    }
   }
 }
 
