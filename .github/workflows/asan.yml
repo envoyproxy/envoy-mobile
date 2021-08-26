@@ -41,4 +41,4 @@ jobs:
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-clang \
             -c dbg \
-            //test/common/... --action_env=LSAN_OPTIONS=verbosity=1:log_threads=1
+            //test/common/... --action_env=LSAN_OPTIONS=verbosity=1:log_threads=1:log_pointers=1
