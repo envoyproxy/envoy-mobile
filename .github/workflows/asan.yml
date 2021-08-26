@@ -27,16 +27,6 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
-      - name: 'Check env tests'
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            bazel test --config=clang-asan \
-              --test_output=all \
-              --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
-              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-              --config=remote-ci-linux-clang \
-              //test/common:engflow
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,4 +37,4 @@ jobs:
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-clang \
-            //test/common/...
+            //test/common:engflow //test/common:engine_common_test -s
