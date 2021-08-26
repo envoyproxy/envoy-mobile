@@ -37,8 +37,3 @@ envoy_cc_test(
         "@envoy//test/common/http:common_lib",
     ],
 )
-
-sh_test(
-    name = "engflow",
-    srcs = ["foo_test.sh"]
-)
