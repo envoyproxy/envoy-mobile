@@ -78,8 +78,8 @@ rbe_autoconfig(
         "CC": "/opt/llvm/bin/clang",
         "CXX": "/opt/llvm/bin/clang++",
     },
-#    exec_properties = {
-#        "Pool": "linux",
-#    },
+    exec_properties = {
+        "Pool": "linux",
+    },
     create_java_configs = False,
 )
