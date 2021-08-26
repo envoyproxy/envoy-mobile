@@ -40,4 +40,5 @@ jobs:
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-clang \
+            -c dbg \
             //test/common/... --action_env=LSAN_OPTIONS=verbosity=1:log_threads=1
