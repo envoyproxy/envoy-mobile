@@ -27,11 +27,6 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
-      - name: 'Python setup'
-        if: steps.check_context.outputs.run_tests == 'true'
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
