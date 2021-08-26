@@ -135,7 +135,7 @@ build:remote-ci-linux --javabase=@engflow_remote_config//java:jdk
 build:remote-ci-linux --platforms=@engflow_remote_config//config:platform
 build:remote-ci-linux --config=remote-ci-common
 # CLANG
-build:remote-ci-linux-clang --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+#build:remote-ci-linux-clang --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 build:remote-ci-linux-clang --action_env=CC=/opt/llvm/bin/clang
 build:remote-ci-linux-clang --action_env=CXX=/opt/llvm/bin/clang++
 build:remote-ci-linux-clang --crosstool_top=@engflow_remote_config_clang//cc:toolchain
