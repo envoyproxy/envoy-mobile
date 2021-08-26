@@ -24,7 +24,7 @@ final class FilterResetIdleTests: XCTestCase {
           - filters:
             - name: envoy.filters.network.http_connection_manager
               typed_config:
-                "@type": \(ehcmType)
+                "@type": \(emhcmType)
                 stat_prefix: remote_hcm
                 route_config:
                   name: remote_route
