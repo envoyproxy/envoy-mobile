@@ -21,6 +21,8 @@ jobs:
         with:
           submodules: true
       - name: 'Build test binary'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazel build \
             --config=sizeopt \
