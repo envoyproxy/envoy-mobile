@@ -30,6 +30,18 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: 'Previous tests'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazel test --config=clang-asan \
+            --test_output=all \
+            --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
+            --bes_backend=grpcs://envoy.cluster.engflow.com/ \
+            --bes_results_url=https://envoy.cluster.engflow.com/invocation/ \
+            --bes_lifecycle_events \
+            --announce_rc \
+            //test/common:engflow //test/common:engine_common_test
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,4 +52,5 @@ jobs:
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-clang \
+            --announce_rc \
             //test/common:engflow //test/common:engine_common_test
