@@ -23,7 +23,7 @@ static_resources:
     - filters:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": \(ehcmType)
+          "@type": \(emhcmType)
           stat_prefix: remote_hcm
           route_config:
             name: remote_route
@@ -42,7 +42,7 @@ static_resources:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": \(ehcmType)
+        "@type": \(emhcmType)
         stat_prefix: api_hcm
         stream_idle_timeout: \(idleTimeout)
         route_config:
