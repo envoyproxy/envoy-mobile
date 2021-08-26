@@ -21,7 +21,12 @@ jobs:
         with:
           submodules: true
       - name: 'Build test binary'
-        run: bazel build //test/performance:test_binary_size --config=sizeopt
+        run: |
+          bazel build \
+            --config=sizeopt \
+            --config=remote-ci-linux-clang \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/performance:test_binary_size
       - uses: actions/upload-artifact@v2
         with:
           name: sizecurrent
@@ -42,7 +47,11 @@ jobs:
       - name: 'Build test binary'
         run: |
           git checkout main && git pull origin main && git submodule update
-          bazel build //test/performance:test_binary_size --config=sizeopt
+          bazel build \
+            --config=sizeopt \
+            --config=remote-ci-linux-clang \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/performance:test_binary_size
       - uses: actions/upload-artifact@v2
         with:
           name: sizemain
