@@ -13,9 +13,6 @@ jobs:
     timeout-minutes: 180
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
-      env:
-        CC: /opt/llvm/bin/clang
-        CXX: /opt/llvm/bin/clang++
     steps:
       - uses: actions/checkout@v1
         with:
@@ -30,6 +27,16 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: 'Check env tests'
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            bazel test --config=clang-asan \
+              --test_output=all \
+              --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
+              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+              --config=remote-ci-linux-clang \
+              //test/common:engflow
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
