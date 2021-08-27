@@ -44,7 +44,8 @@ jobs:
           export PATH=/opt/llvm/bin:${PATH}
           export BAZEL_BUILD_OPTIONS+=("--test_env=ENVOY_IP_TEST_VERSIONS=v4only")
           export BAZEL_BUILD_OPTIONS+=("--config=remote-ci-linux-clang")
-          export BAZEL_BUILD_OPTIONS+=("--remote_header="Authorization=Bearer $GITHUB_TOKEN"")
+          export BAZEL_BUILD_OPTIONS+=("--remote_header='Authorization=Bearer "${GITHUB_TOKEN}"'")
+          echo ${BAZEL_BUILD_OPTIONS[@]}
           BAZEL_BUILD_OPTIONS=${BAZEL_BUILD_OPTIONS[@]} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
