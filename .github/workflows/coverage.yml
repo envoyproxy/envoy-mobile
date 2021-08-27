@@ -38,15 +38,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          export CC=/opt/llvm/bin/clang
-          export CXX=/opt/llvm/bin/clang++
-          export COVERAGE_THRESHOLD=95
-          export PATH=/opt/llvm/bin:${PATH}
-          export BAZEL_BUILD_OPTIONS+=("--test_env=ENVOY_IP_TEST_VERSIONS=v4only")
-          export BAZEL_BUILD_OPTIONS+=("--config=remote-ci-linux-clang")
-          export BAZEL_BUILD_OPTIONS+=("--remote_header='Authorization=Bearer "${GITHUB_TOKEN}"'")
-          bazel shutdown
-          BAZEL_BUILD_OPTIONS=${BAZEL_BUILD_OPTIONS[@]} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
+#          export CC=/opt/llvm/bin/clang
+#          export CXX=/opt/llvm/bin/clang++
+#          export COVERAGE_THRESHOLD=95
+#          export PATH=/opt/llvm/bin:${PATH}
+#          export BAZEL_BUILD_OPTIONS+=("--test_env=ENVOY_IP_TEST_VERSIONS=v4only")
+#          export BAZEL_BUILD_OPTIONS+=("--config=remote-ci-linux-clang")
+#          export BAZEL_BUILD_OPTIONS+=("--remote_header='Authorization=Bearer "${GITHUB_TOKEN}"'")
+#          BAZEL_BUILD_OPTIONS=${BAZEL_BUILD_OPTIONS[@]} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
+          ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
