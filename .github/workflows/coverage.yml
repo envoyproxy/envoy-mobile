@@ -17,7 +17,7 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
       env:
-        BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only --config=remote-ci-linux-clang --remote_header='Authorization=Bearer "${{ secrets.GITHUB_TOKEN }}"'"
+        BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only --config=remote-ci-linux-clang --remote_header='Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}'"
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
