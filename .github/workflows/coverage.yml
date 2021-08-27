@@ -38,7 +38,9 @@ jobs:
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
-        run: "PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/..."
+        run: |
+          bazel clean --expunge
+          PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
