@@ -10,6 +10,9 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-18.04
+    defaults:
+      run:
+        shell: bash
     timeout-minutes: 120
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
@@ -39,7 +42,7 @@ jobs:
           export CXX=/opt/llvm/bin/clang++
           export COVERAGE_THRESHOLD=95
           export PATH=/opt/llvm/bin:${PATH}
-          export BAZEL_BUILD_OPTIONS+="("--test_env=ENVOY_IP_TEST_VERSIONS=v4only")"
+          export BAZEL_BUILD_OPTIONS+=("--test_env=ENVOY_IP_TEST_VERSIONS=v4only")
           export BAZEL_BUILD_OPTIONS+=("--config=remote-ci-linux-clang")
           export BAZEL_BUILD_OPTIONS+=("--remote_header="Authorization=Bearer $GITHUB_TOKEN"")
           BAZEL_BUILD_OPTIONS=${BAZEL_BUILD_OPTIONS[@]} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
