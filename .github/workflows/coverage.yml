@@ -10,9 +10,6 @@ jobs:
   coverage:
     name: coverage
     runs-on: ubuntu-18.04
-    defaults:
-      run:
-        shell: bash
     timeout-minutes: 120
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
@@ -38,9 +35,7 @@ jobs:
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
-        run: |
-          bazel clean --expunge
-          PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
+        run: "PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/..."
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
