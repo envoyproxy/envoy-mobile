@@ -7,6 +7,7 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
+#include "library/common/network/mobile_utility.h"
 #include "library/common/stats/utility.h"
 #include "types/c_types.h"
 
@@ -97,6 +98,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
     postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           ASSERT(Thread::MainThread::isMainThread());
+
+          logInterfaces();
+
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -282,6 +286,16 @@ void Engine::drainConnections() {
   ASSERT(dispatcher_->isThreadSafe(),
          "drainConnections must be called from the dispatcher's context");
   server_->clusterManager().drainConnections();
+}
+
+void Engine::logInterfaces() {
+  auto name_vec = Network::MobileUtility::enumerateInterfaces();
+  std::string names = std::accumulate(name_vec.begin(), name_vec.end(), std::string{},
+                                      [](std::string acc, std::string next) {
+                                        return acc.empty() ? next : std::move(acc) + "," + next;
+                                      });
+  ENVOY_LOG(debug, "available interfaces: {}", names);
+  ENVOY_LOG_EVENT(debug, "socket_selection_available_interfaces", names);
 }
 
 } // namespace Envoy
