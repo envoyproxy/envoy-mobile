@@ -278,7 +278,6 @@ TEST(MainInterfaceTest, ResetStream) {
 }
 
 TEST(MainInterfaceTest, UsingMainInterfaceWithoutARunningEngine) {
-
   Http::TestRequestHeaderMapImpl headers;
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);
