@@ -19,7 +19,8 @@ std::vector<std::string> MobileUtility::enumerateV6Interfaces() {
   return enumerateInterfaces(AF_INET6);
 }
 
-std::vector<std::string> MobileUtility::enumerateInterfaces(unsigned short family) {
+std::vector<std::string>
+MobileUtility::enumerateInterfaces([[maybe_unused]] unsigned short family) {
   std::vector<std::string> names{};
 
 #ifdef SUPPORTS_GETIFADDRS
