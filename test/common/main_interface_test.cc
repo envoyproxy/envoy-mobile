@@ -552,8 +552,8 @@ TEST(EngineTest, EventTrackerRegistersDefaultAPI) {
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
-//FIXME(goaway): temporarily comment out test until it can be made resilient to API usage.
-//TEST(EngineTest, EventTrackerRegistersAPI) {
+// FIXME(goaway): temporarily comment out test until it can be made resilient to API usage.
+// TEST(EngineTest, EventTrackerRegistersAPI) {
 //  engine_test_context test_context{};
 //  envoy_engine_callbacks engine_cbs{NULL /*on_engine_running*/,
 //                                    [](void* context) -> void {
