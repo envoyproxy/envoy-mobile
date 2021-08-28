@@ -11,7 +11,15 @@
 namespace Envoy {
 namespace Network {
 
-std::vector<std::string> MobileUtility::enumerateInterfaces() {
+std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
+  return enumerateInterfaces(AF_INET);
+}
+
+std::vector<std::string> MobileUtility::enumerateV6Interfaces() {
+  return enumerateInterfaces(AF_INET6);
+}
+
+std::vector<std::string> MobileUtility::enumerateInterfaces(unsigned short family) {
   std::vector<std::string> names{};
 
 #ifdef SUPPORTS_GETIFADDRS
@@ -22,12 +30,7 @@ std::vector<std::string> MobileUtility::enumerateInterfaces() {
   RELEASE_ASSERT(!rc, "getifaddrs failed");
 
   for (ifa = interfaces; ifa != nullptr; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr == nullptr) {
-      continue;
-    }
-
-    // TODO(goaway): determine if additional special handling is needed for IPv6
-    if (ifa->ifa_addr->sa_family == AF_INET || ifa->ifa_addr->sa_family == AF_INET6) {
+    if (ifa->ifa_addr && ifa->ifa_addr->sa_family == family) {
       names.push_back(std::string{ifa->ifa_name});
     }
   }

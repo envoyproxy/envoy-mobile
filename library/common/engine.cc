@@ -289,13 +289,19 @@ void Engine::drainConnections() {
 }
 
 void Engine::logInterfaces() {
-  auto name_vec = Network::MobileUtility::enumerateInterfaces();
-  std::string names = std::accumulate(name_vec.begin(), name_vec.end(), std::string{},
+  auto v4_vec = Network::MobileUtility::enumerateV4Interfaces();
+  std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec.end(), std::string{},
                                       [](std::string acc, std::string next) {
                                         return acc.empty() ? next : std::move(acc) + "," + next;
                                       });
-  ENVOY_LOG(debug, "available interfaces: {}", names);
-  ENVOY_LOG_EVENT(debug, "socket_selection_available_interfaces", names);
+
+  auto v6_vec = Network::MobileUtility::enumerateV6Interfaces();
+  std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec.end(), std::string{},
+                                      [](std::string acc, std::string next) {
+                                        return acc.empty() ? next : std::move(acc) + "," + next;
+                                      });
+  ENVOY_LOG_EVENT(debug, "socket_selection_get_v4_interfaces", v4_names);
+  ENVOY_LOG_EVENT(debug, "socket_selection_get_v6_interfaces", v6_names);
 }
 
 } // namespace Envoy

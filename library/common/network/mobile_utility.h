@@ -11,7 +11,18 @@ namespace Network {
  */
 class MobileUtility {
 public:
-  static std::vector<std::string> enumerateInterfaces();
+  /**
+   * @returns a list of local network interfaces supporting IPv4.
+   */
+  static std::vector<std::string> enumerateV4Interfaces();
+
+  /**
+   * @returns a list of local network interfaces supporting IPv6.
+   */
+  static std::vector<std::string> enumerateV6Interfaces();
+
+private:
+  static std::vector<std::string> enumerateInterfaces(unsigned short family);
 };
 
 } // namespace Network
