@@ -97,7 +97,7 @@ layered_runtime:
 const std::string LEVEL_DEBUG = "debug";
 
 // Transform C map to C++ map.
-static inline std::map<std::string, std::string> toMap(envoy_map map) {
+[[[maybe_unused]] static inline std::map<std::string, std::string> toMap(envoy_map map) {
   std::map<std::string, std::string> new_map;
   for (envoy_map_size_t i = 0; i < map.length; i++) {
     envoy_map_entry header = map.entries[i];
