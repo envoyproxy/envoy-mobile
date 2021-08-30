@@ -195,11 +195,7 @@ public final class CronetTestRule implements TestRule {
 
   void tearDown() {
     if (mCronetTestFramework != null) {
-      try {
-        mCronetTestFramework.mCronetEngine.shutdown();
-      } catch (IllegalStateException e) {
-        assertEquals("Engine is shut down.", e.getMessage());
-      }
+      mCronetTestFramework.mCronetEngine.shutdown();
       mCronetTestFramework = null;
     }
 

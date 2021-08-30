@@ -12,7 +12,7 @@ import org.chromium.net.UrlRequest;
  * Base class for classes that implement {@link UrlRequest} including experimental
  * features. {@link CronetUrlRequest} and {@link JavaUrlRequest} extends this class.
  */
-public abstract class UrlRequestBase extends ExperimentalUrlRequest {
+abstract class UrlRequestBase extends ExperimentalUrlRequest {
   /**
    * Sets the HTTP method verb to use for this request. Must be done before
    * request has started.
