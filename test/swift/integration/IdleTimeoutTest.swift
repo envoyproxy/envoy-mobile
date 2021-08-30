@@ -6,19 +6,23 @@ import XCTest
 final class IdleTimeoutTests: XCTestCase {
   func testIdleTimeout() {
     let idleTimeout = "0.5s"
+    let remotePort = Int.random(in: 10001...11000)
     // swiftlint:disable:next line_length
     let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
-    let lefType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
     // swiftlint:disable:next line_length
-    let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
-    let filterName = "idle_timeout_validation_filter"
+    let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
+    let pbfType =
+      "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
+    let localErrorFilterType =
+      "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+    let filterName = "reset_idle_test_filter"
     let config =
 """
 static_resources:
   listeners:
   - name: fake_remote_listener
     address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
+      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: \(remotePort) }
     filter_chains:
     - filters:
       - name: envoy.filters.network.http_connection_manager
@@ -42,28 +46,29 @@ static_resources:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": \(hcmType)
-        stat_prefix: api_hcm
-        stream_idle_timeout: \(idleTimeout)
-        route_config:
-          name: api_router
-          virtual_hosts:
-          - name: api
-            domains: ["*"]
-            routes:
-            - match: { prefix: "/" }
-              route: { cluster: fake_remote }
-        http_filters:
-        - name: envoy.filters.http.local_error
-          typed_config:
-            "@type": \(lefType)
-        - name: envoy.filters.http.platform_bridge
-          typed_config:
-            "@type": \(pbfType)
-            platform_filter_name: \(filterName)
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        "@type": \(emhcmType)
+        config:
+          stat_prefix: api_hcm
+          stream_idle_timeout: \(idleTimeout)
+          route_config:
+            name: api_router
+            virtual_hosts:
+            - name: api
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/" }
+                route: { cluster: fake_remote }
+          http_filters:
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": \(pbfType)
+              platform_filter_name: \(filterName)
+          - name: envoy.filters.http.local_error
+            typed_config:
+              "@type": \(localErrorFilterType)
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
   - name: fake_remote
     connect_timeout: 0.25s
@@ -75,10 +80,10 @@ static_resources:
       - lb_endpoints:
         - endpoint:
             address:
-              socket_address: { address: 127.0.0.1, port_value: 10101 }
+              socket_address: { address: 127.0.0.1, port_value: \(remotePort) }
 """
 
-    class IdleTimeoutValidationFilter: AsyncResponseFilter {
+    class IdleTimeoutValidationFilter: AsyncResponseFilter, ResponseFilter {
       let timeoutExpectation: XCTestExpectation
       var callbacks: ResponseFilterCallbacks!
 
@@ -134,14 +139,15 @@ static_resources:
     let callbackExpectation =
       self.expectation(description: "Stream idle timeout received by callbacks")
 
-    let client = EngineBuilder(yaml: config)
+    let engine = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
         factory: { IdleTimeoutValidationFilter(timeoutExpectation: filterExpectation) }
       )
       .build()
-      .streamClient()
+
+    let client = engine.streamClient()
 
     let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",
                                                authority: "example.com", path: "/test")
@@ -164,5 +170,7 @@ static_resources:
       XCTWaiter.wait(for: [filterExpectation, callbackExpectation], timeout: 2),
       .completed
     )
+
+    engine.terminate()
   }
 }
