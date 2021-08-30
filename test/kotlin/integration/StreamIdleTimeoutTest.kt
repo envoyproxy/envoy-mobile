@@ -23,25 +23,25 @@ import org.assertj.core.api.Assertions.fail
 import org.junit.Test
 
 private const val idleTimeout = "0.5s"
-private const val hcmType =
-  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+private const val ehcmType =
+  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
 private const val lefType =
   "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
 private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
 private const val filterName = "idle_timeout_validation_filter"
-private const val config =
-
+private val remotePort = (10001..11000).random()
+private val config =
 """
 static_resources:
   listeners:
   - name: fake_remote_listener
     address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
+      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: $remotePort }
     filter_chains:
     - filters:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
-          "@type": $hcmType
+          "@type": $ehcmType
           stat_prefix: remote_hcm
           route_config:
             name: remote_route
@@ -93,7 +93,7 @@ static_resources:
       - lb_endpoints:
         - endpoint:
             address:
-              socket_address: { address: 127.0.0.1, port_value: 10101 }
+              socket_address: { address: 127.0.0.1, port_value: $remotePort }
 """
 
 class CancelStreamTest {
