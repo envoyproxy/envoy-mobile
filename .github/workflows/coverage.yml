@@ -47,7 +47,7 @@ jobs:
           export BAZEL_BUILD_OPTIONS+=("--config=remote-ci-linux-clang")
           export BAZEL_BUILD_OPTIONS+=("--remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"")
           echo ${BAZEL_BUILD_OPTIONS[@]}
-          cat .bazelrc >> "startup --client_debug"
+          cat /__w/envoy-mobile/envoy-mobile/.bazelrc >> "startup --client_debug"
           BAZEL_BUILD_OPTIONS=${BAZEL_BUILD_OPTIONS[@]} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
