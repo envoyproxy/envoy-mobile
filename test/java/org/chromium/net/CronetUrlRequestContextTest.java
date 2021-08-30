@@ -68,7 +68,7 @@ public class CronetUrlRequestContextTest {
   private String mUrl500;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     NativeTestServer.startNativeTestServer(getContext());
     mUrl = NativeTestServer.getSuccessURL();
     mUrl404 = NativeTestServer.getNotFoundURL();
@@ -76,7 +76,7 @@ public class CronetUrlRequestContextTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     NativeTestServer.shutdownNativeTestServer();
   }
 
@@ -134,7 +134,6 @@ public class CronetUrlRequestContextTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @SuppressWarnings("deprecation")
   public void testConfigUserAgent() throws Exception {
     String userAgentName = "User-Agent";
     String userAgentValue = "User-Agent-Value";
@@ -407,7 +406,7 @@ public class CronetUrlRequestContextTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet // No netlogs for pure java impl
   @Ignore("Netlog not implemented")
-  // Tests that if stopNetLog is not explicity called, CronetEngine.shutdown()
+  // Tests that if stopNetLog is not explicitly called, CronetEngine.shutdown()
   // will take care of it. crbug.com/623701.
   public void testNoStopNetLog() throws Exception {
     Context context = getContext();
@@ -436,7 +435,7 @@ public class CronetUrlRequestContextTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet // No netlogs for pure java impl
   @Ignore("Netlog not implemented")
-  // Tests that if stopNetLog is not explicity called, CronetEngine.shutdown()
+  // Tests that if stopNetLog is not explicitly called, CronetEngine.shutdown()
   // will take care of it. crbug.com/623701.
   public void testNoStopBoundedFileNetLog() throws Exception {
     Context context = getContext();
@@ -705,7 +704,7 @@ public class CronetUrlRequestContextTest {
     }
     assertFalse(hasBytesInNetLog(file));
     assertTrue(file.delete());
-    assertTrue(!file.exists());
+    assertFalse(file.exists());
   }
 
   @Test
@@ -763,7 +762,7 @@ public class CronetUrlRequestContextTest {
     assertTrue(file.length() != 0);
     assertFalse(hasBytesInNetLog(file));
     assertTrue(file.delete());
-    assertTrue(!file.exists());
+    assertFalse(file.exists());
   }
 
   @Test
@@ -824,7 +823,7 @@ public class CronetUrlRequestContextTest {
     assertTrue(file.length() != 0);
     assertFalse(hasBytesInNetLog(file));
     assertTrue(file.delete());
-    assertTrue(!file.exists());
+    assertFalse(file.exists());
   }
 
   @Test
@@ -883,7 +882,7 @@ public class CronetUrlRequestContextTest {
     assertTrue(file.length() != 0);
     assertTrue(hasBytesInNetLog(file));
     assertTrue(file.delete());
-    assertTrue(!file.exists());
+    assertFalse(file.exists());
   }
 
   @Test
@@ -1209,14 +1208,14 @@ public class CronetUrlRequestContextTest {
     callback.blockForDone();
     // Fetch deltas on a different thread the second time to make sure this is permitted.
     // See crbug.com/719448
-    FutureTask<byte[]> task = new FutureTask<byte[]>(new Callable<byte[]>() {
+    FutureTask<byte[]> task = new FutureTask<>(new Callable<>() {
       @Override
       public byte[] call() {
         return testFramework.mCronetEngine.getGlobalMetricsDeltas();
       }
     });
     new Thread(task).start();
-    byte delta2[] = task.get();
+    byte[] delta2 = task.get();
     assertTrue(delta2.length != 0);
     assertFalse(Arrays.equals(delta1, delta2));
   }
@@ -1384,8 +1383,8 @@ public class CronetUrlRequestContextTest {
     // done through a direct executor which causes onFailed to be run on the network thread.
     Executor directExecutor = new Executor() {
       @Override
-      public void execute(Runnable runable) {
-        runable.run();
+      public void execute(Runnable runnable) {
+        runnable.run();
       }
     };
     UrlRequest.Callback callback = new UrlRequest.Callback() {
@@ -1410,10 +1409,10 @@ public class CronetUrlRequestContextTest {
   }
 
   /**
-   * @returns the thread priority of {@code engine}'s network thread.
+   * @return the thread priority of {@code engine}'s network thread.
    */
   private int getThreadPriority(CronetEngine engine) throws Exception {
-    FutureTask<Integer> task = new FutureTask<Integer>(new Callable<Integer>() {
+    FutureTask<Integer> task = new FutureTask<>(new Callable<>() {
       @Override
       public Integer call() {
         return Process.getThreadPriority(Process.myTid());
