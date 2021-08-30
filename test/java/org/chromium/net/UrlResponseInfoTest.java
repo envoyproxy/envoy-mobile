@@ -24,14 +24,13 @@ public class UrlResponseInfoTest {
   @SmallTest
   @Feature({"Cronet"})
   public void testPublicAPI() throws Exception {
-    final List<String> urlChain = new ArrayList<String>();
+    final List<String> urlChain = new ArrayList<>();
     urlChain.add("chromium.org");
     final int httpStatusCode = 200;
     final String httpStatusText = "OK";
-    final List<Map.Entry<String, String>> allHeadersList =
-        new ArrayList<Map.Entry<String, String>>();
-    allHeadersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
-        "Date", "Fri, 30 Oct 2015 14:26:41 GMT"));
+    final List<Map.Entry<String, String>> allHeadersList = new ArrayList<>();
+    allHeadersList.add(
+        new AbstractMap.SimpleImmutableEntry<>("Date", "Fri, 30 Oct 2015 14:26:41 GMT"));
     final boolean wasCached = true;
     final String negotiatedProtocol = "quic/1+spdy/3";
     final String proxyServer = "example.com";
@@ -43,7 +42,7 @@ public class UrlResponseInfoTest {
     Assert.assertEquals(info.getUrlChain(), urlChain);
     try {
       info.getUrlChain().add("example.com");
-      Assert.fail("getUrlChain() returned modifyable list.");
+      Assert.fail("getUrlChain() returned modifiable list.");
     } catch (UnsupportedOperationException e) {
       // Expected.
     }
@@ -51,9 +50,8 @@ public class UrlResponseInfoTest {
     Assert.assertEquals(info.getHttpStatusText(), httpStatusText);
     Assert.assertEquals(info.getAllHeadersAsList(), allHeadersList);
     try {
-      info.getAllHeadersAsList().add(
-          new AbstractMap.SimpleImmutableEntry<String, String>("X", "Y"));
-      Assert.fail("getAllHeadersAsList() returned modifyable list.");
+      info.getAllHeadersAsList().add(new AbstractMap.SimpleImmutableEntry<>("X", "Y"));
+      Assert.fail("getAllHeadersAsList() returned modifiable list.");
     } catch (UnsupportedOperationException e) {
       // Expected.
     }
