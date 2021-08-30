@@ -4,7 +4,7 @@ import Foundation
 import XCTest
 
 final class FilterResetIdleTests: XCTestCase {
-  func skipped_testFilterResetIdle() {
+  func testFilterResetIdle() {
     let idleTimeout = "0.5s"
     // swiftlint:disable:next line_length
     let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
@@ -180,7 +180,7 @@ static_resources:
       description: "Stream cancellation triggered incorrectly")
     cancelExpectation.isInverted = true
 
-    let client = EngineBuilder(yaml: config)
+    let engine = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
@@ -190,7 +190,8 @@ static_resources:
         }
       )
       .build()
-      .streamClient()
+
+    let client = engine.streamClient()
 
     let requestHeaders = RequestHeadersBuilder(
       method: .get, scheme: "https",

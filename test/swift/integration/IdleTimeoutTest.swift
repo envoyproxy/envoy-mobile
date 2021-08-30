@@ -138,14 +138,15 @@ static_resources:
     let callbackExpectation =
       self.expectation(description: "Stream idle timeout received by callbacks")
 
-    let client = EngineBuilder(yaml: config)
+    let engine = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
         factory: { IdleTimeoutValidationFilter(timeoutExpectation: filterExpectation) }
       )
       .build()
-      .streamClient()
+
+    let client = engine.streamClient()
 
     let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",
                                                authority: "example.com", path: "/test")
@@ -168,5 +169,7 @@ static_resources:
       XCTWaiter.wait(for: [filterExpectation, callbackExpectation], timeout: 2),
       .completed
     )
+
+    engine.terminate()
   }
 }

@@ -86,14 +86,15 @@ static_resources:
     let runExpectation = self.expectation(description: "Run called with expected cancellation")
     let filterExpectation = self.expectation(description: "Filter called with cancellation")
 
-    let client = EngineBuilder(yaml: config)
+    let engine = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
         factory: { CancelValidationFilter(expectation: filterExpectation) }
       )
       .build()
-      .streamClient()
+
+    let client = engine.streamClient()
 
     let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",
                                                authority: "example.com", path: "/test")
@@ -110,5 +111,7 @@ static_resources:
       .cancel()
 
     XCTAssertEqual(XCTWaiter.wait(for: [filterExpectation, runExpectation], timeout: 3), .completed)
+
+    engine.terminate()
   }
 }
