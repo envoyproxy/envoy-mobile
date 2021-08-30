@@ -11,10 +11,12 @@ jobs:
     name: coverage
     runs-on: ubuntu-18.04
     timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only --config=remote-ci-linux-clang" # Not working!! --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\""
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
@@ -36,7 +38,11 @@ jobs:
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
-        run: "PATH=/opt/llvm/bin:${PATH} TOKEN=${GITHUB_TOKEN} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/..."
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          echo ${GITHUB_TOKEN}
+          PATH=/opt/llvm/bin:${PATH} TOKEN=${GITHUB_TOKEN} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
