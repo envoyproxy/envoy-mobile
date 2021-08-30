@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(AndroidJUnit4.class)
 public class GetStatusTest {
+
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
   @Rule public ExpectedException thrown = ExpectedException.none();
 

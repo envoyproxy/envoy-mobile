@@ -226,7 +226,6 @@ public class UploadDataProvidersTest {
 
       @Override
       public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) throws IOException {}
-
       @Override
       public void rewind(UploadDataSink uploadDataSink) throws IOException {}
     }, callback.getExecutor());

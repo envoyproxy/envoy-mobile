@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class CronetStressTest {
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
+
   private CronetTestFramework mTestFramework;
 
   @Before
