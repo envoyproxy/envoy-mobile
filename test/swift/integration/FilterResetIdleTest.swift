@@ -6,6 +6,7 @@ import XCTest
 final class FilterResetIdleTests: XCTestCase {
   func testFilterResetIdle() {
     let idleTimeout = "0.5s"
+    let remotePort = Int.random(in: 10001...11000)
     // swiftlint:disable:next line_length
     let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
     // swiftlint:disable:next line_length
@@ -21,7 +22,7 @@ static_resources:
   listeners:
   - name: fake_remote_listener
     address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10101 }
+      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: \(remotePort) }
     filter_chains:
     - filters:
       - name: envoy.filters.network.http_connection_manager
@@ -79,7 +80,7 @@ static_resources:
       - lb_endpoints:
         - endpoint:
             address:
-              socket_address: { address: 127.0.0.1, port_value: 10101 }
+              socket_address: { address: 127.0.0.1, port_value: \(remotePort) }
 """
 
     class ResetIdleTestFilter: AsyncRequestFilter, ResponseFilter {
@@ -217,5 +218,7 @@ static_resources:
       XCTWaiter.wait(for: [cancelExpectation], timeout: 1),
       .completed
     )
+
+    engine.terminate()
   }
 }

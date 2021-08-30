@@ -5,6 +5,7 @@ import XCTest
 
 final class CancelStreamTests: XCTestCase {
   func testCancelStream() {
+    let remotePort = Int.random(in: 10001...11000)
     // swiftlint:disable:next line_length
     let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
     let lefType = "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
@@ -53,7 +54,7 @@ static_resources:
       - lb_endpoints:
         - endpoint:
             address:
-              socket_address: { address: 127.0.0.1, port_value: 10101 }
+              socket_address: { address: 127.0.0.1, port_value: \(remotePort) }
 """
 
     struct CancelValidationFilter: ResponseFilter {
