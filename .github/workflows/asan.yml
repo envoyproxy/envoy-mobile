@@ -35,10 +35,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.check_context.outputs.run_tests == 'true'
         run: |
-          bazel test --config=clang-asan \
-            --test_output=all \
+          bazel test --test_output=all \
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            --config=remote-ci-linux-clang \
-            --test_env=ASAN_OPTIONS=detect_leaks=0 \
+            --config=remote-ci-linux-asan \
             //test/common/...
