@@ -17,7 +17,6 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
       env:
-        BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only --config=remote-ci-linux-clang" # Not working!! --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\""
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
@@ -43,7 +42,10 @@ jobs:
         run: |
           echo ${GITHUB_TOKEN}
           export PATH=/opt/llvm/bin:${PATH}
-          ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
+          export BAZEL_BUILD_OPTIONS+=("--test_env=ENVOY_IP_TEST_VERSIONS=v4only)
+          export BAZEL_BUILD_OPTIONS+=("--config=remote-ci-linux-clang") # Not working!! --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\""
+          echo ${BAZEL_BUILD_OPTIONS[@]}
+          BAZEL_BUILD_OPTIONS=${BAZEL_BUILD_OPTIONS[@]} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
