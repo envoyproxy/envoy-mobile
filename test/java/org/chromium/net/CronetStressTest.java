@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
-
 import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestRule.CronetTestFramework;
 import org.chromium.net.testing.CronetTestRule.OnlyRunNativeCronet;
@@ -19,14 +18,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
 /**
  * Tests that making a large number of requests do not lead to crashes.
  */
 @RunWith(AndroidJUnit4.class)
 public class CronetStressTest {
-  @Rule
-  public final CronetTestRule mTestRule = new CronetTestRule();
+  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
   private CronetTestFramework mTestFramework;
 
   @Before
@@ -57,8 +54,8 @@ public class CronetStressTest {
         builder.addHeader("header" + j, Integer.toString(j));
       }
       builder.addHeader("content-type", "useless/string");
-      builder.setUploadDataProvider(
-          UploadDataProviders.create(b, 0, kNumUploadBytes), callback.getExecutor());
+      builder.setUploadDataProvider(UploadDataProviders.create(b, 0, kNumUploadBytes),
+                                    callback.getExecutor());
       UrlRequest request = builder.build();
       request.start();
       callback.blockForDone();

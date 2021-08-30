@@ -44,10 +44,10 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
 
   /** New-style constructor */
   public CronetMetrics(long requestStartMs, long dnsStartMs, long dnsEndMs, long connectStartMs,
-      long connectEndMs, long sslStartMs, long sslEndMs, long sendingStartMs,
-      long sendingEndMs, long pushStartMs, long pushEndMs, long responseStartMs,
-      long requestEndMs, boolean socketReused, long sentByteCount,
-      long receivedByteCount) {
+                       long connectEndMs, long sslStartMs, long sslEndMs, long sendingStartMs,
+                       long sendingEndMs, long pushStartMs, long pushEndMs, long responseStartMs,
+                       long requestEndMs, boolean socketReused, long sentByteCount,
+                       long receivedByteCount) {
     // Check that no end times are before corresponding start times,
     // or exist when start time doesn't.
     assert checkOrder(dnsStartMs, dnsEndMs);

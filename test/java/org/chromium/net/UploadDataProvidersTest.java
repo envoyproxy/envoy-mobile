@@ -26,16 +26,15 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 /** Test the default provided implementations of {@link UploadDataProvider} */
 @RunWith(AndroidJUnit4.class)
 public class UploadDataProvidersTest {
-  private static final String LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+  private static final String LOREM =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
       + "Proin elementum, libero laoreet fringilla faucibus, metus tortor vehicula ante, "
       + "lacinia lorem eros vel sapien.";
-  @Rule
-  public final CronetTestRule mTestRule = new CronetTestRule();
+  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
   private CronetTestFramework mTestFramework;
   private File mFile;
 
@@ -153,8 +152,7 @@ public class UploadDataProvidersTest {
       }
 
       @Override
-      public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
-          throws IOException {
+      public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) throws IOException {
         int oldPos = byteBuffer.position();
         int oldLimit = byteBuffer.limit();
         byteBuffer.put(CONTENT.getBytes());
@@ -195,8 +193,7 @@ public class UploadDataProvidersTest {
       }
 
       @Override
-      public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
-          throws IOException {}
+      public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) throws IOException {}
 
       @Override
       public void rewind(UploadDataSink uploadDataSink) throws IOException {}
@@ -228,8 +225,7 @@ public class UploadDataProvidersTest {
       }
 
       @Override
-      public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
-          throws IOException {}
+      public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) throws IOException {}
 
       @Override
       public void rewind(UploadDataSink uploadDataSink) throws IOException {}

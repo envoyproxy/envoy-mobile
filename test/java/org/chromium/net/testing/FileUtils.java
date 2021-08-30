@@ -21,8 +21,8 @@ public class FileUtils {
    * @note Caveat: Return values from recursive deletes are ignored.
    * @note Caveat: |canDelete| is not robust; see https://crbug.com/1066733.
    */
-  public static boolean recursivelyDeleteFile(
-      File currentFile, Function<String, Boolean> canDelete) {
+  public static boolean recursivelyDeleteFile(File currentFile,
+                                              Function<String, Boolean> canDelete) {
     if (!currentFile.exists()) {
       // This file could be a broken symlink, so try to delete. If we don't delete a broken
       // symlink, the directory containing it cannot be deleted.
@@ -48,5 +48,4 @@ public class FileUtils {
     }
     return ret;
   }
-
 }

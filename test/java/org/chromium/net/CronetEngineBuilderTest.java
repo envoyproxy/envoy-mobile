@@ -1,37 +1,29 @@
 package org.chromium.net;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import static org.chromium.net.CronetProvider.PROVIDER_NAME_APP_PACKAGED;
 import static org.chromium.net.CronetProvider.PROVIDER_NAME_FALLBACK;
 import static org.chromium.net.testing.CronetTestRule.getContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import androidx.test.filters.SmallTest;
-
-import org.chromium.net.CronetProvider;
-import org.chromium.net.testing.CronetTestRule;
-import org.chromium.net.testing.CronetTestRule.OnlyRunNativeCronet;
-import org.chromium.net.testing.Feature;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.chromium.net.testing.CronetTestRule;
+import org.chromium.net.testing.Feature;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Tests {@link CronetEngine.Builder}.
  */
 @RunWith(AndroidJUnit4.class)
 public class CronetEngineBuilderTest {
-  @Rule
-  public final CronetTestRule mTestRule = new CronetTestRule();
+  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
   /**
    * Tests the comparison of two strings that contain versions.
@@ -136,7 +128,7 @@ public class CronetEngineBuilderTest {
 
     @Override
     public CronetEngine.Builder createBuilder() {
-      return new CronetEngine.Builder((ICronetEngineBuilder) null);
+      return new CronetEngine.Builder((ICronetEngineBuilder)null);
     }
 
     @Override

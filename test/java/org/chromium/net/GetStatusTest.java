@@ -1,17 +1,18 @@
 package org.chromium.net;
 
+import static org.chromium.net.testing.CronetTestRule.getContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.chromium.net.testing.CronetTestRule.getContext;
-
 import android.os.ConditionVariable;
-
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-
+import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import org.chromium.net.UrlRequest.Status;
+import org.chromium.net.UrlRequest.StatusListener;
 import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestRule.CronetTestFramework;
 import org.chromium.net.testing.CronetTestRule.OnlyRunNativeCronet;
@@ -19,6 +20,7 @@ import org.chromium.net.testing.Feature;
 import org.chromium.net.testing.NativeTestServer;
 import org.chromium.net.testing.TestUploadDataProvider;
 import org.chromium.net.testing.TestUrlRequestCallback;
+import org.chromium.net.testing.TestUrlRequestCallback.ResponseStep;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -27,26 +29,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import org.chromium.net.testing.TestUrlRequestCallback.ResponseStep;
-import org.chromium.net.UrlRequest.Status;
-import org.chromium.net.UrlRequest.StatusListener;
-// import org.chromium.net.impl.LoadState;
-import org.chromium.net.impl.UrlRequestBase;
-
-import java.io.IOException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 /**
  * Tests that {@link org.chromium.net.impl.CronetUrlRequest#getStatus(StatusListener)} works as
  * expected.
  */
 @RunWith(AndroidJUnit4.class)
 public class GetStatusTest {
-  @Rule
-  public final CronetTestRule mTestRule = new CronetTestRule();
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
+  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   private CronetTestFramework mTestFramework;
 
@@ -85,8 +75,8 @@ public class GetStatusTest {
     String url = NativeTestServer.getEchoMethodURL();
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
     callback.setAutoAdvance(false);
-    UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-        url, callback, callback.getExecutor());
+    UrlRequest.Builder builder =
+        mTestFramework.mCronetEngine.newUrlRequestBuilder(url, callback, callback.getExecutor());
     UrlRequest urlRequest = builder.build();
     // Calling before request is started should give Status.INVALID,
     // since the native adapter is not created.
@@ -105,7 +95,7 @@ public class GetStatusTest {
     assertTrue(statusListener1.mOnStatusCalled);
     assertTrue("Status is :" + statusListener1.mStatus, statusListener1.mStatus >= Status.IDLE);
     assertTrue("Status is :" + statusListener1.mStatus,
-        statusListener1.mStatus <= Status.READING_RESPONSE);
+               statusListener1.mStatus <= Status.READING_RESPONSE);
 
     callback.waitForNextStep();
     assertEquals(ResponseStep.ON_RESPONSE_STARTED, callback.mResponseStep);

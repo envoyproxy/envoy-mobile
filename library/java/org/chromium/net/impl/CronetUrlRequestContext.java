@@ -305,9 +305,7 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
 
   @VisibleForTesting
   public void getUrlRequestContextAdapter() {
-    synchronized (mLock) {
-      checkHaveAdapter();
-    }
+    synchronized (mLock) { checkHaveAdapter(); }
   }
 
   @GuardedBy("mLock")

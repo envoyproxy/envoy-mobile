@@ -38,8 +38,8 @@ public class UrlResponseInfoTest {
     final long receivedByteCount = 42;
 
     final UrlResponseInfo info =
-        new UrlResponseInfoImpl(urlChain, httpStatusCode, httpStatusText, allHeadersList,
-            wasCached, negotiatedProtocol, proxyServer, receivedByteCount);
+        new UrlResponseInfoImpl(urlChain, httpStatusCode, httpStatusText, allHeadersList, wasCached,
+                                negotiatedProtocol, proxyServer, receivedByteCount);
     Assert.assertEquals(info.getUrlChain(), urlChain);
     try {
       info.getUrlChain().add("example.com");
@@ -60,7 +60,7 @@ public class UrlResponseInfoTest {
     Assert.assertEquals(info.getAllHeaders().size(), allHeadersList.size());
     Assert.assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).size(), 1);
     Assert.assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).get(0),
-        allHeadersList.get(0).getValue());
+                        allHeadersList.get(0).getValue());
     Assert.assertEquals(info.wasCached(), wasCached);
     Assert.assertEquals(info.getNegotiatedProtocol(), negotiatedProtocol);
     Assert.assertEquals(info.getProxyServer(), proxyServer);
