@@ -10,9 +10,11 @@ envoy_mobile_android_test(
     srcs = [
         "CronetEngineBuilderTest.java",
         "CronetStressTest.java",
+        "CronetUrlRequestContextTest.java",
         "CronetUrlRequestTest.java",
+        "DiskStorageTest.java",
         "GetStatusTest.java",
-        "NQETest.java",
+        "RequestFinishedInfoTest.java",
         "UploadDataProvidersTest.java",
         "UrlResponseInfoTest.java",
     ],

@@ -319,6 +319,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       mCronvoyEngine.setTaskToExecuteWhenInitializationIsCompleted(mCronvoyExecutor::resume);
       mAdditionalStatusDetails = Status.CONNECTING;
       mUrlChain.add(mCurrentUrl);
+      mCronvoyEngine.onRequestStarted();
       fireOpenConnection();
     });
   }
@@ -331,6 +332,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         }
       }
       fireCloseUploadDataProvider();
+      mCronvoyEngine.onRequestDestroyed();
       mCallbackAsync.onFailed(mUrlResponseInfo, error);
     }
   }
@@ -633,6 +635,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
     if (mState.compareAndSet(/* expect= */ State.READING,
                              /* update= */ State.COMPLETE)) {
+      mCronvoyEngine.onRequestDestroyed();
       mCallbackAsync.onSucceeded(mUrlResponseInfo);
     }
   }
@@ -646,6 +649,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     case State.AWAITING_READ:
     case State.STARTED:
     case State.READING:
+      mCronvoyEngine.onRequestDestroyed();
       fireCloseUploadDataProvider();
       if (mStream != null && mCancelCalled.compareAndSet(false, true)) {
         mStream.cancel();
