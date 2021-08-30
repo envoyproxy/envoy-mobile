@@ -579,7 +579,7 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
   EXPECT_EQ(event_tracker.track, registered_event_tracker->track);
   EXPECT_EQ(event_tracker.context, registered_event_tracker->context);
 
-  event_tracker.track(Envoy::Bridge::makeEnvoyMap({{"foo", "bar"}}),
+  event_tracker.track(Bridge::Utility::makeEnvoyMap({{"foo", "bar"}}),
                       registered_event_tracker->context);
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));
@@ -623,6 +623,28 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));
   terminate_engine(0);
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
+}
+
+TEST(MainInterfaceTest, DrainConnections) {
+  engine_test_context test_context{};
+  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+                                      auto* engine_running =
+                                          static_cast<engine_test_context*>(context);
+                                      engine_running->on_engine_running.Notify();
+                                    } /*on_engine_running*/,
+                                    [](void* context) -> void {
+                                      auto* exit = static_cast<engine_test_context*>(context);
+                                      exit->on_exit.Notify();
+                                    } /*on_exit*/,
+                                    &test_context /*context*/};
+  envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+
+  ASSERT_EQ(ENVOY_SUCCESS, drain_connections(engine_handle));
+
+  terminate_engine(engine_handle);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
