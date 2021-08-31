@@ -21,7 +21,6 @@ namespace {
 #define SUPPORTS_GETIFADDRS
 #endif
 
-
 std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET);
 }

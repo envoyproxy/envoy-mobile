@@ -16,11 +16,11 @@ envoy_cc_library(
         ],
         "//conditions:default": [],
     }),
+    hdrs = ["mobile_utility.h"],
     copts = select({
         "//bazel:include_ifaddrs": ["-DINCLUDE_IFADDRS"],
         "//conditions:default": [],
     }),
-    hdrs = ["mobile_utility.h"],
     repository = "@envoy",
     deps = [
         "@envoy//source/common/common:assert_lib",
