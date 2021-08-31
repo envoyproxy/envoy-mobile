@@ -81,6 +81,36 @@ class EngineBuilderTest {
   }
 
   @Test
+  fun `specifying H2 Ping interval overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addH2ConnectionKeepaliveIntervalSeconds(111)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.h2ConnectionKeepaliveIntervalSeconds).isEqualTo(111)
+  }
+
+  @Test
+  fun `specifying H2 Ping idle interval overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addH2ConnectionKeepaliveIdleIntervalMilliseconds(1234)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.h2ConnectionKeepaliveIdleIntervalMilliseconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying H2 Ping timeout overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addH2ConnectionKeepaliveTimeoutSeconds(1234)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.h2ConnectionKeepaliveTimeoutSeconds).isEqualTo(1234)
+  }
+
+  @Test
   fun `specifying stats flush overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }

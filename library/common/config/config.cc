@@ -39,6 +39,9 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
+- &h2_connection_keepalive_interval 0s
+- &h2_connection_keepalive_idle_interval 0s
+- &h2_connection_keepalive_timeout 5s
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s

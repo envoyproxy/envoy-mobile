@@ -35,6 +35,9 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
+  private var h2ConnectionKeepaliveIntervalSeconds = 2
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
+  private var h2ConnectionKeepaliveTimeoutSeconds = 5
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
@@ -145,6 +148,42 @@ open class EngineBuilder(
    */
   fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
     this.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return this
+  }
+
+  /**
+   * Add a rate at which to ping h2 connections.
+   *
+   * @param h2ConnectionKeepaliveIntervalSeconds rate in seconds to ping h2 connections.
+   *
+   * @return this builder.
+   */
+  fun addH2ConnectionKeepaliveIntervalSeconds(h2ConnectionKeepaliveIntervalSeconds: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveIntervalSeconds = h2ConnectionKeepaliveIntervalSeconds
+    return this
+  }
+
+  /**
+   * Add a rate at which to ping h2 connections on new stream creation if the connection has sat idle.
+   *
+   * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
+   *
+   * @return this builder.
+   */
+  fun addH2ConnectionKeepaliveIdleIntervalMilliseconds(h2ConnectionKeepaliveIdleIntervalMilliseconds: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveIdleIntervalMilliseconds = h2ConnectionKeepaliveIdleIntervalMilliseconds
+    return this
+  }
+
+  /**
+   * Add a rate at which to timeout h2 pings.
+   *
+   * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   *
+   * @return this builder.
+   */
+  fun addH2ConnectionKeepaliveTimeoutSeconds(h2ConnectionKeepaliveTimeoutSeconds: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
     return this
   }
 
@@ -321,8 +360,9 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds,
-            dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, h2ConnectionKeepaliveIntervalSeconds,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
@@ -335,8 +375,9 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds,
-            dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, h2ConnectionKeepaliveIntervalSeconds,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           logLevel
