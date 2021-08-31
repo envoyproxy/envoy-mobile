@@ -243,12 +243,7 @@ public class CronetUrlRequestContextTest {
     // Shutdown will wait for init to complete on main thread.
     cronetEngine.shutdown();
     // Verify that context is shutdown.
-    try {
-      cronetEngine.getUrlRequestContextAdapter();
-      fail("Should throw an exception.");
-    } catch (Exception e) {
-      assertEquals("Engine is shut down.", e.getMessage());
-    }
+    assertTrue("Engine is shutdown", cronetEngine.hasShutdown());
   }
 
   @Test
@@ -269,12 +264,7 @@ public class CronetUrlRequestContextTest {
         // Shutdown right after init.
         cronetEngine.shutdown();
         // Verify that context is shutdown.
-        try {
-          cronetEngine.getUrlRequestContextAdapter();
-          fail("Should throw an exception.");
-        } catch (Exception e) {
-          assertEquals("Engine is shut down.", e.getMessage());
-        }
+        assertTrue("Engine is shutdown", cronetEngine.hasShutdown());
         block.open();
       }
     };

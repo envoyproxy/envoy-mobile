@@ -304,8 +304,8 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
   void onRequestDestroyed() { mActiveRequestCount.decrementAndGet(); }
 
   @VisibleForTesting
-  public void getUrlRequestContextAdapter() {
-    synchronized (mLock) { checkHaveAdapter(); }
+  public boolean hasShutdown() {
+    synchronized (mLock) { return !haveRequestContextAdapter(); }
   }
 
   @GuardedBy("mLock")

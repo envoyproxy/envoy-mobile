@@ -14,7 +14,7 @@ import org.chromium.net.UploadDataSink;
  * Chunked mode is not supported here, since the main interest is to test
  * different order of init/read/rewind calls.
  */
-public class TestDrivenDataProvider extends UploadDataProvider {
+public final class TestDrivenDataProvider extends UploadDataProvider {
   private final Executor mExecutor;
   private final List<byte[]> mReads;
   private final ConditionVariable mWaitForReadRequest = new ConditionVariable();
