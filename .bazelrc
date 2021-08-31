@@ -151,11 +151,17 @@ build:remote-ci-linux-clang --config=remote-ci-common
 # remote-ci-linux-asan: These options are Linux-only using Clang and AddressSanitizer
 #############################################################################
 build:remote-ci-linux-asan --config=clang-asan
-build:remote-ci-linux-asan --config=remote-ci-linux-clang
-# Due to google/sanitizers#916 we need to deactivate the experimental detect_leaks option
-# from https://clang.llvm.org/docs/AddressSanitizer.html#memory-leak-detection.
-# Otherwise, dangling threads in the remote execution docker container fail tests during teardown.
-build:remote-ci-linux-asan --test_env=ASAN_OPTIONS=detect_leaks=0
+build:remote-ci-linux-clang --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:remote-ci-linux-clang --action_env=CC=/opt/llvm/bin/clang
+build:remote-ci-linux-clang --action_env=CXX=/opt/llvm/bin/clang++
+build:remote-ci-linux-clang --crosstool_top=@engflow_remote_config_clang_asan//cc:toolchain
+build:remote-ci-linux-clang --extra_execution_platforms=@engflow_remote_config_clang_asan//config:platform
+build:remote-ci-linux-clang --extra_toolchains=@engflow_remote_config_clang_asan//config:cc-toolchain
+build:remote-ci-linux-clang --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:remote-ci-linux-clang --host_platform=@engflow_remote_config_clang_asan//config:platform
+build:remote-ci-linux-clang --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:remote-ci-linux-clang --platforms=@engflow_remote_config_clang_asan//config:platform
+build:remote-ci-linux-clang --config=remote-ci-common
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
