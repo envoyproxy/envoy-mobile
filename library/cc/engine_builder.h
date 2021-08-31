@@ -24,9 +24,12 @@ public:
   EngineBuilder& addDnsFailureRefreshSeconds(int base, int max);
   EngineBuilder& addDnsQueryTimeoutSeconds(int dns_query_timeout_seconds);
   EngineBuilder& addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames);
-  EngineBuilder& addH2ConnectionKeepaliveIntervalSeconds(int h2_connection_keepalive_interval_seconds);
-  EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(int h2_connection_keepalive_idle_interval_milliseconds);
-  EngineBuilder& addh2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds);
+  EngineBuilder&
+  addH2ConnectionKeepaliveIntervalSeconds(int h2_connection_keepalive_interval_seconds);
+  EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(
+      int h2_connection_keepalive_idle_interval_milliseconds);
+  EngineBuilder&
+  addh2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds);
   EngineBuilder& addStatsFlushSeconds(int stats_flush_seconds);
   EngineBuilder& addVirtualClusters(const std::string& virtual_clusters);
   EngineBuilder& setAppVersion(const std::string& app_version);
@@ -56,10 +59,9 @@ private:
   int dns_failure_refresh_seconds_max_ = 10;
   int dns_query_timeout_seconds_ = 25;
   std::string dns_preresolve_hostnames_ = "[]";
-  int h2_connection_keepalive_interval_seconds = 2
-  int h2_connection_keepalive_idle_interval_milliseconds = 1
-  int h2_connection_keepalive_timeout_seconds = 5
-  int stats_flush_seconds_ = 60;
+  int h2_connection_keepalive_interval_seconds =
+      2 int h2_connection_keepalive_idle_interval_milliseconds =
+          1 int h2_connection_keepalive_timeout_seconds = 5 int stats_flush_seconds_ = 60;
   std::string app_version_ = "unspecified";
   std::string app_id_ = "unspecified";
   std::string device_os_ = "unspecified";

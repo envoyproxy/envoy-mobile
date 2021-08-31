@@ -318,29 +318,32 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /**
  Create a new instance of the configuration.
  */
-- (instancetype)
-    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
-                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
-           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-           h2ConnectionKeepaliveIntervalSeconds:(UInt32)h2ConnectionKeepaliveIntervalSeconds
-           h2ConnectionKeepaliveIdleIntervalMilliseconds:(UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
-           h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
-                statsFlushSeconds:(UInt32)statsFlushSeconds
-         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                       appVersion:(NSString *)appVersion
-                            appId:(NSString *)appId
-                  virtualClusters:(NSString *)virtualClusters
-           directResponseMatchers:(NSString *)directResponseMatchers
-                  directResponses:(NSString *)directResponses
-                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                  stringAccessors:
-                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
+- (instancetype)initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+                            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+                     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+                      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+                           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+             h2ConnectionKeepaliveIntervalSeconds:(UInt32)h2ConnectionKeepaliveIntervalSeconds
+    h2ConnectionKeepaliveIdleIntervalMilliseconds:
+        (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
+              h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
+                                statsFlushSeconds:(UInt32)statsFlushSeconds
+                         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                                       appVersion:(NSString *)appVersion
+                                            appId:(NSString *)appId
+                                  virtualClusters:(NSString *)virtualClusters
+                           directResponseMatchers:(NSString *)directResponseMatchers
+                                  directResponses:(NSString *)directResponses
+                                nativeFilterChain:
+                                    (NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                              platformFilterChain:
+                                  (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                                  stringAccessors:
+                                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)
+                                          stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.

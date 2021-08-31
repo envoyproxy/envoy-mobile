@@ -139,19 +139,23 @@ open class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addH2ConnectionKeepaliveIntervalSeconds(_ h2ConnectionKeepaliveIntervalSeconds: UInt32) -> Self {
+  public func addH2ConnectionKeepaliveIntervalSeconds(
+    _ h2ConnectionKeepaliveIntervalSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveIntervalSeconds = h2ConnectionKeepaliveIntervalSeconds
     return self
   }
 
-  /// Add a rate at which to ping h2 connections on new stream creation if the connection has sat idle.
+  /// Add a rate at which to ping h2 connections on new stream creation if the connection has
+  /// sat idle.
   ///
   /// - parameter h2ConnectionKeepaliveIdleIntervalMilliseconds: Rate in milliseconds.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addH2ConnectionKeepaliveIdleIntervalMilliseconds(_ h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32) -> Self {
-    self.h2ConnectionKeepaliveIdleIntervalMilliseconds = h2ConnectionKeepaliveIdleIntervalMilliseconds
+  public func addH2ConnectionKeepaliveIdleIntervalMilliseconds(
+    _ h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32) -> Self {
+    self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
+      h2ConnectionKeepaliveIdleIntervalMilliseconds
     return self
   }
 
@@ -161,7 +165,8 @@ open class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addH2ConnectionKeepaliveTimeoutSeconds(_ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
+  public func addH2ConnectionKeepaliveTimeoutSeconds(
+    _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
     return self
   }
@@ -335,8 +340,10 @@ open class EngineBuilder: NSObject {
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
       dnsQueryTimeoutSeconds: self.dnsQueryTimeoutSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
-      h2ConnectionKeepaliveIntervalSeconds: self.h2ConnectionKeepaliveIntervalSeconds,
-      h2ConnectionKeepaliveIdleIntervalMilliseconds: self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
+      h2ConnectionKeepaliveIntervalSeconds:
+        self.h2ConnectionKeepaliveIntervalSeconds,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds:
+        self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,

@@ -54,17 +54,21 @@ EngineBuilder::addDnsPreresolveHostnames(const std::string& dns_preresolve_hostn
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addH2ConnectionKeepaliveIntervalSeconds(int h2_connection_keepalive_interval_seconds) {
+EngineBuilder& EngineBuilder::addH2ConnectionKeepaliveIntervalSeconds(
+    int h2_connection_keepalive_interval_seconds) {
   this->h2_connection_keepalive_interval_seconds_ = h2_connection_keepalive_interval_seconds;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addH2ConnectionKeepaliveIdleIntervalMilliseconds(int h2_connection_keepalive_idle_interval_milliseconds) {
-  this->h2_connection_keepalive_idle_interval_milliseconds_ = h2_connection_keepalive_idle_interval_milliseconds;
+EngineBuilder& EngineBuilder::addH2ConnectionKeepaliveIdleIntervalMilliseconds(
+    int h2_connection_keepalive_idle_interval_milliseconds) {
+  this->h2_connection_keepalive_idle_interval_milliseconds_ =
+      h2_connection_keepalive_idle_interval_milliseconds;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addH2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds) {
+EngineBuilder&
+EngineBuilder::addH2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds) {
   this->h2_connection_keepalive_timeout_seconds_ = h2_connection_keepalive_timeout_seconds;
   return *this;
 }
@@ -102,9 +106,12 @@ std::string EngineBuilder::generateConfigStr() {
       {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
       {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
       {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},
-      {"h2_connection_keepalive_interval", fmt::format("{}s", this->h2_connection_keepalive_interval_seconds_)},
-      {"h2_connection_keepalive_idle_interval", fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_)},
-      {"h2_connection_keepalive_timeout", fmt::format("{}s", this->h2_connection_keepalive_timeout_seconds_)},
+      {"h2_connection_keepalive_interval",
+       fmt::format("{}s", this->h2_connection_keepalive_interval_seconds_)},
+      {"h2_connection_keepalive_idle_interval",
+       fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_)},
+      {"h2_connection_keepalive_timeout",
+       fmt::format("{}s", this->h2_connection_keepalive_timeout_seconds_)},
       {
           "metadata",
           fmt::format("{{ device_os: {}, app_version: {}, app_id: {} }}", this->device_os_,

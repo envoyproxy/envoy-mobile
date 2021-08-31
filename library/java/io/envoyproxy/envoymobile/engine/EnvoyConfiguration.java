@@ -47,7 +47,8 @@ public class EnvoyConfiguration {
    * @param dnsQueryTimeoutSeconds       rate in seconds to timeout DNS queries.
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
    * @param h2ConnectionKeepaliveIntervalSeconds rate in seconds to send h2 pings.
-   * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2 pings on stream creation.
+   * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
+   *     pings on stream creation.
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
@@ -63,8 +64,8 @@ public class EnvoyConfiguration {
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
                             String dnsPreresolveHostnames, int h2ConnectionKeepaliveIntervalSeconds,
-int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
+                            int h2ConnectionKeepaliveIdleIntervalMilliseconds,
+                            int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, String appVersion, String appId,
                             String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
@@ -79,8 +80,9 @@ int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
     this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
     this.h2ConnectionKeepaliveIntervalSeconds = h2ConnectionKeepaliveIntervalSeconds;
-this.h2ConnectionKeepaliveIdleIntervalMilliseconds = h2ConnectionKeepaliveIdleIntervalMilliseconds;
-this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+    this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
+        h2ConnectionKeepaliveIdleIntervalMilliseconds;
+    this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
     this.statsFlushSeconds = statsFlushSeconds;
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
     this.appVersion = appVersion;
@@ -129,9 +131,12 @@ this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
-        .append(String.format("- &h2_connection_keepalive_interval %ss\n", h2ConnectionKeepaliveIntervalSeconds))
-        .append(String.format("- &h2_connection_keepalive_idle_interval %sms\n", h2ConnectionKeepaliveIdleIntervalMilliseconds))
-        .append(String.format("- &h2_connection_keepalive_timeout %ss\n", h2ConnectionKeepaliveTimeoutSeconds))
+        .append(String.format("- &h2_connection_keepalive_interval %ss\n",
+                              h2ConnectionKeepaliveIntervalSeconds))
+        .append(String.format("- &h2_connection_keepalive_idle_interval %sms\n",
+                              h2ConnectionKeepaliveIdleIntervalMilliseconds))
+        .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
+                              h2ConnectionKeepaliveTimeoutSeconds))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",
                               "Android", appVersion, appId))
