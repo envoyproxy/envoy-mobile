@@ -1,5 +1,8 @@
 package org.chromium.net;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import java.util.AbstractMap;
@@ -8,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import org.chromium.net.impl.UrlResponseInfoImpl;
 import org.chromium.net.testing.Feature;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,29 +41,29 @@ public class UrlResponseInfoTest {
     final UrlResponseInfo info =
         new UrlResponseInfoImpl(urlChain, httpStatusCode, httpStatusText, allHeadersList, wasCached,
                                 negotiatedProtocol, proxyServer, receivedByteCount);
-    Assert.assertEquals(info.getUrlChain(), urlChain);
+    assertEquals(info.getUrlChain(), urlChain);
     try {
       info.getUrlChain().add("example.com");
-      Assert.fail("getUrlChain() returned modifiable list.");
+      fail("getUrlChain() returned modifiable list.");
     } catch (UnsupportedOperationException e) {
       // Expected.
     }
-    Assert.assertEquals(info.getHttpStatusCode(), httpStatusCode);
-    Assert.assertEquals(info.getHttpStatusText(), httpStatusText);
-    Assert.assertEquals(info.getAllHeadersAsList(), allHeadersList);
+    assertEquals(info.getHttpStatusCode(), httpStatusCode);
+    assertEquals(info.getHttpStatusText(), httpStatusText);
+    assertEquals(info.getAllHeadersAsList(), allHeadersList);
     try {
       info.getAllHeadersAsList().add(new AbstractMap.SimpleImmutableEntry<>("X", "Y"));
-      Assert.fail("getAllHeadersAsList() returned modifiable list.");
+      fail("getAllHeadersAsList() returned modifiable list.");
     } catch (UnsupportedOperationException e) {
       // Expected.
     }
-    Assert.assertEquals(info.getAllHeaders().size(), allHeadersList.size());
-    Assert.assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).size(), 1);
-    Assert.assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).get(0),
-                        allHeadersList.get(0).getValue());
-    Assert.assertEquals(info.wasCached(), wasCached);
-    Assert.assertEquals(info.getNegotiatedProtocol(), negotiatedProtocol);
-    Assert.assertEquals(info.getProxyServer(), proxyServer);
-    Assert.assertEquals(info.getReceivedByteCount(), receivedByteCount);
+    assertEquals(info.getAllHeaders().size(), allHeadersList.size());
+    assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).size(), 1);
+    assertEquals(info.getAllHeaders().get(allHeadersList.get(0).getKey()).get(0),
+                 allHeadersList.get(0).getValue());
+    assertEquals(info.wasCached(), wasCached);
+    assertEquals(info.getNegotiatedProtocol(), negotiatedProtocol);
+    assertEquals(info.getProxyServer(), proxyServer);
+    assertEquals(info.getReceivedByteCount(), receivedByteCount);
   }
 }

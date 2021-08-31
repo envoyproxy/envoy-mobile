@@ -18,7 +18,7 @@ import org.chromium.net.RequestFinishedInfo.Listener;
  * Classes which are useful for testing Cronet's metrics implementation and are needed in more than
  * one test file.
  */
-public class MetricsTestUtil {
+public final class MetricsTestUtil {
   /**
    * Executor which runs tasks only when told to with runAllTasks().
    */
@@ -167,4 +167,6 @@ public class MetricsTestUtil {
     assertTrue(metrics.getSentByteCount() > 0);
     assertTrue(metrics.getReceivedByteCount() > 0);
   }
+
+  private MetricsTestUtil() {}
 }

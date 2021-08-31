@@ -7,7 +7,7 @@ import java.util.function.Function;
 /**
  * Helper methods for dealing with Files.
  */
-public class FileUtils {
+public final class FileUtils {
   private static final String TAG = "FileUtils";
 
   public static Function<String, Boolean> DELETE_ALL = filepath -> true;
@@ -48,4 +48,6 @@ public class FileUtils {
     }
     return ret;
   }
+
+  private FileUtils() {}
 }
