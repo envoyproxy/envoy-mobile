@@ -11,6 +11,17 @@
 namespace Envoy {
 namespace Network {
 
+#if !defined(SUPPORTS_GETIFADDRS) && defined(INCLUDE_IFADDRS)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+namespace {
+#include "third_party/android/ifaddrs-android.h"
+}
+#pragma clang diagnostic pop
+#define SUPPORTS_GETIFADDRS
+#endif
+
+
 std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET);
 }
@@ -37,7 +48,7 @@ MobileUtility::enumerateInterfaces([[maybe_unused]] unsigned short family) {
   }
 
   freeifaddrs(interfaces);
-#endif
+#endif // SUPPORTS_GETIFADDRS
 
   return names;
 }
