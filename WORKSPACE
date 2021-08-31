@@ -96,7 +96,9 @@ rbe_autoconfig(
     },
     exec_properties = {
         "Pool": "linux",
-        "dockerAddCapabilities": "SYS_PTRACE", # Necessary to workaround https://github.com/google/sanitizers/issues/916
+        # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
+        # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
+        "dockerAddCapabilities": "SYS_PTRACE",
     },
     create_java_configs = False,
 )
