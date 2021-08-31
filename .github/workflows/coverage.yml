@@ -36,7 +36,6 @@ jobs:
           fi
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
-        continue-on-error: true
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
