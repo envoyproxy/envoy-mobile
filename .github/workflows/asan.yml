@@ -38,5 +38,6 @@ jobs:
           bazel test --test_output=all \
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=clang-asan \
             --config=remote-ci-linux-asan \
             //test/common/...
