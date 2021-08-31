@@ -644,12 +644,12 @@ TEST(EngineTest, EventTrackerRegistersEnvoyBugRecordAction) {
   envoy_event_tracker event_tracker{[](envoy_map map, const void* context) -> void {
                                       const auto new_map = toMap(map);
                                       if (new_map.count("name") && new_map.at("name") == "bug") {
-                                          EXPECT_EQ(new_map.at("name"), "bug");
-                                          EXPECT_EQ(new_map.at("location"), "foo_location");
-                                          auto* test_context = static_cast<engine_test_context*>(
-                                              const_cast<void*>(context));
-                                          test_context->on_event.Notify();
-                                        }
+                                        EXPECT_EQ(new_map.at("name"), "bug");
+                                        EXPECT_EQ(new_map.at("location"), "foo_location");
+                                        auto* test_context = static_cast<engine_test_context*>(
+                                            const_cast<void*>(context));
+                                        test_context->on_event.Notify();
+                                      }
                                     } /*track*/,
                                     &test_context /*context*/};
 
