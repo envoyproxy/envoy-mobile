@@ -65,6 +65,12 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                   {{"name", "assertion"}, {"location", std::string(location)}});
               event_tracker_.track(event, event_tracker_.context);
             });
+        bug_handler_registration_ =
+            Assert::addEnvoyBugFailureRecordAction([this](const char* location) {
+              const auto event = Bridge::Utility::makeEnvoyMap(
+                  {{"name", "bug"}, {"location", std::string(location)}});
+              event_tracker_.track(event, event_tracker_.context);
+            });
       }
 
       if (logger_.log) {
