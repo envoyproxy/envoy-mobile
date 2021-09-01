@@ -20,9 +20,10 @@ public:
    * Constructor for a new engine instance.
    * @param callbacks, the callbacks to use for engine lifecycle monitoring.
    * @param logger, the callbacks to use for engine logging.
+   * @param event_tracker, the event tracker to use for the emission of events.
    * @param preferred_network, hook to obtain the preferred network for new streams.
    */
-  Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
+  Engine(envoy_engine_callbacks callbacks, envoy_logger logger, envoy_event_tracker event_tracker,
          std::atomic<envoy_network_t>& preferred_network);
 
   /**
@@ -100,25 +101,46 @@ public:
                                       uint64_t value, envoy_histogram_stat_unit_t unit_measure);
 
   /**
+   * Issue a call against the admin handler, populating the `out` parameter with the response if
+   * the call was successful.
+   * @param path the admin path to query.
+   * @param method the HTTP method to use (GET or POST).
+   * @param out the response body, populated if the call is successful.
+   * @returns ENVOY_SUCCESS if the call was successful and `out` was populated.
+   */
+  envoy_status_t makeAdminCall(absl::string_view path, absl::string_view method, envoy_data& out);
+
+  /**
    * Flush the stats sinks outside of a flushing interval.
    * Note: stat flushing is done asynchronously, this function will never block.
    * This is a noop if called before the underlying EnvoyEngine has started.
    */
   void flushStats();
 
+  /**
+   * Drain all upstream connections associated with this Engine.
+   */
+  void drainConnections();
+
 private:
   envoy_status_t main(std::string config, std::string log_level);
+  void logInterfaces();
 
   Event::Dispatcher* event_dispatcher_{};
   Stats::ScopePtr client_scope_;
   Stats::StatNameSetPtr stat_name_set_;
   envoy_engine_callbacks callbacks_;
   envoy_logger logger_;
+  envoy_event_tracker event_tracker_;
+  Assert::ActionRegistrationPtr assert_handler_registration_;
+  Assert::ActionRegistrationPtr bug_handler_registration_;
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   Http::ClientPtr http_client_;
   Event::ProvisionalDispatcherPtr dispatcher_;
-  Logger::LambdaDelegatePtr lambda_logger_{};
+  // Used by the cerr logger to ensure logs don't overwrite each other.
+  absl::Mutex log_mutex_;
+  Logger::EventTrackingDelegatePtr log_delegate_ptr_{};
   Server::Instance* server_{};
   Server::ServerLifecycleNotifier::HandlePtr postinit_callback_handler_;
   std::atomic<envoy_network_t>& preferred_network_;

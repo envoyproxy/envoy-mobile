@@ -15,17 +15,16 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   private static final int ENVOY_FAILURE = 1;
 
   private final long engineHandle;
-  private final EnvoyEventTracker eventTracker;
 
   /**
    * @param runningCallback Called when the engine finishes its async startup and begins running.
    * @param logger          The logging interface.
+   * @param eventTracker    The event tracking interface.
    */
   public EnvoyEngineImpl(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger,
                          EnvoyEventTracker eventTracker) {
     JniLibrary.load();
-    this.engineHandle = JniLibrary.initEngine(runningCallback, logger);
-    this.eventTracker = eventTracker;
+    this.engineHandle = JniLibrary.initEngine(runningCallback, logger, eventTracker);
   }
 
   /**
@@ -53,6 +52,11 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     JniLibrary.flushStats(engineHandle);
   }
 
+  @Override
+  public String dumpStats() {
+    return JniLibrary.dumpStats();
+  }
+
   /**
    * Run the Envoy engine with the provided yaml string and log level.
    *
@@ -77,7 +81,6 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                         new JvmStringAccessorContext(entry.getValue()));
     }
 
-    JniLibrary.registerEventTracker(this.eventTracker);
     return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
                                    configurationYAML, JniLibrary.platformFilterTemplateString(),
                                    JniLibrary.nativeFilterTemplateString()),
@@ -190,5 +193,10 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public int registerStringAccessor(String accessor_name, EnvoyStringAccessor accessor) {
     return JniLibrary.registerStringAccessor(accessor_name, new JvmStringAccessorContext(accessor));
+  }
+
+  @Override
+  public void drainConnections() {
+    JniLibrary.drainConnections(engineHandle);
   }
 }

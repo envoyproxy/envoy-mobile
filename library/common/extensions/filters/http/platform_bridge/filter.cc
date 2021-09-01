@@ -9,6 +9,7 @@
 #include "source/common/common/utility.h"
 
 #include "library/common/api/external.h"
+#include "library/common/bridge/utility.h"
 #include "library/common/buffer/bridge_fragment.h"
 #include "library/common/data/utility.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_type_definitions.h"
@@ -31,6 +32,7 @@ void replaceHeaders(Http::HeaderMap& headers, envoy_headers c_headers) {
   // The C envoy_headers struct can be released now because the headers have been copied.
   release_envoy_headers(c_headers);
 }
+
 } // namespace
 
 static void envoy_filter_release_callbacks(const void* context) {
@@ -150,7 +152,7 @@ void PlatformBridgeFilter::onDestroy() {
   // If the filter chain is destroyed before a response is received, treat as cancellation.
   if (!response_filter_base_->state_.stream_complete_ && platform_filter_.on_cancel) {
     ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_cancel", filter_name_);
-    platform_filter_.on_cancel(platform_filter_.instance_context);
+    platform_filter_.on_cancel(streamIntel(), platform_filter_.instance_context);
   }
 
   // Allow nullptr as no-op only if nothing was initialized.
@@ -163,6 +165,37 @@ void PlatformBridgeFilter::onDestroy() {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->release_filter", filter_name_);
   platform_filter_.release_filter(platform_filter_.instance_context);
   platform_filter_.instance_context = nullptr;
+}
+
+Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& reply) {
+  ENVOY_LOG(trace, "PlatformBridgeFilter({})::onLocalReply", filter_name_);
+  response_filter_base_->state_.stream_complete_ = true;
+  auto& info = decoder_callbacks_->streamInfo();
+  // TODO(goaway): set responseCode in upstream Envoy when responseCodDetails are set.
+  // ASSERT(static_cast<uint32_t>(reply.code_) == info.responseCode());
+  // TODO(goaway): follow up on the underscore discrepancy between these values.
+  // ASSERT(reply.details_ == info.responseCodeDetails());
+
+  if (platform_filter_.on_error) {
+    envoy_error_code_t error_code = Bridge::Utility::errorCodeFromLocalStatus(reply.code_);
+    envoy_data error_message = Data::Utility::copyToBridgeData(reply.details_);
+    int32_t attempts = static_cast<int32_t>(info.attemptCount().value_or(0));
+    platform_filter_.on_error({error_code, error_message, attempts}, streamIntel(),
+                              platform_filter_.instance_context);
+  }
+
+  return Http::LocalErrorStatus::ContinueAndResetStream;
+}
+
+envoy_stream_intel PlatformBridgeFilter::streamIntel() {
+  RELEASE_ASSERT(decoder_callbacks_, "StreamInfo accessed before filter callbacks are set");
+  auto& info = decoder_callbacks_->streamInfo();
+  envoy_stream_intel stream_intel{};
+  stream_intel.connection_id = info.upstreamConnectionId().value_or(0);
+  // FIXME: Stream handle cannot currently be set from the filter context.
+  stream_intel.stream_id = 0;
+  stream_intel.attempt_count = info.attemptCount().value_or(0);
+  return stream_intel;
 }
 
 void PlatformBridgeFilter::dumpState(std::ostream& os, int indent_level) const {
@@ -202,7 +235,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   envoy_headers in_headers = Http::Utility::toBridgeHeaders(headers);
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_headers", parent_.filter_name_);
   envoy_filter_headers_status result =
-      on_headers_(in_headers, end_stream, parent_.platform_filter_.instance_context);
+      on_headers_(in_headers, end_stream, streamIntel(), parent_.platform_filter_.instance_context);
   state_.on_headers_called_ = true;
 
   switch (result.status) {
@@ -251,7 +284,7 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
 
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_data", parent_.filter_name_);
   envoy_filter_data_status result =
-      on_data_(in_data, end_stream, parent_.platform_filter_.instance_context);
+      on_data_(in_data, end_stream, streamIntel(), parent_.platform_filter_.instance_context);
   state_.on_data_called_ = true;
 
   switch (result.status) {
@@ -334,7 +367,7 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
   envoy_headers in_trailers = Http::Utility::toBridgeHeaders(trailers);
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_trailers", parent_.filter_name_);
   envoy_filter_trailers_status result =
-      on_trailers_(in_trailers, parent_.platform_filter_.instance_context);
+      on_trailers_(in_trailers, streamIntel(), parent_.platform_filter_.instance_context);
   state_.on_trailers_called_ = true;
 
   switch (result.status) {
@@ -430,7 +463,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
   }
 
   if (platform_filter_.on_error) {
-    platform_filter_.on_error({error_code, error_message, attempt_count},
+    platform_filter_.on_error({error_code, error_message, attempt_count}, streamIntel(),
                               platform_filter_.instance_context);
   } else {
     release_envoy_data(error_message);
@@ -561,7 +594,7 @@ void PlatformBridgeFilter::FilterBase::onResume() {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_resume_*", parent_.filter_name_);
   envoy_filter_resume_status result =
       on_resume_(pending_headers, pending_data, pending_trailers, state_.stream_complete_,
-                 parent_.platform_filter_.instance_context);
+                 streamIntel(), parent_.platform_filter_.instance_context);
   state_.on_resume_called_ = true;
 
   if (result.status == kEnvoyFilterResumeStatusStopIteration) {
