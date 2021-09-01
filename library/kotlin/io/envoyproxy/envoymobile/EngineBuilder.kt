@@ -26,6 +26,7 @@ open class EngineBuilder(
     EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
   }
   private var logLevel = LogLevel.INFO
+  private var componentLogLevel = ""
   private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String? = null
   private var statsDPort: Int? = null
@@ -53,6 +54,11 @@ open class EngineBuilder(
    */
   fun addLogLevel(logLevel: LogLevel): EngineBuilder {
     this.logLevel = logLevel
+    return this
+  }
+
+  fun setComponentLogLevel(componentLogLevel: String): EngineBuilder {
+    this.componentLogLevel = componentLogLevel
     return this
   }
 
@@ -326,7 +332,8 @@ open class EngineBuilder(
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
-          logLevel
+          logLevel,
+          componentLogLevel
         )
       }
       is Standard -> {
@@ -339,7 +346,8 @@ open class EngineBuilder(
             dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
-          logLevel
+          logLevel,
+          componentLogLevel
         )
       }
     }

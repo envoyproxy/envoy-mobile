@@ -29,32 +29,18 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
   Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
 }
 
-envoy_status_t Engine::run(const std::string config, const std::string log_level) {
+envoy_status_t Engine::run(const EngineRunOptions& options) {
   // Start the Envoy on the dedicated thread. Note: due to how the assignment operator works with
   // std::thread, main_thread_ is the same object after this call, but its state is replaced with
   // that of the temporary. The temporary object's state becomes the default state, which does
   // nothing.
-  main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level));
+  main_thread_ = std::thread(&Engine::main, this, options);
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Engine::main(const std::string config, const std::string log_level) {
+envoy_status_t Engine::main(const EngineRunOptions& run_options) {
   // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
   std::unique_ptr<EngineCommon> main_common;
-  const std::string name = "envoy";
-  const std::string config_flag = "--config-yaml";
-  const std::string composed_config = absl::StrCat(config_header, config);
-  const std::string log_flag = "-l";
-  const std::string concurrency_option = "--concurrency";
-  const std::string concurrency_arg = "0";
-  std::vector<const char*> envoy_argv = {name.c_str(),
-                                         config_flag.c_str(),
-                                         composed_config.c_str(),
-                                         concurrency_option.c_str(),
-                                         concurrency_arg.c_str(),
-                                         log_flag.c_str(),
-                                         log_level.c_str(),
-                                         nullptr};
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -81,7 +67,13 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
             std::make_unique<Logger::DefaultDelegate>(log_mutex_, Logger::Registry::getSink());
       }
 
-      main_common = std::make_unique<EngineCommon>(envoy_argv.size() - 1, envoy_argv.data());
+      OptionsImpl options("", "", "", spdlog::level::level_enum::info);
+      options.setConcurrency(0);
+      options.setLogLevel(OptionsImpl::parseAndValidateLogLevel(run_options.log_level));
+      options.setConfigYaml(absl::StrCat(config_header, run_options.config));
+      options.parseComponentLogLevels(run_options.component_log_level);
+
+      main_common = std::make_unique<EngineCommon>(std::move(options));
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
 

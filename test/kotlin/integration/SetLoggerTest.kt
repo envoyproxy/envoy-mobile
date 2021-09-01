@@ -93,6 +93,36 @@ class SetLoggerTest {
   }
 
   @Test
+  fun `set component logger`() {
+    val countDownLatch = CountDownLatch(1)
+    val traceLogEvent = CountDownLatch(1)
+    val engine = EngineBuilder(Custom(config))
+      .addLogLevel(LogLevel.DEBUG)
+      .setComponentLogLevel("main:trace")
+      .setLogger { msg ->
+        if (msg.contains("starting main dispatch loop")) {
+          countDownLatch.countDown()
+        }
+
+        if (msg.contains("[trace]")) {
+          traceLogEvent.countDown()
+        }
+      }
+      .setOnEngineRunning {}
+      .build()
+
+    countDownLatch.await(30, TimeUnit.SECONDS)
+
+    sendRequest(engine)
+
+    traceLogEvent.await(30, TimeUnit.SECONDS)
+
+    engine.terminate()
+    assertThat(countDownLatch.count).isEqualTo(0)
+    assertThat(traceLogEvent.count).isEqualTo(0)
+  }
+
+  @Test
   fun `engine should continue to run if no logger is set`() {
     val countDownLatch = CountDownLatch(1)
     val logEventLatch = CountDownLatch(1)

@@ -69,7 +69,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    */
   @Override
   public int runWithTemplate(String configurationYAML, EnvoyConfiguration envoyConfiguration,
-                             String logLevel) {
+                             String logLevel, String logComponentLevel) {
     for (EnvoyHTTPFilterFactory filterFactory : envoyConfiguration.httpPlatformFilterFactories) {
       JniLibrary.registerFilterFactory(filterFactory.getFilterName(),
                                        new JvmFilterFactoryContext(filterFactory));
@@ -84,7 +84,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
                                    configurationYAML, JniLibrary.platformFilterTemplateString(),
                                    JniLibrary.nativeFilterTemplateString()),
-                               logLevel);
+                               logLevel, logComponentLevel);
   }
 
   /**
@@ -95,13 +95,13 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return int A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
-    return runWithTemplate(JniLibrary.templateString(), envoyConfiguration, logLevel);
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel, String logComponentLevel) {
+    return runWithTemplate(JniLibrary.templateString(), envoyConfiguration, logLevel, logComponentLevel);
   }
 
-  private int runWithResolvedYAML(String configurationYAML, String logLevel) {
+  private int runWithResolvedYAML(String configurationYAML, String logLevel, String logComponentLevel) {
     try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel);
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, logComponentLevel);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;

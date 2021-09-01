@@ -43,6 +43,7 @@ public:
 
 private:
   LogLevel log_level_ = LogLevel::info;
+  std::string component_log_level_;
   EngineCallbacksSharedPtr callbacks_;
 
   std::string config_template_;

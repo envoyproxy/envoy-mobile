@@ -22,7 +22,7 @@ namespace Envoy {
  */
 class EngineCommon {
 public:
-  EngineCommon(int argc, const char* const* argv);
+  EngineCommon(OptionsImpl&& options);
   bool run() { return base_.run(); }
 
   /**

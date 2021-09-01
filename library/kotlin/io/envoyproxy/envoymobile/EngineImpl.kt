@@ -10,7 +10,8 @@ class EngineImpl constructor(
   internal val envoyEngine: EnvoyEngine,
   internal val envoyConfiguration: EnvoyConfiguration,
   internal val configurationYAML: String?,
-  internal val logLevel: LogLevel
+  internal val logLevel: LogLevel,
+  internal val componentLogLevel: String
 ) : Engine {
 
   private val streamClient: StreamClient
@@ -19,16 +20,17 @@ class EngineImpl constructor(
   constructor(
     envoyEngine: EnvoyEngine,
     envoyConfiguration: EnvoyConfiguration,
-    logLevel: LogLevel = LogLevel.INFO
-  ) : this(envoyEngine, envoyConfiguration, null, logLevel)
+    logLevel: LogLevel = LogLevel.INFO,
+    componentLogLevel: String
+  ) : this(envoyEngine, envoyConfiguration, null, logLevel, componentLogLevel)
 
   init {
     streamClient = StreamClientImpl(envoyEngine)
     pulseClient = PulseClientImpl(envoyEngine)
     if (configurationYAML != null) {
-      envoyEngine.runWithTemplate(configurationYAML, envoyConfiguration, logLevel.level)
+      envoyEngine.runWithTemplate(configurationYAML, envoyConfiguration, logLevel.level, componentLogLevel)
     } else {
-      envoyEngine.runWithConfig(envoyConfiguration, logLevel.level)
+      envoyEngine.runWithConfig(envoyConfiguration, logLevel.level, componentLogLevel)
     }
   }
 

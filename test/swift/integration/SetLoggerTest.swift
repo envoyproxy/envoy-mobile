@@ -55,14 +55,19 @@ static_resources:
 
     let engineExpectation = self.expectation(description: "Run started engine")
     let loggingExpectation = self.expectation(description: "Run used platform logger")
+    let traceLogExpectation = self.expactation(description: "Selective trace logs should be emitted")
     let logEventExpectation = self.expectation(
       description: "Run received log event via event tracker")
 
     let engine = EngineBuilder(yaml: config)
       .addLogLevel(.debug)
+      .setLogComponentLevel("main:trace")
       .setLogger { msg in
         if msg.contains("starting main dispatch loop") {
           loggingExpectation.fulfill()
+        }
+        if msg.contains("[trace]") {
+          traceLogExpectation.fulfill()
         }
       }
       .setOnEngineRunning {
@@ -77,6 +82,7 @@ static_resources:
 
     XCTAssertEqual(XCTWaiter.wait(for: [engineExpectation], timeout: 1), .completed)
     XCTAssertEqual(XCTWaiter.wait(for: [loggingExpectation], timeout: 1), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [traceLogExpectation], timeout: 1), .completed)
 
     // Send a request to trigger the test filter which should log an event.
     let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",

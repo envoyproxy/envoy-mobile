@@ -46,9 +46,9 @@ layered_runtime:
 // between the main thread and the engine thread both writing to the
 // Envoy::Logger::current_log_context global.
 struct EngineHandle {
-  EngineHandle(envoy_engine_callbacks callbacks, const std::string& level) {
+  EngineHandle(envoy_engine_callbacks callbacks, const std::string& level, const std::string& component_log_level) {
     init_engine(callbacks, {}, {});
-    run_engine(0, MINIMAL_TEST_CONFIG.c_str(), level.c_str());
+    run_engine(0, MINIMAL_TEST_CONFIG.c_str(), level.c_str(), component_log_level.c_str());
   }
 
   ~EngineHandle() { terminate_engine(0); }
@@ -79,12 +79,32 @@ TEST_F(EngineTest, EarlyExit) {
                                    } /*on_exit*/,
                                    &test_context /*context*/};
 
-  engine_ = std::make_unique<EngineHandle>(callbacks, level);
+  engine_ = std::make_unique<EngineHandle>(callbacks, level, "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   engine_.reset();
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   start_stream(0, {}, false);
+}
+
+TEST_F(EngineTest, ComponentLogLevel) {
+  const std::string level = "debug";
+  const std::string component_log_level = "assert:info,misc:trace";
+
+  engine_test_context test_context{};
+  envoy_engine_callbacks callbacks{[](void* context) -> void {
+                                     auto* engine_running =
+                                         static_cast<engine_test_context*>(context);
+                                     engine_running->on_engine_running.Notify();
+                                   } /*on_engine_running*/,
+                                   [](void* context) -> void {
+                                     auto* exit = static_cast<engine_test_context*>(context);
+                                     exit->on_exit.Notify();
+                                   } /*on_exit*/,
+                                   &test_context /*context*/};
+
+  engine_ = std::make_unique<EngineHandle>(callbacks, level, component_log_level);
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 } // namespace Envoy

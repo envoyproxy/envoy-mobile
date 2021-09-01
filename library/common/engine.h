@@ -31,12 +31,18 @@ public:
    */
   ~Engine();
 
+  struct EngineRunOptions {
+    std::string config;
+    std::string log_level;
+    std::string component_log_level;
+  };
+
   /**
    * Run the engine with the provided configuration.
    * @param config, the Envoy bootstrap configuration to use.
    * @param log_level, the log level.
    */
-  envoy_status_t run(std::string config, std::string log_level);
+  envoy_status_t run(const EngineRunOptions& options);
 
   /**
    * Immediately terminate the engine, if running.
@@ -123,7 +129,7 @@ public:
   void drainConnections();
 
 private:
-  envoy_status_t main(std::string config, std::string log_level);
+  envoy_status_t main(const EngineRunOptions& run_options);
   void logInterfaces();
 
   Event::Dispatcher* event_dispatcher_{};
