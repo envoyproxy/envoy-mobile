@@ -151,6 +151,14 @@ envoy_status_t record_histogram_value(envoy_engine_t engine, const char* element
 void flush_stats(envoy_engine_t engine);
 
 /**
+ * Collect a snapshot of all active stats.
+ * Note: this function may block for some time while collecting stats.
+ * @param engine, the engine whose stats to dump.
+ * @param data, out parameter to populate with stats data.
+ */
+envoy_status_t dump_stats(envoy_engine_t engine, envoy_data* data);
+
+/**
  * Statically register APIs leveraging platform libraries.
  * Warning: Must be completed before any calls to run_engine().
  * @param name, identifier of the platform API
@@ -178,7 +186,19 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
  */
 envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level);
 
+/**
+ * Terminate an engine. Further interactions with a terminated engine, or streams created by a
+ * terminated engine is illegal.
+ * @param engine, handle to the engine to terminate.
+ */
 void terminate_engine(envoy_engine_t engine);
+
+/**
+ * Drain all upstream connections associated with an engine
+ * @param engine, handle to the engine to drain.
+ * @return envoy_status_t, the resulting status of the operation.
+ */
+envoy_status_t drain_connections(envoy_engine_t engine);
 
 #ifdef __cplusplus
 } // functions

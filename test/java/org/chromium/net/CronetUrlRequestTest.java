@@ -54,7 +54,6 @@ import org.robolectric.RobolectricTestRunner;
 /**
  * Test functionality of CronetUrlRequest.
  */
-@Ignore("ignoring due to https://github.com/envoyproxy/envoy-mobile/pull/1710")
 @RunWith(RobolectricTestRunner.class)
 public class CronetUrlRequestTest {
 
@@ -153,7 +152,6 @@ public class CronetUrlRequestTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1540")
   public void testSimpleGet() throws Exception {
     String url = NativeTestServer.getEchoMethodURL();
     TestUrlRequestCallback callback = startAndWaitForComplete(url);
@@ -201,7 +199,6 @@ public class CronetUrlRequestTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1540")
   public void testRedirectAsync() throws Exception {
     // Start the request and wait to see the redirect.
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -639,6 +636,7 @@ public class CronetUrlRequestTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1558")
   public void testResponseHeadersList() throws Exception {
     TestUrlRequestCallback callback = startAndWaitForComplete(NativeTestServer.getSuccessURL());
     assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -797,7 +795,6 @@ public class CronetUrlRequestTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1540")
   public void testSimpleGetBufferUpdates() throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
     callback.setAutoAdvance(false);

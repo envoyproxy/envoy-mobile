@@ -7,7 +7,9 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
+#include "library/common/network/mobile_utility.h"
 #include "library/common/stats/utility.h"
+#include "types/c_types.h"
 
 namespace Envoy {
 
@@ -59,19 +61,29 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       if (event_tracker_.track != nullptr) {
         assert_handler_registration_ =
             Assert::addDebugAssertionFailureRecordAction([this](const char* location) {
-              const auto event = Bridge::makeEnvoyMap(
+              const auto event = Bridge::Utility::makeEnvoyMap(
                   {{"name", "assertion"}, {"location", std::string(location)}});
               event_tracker_.track(event, event_tracker_.context);
             });
+        bug_handler_registration_ =
+            Assert::addEnvoyBugFailureRecordAction([this](const char* location) {
+              const auto event = Bridge::Utility::makeEnvoyMap(
+                  {{"name", "bug"}, {"location", std::string(location)}});
+              event_tracker_.track(event, event_tracker_.context);
+            });
+      }
+
+      if (logger_.log) {
+        log_delegate_ptr_ =
+            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
+      } else {
+        log_delegate_ptr_ =
+            std::make_unique<Logger::DefaultDelegate>(log_mutex_, Logger::Registry::getSink());
       }
 
       main_common = std::make_unique<EngineCommon>(envoy_argv.size() - 1, envoy_argv.data());
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
-      if (logger_.log) {
-        lambda_logger_ =
-            std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
-      }
 
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
@@ -92,6 +104,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
     postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           ASSERT(Thread::MainThread::isMainThread());
+
+          logInterfaces();
+
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -117,8 +132,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   postinit_callback_handler_.reset(nullptr);
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
-  lambda_logger_.reset(nullptr);
+  log_delegate_ptr_.reset(nullptr);
   main_common.reset(nullptr);
+  bug_handler_registration_.reset(nullptr);
   assert_handler_registration_.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
@@ -241,6 +257,24 @@ envoy_status_t Engine::recordHistogramValue(const std::string& elements, envoy_s
   return ENVOY_SUCCESS;
 }
 
+envoy_status_t Engine::makeAdminCall(absl::string_view path, absl::string_view method,
+                                     envoy_data& out) {
+  ENVOY_LOG(trace, "admin call {} {}", method, path);
+
+  ASSERT(dispatcher_->isThreadSafe(), "admin calls must be run from the dispatcher's context");
+  auto response_headers = Http::ResponseHeaderMapImpl::create();
+  std::string body;
+  const auto code = server_->admin().request(path, method, *response_headers, body);
+  if (code != Http::Code::OK) {
+    ENVOY_LOG(warn, "admin call failed with status {} body {}", code, body);
+    return ENVOY_FAILURE;
+  }
+
+  out = Data::Utility::copyToBridgeData(body);
+
+  return ENVOY_SUCCESS;
+}
+
 Event::ProvisionalDispatcher& Engine::dispatcher() { return *dispatcher_; }
 
 Http::Client& Engine::httpClient() {
@@ -253,6 +287,28 @@ void Engine::flushStats() {
   ASSERT(dispatcher_->isThreadSafe(), "flushStats must be called from the dispatcher's context");
 
   server_->flushStats();
+}
+
+void Engine::drainConnections() {
+  ASSERT(dispatcher_->isThreadSafe(),
+         "drainConnections must be called from the dispatcher's context");
+  server_->clusterManager().drainConnections();
+}
+
+void Engine::logInterfaces() {
+  auto v4_vec = Network::MobileUtility::enumerateV4Interfaces();
+  std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec.end(), std::string{},
+                                         [](std::string acc, std::string next) {
+                                           return acc.empty() ? next : std::move(acc) + "," + next;
+                                         });
+
+  auto v6_vec = Network::MobileUtility::enumerateV6Interfaces();
+  std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec.end(), std::string{},
+                                         [](std::string acc, std::string next) {
+                                           return acc.empty() ? next : std::move(acc) + "," + next;
+                                         });
+  ENVOY_LOG_EVENT(debug, "socket_selection_get_v4_interfaces", v4_names);
+  ENVOY_LOG_EVENT(debug, "socket_selection_get_v6_interfaces", v6_names);
 }
 
 } // namespace Envoy
