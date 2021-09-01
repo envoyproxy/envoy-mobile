@@ -15,6 +15,15 @@ def envoy_mobile_repositories():
     python_repos()
 
 def upstream_envoy_overrides():
+    # https://github.com/envoyproxy/envoy/pull/17794 breaks envoy mobile's android CI
+    # https://github.com/envoyproxy/envoy-mobile/pull/1776/checks?check_run_id=3487183404#step:7:105
+    http_archive(
+        name = "com_github_libevent_libevent",
+        urls = ["https://storage.googleapis.com/quiche-envoy-integration/googleurl_ef0d23689e240e6c8de4c3a5296b209128c87373.tar.gz"],
+        sha256 = "d769283fed1319bca68bae8bdd47fbc3a7933999329eee850eff1f1ea61ce176",
+        patches = ["@envoy_mobile//bazel:googleurl.patch"],
+    )
+
     # Workaround old NDK version breakages https://github.com/lyft/envoy-mobile/issues/934
     http_archive(
         name = "com_github_libevent_libevent",
