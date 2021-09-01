@@ -5,8 +5,9 @@ import static org.chromium.net.CronetProvider.PROVIDER_NAME_FALLBACK;
 import static org.chromium.net.testing.CronetTestRule.getContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import android.content.Context;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import java.util.ArrayList;
@@ -54,9 +55,9 @@ public class CronetEngineBuilderTest {
   @Feature({"Cronet"})
   public void testProviderOrdering() {
     final CronetProvider[] availableProviders = new CronetProvider[] {
-        new FakeProvider(getContext(), PROVIDER_NAME_APP_PACKAGED, "99.77", true),
-        new FakeProvider(getContext(), PROVIDER_NAME_FALLBACK, "99.99", true),
-        new FakeProvider(getContext(), "Some other provider", "99.88", true),
+        createMockCronetProvider(PROVIDER_NAME_APP_PACKAGED, "99.77", true),
+        createMockCronetProvider(PROVIDER_NAME_FALLBACK, "99.99", true),
+        createMockCronetProvider("Some other provider", "99.88", true),
     };
 
     ArrayList<CronetProvider> providers = new ArrayList<>(Arrays.asList(availableProviders));
@@ -78,9 +79,9 @@ public class CronetEngineBuilderTest {
   @Feature({"Cronet"})
   public void testThatDisabledProvidersAreExcluded() {
     final CronetProvider[] availableProviders = new CronetProvider[] {
-        new FakeProvider(getContext(), PROVIDER_NAME_FALLBACK, "99.99", true),
-        new FakeProvider(getContext(), PROVIDER_NAME_APP_PACKAGED, "99.77", true),
-        new FakeProvider(getContext(), "Some other provider", "99.88", false),
+        createMockCronetProvider(PROVIDER_NAME_FALLBACK, "99.99", true),
+        createMockCronetProvider(PROVIDER_NAME_APP_PACKAGED, "99.77", true),
+        createMockCronetProvider("Some other provider", "99.88", false),
     };
 
     ArrayList<CronetProvider> providers = new ArrayList<>(Arrays.asList(availableProviders));
@@ -114,42 +115,11 @@ public class CronetEngineBuilderTest {
     fail("Expected IllegalArgumentException");
   }
 
-  // TODO(kapishnikov): Replace with a mock when mockito is supported.
-  private static class FakeProvider extends CronetProvider {
-    private final String mName;
-    private final String mVersion;
-    private final boolean mEnabled;
-
-    protected FakeProvider(Context context, String name, String version, boolean enabled) {
-      super(context);
-      mName = name;
-      mVersion = version;
-      mEnabled = enabled;
-    }
-
-    @Override
-    public CronetEngine.Builder createBuilder() {
-      return new CronetEngine.Builder((ICronetEngineBuilder)null);
-    }
-
-    @Override
-    public String getName() {
-      return mName;
-    }
-
-    @Override
-    public String getVersion() {
-      return mVersion;
-    }
-
-    @Override
-    public boolean isEnabled() {
-      return mEnabled;
-    }
-
-    @Override
-    public String toString() {
-      return mName;
-    }
+  private CronetProvider createMockCronetProvider(String mName, String mVersion, boolean mEnabled) {
+    CronetProvider mock = mock(CronetProvider.class);
+    when(mock.getName()).thenReturn(mName);
+    when(mock.getVersion()).thenReturn(mVersion);
+    when(mock.isEnabled()).thenReturn(mEnabled);
+    return mock;
   }
 }

@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 public class GetStatusTest {
 
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
-  @Rule public ExpectedException thrown = ExpectedException.none();
+  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private CronetTestFramework mTestFramework;
 
