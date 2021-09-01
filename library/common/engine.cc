@@ -71,7 +71,10 @@ envoy_status_t Engine::main(const EngineRunOptions& run_options) {
       options.setConcurrency(0);
       options.setLogLevel(OptionsImpl::parseAndValidateLogLevel(run_options.log_level));
       options.setConfigYaml(absl::StrCat(config_header, run_options.config));
-      options.parseComponentLogLevels(run_options.component_log_level);
+      try {
+        options.parseComponentLogLevels(run_options.component_log_level);
+      } catch (const Envoy::MalformedArgvException& e) {
+      }
 
       main_common = std::make_unique<EngineCommon>(std::move(options));
       server_ = main_common->server();

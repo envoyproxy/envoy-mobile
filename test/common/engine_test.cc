@@ -107,5 +107,31 @@ TEST_F(EngineTest, ComponentLogLevel) {
 
   engine_ = std::make_unique<EngineHandle>(callbacks, level, component_log_level);
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+
+  engine_.reset();
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
+}
+
+TEST_F(EngineTest, InvalidComponentLogLevel) {
+  const std::string level = "debug";
+  const std::string component_log_level = "bogus";
+
+  engine_test_context test_context{};
+  envoy_engine_callbacks callbacks{[](void* context) -> void {
+                                     auto* engine_running =
+                                         static_cast<engine_test_context*>(context);
+                                     engine_running->on_engine_running.Notify();
+                                   } /*on_engine_running*/,
+                                   [](void* context) -> void {
+                                     auto* exit = static_cast<engine_test_context*>(context);
+                                     exit->on_exit.Notify();
+                                   } /*on_exit*/,
+                                   &test_context /*context*/};
+
+  engine_ = std::make_unique<EngineHandle>(callbacks, level, component_log_level);
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+
+  engine_.reset();
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 } // namespace Envoy
