@@ -343,7 +343,7 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
 
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_interval 111s"))
-    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 222ms"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.222s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))

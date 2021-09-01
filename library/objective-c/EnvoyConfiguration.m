@@ -120,8 +120,8 @@
   [definitions appendFormat:@"- &dns_preresolve_hostnames %@\n", self.dnsPreresolveHostnames];
   [definitions appendFormat:@"- &h2_connection_keepalive_interval %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveIntervalSeconds];
-  [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %lums\n",
-                            (unsigned long)self.h2ConnectionKeepaliveIdleIntervalMilliseconds];
+  [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %lus\n",
+                            (unsigned long)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
   [definitions

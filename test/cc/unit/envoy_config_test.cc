@@ -38,7 +38,7 @@ TEST(TestConfig, ConfigIsApplied) {
       "- &dns_query_timeout 321s",
       "- &dns_preresolve_hostnames [hostname]",
       "- &h2_connection_keepalive_interval 111s"
-      "- &h2_connection_keepalive_idle_interval 222ms"
+      "- &h2_connection_keepalive_idle_interval 0.222s"
       "- &h2_connection_keepalive_timeout 333s"
       "- &stats_flush_interval 654s",
       "- &virtual_clusters [virtual-clusters]",

@@ -73,7 +73,11 @@ const std::string config_header = R"(
     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
       auto_config:
-        http2_protocol_options: {}
+        http2_protocol_options:
+          connection_keepalive:
+            interval: *h2_connection_keepalive_interval
+            connection_idle_interval: *h2_connection_keepalive_idle_interval
+            timeout: *h2_connection_keepalive_timeout
         http_protocol_options:
           header_key_format:
             stateful_formatter:

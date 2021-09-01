@@ -109,7 +109,7 @@ std::string EngineBuilder::generateConfigStr() {
       {"h2_connection_keepalive_interval",
        fmt::format("{}s", this->h2_connection_keepalive_interval_seconds_)},
       {"h2_connection_keepalive_idle_interval",
-       fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_)},
+       fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_ / 1000.0)},
       {"h2_connection_keepalive_timeout",
        fmt::format("{}s", this->h2_connection_keepalive_timeout_seconds_)},
       {

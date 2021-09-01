@@ -49,7 +49,7 @@ class EnvoyConfigurationTest {
 
     // H2 Ping
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_interval 111s")
-    assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 222ms")
+    assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_timeout 333s")
 
     // Metadata

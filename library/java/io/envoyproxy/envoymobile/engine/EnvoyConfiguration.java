@@ -133,8 +133,8 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
         .append(String.format("- &h2_connection_keepalive_interval %ss\n",
                               h2ConnectionKeepaliveIntervalSeconds))
-        .append(String.format("- &h2_connection_keepalive_idle_interval %sms\n",
-                              h2ConnectionKeepaliveIdleIntervalMilliseconds))
+        .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
+                              h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
                               h2ConnectionKeepaliveTimeoutSeconds))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
