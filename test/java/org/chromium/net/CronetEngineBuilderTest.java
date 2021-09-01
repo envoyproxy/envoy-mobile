@@ -115,7 +115,8 @@ public class CronetEngineBuilderTest {
     fail("Expected IllegalArgumentException");
   }
 
-  private static CronetProvider createMockCronetProvider(String mName, String mVersion, boolean mEnabled) {
+  private static CronetProvider createMockCronetProvider(String mName, String mVersion,
+                                                         boolean mEnabled) {
     CronetProvider mock = mock(CronetProvider.class);
     when(mock.getName()).thenReturn(mName);
     when(mock.getVersion()).thenReturn(mVersion);
