@@ -7,12 +7,13 @@ final class MockEnvoyEngine: NSObject {
        eventTracker: (([String: String]) -> Void)? = nil) {}
 
   /// Closure called when `run(withConfig:)` is called.
-  static var onRunWithConfig: ((_ config: EnvoyConfiguration, _ logLevel: String?) -> Void)?
+  static var onRunWithConfig: ((_ config: EnvoyConfiguration, _ logLevel: String?, _ logComponentLevel: String?) -> Void)?
   /// Closure called when `run(withConfigYAML:)` is called.
   static var onRunWithTemplate: ((
     _ template: String,
     _ config: EnvoyConfiguration,
-    _ logLevel: String?
+    _ logLevel: String?,
+    _ logComponentLevel: String?
   ) -> Void)?
 
   /// Closure called when `recordCounterInc(_:tags:count:)` is called.
@@ -37,13 +38,13 @@ final class MockEnvoyEngine: NSObject {
 }
 
 extension MockEnvoyEngine: EnvoyEngine {
-  func run(withConfig config: EnvoyConfiguration, logLevel: String) -> Int32 {
-    MockEnvoyEngine.onRunWithConfig?(config, logLevel)
+  func run(withConfig config: EnvoyConfiguration, logLevel: String, logComponentLevel: String) -> Int32 {
+    MockEnvoyEngine.onRunWithConfig?(config, logLevel, logComponentLevel)
     return kEnvoySuccess
   }
 
-  func run(withTemplate template: String, config: EnvoyConfiguration, logLevel: String) -> Int32 {
-    MockEnvoyEngine.onRunWithTemplate?(template, config, logLevel)
+  func run(withTemplate template: String, config: EnvoyConfiguration, logLevel: String, logComponentLevel: String) -> Int32 {
+    MockEnvoyEngine.onRunWithTemplate?(template, config, logLevel, logComponentLevel)
     return kEnvoySuccess
   }
 

@@ -228,9 +228,7 @@ private:
     void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
-    void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
-      PANIC("buffer accounts unsupported");
-    }
+    void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {}
     void setFlushTimeout(std::chrono::milliseconds) override {}
 
     // ScopeTrackedObject

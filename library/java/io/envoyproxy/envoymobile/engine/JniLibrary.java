@@ -161,7 +161,8 @@ public class JniLibrary {
    * @param logLevel,        the logging level to run envoy with.
    * @return int, the resulting status of the operation.
    */
-  protected static native int runEngine(long engine, String config, String logLevel, String logComponentLevel);
+  protected static native int runEngine(long engine, String config, String logLevel,
+                                        String logComponentLevel);
 
   /**
    * Terminate the engine.

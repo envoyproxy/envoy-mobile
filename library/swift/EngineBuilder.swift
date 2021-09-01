@@ -7,6 +7,7 @@ open class EngineBuilder: NSObject {
   private let base: BaseConfiguration
   private var engineType: EnvoyEngine.Type = EnvoyEngineImpl.self
   private var logLevel: LogLevel = .info
+  private var logComponentLevel: String = ""
 
   private enum BaseConfiguration {
     case standard
@@ -69,6 +70,17 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func addLogLevel(_ logLevel: LogLevel) -> Self {
     self.logLevel = logLevel
+    return self
+  }
+
+  /// Add a log component level to use with Envoy.
+  ///
+  /// - parameter logComponentLevel: The log component level string to use with Envoy.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func setComponentLogLevel(_ logComponentLevel: String) -> Self {
+    self.logComponentLevel = logComponentLevel
     return self
   }
 
@@ -317,9 +329,9 @@ open class EngineBuilder: NSObject {
 
     switch self.base {
     case .custom(let yaml):
-      return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, engine: engine)
+      return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, logComponentLevel: self.logComponentLevel, engine: engine)
     case .standard:
-      return EngineImpl(config: config, logLevel: self.logLevel, engine: engine)
+      return EngineImpl(config: config, logLevel: self.logLevel, logComponentLevel: self.logComponentLevel, engine: engine)
     }
   }
 

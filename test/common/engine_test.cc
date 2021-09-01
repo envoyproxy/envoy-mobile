@@ -46,7 +46,8 @@ layered_runtime:
 // between the main thread and the engine thread both writing to the
 // Envoy::Logger::current_log_context global.
 struct EngineHandle {
-  EngineHandle(envoy_engine_callbacks callbacks, const std::string& level, const std::string& component_log_level) {
+  EngineHandle(envoy_engine_callbacks callbacks, const std::string& level,
+               const std::string& component_log_level) {
     init_engine(callbacks, {}, {});
     run_engine(0, MINIMAL_TEST_CONFIG.c_str(), level.c_str(), component_log_level.c_str());
   }

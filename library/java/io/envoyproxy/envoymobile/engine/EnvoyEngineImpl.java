@@ -95,13 +95,17 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    * @return int A status indicating if the action was successful.
    */
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel, String logComponentLevel) {
-    return runWithTemplate(JniLibrary.templateString(), envoyConfiguration, logLevel, logComponentLevel);
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
+                           String logComponentLevel) {
+    return runWithTemplate(JniLibrary.templateString(), envoyConfiguration, logLevel,
+                           logComponentLevel);
   }
 
-  private int runWithResolvedYAML(String configurationYAML, String logLevel, String logComponentLevel) {
+  private int runWithResolvedYAML(String configurationYAML, String logLevel,
+                                  String logComponentLevel) {
     try {
-      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel, logComponentLevel);
+      return JniLibrary.runEngine(this.engineHandle, configurationYAML, logLevel,
+                                  logComponentLevel);
     } catch (Throwable throwable) {
       // TODO: Need to have a way to log the exception somewhere.
       return ENVOY_FAILURE;

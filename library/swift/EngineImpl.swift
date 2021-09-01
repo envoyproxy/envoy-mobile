@@ -13,7 +13,10 @@ final class EngineImpl: NSObject {
     case standard(config: EnvoyConfiguration)
   }
 
-  private init(configType: ConfigurationType, logLevel: LogLevel, engine: EnvoyEngine) {
+  private init(
+    configType: ConfigurationType, logLevel: LogLevel, logComponentLevel: String,
+    engine: EnvoyEngine
+  ) {
     self.engine = engine
     self.pulseClientImpl = PulseClientImpl(engine: engine)
     self.streamClientImpl = StreamClientImpl(engine: engine)
@@ -21,31 +24,37 @@ final class EngineImpl: NSObject {
 
     switch configType {
     case .custom(let yaml, let config):
-      self.engine.run(withTemplate: yaml, config: config, logLevel: logLevel.stringValue)
+      self.engine.run(
+        withTemplate: yaml, config: config, logLevel: logLevel.stringValue,
+        logComponentLevel: logComponentLevel)
     case .standard(let config):
-      self.engine.run(withConfig: config, logLevel: logLevel.stringValue)
+      self.engine.run(
+        withConfig: config, logLevel: logLevel.stringValue, logComponentLevel: logComponentLevel)
     }
   }
 
   /// Initialize a new Envoy instance using a typed configuration.
   ///
-  /// - parameter config:          Configuration to use for starting Envoy.
-  /// - parameter logLevel:        Log level to use for this instance.
-  /// - parameter engine:          The underlying engine to use for starting Envoy.
-  convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, engine: EnvoyEngine) {
-    self.init(configType: .standard(config: config), logLevel: logLevel, engine: engine)
+  /// - parameter config:            Configuration to use for starting Envoy.
+  /// - parameter logLevel:          Log level to use for this instance.
+  /// - parameter logComponentLevel: Log component level to use for this instance.
+  /// - parameter engine:            The underlying engine to use for starting Envoy.
+  convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, logComponentLevel: String = "", engine: EnvoyEngine) {
+    self.init(configType: .standard(config: config), logLevel: logLevel, logComponentLevel: logComponentLevel, engine: engine)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
   ///
-  /// - parameter yaml:            Template yaml to use as basis for configuration.
-  /// - parameter config:          Configuration to use for starting Envoy.
-  /// - parameter logLevel:        Log level to use for this instance.
-  /// - parameter engine:          The underlying engine to use for starting Envoy.
-  convenience init(yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info,
-                   engine: EnvoyEngine)
-  {
-    self.init(configType: .custom(yaml: yaml, config: config), logLevel: logLevel, engine: engine)
+  /// - parameter config:            Configuration to use for starting Envoy.
+  /// - parameter logLevel:          Log level to use for this instance.
+  /// - parameter logComponentLevel: Log component level to use for this instance.
+  /// - parameter engine:            The underlying engine to use for starting Envoy.
+  convenience init(
+    yaml: String, config: EnvoyConfiguration, logLevel: LogLevel = .info,
+    logComponentLevel: String = "",
+    engine: EnvoyEngine
+  ) {
+    self.init(configType: .custom(yaml: yaml, config: config), logLevel: logLevel, logComponentLevel: logComponentLevel, engine: engine)
   }
 }
 

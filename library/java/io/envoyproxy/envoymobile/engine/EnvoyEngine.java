@@ -41,7 +41,8 @@ public interface EnvoyEngine {
    * @param logLevel           The log level to use when starting Envoy.
    * @return A status indicating if the action was successful.
    */
-  int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel, String logComponentLevel);
+  int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
+                    String logComponentLevel);
 
   /**
    * Increments a counter with the given count.

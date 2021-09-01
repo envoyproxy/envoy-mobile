@@ -30,11 +30,13 @@ public class AndroidEngineImpl implements EnvoyEngine {
 
   public int runWithTemplate(String configurationYAML, EnvoyConfiguration envoyConfiguration,
                              String logLevel, String logComponentLevel) {
-    return envoyEngine.runWithTemplate(configurationYAML, envoyConfiguration, logLevel, logComponentLevel);
+    return envoyEngine.runWithTemplate(configurationYAML, envoyConfiguration, logLevel,
+                                       logComponentLevel);
   }
 
   @Override
-  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel, String logComponentLevel) {
+  public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,
+                           String logComponentLevel) {
     return envoyEngine.runWithConfig(envoyConfiguration, logLevel, logComponentLevel);
   }
 

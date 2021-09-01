@@ -117,44 +117,44 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward headers
-@property (nonatomic, copy) NSArray * (^onRequestHeaders)
-    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy) NSArray * (^onRequestHeaders)(EnvoyHeaders *headers, BOOL endStream,
+                                                          EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - NSData *, forward data
 /// 2 - EnvoyHeaders *, optional pending headers
-@property (nonatomic, copy) NSArray * (^onRequestData)
-    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy)
+    NSArray * (^onRequestData)(NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward trailers
 /// 2 - EnvoyHeaders *, optional pending headers
 /// 3 - NSData *, optional pending data
-@property (nonatomic, copy) NSArray * (^onRequestTrailers)
-    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy)
+    NSArray * (^onRequestTrailers)(EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward headers
-@property (nonatomic, copy) NSArray * (^onResponseHeaders)
-    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy) NSArray * (^onResponseHeaders)(EnvoyHeaders *headers, BOOL endStream,
+                                                           EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - NSData *, forward data
 /// 2 - EnvoyHeaders *, optional pending headers
-@property (nonatomic, copy) NSArray * (^onResponseData)
-    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy)
+    NSArray * (^onResponseData)(NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /// Returns tuple of:
 /// 0 - NSNumber *,filter status
 /// 1 - EnvoyHeaders *, forward trailers
 /// 2 - EnvoyHeaders *, optional pending headers
 /// 3 - NSData *, optional pending data
-@property (nonatomic, copy) NSArray * (^onResponseTrailers)
-    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy)
+    NSArray * (^onResponseTrailers)(EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 @property (nonatomic, copy) void (^onCancel)(EnvoyStreamIntel streamIntel);
 
@@ -383,9 +383,12 @@ extern const int kEnvoyFailure;
 
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
+ @param logComponentLevel The log component level to use when starting Envoy.
  @return A status indicating if the action was successful.
  */
-- (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel;
+- (int)runWithConfig:(EnvoyConfiguration *)config
+             logLevel:(NSString *)logLevel
+    logComponentLevel:(NSString *)logComponentLevel;
 
 /**
  Run the Envoy engine with the provided yaml string and log level.
@@ -393,11 +396,13 @@ extern const int kEnvoyFailure;
  @param yaml The configuration template with which to start Envoy.
  @param config The EnvoyConfiguration used to start Envoy.
  @param logLevel The log level to use when starting Envoy.
+ @param logComponentLevel The log component level to use when starting Envoy.
  @return A status indicating if the action was successful.
  */
 - (int)runWithTemplate:(NSString *)yaml
                 config:(EnvoyConfiguration *)config
-              logLevel:(NSString *)logLevel;
+              logLevel:(NSString *)logLevel
+     logComponentLevel:(NSString *)logComponentLevel;
 
 /**
  Opens a new HTTP stream attached to this engine.
