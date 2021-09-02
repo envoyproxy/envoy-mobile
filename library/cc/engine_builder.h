@@ -15,6 +15,7 @@ public:
   EngineBuilder(std::string config_template);
   EngineBuilder();
 
+  EngineBuilder& setComponentLogLevel(const std::string& component_log_level);
   EngineBuilder& addLogLevel(LogLevel log_level);
   EngineBuilder& setOnEngineRunning(std::function<void()> closure);
 
