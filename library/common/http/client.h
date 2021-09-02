@@ -228,7 +228,9 @@ private:
     void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
-    void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {}
+    void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
+      // Acounting became default in https://github.com/envoyproxy/envoy/pull/17702 but is a no=op.
+    }
     void setFlushTimeout(std::chrono::milliseconds) override {}
 
     // ScopeTrackedObject
