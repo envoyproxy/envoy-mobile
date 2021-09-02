@@ -31,6 +31,8 @@ jobs:
             echo "::set-output name=run_tests::false"
           fi
       - name: 'Run tests'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.check_context.outputs.run_tests == 'true'
         run: |
           bazel test --test_output=all \
