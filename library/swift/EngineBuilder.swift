@@ -21,8 +21,8 @@ open class EngineBuilder: NSObject {
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
   private var dnsQueryTimeoutSeconds: UInt32 = 25
   private var dnsPreresolveHostnames: String = "[]"
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 0
-  private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 5
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
+  private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var appVersion: String = "unspecified"

@@ -35,8 +35,8 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 0
-  private var h2ConnectionKeepaliveTimeoutSeconds = 5
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
