@@ -49,6 +49,11 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
+  public String dumpStats() {
+    return envoyEngine.dumpStats();
+  }
+
+  @Override
   public int recordCounterInc(String elements, Map<String, String> tags, int count) {
     return envoyEngine.recordCounterInc(elements, tags, count);
   }
@@ -81,5 +86,10 @@ public class AndroidEngineImpl implements EnvoyEngine {
   @Override
   public int registerStringAccessor(String accessorName, EnvoyStringAccessor accessor) {
     return envoyEngine.registerStringAccessor(accessorName, accessor);
+  }
+
+  @Override
+  public void drainConnections() {
+    envoyEngine.drainConnections();
   }
 }

@@ -77,6 +77,23 @@ const std::string config_header = R"(
               name: preserve_case
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+      upstream_http_protocol_options:
+        auto_sni: true
+        auto_san_validation: true
+
+!ignore protocol_defs: &http1_protocol_options_defs
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicit_http_config:
+        http_protocol_options:
+          header_key_format:
+            stateful_formatter:
+              name: preserve_case
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+      upstream_http_protocol_options:
+        auto_sni: true
+        auto_san_validation: true
 
 !ignore admin_interface_defs: &admin_interface
     address:
@@ -84,17 +101,34 @@ const std::string config_header = R"(
         address: 127.0.0.1
         port_value: 9901
 
-!ignore tls_socket_defs: &base_tls_socket
+!ignore tls_root_ca_defs: &tls_root_certs |
+)"
+#include "certificates.inc"
+R"(
+
+!ignore tls_socket_defs:
+- &base_tls_socket
   name: envoy.transport_sockets.tls
   typed_config:
     "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
     common_tls_context:
+      tls_params:
+        tls_maximum_protocol_version: TLSv1_3
       validation_context:
         trusted_ca:
-          inline_string: |
-)"
-#include "certificates.inc"
-;
+          inline_string: *tls_root_certs
+- &base_tls_h2_socket
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+    common_tls_context:
+      alpn_protocols: [h2]
+      tls_params:
+        tls_maximum_protocol_version: TLSv1_3
+      validation_context:
+        trusted_ca:
+          inline_string: *tls_root_certs
+)";
 
 const char* config_template = R"(
 !ignore custom_listener_defs:
@@ -271,14 +305,7 @@ R"(
       base_ejection_time: 0.001s
       max_ejection_time: 0.001s
       interval: 1s
-  - name: base_alt
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wlan
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -287,14 +314,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-  - name: base_wlan_alt
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wwan
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -303,14 +323,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-  - name: base_wwan_alt
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -319,14 +332,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-  - name: base_clear_alt
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wlan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -335,14 +341,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-  - name: base_wlan_clear_alt
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_wwan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -351,29 +350,13 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-  - name: base_wwan_clear_alt
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-  - name: base_h2_alt
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
+    transport_socket: *base_tls_h2_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
@@ -382,16 +365,7 @@ R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-  - name: base_wlan_h2_alt
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
+    transport_socket: *base_tls_h2_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
@@ -400,29 +374,11 @@ R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-  - name: base_wwan_h2_alt
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
+    transport_socket: *base_tls_h2_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
   - name: base_alpn
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options_defs
-  - name: base_alpn_alt
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
@@ -441,27 +397,7 @@ R"(
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options_defs
-  - name: base_wlan_alpn_alt
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wwan_alpn
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options_defs
-  - name: base_wwan_alpn_alt
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED

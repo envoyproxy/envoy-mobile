@@ -15,6 +15,11 @@ public protocol Engine: AnyObject {
   /// This is a noop if called before the underlying EnvoyEngine has started.
   func flushStats()
 
+  func dumpStats() -> String
+
   /// Terminates the running engine.
   func terminate()
+
+  /// Drain all connections owned by this Engine.
+  func drainConnections()
 }
