@@ -19,7 +19,6 @@ TEST(TestConfig, ConfigIsApplied) {
       .addDnsFailureRefreshSeconds(789, 987)
       .addDnsQueryTimeoutSeconds(321)
       .addDnsPreresolveHostnames("[hostname]")
-      .addH2ConnectionKeepaliveIntervalSeconds(111)
       .addH2ConnectionKeepaliveIdleIntervalMilliseconds(222)
       .addH2ConnectionKeepaliveTimeoutSeconds(333)
       .addStatsFlushSeconds(654)
@@ -37,7 +36,6 @@ TEST(TestConfig, ConfigIsApplied) {
       "- &dns_fail_max_interval 987s",
       "- &dns_query_timeout 321s",
       "- &dns_preresolve_hostnames [hostname]",
-      "- &h2_connection_keepalive_interval 111s"
       "- &h2_connection_keepalive_idle_interval 0.222s"
       "- &h2_connection_keepalive_timeout 333s"
       "- &stats_flush_interval 654s",

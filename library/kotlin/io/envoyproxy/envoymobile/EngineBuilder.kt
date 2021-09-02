@@ -35,7 +35,6 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
-  private var h2ConnectionKeepaliveIntervalSeconds = 0
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 0
   private var h2ConnectionKeepaliveTimeoutSeconds = 5
   private var statsFlushSeconds = 60
@@ -152,26 +151,17 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a rate at which to ping h2 connections.
-   *
-   * @param h2ConnectionKeepaliveIntervalSeconds rate in seconds to ping h2 connections.
-   *
-   * @return this builder.
-   */
-  fun addH2ConnectionKeepaliveIntervalSeconds(h2ConnectionKeepaliveIntervalSeconds: Int): EngineBuilder {
-    this.h2ConnectionKeepaliveIntervalSeconds = h2ConnectionKeepaliveIntervalSeconds
-    return this
-  }
-
-  /**
-   * Add a rate at which to ping h2 connections on new stream creation if the connection has sat idle.
+   * Add a rate at which to ping h2 connections on new stream creation if the connection has
+   * sat idle.
    *
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
    *
    * @return this builder.
    */
-  fun addH2ConnectionKeepaliveIdleIntervalMilliseconds(h2ConnectionKeepaliveIdleIntervalMilliseconds: Int): EngineBuilder {
-    this.h2ConnectionKeepaliveIdleIntervalMilliseconds = h2ConnectionKeepaliveIdleIntervalMilliseconds
+  fun addH2ConnectionKeepaliveIdleIntervalMilliseconds(
+    h2ConnectionKeepaliveIdleIntervalMilliseconds: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
+      h2ConnectionKeepaliveIdleIntervalMilliseconds
     return this
   }
 
@@ -182,7 +172,8 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addH2ConnectionKeepaliveTimeoutSeconds(h2ConnectionKeepaliveTimeoutSeconds: Int): EngineBuilder {
+  fun addH2ConnectionKeepaliveTimeoutSeconds(
+    h2ConnectionKeepaliveTimeoutSeconds: Int): EngineBuilder {
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
     return this
   }
@@ -360,7 +351,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, h2ConnectionKeepaliveIntervalSeconds,
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
@@ -375,7 +366,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, h2ConnectionKeepaliveIntervalSeconds,
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
             statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
             virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors

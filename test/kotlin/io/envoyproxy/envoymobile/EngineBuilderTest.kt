@@ -81,16 +81,6 @@ class EngineBuilderTest {
   }
 
   @Test
-  fun `specifying H2 Ping interval overrides default`() {
-    engineBuilder = EngineBuilder(Standard())
-    engineBuilder.addEngineType { envoyEngine }
-    engineBuilder.addH2ConnectionKeepaliveIntervalSeconds(111)
-
-    val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.h2ConnectionKeepaliveIntervalSeconds).isEqualTo(111)
-  }
-
-  @Test
   fun `specifying H2 Ping idle interval overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }

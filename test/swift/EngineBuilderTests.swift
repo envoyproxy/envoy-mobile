@@ -152,20 +152,6 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-  func testAddingH2ConnectionKeepaliveIntervalSecondsAddsToConfigurationWhenRunningEnvoy() {
-    let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual(234, config.h2ConnectionKeepaliveIntervalSeconds)
-      expectation.fulfill()
-    }
-
-    _ = EngineBuilder()
-      .addEngineType(MockEnvoyEngine.self)
-      .addH2ConnectionKeepaliveIntervalSeconds(234)
-      .build()
-    self.waitForExpectations(timeout: 0.01)
-  }
-
   func testAddingH2ConnectionKeepaliveIdleIntervalMSAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -316,8 +302,7 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
       dnsPreresolveHostnames: "[test]",
-      h2ConnectionKeepaliveIntervalSeconds: 111,
-      h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
@@ -342,8 +327,7 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
 
-    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_interval 111s"))
-    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.222s"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
@@ -377,7 +361,6 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
       dnsPreresolveHostnames: "[test]",
-      h2ConnectionKeepaliveIntervalSeconds: 111,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
       statsFlushSeconds: 600,

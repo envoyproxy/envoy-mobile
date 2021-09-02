@@ -24,8 +24,6 @@ public:
   EngineBuilder& addDnsFailureRefreshSeconds(int base, int max);
   EngineBuilder& addDnsQueryTimeoutSeconds(int dns_query_timeout_seconds);
   EngineBuilder& addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames);
-  EngineBuilder&
-  addH2ConnectionKeepaliveIntervalSeconds(int h2_connection_keepalive_interval_seconds);
   EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(
       int h2_connection_keepalive_idle_interval_milliseconds);
   EngineBuilder&
@@ -59,7 +57,6 @@ private:
   int dns_failure_refresh_seconds_max_ = 10;
   int dns_query_timeout_seconds_ = 25;
   std::string dns_preresolve_hostnames_ = "[]";
-  int h2_connection_keepalive_interval_seconds_ = 0;
   int h2_connection_keepalive_idle_interval_milliseconds_ = 0;
   int h2_connection_keepalive_timeout_seconds_ = 5;
   int stats_flush_seconds_ = 60;
