@@ -27,7 +27,7 @@ public:
   EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(
       int h2_connection_keepalive_idle_interval_milliseconds);
   EngineBuilder&
-  addh2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds);
+  addH2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds);
   EngineBuilder& addStatsFlushSeconds(int stats_flush_seconds);
   EngineBuilder& addVirtualClusters(const std::string& virtual_clusters);
   EngineBuilder& setAppVersion(const std::string& app_version);
