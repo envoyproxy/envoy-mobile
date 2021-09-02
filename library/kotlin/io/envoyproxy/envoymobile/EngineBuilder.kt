@@ -158,10 +158,8 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addH2ConnectionKeepaliveIdleIntervalMilliseconds(
-    h2ConnectionKeepaliveIdleIntervalMilliseconds: Int): EngineBuilder {
-    this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
-      h2ConnectionKeepaliveIdleIntervalMilliseconds
+  fun addH2ConnectionKeepaliveIdleIntervalMilliseconds(idleIntervalMs: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveIdleIntervalMilliseconds = idleIntervalMs
     return this
   }
 
@@ -172,9 +170,8 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addH2ConnectionKeepaliveTimeoutSeconds(
-    h2ConnectionKeepaliveTimeoutSeconds: Int): EngineBuilder {
-    this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+  fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
     return this
   }
 
