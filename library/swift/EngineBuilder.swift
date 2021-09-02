@@ -329,9 +329,11 @@ open class EngineBuilder: NSObject {
 
     switch self.base {
     case .custom(let yaml):
-      return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel, logComponentLevel: self.logComponentLevel, engine: engine)
+      return EngineImpl(yaml: yaml, config: config, logLevel: self.logLevel,
+                        logComponentLevel: self.logComponentLevel, engine: engine)
     case .standard:
-      return EngineImpl(config: config, logLevel: self.logLevel, logComponentLevel: self.logComponentLevel, engine: engine)
+      return EngineImpl(config: config, logLevel: self.logLevel,
+                        logComponentLevel: self.logComponentLevel, engine: engine)
     }
   }
 

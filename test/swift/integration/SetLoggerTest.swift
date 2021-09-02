@@ -55,7 +55,8 @@ static_resources:
 
     let engineExpectation = self.expectation(description: "Run started engine")
     let loggingExpectation = self.expectation(description: "Run used platform logger")
-    let traceLogExpectation = self.expectation(description: "Selective trace logs should be emitted")
+    let traceLogExpectation = self.expectation(description:
+    "Selective trace logs should be emitted")
     let logEventExpectation = self.expectation(
       description: "Run received log event via event tracker")
 

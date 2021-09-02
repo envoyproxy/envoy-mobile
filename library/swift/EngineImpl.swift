@@ -39,8 +39,10 @@ final class EngineImpl: NSObject {
   /// - parameter logLevel:          Log level to use for this instance.
   /// - parameter logComponentLevel: Log component level to use for this instance.
   /// - parameter engine:            The underlying engine to use for starting Envoy.
-  convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info, logComponentLevel: String = "", engine: EnvoyEngine) {
-    self.init(configType: .standard(config: config), logLevel: logLevel, logComponentLevel: logComponentLevel, engine: engine)
+  convenience init(config: EnvoyConfiguration, logLevel: LogLevel = .info,
+                   logComponentLevel: String = "", engine: EnvoyEngine) {
+    self.init(configType: .standard(config: config), logLevel: logLevel,
+              logComponentLevel: logComponentLevel, engine: engine)
   }
 
   /// Initialize a new Envoy instance using a string configuration.
@@ -54,7 +56,8 @@ final class EngineImpl: NSObject {
     logComponentLevel: String = "",
     engine: EnvoyEngine
   ) {
-    self.init(configType: .custom(yaml: yaml, config: config), logLevel: logLevel, logComponentLevel: logComponentLevel, engine: engine)
+    self.init(configType: .custom(yaml: yaml, config: config), logLevel: logLevel,
+              logComponentLevel: logComponentLevel, engine: engine)
   }
 }
 
