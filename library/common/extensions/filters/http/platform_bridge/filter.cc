@@ -191,10 +191,11 @@ envoy_stream_intel PlatformBridgeFilter::streamIntel() {
   RELEASE_ASSERT(decoder_callbacks_, "StreamInfo accessed before filter callbacks are set");
   auto& info = decoder_callbacks_->streamInfo();
   envoy_stream_intel stream_intel{};
-  stream_intel.connection_id = info.upstreamConnectionId().value_or(0);
+  stream_intel.connection_id =
+      info.upstreamConnectionId().value_or(std::numeric_limits<uint64_t>::max());
   // FIXME: Stream handle cannot currently be set from the filter context.
-  stream_intel.stream_id = 0;
-  stream_intel.attempt_count = info.attemptCount().value_or(0);
+  stream_intel.stream_id = std::numeric_limits<uint64_t>::max();
+  stream_intel.attempt_count = info.attemptCount().value_or(std::numeric_limits<uint64_t>::max());
   return stream_intel;
 }
 
