@@ -4,12 +4,18 @@
 namespace Envoy {
 
 TEST(EngineCommonTest, SignalHandlingFalse) {
-  std::vector<const char*> envoy_argv{
-      "envoy", "--config-yaml",
-      "{\"layered_runtime\":{\"layers\":[{\"name\":\"static_layer_0\",\"static_layer\":{"
-      "\"overload\":{\"global_downstream_max_connections\":50000}}}]}}",
-      nullptr};
-  EngineCommon main_common{3, &envoy_argv[0]};
+  const std::string config_yaml = R"EOF(
+layered_runtime:
+  layers:
+  - name: static_layer_0
+    static_layer:
+      overload:
+        global_downstream_max_connections: 50000
+)EOF";
+
+  OptionsImpl options("", "", "", spdlog::level::level_enum::info);
+  options.setConfigYaml(config_yaml);
+  EngineCommon main_common(std::move(options));
   ASSERT_FALSE(main_common.server()->options().signalHandlingEnabled());
 }
 
