@@ -68,7 +68,7 @@ envoy_status_t Engine::main(const EngineRunOptions& run_options) {
       }
 
       OptionsImpl options("", "", "", spdlog::level::level_enum::info);
-      options.setConcurrency(0);
+      options.setConcurrency(1);
       options.setLogLevel(OptionsImpl::parseAndValidateLogLevel(run_options.log_level));
       options.setConfigYaml(absl::StrCat(config_header, run_options.config));
       try {

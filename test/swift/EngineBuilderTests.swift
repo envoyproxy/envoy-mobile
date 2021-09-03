@@ -29,7 +29,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testCustomConfigTemplateUsesSpecifiedYAMLWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithTemplate = { yaml, _, _ in
+    MockEnvoyEngine.onRunWithTemplate = { yaml, _, _, _ in
       XCTAssertEqual("foobar", yaml)
       expectation.fulfill()
     }
@@ -42,7 +42,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingLogLevelAddsLogLevelWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { _, logLevel in
+    MockEnvoyEngine.onRunWithConfig = { _, logLevel, _ in
       XCTAssertEqual("trace", logLevel)
       expectation.fulfill()
     }
@@ -56,7 +56,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAdminInterfaceIsDisabledByDefault() {
     let expectation = self.expectation(description: "Run called with disabled admin interface")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertFalse(config.adminInterfaceEnabled)
       expectation.fulfill()
     }
@@ -69,7 +69,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testEnablingAdminInterfaceAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with enabled admin interface")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertTrue(config.adminInterfaceEnabled)
       expectation.fulfill()
     }
@@ -83,7 +83,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddinggrpcStatsDomainAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual("stats.envoyproxy.io", config.grpcStatsDomain)
       expectation.fulfill()
     }
@@ -97,7 +97,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingConnectTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(12345, config.connectTimeoutSeconds)
       expectation.fulfill()
     }
@@ -111,7 +111,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingDNSRefreshSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(23, config.dnsRefreshSeconds)
       expectation.fulfill()
     }
@@ -125,7 +125,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingDNSQueryTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(234, config.dnsQueryTimeoutSeconds)
       expectation.fulfill()
     }
@@ -139,7 +139,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingDNSFailureRefreshSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(1234, config.dnsFailureRefreshSecondsBase)
       XCTAssertEqual(5678, config.dnsFailureRefreshSecondsMax)
       expectation.fulfill()
@@ -154,7 +154,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingH2ConnectionKeepaliveIdleIntervalMSAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(234, config.h2ConnectionKeepaliveIdleIntervalMilliseconds)
       expectation.fulfill()
     }
@@ -196,7 +196,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingStatsFlushSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(42, config.statsFlushSeconds)
       expectation.fulfill()
     }
@@ -210,7 +210,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingStreamIdleTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(42, config.streamIdleTimeoutSeconds)
       expectation.fulfill()
     }
@@ -224,7 +224,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingAppVersionAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual("v1.2.3", config.appVersion)
       expectation.fulfill()
     }
@@ -238,7 +238,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingAppIdAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual("com.envoymobile.ios", config.appId)
       expectation.fulfill()
     }
@@ -252,7 +252,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingVirtualClustersAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual("[test]", config.virtualClusters)
       expectation.fulfill()
     }
@@ -266,7 +266,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingNativeFiltersToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(1, config.nativeFilterChain.count)
       expectation.fulfill()
     }
@@ -280,7 +280,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingStringAccessorToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual("hello", config.stringAccessors["name"]?.getEnvoyString())
       expectation.fulfill()
     }
