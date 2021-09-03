@@ -146,12 +146,12 @@ typedef struct {
  * Note these values may change over the lifecycle of a stream.
  */
 typedef struct {
-  // An internal identifier for the stream.
-  int64_t stream_id{-1};
+  // An internal identifier for the stream. -1 if not preset.
+  int64_t stream_id;
   // An internal identifier for the connection carrying the stream. -1 if not present.
-  int64_t connection_id{-1};
+  int64_t connection_id;
   // The number of internal attempts to carry out a request/operation. -1 if not present.
-  int64_t attempt_count{-1};
+  int64_t attempt_count;
 } envoy_stream_intel;
 
 #ifdef __cplusplus
