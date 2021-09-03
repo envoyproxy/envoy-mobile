@@ -247,9 +247,9 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
   const auto& info = direct_stream_.request_decoder_->streamInfo();
   envoy_stream_intel stream_intel{};
   stream_intel.connection_id =
-      info.upstreamConnectionId().value_or(std::numeric_limits<uint64_t>::max());
+      info.upstreamConnectionId().value_or(-1);
   stream_intel.stream_id = static_cast<uint64_t>(direct_stream_.stream_handle_);
-  stream_intel.attempt_count = info.attemptCount().value_or(std::numeric_limits<uint64_t>::max());
+  stream_intel.attempt_count = info.attemptCount().value_or(-1);
   return stream_intel;
 }
 
