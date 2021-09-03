@@ -242,7 +242,6 @@ R"(
                 preresolve_hostnames: *dns_preresolve_hostnames
 )"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
 R"(
-                dns_lookup_family: V4_ONLY
                 dns_refresh_rate: *dns_refresh_rate
                 dns_failure_refresh_rate:
                   base_interval: *dns_fail_base_interval
