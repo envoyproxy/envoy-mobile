@@ -63,5 +63,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REMOTE_BUILD_OPTIONS=--config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+          REMOTE_BUILD_OPTIONS="--config=remote-ci-macos --remote_header=\"Authorization=Bearer $GITHUB_TOKEN\"" \
             ./tools/kotlin_format.sh
