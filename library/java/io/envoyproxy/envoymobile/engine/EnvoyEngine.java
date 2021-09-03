@@ -29,6 +29,7 @@ public interface EnvoyEngine {
    * @param configurationYAML The configuration yaml with which to start Envoy.
    * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param logLevel          The log level to use when starting Envoy.
+   * @param logComponentLevel  The log component level to use when starting Envoy.
    * @return A status indicating if the action was successful.
    */
   int runWithTemplate(String configurationYAML, EnvoyConfiguration envoyConfiguration,
@@ -39,6 +40,7 @@ public interface EnvoyEngine {
    *
    * @param envoyConfiguration The EnvoyConfiguration used to start Envoy.
    * @param logLevel           The log level to use when starting Envoy.
+   * @param logComponentLevel  The log component level to use when starting Envoy.
    * @return A status indicating if the action was successful.
    */
   int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel,

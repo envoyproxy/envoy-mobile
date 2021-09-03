@@ -156,9 +156,10 @@ public class JniLibrary {
   /**
    * External entry point for library.
    *
-   * @param engine,          the engine to run.
-   * @param config,          the configuration blob to run envoy with.
-   * @param logLevel,        the logging level to run envoy with.
+   * @param engine,            the engine to run.
+   * @param config,            the configuration blob to run envoy with.
+   * @param logLevel,          the logging level to run envoy with.
+   * @param logComponentLevel  the log component level to use when starting Envoy.
    * @return int, the resulting status of the operation.
    */
   protected static native int runEngine(long engine, String config, String logLevel,

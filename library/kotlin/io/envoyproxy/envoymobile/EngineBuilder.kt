@@ -59,6 +59,13 @@ open class EngineBuilder(
     return this
   }
 
+  /**
+   * Set the component log level to use with Envoy.
+   *
+   * @param componentLogLevel the log level to use with Envoy.
+   *
+   * @return this builder.
+   */
   fun setComponentLogLevel(componentLogLevel: String): EngineBuilder {
     this.componentLogLevel = componentLogLevel
     return this

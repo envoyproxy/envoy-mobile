@@ -168,7 +168,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingH2ConnectionKeepaliveTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(234, config.h2ConnectionKeepaliveTimeoutSeconds)
       expectation.fulfill()
     }
@@ -182,7 +182,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testAddingPlatformFiltersToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
+    MockEnvoyEngine.onRunWithConfig = { config, _, _ in
       XCTAssertEqual(1, config.httpPlatformFilterFactories.count)
       expectation.fulfill()
     }
