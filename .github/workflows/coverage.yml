@@ -39,7 +39,8 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
-          PATH=/opt/llvm/bin:${PATH} //test/common/foo:a_test
+          echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
+          PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
           cat $(find bazel-out/ -name "test.log")
           exit 1
       - name: 'Package coverage'
