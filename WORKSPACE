@@ -63,9 +63,9 @@ rbe_autoconfig(
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
-    exec_properties = {
-        "Pool": "linux",
-    },
+#    exec_properties = {
+#        "Pool": "linux",
+#    },
 )
 
 rbe_autoconfig(
