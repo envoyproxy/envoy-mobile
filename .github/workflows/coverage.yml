@@ -14,7 +14,7 @@ jobs:
     container:
       image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
       env:
-        BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only -s"
+        BAZEL_BUILD_OPTIONS: "--test_env=ENVOY_IP_TEST_VERSIONS=v4only -s --test_env=VERBOSE_COVERAGE=true"
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
