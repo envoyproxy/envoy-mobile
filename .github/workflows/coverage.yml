@@ -39,12 +39,13 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
-          echo "build --announce_rc" >> ~/.bazelrc
-          echo "build --test_env=ENVOY_IP_TEST_VERSIONS=v4only" >> ~/.bazelrc
-          echo "build --config=remote-ci-linux-clang" >> ~/.bazelrc
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
-          echo "startup --client_debug" >> ~/.bazelrc
-          PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
+          BAZEL_BUILD_OPTIONS="--test_env=ENVOY_IP_TEST_VERSIONS=v4only --config=remote-ci-linux-clang --config=ciab \
+            --action_env=PATH=/opt/llvm/bin:${PATH} --test_env=PATH=/opt/llvm/bin:${PATH} \
+            --test_env=VERBOSE_COVERAGE=true --verbose_failures --sandbox_debug \
+            --test_env=GCOV=/opt/llvm/bin/llvm-profdata --test_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
+            --test_env=GCOV=/opt/llvm/bin/llvm-profdata --action_env=CC=clang \
+            --test_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov" ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
