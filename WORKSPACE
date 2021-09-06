@@ -77,7 +77,7 @@ rbe_autoconfig(
     env = {
         "CC": "/opt/llvm/bin/clang",
         "CXX": "/opt/llvm/bin/clang++",
-        "GCOV": "/opt/llvm/bin/llvm-profdata",
+        "GCOV": "llvm-profdata",
     },
 #    exec_properties = {
 #        "Pool": "linux",
