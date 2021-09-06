@@ -75,10 +75,10 @@ rbe_autoconfig(
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
     env = {
-        "CC": "/opt/llvm/bin/clang",
-        "CXX": "/opt/llvm/bin/clang++",
-        "GCOV": "/opt/llvm/bin/llvm-profdata", # "GCOV": "/opt/llvm/bin/llvm-cov",
-        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
+        "CC": "/opt/llvm/bin/clang-11",
+        "CXX": "/opt/llvm/bin/clang++-11",
+        "GCOV": "/opt/llvm/bin/llvm-profdata-11", # "GCOV": "/opt/llvm/bin/llvm-cov",
+        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov-11",
     },
     exec_properties = {
         "Pool": "linux",
@@ -103,4 +103,12 @@ rbe_autoconfig(
         "dockerAddCapabilities": "SYS_PTRACE",
     },
     create_java_configs = False,
+)
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "gtest",
+    remote = "https://github.com/google/googletest",
+    commit = "3306848f697568aacf4bcca330f6bdd5ce671899",
 )

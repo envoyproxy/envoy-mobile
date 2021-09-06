@@ -46,7 +46,9 @@ jobs:
             --action_env=PATH=/opt/llvm/bin:${PATH} --test_env=PATH=/opt/llvm/bin:${PATH} \
             --test_env=VERBOSE_COVERAGE=true --verbose_failures --sandbox_debug \
             --test_env=GCOV=/opt/llvm/bin/llvm-profdata --test_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
-            --test_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov" ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
+            --test_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov" ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
+          cat $(find bazel-out/ -name "test.log")
+          exit 1
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
