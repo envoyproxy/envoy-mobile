@@ -301,6 +301,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
 @property (nonatomic, assign) UInt32 dnsQueryTimeoutSeconds;
 @property (nonatomic, strong) NSString *dnsPreresolveHostnames;
+@property (nonatomic, assign) UInt32 h2ConnectionKeepaliveIdleIntervalMilliseconds;
+@property (nonatomic, assign) UInt32 h2ConnectionKeepaliveTimeoutSeconds;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, assign) UInt32 streamIdleTimeoutSeconds;
 @property (nonatomic, strong) NSString *appVersion;
@@ -315,26 +317,31 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /**
  Create a new instance of the configuration.
  */
-- (instancetype)
-    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
-                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
-           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-                statsFlushSeconds:(UInt32)statsFlushSeconds
-         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                       appVersion:(NSString *)appVersion
-                            appId:(NSString *)appId
-                  virtualClusters:(NSString *)virtualClusters
-           directResponseMatchers:(NSString *)directResponseMatchers
-                  directResponses:(NSString *)directResponses
-                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                  stringAccessors:
-                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
+- (instancetype)initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+                            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+                     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+                      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+                           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+    h2ConnectionKeepaliveIdleIntervalMilliseconds:
+        (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
+              h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
+                                statsFlushSeconds:(UInt32)statsFlushSeconds
+                         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                                       appVersion:(NSString *)appVersion
+                                            appId:(NSString *)appId
+                                  virtualClusters:(NSString *)virtualClusters
+                           directResponseMatchers:(NSString *)directResponseMatchers
+                                  directResponses:(NSString *)directResponses
+                                nativeFilterChain:
+                                    (NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                              platformFilterChain:
+                                  (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                                  stringAccessors:
+                                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)
+                                          stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -462,7 +469,16 @@ extern const int kEnvoyFailure;
  */
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
+/**
+ Attempt to trigger a stat flush.
+ */
 - (void)flushStats;
+
+/**
+ Retrieve the value of all active stats. Note that this function may block for some time.
+ @return The list of active stats and their values, or empty string of the operation failed
+ */
+- (NSString *)dumpStats;
 
 - (void)terminate;
 

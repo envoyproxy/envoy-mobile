@@ -229,7 +229,7 @@ private:
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
     void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
-      PANIC("buffer accounts unsupported");
+      // Acounting became default in https://github.com/envoyproxy/envoy/pull/17702 but is a no=op.
     }
     void setFlushTimeout(std::chrono::milliseconds) override {}
 
@@ -299,7 +299,7 @@ private:
   };
   DirectStreamSharedPtr getStream(envoy_stream_t stream_handle, GetStreamFilters filters);
   void removeStream(envoy_stream_t stream_handle);
-  void setDestinationCluster(RequestHeaderMap& headers, bool alternate);
+  void setDestinationCluster(RequestHeaderMap& headers);
 
   ApiListener& api_listener_;
   Event::ProvisionalDispatcher& dispatcher_;
