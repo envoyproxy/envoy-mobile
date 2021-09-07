@@ -49,16 +49,14 @@ jobs:
         continue-on-error: true
         run: |
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
-          BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage -s --announce_rc --sandbox_debug" \
-            GCOV=/opt/llvm/bin/llvm-profdata \
-            BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov
-            BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
-            PATH=/opt/llvm/bin:${PATH} \
-            ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
+          echo "build --config=remote-ci-linux-coverage" >> ~/.bazelrc
+          echo "build -s" >> ~/.bazelrc
+          echo "build --announce_rc" >> ~/.bazelrc
+          echo "build --sandbox_debug" >> ~/.bazelrc
+          GCOV=/opt/llvm/bin/llvm-profdata BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov BAZEL_USE_LLVM_NATIVE_COVERAGE=1 PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
-          ls -alR /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/sandbox/processwrapper-sandbox/80/execroot/envoy_mobile/_coverage/
           cat $(find bazel-out/ -name "test.log")
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
