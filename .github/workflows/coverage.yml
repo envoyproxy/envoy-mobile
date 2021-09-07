@@ -67,8 +67,7 @@ jobs:
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
-          cat bazel-envoy-mobile/external/engflow_remote_config_clang_coverage/cc/cc_toolchain_config.bzl
-          cat bazel-envoy-mobile/external/engflow_remote_config_clang_coverage/cc/BUILD
+          ls -alR /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/sandbox/
           cat $(find bazel-out/ -name "test.log")
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
