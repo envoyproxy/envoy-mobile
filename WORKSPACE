@@ -79,6 +79,7 @@ rbe_autoconfig(
         "CXX": "/opt/llvm/bin/clang++-11",
         "GCOV": "/opt/llvm/bin/llvm-profdata-11", # "GCOV": "/opt/llvm/bin/llvm-cov",
         "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov-11",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
     },
     exec_properties = {
         "Pool": "linux",
