@@ -47,7 +47,7 @@ jobs:
           echo "build --verbose_failures" >> ~/.bazelrc
           echo "build --sandbox_debug" >> ~/.bazelrc
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
-          echo "build --config=remote-ci-linux-clang" >> ~/.bazelrc
+          echo "build --config=remote-ci-linux-coverage" >> ~/.bazelrc
           echo "build --action_env=CC=/opt/llvm/bin/clang" >> ~/.bazelrc
           echo "build --test_env=CC=/opt/llvm/bin/clang" >> ~/.bazelrc
           echo "build --action_env=CXX=/opt/llvm/bin/clang++" >> ~/.bazelrc
