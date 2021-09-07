@@ -116,9 +116,9 @@ rbe_autoconfig(
         "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
         "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
     },
-#    exec_properties = {
-#        "Pool": "linux",
-#    },
+    exec_properties = {
+        "Pool": "linux",
+    },
     create_java_configs = False,
 )
 
