@@ -19,7 +19,7 @@ jobs:
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
-        VERBOSE_COVERAGE:true
+        VERBOSE_COVERAGE: true
         GCOV: /opt/llvm/bin/llvm-profdata
         BAZEL_LLVM_COV: /opt/llvm/bin/llvm-cov
         BAZEL_USE_LLVM_NATIVE_COVERAGE: 1
