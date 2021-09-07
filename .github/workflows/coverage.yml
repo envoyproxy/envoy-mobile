@@ -45,6 +45,8 @@ jobs:
           echo "build -s" >> ~/.bazelrc
           echo "build --verbose_failures" >> ~/.bazelrc
           echo "build --sandbox_debug" >> ~/.bazelrc
+          echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
+          echo "build --config=remote-ci-linux-clang" >> ~/.bazelrc
           PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
