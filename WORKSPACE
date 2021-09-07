@@ -77,9 +77,6 @@ rbe_autoconfig(
     env = {
         "CC": "/opt/llvm/bin/clang",
         "CXX": "/opt/llvm/bin/clang++",
-        "GCOV": "/opt/llvm/bin/llvm-profdata", # "GCOV": "/opt/llvm/bin/llvm-cov",
-        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
-        "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
     },
     exec_properties = {
         "Pool": "linux",
@@ -102,6 +99,25 @@ rbe_autoconfig(
         # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
         # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
         "dockerAddCapabilities": "SYS_PTRACE",
+    },
+    create_java_configs = False,
+)
+
+rbe_autoconfig(
+    name = "engflow_remote_config_clang_coverage",
+    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    registry = "docker.io",
+    repository = "envoyproxy/envoy-build-ubuntu",
+    use_legacy_platform_definition = False,
+    env = {
+        "CC": "/opt/llvm/bin/clang",
+        "CXX": "/opt/llvm/bin/clang++",
+        "GCOV": "/opt/llvm/bin/llvm-profdata",
+        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
+    },
+    exec_properties = {
+        "Pool": "linux",
     },
     create_java_configs = False,
 )
