@@ -63,10 +63,12 @@ jobs:
           echo "build --action_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1" >> ~/.bazelrc
           echo "build --test_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1" >> ~/.bazelrc
           echo "build --experimental_fetch_all_coverage_outputs" >> ~/.bazelrc
-          PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
+          BAZEL_USE_LLVM_NATIVE_COVERAGE=1 PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
+          cat bazel-envoy-mobile/external/engflow_remote_config_clang_coverage/cc/cc_toolchain_config.bzl
+          cat bazel-envoy-mobile/external/engflow_remote_config_clang_coverage/cc/BUILD
           cat $(find bazel-out/ -name "test.log")
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
