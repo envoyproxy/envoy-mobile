@@ -45,7 +45,6 @@ jobs:
           echo "build -s" >> ~/.bazelrc
           echo "build --verbose_failures" >> ~/.bazelrc
           echo "build --sandbox_debug" >> ~/.bazelrc
-          bazel clean --expunge
           PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
           echo "Printing log..."
           cat $(find bazel-out/ -name "test.log")
