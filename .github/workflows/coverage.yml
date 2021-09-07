@@ -57,6 +57,7 @@ jobs:
           echo "build --test_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov" >> ~/.bazelrc
           echo "build --action_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1" >> ~/.bazelrc
           echo "build --test_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1" >> ~/.bazelrc
+          echo "build --nocache_test_results" >> ~/.bazelrc
           PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
