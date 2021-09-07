@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
-          rm ~/.bazelrc
+          rm -f ~/.bazelrc
           echo "startup --client_debug" >> ~/.bazelrc
           echo "build --announce_rc" >> ~/.bazelrc
           echo "build -s" >> ~/.bazelrc
@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
-          rm ~/.bazelrc
+          rm -f ~/.bazelrc
           echo "startup --client_debug" >> ~/.bazelrc
           echo "build --announce_rc" >> ~/.bazelrc
           echo "build -s" >> ~/.bazelrc
@@ -83,7 +83,7 @@ jobs:
           cat $(find bazel-out/ -name "test.log")
           echo ">>>>>>>>>>>End log..."
           tar -czvf coverage.tar.gz generated/coverage
-          rm ~/.bazelrc
+          rm -f ~/.bazelrc
       - name: 'Upload report'
         if: steps.check_context.outputs.run_coverage == 'true'
         uses: actions/upload-artifact@v2
