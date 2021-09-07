@@ -19,6 +19,9 @@ jobs:
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
+        GCOV: /opt/llvm/bin/llvm-profdata
+        BAZEL_LLVM_COV: /opt/llvm/bin/llvm-cov
+        BAZEL_USE_LLVM_NATIVE_COVERAGE: "1"
         COVERAGE_THRESHOLD: 95
     steps:
       - uses: actions/checkout@v1
