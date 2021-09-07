@@ -2,12 +2,6 @@ load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_test", "envoy_package")
 
 licenses(["notice"])  # Apache 2
 
-cc_test(
-  name = "hello_test"
-  srcs = ["hello.cc"],
-  deps = [],
-)
-
 envoy_package()
 
 envoy_cc_test(
