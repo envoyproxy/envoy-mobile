@@ -25,12 +25,10 @@ public final class QuicTestServer {
     if (sServerRunning) {
       throw new IllegalStateException("Quic server is already running");
     }
-    System.out.println("QTS: quicTestServerJavaL28");
     TestFilesInstaller.installIfNeeded(context);
     nativeStartQuicTestServer(
         TestFilesInstaller.getInstalledPath(context), UrlUtils.getIsolatedTestRoot());
-    System.out.println("port at: " + nativeGetServerPort());
-    System.out.println("QTS: quicTestServerJavaL32");
+
     // sBlock.block();
     // sBlock.close();
     sServerRunning = true;
@@ -48,12 +46,10 @@ public final class QuicTestServer {
   }
 
   public static String getServerURL() {
-    System.out.println("QTS: quicTestServerJavaL51");
     return "https://" + getServerHost() + ":" + getServerPort() + "/";
   }
 
   public static String getServerHost() {
-    System.out.println("QTS: quicTestServerJavaL56");
     // return CronetTestUtil.QUIC_FAKE_HOST;
     return "127.0.0.1";
   }

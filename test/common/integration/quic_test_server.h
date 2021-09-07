@@ -19,7 +19,6 @@
 #include "test/integration/autonomous_upstream.h"
 #include "test/config/utility.h"
 #include "test/test_common/network_utility.h"
-#include "tools/cpp/runfiles/runfiles.h"
 
 namespace Envoy {
   class QuicTestServer {
@@ -33,7 +32,7 @@ namespace Envoy {
     std::unique_ptr<FakeUpstream> upstream;
     std::unique_ptr<AutonomousUpstream> aupstream;
 
-    void setup(int, char**);
+    void setup();
     Network::TransportSocketFactoryPtr createUpstreamTlsContext(testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>&);
 
    public:
