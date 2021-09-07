@@ -1,6 +1,7 @@
 #pragma once
 
 #include "test/common/integration/quic_test_server.h"
+
 // NOLINT(namespace-envoy)
 
 #ifdef __cplusplus

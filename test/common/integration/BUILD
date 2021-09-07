@@ -1,5 +1,4 @@
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_test", "envoy_package")
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_test_library", "envoy_package")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_test", "envoy_cc_test_library", "envoy_package")
 
 licenses(["notice"])  # Apache 2
 
@@ -38,6 +37,7 @@ envoy_cc_test(
         "@envoy//test/integration:autonomous_upstream_lib",
         "@envoy//test/integration:fake_upstream_lib",
         "@envoy//test/test_common:network_utility_lib",
+        "@envoy_api//envoy/extensions/transport_sockets/quic/v3:pkg_cc_proto",
         #        "@envoy_api//envoy/extensions/transport_sockets/quic/v3:pkg_cc_proto",
     ],
 )

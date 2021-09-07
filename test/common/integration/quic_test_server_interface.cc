@@ -15,7 +15,7 @@ void start_server() {
   quic_test_server_ = strong_quic_test_server_;
 
   if (auto e = quic_test_server()) {
-     e->startQuicTestServer();
+    e->startQuicTestServer();
   }
 }
 

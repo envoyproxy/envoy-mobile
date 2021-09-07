@@ -64,3 +64,24 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
     ],
 )
+
+envoy_mobile_android_test(
+    name = "quic_test_server_test",
+    srcs = [
+        "QuicTestServerTest.java",
+    ],
+    library_path = "library/common/jni:test/common/jni",
+    native_deps = [
+        "//library/common/jni:libndk_envoy_jni.so",
+        "//library/common/jni:libndk_envoy_jni.jnilib",
+        "//test/common/jni:libquic_test_server_jni.so",
+    ],
+    deps = [
+        ":testing",
+        "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
+        "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
+        "//library/java/org/chromium/net/impl:cronvoy",
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
+    ],
+)

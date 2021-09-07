@@ -1,28 +1,29 @@
 #include "quic_test_server.h"
 
 namespace Envoy {
-  // see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
-  void QuicTestServer::setup() {
+// see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
+void QuicTestServer::setup() {
 
-    ProcessWide process_wide;
-    Thread::MutexBasicLockable lock;
+  ProcessWide process_wide;
+  Thread::MutexBasicLockable lock;
 
-    Logger::Registry::getSink()->setLock(lock);
-    Logger::Registry::getSink()->setShouldEscape(false);
-    Logger::Registry::setLogLevel(spdlog::level::level_enum::err); // options.logLevel()
-    Logger::Registry::setLogFormat("[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v"); // options.logFormat()
+  Logger::Registry::getSink()->setLock(lock);
+  Logger::Registry::getSink()->setShouldEscape(false);
+  Logger::Registry::setLogLevel(spdlog::level::level_enum::err);             // options.logLevel()
+  Logger::Registry::setLogFormat("[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v"); // options.logFormat()
 
-    // TODO(colibie) this doesnt work. Why?
-    // Logger::Context logging_state(options.logLevel(), options.logFormat(), lock, false,
-    //                               options.enableFineGrainLogging());
-  }
+  // TODO(colibie) this doesnt work. Why?
+  // Logger::Context logging_state(options.logLevel(), options.logFormat(), lock, false,
+  //                               options.enableFineGrainLogging());
+}
 
-  Network::TransportSocketFactoryPtr QuicTestServer::createUpstreamTlsContext(testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>& factory_context) {
-    envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
-    Extensions::TransportSockets::Tls::ContextManagerImpl context_manager_{time_system_};
+Network::TransportSocketFactoryPtr QuicTestServer::createUpstreamTlsContext(
+    testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>& factory_context) {
+  envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
+  Extensions::TransportSockets::Tls::ContextManagerImpl context_manager_{time_system_};
 
-    const std::string yaml = absl::StrFormat(
-        R"EOF(
+  const std::string yaml = absl::StrFormat(
+      R"EOF(
 common_tls_context:
   alpn_protocols: h3
   tls_certificates:
@@ -109,53 +110,71 @@ common_tls_context:
         ie3qKR3an4KC20CtFbpZfv540BVuTTOCtQ5xqZ/LTE78
         -----END CERTIFICATE-----
 )EOF");
-    TestUtility::loadFromYaml(yaml, tls_context);
-    envoy::extensions::transport_sockets::quic::v3::QuicDownstreamTransport quic_config;
-    quic_config.mutable_downstream_tls_context()->MergeFrom(tls_context);
+  TestUtility::loadFromYaml(yaml, tls_context);
+  envoy::extensions::transport_sockets::quic::v3::QuicDownstreamTransport quic_config;
+  quic_config.mutable_downstream_tls_context()->MergeFrom(tls_context);
 
-    std::vector<std::string> server_names;
-    auto& config_factory = Config::Utility::getAndCheckFactoryByName<
-        Server::Configuration::DownstreamTransportSocketConfigFactory>(
-        "envoy.transport_sockets.quic");
+  std::vector<std::string> server_names;
+  auto& config_factory = Config::Utility::getAndCheckFactoryByName<
+      Server::Configuration::DownstreamTransportSocketConfigFactory>(
+      "envoy.transport_sockets.quic");
 
-    return config_factory.createTransportSocketFactory(quic_config, factory_context, server_names);
-  }
+  return config_factory.createTransportSocketFactory(quic_config, factory_context, server_names);
+}
 
-  QuicTestServer::QuicTestServer() : api_(Api::createApiForTest(stats_store_, time_system_)),
-                    version_(Network::Address::IpVersion::v4),
-                    config_helper_(version_, *api_, ConfigHelper::baseConfig() + R"EOF(
+QuicTestServer::QuicTestServer()
+    : api_(Api::createApiForTest(stats_store_, time_system_)),
+      version_(Network::Address::IpVersion::v4),
+      config_helper_(version_, *api_, ConfigHelper::baseConfig() + R"EOF(
     filter_chains:
       filters:
-    )EOF"){
-    ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
-    ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          codec_type: HTTP3
+          stat_prefix: remote_hcm
+          route_config:
+            name: remote_route
+            virtual_hosts:
+            - name: remote_service
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/simple" }
+                direct_response: { status: 200 }
+          http3_protocol_options:
+          http_filters:
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+    )EOF") {
+  ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
+  ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
 
-    setup();
-  }
+  setup();
+}
 
-  void QuicTestServer::startQuicTestServer() {
-    FakeUpstreamConfig upstream_config_{time_system_};
-    upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
-    upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
+void QuicTestServer::startQuicTestServer() {
+  FakeUpstreamConfig upstream_config_{time_system_};
+  upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
+  upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 
-    Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_); // Network::Test::createRawBufferSocketFactory();
+  Network::TransportSocketFactoryPtr factory =
+      createUpstreamTlsContext(factory_context_); // Network::Test::createRawBufferSocketFactory();
 
-    int port = 0;  // let the kernel pick a port that is not in use (avoids test races)
-    aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_, upstream_config_, false);
+  int port = 0; // let the kernel pick a port that is not in use (avoids test races)
+  aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
+                                                   upstream_config_, false);
 
-    // see what port was selected.
-    std::cerr << "Upstream now listening on " << aupstream->localAddress()->asString() << "\n";
+  // see what port was selected.
+  std::cerr << "Upstream now listening on " << aupstream->localAddress()->asString() << "\n";
 
-    Logger::Registry::getSink()->clearLock();
-  }
+  Logger::Registry::getSink()->clearLock();
+}
 
-  void QuicTestServer::shutdownQuicTestServer() {
-    aupstream.reset();
-//    FAIL() << "this way blaze will give you a test log";
-  }
+void QuicTestServer::shutdownQuicTestServer() {
+  aupstream.reset();
+  //    FAIL() << "this way blaze will give you a test log";
+}
 
-  int QuicTestServer::getServerPort() {
-    return aupstream->localAddress()->ip()->port();
-  }
+int QuicTestServer::getServerPort() { return aupstream->localAddress()->ip()->port(); }
 } // namespace Envoy
-

@@ -13,7 +13,6 @@ import androidx.test.filters.SmallTest;
 import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestUtil;
 import org.chromium.net.testing.QuicTestServer;
-import org.chromium.net.testing.QuicTestServerA;
 import org.chromium.net.testing.TestUrlRequestCallback;
 import org.json.JSONObject;
 import org.junit.After;
@@ -93,6 +92,7 @@ public class QuicTest {
   public void testQuicLoadUrl() throws Exception {
     ExperimentalCronetEngine cronetEngine = mBuilder.build();
     String quicURL = QuicTestServer.getServerURL();
+    Thread.sleep(100000);
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
     // Although the native stack races QUIC and SPDY for the first request,
     // since there is no http server running on the corresponding TCP port,

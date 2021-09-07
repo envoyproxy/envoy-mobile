@@ -1,6 +1,4 @@
-load("//bazel:kotlin_lib.bzl", "envoy_mobile_so_to_jni_lib")
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 
 licenses(["notice"])  # Apache 2
 

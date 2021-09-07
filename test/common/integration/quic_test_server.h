@@ -21,28 +21,29 @@
 #include "test/test_common/network_utility.h"
 
 namespace Envoy {
-  class QuicTestServer {
-   private:
-    testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext> factory_context_;
-    Stats::IsolatedStoreImpl stats_store_;
-    Event::GlobalTimeSystem time_system_;
-    Api::ApiPtr api_;
-    Network::Address::IpVersion version_;
-    ConfigHelper config_helper_;
-    std::unique_ptr<FakeUpstream> upstream;
-    std::unique_ptr<AutonomousUpstream> aupstream;
+class QuicTestServer {
+private:
+  testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext> factory_context_;
+  Stats::IsolatedStoreImpl stats_store_;
+  Event::GlobalTimeSystem time_system_;
+  Api::ApiPtr api_;
+  Network::Address::IpVersion version_;
+  ConfigHelper config_helper_;
+  std::unique_ptr<FakeUpstream> upstream;
+  std::unique_ptr<AutonomousUpstream> aupstream;
 
-    void setup();
-    Network::TransportSocketFactoryPtr createUpstreamTlsContext(testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>&);
+  void setup();
+  Network::TransportSocketFactoryPtr createUpstreamTlsContext(
+      testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>&);
 
-   public:
-    QuicTestServer();
+public:
+  QuicTestServer();
 
-    void startQuicTestServer();
+  void startQuicTestServer();
 
-    void shutdownQuicTestServer();
+  void shutdownQuicTestServer();
 
-    int getServerPort();
-  };
+  int getServerPort();
+};
 
 } // namespace Envoy
