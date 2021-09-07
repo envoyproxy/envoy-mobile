@@ -78,6 +78,8 @@ jobs:
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
           echo "build --config=remote-ci-linux-coverage"
           BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
+            BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
+            GCOV=llvm-profdata \
             PATH=/opt/llvm/bin:${PATH} \
             ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
