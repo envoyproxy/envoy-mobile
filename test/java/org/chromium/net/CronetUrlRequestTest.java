@@ -274,7 +274,7 @@ public class CronetUrlRequestTest {
 
     mTestRule.assertResponseEquals(urlResponseInfo, callback.mResponseInfo);
     // Make sure there are no other pending messages, which would trigger
-    // asserts in TestUrlRequestCallback.
+    // asserts in TestUrlRequestCallback
     testSimpleGet();
   }
 
