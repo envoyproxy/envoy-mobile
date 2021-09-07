@@ -66,8 +66,10 @@ jobs:
           BAZEL_USE_LLVM_NATIVE_COVERAGE=1 PATH=/opt/llvm/bin:${PATH} ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
+        continue-on-error: true
         run: |
           cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/sandbox/processwrapper-sandbox/80/execroot/envoy_mobile/bazel-out/k8-fastbuild/testlogs/test/common/foo/a_test/_coverage/_cc_coverage.dat
+          ls -lR /github/home/.cache/bazel/_bazel_root/
           ls -l /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/sandbox/processwrapper-sandbox/80/execroot/envoy_mobile/bazel-out/k8-fastbuild/testlogs/test/common/foo/a_test/_coverage/
           cat $(find bazel-out/ -name "test.log")
           tar -czvf coverage.tar.gz generated/coverage
