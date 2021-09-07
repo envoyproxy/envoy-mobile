@@ -48,6 +48,9 @@ jobs:
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
+          whereis gcov
+          whereis llvm-cov
+          whereis llvm-profdata
           cat $(find bazel-out/ -name "test.log")
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
