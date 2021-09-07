@@ -23,6 +23,7 @@ public class EnvoyConfiguration {
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
+  public final Integer outlierDetectionConsecutive5xx;
   public final Integer statsFlushSeconds;
   public final Integer streamIdleTimeoutSeconds;
   public final String appVersion;
@@ -48,6 +49,8 @@ public class EnvoyConfiguration {
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   * @param outlierDetectionConsecutive5xx number of consecutive 5xx failures that will trigger
+   *     connection resetting.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
    * @param appVersion                   the App Version of the App using this Envoy Client.
@@ -63,7 +66,8 @@ public class EnvoyConfiguration {
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
                             String dnsPreresolveHostnames,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-                            int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
+                            int h2ConnectionKeepaliveTimeoutSeconds,
+                            int outlierDetectionConsecutive5xx, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, String appVersion, String appId,
                             String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
@@ -80,6 +84,7 @@ public class EnvoyConfiguration {
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+    this.outlierDetectionConsecutive5xx = outlierDetectionConsecutive5xx;
     this.statsFlushSeconds = statsFlushSeconds;
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
     this.appVersion = appVersion;
@@ -135,6 +140,8 @@ public class EnvoyConfiguration {
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",
                               "Android", appVersion, appId))
+        .append(String.format("- &outlier_detection_consecutive_5xx %s\n",
+                              outlierDetectionConsecutive5xx))
         .append("- &virtual_clusters ")
         .append(virtualClusters)
         .append("\n");

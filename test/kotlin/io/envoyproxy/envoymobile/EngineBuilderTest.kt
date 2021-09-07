@@ -101,6 +101,16 @@ class EngineBuilderTest {
   }
 
   @Test
+  fun `specifying outlier detection `() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addOutlierDetectionConsecutive5xx(999)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.outlierDetectionConsecutive5xx).isEqualTo(999)
+  }
+
+  @Test
   fun `specifying stats flush overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }

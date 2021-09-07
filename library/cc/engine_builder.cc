@@ -67,6 +67,12 @@ EngineBuilder::addH2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepaliv
   return *this;
 }
 
+EngineBuilder&
+EngineBuilder::addOutlierDetectionConsecutive5xx(int outlier_detection_consecutive_5xx) {
+  this->outlier_detection_consecutive_5xx_ = outlier_detection_consecutive_5xx;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::addStatsFlushSeconds(int stats_flush_seconds) {
   this->stats_flush_seconds_ = stats_flush_seconds;
   return *this;
@@ -109,6 +115,7 @@ std::string EngineBuilder::generateConfigStr() {
           fmt::format("{{ device_os: {}, app_version: {}, app_id: {} }}", this->device_os_,
                       this->app_version_, this->app_id_),
       },
+      {"outlier_detection_consecutive_5xx", this->outlier_detection_consecutive_5xx_},
       {"stats_domain", this->stats_domain_},
       {"stats_flush_interval", fmt::format("{}s", this->stats_flush_seconds_)},
       {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},

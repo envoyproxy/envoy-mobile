@@ -180,6 +180,20 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testAddingOutlierDetectionConsecutive5xxAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(999, config.outlierDetectionConsecutive5xx)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addOutlierDetectionConsecutive5xx(999)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testAddingPlatformFiltersToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -304,6 +318,7 @@ final class EngineBuilderTests: XCTestCase {
       dnsPreresolveHostnames: "[test]",
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      outlierDetectionConsecutive5xx: 999,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       appVersion: "v1.2.3",
@@ -341,6 +356,9 @@ final class EngineBuilderTests: XCTestCase {
 
     XCTAssertTrue(resolvedYAML.contains("&virtual_clusters [test]"))
 
+    // Outlier Detection
+    XCTAssertTrue(resolvedYAML.contains("&outlier_detection_consecutive_5xx 999"))
+
     // Stats
     XCTAssertTrue(resolvedYAML.contains("&stats_domain stats.envoyproxy.io"))
     XCTAssertTrue(resolvedYAML.contains("&stats_flush_interval 600s"))
@@ -363,6 +381,7 @@ final class EngineBuilderTests: XCTestCase {
       dnsPreresolveHostnames: "[test]",
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      outlierDetectionConsecutive5xx: 999,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       appVersion: "v1.2.3",

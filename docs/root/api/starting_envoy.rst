@@ -116,6 +116,20 @@ The configuration is expected as a JSON list.
   // Swift
   builder.addDNSPreresolveHostnames("[{\"address\": \"foo.com", \"port_value\": 443}]")
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addOutlierDetectionConsecutive5xx``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify a rate of consecutive 5xx failures that will lead to connection resetting.
+
+**Example**::
+
+  // Kotlin
+  builder.addOutlierDetectionConsecutive5xx(3L)
+
+  // Swift
+  builder.addOutlierDetectionConsecutive5xx(3)
+
 ~~~~~~~~~~~~~~~
 ``addLogLevel``
 ~~~~~~~~~~~~~~~

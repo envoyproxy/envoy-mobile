@@ -42,6 +42,7 @@ const std::string config_header = R"(
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
 - &metadata {}
+- &outlier_detection_consecutive_5xx: 3
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
 - &stats_sinks []
@@ -306,7 +307,7 @@ R"(
     // tight to cause unnecessary churn.
 R"(
     outlier_detection: &base_outlier_detection
-      consecutive_5xx: 3
+      consecutive_5xx: *outlier_detection_consecutive_5xx
       base_ejection_time: 0.001s
       max_ejection_time: 0.001s
       interval: 1s

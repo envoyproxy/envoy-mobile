@@ -37,6 +37,7 @@ open class EngineBuilder(
   private var dnsPreresolveHostnames = "[]"
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
+  private var outlierDetectionConsecutive5xx = 3
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
@@ -172,6 +173,18 @@ open class EngineBuilder(
    */
   fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
     this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
+    return this
+  }
+
+  /**
+   * Add a rate of consecutive 5xx failures that will lead to connection resetting.
+   *
+   * @param h2ConnectionKeepaliveTimeoutSeconds rate in number of consecutive 5xxs.
+   *
+   * @return this builder.
+   */
+  fun addOutlierDetectionConsecutive5xx(consecutive5xx: Int): EngineBuilder {
+    this.outlierDetectionConsecutive5xx = consecutive5xx
     return this
   }
 
@@ -350,8 +363,8 @@ open class EngineBuilder(
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
-            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            outlierDetectionConsecutive5xx, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion,
+            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -365,8 +378,8 @@ open class EngineBuilder(
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
-            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            outlierDetectionConsecutive5xx, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion,
+            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           logLevel
         )

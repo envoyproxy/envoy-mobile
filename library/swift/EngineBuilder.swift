@@ -23,6 +23,7 @@ open class EngineBuilder: NSObject {
   private var dnsPreresolveHostnames: String = "[]"
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
+  private var outlierDetectionConsecutive5xx: UInt32 = 3
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var appVersion: String = "unspecified"
@@ -155,6 +156,18 @@ open class EngineBuilder: NSObject {
   public func addH2ConnectionKeepaliveTimeoutSeconds(
     _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+    return self
+  }
+
+  /// Add a rate of consecutive 5xx failures that will lead to connection resetting.
+  ///
+  /// - parameter outlierDetectionConsecutive5xx: Rate in number of consecutive 5xxs.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addOutlierDetectionConsecutive5xx(
+    _ outlierDetectionConsecutive5xx: UInt32) -> Self {
+    self.outlierDetectionConsecutive5xx = outlierDetectionConsecutive5xx
     return self
   }
 
@@ -330,6 +343,7 @@ open class EngineBuilder: NSObject {
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
+      outlierDetectionConsecutive5xx: self.outlierDetectionConsecutive5xx,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       appVersion: self.appVersion,
