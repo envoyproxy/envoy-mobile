@@ -38,8 +38,7 @@ import java.util.concurrent.Executors;
  */
 @RunWith(AndroidJUnit4.class)
 public class QuicTest {
-  @Rule
-  public final CronetTestRule mTestRule = new CronetTestRule();
+  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
   private static final String TAG = QuicTest.class.getSimpleName();
   private ExperimentalCronetEngine.Builder mBuilder;
@@ -117,32 +116,29 @@ public class QuicTest {
       Thread.sleep(10000);
       boolean contains = false;
       try {
-        if (fileContainsString("local_prefs.json", "quic")) break;
+        if (fileContainsString("local_prefs.json", "quic"))
+          break;
       } catch (FileNotFoundException e) {
         // Ignored this exception since the file will only be created when updates are
         // flushed to the disk.
       }
     }
-    assertTrue(fileContainsString("local_prefs.json",
-        QuicTestServer.getServerHost() + ":" + QuicTestServer.getServerPort()));
+    assertTrue(fileContainsString("local_prefs.json", QuicTestServer.getServerHost() + ":" +
+                                                          QuicTestServer.getServerPort()));
     cronetEngine.shutdown();
 
     // Make another request using a new context but with no QUIC hints.
-    ExperimentalCronetEngine.Builder builder =
-        new ExperimentalCronetEngine.Builder(getContext());
+    ExperimentalCronetEngine.Builder builder = new ExperimentalCronetEngine.Builder(getContext());
     builder.setStoragePath(getTestStorage());
     builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
     builder.enableQuic(true);
     JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
-    JSONObject experimentalOptions = new JSONObject()
-        .put("HostResolverRules", hostResolverParams);
+    JSONObject experimentalOptions = new JSONObject().put("HostResolverRules", hostResolverParams);
     builder.setExperimentalOptions(experimentalOptions.toString());
-    CronetTestUtil.setMockCertVerifierForTesting(
-        builder, QuicTestServer.createMockCertVerifier());
+    CronetTestUtil.setMockCertVerifierForTesting(builder, QuicTestServer.createMockCertVerifier());
     cronetEngine = builder.build();
     TestUrlRequestCallback callback2 = new TestUrlRequestCallback();
-    requestBuilder =
-        cronetEngine.newUrlRequestBuilder(quicURL, callback2, callback2.getExecutor());
+    requestBuilder = cronetEngine.newUrlRequestBuilder(quicURL, callback2, callback2.getExecutor());
     requestBuilder.build().start();
     callback2.blockForDone();
     assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
@@ -158,7 +154,7 @@ public class QuicTest {
   private boolean fileContainsString(String filename, String content) throws IOException {
     File file = new File(getTestStorage() + "/prefs/" + filename);
     FileInputStream fileInputStream = new FileInputStream(file);
-    byte[] data = new byte[(int) file.length()];
+    byte[] data = new byte[(int)file.length()];
     fileInputStream.read(data);
     fileInputStream.close();
     return new String(data, "UTF-8").contains(content);
@@ -299,7 +295,7 @@ public class QuicTest {
 
   // Helper method to assert that the request is negotiated over QUIC.
   private void assertIsQuic(UrlResponseInfo responseInfo) {
-    assertTrue(responseInfo.getNegotiatedProtocol().startsWith("http/2+quic")
-        || responseInfo.getNegotiatedProtocol().startsWith("h3"));
+    assertTrue(responseInfo.getNegotiatedProtocol().startsWith("http/2+quic") ||
+               responseInfo.getNegotiatedProtocol().startsWith("h3"));
   }
 }

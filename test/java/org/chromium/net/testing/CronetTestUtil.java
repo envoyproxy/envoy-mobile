@@ -54,7 +54,7 @@ public class CronetTestUtil {
     private final CronetUrlRequestContext mRequestContext;
 
     public NetworkThreadTestConnector(CronetEngine cronetEngine) {
-      mRequestContext = (CronetUrlRequestContext) cronetEngine;
+      mRequestContext = (CronetUrlRequestContext)cronetEngine;
       // nativePrepareNetworkThread(mRequestContext.getUrlRequestContextAdapter());
     }
 
@@ -72,14 +72,13 @@ public class CronetTestUtil {
     return 0;
   }
 
-  public static void setMockCertVerifierForTesting(
-      ExperimentalCronetEngine.Builder builder, long mockCertVerifier) {
+  public static void setMockCertVerifierForTesting(ExperimentalCronetEngine.Builder builder,
+                                                   long mockCertVerifier) {
     getCronetEngineBuilderImpl(builder).setMockCertVerifierForTesting(mockCertVerifier);
   }
 
-  public static CronetEngineBuilderImpl getCronetEngineBuilderImpl(
-      ExperimentalCronetEngine.Builder builder) {
-    return (CronetEngineBuilderImpl) builder.getBuilderDelegate();
+  public static CronetEngineBuilderImpl
+  getCronetEngineBuilderImpl(ExperimentalCronetEngine.Builder builder) {
+    return (CronetEngineBuilderImpl)builder.getBuilderDelegate();
   }
 }
-

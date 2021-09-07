@@ -26,8 +26,8 @@ public final class QuicTestServer {
       throw new IllegalStateException("Quic server is already running");
     }
     TestFilesInstaller.installIfNeeded(context);
-    nativeStartQuicTestServer(
-        TestFilesInstaller.getInstalledPath(context), UrlUtils.getIsolatedTestRoot());
+    nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context),
+                              UrlUtils.getIsolatedTestRoot());
 
     // sBlock.block();
     // sBlock.close();
@@ -54,17 +54,11 @@ public final class QuicTestServer {
     return "127.0.0.1";
   }
 
-  public static int getServerPort() {
-    return nativeGetServerPort();
-  }
+  public static int getServerPort() { return nativeGetServerPort(); }
 
-  public static final String getServerCert() {
-    return CERT_USED;
-  }
+  public static final String getServerCert() { return CERT_USED; }
 
-  public static final String getServerCertKey() {
-    return KEY_USED;
-  }
+  public static final String getServerCertKey() { return KEY_USED; }
 
   public static long createMockCertVerifier() {
     TestFilesInstaller.installIfNeeded(ContextUtils.getApplicationContext());
