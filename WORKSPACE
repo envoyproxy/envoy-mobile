@@ -75,10 +75,10 @@ rbe_autoconfig(
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
     env = {
-        "CC": "/opt/llvm/bin/clang-11",
-        "CXX": "/opt/llvm/bin/clang++-11",
-        "GCOV": "/opt/llvm/bin/llvm-profdata-11", # "GCOV": "/opt/llvm/bin/llvm-cov",
-        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov-11",
+        "CC": "/opt/llvm/bin/clang",
+        "CXX": "/opt/llvm/bin/clang++",
+        "GCOV": "/opt/llvm/bin/llvm-profdata", # "GCOV": "/opt/llvm/bin/llvm-cov",
+        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
         "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
     },
     exec_properties = {
