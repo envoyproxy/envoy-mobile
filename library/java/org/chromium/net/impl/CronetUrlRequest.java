@@ -549,7 +549,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
     RequestMethod requestMethod = RequestMethod.valueOf(initialMethod);
     RequestHeadersBuilder requestHeadersBuilder = new RequestHeadersBuilder(
-        requestMethod, url.getProtocol(), url.getAuthority(), url.getFile());
+        requestMethod, url.getProtocol(), url.getAuthority(), url.getFile().isEmpty() ? "/" : url.getFile() );
     boolean hasUserAgent = false;
     boolean hasContentType = false;
     for (Map.Entry<String, String> header : headersList) {
