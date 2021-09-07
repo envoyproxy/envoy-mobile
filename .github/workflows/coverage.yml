@@ -37,13 +37,17 @@ jobs:
             echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
+      - name: 'Clean'
+        continue-on-error: true
+        run: |
+          rm -f ~/.bazelrc
+          bazel clean --expunge
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
-          bazel clean --expunge
           env
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
