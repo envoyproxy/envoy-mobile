@@ -184,6 +184,7 @@ build:remote-ci-linux-coverage --action_env=CXX=/opt/llvm/bin/clang++
 build:remote-ci-linux-coverage --action_env=GCOV=/opt/llvm/bin/llvm-profdata
 build:remote-ci-linux-coverage --action_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov
 build:remote-ci-linux-coverage --action_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
+build:remote-ci-linux-coverage --test_env=CC=/opt/llvm/bin/clang
 build:remote-ci-linux-coverage --test_env=CXX=/opt/llvm/bin/clang++
 build:remote-ci-linux-coverage --test_env=GCOV=/opt/llvm/bin/llvm-profdata
 build:remote-ci-linux-coverage --test_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov
