@@ -33,6 +33,7 @@ jobs:
         with:
           python-version: '3.8'
       - name: 'Clean'
+        continue-on-error: true
         run: bazel clean --expunge
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
