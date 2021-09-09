@@ -28,9 +28,9 @@ jobs:
             echo "::set-output name=run_tests::false"
           fi
       - name: 'Paths'
-      run: |
-        echo $PYTHON_BIN_PATH
-        echo $PYTHON_LIB_PATH
+        run: |
+          echo $PYTHON_BIN_PATH
+          echo $PYTHON_LIB_PATH
       - name: 'Python setup'
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-python@v2
