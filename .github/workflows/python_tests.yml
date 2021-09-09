@@ -32,12 +32,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
+      - name: 'Clean'
+        run: bazel clean --expunge
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          bazel clean --expunge
           bazel test \
             --action_env=LD_LIBRARY_PATH \
             --test_output=all \
