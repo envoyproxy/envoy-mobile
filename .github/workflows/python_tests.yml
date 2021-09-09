@@ -28,9 +28,9 @@ jobs:
             echo "::set-output name=run_tests::false"
           fi
       - name: 'Paths'
-        run: |
-          echo $PYTHON_BIN_PATH
-          echo $PYTHON_LIB_PATH
+      run: |
+        echo $PYTHON_BIN_PATH
+        echo $PYTHON_LIB_PATH
       - name: 'Python setup'
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-python@v2
@@ -40,6 +40,12 @@ jobs:
         run: |
           echo $PYTHON_BIN_PATH
           echo $PYTHON_LIB_PATH
+      - name: 'Copy header files'
+        if: steps.check_context.outputs.run_tests == 'true'
+        run: |
+          INCLUDE_DIR=$(python3.8 -c 'from distutils import sysconfig; print(sysconfig.get_python_inc())')
+          echo $INCLUDE_DIR
+          cp -rf /usr/include/python3.8/* $INCLUDE_DIR
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
