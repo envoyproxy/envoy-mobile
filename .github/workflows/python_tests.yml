@@ -36,7 +36,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         run: |
           INCLUDE_DIR=$(python3.8 -c 'from distutils import sysconfig; print(sysconfig.get_python_inc())')
-          cp -f /usr/include/python3.8 $INCLUDE_DIR
+          cp -f /usr/include/python3.8/* $INCLUDE_DIR
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
