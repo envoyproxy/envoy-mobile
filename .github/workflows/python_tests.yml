@@ -39,7 +39,7 @@ jobs:
         run: |
           ls /usr/include/python3.8
           bazel build @local_config_python//...
-          cat bazel-envoy-mobile/external/external/local_config_python/BUILD
+          ls -lR /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/external/local*
           bazel test \
             --action_env=LD_LIBRARY_PATH \
             --test_output=all \
