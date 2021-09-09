@@ -40,12 +40,13 @@ jobs:
         run: |
           PY_INCLUDE_DIR=$(python3.8 -c 'from distutils import sysconfig; print(sysconfig.get_python_inc())')
           cp -rf /usr/include/python3.8/* $PY_INCLUDE_DIR
+          bazel build @local_config_python//...
+          cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/external/local_config_python/BUILD
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ls -lR /__t/Python/3.8.11/x64/include/python3.8/
           bazel test \
             --action_env=LD_LIBRARY_PATH \
             --test_output=all \
