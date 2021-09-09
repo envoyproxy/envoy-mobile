@@ -40,9 +40,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ls /usr/include/python3.8
+          python3.8 -c 'from distutils import sysconfig; print(sysconfig.get_python_inc())'
           bazel build @local_config_python//...
           cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/external/local_config_python/BUILD
+          exit 1
           bazel test \
             --action_env=LD_LIBRARY_PATH \
             --test_output=all \
