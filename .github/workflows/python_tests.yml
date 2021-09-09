@@ -32,6 +32,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
+      - name: 'Clean'
+        continue-on-error: true
+        run: bazel clean --expunge
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -39,7 +42,7 @@ jobs:
         run: |
           ls /usr/include/python3.8
           bazel build @local_config_python//...
-          ls -lR /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/external/local*
+          cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/external/local_config_python/BUILD
           bazel test \
             --action_env=LD_LIBRARY_PATH \
             --test_output=all \
