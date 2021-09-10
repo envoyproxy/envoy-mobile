@@ -78,8 +78,8 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
       - name: 'Clean'
-       continue-on-error: true
-       run: bazel clean --expunge
+        continue-on-error: true
+        run: bazel clean --expunge
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         run: |
