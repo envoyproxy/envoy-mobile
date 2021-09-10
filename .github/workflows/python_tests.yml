@@ -27,6 +27,9 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: 'Clean'
+        continue-on-error: true
+        run: bazel clean --expunge
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
