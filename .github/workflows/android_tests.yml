@@ -82,6 +82,8 @@ jobs:
         run: bazel clean --expunge
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazel test \
             --test_output=all \
@@ -127,6 +129,8 @@ jobs:
         run: bazel clean --expunge
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazel test \
             --test_output=all \
