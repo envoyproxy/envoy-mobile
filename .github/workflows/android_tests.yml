@@ -9,10 +9,8 @@ on:
 jobs:
   kotlintestsmac:
     name: kotlin_tests_mac
-    runs-on: ubuntu-18.04
-    timeout-minutes: 45
-    container:
-      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+    runs-on: macos-11
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v1
         with:
@@ -34,6 +32,9 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: 'Install dependencies'
+        if: steps.check_context.outputs.run_tests == 'true'
+        run: ./ci/mac_ci_setup.sh
       - name: 'Run Kotlin library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -42,6 +43,6 @@ jobs:
           bazel test \
             --test_output=all \
             --build_tests_only \
-            --config=remote-ci-linux \
+            --config=remote-ci-mac \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/...
