@@ -147,9 +147,11 @@ public class JniLibrary {
    *
    * @param runningCallback, called when the engine finishes its async startup and begins running.
    * @param logger,          the logging interface.
+   * @param eventTracker     the event tracking interface.
    * @return envoy_engine_t, handle to the underlying engine.
    */
-  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger);
+  protected static native long initEngine(EnvoyOnEngineRunning runningCallback, EnvoyLogger logger,
+                                          EnvoyEventTracker eventTracker);
 
   /**
    * External entry point for library.
@@ -246,6 +248,12 @@ public class JniLibrary {
   protected static native int flushStats(long engine);
 
   /**
+   * Retrieve the value of all active stats. Note that this function may block for some time.
+   * @return The list of active stats and their values, or empty string of the operation failed
+   */
+  protected static native String dumpStats();
+
+  /**
    * Add another recorded value to the generic histogram with the given string of elements.
    *
    * @param elements Elements of the histogram stat.
@@ -283,11 +291,9 @@ public class JniLibrary {
    */
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
+
   /**
-   * Register an event tracker.
-   *
-   * @param eventTracker,  the event tracker to be registered.
-   * @return int, the resulting status of the operation.
+   * Drain all connections owned by this Engine.
    */
-  protected static native int registerEventTracker(EnvoyEventTracker eventTracker);
+  protected static native int drainConnections(long engine);
 }

@@ -5,6 +5,29 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
+    name = "mobile_utility_lib",
+    srcs = [
+        "mobile_utility.cc",
+    ] + select({
+        "//bazel:include_ifaddrs": [
+            "//third_party:android/ifaddrs-android.h",
+            "//third_party:android/LocalArray.h",
+            "//third_party:android/ScopedFd.h",
+        ],
+        "//conditions:default": [],
+    }),
+    hdrs = ["mobile_utility.h"],
+    copts = select({
+        "//bazel:include_ifaddrs": ["-DINCLUDE_IFADDRS"],
+        "//conditions:default": [],
+    }),
+    repository = "@envoy",
+    deps = [
+        "@envoy//source/common/common:assert_lib",
+    ],
+)
+
+envoy_cc_library(
     name = "synthetic_address_lib",
     hdrs = ["synthetic_address_impl.h"],
     repository = "@envoy",

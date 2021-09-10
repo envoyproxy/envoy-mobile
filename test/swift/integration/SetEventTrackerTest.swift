@@ -1,29 +1,28 @@
 import Envoy
 import EnvoyEngine
 import Foundation
+import TestExtensions
 import XCTest
 
-final class EventTrackerTests: XCTestCase {
-  func testSetEventTracker() throws {
-    let engineExpectation = self.expectation(description: "Engine runs")
-    let eventTrackingExpectation =
+final class SetEventTrackerTest: XCTestCase {
+  func testEmitEventWithoutSettingEventTracker() throws {
+    register_test_extensions()
+
+    let eventExpectation =
       self.expectation(description: "Passed event tracker receives an event")
 
-    let client = EngineBuilder()
-      .setOnEngineRunning {
-        engineExpectation.fulfill()
-      }
+    let engine = EngineBuilder()
       .setEventTracker { event in
         XCTAssertEqual("bar", event["foo"])
-        eventTrackingExpectation.fulfill()
+        eventExpectation.fulfill()
       }
-
       .addNativeFilter(
         name: "envoy.filters.http.test_event_tracker",
         // swiftlint:disable:next line_length
         typedConfig: "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_event_tracker.TestEventTracker\",\"attributes\":{\"foo\":\"bar\"}}")
       .build()
-      .streamClient()
+
+    let client = engine.streamClient()
 
     let requestHeaders = RequestHeadersBuilder(method: .get, scheme: "https",
                                                authority: "example.com", path: "/test")
@@ -34,7 +33,8 @@ final class EventTrackerTests: XCTestCase {
       .start()
       .sendHeaders(requestHeaders, endStream: true)
 
-    let expectations = [engineExpectation, eventTrackingExpectation]
-    XCTAssertEqual(XCTWaiter.wait(for: expectations, timeout: 10, enforceOrder: true), .completed)
+    XCTAssertEqual(XCTWaiter.wait(for: [eventExpectation], timeout: 10), .completed)
+
+    engine.terminate()
   }
 }

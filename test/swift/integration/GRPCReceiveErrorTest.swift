@@ -6,7 +6,7 @@ import XCTest
 final class ReceiveErrorTests: XCTestCase {
   func testReceiveError() {
     // swiftlint:disable:next line_length
-    let hcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    let emhcmType = "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
     // swiftlint:disable:next line_length
     let pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
     // swiftlint:disable:next line_length
@@ -21,27 +21,28 @@ static_resources:
       socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": \(hcmType)
-        stat_prefix: hcm
-        route_config:
-          name: api_router
-          virtual_hosts:
-          - name: api
-            domains: ["*"]
-            routes:
-            - match: { prefix: "/" }
-              direct_response: { status: 503 }
-        http_filters:
-        - name: envoy.filters.http.platform_bridge
-          typed_config:
-            "@type": \(pbfType)
-            platform_filter_name: \(filterName)
-        - name: envoy.filters.http.local_error
-          typed_config:
-            "@type": \(localErrorFilterType)
-        - name: envoy.router
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+        "@type": \(emhcmType)
+        config:
+          stat_prefix: hcm
+          route_config:
+            name: api_router
+            virtual_hosts:
+            - name: api
+              domains: ["*"]
+              routes:
+              - match: { prefix: "/" }
+                direct_response: { status: 503 }
+          http_filters:
+          - name: envoy.filters.http.platform_bridge
+            typed_config:
+              "@type": \(pbfType)
+              platform_filter_name: \(filterName)
+          - name: envoy.filters.http.local_error
+            typed_config:
+              "@type": \(localErrorFilterType)
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 """
 
     struct ErrorValidationFilter: ResponseFilter {
@@ -83,7 +84,7 @@ static_resources:
     filterNotCancelled.isInverted = true
     let expectations = [filterReceivedError, filterNotCancelled, callbackReceivedError]
 
-    let httpStreamClient = EngineBuilder(yaml: config)
+    let engine = EngineBuilder(yaml: config)
       .addLogLevel(.trace)
       .addPlatformFilter(
         name: filterName,
@@ -93,9 +94,8 @@ static_resources:
         }
       )
       .build()
-      .streamClient()
 
-    let client = Envoy.GRPCClient(streamClient: httpStreamClient)
+    let client = Envoy.GRPCClient(streamClient: engine.streamClient())
 
     let requestHeaders = GRPCRequestHeadersBuilder(scheme: "https", authority: "example.com",
                                                    path: "/pb.api.v1.Foo/GetBar").build()
@@ -123,5 +123,7 @@ static_resources:
       .sendMessage(message)
 
     XCTAssertEqual(XCTWaiter.wait(for: expectations, timeout: 1), .completed)
+
+    engine.terminate()
   }
 }

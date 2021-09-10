@@ -9,7 +9,7 @@ on:
 jobs:
   iosbuild:
     name: ios_build
-    runs-on: macOS-latest
+    runs-on: macos-11
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v1
@@ -19,29 +19,6 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Check cache'
-      - run: echo "Found Envoy.framework from previous run!"
-        if: steps.check-cache.outputs.cache-hit == 'true'
-        name: 'Build cache hit'
-      - run: ./ci/mac_ci_setup.sh
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Install dependencies'
-      - run: bazelisk build --config=ios //:ios_dist
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Build Envoy.framework distributable'
-  iosbuildshadow:
-    name: ios_build_shadow
-    runs-on: macOS-latest
-    timeout-minutes: 75
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-shadow-${{ github.sha }}
           path: dist/Envoy.framework
         name: 'Check cache'
       - run: echo "Found Envoy.framework from previous run!"
@@ -60,7 +37,7 @@ jobs:
   swifthelloworld:
     name: swift_helloworld
     needs: iosbuild
-    runs-on: macOS-latest
+    runs-on: macos-11
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -77,10 +54,14 @@ jobs:
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Short-circuit'
-      - run: bazelisk build --config=ios //examples/swift/hello_world:app
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
-      - run: bazelisk run --config=ios //examples/swift/hello_world:app &> /tmp/envoy.log &
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bazelisk run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app &> /tmp/envoy.log &
         name: 'Run swift app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'
@@ -90,7 +71,7 @@ jobs:
   objchelloworld:
     name: objc_helloworld
     needs: iosbuild
-    runs-on: macOS-latest
+    runs-on: macos-11
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -107,10 +88,14 @@ jobs:
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Short-circuit'
-      - run: bazelisk build --config=ios //examples/objective-c/hello_world:app
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app
         name: 'Build objective-c app'
       # Run the app in the background and redirect logs.
-      - run: bazelisk run --config=ios //examples/objective-c/hello_world:app &> /tmp/envoy.log &
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bazelisk run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app &> /tmp/envoy.log &
         name: 'Run objective-c app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'
