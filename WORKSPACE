@@ -81,7 +81,6 @@ rbe_autoconfig(
     exec_properties = {
         "Pool": "linux",
     },
-    create_java_configs = False,
 )
 
 rbe_autoconfig(

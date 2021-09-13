@@ -32,6 +32,13 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: 'Java setup'
+        if: steps.check_context.outputs.run_tests == 'true'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
