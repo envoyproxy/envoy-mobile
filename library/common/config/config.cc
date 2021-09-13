@@ -233,6 +233,9 @@ static_resources:
                       max_interval: 60s
           http_filters:
 #{custom_filters}
+          - name: envoy.filters.http.socket_selection
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_selection.SocketSelection
           - name: envoy.filters.http.local_error
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError

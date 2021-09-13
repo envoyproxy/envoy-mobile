@@ -16,6 +16,7 @@ envoy_cc_library(
         "//library/common/data:utility_lib",
         "//library/common/event:provisional_dispatcher_lib",
         "//library/common/extensions/filters/http/local_error:local_error_filter_lib",
+        "//library/common/extensions/filters/http/socket_selection:socket_selection_filter_lib",
         "//library/common/http:header_utility_lib",
         "//library/common/network:synthetic_address_lib",
         "//library/common/types:c_types_lib",
