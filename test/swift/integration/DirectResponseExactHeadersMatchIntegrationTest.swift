@@ -7,7 +7,7 @@ final class DirectResponseExactHeadersMatchIntegrationTest: XCTestCase {
     let dataExpectation = self.expectation(description: "Response data received")
 
     let requestHeaders = RequestHeadersBuilder(
-      method: .get, authority: "127.0.0.1", path: "/v1/abc"
+      method: .get, authority: "127.0.0.1", path: "/v1/abc", reuse_port: true
     )
     .add(name: "x-foo", value: "123")
     .build()
