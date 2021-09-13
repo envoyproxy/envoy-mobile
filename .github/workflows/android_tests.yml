@@ -7,6 +7,7 @@ on:
   pull_request:
 
 jobs:
+<<<<<<< HEAD
   kotlintestsmac:
     name: kotlin_tests_mac
     runs-on: macOS-latest
@@ -75,6 +76,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazelisk test --test_output=all --build_tests_only --define=signal_trace=disabled --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/java/...
+=======
+>>>>>>> 53ad129... Move android_test flow and delete other flows temporarily
   kotlintestslinux:
     # Only kotlin tests are executed since with linux:
     # https://github.com/envoyproxy/envoy-mobile/issues/1418.
@@ -111,5 +114,15 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+<<<<<<< HEAD
         run: |
           bazel test --test_output=all --build_tests_only --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/kotlin/...
+=======
+          run: |
+            bazel test \
+              --test_output=all \
+              --build_tests_only \
+              --config=remote-ci-linux-clang \
+              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+              //test/kotlin/...
+>>>>>>> 53ad129... Move android_test flow and delete other flows temporarily
