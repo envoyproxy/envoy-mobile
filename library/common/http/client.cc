@@ -13,6 +13,7 @@
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
+#include "library/common/network/mobile_utility.h"
 
 namespace Envoy {
 namespace Http {
@@ -558,9 +559,9 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // - Force http/1.1 if request scheme is http (cleartext).
   const char* cluster{};
   auto h2_header = headers.get(H2UpstreamHeader);
-  auto network = preferred_network_.load();
+  auto network = Network::MobileUtility::getPreferredNetwork();
   ASSERT(network >= 0 && network < ClustersPerPool,
-         "preferred_network_ must be valid index into cluster array");
+         "preferred network must be valid index into cluster array");
 
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
     cluster = ClearTextClusters[network];

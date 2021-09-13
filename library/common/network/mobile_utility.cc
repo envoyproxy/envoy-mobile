@@ -4,6 +4,24 @@
 
 #include "source/common/common/assert.h"
 
+#ifdef SO_BINDTODEVICE
+#define ENVOY_SOCKET_SO_BINDTODEVICE ENVOY_MAKE_SOCKET_OPTION_NAME(SOL_SOCKET, SO_BINDTODEVICE)
+#else
+#define ENVOY_SOCKET_SO_BINDTODEVICE Network::SocketOptionName()
+#endif
+
+#ifdef IP_BOUND_IF
+#define ENVOY_SOCKET_IP_BOUND_IF ENVOY_MAKE_SOCKET_OPTION_NAME(IPPROTO_IP, IP_BOUND_IF)
+#else
+#define ENVOY_SOCKET_IP_BOUND_IF Network::SocketOptionName()
+#endif
+
+#ifdef IPV6_BOUND_IF
+#define ENVOY_SOCKET_IPV6_BOUND_IF ENVOY_MAKE_SOCKET_OPTION_NAME(IPPROTO_IPV6, IPV6_BOUND_IF)
+#else
+#define ENVOY_SOCKET_IPV6_BOUND_IF Network::SocketOptionName()
+#endif
+
 #ifdef SUPPORTS_GETIFADDRS
 #include <ifaddrs.h>
 #endif
@@ -20,6 +38,16 @@ namespace {
 #pragma clang diagnostic pop
 #define SUPPORTS_GETIFADDRS
 #endif
+
+std::atomic<envoy_network_t> MobileUtility::preferred_network_{ENVOY_NET_GENERIC};
+
+void MobileUtility::setPreferredNetwork(envoy_network_t network) {
+  preferred_network_ = network;
+}
+
+envoy_network_t MobileUtility::getPreferredNetwork() {
+  return preferred_network_.load();
+}
 
 std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET);

@@ -23,6 +23,7 @@ envoy_cc_library(
     }),
     repository = "@envoy",
     deps = [
+        "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ],
 )
