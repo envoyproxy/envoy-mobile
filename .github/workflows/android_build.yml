@@ -1,0 +1,118 @@
+name: android_build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  androidbuild:
+    name: android_build
+    runs-on: macos-11
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/cache@v2
+        id: check-cache
+        with:
+          key: aar-${{ github.sha }}
+          path: dist/envoy.aar
+        name: 'Check cache'
+      - run: echo "Found envoy.aar from previous run!"
+        if: steps.check-cache.outputs.cache-hit == 'true'
+        name: 'Build cache hit'
+      - uses: actions/setup-java@v1
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Install dependencies'
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bazelisk build --fat_apk_cpu=x86 --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:android_dist_ci
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Build envoy.aar distributable'
+  javahelloworld:
+    name: java_helloworld
+    needs: androidbuild
+    runs-on: macos-11
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - uses: actions/cache@v2
+        id: check-cache
+        with:
+          key: aar-${{ github.sha }}
+          path: dist/envoy.aar
+        name: 'Download aar'
+      - run: exit 1
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Short-circuit'
+      - name: start simulator
+        run: ./ci/mac_start_emulator.sh
+      # Return to using:
+      #   bazelisk mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+      # When https://github.com/lyft/envoy-mobile/issues/853 is fixed.
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --fat_apk_cpu=x86 --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/java/hello_world:hello_envoy
+          adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
+          adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
+        name: 'Start java app'
+      - run: 'adb logcat -e "received headers with status 200" -m 1'
+        name: 'Check connectivity'
+  kotlinhelloworld:
+    name: kotlin_helloworld
+    needs: androidbuild
+    runs-on: macos-11
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
+      - uses: actions/cache@v2
+        id: check-cache
+        with:
+          key: aar-${{ github.sha }}
+          path: dist/envoy.aar
+        name: 'Download aar'
+      - run: exit 1
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        name: 'Short-circuit'
+      - name: start simulator
+        run: ./ci/mac_start_emulator.sh
+      # Return to using:
+      #   bazelisk mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
+      # When https://github.com/lyft/envoy-mobile/issues/853 is fixed.
+      - env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build --fat_apk_cpu=x86 --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/kotlin/hello_world:hello_envoy_kt
+          adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
+          adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin/.MainActivity
+        name: 'Start kotlin app'
+      - run: 'adb logcat -e "received headers with status 200" -m 1'
+        name: 'Check connectivity'
