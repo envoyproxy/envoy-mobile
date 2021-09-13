@@ -45,7 +45,7 @@ declare_python_abi(name = "python_abi", python_version = "3")
 
 # Note: proguard is failing for API 30+
 android_sdk_repository(name = "androidsdk", api_level = 29)
-android_ndk_repository(name = "androidndk", path = "/Users/runner/Library/Android/sdk/ndk/21.3.6528147", api_level = 21)
+android_ndk_repository(name = "androidndk", api_level = 21)
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
@@ -59,7 +59,7 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "engflow_remote_config",
-    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    digest = "sha256:239015d203837f2bdcd4cfdd710d7db60acc3fb1f002f1c926b92b42c59afdd6",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -70,7 +70,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang",
-    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    digest = "sha256:239015d203837f2bdcd4cfdd710d7db60acc3fb1f002f1c926b92b42c59afdd6",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -80,6 +80,25 @@ rbe_autoconfig(
     },
     exec_properties = {
         "Pool": "linux",
+    },
+    create_java_configs = False,
+)
+
+rbe_autoconfig(
+    name = "engflow_remote_config_clang_asan",
+    digest = "sha256:239015d203837f2bdcd4cfdd710d7db60acc3fb1f002f1c926b92b42c59afdd6",
+    registry = "docker.io",
+    repository = "envoyproxy/envoy-build-ubuntu",
+    use_legacy_platform_definition = False,
+    env = {
+        "CC": "/opt/llvm/bin/clang",
+        "CXX": "/opt/llvm/bin/clang++",
+    },
+    exec_properties = {
+        "Pool": "linux",
+        # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
+        # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
+        "dockerAddCapabilities": "SYS_PTRACE",
     },
     create_java_configs = False,
 )
