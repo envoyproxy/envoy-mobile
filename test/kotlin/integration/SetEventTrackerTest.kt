@@ -76,11 +76,12 @@ class SetEventTrackerTest {
       .newStreamPrototype()
       .setOnResponseHeaders { _, _, _ ->
         countDownLatch.countDown()
+        assertThat(countDownLatch.count).isEqualTo(100)
       }
       .start()
       .sendHeaders(requestHeaders, true)
 
-    countDownLatch.await(60, TimeUnit.SECONDS)
+    countDownLatch.await(30, TimeUnit.SECONDS)
     engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
   }
