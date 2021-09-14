@@ -78,7 +78,7 @@ rbe_autoconfig(
         "CC": "/opt/llvm/bin/clang",
         "CXX": "/opt/llvm/bin/clang++",
     },
-    detect_java_home
+    detect_java_home = True,
     exec_properties = {
         "Pool": "linux",
     },
