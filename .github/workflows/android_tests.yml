@@ -52,4 +52,4 @@ jobs:
             --build_tests_only \
             --config=remote-ci-linux-clang \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            //test/kotlin/...
+            //test/kotlin/... -s

@@ -142,11 +142,11 @@ build:remote-ci-linux-clang --action_env=CC=/opt/llvm/bin/clang
 build:remote-ci-linux-clang --action_env=CXX=/opt/llvm/bin/clang++
 build:remote-ci-linux-clang --crosstool_top=@engflow_remote_config_clang//cc:toolchain
 build:remote-ci-linux-clang --extra_execution_platforms=@engflow_remote_config_clang//config:platform
-#build:remote-ci-linux-clang --extra_toolchains=@engflow_remote_config_clang//config:cc-toolchain
+build:remote-ci-linux-clang --extra_toolchains=@engflow_remote_config_clang//config:cc-toolchain
 build:remote-ci-linux-clang --extra_toolchains=@local_jdk//:all
-build:remote-ci-linux-clang --host_java_toolchain=@local_jdk//:all
+build:remote-ci-linux-clang --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
 build:remote-ci-linux-clang --host_platform=@engflow_remote_config_clang//config:platform
-build:remote-ci-linux-clang --java_toolchain=@local_jdk//:all
+build:remote-ci-linux-clang --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
 build:remote-ci-linux-clang --platforms=@engflow_remote_config_clang//config:platform
 build:remote-ci-linux-clang --config=remote-ci-common
 #############################################################################
