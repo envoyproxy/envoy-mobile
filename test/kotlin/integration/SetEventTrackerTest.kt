@@ -80,7 +80,11 @@ class SetEventTrackerTest {
       .start()
       .sendHeaders(requestHeaders, true)
 
-    countDownLatch.await(30, TimeUnit.SECONDS)
+    try {
+      countDownLatch.await(30, TimeUnit.SECONDS)
+    } catch (e:java.lang.InterruptedException) {
+      println("ENGFLOW" + e.getStackTrace())
+    }
     engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
   }
