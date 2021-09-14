@@ -5,6 +5,8 @@
 
 #include "library/common/types/c_types.h"
 
+#include "envoy/network/socket.h"
+
 namespace Envoy {
 namespace Network {
 
@@ -33,6 +35,11 @@ public:
    * @param network, the network preference.
    */
   static void setPreferredNetwork(envoy_network_t network);
+
+  /**
+   * @returns the current socket options that should be used for connections.
+   */
+  static Socket::OptionsSharedPtr getUpstreamSocketOptions(envoy_network_t network);
 
 private:
   static std::vector<std::string> enumerateInterfaces(unsigned short family);

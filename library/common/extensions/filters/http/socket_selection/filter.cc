@@ -1,19 +1,26 @@
 #include "library/common/extensions/filters/http/socket_selection/filter.h"
 
 #include "envoy/server/filter_config.h"
-#include "source/common/network/upstream_socket_options_filter_state.h"
+
+#include "library/common/network/mobile_utility.h"
 
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
 namespace SocketSelection {
 
+std::atomic<int> network_override{0};
+
 Http::FilterHeadersStatus SocketSelectionFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
   ASSERT(decoder_callbacks_);
   ENVOY_LOG(debug, "SocketSelectionFilter::decodeHeaders");
 
-  auto network_selection_options = std::make_shared<Network::Socket::Options>();
-  decoder_callbacks_->addUpstreamSocketOptions(network_selection_options);
+  network_override ^= 1;
+  envoy_network_t network = static_cast<envoy_network_t>(network_override.load());
+  ENVOY_LOG(debug, "SocketSelectionFilter NETWORK OVERRIDE: {}", network);
+
+  auto connection_options = Network::MobileUtility::getUpstreamSocketOptions(network);
+  decoder_callbacks_->addUpstreamSocketOptions(connection_options);
 
   return Http::FilterHeadersStatus::Continue;
 }

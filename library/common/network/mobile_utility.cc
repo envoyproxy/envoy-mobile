@@ -3,13 +3,18 @@
 #include "envoy/common/platform.h"
 
 #include "source/common/common/assert.h"
+#include "source/common/common/scalar_to_byte_vector.h"
+#include "source/common/common/utility.h"
+#include "source/common/network/socket_option_impl.h"
 
+// Used on Linux/Android
 #ifdef SO_BINDTODEVICE
 #define ENVOY_SOCKET_SO_BINDTODEVICE ENVOY_MAKE_SOCKET_OPTION_NAME(SOL_SOCKET, SO_BINDTODEVICE)
 #else
 #define ENVOY_SOCKET_SO_BINDTODEVICE Network::SocketOptionName()
 #endif
 
+// Used on BSD/iOS
 #ifdef IP_BOUND_IF
 #define ENVOY_SOCKET_IP_BOUND_IF ENVOY_MAKE_SOCKET_OPTION_NAME(IPPROTO_IP, IP_BOUND_IF)
 #else
@@ -21,6 +26,15 @@
 #else
 #define ENVOY_SOCKET_IPV6_BOUND_IF Network::SocketOptionName()
 #endif
+
+// Dummy/test option
+#ifdef IP_TTL
+#define ENVOY_SOCKET_IP_TTL ENVOY_MAKE_SOCKET_OPTION_NAME(IPPROTO_IP, IP_TTL)
+#else
+#define ENVOY_SOCKET_IP_TTL Network::SocketOptionName()
+#endif
+
+#define DEFAULT_IP_TTL 64
 
 #ifdef SUPPORTS_GETIFADDRS
 #include <ifaddrs.h>
@@ -39,6 +53,37 @@ namespace {
 #define SUPPORTS_GETIFADDRS
 #endif
 
+namespace {
+
+// Internal SocketOptionImpl that permutes hash key based on name and value.
+class InternalOptionImpl : public SocketOptionImpl {
+public:
+  InternalOptionImpl(envoy::config::core::v3::SocketOption::SocketState in_state,
+                   Network::SocketOptionName optname, absl::string_view value)
+      : SocketOptionImpl(in_state, optname, value) {
+        name_ = optname.name();
+        value_ = value;
+  }
+
+  InternalOptionImpl(envoy::config::core::v3::SocketOption::SocketState in_state,
+                   Network::SocketOptionName optname,
+                   int value) // Yup, int. See setsockopt(2).
+      : InternalOptionImpl(in_state, optname,
+                         absl::string_view(reinterpret_cast<char*>(&value), sizeof(value))) {}
+
+  // The common socket options don't require a hash key.
+  void hashKey(std::vector<uint8_t>& hash) const override {
+    pushScalarToByteVector(StringUtil::CaseInsensitiveHash()(name_), hash);
+    pushScalarToByteVector(StringUtil::CaseInsensitiveHash()(value_), hash);
+  }
+
+private:
+  std::string name_;
+  std::string value_;
+};
+
+} // namespace
+
 std::atomic<envoy_network_t> MobileUtility::preferred_network_{ENVOY_NET_GENERIC};
 
 void MobileUtility::setPreferredNetwork(envoy_network_t network) {
@@ -55,6 +100,19 @@ std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
 
 std::vector<std::string> MobileUtility::enumerateV6Interfaces() {
   return enumerateInterfaces(AF_INET6);
+}
+
+Socket::OptionsSharedPtr MobileUtility::getUpstreamSocketOptions(envoy_network_t network) {
+  // Envoy uses the hash signature of overridden socket options to choose a connection pool.
+  // Setting a dummy socket option is a hack that allows us to select a different
+  // connection pool without materially changing the socket configuration.
+
+  ASSERT(network >= 0 && network < 3);
+  int ttl_value = DEFAULT_IP_TTL + static_cast<int>(network);
+  auto options = std::make_shared<Socket::Options>();
+  options->push_back(std::make_shared<InternalOptionImpl>(
+    envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_TTL, ttl_value));
+  return options;
 }
 
 std::vector<std::string>
