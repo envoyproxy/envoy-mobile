@@ -53,4 +53,5 @@ jobs:
             --config=remote-ci-linux-clang \
             --config=remote-ci-linux-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --nocache_test_results \
             //test/kotlin/...
