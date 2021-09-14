@@ -372,6 +372,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wlan_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -381,6 +382,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_wwan_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -390,6 +392,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *base_protocol_options_defs
   - name: base_alpn
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
