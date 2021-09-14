@@ -47,7 +47,7 @@ class SetEventTrackerTest {
       .start()
       .sendHeaders(requestHeaders, true)
 
-    assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
+    countDownLatch.await(30, TimeUnit.SECONDS)
     engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
   }
@@ -80,7 +80,7 @@ class SetEventTrackerTest {
       .start()
       .sendHeaders(requestHeaders, true)
 
-    countDownLatch.await(30, TimeUnit.SECONDS)
+    assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
     engine.terminate()
     assertThat(countDownLatch.count).isEqualTo(0)
   }
