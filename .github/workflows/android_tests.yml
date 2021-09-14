@@ -39,9 +39,6 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-      - name: 'Clean'
-        continue-on-error: true
-        run: bazel clean --expunge
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -53,5 +50,4 @@ jobs:
             --config=remote-ci-linux-clang \
             --config=remote-ci-linux-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            --nocache_test_results \
-            //test/kotlin/...
+            //test/kotlin/integration:set_event_tracker_test
