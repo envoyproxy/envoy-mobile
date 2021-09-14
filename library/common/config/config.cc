@@ -118,24 +118,23 @@ R"(
 )";
 
 const char* config_template = R"(
-!ignore base_protocol_options_defs:
-    typed_extension_protocol_options: &base_protocol_options
-      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-        auto_config:
-          http2_protocol_options:
-            connection_keepalive:
-              connection_idle_interval: *h2_connection_keepalive_idle_interval
-              timeout: *h2_connection_keepalive_timeout
-          http_protocol_options:
-            header_key_format:
-              stateful_formatter:
-                name: preserve_case
-                typed_config:
-                  "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-        upstream_http_protocol_options:
-          auto_sni: true
-          auto_san_validation: true
+!ignore base_protocol_options_defs: &base_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    auto_config:
+      http2_protocol_options:
+        connection_keepalive:
+          connection_idle_interval: *h2_connection_keepalive_idle_interval
+          timeout: *h2_connection_keepalive_timeout
+      http_protocol_options:
+        header_key_format:
+          stateful_formatter:
+            name: preserve_case
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+    upstream_http_protocol_options:
+      auto_sni: true
+      auto_san_validation: true
 
 !ignore custom_listener_defs:
   fake_remote_listener: &fake_remote_listener
