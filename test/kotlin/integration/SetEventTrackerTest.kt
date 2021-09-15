@@ -77,7 +77,6 @@ class SetEventTrackerTest {
       .newStreamPrototype()
       .setOnResponseData { _, _, _ ->
         countDownLatch.countDown()
-        assertThat(countDownLatch.count).isEqualTo(100)
       }
       .start()
       .close(ByteBuffer.allocate(10).put(10))
