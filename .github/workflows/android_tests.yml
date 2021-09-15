@@ -50,4 +50,4 @@ jobs:
             --config=remote-ci-linux-clang \
             --config=remote-ci-linux-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            //test/kotlin/integration:set_event_tracker_test
+            //test/kotlin/...
