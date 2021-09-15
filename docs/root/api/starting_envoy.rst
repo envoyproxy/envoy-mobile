@@ -185,9 +185,9 @@ for further information.
   // Swift
   builder.addStreamIdleTimeoutSeconds(5)
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``addPerTryIdleTimeoutSeconds``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Specifies the length of time a retry (including the initial attempt) should wait without a headers
 or data event before timing out. Defaults to 15 seconds.
