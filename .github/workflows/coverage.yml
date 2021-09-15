@@ -21,10 +21,9 @@ jobs:
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
       - id: check_context
         name: 'Check whether to run'
         run: |
@@ -49,7 +48,7 @@ jobs:
             BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov \
             BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
             PATH=/opt/llvm/bin:${PATH} \
-            ./envoy/test/run_envoy_bazel_coverage.sh //test/common/foo:a_test
+            ./run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
