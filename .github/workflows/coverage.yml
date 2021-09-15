@@ -21,9 +21,10 @@ jobs:
         CXX: /opt/llvm/bin/clang++
         COVERAGE_THRESHOLD: 95
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
       - id: check_context
         name: 'Check whether to run'
         run: |
@@ -40,7 +41,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
-          echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" >> ~/.bazelrc
+          echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=debug --config=remote-ci-linux-coverage" \
             CC=/opt/llvm/bin/clang \
             CXX=/opt/llvm/bin/clang++ \
