@@ -22,7 +22,7 @@ Http::FilterHeadersStatus SocketSelectionFilter::decodeHeaders(Http::RequestHead
   return Http::FilterHeadersStatus::Continue;
 }
 
-Http::LocalErrorStatus SocketSelectionFilter::onLocalReply(const LocalReplyData& reply) {
+Http::LocalErrorStatus SocketSelectionFilter::onLocalReply(const LocalReplyData&) {
   ASSERT(decoder_callbacks_);
   return Http::LocalErrorStatus::ContinueAndResetStream;
 }
