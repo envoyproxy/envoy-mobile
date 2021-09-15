@@ -235,8 +235,7 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
                            envoy_event_tracker event_tracker) {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  strong_engine_ =
-      std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker);
+  strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker);
   engine_ = strong_engine_;
   return 1;
 }

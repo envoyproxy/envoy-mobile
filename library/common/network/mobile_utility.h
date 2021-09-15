@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "library/common/types/c_types.h"
-
 #include "envoy/network/socket.h"
+
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Network {

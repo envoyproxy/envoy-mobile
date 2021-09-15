@@ -59,17 +59,17 @@ namespace {
 class InternalOptionImpl : public SocketOptionImpl {
 public:
   InternalOptionImpl(envoy::config::core::v3::SocketOption::SocketState in_state,
-                   Network::SocketOptionName optname, absl::string_view value)
+                     Network::SocketOptionName optname, absl::string_view value)
       : SocketOptionImpl(in_state, optname, value) {
-        name_ = optname.name();
-        value_ = value;
+    name_ = optname.name();
+    value_ = value;
   }
 
   InternalOptionImpl(envoy::config::core::v3::SocketOption::SocketState in_state,
-                   Network::SocketOptionName optname,
-                   int value) // Yup, int. See setsockopt(2).
+                     Network::SocketOptionName optname,
+                     int value) // Yup, int. See setsockopt(2).
       : InternalOptionImpl(in_state, optname,
-                         absl::string_view(reinterpret_cast<char*>(&value), sizeof(value))) {}
+                           absl::string_view(reinterpret_cast<char*>(&value), sizeof(value))) {}
 
   // The common socket options don't require a hash key.
   void hashKey(std::vector<uint8_t>& hash) const override {
@@ -86,13 +86,9 @@ private:
 
 std::atomic<envoy_network_t> MobileUtility::preferred_network_{ENVOY_NET_GENERIC};
 
-void MobileUtility::setPreferredNetwork(envoy_network_t network) {
-  preferred_network_ = network;
-}
+void MobileUtility::setPreferredNetwork(envoy_network_t network) { preferred_network_ = network; }
 
-envoy_network_t MobileUtility::getPreferredNetwork() {
-  return preferred_network_.load();
-}
+envoy_network_t MobileUtility::getPreferredNetwork() { return preferred_network_.load(); }
 
 std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET);
@@ -110,7 +106,7 @@ Socket::OptionsSharedPtr MobileUtility::getUpstreamSocketOptions(envoy_network_t
   int ttl_value = DEFAULT_IP_TTL + static_cast<int>(network);
   auto options = std::make_shared<Socket::Options>();
   options->push_back(std::make_shared<InternalOptionImpl>(
-    envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_TTL, ttl_value));
+      envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_TTL, ttl_value));
   return options;
 }
 

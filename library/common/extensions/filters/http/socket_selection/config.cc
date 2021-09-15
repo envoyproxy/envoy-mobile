@@ -8,8 +8,8 @@ namespace HttpFilters {
 namespace SocketSelection {
 
 Http::FilterFactoryCb SocketSelectionFilterFactory::createFilterFactoryFromProtoTyped(
-    const envoymobile::extensions::filters::http::socket_selection::SocketSelection&, const std::string&,
-    Server::Configuration::FactoryContext&) {
+    const envoymobile::extensions::filters::http::socket_selection::SocketSelection&,
+    const std::string&, Server::Configuration::FactoryContext&) {
 
   return [](Http::FilterChainFactoryCallbacks& callbacks) -> void {
     callbacks.addStreamFilter(std::make_shared<SocketSelectionFilter>());

@@ -22,7 +22,6 @@ public:
 
   void setPreferedNetwork(envoy_network_t interface);
   absl::optional<envoy_network_t> getNetworkOverride();
-
 };
 
 /**

@@ -14,7 +14,8 @@ namespace SocketSelection {
  * Config registration for the socket_selection filter. @see NamedHttpFilterConfigFactory.
  */
 class SocketSelectionFilterFactory
-    : public Common::FactoryBase<envoymobile::extensions::filters::http::socket_selection::SocketSelection> {
+    : public Common::FactoryBase<
+          envoymobile::extensions::filters::http::socket_selection::SocketSelection> {
 public:
   SocketSelectionFilterFactory() : FactoryBase("socket_selection") {}
 
