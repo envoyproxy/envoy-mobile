@@ -79,7 +79,7 @@ class SetEventTrackerTest {
         countDownLatch.countDown()
       }
       .start()
-      .close(ByteBuffer.allocate(10).put(10))
+      .close(ByteBuffer.allocate(1))
 
     countDownLatch.await(30, TimeUnit.SECONDS)
     engine.terminate()
