@@ -9,15 +9,12 @@ namespace Extensions {
 namespace HttpFilters {
 namespace SocketSelection {
 
-std::atomic<int> network_override{0};
-
 Http::FilterHeadersStatus SocketSelectionFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
   ASSERT(decoder_callbacks_);
   ENVOY_LOG(debug, "SocketSelectionFilter::decodeHeaders");
 
-  network_override ^= 1;
-  envoy_network_t network = static_cast<envoy_network_t>(network_override.load());
-  ENVOY_LOG(debug, "SocketSelectionFilter NETWORK OVERRIDE: {}", network);
+  envoy_network_t network = Network::MobileUtility::getPreferredNetwork();
+  ENVOY_LOG(debug, "current preferred network: {}", network);
 
   auto connection_options = Network::MobileUtility::getUpstreamSocketOptions(network);
   decoder_callbacks_->addUpstreamSocketOptions(connection_options);
@@ -26,7 +23,6 @@ Http::FilterHeadersStatus SocketSelectionFilter::decodeHeaders(Http::RequestHead
 }
 
 Http::LocalErrorStatus SocketSelectionFilter::onLocalReply(const LocalReplyData& reply) {
-  ENVOY_LOG(debug, "SocketSelectionFilter::onLocalReply({}, {})", reply.code_, reply.details_);
   ASSERT(decoder_callbacks_);
   return Http::LocalErrorStatus::ContinueAndResetStream;
 }
