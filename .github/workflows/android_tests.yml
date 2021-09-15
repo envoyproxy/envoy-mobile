@@ -120,6 +120,8 @@ jobs:
           architecture: x64
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazel test \
             --test_output=all \
