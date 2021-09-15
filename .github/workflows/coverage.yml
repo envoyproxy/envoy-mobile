@@ -38,6 +38,7 @@ jobs:
         run: |
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=debug --config=remote-ci-linux-coverage" \
+            SRCDIR=${PWD} FUZZ_COVERAGE=false VALIDATE_COVERAGE=true \
             CC=/opt/llvm/bin/clang \
             CXX=/opt/llvm/bin/clang++ \
             GCOV=/opt/llvm/bin/llvm-profdata \
