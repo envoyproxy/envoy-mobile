@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -euox pipefail
 
 LLVM_VERSION="11.0.1"
 CLANG_VERSION=$(clang --version | grep version | sed -e 's/\ *clang version \(.*\)\ */\1/')

@@ -1,4 +1,5 @@
 #!/bin/bash -x
+set -euox pipefail
 #
 # This is a fork of https://github.com/bazelbuild/bazel/blob/3.1.0/tools/test/collect_cc_coverage.sh
 # to cover most of use cases in Envoy.
@@ -40,7 +41,6 @@
 # The script looks in $COVERAGE_DIR for the C++ metadata coverage files (either
 # gcda or profraw) and uses either lcov or gcov to get the coverage data.
 # The coverage data is placed in $COVERAGE_OUTPUT_FILE.
-echo "IM RUNNING HERE"
 
 read -ra COVERAGE_GCOV_OPTIONS <<< "${COVERAGE_GCOV_OPTIONS:-}"
 
