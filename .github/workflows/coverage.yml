@@ -16,10 +16,6 @@ jobs:
         shell: bash
     container:
       image: envoyproxy/envoy-build-ubuntu:b51ac7a0f2cb5dd729984a379a301ce029ac765d
-      env:
-        CC: /opt/llvm/bin/clang
-        CXX: /opt/llvm/bin/clang++
-        COVERAGE_THRESHOLD: 95
     steps:
       - uses: actions/checkout@v1
         with:
@@ -48,12 +44,13 @@ jobs:
             BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov \
             BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
             PATH=/opt/llvm/bin:${PATH} \
+            COVERAGE_THRESHOLD=95 \
             ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
-          ls -lR /github/home/.cache/bazel/_bazel_root/ > mylog_ls.txt
+          ls -lR bazel-out/_coverage/
           cat $(find /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/ -name "java.log") > mylog_java.txt
           cat $(find bazel-out/ -name "test.log") > test.log
           tar -czvf coverage.tar.gz generated/coverage
