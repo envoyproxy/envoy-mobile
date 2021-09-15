@@ -137,7 +137,6 @@ api_listener:
       )EOF";
   }
 
-  std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
   Event::ProvisionalDispatcherPtr dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>();
   Http::ClientPtr http_client_{};
   envoy_http_callbacks bridge_callbacks_;
@@ -156,7 +155,7 @@ TEST_P(ClientIntegrationTest, Basic) {
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
         test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
-        test_server_->statStore(), preferred_network_,
+        test_server_->statStore(),
         test_server_->server().api().randomGenerator());
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();
@@ -218,7 +217,7 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
         test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
-        test_server_->statStore(), preferred_network_,
+        test_server_->statStore(),
         test_server_->server().api().randomGenerator());
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();
@@ -259,7 +258,7 @@ TEST_P(ClientIntegrationTest, BasicReset) {
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
         test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
-        test_server_->statStore(), preferred_network_,
+        test_server_->statStore(),
         test_server_->server().api().randomGenerator());
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();
@@ -315,7 +314,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   test_server_->server().dispatcher().post([this, &server_started]() -> void {
     http_client_ = std::make_unique<Http::Client>(
         test_server_->server().listenerManager().apiListener()->get().http()->get(), *dispatcher_,
-        test_server_->statStore(), preferred_network_,
+        test_server_->statStore(),
         test_server_->server().api().randomGenerator());
     dispatcher_->drain(test_server_->server().dispatcher());
     server_started.setReady();

@@ -539,9 +539,6 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // - Force http/1.1 if request scheme is http (cleartext).
   const char* cluster{};
   auto h2_header = headers.get(H2UpstreamHeader);
-  ASSERT(network >= 0 && network < ClustersPerPool,
-         "preferred network must be valid index into cluster array");
-
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
     cluster = ClearTextCluster;
   } else if (!h2_header.empty()) {
