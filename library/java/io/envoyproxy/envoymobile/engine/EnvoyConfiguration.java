@@ -66,8 +66,9 @@ public class EnvoyConfiguration {
                             String dnsPreresolveHostnames,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
-                            int streamIdleTimeoutSeconds, int perTrystreamIdleTimeoutSeconds, String appVersion, String appId,
-                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
+                            int streamIdleTimeoutSeconds, int perTrystreamIdleTimeoutSeconds,
+                            String appVersion, String appId, String virtualClusters,
+                            List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
