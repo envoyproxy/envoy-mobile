@@ -8,6 +8,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.nio.ByteBuffer
 
 class SetEventTrackerTest {
 
@@ -74,12 +75,12 @@ class SetEventTrackerTest {
 
     client
       .newStreamPrototype()
-      .setOnResponseHeaders { _, _, _ ->
+      .setOnResponseData { _, _, _ ->
         countDownLatch.countDown()
         assertThat(countDownLatch.count).isEqualTo(100)
       }
       .start()
-      .sendHeaders(requestHeaders, true)
+      .close(ByteBuffer.allocate(10).put(10))
 
     countDownLatch.await(30, TimeUnit.SECONDS)
     engine.terminate()
