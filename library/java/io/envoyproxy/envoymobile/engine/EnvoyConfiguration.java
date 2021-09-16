@@ -66,7 +66,7 @@ public class EnvoyConfiguration {
                             String dnsPreresolveHostnames,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
-                            int streamIdleTimeoutSeconds, int perTrystreamIdleTimeoutSeconds,
+                            int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
                             String appVersion, String appId, String virtualClusters,
                             List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
