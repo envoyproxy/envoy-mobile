@@ -3,8 +3,7 @@
 # Checks the absolute size and the relative size increase of a file.
 
 MAX_SIZE=7200000 # 7.2MB
-# TODO(alyssawilk) bump this back down after HTTP/3 is turned up
-MAX_PERC=16.0
+MAX_PERC=2.0
 
 if [ `uname` == "Darwin" ]
 then
