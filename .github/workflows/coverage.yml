@@ -30,6 +30,13 @@ jobs:
             echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
+      - name: 'Java setup'
+        if: steps.check_context.outputs.run_coverage == 'true'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         env:
