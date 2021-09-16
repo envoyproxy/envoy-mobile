@@ -54,6 +54,7 @@ jobs:
             BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
             PATH=/opt/llvm/bin:${PATH} \
             COVERAGE_THRESHOLD=95 \
+            COVERAGE_REPORTED_TO_ACTUAL_SOURCES_FILE=true \
             ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/foo:a_test
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
@@ -67,14 +68,13 @@ jobs:
         with:
           name: coverage.tar.gz
           path: coverage.tar.gz
-      - name: 'Upload report'
-        uses: actions/upload-artifact@v2
-        continue-on-error: true
-        with:
-          name: coverage.html
-          path: /__w/envoy-mobile/envoy-mobile/generated/coverage/index.html
       - name: 'Upload log'
         uses: actions/upload-artifact@v2
         with:
           name: test.log
           path: test.log
+      - name: 'Upload report'
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage.html
+          path: /__w/envoy-mobile/envoy-mobile/generated/coverage/index.html

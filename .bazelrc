@@ -191,6 +191,8 @@ build:remote-ci-linux-coverage --action_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-co
 build:remote-ci-linux-coverage --test_env=BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov
 build:remote-ci-linux-coverage --action_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
 build:remote-ci-linux-coverage --test_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
+build:remote-ci-linux-coverage --action_env=COVERAGE_REPORTED_TO_ACTUAL_SOURCES_FILE=true
+build:remote-ci-linux-coverage --test_env=COVERAGE_REPORTED_TO_ACTUAL_SOURCES_FILE=true
 build:remote-ci-linux-coverage --crosstool_top=@engflow_remote_config_clang_coverage//cc:toolchain
 build:remote-ci-linux-coverage --extra_execution_platforms=@engflow_remote_config_clang_coverage//config:platform
 build:remote-ci-linux-coverage --extra_toolchains=@engflow_remote_config_clang_coverage//config:cc-toolchain
@@ -213,3 +215,4 @@ common:debug --verbose_failures
 common:debug --sandbox_debug
 common:debug --action_env=VERBOSE_COVERAGE=true
 common:debug --test_env=VERBOSE_COVERAGE=true
+common:debug --test_env=DISPLAY_LCOV_CMD=true
