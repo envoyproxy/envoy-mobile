@@ -14,8 +14,6 @@ LLVM_PROFDATA_VERSION=$(llvm-profdata show --version | grep version | sed -e 's/
 COVERAGE_TARGET="${COVERAGE_TARGET:-}"
 read -ra BAZEL_BUILD_OPTIONS <<< "${BAZEL_BUILD_OPTIONS:-}"
 
-BAZEL=${SRCDIR}/.github/workflows/bazel
-
 echo "Starting run_envoy_bazel_coverage.sh..."
 echo "    PWD=$(pwd)"
 echo "    SRCDIR=${SRCDIR}"
@@ -34,7 +32,7 @@ fi
 
 if [[ "${FUZZ_COVERAGE}" == "true" ]]; then
   # Filter targets to just fuzz tests.
-  _targets=$(${BAZEL} query "attr('tags', 'fuzz_target', ${COVERAGE_TARGETS[*]})")
+  _targets=$(bazel query "attr('tags', 'fuzz_target', ${COVERAGE_TARGETS[*]})")
   COVERAGE_TARGETS=()
   while read -r line; do COVERAGE_TARGETS+=("$line"); done \
       <<< "$_targets"
@@ -50,10 +48,10 @@ fi
 # Don't block coverage on flakes.
 BAZEL_BUILD_OPTIONS+=("--flaky_test_attempts=2")
 
-${BAZEL} coverage "${BAZEL_BUILD_OPTIONS[@]}" "${COVERAGE_TARGETS[@]}"
+bazel coverage "${BAZEL_BUILD_OPTIONS[@]}" "${COVERAGE_TARGETS[@]}"
 
 # Collecting profile and testlogs
-[[ -z "${ENVOY_BUILD_PROFILE}" ]] || cp -f "$(${BAZEL} info output_base)/command.profile.gz" "${ENVOY_BUILD_PROFILE}/coverage.profile.gz" || true
+[[ -z "${ENVOY_BUILD_PROFILE}" ]] || cp -f "$(bazel info output_base)/command.profile.gz" "${ENVOY_BUILD_PROFILE}/coverage.profile.gz" || true
 [[ -z "${ENVOY_BUILD_DIR}" ]] || find bazel-testlogs/ -name test.log | tar zcf "${ENVOY_BUILD_DIR}/testlogs.tar.gz" -T -
 
 COVERAGE_DIR="${SRCDIR}"/generated/coverage && [[ ${FUZZ_COVERAGE} == "true" ]] && COVERAGE_DIR="${SRCDIR}"/generated/fuzz_coverage
