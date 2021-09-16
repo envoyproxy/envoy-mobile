@@ -52,8 +52,6 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
-          ls -lR bazel-out/_coverage/
-          cat $(find /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/ -name "java.log") > mylog_java.txt
           cat $(find bazel-out/ -name "test.log") > test.log
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
@@ -62,17 +60,7 @@ jobs:
         with:
           name: coverage.tar.gz
           path: coverage.tar.gz
-      - name: 'Upload log 1'
-        uses: actions/upload-artifact@v2
-        with:
-          name: mylog_ls.txt
-          path: mylog_ls.txt
-      - name: 'Upload log 2'
-        uses: actions/upload-artifact@v2
-        with:
-          name: mylog_java.txt
-          path: mylog_java.txt
-      - name: 'Upload log 3'
+      - name: 'Upload log'
         uses: actions/upload-artifact@v2
         with:
           name: test.log
