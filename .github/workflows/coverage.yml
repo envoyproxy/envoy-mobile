@@ -59,6 +59,7 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
+          cat bazel-out/_coverage/lcov_files.tmp
           cat $(bazel info execution_root)/bazel-out/k8-fastbuild/testlogs/test/common/foo/a_test/coverage.dat > coverage.dat
           cat $(find bazel-testlogs/ -name "test.log") > test.log
           tar -czvf coverage.tar.gz generated/coverage
