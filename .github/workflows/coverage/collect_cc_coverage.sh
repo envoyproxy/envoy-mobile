@@ -89,6 +89,7 @@ function llvm_coverage() {
       -ignore-filename-regex='.*external/.+' \
       -ignore-filename-regex='/tmp/.+' \
       "${object_param[@]}" | sed 's#/proc/self/cwd/##' > "${output_file}"
+  cat ${output_file}
 }
 
 # Generates a code coverage report in gcov intermediate text format by invoking
