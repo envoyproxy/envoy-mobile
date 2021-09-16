@@ -78,8 +78,7 @@ rm -rf "${COVERAGE_DIR}"
 mkdir -p "${COVERAGE_DIR}"
 
 COVERAGE_DATA="${COVERAGE_DIR}/coverage.dat"
-ls -l bazel-out/
-ls -l bazel-out/_coverage/
+ls -lR bazel-out/_coverage/
 cp bazel-out/_coverage/_coverage_report.dat "${COVERAGE_DATA}"
 
 COVERAGE_VALUE="$(genhtml --prefix "${PWD}" --output "${COVERAGE_DIR}" "${COVERAGE_DATA}" | tee /dev/stderr | grep lines... | cut -d ' ' -f 4)"
