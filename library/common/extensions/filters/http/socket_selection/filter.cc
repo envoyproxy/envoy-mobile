@@ -10,7 +10,6 @@ namespace HttpFilters {
 namespace SocketSelection {
 
 Http::FilterHeadersStatus SocketSelectionFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
-  ASSERT(decoder_callbacks_);
   ENVOY_LOG(debug, "SocketSelectionFilter::decodeHeaders");
 
   envoy_network_t network = Network::MobileUtility::getPreferredNetwork();
@@ -20,11 +19,6 @@ Http::FilterHeadersStatus SocketSelectionFilter::decodeHeaders(Http::RequestHead
   decoder_callbacks_->addUpstreamSocketOptions(connection_options);
 
   return Http::FilterHeadersStatus::Continue;
-}
-
-Http::LocalErrorStatus SocketSelectionFilter::onLocalReply(const LocalReplyData&) {
-  ASSERT(decoder_callbacks_);
-  return Http::LocalErrorStatus::ContinueAndResetStream;
 }
 
 } // namespace SocketSelection

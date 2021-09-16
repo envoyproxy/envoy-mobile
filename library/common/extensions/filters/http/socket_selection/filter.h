@@ -14,24 +14,11 @@ namespace HttpFilters {
 namespace SocketSelection {
 
 /**
- * Interface for socket selection controller. Shared by filter instances.
- */
-class SocketSelectionController {
-public:
-  virtual ~SocketSelectionController() {}
-
-  void setPreferedNetwork(envoy_network_t interface);
-  absl::optional<envoy_network_t> getNetworkOverride();
-};
-
-/**
  * Filter to set upstream socket options based on network conditions.
  */
 class SocketSelectionFilter final : public Http::PassThroughFilter,
                                     public Logger::Loggable<Logger::Id::filter> {
 public:
-  // Http::StreamFilterBase
-  Http::LocalErrorStatus onLocalReply(const LocalReplyData&) override;
   // Http::StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
                                           bool end_stream) override;
