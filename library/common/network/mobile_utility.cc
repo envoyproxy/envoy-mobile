@@ -53,37 +53,6 @@ namespace {
 #define SUPPORTS_GETIFADDRS
 #endif
 
-namespace {
-
-// Internal SocketOptionImpl that permutes hash key based on name and value.
-class InternalOptionImpl : public SocketOptionImpl {
-public:
-  InternalOptionImpl(envoy::config::core::v3::SocketOption::SocketState in_state,
-                     Network::SocketOptionName optname, absl::string_view value)
-      : SocketOptionImpl(in_state, optname, value) {
-    name_ = optname.name();
-    value_ = value;
-  }
-
-  InternalOptionImpl(envoy::config::core::v3::SocketOption::SocketState in_state,
-                     Network::SocketOptionName optname,
-                     int value) // Yup, int. See setsockopt(2).
-      : InternalOptionImpl(in_state, optname,
-                           absl::string_view(reinterpret_cast<char*>(&value), sizeof(value))) {}
-
-  // The common socket options don't require a hash key.
-  void hashKey(std::vector<uint8_t>& hash) const override {
-    pushScalarToByteVector(StringUtil::CaseInsensitiveHash()(name_), hash);
-    pushScalarToByteVector(StringUtil::CaseInsensitiveHash()(value_), hash);
-  }
-
-private:
-  std::string name_;
-  std::string value_;
-};
-
-} // namespace
-
 std::atomic<envoy_network_t> MobileUtility::preferred_network_{ENVOY_NET_GENERIC};
 
 void MobileUtility::setPreferredNetwork(envoy_network_t network) { preferred_network_ = network; }
@@ -105,7 +74,7 @@ Socket::OptionsSharedPtr MobileUtility::getUpstreamSocketOptions(envoy_network_t
   ASSERT(network >= 0 && network < 3);
   int ttl_value = DEFAULT_IP_TTL + static_cast<int>(network);
   auto options = std::make_shared<Socket::Options>();
-  options->push_back(std::make_shared<InternalOptionImpl>(
+  options->push_back(std::make_shared<SocketOptionImpl>(
       envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_TTL, ttl_value));
   return options;
 }
