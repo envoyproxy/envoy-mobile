@@ -59,8 +59,16 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
-          cat bazel-out/_coverage/lcov_files.tmp
-          cat $(bazel info execution_root)/bazel-out/k8-fastbuild/testlogs/test/common/foo/a_test/coverage.dat > coverage.dat
+          cat bazel-out/host/bin/external/remote_coverage_tools/Main.runfiles
+          cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile && \
+            exec env - \
+              JAVA_RUNFILES=bazel-out/host/bin/external/remote_coverage_tools/Main.runfiles \
+              PYTHON_RUNFILES=bazel-out/host/bin/external/remote_coverage_tools/Main.runfiles \
+            bazel-out/host/bin/external/remote_coverage_tools/Main '--reports_file=bazel-out/_coverage/lcov_files.tmp' '--output_file=bazel-out/_coverage/_coverage_report.dat')
+          INFO: LCOV coverage report is located at /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile/bazel-out/_coverage/_coverage_report.dat
+           and execpath is bazel-out/_coverage/_coverage_report.dat
+
+
           cat $(find bazel-testlogs/ -name "test.log") > test.log
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
