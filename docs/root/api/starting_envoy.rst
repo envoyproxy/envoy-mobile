@@ -174,7 +174,7 @@ Specify the rate at which Envoy Mobile should flush its queued stats.
 
 Specifies the length of time a stream should wait without a headers or data event before timing out.
 Defaults to 15 seconds.
-See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-idle-timeout>`_
+See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-idle-timeout>`__
 for further information.
 
 **Example**::
@@ -191,7 +191,7 @@ for further information.
 
 Specifies the length of time a retry (including the initial attempt) should wait without a headers
 or data event before timing out. Defaults to 15 seconds.
-See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto.html#config-route-v3-retrypolicy>`_
+See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto.html#config-route-v3-retrypolicy>`__
 for further information.
 
 **Example**::
