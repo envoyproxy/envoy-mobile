@@ -210,3 +210,5 @@ common:debug --announce_rc
 common:debug -s
 common:debug --verbose_failures
 common:debug --sandbox_debug
+common:debug --action_env=VERBOSE_COVERAGE=true
+common:debug --test_env=VERBOSE_COVERAGE=true
