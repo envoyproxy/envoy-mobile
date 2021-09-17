@@ -49,6 +49,7 @@ jobs:
             SRCDIR=${PWD} FUZZ_COVERAGE=false VALIDATE_COVERAGE=true \
             CC=/opt/llvm/bin/clang \
             CXX=/opt/llvm/bin/clang++ \
+            COVERAGE_OUTPUT_FILE= \
             GCOV=/opt/llvm/bin/llvm-profdata \
             BAZEL_LLVM_COV=/opt/llvm/bin/llvm-cov \
             BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
