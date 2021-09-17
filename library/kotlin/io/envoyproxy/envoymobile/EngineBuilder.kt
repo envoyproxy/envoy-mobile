@@ -363,8 +363,8 @@ open class EngineBuilder(
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion, appId,
-            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
+            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -378,8 +378,8 @@ open class EngineBuilder(
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion, appId,
-            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
+            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           logLevel
         )
