@@ -59,9 +59,11 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
+          ls -lR /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile/bazel-out/_coverage/
+          echo "1"
           cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile/bazel-out/_coverage/lcov_files.tmp
-          cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile/bazel-out/k8-fastbuild/testlogs/test/common/foo/a_test/coverage.dat
-          cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile/bazel-out/k8-fastbuild/testlogs/test/common/foo/a_test/baseline_coverage.dat
+          echo "2"
+          cat /github/home/.cache/bazel/_bazel_root/e390684146b86f31340021c5495bb190/execroot/envoy_mobile/bazel-out/_coverage/lcov_files.tmp | xargs cat
           cat $(find bazel-testlogs/ -name "test.log") > test.log
           tar -czvf coverage.tar.gz generated/coverage
       - name: 'Upload report'
