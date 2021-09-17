@@ -200,10 +200,6 @@ build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
 build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --config=remote-ci-common
-#build:remote-ci-linux-coverage --host_javabase=@bazel_tools//tools/jdk
-#build:remote-ci-linux-coverage --javabase=@bazel_tools//tools/jdk
-#build:remote-ci-linux-coverage --strategy=Javac=local
-#build:remote-ci-linux-coverage --strategy=Java=local
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
