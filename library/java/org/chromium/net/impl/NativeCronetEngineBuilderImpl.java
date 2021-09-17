@@ -76,7 +76,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
         mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames,
         mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,
-        mVirtualClusters, mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
+        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
+        mAppId, mVirtualClusters, mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
   }
 }
