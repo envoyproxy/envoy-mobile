@@ -200,6 +200,7 @@ build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
 build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --config=remote-ci-common
+build:remote-ci-linux-coverage --test_strategy=local
 build:remote-ci-linux-coverage --strategy=TestRunner=sandboxed,local
 build:remote-ci-linux-coverage --strategy=CoverageReport=sandboxed,local
 #############################################################################
