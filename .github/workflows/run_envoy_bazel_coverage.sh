@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -x
+echo "run_envoy_bazel_coverage: " && uname -a
 
 LLVM_VERSION="11.0.1"
 CLANG_VERSION=$(clang --version | grep version | sed -e 's/\ *clang version \(.*\)\ */\1/')
