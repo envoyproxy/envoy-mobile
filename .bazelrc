@@ -201,6 +201,8 @@ build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:too
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --config=remote-ci-common
 #build:remote-ci-linux-coverage --test_strategy=standalone
+build:remote-ci-linux-coverage --experimental_split_coverage_postprocessing
+build:remote-ci-linux-coverage --experimental_fetch_all_coverage_outputs
 build:remote-ci-linux-coverage --spawn_strategy=remote,sandboxed,local
 build:remote-ci-linux-coverage --strategy=TestRunner=remote,sandboxed,local
 build:remote-ci-linux-coverage --strategy=CoverageReport=remote,sandboxed,local
