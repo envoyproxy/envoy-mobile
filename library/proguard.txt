@@ -43,6 +43,6 @@
    <methods>;
 }
 
--keep includedescriptorclasses class io.envoyproxy.envoymobile.engine.types.EnvoyLogger {
+-keep class io.envoyproxy.envoymobile.engine.types.EnvoyLogger {
    <methods>;
 }
