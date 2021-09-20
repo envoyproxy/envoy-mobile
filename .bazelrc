@@ -203,9 +203,9 @@ build:remote-ci-linux-coverage --config=remote-ci-common
 #build:remote-ci-linux-coverage --test_strategy=standalone
 build:remote-ci-linux-coverage --experimental_split_coverage_postprocessing
 build:remote-ci-linux-coverage --experimental_fetch_all_coverage_outputs
-build:remote-ci-linux-coverage --spawn_strategy=remote,sandboxed,local
-build:remote-ci-linux-coverage --strategy=TestRunner=remote,sandboxed,local
-build:remote-ci-linux-coverage --strategy=CoverageReport=remote,sandboxed,local
+#build:remote-ci-linux-coverage --spawn_strategy=remote,sandboxed,local
+#build:remote-ci-linux-coverage --strategy=TestRunner=remote,sandboxed,local
+#build:remote-ci-linux-coverage --strategy=CoverageReport=remote,sandboxed,local
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
