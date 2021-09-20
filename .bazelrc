@@ -196,18 +196,18 @@ build:remote-ci-linux-coverage --extra_execution_platforms=@engflow_remote_confi
 build:remote-ci-linux-coverage --extra_toolchains=@engflow_remote_config_clang_coverage//config:cc-toolchain
 build:remote-ci-linux-coverage --host_platform=@engflow_remote_config_clang_coverage//config:platform
 build:remote-ci-linux-coverage --platforms=@engflow_remote_config_clang_coverage//config:platform
-#build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
-#build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-#build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux-coverage --config=remote-ci-linux-local-java8
-build:remote-ci-linux-coverage --config=remote-ci-common
+build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
+build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
+#build:remote-ci-linux-coverage --config=remote-ci-linux-local-java8
 #build:remote-ci-linux-coverage --test_strategy=standalone
-build:remote-ci-linux-coverage --experimental_split_coverage_postprocessing
-build:remote-ci-linux-coverage --experimental_fetch_all_coverage_outputs
+#build:remote-ci-linux-coverage --experimental_split_coverage_postprocessing
+#build:remote-ci-linux-coverage --experimental_fetch_all_coverage_outputs
 build:remote-ci-linux-coverage --remote_download_outputs=all
 #build:remote-ci-linux-coverage --spawn_strategy=remote,sandboxed,local
 #build:remote-ci-linux-coverage --strategy=TestRunner=remote,local
 #build:remote-ci-linux-coverage --strategy=CoverageReport=remote,local
+build:remote-ci-linux-coverage --config=remote-ci-common
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
