@@ -56,17 +56,12 @@ jobs:
             PATH=/opt/llvm/bin:${PATH} \
             COVERAGE_THRESHOLD=95 \
             ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/...
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
-          find bazel-out/ -name "java.log" > java.log
           tar -czvf coverage.tar.gz generated/coverage
-      - name: 'Upload log'
-        if: steps.check_context.outputs.run_coverage == 'true'
-        uses: actions/upload-artifact@v2
-        with:
-          name: java.log
-          path: java.log
       - name: 'Upload report'
         if: steps.check_context.outputs.run_coverage == 'true'
         uses: actions/upload-artifact@v2
