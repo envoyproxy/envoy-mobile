@@ -40,11 +40,10 @@ jobs:
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          REMOTE_HEADER: "Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
-          echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
-          BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
+          BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage --remote_header=\"$REMOTE_HEADER\"" \
             SRCDIR=${PWD} FUZZ_COVERAGE=false VALIDATE_COVERAGE=true \
             CC=/opt/llvm/bin/clang \
             CXX=/opt/llvm/bin/clang++ \

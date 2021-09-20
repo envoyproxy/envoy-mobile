@@ -18,6 +18,6 @@ envoy_cc_test(
         "@envoy//test/integration:http_integration_lib",
         "@envoy//test/server:utility_lib",
     ],
-    # TODO(lfpino): Enable coverage again.
+    # TODO(lfpino): Enable coverage in this test once it's back to green.
     tags = ["nocoverage"],
 )
