@@ -55,7 +55,7 @@ jobs:
             BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
             PATH=/opt/llvm/bin:${PATH} \
             COVERAGE_THRESHOLD=95 \
-            ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/...
+            ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/... -//test/common/integration:client_integration_test
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
       - name: 'Package coverage'
