@@ -39,6 +39,8 @@ jobs:
           architecture: x64
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
