@@ -199,7 +199,7 @@ build:remote-ci-linux-coverage --platforms=@engflow_remote_config_clang_coverage
 build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
 build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux-coverage --test_strategy=standalone
+#build:remote-ci-linux-coverage --test_strategy=standalone
 build:remote-ci-linux-coverage --remote_download_outputs=all
 build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
