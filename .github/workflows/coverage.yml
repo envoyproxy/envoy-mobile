@@ -37,6 +37,8 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: 'Clean'
+        run: bazel clean --expunge
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         env:
