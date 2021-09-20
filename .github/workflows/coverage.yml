@@ -37,9 +37,6 @@ jobs:
           java-version: '11'
           java-package: jdk
           architecture: x64
-      - name: 'Clean'
-        continue-on-error: true
-        run: bazel clean --expunge --async
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         env:
