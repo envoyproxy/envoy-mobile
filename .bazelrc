@@ -178,8 +178,8 @@ build:remote-ci-linux-local-java8 --config=remote-ci-common
 #############################################################################
 # remote-ci-linux-coverage: These options are Linux-only using Clang and LLVM coverage
 #############################################################################
-build:remote-ci-linux-coverage --coverage_support=//.github/workflows/coverage:coverage_support
-build:remote-ci-linux-coverage --test_env=CC_CODE_COVERAGE_SCRIPT=.github/workflows/coverage/collect_cc_coverage.sh
+#build:remote-ci-linux-coverage --coverage_support=//.github/workflows/coverage:coverage_support
+#build:remote-ci-linux-coverage --test_env=CC_CODE_COVERAGE_SCRIPT=.github/workflows/coverage/collect_cc_coverage.sh
 build:remote-ci-linux-coverage --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 build:remote-ci-linux-coverage --action_env=CC=/opt/llvm/bin/clang
 build:remote-ci-linux-coverage --test_env=CC=/opt/llvm/bin/clang
@@ -204,7 +204,6 @@ build:remote-ci-linux-coverage --remote_download_outputs=all
 build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
 build:remote-ci-linux-coverage --nocache_test_results
-#build:remote-ci-linux-coverage --remote_cache=
 build:remote-ci-linux-coverage --noremote_accept_cached
 build:remote-ci-linux-coverage --config=remote-ci-common
 #############################################################################
