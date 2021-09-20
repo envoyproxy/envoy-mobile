@@ -205,6 +205,7 @@ build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
 build:remote-ci-linux-coverage --nocache_test_results
 build:remote-ci-linux-coverage --remote_cache=
+#build:remote-ci-linux-coverage --noremote_accept_cached
 build:remote-ci-linux-coverage --config=remote-ci-common
 #############################################################################
 # remote-ci-macos: These options are macOS-only
