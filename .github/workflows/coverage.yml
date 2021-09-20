@@ -34,7 +34,7 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
           architecture: x64
       - name: 'Clean'
@@ -58,7 +58,7 @@ jobs:
             BAZEL_USE_LLVM_NATIVE_COVERAGE=1 \
             PATH=/opt/llvm/bin:${PATH} \
             COVERAGE_THRESHOLD=95 \
-            ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/foo:a_test # //test/common/...
+            ./.github/workflows/run_envoy_bazel_coverage.sh //test/common/foo:a_test //test/common/bar:b_test
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
       - name: 'Package coverage'
