@@ -201,7 +201,7 @@ build:remote-ci-linux-coverage --test_strategy=standalone
 build:remote-ci-linux-coverage --remote_download_outputs=all
 build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
-build:remote-ci-linux-coverage --nocache_test_results
+#build:remote-ci-linux-coverage --nocache_test_results
 # Bazel remote caching is incompatible with C++ LLVM coverage so we need to deactivate it for coverage
 # TODO(lfpino): Reference upstream Bazel issue here.
 build:remote-ci-linux-coverage --noremote_accept_cached
