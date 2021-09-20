@@ -8,5 +8,4 @@ cc_test(
     srcs = ["a_test.cc"],
     copts = ["-Iexternal/gtest"],
     deps = ["@gtest//:gtest_main", ":a"],
-    tags = ["local"],
 )
