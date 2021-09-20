@@ -203,8 +203,8 @@ build:remote-ci-linux-coverage --test_strategy=standalone
 build:remote-ci-linux-coverage --remote_download_outputs=all
 build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
-build:remote-ci-linux-coverage --config=remote-ci-common
 build:remote-ci-linux-coverage --nocache_test_results
+build:remote-ci-linux-coverage --config=remote-ci-common
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
