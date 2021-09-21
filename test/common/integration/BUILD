@@ -8,6 +8,8 @@ envoy_cc_test(
     name = "client_integration_test",
     srcs = ["client_integration_test.cc"],
     repository = "@envoy",
+    # TODO(lfpino): Enable coverage in this test once it's back to green.
+    tags = ["nocoverage"],
     deps = [
         "//library/common/extensions/filters/http/local_error:config",
         "//library/common/extensions/filters/http/local_error:filter_cc_proto",
@@ -18,6 +20,4 @@ envoy_cc_test(
         "@envoy//test/integration:http_integration_lib",
         "@envoy//test/server:utility_lib",
     ],
-    # TODO(lfpino): Enable coverage in this test once it's back to green.
-    tags = ["nocoverage"],
 )
