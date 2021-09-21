@@ -7,7 +7,7 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
-#include "library/common/network/mobile_utility.h"
+#include "library/common/network/configurator.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
@@ -294,19 +294,19 @@ void Engine::drainConnections() {
 }
 
 void Engine::logInterfaces() {
-  auto v4_vec = Network::MobileUtility::enumerateV4Interfaces();
+  auto v4_vec = Network::Configurator::enumerateV4Interfaces();
   std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec.end(), std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
 
-  auto v6_vec = Network::MobileUtility::enumerateV6Interfaces();
+  auto v6_vec = Network::Configurator::enumerateV6Interfaces();
   std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec.end(), std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
-  ENVOY_LOG_EVENT(debug, "socket_selection_get_v4_interfaces", v4_names);
-  ENVOY_LOG_EVENT(debug, "socket_selection_get_v6_interfaces", v6_names);
+  ENVOY_LOG_EVENT(debug, "network_configuration_get_v4_interfaces", v4_names);
+  ENVOY_LOG_EVENT(debug, "network_configuration_get_v6_interfaces", v6_names);
 }
 
 } // namespace Envoy

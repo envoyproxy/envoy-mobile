@@ -1,4 +1,4 @@
-#include "library/common/network/mobile_utility.h"
+#include "library/common/network/configurator.h"
 
 #include "envoy/common/platform.h"
 
@@ -60,21 +60,21 @@ namespace {
 #define SUPPORTS_GETIFADDRS
 #endif
 
-std::atomic<envoy_network_t> MobileUtility::preferred_network_{ENVOY_NET_GENERIC};
+std::atomic<envoy_network_t> Configurator::preferred_network_{ENVOY_NET_GENERIC};
 
-void MobileUtility::setPreferredNetwork(envoy_network_t network) { preferred_network_ = network; }
+void Configurator::setPreferredNetwork(envoy_network_t network) { preferred_network_ = network; }
 
-envoy_network_t MobileUtility::getPreferredNetwork() { return preferred_network_.load(); }
+envoy_network_t Configurator::getPreferredNetwork() { return preferred_network_.load(); }
 
-std::vector<std::string> MobileUtility::enumerateV4Interfaces() {
+std::vector<std::string> Configurator::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET);
 }
 
-std::vector<std::string> MobileUtility::enumerateV6Interfaces() {
+std::vector<std::string> Configurator::enumerateV6Interfaces() {
   return enumerateInterfaces(AF_INET6);
 }
 
-Socket::OptionsSharedPtr MobileUtility::getUpstreamSocketOptions(envoy_network_t network) {
+Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t network) {
   // Envoy uses the hash signature of overridden socket options to choose a connection pool.
   // Setting a dummy socket option is a hack that allows us to select a different
   // connection pool without materially changing the socket configuration.
@@ -88,7 +88,7 @@ Socket::OptionsSharedPtr MobileUtility::getUpstreamSocketOptions(envoy_network_t
 }
 
 std::vector<std::string>
-MobileUtility::enumerateInterfaces([[maybe_unused]] unsigned short family) {
+Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family) {
   std::vector<std::string> names{};
 
 #ifdef SUPPORTS_GETIFADDRS

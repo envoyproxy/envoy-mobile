@@ -5,18 +5,18 @@
 #include "source/common/common/logger.h"
 #include "source/extensions/filters/http/common/pass_through_filter.h"
 
-#include "library/common/extensions/filters/http/socket_selection/filter.pb.h"
+#include "library/common/extensions/filters/http/network_configuration/filter.pb.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
-namespace SocketSelection {
+namespace NetworkConfiguration {
 
 /**
  * Filter to set upstream socket options based on network conditions.
  */
-class SocketSelectionFilter final : public Http::PassThroughFilter,
+class NetworkConfigurationFilter final : public Http::PassThroughFilter,
                                     public Logger::Loggable<Logger::Id::filter> {
 public:
   // Http::StreamDecoderFilter
@@ -24,7 +24,7 @@ public:
                                           bool end_stream) override;
 };
 
-} // namespace SocketSelection
+} // namespace NetworkConfiguration
 } // namespace HttpFilters
 } // namespace Extensions
 } // namespace Envoy

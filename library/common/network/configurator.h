@@ -13,7 +13,7 @@ namespace Network {
 /**
  * Network utility routines related to mobile clients.
  */
-class MobileUtility {
+class Configurator {
 public:
   /**
    * @returns a list of local network interfaces supporting IPv4.

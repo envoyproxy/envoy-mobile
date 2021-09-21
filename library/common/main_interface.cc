@@ -8,7 +8,7 @@
 #include "library/common/engine.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/http/client.h"
-#include "library/common/network/mobile_utility.h"
+#include "library/common/network/configurator.h"
 
 // NOLINT(namespace-envoy)
 
@@ -88,7 +88,7 @@ envoy_status_t reset_stream(envoy_stream_t stream) {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
-  Envoy::Network::MobileUtility::setPreferredNetwork(network);
+  Envoy::Network::Configurator::setPreferredNetwork(network);
   return ENVOY_SUCCESS;
 }
 
