@@ -201,12 +201,13 @@ build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
 build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 # Flags to run tests locally which are necessary since Bazel C++ LLVM coverage isn't fully supported for remote builds
+# TODO(lfpino): Reference upstream Bazel issue here on the incompatibility of remote test execution and LLVM coverage.
 build:remote-ci-linux-coverage --test_strategy=standalone
 build:remote-ci-linux-coverage --remote_download_outputs=all
 build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
 # Bazel remote caching is incompatible with C++ LLVM coverage so we need to deactivate it for coverage builds
-# TODO(lfpino): Reference upstream Bazel issue here.
+# TODO(lfpino): Reference upstream Bazel issue here on the incompatibility of remote caching and LLVM coverage.
 build:remote-ci-linux-coverage --noremote_accept_cached
 build:remote-ci-linux-coverage --config=remote-ci-common
 #############################################################################
