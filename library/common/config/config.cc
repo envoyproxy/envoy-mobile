@@ -48,6 +48,7 @@ const std::string config_header = R"(
 - &statsd_host 127.0.0.1
 - &statsd_port 8125
 - &stream_idle_timeout 15s
+- &per_try_idle_timeout 15s
 - &virtual_clusters []
 
 !ignore stats_defs:
@@ -228,11 +229,15 @@ static_resources:
                   cluster_header: x-envoy-mobile-cluster
                   timeout: 0s
                   retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
                     retry_back_off:
                       base_interval: 0.25s
                       max_interval: 60s
           http_filters:
 #{custom_filters}
+          - name: envoy.filters.http.socket_selection
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_selection.SocketSelection
           - name: envoy.filters.http.local_error
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
@@ -247,7 +252,7 @@ R"(
                 preresolve_hostnames: *dns_preresolve_hostnames
 )"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
 R"(
-                dns_lookup_family: V4_ONLY
+                dns_lookup_family: V4_PREFERRED
 )"              // On mobile, backgrounding might cause the host to be past its TTL without good
                 // reason. Given the host would be deleted, and new streams for a given domain
                 // would have to wait for resolution, it is better to not delete existing hosts;
@@ -318,43 +323,7 @@ R"(
       max_ejection_time: 0.001s
       interval: 1s
     typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wlan
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wwan
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_clear
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wlan_clear
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wwan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
@@ -373,47 +342,7 @@ R"(
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
     typed_extension_protocol_options: *base_protocol_options
-  - name: base_wlan_h2
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_h2_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options
-  - name: base_wwan_h2
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_h2_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options
   - name: base_alpn
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options
-  - name: base_wlan_alpn
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options
-  - name: base_wwan_alpn
-    http2_protocol_options: {}
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
