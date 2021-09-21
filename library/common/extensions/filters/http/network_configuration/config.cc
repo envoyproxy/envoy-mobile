@@ -19,7 +19,8 @@ Http::FilterFactoryCb NetworkConfigurationFilterFactory::createFilterFactoryFrom
 /**
  * Static registration for the NetworkConfiguration filter. @see NamedHttpFilterConfigFactory.
  */
-REGISTER_FACTORY(NetworkConfigurationFilterFactory, Server::Configuration::NamedHttpFilterConfigFactory);
+REGISTER_FACTORY(NetworkConfigurationFilterFactory,
+                 Server::Configuration::NamedHttpFilterConfigFactory);
 
 } // namespace NetworkConfiguration
 } // namespace HttpFilters

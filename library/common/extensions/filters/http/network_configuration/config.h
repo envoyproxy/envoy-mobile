@@ -21,7 +21,8 @@ public:
 
 private:
   ::Envoy::Http::FilterFactoryCb createFilterFactoryFromProtoTyped(
-      const envoymobile::extensions::filters::http::network_configuration::NetworkConfiguration& config,
+      const envoymobile::extensions::filters::http::network_configuration::NetworkConfiguration&
+          config,
       const std::string& stats_prefix, Server::Configuration::FactoryContext& context) override;
 };
 

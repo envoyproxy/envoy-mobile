@@ -17,7 +17,7 @@ namespace NetworkConfiguration {
  * Filter to set upstream socket options based on network conditions.
  */
 class NetworkConfigurationFilter final : public Http::PassThroughFilter,
-                                    public Logger::Loggable<Logger::Id::filter> {
+                                         public Logger::Loggable<Logger::Id::filter> {
 public:
   // Http::StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,

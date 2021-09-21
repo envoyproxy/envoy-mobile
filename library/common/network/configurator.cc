@@ -87,8 +87,7 @@ Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t 
   return options;
 }
 
-std::vector<std::string>
-Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family) {
+std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family) {
   std::vector<std::string> names{};
 
 #ifdef SUPPORTS_GETIFADDRS
