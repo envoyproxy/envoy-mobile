@@ -267,7 +267,7 @@ private:
     // back, avoids excessive buffering of response bodies if the response body is
     // read faster than the mobile caller can process it.
     bool explicit_flow_control_ = false;
-    // Latest intel data retrieved from the InfoStream.
+    // Latest intel data retrieved from the StreamInfo.
     envoy_stream_intel stream_intel_;
   };
 

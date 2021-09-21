@@ -251,7 +251,7 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
   return direct_stream_.stream_intel_;
 }
 
-void Client::DirectStream::saveStreamIntel() {
+void Client::DirectStream::saveLatestStreamIntel() {
   const auto& info = request_decoder_->streamInfo();
   stream_intel_.connection_id = info.upstreamConnectionId().value_or(0);
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
