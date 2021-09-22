@@ -117,7 +117,7 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
 
-  bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), end_stream,
+  bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), send_end_stream,
                             streamIntel(), bridge_callbacks_.context);
   if (send_end_stream) {
     onComplete();
