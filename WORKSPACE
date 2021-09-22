@@ -64,9 +64,6 @@ rbe_autoconfig(
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
     create_java_configs = False,
-    exec_properties = {
-        "Pool": "linux",
-    },
 )
 
 rbe_autoconfig(
