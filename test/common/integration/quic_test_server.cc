@@ -1,21 +1,6 @@
 #include "quic_test_server.h"
 
 namespace Envoy {
-// see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
-void QuicTestServer::setup() {
-
-  ProcessWide process_wide;
-  Thread::MutexBasicLockable lock;
-
-  Logger::Registry::getSink()->setLock(lock);
-  Logger::Registry::getSink()->setShouldEscape(false);
-  Logger::Registry::setLogLevel(spdlog::level::level_enum::err);             // options.logLevel()
-  Logger::Registry::setLogFormat("[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v"); // options.logFormat()
-
-  // TODO(colibie) this doesnt work. Why?
-  // Logger::Context logging_state(options.logLevel(), options.logFormat(), lock, false,
-  //                               options.enableFineGrainLogging());
-}
 
 Network::TransportSocketFactoryPtr QuicTestServer::createUpstreamTlsContext(
     testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>& factory_context) {
@@ -150,10 +135,16 @@ QuicTestServer::QuicTestServer()
   ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
   ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
 
-  setup();
 }
 
 void QuicTestServer::startQuicTestServer() {
+  // pre-setup: see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
+  ProcessWide process_wide;
+  Thread::MutexBasicLockable lock;
+  Logger::Context logging_state(spdlog::level::level_enum::err, "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false,
+                                   false);
+  // end pre-setup
+
   FakeUpstreamConfig upstream_config_{time_system_};
   upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
   upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
@@ -165,10 +156,14 @@ void QuicTestServer::startQuicTestServer() {
   aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
                                                    upstream_config_, false);
 
+  aupstream->setLastRequestHeaders(Http::TestRequestHeaderMapImpl{
+                                            {"response_size_bytes", "2"}});
+  aupstream->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
+                                           Http::TestResponseHeaderMapImpl({{":status", "203"}})));
+
   // see what port was selected.
   std::cerr << "Upstream now listening on " << aupstream->localAddress()->asString() << "\n";
 
-  Logger::Registry::getSink()->clearLock();
 }
 
 void QuicTestServer::shutdownQuicTestServer() {

@@ -1,6 +1,7 @@
 package org.chromium.net.testing;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.chromium.net.testing.CronetTestRule.getContext;
 
 import io.envoyproxy.envoymobile.AndroidEngineBuilder;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -205,37 +205,73 @@ public class QuicTestServerTest {
     }
   }
 
-  @Before
-  public void setUpEngine() throws Exception {
-    if (engine == null) {
-      CountDownLatch latch = new CountDownLatch(1);
-      engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
-                   .setOnEngineRunning(() -> {
-                     latch.countDown();
-                     return null;
-                   })
-                   .build();
-      latch.await(); // Don't launch a request before initialization has completed.
-    }
-  }
+  // @Before
+  // public void setUpEngine() throws Exception {
+  //   if (engine == null) {
+  //     CountDownLatch latch = new CountDownLatch(1);
+  //     engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
+  //                  .setOnEngineRunning(() -> {
+  //                    latch.countDown();
+  //                    return null;
+  //                  })
+  //                  .build();
+  //     latch.await(); // Don't launch a request before initialization has completed.
+  //   }
+  // }
 
   @After
   public void shutdownMockWebServer() throws IOException {
-    QuicTestServer.shutdownQuicTestServer();
+    // QuicTestServer.shutdownQuicTestServer();
   }
 
   @Test
   public void get_simple() throws Exception {
-    QuicTestServer.startQuicTestServer(getContext());
-    QuicTestServerTest.RequestScenario requestScenario = new QuicTestServerTest.RequestScenario()
-                                                             .setHttpMethod(RequestMethod.GET)
-                                                             .setUrl(QuicTestServer.getServerURL());
+    CountDownLatch latch = new CountDownLatch(1);
+    Engine engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
+        .setOnEngineRunning(() -> {
+          latch.countDown();
+          return null;
+        })
+        .build();
+    latch.await();
 
-    QuicTestServerTest.Response response = sendRequest(requestScenario);
+    RequestMethod requestMethod = RequestMethod.valueOf("GET");
+    RequestHeaders requestHeaders = new RequestHeadersBuilder(requestMethod, "https",
+        "example.com", "/test")
+      .build();
 
-    assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
-    assertThat(response.getBodyAsString()).isEqualTo("hello, world");
-    assertThat(response.getEnvoyError()).isNull();
+    engine
+      .streamClient()
+      .newStreamPrototype()
+      .setOnResponseHeaders((responseHeaders, lastCallback, ignored) -> {
+        assertThat(responseHeaders.getHttpStatus()).isEqualTo(200);
+        if (lastCallback) {
+          System.err.println("SUCCESSFUL HEADERS!!!");
+        }
+        return null;
+      })
+      .setOnResponseData((data, endStream, ignored) -> {
+        if (endStream) {
+          System.err.println("SUCCESSFUL DATA!!!");
+        }
+        return null;
+      })
+      .setOnError((error, ignored) -> {
+        fail("An error");
+        return null;
+      })
+      .start(Executors.newSingleThreadExecutor())
+        .sendHeaders(requestHeaders, true);
+    // QuicTestServer.startQuicTestServer(getContext());
+    // QuicTestServerTest.RequestScenario requestScenario = new QuicTestServerTest.RequestScenario()
+    //                                                          .setHttpMethod(RequestMethod.GET)
+    //                                                          .setUrl(QuicTestServer.getServerURL());
+    //
+    // QuicTestServerTest.Response response = sendRequest(requestScenario);
+    //
+    // assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
+    // assertThat(response.getBodyAsString()).isEqualTo("hello, world");
+    // assertThat(response.getEnvoyError()).isNull();
   }
 
   private QuicTestServerTest.Response
