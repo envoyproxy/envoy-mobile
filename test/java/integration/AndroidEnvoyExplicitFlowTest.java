@@ -68,11 +68,11 @@ public class AndroidEnvoyExplicitFlowTest {
       CountDownLatch latch = new CountDownLatch(1);
       Context appContext = ApplicationProvider.getApplicationContext();
       engine = new AndroidEngineBuilder(appContext)
-          .setOnEngineRunning(() -> {
-            latch.countDown();
-            return null;
-          })
-          .build();
+                   .setOnEngineRunning(() -> {
+                     latch.countDown();
+                     return null;
+                   })
+                   .build();
       latch.await(); // Don't launch a request before initialization has completed.
     }
   }
@@ -86,10 +86,11 @@ public class AndroidEnvoyExplicitFlowTest {
   public void get_simple_bufferLargerThanResponseBody() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
-    RequestScenario requestScenario = new RequestScenario()
-        .setHttpMethod(RequestMethod.GET)
-        .setUrl(mockWebServer.url("get/flowers").toString())
-        .setResponseBufferSize(20); // Larger than the response body size
+    RequestScenario requestScenario =
+        new RequestScenario()
+            .setHttpMethod(RequestMethod.GET)
+            .setUrl(mockWebServer.url("get/flowers").toString())
+            .setResponseBufferSize(20); // Larger than the response body size
 
     Response response = sendRequest(requestScenario);
 
@@ -102,10 +103,11 @@ public class AndroidEnvoyExplicitFlowTest {
   public void get_simple_bufferSmallerThanResponseBody() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
     mockWebServer.start();
-    RequestScenario requestScenario = new RequestScenario()
-        .setHttpMethod(RequestMethod.GET)
-        .setUrl(mockWebServer.url("get/flowers").toString())
-        .setResponseBufferSize(4); // Smaller than the response body size
+    RequestScenario requestScenario =
+        new RequestScenario()
+            .setHttpMethod(RequestMethod.GET)
+            .setUrl(mockWebServer.url("get/flowers").toString())
+            .setResponseBufferSize(4); // Smaller than the response body size
 
     Response response = sendRequest(requestScenario);
 
@@ -119,8 +121,8 @@ public class AndroidEnvoyExplicitFlowTest {
     mockWebServer.enqueue(new MockResponse().setResponseCode(200));
     mockWebServer.start();
     RequestScenario requestScenario = new RequestScenario()
-        .setHttpMethod(RequestMethod.GET)
-        .setUrl(mockWebServer.url("get/flowers").toString());
+                                          .setHttpMethod(RequestMethod.GET)
+                                          .setUrl(mockWebServer.url("get/flowers").toString());
 
     Response response = sendRequest(requestScenario);
 
@@ -136,10 +138,11 @@ public class AndroidEnvoyExplicitFlowTest {
     mockWebServer.enqueue(
         new MockResponse().throttleBody(5, 1, TimeUnit.SECONDS).setBody("hello, world"));
     mockWebServer.start();
-    RequestScenario requestScenario = new RequestScenario()
-        .setHttpMethod(RequestMethod.GET)
-        .setUrl(mockWebServer.url("get/flowers").toString())
-        .setResponseBufferSize(6); // Larger than one chunk of the response body size
+    RequestScenario requestScenario =
+        new RequestScenario()
+            .setHttpMethod(RequestMethod.GET)
+            .setUrl(mockWebServer.url("get/flowers").toString())
+            .setResponseBufferSize(6); // Larger than one chunk of the response body size
 
     Response response = sendRequest(requestScenario);
 
@@ -157,10 +160,11 @@ public class AndroidEnvoyExplicitFlowTest {
     mockWebServer.enqueue(
         new MockResponse().throttleBody(5, 1, TimeUnit.SECONDS).setBody("hello, world"));
     mockWebServer.start();
-    RequestScenario requestScenario = new RequestScenario()
-        .setHttpMethod(RequestMethod.GET)
-        .setUrl(mockWebServer.url("get/flowers").toString())
-        .setResponseBufferSize(3); // Smaller than some chunk of the response body size
+    RequestScenario requestScenario =
+        new RequestScenario()
+            .setHttpMethod(RequestMethod.GET)
+            .setUrl(mockWebServer.url("get/flowers").toString())
+            .setResponseBufferSize(3); // Smaller than some chunk of the response body size
 
     Response response = sendRequest(requestScenario);
 
@@ -172,7 +176,7 @@ public class AndroidEnvoyExplicitFlowTest {
     assertThat(response.getNbResponseChunks()).isEqualTo(6); // 3&2 bytes, 3&2 bytes, 2, and 0 bytes
   }
 
-  // TODO(carloseltuerto) Add tests for POST once the Explicit Flow Control gets surfaced.
+  // TODO(carloseltuerto) Add tests for POST once the Explicit Flow Control surfaces.
 
   private Response sendRequest(RequestScenario requestScenario) throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
@@ -180,41 +184,41 @@ public class AndroidEnvoyExplicitFlowTest {
     final AtomicReference<Stream> streamRef = new AtomicReference<>();
 
     Stream stream = engine.streamClient()
-        .newStreamPrototype()
-        .setOnResponseHeaders((responseHeaders, endStream, ignored) -> {
-          response.get().setHeaders(responseHeaders);
-          if (endStream) {
-            latch.countDown();
-          }
-          streamRef.get().readData(requestScenario.responseBufferSize);
-          return null;
-        })
-        .setOnResponseData((data, endStream, ignored) -> {
-          response.get().addBody(data);
-          if (endStream) {
-            latch.countDown();
-          } else {
-            streamRef.get().readData(requestScenario.responseBufferSize);
-          }
-          return null;
-        })
-        .setOnResponseTrailers((trailers, ignored) -> {
-          response.get().setTrailers(trailers);
-          latch.countDown();
-          return null;
-        })
-        .setOnError((error, ignored) -> {
-          response.get().setEnvoyError(error);
-          latch.countDown();
-          return null;
-        })
-        .setOnCancel((ignored) -> {
-          response.get().setCancelled();
-          latch.countDown();
-          return null;
-        })
-        .setExplicitFlowControl(true)
-        .start(Executors.newSingleThreadExecutor());
+                        .newStreamPrototype()
+                        .setOnResponseHeaders((responseHeaders, endStream, ignored) -> {
+                          response.get().setHeaders(responseHeaders);
+                          if (endStream) {
+                            latch.countDown();
+                          }
+                          streamRef.get().readData(requestScenario.responseBufferSize);
+                          return null;
+                        })
+                        .setOnResponseData((data, endStream, ignored) -> {
+                          response.get().addBody(data);
+                          if (endStream) {
+                            latch.countDown();
+                          } else {
+                            streamRef.get().readData(requestScenario.responseBufferSize);
+                          }
+                          return null;
+                        })
+                        .setOnResponseTrailers((trailers, ignored) -> {
+                          response.get().setTrailers(trailers);
+                          latch.countDown();
+                          return null;
+                        })
+                        .setOnError((error, ignored) -> {
+                          response.get().setEnvoyError(error);
+                          latch.countDown();
+                          return null;
+                        })
+                        .setOnCancel((ignored) -> {
+                          response.get().setCancelled();
+                          latch.countDown();
+                          return null;
+                        })
+                        .setExplicitFlowControl(true)
+                        .start(Executors.newSingleThreadExecutor());
     streamRef.set(stream); // Set before sending headers to avoid race conditions.
     stream.sendHeaders(requestScenario.getHeaders(), !requestScenario.hasBody());
     requestScenario.getBodyChunks().forEach(stream::sendData);
@@ -249,7 +253,7 @@ public class AndroidEnvoyExplicitFlowTest {
 
     Optional<ByteBuffer> getClosingBodyChunk() {
       return closeBodyStream ? Optional.of(bodyChunks.get(bodyChunks.size() - 1))
-          : Optional.empty();
+                             : Optional.empty();
     }
 
     boolean hasBody() { return !bodyChunks.isEmpty(); }
@@ -324,7 +328,7 @@ public class AndroidEnvoyExplicitFlowTest {
     void setCancelled() {
       if (!cancelled.compareAndSet(false, true)) {
         assertionError.compareAndSet(null,
-            new AssertionError("setOnCancel called more than once."));
+                                     new AssertionError("setOnCancel called more than once."));
       }
     }
 
