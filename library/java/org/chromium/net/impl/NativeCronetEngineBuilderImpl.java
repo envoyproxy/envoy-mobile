@@ -34,10 +34,12 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private int mDnsFailureRefreshSecondsMax = 10;
   private int mDnsQueryTimeoutSeconds = 25;
   private String mDnsPreresolveHostnames = "[]";
+  private boolean mEnableInterfaceBinding = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
   private int mH2ConnectionKeepaliveTimeoutSeconds = 10;
   private int mStatsFlushSeconds = 60;
   private int mStreamIdleTimeoutSeconds = 15;
+  private int mPerTryIdleTimeoutSeconds = 15;
   private String mAppVersion = "unspecified";
   private String mAppId = "unspecified";
   private String mVirtualClusters = "[]";
@@ -73,9 +75,9 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
-        mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames,
+        mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mEnableInterfaceBinding,
         mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mAppVersion, mAppId, mVirtualClusters,
-        mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
+        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
+        mAppId, mVirtualClusters, mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
   }
 }
