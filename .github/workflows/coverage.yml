@@ -44,7 +44,7 @@ jobs:
         continue-on-error: true
         run: |
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
-          BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
+          BAZEL_BUILD_OPTIONS="--config=remote-ci-debug --config=remote-ci-linux-coverage" \
             CC=/opt/llvm/bin/clang \
             CXX=/opt/llvm/bin/clang++ \
             GCOV=/opt/llvm/bin/llvm-profdata \
