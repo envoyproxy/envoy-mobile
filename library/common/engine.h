@@ -10,6 +10,7 @@
 #include "library/common/common/lambda_logger_delegate.h"
 #include "library/common/engine_common.h"
 #include "library/common/http/client.h"
+#include "library/common/network/configurator.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -135,6 +136,7 @@ private:
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   Http::ClientPtr http_client_;
+  Network::ConfiguratorSharedPtr network_configurator_;
   Event::ProvisionalDispatcherPtr dispatcher_;
   // Used by the cerr logger to ensure logs don't overwrite each other.
   absl::Mutex log_mutex_;

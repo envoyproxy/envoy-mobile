@@ -7,7 +7,6 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
-#include "library/common/network/configurator.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
@@ -103,8 +102,8 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           ASSERT(Thread::MainThread::isMainThread());
 
+          network_configurator_ = Network::ConfiguratorHandle(server_->singletonManager()).get();
           logInterfaces();
-
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -294,13 +293,13 @@ void Engine::drainConnections() {
 }
 
 void Engine::logInterfaces() {
-  auto v4_vec = Network::Configurator::enumerateV4Interfaces();
+  auto v4_vec = network_configurator_->enumerateV4Interfaces();
   std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec.end(), std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
 
-  auto v6_vec = Network::Configurator::enumerateV6Interfaces();
+  auto v6_vec = network_configurator_->enumerateV6Interfaces();
   std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec.end(), std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;

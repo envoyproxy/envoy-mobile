@@ -60,6 +60,8 @@ namespace {
 #define SUPPORTS_GETIFADDRS
 #endif
 
+SINGLETON_MANAGER_REGISTRATION(network_configurator);
+
 std::atomic<envoy_network_t> Configurator::preferred_network_{ENVOY_NET_GENERIC};
 
 void Configurator::setPreferredNetwork(envoy_network_t network) { preferred_network_ = network; }
@@ -107,6 +109,12 @@ std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsi
 #endif // SUPPORTS_GETIFADDRS
 
   return names;
+}
+
+ConfiguratorSharedPtr ConfiguratorHandle::get() {
+  return singleton_manager_.getTyped<Configurator>(
+      SINGLETON_MANAGER_REGISTERED_NAME(network_configurator),
+      [] { return std::make_shared<Configurator>(); });
 }
 
 } // namespace Network
