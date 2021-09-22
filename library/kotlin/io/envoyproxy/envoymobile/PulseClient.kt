@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
 /**
- * Client for Envoy Mobile's stats and logging library, Pulse, used to record client time series metrics and loggs
+ * Client for Envoy Mobile's stats and logging library, Pulse, used to record client time series metrics and logs.
  *
  * Note: this is an experimental interface and is subject to change The implementation has not been
  * optimized, and there may be performance implications in production usage.
@@ -43,11 +43,11 @@ interface PulseClient {
   fun distribution(vararg elements: Element, tags: Tags): Distribution
 
   /**
-   * Logs a log with its level, message and tags.
+   * Logs with level, message and tags.
    *
    * @param level Level of the log
    * @param message The log message
-   * @param tags Log tags, carries miscellaneous information about the log, such as file, line number etc.
+   * @param tags Log tags, carries miscellaneous information about the log, such as file name, line number etc.
    */
   fun log(level: LogLevel, message: String, tags: Map<String, String>?)
 }
