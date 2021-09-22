@@ -24,8 +24,8 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "//library/common/types:c_types_lib",
-        "@envoy//envoy/singleton:manager_interface",
         "@envoy//envoy/network:socket_interface",
+        "@envoy//envoy/singleton:manager_interface",
         "@envoy//source/common/common:assert_lib",
         "@envoy//source/common/common:scalar_to_byte_vector_lib",
         "@envoy//source/common/common:utility_lib",

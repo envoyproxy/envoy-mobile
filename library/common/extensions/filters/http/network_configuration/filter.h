@@ -9,7 +9,6 @@
 #include "library/common/network/configurator.h"
 #include "library/common/types/c_types.h"
 
-
 namespace Envoy {
 namespace Extensions {
 namespace HttpFilters {
@@ -22,7 +21,7 @@ class NetworkConfigurationFilter final : public Http::PassThroughFilter,
                                          public Logger::Loggable<Logger::Id::filter> {
 public:
   NetworkConfigurationFilter(Network::ConfiguratorSharedPtr network_configurator)
-    : network_configurator_(network_configurator) {}
+      : network_configurator_(network_configurator) {}
 
   // Http::StreamDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,

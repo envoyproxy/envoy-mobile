@@ -5,6 +5,7 @@
 
 #include "envoy/network/socket.h"
 #include "envoy/singleton/manager.h"
+
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_impl.h"
 
 #include "library/common/types/c_types.h"
@@ -66,8 +67,7 @@ using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
  */
 class ConfiguratorHandle {
 public:
-  ConfiguratorHandle(Server::Configuration::FactoryContextBase& context)
-      : context_(context) {}
+  ConfiguratorHandle(Server::Configuration::FactoryContextBase& context) : context_(context) {}
 
   /**
    * @returns singleton Configurator instance.
