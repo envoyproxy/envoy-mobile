@@ -55,6 +55,12 @@ public:
   Http::Client& httpClient();
 
   /**
+   * Accessor for the network configuraator. Must be called from the dispatcher's context.
+   * @return Network::Configurator&, the network configurator.
+   */
+  Network::Configurator& networkConfigurator();
+
+  /**
    * Increment a counter with a given string of elements and by the given count.
    * @param elements, joined elements of the timeseries.
    * @param tags, custom tags of the reporting stat.

@@ -40,7 +40,13 @@ public:
    * Sets the current OS default/preferred network class.
    * @param network, the network preference.
    */
-  static void setPreferredNetwork(envoy_network_t network);
+  static envoy_network_t setPreferredNetwork(envoy_network_t network);
+
+  /**
+   * Refresh DNS in response to preferred network update. May be no-op.
+   * @param network, the updated network.
+   */
+  void refreshDns(envoy_network_t network);
 
   /**
    * @returns the current socket options that should be used for connections.

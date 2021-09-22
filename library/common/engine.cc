@@ -280,6 +280,12 @@ Http::Client& Engine::httpClient() {
   return *http_client_;
 }
 
+Network::Configurator& Engine::networkConfigurator() {
+  RELEASE_ASSERT(dispatcher_->isThreadSafe(),
+                 "networkConfigurator must be accessed from dispatcher's context");
+  return *network_configurator_;
+}
+
 void Engine::flushStats() {
   ASSERT(dispatcher_->isThreadSafe(), "flushStats must be called from the dispatcher's context");
 

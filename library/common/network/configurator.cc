@@ -65,9 +65,22 @@ SINGLETON_MANAGER_REGISTRATION(network_configurator);
 
 std::atomic<envoy_network_t> Configurator::preferred_network_{ENVOY_NET_GENERIC};
 
-void Configurator::setPreferredNetwork(envoy_network_t network) { preferred_network_ = network; }
+envoy_network_t Configurator::setPreferredNetwork(envoy_network_t network) { return preferred_network_.exchange(network); }
 
 envoy_network_t Configurator::getPreferredNetwork() { return preferred_network_.load(); }
+
+void Configurator::refreshDns(envoy_network_t network) {
+  // refreshDns is intended to be queued on Envoy's event loop, whereas preferred_network_ is
+  // updated synchronously. In the event that multiple refreshes become queued on the event loop,
+  // this avoids triggering a refresh for a non-current network.
+  // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
+  // flip-flop scenarios.
+  if (network != preferred_network_.load() || !dns_cache_.has_value()) {
+    return;
+  }
+  // TODO(goaway): track event here or are there existing signals we can use?
+  dns_cache_.value()->forceRefreshHosts();
+}
 
 std::vector<std::string> Configurator::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET);
@@ -112,6 +125,8 @@ std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsi
   return names;
 }
 
+constexpr std::string_view BaseDnsCache = "base_dns_cache";
+
 ConfiguratorSharedPtr ConfiguratorHandle::get() {
   return context_.singletonManager().getTyped<Configurator>(
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator),
@@ -119,7 +134,7 @@ ConfiguratorSharedPtr ConfiguratorHandle::get() {
           Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl
               cache_manager_factory{context_};
           return std::make_shared<Configurator>(
-              cache_manager_factory.get()->lookUpCacheByName("base_dns_cache"));
+              cache_manager_factory.get()->lookUpCacheByName(BaseDnsCache));
       });
 }
 
