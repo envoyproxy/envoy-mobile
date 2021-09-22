@@ -11,8 +11,7 @@ Http::FilterFactoryCb NetworkConfigurationFilterFactory::createFilterFactoryFrom
     const envoymobile::extensions::filters::http::network_configuration::NetworkConfiguration&,
     const std::string&, Server::Configuration::FactoryContext& context) {
 
-  Network::ConfiguratorHandle network_configurator_handle{context.singletonManager()};
-  auto network_configurator = network_configurator_handle.get();
+  auto network_configurator = Network::ConfiguratorHandle{context}.get();
 
   return [network_configurator](Http::FilterChainFactoryCallbacks& callbacks) -> void {
     callbacks.addStreamFilter(std::make_shared<NetworkConfigurationFilter>(network_configurator));

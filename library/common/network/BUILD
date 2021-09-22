@@ -31,6 +31,7 @@ envoy_cc_library(
         "@envoy//source/common/common:utility_lib",
         "@envoy//source/common/network:addr_family_aware_socket_option_lib",
         "@envoy//source/common/network:socket_option_lib",
+        "@envoy//source/extensions/common/dynamic_forward_proxy:dns_cache_manager_impl",
     ],
 )
 

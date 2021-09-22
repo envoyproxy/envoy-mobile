@@ -5,17 +5,22 @@
 
 #include "envoy/network/socket.h"
 #include "envoy/singleton/manager.h"
+#include "source/extensions/common/dynamic_forward_proxy/dns_cache_impl.h"
 
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Network {
 
+using DnsCacheSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCacheSharedPtr;
+
 /**
  * Network utility routines related to mobile clients.
  */
 class Configurator : public Singleton::Instance {
 public:
+  Configurator(absl::optional<DnsCacheSharedPtr> dns_cache) : dns_cache_(dns_cache) {}
+
   /**
    * @returns a list of local network interfaces supporting IPv4.
    */
@@ -44,6 +49,7 @@ public:
 
 private:
   std::vector<std::string> enumerateInterfaces(unsigned short family);
+  absl::optional<DnsCacheSharedPtr> dns_cache_;
   static std::atomic<envoy_network_t> preferred_network_;
 };
 
@@ -54,8 +60,8 @@ using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
  */
 class ConfiguratorHandle {
 public:
-  ConfiguratorHandle(Singleton::Manager& singleton_manager)
-    : singleton_manager_(singleton_manager) {}
+  ConfiguratorHandle(Server::Configuration::FactoryContextBase& context)
+      : context_(context) {}
 
   /**
    * @returns singleton Configurator instance.
@@ -63,7 +69,7 @@ public:
   ConfiguratorSharedPtr get();
 
 private:
-  Singleton::Manager& singleton_manager_;
+  Server::Configuration::FactoryContextBase& context_;
 };
 
 } // namespace Network

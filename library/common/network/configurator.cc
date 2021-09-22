@@ -6,6 +6,7 @@
 #include "source/common/common/scalar_to_byte_vector.h"
 #include "source/common/common/utility.h"
 #include "source/common/network/addr_family_aware_socket_option_impl.h"
+#include "source/extensions/common/dynamic_forward_proxy/dns_cache_manager_impl.h"
 
 // Used on Linux/Android
 #ifdef SO_BINDTODEVICE
@@ -112,9 +113,14 @@ std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsi
 }
 
 ConfiguratorSharedPtr ConfiguratorHandle::get() {
-  return singleton_manager_.getTyped<Configurator>(
+  return context_.singletonManager().getTyped<Configurator>(
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator),
-      [] { return std::make_shared<Configurator>(); });
+      [&] {
+          Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl
+              cache_manager_factory{context_};
+          return std::make_shared<Configurator>(
+              cache_manager_factory.get()->lookUpCacheByName("base_dns_cache"));
+      });
 }
 
 } // namespace Network
