@@ -13,6 +13,7 @@ android_artifacts(
     native_deps = [
         "//library/common/jni:libenvoy_jni.so",
     ],
+    tags = ["local"]
     proguard_rules = "//library:proguard_rules",
     visibility = ["//visibility:public"],
 )
