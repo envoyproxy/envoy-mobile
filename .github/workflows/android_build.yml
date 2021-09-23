@@ -37,6 +37,7 @@ jobs:
         if: steps.check-cache.outputs.cache-hit != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
         run: |
           bazelisk build \
             --config=remote-ci-macos \
