@@ -53,6 +53,7 @@ public protocol PulseClient: AnyObject {
 
   /// - parameter level: Level of the log
   /// - parameter message: The log message
-  /// - parameter tags: Log tags, carries miscellaneous information about the log, such as file name, line number etc.
-  func log(level: LogLevel, message: String, tags: [String:String]?)
+  /// - parameter tags: Log tags, carries miscellaneous information about the log, such as file
+  ///   name, line number etc.
+  func log(level: LogLevel, message: String, tags: [String: String]?)
 }
