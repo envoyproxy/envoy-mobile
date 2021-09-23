@@ -136,8 +136,7 @@ ConfiguratorSharedPtr ConfiguratorHandle::get() {
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator), [&] {
         Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl cache_manager_factory{
             context_};
-        return std::make_shared<Configurator>(
-            cache_manager_factory.get());
+        return std::make_shared<Configurator>(cache_manager_factory.get());
       });
 }
 

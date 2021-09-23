@@ -20,7 +20,8 @@ using DnsCacheManagerSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCac
  */
 class Configurator : public Singleton::Instance {
 public:
-  Configurator(DnsCacheManagerSharedPtr dns_cache_manager) : dns_cache_manager_(dns_cache_manager) {}
+  Configurator(DnsCacheManagerSharedPtr dns_cache_manager)
+      : dns_cache_manager_(dns_cache_manager) {}
 
   /**
    * @returns a list of local network interfaces supporting IPv4.
