@@ -13,14 +13,14 @@
 namespace Envoy {
 namespace Network {
 
-using DnsCacheSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCacheSharedPtr;
+using DnsCacheManagerSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCacheManagerSharedPtr;
 
 /**
  * Network utility routines related to mobile clients.
  */
 class Configurator : public Singleton::Instance {
 public:
-  Configurator(absl::optional<DnsCacheSharedPtr> dns_cache) : dns_cache_(dns_cache) {}
+  Configurator(DnsCacheManagerSharedPtr dns_cache_manager) : dns_cache_manager_(dns_cache_manager) {}
 
   /**
    * @returns a list of local network interfaces supporting IPv4.
@@ -56,7 +56,7 @@ public:
 
 private:
   std::vector<std::string> enumerateInterfaces(unsigned short family);
-  absl::optional<DnsCacheSharedPtr> dns_cache_;
+  DnsCacheManagerSharedPtr dns_cache_manager_;
   static std::atomic<envoy_network_t> preferred_network_;
 };
 
