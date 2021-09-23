@@ -53,15 +53,33 @@ jobs:
             PATH=/opt/llvm/bin:${PATH} \
             COVERAGE_THRESHOLD=95 \
             ./envoy/test/run_envoy_bazel_coverage.sh //test/common/integration:client_integration_test
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: 'Package coverage'
+        continue-on-error: true
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |
+          cat $(bazel info server_log) > server.log
+          cat $(find bazel-out/ -name "test.log") > test.log
           tar -czvf coverage.tar.gz generated/coverage
+      - name: 'Upload log'
+        continue-on-error: true
+        if: steps.check_context.outputs.run_coverage == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: server.log
+          path: server.log
+      - name: 'Upload log 2'
+        continue-on-error: true
+        if: steps.check_context.outputs.run_coverage == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: test.log
+          path: test.log
       - name: 'Upload report'
+        continue-on-error: true
         if: steps.check_context.outputs.run_coverage == 'true'
         uses: actions/upload-artifact@v2
         with:
           name: coverage.tar.gz
           path: coverage.tar.gz
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
