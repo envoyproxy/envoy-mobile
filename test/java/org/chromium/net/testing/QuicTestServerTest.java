@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -135,14 +136,16 @@ public class QuicTestServerTest {
       + "           - name: remote_service\n"
       + "             domains: [\"*\"]\n"
       + "             routes:\n"
-      + "             - match: { prefix: \"/\" }\n"
-      + "               direct_response: { status: 200 }\n"
+      + "             - match: { prefix: \"/base\" }\n"
+      + "               direct_response:\n"
+      + "                 status: 200\n"
+      + "                 body:\n"
+      + "                   inline_string: \"hello, world\"\n"
       + "         http3_protocol_options:\n"
       + "         http_filters:\n"
       + "         - name: envoy.router\n"
       + "           typed_config:\n"
-      +
-      "             \"@type\": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router\n"
+      + "             \"@type\": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router\n"
       + " - name: base_api_listener\n"
       + "   address:\n"
       + "     socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }\n"
@@ -157,7 +160,7 @@ public class QuicTestServerTest {
       + "           domains: [\"*\"]\n"
       + "           routes:\n"
       + "           - match: { prefix: \"/\" }\n"
-      + "             route: { host_rewrite_literal: example.com, cluster: h3_remote }\n"
+      + "             route: { host_rewrite_literal: lyft.com, cluster: h3_remote }\n"
       + "       http_filters:\n"
       + "       - name: envoy.router\n"
       + "         typed_config:\n"
@@ -188,7 +191,7 @@ public class QuicTestServerTest {
       + "     typed_config:\n"
       + "       \"@type\": " + quicUpstreamType + "\n"
       + "       upstream_tls_context:\n"
-      + "         sni: example.com";
+      + "         sni: lyft.com";
 
   private static Engine engine;
 
@@ -205,73 +208,37 @@ public class QuicTestServerTest {
     }
   }
 
-  // @Before
-  // public void setUpEngine() throws Exception {
-  //   if (engine == null) {
-  //     CountDownLatch latch = new CountDownLatch(1);
-  //     engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
-  //                  .setOnEngineRunning(() -> {
-  //                    latch.countDown();
-  //                    return null;
-  //                  })
-  //                  .build();
-  //     latch.await(); // Don't launch a request before initialization has completed.
-  //   }
-  // }
+  @Before
+  public void setUpEngine() throws Exception {
+    if (engine == null) {
+      CountDownLatch latch = new CountDownLatch(1);
+      engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
+                   .setOnEngineRunning(() -> {
+                     latch.countDown();
+                     return null;
+                   })
+                   .build();
+      latch.await(); // Don't launch a request before initialization has completed.
+    }
+  }
 
   @After
   public void shutdownMockWebServer() throws IOException {
-    // QuicTestServer.shutdownQuicTestServer();
+    QuicTestServer.shutdownQuicTestServer();
   }
 
   @Test
   public void get_simple() throws Exception {
-    CountDownLatch latch = new CountDownLatch(1);
-    Engine engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
-        .setOnEngineRunning(() -> {
-          latch.countDown();
-          return null;
-        })
-        .build();
-    latch.await();
+    QuicTestServer.startQuicTestServer(getContext());
+    QuicTestServerTest.RequestScenario requestScenario = new QuicTestServerTest.RequestScenario()
+                                                             .setHttpMethod(RequestMethod.GET)
+                                                             .setUrl(QuicTestServer.getServerURL());
 
-    RequestMethod requestMethod = RequestMethod.valueOf("GET");
-    RequestHeaders requestHeaders = new RequestHeadersBuilder(requestMethod, "https",
-        "example.com", "/test")
-      .build();
+    QuicTestServerTest.Response response = sendRequest(requestScenario);
 
-    engine
-      .streamClient()
-      .newStreamPrototype()
-      .setOnResponseHeaders((responseHeaders, lastCallback, ignored) -> {
-        assertThat(responseHeaders.getHttpStatus()).isEqualTo(200);
-        if (lastCallback) {
-          System.err.println("SUCCESSFUL HEADERS!!!");
-        }
-        return null;
-      })
-      .setOnResponseData((data, endStream, ignored) -> {
-        if (endStream) {
-          System.err.println("SUCCESSFUL DATA!!!");
-        }
-        return null;
-      })
-      .setOnError((error, ignored) -> {
-        fail("An error");
-        return null;
-      })
-      .start(Executors.newSingleThreadExecutor())
-        .sendHeaders(requestHeaders, true);
-    // QuicTestServer.startQuicTestServer(getContext());
-    // QuicTestServerTest.RequestScenario requestScenario = new QuicTestServerTest.RequestScenario()
-    //                                                          .setHttpMethod(RequestMethod.GET)
-    //                                                          .setUrl(QuicTestServer.getServerURL());
-    //
-    // QuicTestServerTest.Response response = sendRequest(requestScenario);
-    //
-    // assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
-    // assertThat(response.getBodyAsString()).isEqualTo("hello, world");
-    // assertThat(response.getEnvoyError()).isNull();
+    assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
+    assertThat(response.getBodyAsString()).isEqualTo("hello, world");
+    assertThat(response.getEnvoyError()).isNull();
   }
 
   private QuicTestServerTest.Response
