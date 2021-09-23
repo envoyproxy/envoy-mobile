@@ -17,7 +17,7 @@ envoy_data toTestEnvoyData(std::string& s, uint32_t* sentinel) {
 }
 
 TEST(BridgeFragmentTest, Basic) {
-  uint32_t* sentinel = new uint32_t;
+  uint32_t* sentinel = nullptr;
   *sentinel = 0;
   std::string s = "test string";
   envoy_data c_data = toTestEnvoyData(s, sentinel);
