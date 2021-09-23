@@ -196,7 +196,6 @@ build:remote-ci-linux-coverage --extra_execution_platforms=@engflow_remote_confi
 build:remote-ci-linux-coverage --extra_toolchains=@engflow_remote_config_clang_coverage//config:cc-toolchain
 build:remote-ci-linux-coverage --host_platform=@engflow_remote_config_clang_coverage//config:platform
 build:remote-ci-linux-coverage --platforms=@engflow_remote_config_clang_coverage//config:platform
-build:remote-ci-linux-coverage --extra_toolchains=@local_jdk//:all
 build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 # Flags to run tests locally which are necessary since Bazel C++ LLVM coverage isn't fully supported for remote builds
@@ -208,6 +207,7 @@ build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
 # TODO(lfpino): Reference upstream Bazel issue here on the incompatibility of remote caching and LLVM coverage.
 build:remote-ci-linux-coverage --noremote_accept_cached
 build:remote-ci-linux-coverage --config=remote-ci-common
+# IPv6 tests fail on CI
 build:remote-ci-linux-coverage --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 #############################################################################
 # remote-ci-macos: These options are macOS-only
