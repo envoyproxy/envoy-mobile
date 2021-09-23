@@ -30,6 +30,7 @@ jobs:
             echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
+          [ -f /proc/net/if_inet6 ] && echo 'IPv6 ready system!' || echo 'No IPv6 support found! Compile the kernel!!'
       - name: 'Java setup'
         if: steps.check_context.outputs.run_coverage == 'true'
         uses: actions/setup-java@v1
@@ -43,7 +44,6 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
-          [ -f /proc/net/if_inet6 ] && echo 'IPv6 ready system!' || echo 'No IPv6 support found! Compile the kernel!!'
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=remote-ci-debug --config=remote-ci-linux-coverage" \
             CC=/opt/llvm/bin/clang \
