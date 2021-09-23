@@ -175,18 +175,22 @@ build:remote-ci-linux-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:
 build:remote-ci-linux-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
 build:remote-ci-linux-local-java8 --config=remote-ci-common
 #############################################################################
-# remote-ci-linux-local-java11: These options are linux-only using a local Java 11 (JDK)
-#############################################################################
-build:remote-ci-linux-local-java11 --extra_toolchains=@local_jdk//:all
-build:remote-ci-linux-local-java11 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux-local-java11 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-build:remote-ci-linux-local-java11 --config=remote-ci-common
-#############################################################################
 # remote-ci-macos: These options are macOS-only
 # TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
 #############################################################################
 build:remote-ci-macos --config=remote-ci-common
 build:remote-ci-macos --xcode_version_config=//ci:xcode_config
+#############################################################################
+# remote-ci-debug: Various Bazel debugging flags
+#############################################################################
+common:remote-ci-debug --announce_rc
+common:remote-ci-debug -s
+common:remote-ci-debug -c dbg
+common:remote-ci-debug --verbose_failures
+common:remote-ci-debug --sandbox_debug
+common:remote-ci-debug --action_env=VERBOSE_COVERAGE=true
+common:remote-ci-debug --test_env=VERBOSE_COVERAGE=true
+common:remote-ci-debug --test_env=DISPLAY_LCOV_CMD=true
 #############################################################################
 # Experimental EngFlow Remote Execution Configs
 #############################################################################

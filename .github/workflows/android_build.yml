@@ -42,4 +42,5 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86 \
-            //:android_dist_ci
+            //:android_dist_ci \
+            --config=remote-ci-debug
