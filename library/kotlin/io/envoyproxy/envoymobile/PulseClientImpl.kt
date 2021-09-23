@@ -41,7 +41,7 @@ internal class PulseClientImpl constructor(
     return DistributionImpl(engine, elements.asList(), tags)
   }
 
-  override fun log(level: LogLevel, message: String, tags: Map<String, String>?) {
+  override fun log(level: LogLevel, message: String, logTags: Map<String, String>?) {
     // TODO: currently does nothing, it will be implemented soon
   }
 }

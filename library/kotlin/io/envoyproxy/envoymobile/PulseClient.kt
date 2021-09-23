@@ -48,8 +48,8 @@ interface PulseClient {
    *
    * @param level Level of the log
    * @param message The log message
-   * @param tags Log tags, carries miscellaneous information about the log, such as file name, line
-   *             number etc.
+   * @param logTags Log tags, carries miscellaneous information about the log, such as file name,
+   *                line number etc.
    */
-  fun log(level: LogLevel, message: String, tags: Map<String, String>?)
+  fun log(level: LogLevel, message: String, logTags: Map<String, String>?)
 }
