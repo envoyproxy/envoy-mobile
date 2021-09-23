@@ -43,6 +43,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         continue-on-error: true
         run: |
+          [ -f /proc/net/if_inet6 ] && echo 'IPv6 ready system!' || echo 'No IPv6 support found! Compile the kernel!!'
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=remote-ci-debug --config=remote-ci-linux-coverage" \
             CC=/opt/llvm/bin/clang \
