@@ -18,7 +18,7 @@ using DnsCacheManagerSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCac
 /**
  * Network utility routines related to mobile clients.
  */
-class Configurator : public Singleton::Instance {
+class Configurator : public Logger::Loggable<Logger::Id::upstream>, public Singleton::Instance {
 public:
   Configurator(DnsCacheManagerSharedPtr dns_cache_manager)
       : dns_cache_manager_(dns_cache_manager) {}

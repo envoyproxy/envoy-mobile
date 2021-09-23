@@ -68,6 +68,7 @@ constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 std::atomic<envoy_network_t> Configurator::preferred_network_{ENVOY_NET_GENERIC};
 
 envoy_network_t Configurator::setPreferredNetwork(envoy_network_t network) {
+  ENVOY_LOG_EVENT(debug, "network_configuration_network_change", std::to_string(network));
   return preferred_network_.exchange(network);
 }
 
@@ -84,7 +85,10 @@ void Configurator::refreshDns(envoy_network_t network) {
   }
   // TODO(goaway): track event here or are there existing signals we can use?
   if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {
+    ENVOY_LOG_EVENT(debug, "network_configuration_refresh_dns", std::to_string(network));
     dns_cache->forceRefreshHosts();
+  } else {
+    ENVOY_LOG_EVENT(warn, "network_configuration_dns_cache_missing", BaseDnsCache);
   }
 }
 
