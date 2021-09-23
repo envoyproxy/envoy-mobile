@@ -30,14 +30,6 @@ jobs:
             echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
-          [ -f /proc/net/if_inet6 ] && echo 'IPv6 ready system!' || echo 'No IPv6 support found! Compile the kernel!!'
-      - name: 'Java setup'
-        if: steps.check_context.outputs.run_coverage == 'true'
-        uses: actions/setup-java@v1
-        with:
-          java-version: '11'
-          java-package: jdk
-          architecture: x64
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         env:
