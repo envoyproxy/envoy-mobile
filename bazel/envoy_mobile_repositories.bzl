@@ -117,8 +117,8 @@ def kotlin_repos():
     # https://github.com/Kotlin/dokka/issues/942
     http_jar(
         name = "kotlin_dokka",
-        sha256 = "f95fafa4e3e5859a70e00a7324f5fbd32c8ec5153d02450cab35ffc52485b03a",
-        url = "https://github.com/Kotlin/dokka/releases/download/v1.4.10/dokka-cli-1.4.10.jar",
+        sha256 = "4c73eee92dd652ea8e2afd7b20732cf863d4938a30f634d12c88fe64def89fd8",
+        url = "https://github.com/Kotlin/dokka/releases/download/0.9.18/dokka-fatjar-0.9.18.jar",
     )
 
     http_file(
