@@ -1,5 +1,7 @@
 #include "library/common/network/configurator.h"
 
+#include <net/if.h>
+
 #include "envoy/common/platform.h"
 
 #include "source/common/common/assert.h"
@@ -96,14 +98,17 @@ void Configurator::refreshDns(envoy_network_t network) {
 }
 
 std::vector<std::string> Configurator::enumerateV4Interfaces() {
-  return enumerateInterfaces(AF_INET);
+  return enumerateInterfaces(AF_INET, 0, 0);
 }
 
 std::vector<std::string> Configurator::enumerateV6Interfaces() {
-  return enumerateInterfaces(AF_INET6);
+  return enumerateInterfaces(AF_INET6, 0, 0);
 }
 
-Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t network, bool) {
+Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t network, bool override_interface) {
+  if (override_interface && network != ENVOY_NET_GENERIC) {
+    return getAlternateInterfaceSocketOptions(network);
+  }
   // Envoy uses the hash signature of overridden socket options to choose a connection pool.
   // Setting a dummy socket option is a hack that allows us to select a different
   // connection pool without materially changing the socket configuration.
@@ -116,7 +121,48 @@ Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t 
   return options;
 }
 
-std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family) {
+Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_network_t network) {
+  auto& v4_interface = getActiveAlternateInterface(network, AF_INET);
+  // auto& v6_interface = getActiveAlternateInterface(network, AF_INET6);
+
+  auto options = std::make_shared<Socket::Options>();
+
+  // TODO(goaway): add v6 options
+
+  // Android
+#ifdef SO_BINDTODEVICE
+  options->push_back(std::make_shared<SocketOptionImpl>(
+      envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_SO_BINDTODEVICE
+      v4_interface, strlen(v4_interface));
+#endif // SO_BINDTODEVICE
+
+  // iOS
+#ifdef IP_BOUND_IF
+  int v4_idx = if_nametoindex(v4_interface.c_str());
+  //int v6_idx = if_nametoindex(v6_interface.c_str());
+  options->push_back(std::make_shared<SocketOptionImpl>(
+      envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_BOUND_IF,
+      v4_idx));
+#endif // IP_BOUND_IF
+
+  return options;
+}
+
+const std::string Configurator::getActiveAlternateInterface(envoy_network_t network, unsigned short family) {
+  if (network == ENVOY_NET_WLAN) {
+    auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_MULTICAST, IFF_LOOPBACK | IFF_POINTOPOINT);
+    return interfaces.size() > 0 ? interfaces[0] : "";
+  } else if (network == ENVOY_NET_WWAN) {
+    auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK | IFF_MULTICAST);
+    return interfaces.size() > 0 ? interfaces[0] : "";
+  } else {
+    return "";
+  }
+}
+
+std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
+                                                           [[maybe_unused]] unsigned int select_flags,
+                                                           [[maybe_unused]] unsigned int reject_flags) {
   std::vector<std::string> names{};
 
 #ifdef SUPPORTS_GETIFADDRS
@@ -127,9 +173,16 @@ std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsi
   RELEASE_ASSERT(!rc, "getifaddrs failed");
 
   for (ifa = interfaces; ifa != nullptr; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr && ifa->ifa_addr->sa_family == family) {
-      names.push_back(std::string{ifa->ifa_name});
+    if (!ifa->ifa_addr || ifa->ifa_addr->sa_family != family) {
+      continue;
     }
+    if ((ifa->ifa_flags & select_flags) != select_flags) {
+      continue;
+    }
+    if ((ifa->ifa_flags & reject_flags) != 0) {
+      continue;
+    }
+    names.push_back(std::string{ifa->ifa_name});
   }
 
   freeifaddrs(interfaces);
