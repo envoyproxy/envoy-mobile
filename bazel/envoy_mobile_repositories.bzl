@@ -118,7 +118,7 @@ def kotlin_repos():
     http_jar(
         name = "kotlin_dokka",
         sha256 = "0f27caecfed1e6dfa827d0fa3b9b165007d167ee0b3bf4dbf85765c08d588fbc",
-        url = "https://github.com/Kotlin/dokka/releases/download/v1.4.10.2/dokka-base-1.4.10.2.jar",
+        url = "https://github.com/Kotlin/dokka/releases/download/v1.4.10/dokka-cli-1.4.10.jar",
     )
 
     http_file(
