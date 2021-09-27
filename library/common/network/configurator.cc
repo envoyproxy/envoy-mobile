@@ -105,7 +105,8 @@ std::vector<std::string> Configurator::enumerateV6Interfaces() {
   return enumerateInterfaces(AF_INET6, 0, 0);
 }
 
-Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t network, bool override_interface) {
+Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t network,
+                                                                bool override_interface) {
   if (override_interface && network != ENVOY_NET_GENERIC) {
     return getAlternateInterfaceSocketOptions(network);
   }
@@ -148,21 +149,25 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
   return options;
 }
 
-const std::string Configurator::getActiveAlternateInterface(envoy_network_t network, unsigned short family) {
+const std::string Configurator::getActiveAlternateInterface(envoy_network_t network,
+                                                            unsigned short family) {
   if (network == ENVOY_NET_WLAN) {
-    auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_MULTICAST, IFF_LOOPBACK | IFF_POINTOPOINT);
+    auto interfaces =
+        enumerateInterfaces(family, IFF_UP | IFF_MULTICAST, IFF_LOOPBACK | IFF_POINTOPOINT);
     return interfaces.size() > 0 ? interfaces[0] : "";
   } else if (network == ENVOY_NET_WWAN) {
-    auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK | IFF_MULTICAST);
+    auto interfaces =
+        enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK | IFF_MULTICAST);
     return interfaces.size() > 0 ? interfaces[0] : "";
   } else {
     return "";
   }
 }
 
-std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
-                                                           [[maybe_unused]] unsigned int select_flags,
-                                                           [[maybe_unused]] unsigned int reject_flags) {
+std::vector<std::string>
+Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
+                                  [[maybe_unused]] unsigned int select_flags,
+                                  [[maybe_unused]] unsigned int reject_flags) {
   std::vector<std::string> names{};
 
 #ifdef SUPPORTS_GETIFADDRS
