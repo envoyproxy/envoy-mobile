@@ -58,7 +58,8 @@ public:
   /**
    * @returns the current socket options that should be used for connections.
    */
-  Socket::OptionsSharedPtr getUpstreamSocketOptions(envoy_network_t network, bool override_interface);
+  Socket::OptionsSharedPtr getUpstreamSocketOptions(envoy_network_t network,
+                                                    bool override_interface);
 
 private:
   std::vector<std::string> enumerateInterfaces(unsigned short family);

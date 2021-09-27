@@ -18,7 +18,8 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::decodeHeaders(Http::Reques
   }
   ENVOY_LOG(debug, "will override interface: {}", override_interface_);
 
-  auto connection_options = network_configurator_->getUpstreamSocketOptions(network, override_interface_);
+  auto connection_options =
+      network_configurator_->getUpstreamSocketOptions(network, override_interface_);
   decoder_callbacks_->addUpstreamSocketOptions(connection_options);
 
   return Http::FilterHeadersStatus::Continue;
