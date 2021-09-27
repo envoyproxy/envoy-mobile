@@ -1,0 +1,88 @@
+name: perf
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  sizecurrent:
+    name: size_current
+    runs-on: ubuntu-18.04
+    timeout-minutes: 120
+    container:
+      image: envoyproxy/envoy-build-ubuntu:b51ac7a0f2cb5dd729984a379a301ce029ac765d
+      env:
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Build test binary'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazel build \
+            --config=sizeopt \
+            --config=remote-ci-linux-clang \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/performance:test_binary_size
+      - uses: actions/upload-artifact@v2
+        with:
+          name: sizecurrent
+          path: bazel-bin/test/performance/test_binary_size
+  sizemain:
+    name: size_main
+    runs-on: ubuntu-18.04
+    timeout-minutes: 90
+    container:
+      image: envoyproxy/envoy-build-ubuntu:b51ac7a0f2cb5dd729984a379a301ce029ac765d
+      env:
+        CC: /opt/llvm/bin/clang
+        CXX: /opt/llvm/bin/clang++
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Build test binary'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git checkout main && git pull origin main && git submodule update
+          bazel build \
+            --config=sizeopt \
+            --config=remote-ci-linux-clang \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/performance:test_binary_size
+      - uses: actions/upload-artifact@v2
+        with:
+          name: sizemain
+          path: bazel-bin/test/performance/test_binary_size
+  sizecompare:
+    name: size_compare
+    needs: [sizecurrent, sizemain]
+    runs-on: ubuntu-18.04
+    timeout-minutes: 30
+    container:
+      image: envoyproxy/envoy-build-ubuntu:b51ac7a0f2cb5dd729984a379a301ce029ac765d
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v2
+        with:
+          name: sizecurrent
+          path: dist/sizecurrent
+      - uses: actions/download-artifact@v2
+        with:
+          name: sizemain
+          path: dist/sizemain
+      - name: 'Strip and Zip binary'
+        run: |
+          ls -lh dist/
+          strip -s -o dist/main.stripped dist/sizemain/test_binary_size
+          strip -s -o dist/current.stripped dist/sizecurrent/test_binary_size
+          zip -9 dist/main.zip dist/main.stripped
+          zip -9 dist/current.zip dist/current.stripped
+      - name: 'Test size regression'
+        run: ./ci/test_size_regression.sh dist/main.zip dist/current.zip

@@ -33,8 +33,6 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Clean'
-        run: bazelisk clean --expunge
       - name: 'Build envoy.aar distributable'
         if: steps.check-cache.outputs.cache-hit != 'true'
         env:
