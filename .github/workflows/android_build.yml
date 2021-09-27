@@ -33,6 +33,8 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./ci/mac_ci_setup.sh
+      - name: 'Clean'
+        run: bazelisk clean --expunge
       - name: 'Build envoy.aar distributable'
         if: steps.check-cache.outputs.cache-hit != 'true'
         env:
@@ -80,7 +82,8 @@ jobs:
           bazelisk build \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            --fat_apk_cpu=x86 //examples/java/hello_world:hello_envoy
+            --fat_apk_cpu=x86 \
+            //examples/java/hello_world:hello_envoy
           adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
       - name: 'Check connectivity'
@@ -116,11 +119,14 @@ jobs:
       #   bazelisk mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/lyft/envoy-mobile/issues/853 is fixed.
       - name: 'Start kotlin app'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazelisk build \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            --fat_apk_cpu=x86 //examples/kotlin/hello_world:hello_envoy_kt
+            --fat_apk_cpu=x86 \
+            //examples/kotlin/hello_world:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin/.MainActivity
       - name: 'Check connectivity'
