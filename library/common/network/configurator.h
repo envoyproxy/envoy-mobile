@@ -62,7 +62,10 @@ public:
                                                     bool override_interface);
 
 private:
-  std::vector<std::string> enumerateInterfaces(unsigned short family);
+  Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
+  const std::string getActiveAlternateInterface(envoy_network_t network, unsigned short family);
+  std::vector<std::string> enumerateInterfaces(unsigned short family, unsigned int select_flags,
+                                               unsigned int reject_flags);
   DnsCacheManagerSharedPtr dns_cache_manager_;
   static std::atomic<envoy_network_t> preferred_network_;
 };
