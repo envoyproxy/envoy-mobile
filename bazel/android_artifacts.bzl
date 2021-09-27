@@ -277,7 +277,7 @@ def _create_sources_javadocs(name, android_library):
         cd $$tmp_dir
         zip -r $$original_directory/$@ . > /dev/null
         """,
-        local = true,
+        local = True,
         tools = ["@kotlin_dokka//jar"],
     )
 
