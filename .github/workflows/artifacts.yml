@@ -61,6 +61,7 @@ jobs:
           git config --global user.email "envoy-bot@users.noreply.github.com"
           git config --global user.name "envoy-bot"
       - name: 'Configure gpg signing'
+        continue-on-error: true
         env:
           GPG_KEY: ${{ secrets.gpg_key }}
           GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
@@ -81,6 +82,7 @@ jobs:
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
       - name: 'Release to sonatype repository'
+        continue-on-error: true
         env:
           READWRITE_USER: ${{ secrets.sonatype_user }}
           READWRITE_API_KEY: ${{ secrets.sonatype_password }}
@@ -100,3 +102,5 @@ jobs:
                 dist/envoy.aar.asc \
                 dist/envoy-pom.xml.asc \
                 dist/envoy-javadoc.jar.asc
+      - name: 'Setup tmate session'
+        uses: mxschmitt/action-tmate@v3
