@@ -35,7 +35,19 @@ jobs:
         name: 'Install dependencies'
       - run: bazelisk build --fat_apk_cpu=x86 //:android_dist_ci
         if: steps.check-cache.outputs.cache-hit != 'true'
+<<<<<<< HEAD
         name: 'Build envoy.aar distributable'
+=======
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build \
+            --config=remote-ci-macos \
+            --config=remote-ci-debug \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --fat_apk_cpu=x86 \
+            //:android_dist_ci
+>>>>>>> ea22aa1... Debug
   javahelloworld:
     name: java_helloworld
     needs: androidbuild
