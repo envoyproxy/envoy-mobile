@@ -88,6 +88,10 @@ void Configurator::refreshDns(envoy_network_t network) {
     return;
   }
   // TODO(goaway): track event here or are there existing signals we can use?
+  if (!dns_cache_manager_) {
+    ENVOY_LOG_EVENT(warn, "network_configuration_dcm_missing", std::to_string(network));
+    return;
+  }
   if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {
     ENVOY_LOG_EVENT(debug, "network_configuration_refresh_dns", std::to_string(network));
     dns_cache->forceRefreshHosts();
