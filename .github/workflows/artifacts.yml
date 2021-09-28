@@ -2,9 +2,8 @@ name: artifacts
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    tags:
+      - v*
 
 jobs:
   main_android_dist_ci:
@@ -61,7 +60,6 @@ jobs:
           git config --global user.email "envoy-bot@users.noreply.github.com"
           git config --global user.name "envoy-bot"
       - name: 'Configure gpg signing'
-        continue-on-error: true
         env:
           GPG_KEY: ${{ secrets.gpg_key }}
           GPG_KEY_NAME: ${{ secrets.gpg_key_name }}
@@ -82,7 +80,6 @@ jobs:
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
           gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
       - name: 'Release to sonatype repository'
-        continue-on-error: true
         env:
           READWRITE_USER: ${{ secrets.sonatype_user }}
           READWRITE_API_KEY: ${{ secrets.sonatype_password }}
@@ -102,5 +99,58 @@ jobs:
                 dist/envoy.aar.asc \
                 dist/envoy-pom.xml.asc \
                 dist/envoy-javadoc.jar.asc
-      - name: 'Setup tmate session'
-        uses: mxschmitt/action-tmate@v3
+
+  main_ios_dist:
+    name: main_ios_dist
+    runs-on: macos-11
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/mac_ci_setup.sh
+      - name: 'Build Envoy.framework distributable'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build \
+            --config=release-ios \
+            --ios_multi_cpus=i386,x86_64,armv7,arm64 \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //:ios_dist
+      - name: 'Create temporary directory for artifact to produce properly named zip'
+        run: mkdir -p dist/ios_artifact/Envoy.framework
+      - name: 'Move artifact to directory for zipping'
+        run: mv dist/Envoy.framework/* dist/ios_artifact/Envoy.framework
+      - uses: actions/upload-artifact@v2
+        with:
+          name: envoy_ios_framework
+          path: dist/ios_artifact
+
+  main_ios_cocoapods:
+    name: main_ios_cocoapods
+    runs-on: macos-11
+    timeout-minutes: 45
+    needs: [main_ios_dist]
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Install dependencies'
+        run: ./ci/mac_ci_setup.sh
+      - uses: actions/download-artifact@v2
+        with:
+          name: envoy_ios_framework
+          path: dist/envoy_ios_cocoapods
+      - name: 'Copy license for CocoaPods'
+        run: cp LICENSE dist/envoy_ios_cocoapods
+      - name: 'Create empty Swift sources directory'
+        run: mkdir -p dist/envoy_ios_cocoapods/Envoy.framework/Swift
+      - name: 'Create empty Swift file to force Swift libraries to link properly'
+        run: touch dist/envoy_ios_cocoapods/Envoy.framework/Swift/Empty.swift
+      - uses: actions/upload-artifact@v2
+        with:
+          name: envoy_ios_cocoapods
+          path: dist/envoy_ios_cocoapods
