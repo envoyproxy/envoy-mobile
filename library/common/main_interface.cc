@@ -88,7 +88,7 @@ envoy_status_t reset_stream(envoy_stream_t stream) {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
-  envoy_network_t previous = Envoy::Network::Configurator::setPreferredNetwork(network);
+  Envoy::Network::Configurator::setPreferredNetwork(network);
   // TODO: re-enable refresh DNS on network change when
   // https://github.com/envoyproxy/envoy-mobile/issues/1842 is fixed.
   // if (previous != network && previous != ENVOY_NET_GENERIC) {
