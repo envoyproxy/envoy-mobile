@@ -124,26 +124,26 @@ Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t 
 
 Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_network_t network) {
   auto& v4_interface = getActiveAlternateInterface(network, AF_INET);
-  // auto& v6_interface = getActiveAlternateInterface(network, AF_INET6);
+  auto& v6_interface = getActiveAlternateInterface(network, AF_INET6);
 
   auto options = std::make_shared<Socket::Options>();
 
-  // TODO(goaway): add v6 options
-
   // Android
 #ifdef SO_BINDTODEVICE
-  options->push_back(std::make_shared<SocketOptionImpl>(
-      envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_SO_BINDTODEVICE
-      v4_interface, strlen(v4_interface));
+  options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
+      envoy::config::core::v3::SocketOption::STATE_PREBIND,
+      ENVOY_SOCKET_SO_BINDTODEVICE, v4_interface,
+      ENVOY_SOCKET_SO_BINDTODEVICE, v6_interface));
 #endif // SO_BINDTODEVICE
 
   // iOS
 #ifdef IP_BOUND_IF
   int v4_idx = if_nametoindex(v4_interface.c_str());
-  //int v6_idx = if_nametoindex(v6_interface.c_str());
-  options->push_back(std::make_shared<SocketOptionImpl>(
-      envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_BOUND_IF,
-      v4_idx));
+  int v6_idx = if_nametoindex(v6_interface.c_str());
+  options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
+      envoy::config::core::v3::SocketOption::STATE_PREBIND,
+      ENVOY_SOCKET_IP_BOUND_IF, v4_idx,
+      ENVOY_SOCKET_IPV6_BOUND_IF, v6_idx));
 #endif // IP_BOUND_IF
 
   return options;
