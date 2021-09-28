@@ -77,12 +77,14 @@ envoy_network_t Configurator::getPreferredNetwork() { return preferred_network_.
 bool Configurator::overrideInterface(envoy_network_t) { return false; }
 
 void Configurator::refreshDns(envoy_network_t network) {
+  ENVOY_LOG_EVENT(debug, "network_configuration_refresh_dns_attempt", std::to_string(network));
   // refreshDns is intended to be queued on Envoy's event loop, whereas preferred_network_ is
   // updated synchronously. In the event that multiple refreshes become queued on the event loop,
   // this avoids triggering a refresh for a non-current network.
   // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
   // flip-flop scenarios.
   if (network != preferred_network_.load()) {
+    ENVOY_LOG_EVENT(debug, "network_configuration_dns_flipflop", std::to_string(network));
     return;
   }
   // TODO(goaway): track event here or are there existing signals we can use?
