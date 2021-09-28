@@ -301,10 +301,12 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
 @property (nonatomic, assign) UInt32 dnsQueryTimeoutSeconds;
 @property (nonatomic, strong) NSString *dnsPreresolveHostnames;
+@property (nonatomic, assign) BOOL enableInterfaceBinding;
 @property (nonatomic, assign) UInt32 h2ConnectionKeepaliveIdleIntervalMilliseconds;
 @property (nonatomic, assign) UInt32 h2ConnectionKeepaliveTimeoutSeconds;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, assign) UInt32 streamIdleTimeoutSeconds;
+@property (nonatomic, assign) UInt32 perTryIdleTimeoutSeconds;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
 @property (nonatomic, strong) NSString *virtualClusters;
@@ -325,11 +327,13 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                       dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
                            dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
                            dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                           enableInterfaceBinding:(BOOL)enableInterfaceBinding
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
                                 statsFlushSeconds:(UInt32)statsFlushSeconds
                          streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                         perTryIdleTimeoutSeconds:(UInt32)perTryIdleTimeoutSeconds
                                        appVersion:(NSString *)appVersion
                                             appId:(NSString *)appId
                                   virtualClusters:(NSString *)virtualClusters

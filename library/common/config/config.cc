@@ -39,6 +39,7 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
+- &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
 - &metadata {}
@@ -48,6 +49,7 @@ const std::string config_header = R"(
 - &statsd_host 127.0.0.1
 - &statsd_port 8125
 - &stream_idle_timeout 15s
+- &per_try_idle_timeout 15s
 - &virtual_clusters []
 
 !ignore stats_defs:
@@ -228,14 +230,16 @@ static_resources:
                   cluster_header: x-envoy-mobile-cluster
                   timeout: 0s
                   retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
                     retry_back_off:
                       base_interval: 0.25s
                       max_interval: 60s
           http_filters:
 #{custom_filters}
-          - name: envoy.filters.http.socket_selection
+          - name: envoy.filters.http.network_configuration
             typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_selection.SocketSelection
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
+              enable_interface_binding: *enable_interface_binding
           - name: envoy.filters.http.local_error
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
@@ -243,14 +247,14 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
               dns_cache_config: &dns_cache_config
-                name: dynamic_forward_proxy_cache_config
+                name: base_dns_cache
 )"              // TODO: Support API for overriding prefetch_hostnames:
                 // https://github.com/envoyproxy/envoy-mobile/issues/1534
 R"(
                 preresolve_hostnames: *dns_preresolve_hostnames
 )"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
 R"(
-                dns_lookup_family: V4_ONLY
+                dns_lookup_family: V4_PREFERRED
 )"              // On mobile, backgrounding might cause the host to be past its TTL without good
                 // reason. Given the host would be deleted, and new streams for a given domain
                 // would have to wait for resolution, it is better to not delete existing hosts;
