@@ -32,7 +32,7 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
   // that of the temporary. The temporary object's state becomes the default state, which does
   // nothing.
   main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level));
-  return ENVOY_SUCCESS;
+  return ENVOY_FAILURE;
 }
 
 envoy_status_t Engine::main(const std::string config, const std::string log_level) {
