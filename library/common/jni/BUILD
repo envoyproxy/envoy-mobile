@@ -25,12 +25,26 @@ envoy_cc_library(
     ],
 )
 
-# Main dynamic library for the Envoy Mobile aar
-cc_binary(
-    name = "libenvoy_jni.so",
+cc_library(
+    name = "envoy_jni_lib",
     srcs = [
         "android_jni_interface.cc",
         "jni_interface.cc",
+    ],
+    deps = [
+        ":jni_utility_lib",
+        ":ndk_jni_support",
+        "//library/common:envoy_main_interface_lib",
+        "//library/common/api:c_types",
+    ],
+)
+
+# Main dynamic library for the Envoy Mobile aar
+cc_binary(
+    name = "libenvoy_jni.so",
+    deps = [
+        ":envoy_jni_lib",
+        "@envoy_mobile_extra_jni_deps//:extra_jni_dep",
     ],
     copts = ["-std=c++17"],
     linkopts = [
@@ -39,12 +53,6 @@ cc_binary(
         "-Wl,-s",
     ],
     linkshared = True,
-    deps = [
-        ":jni_utility_lib",
-        ":ndk_jni_support",
-        "//library/common:envoy_main_interface_lib",
-        "//library/common/api:c_types",
-    ],
 )
 
 ## Targets for local execution
@@ -90,7 +98,8 @@ cc_binary(
         "-lm",
     ],
     linkshared = True,
-    deps = ["base_java_jni_lib"],
+    deps = ["base_java_jni_lib", 
+        "@envoy_mobile_extra_jni_deps//:extra_jni_dep"],
 )
 
 cc_library(

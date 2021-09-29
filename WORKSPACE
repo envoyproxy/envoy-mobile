@@ -13,6 +13,11 @@ local_repository(
     path = "envoy_build_config",
 )
 
+local_repository(
+    name = "envoy_mobile_extra_jni_deps",
+    path = "envoy_mobile_extra_jni_deps",
+)
+
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
 envoy_api_binding()
 
