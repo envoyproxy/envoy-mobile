@@ -59,7 +59,7 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "engflow_remote_config",
-    digest = "sha256:e5f809fc41d6da5d0144ad3cfa037d2381a6f11ae78834fbf5516fa04e11edf9",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -71,7 +71,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang",
-    digest = "sha256:e5f809fc41d6da5d0144ad3cfa037d2381a6f11ae78834fbf5516fa04e11edf9",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -87,7 +87,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang_asan",
-    digest = "sha256:e5f809fc41d6da5d0144ad3cfa037d2381a6f11ae78834fbf5516fa04e11edf9",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -106,7 +106,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang_coverage",
-    digest = "sha256:e5f809fc41d6da5d0144ad3cfa037d2381a6f11ae78834fbf5516fa04e11edf9",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
