@@ -7,17 +7,14 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
-#include "library/common/network/mobile_utility.h"
 #include "library/common/stats/utility.h"
-#include "types/c_types.h"
 
 namespace Envoy {
 
 Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
-               envoy_event_tracker event_tracker, std::atomic<envoy_network_t>& preferred_network)
+               envoy_event_tracker event_tracker)
     : callbacks_(callbacks), logger_(logger), event_tracker_(event_tracker),
-      dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()),
-      preferred_network_(preferred_network) {
+      dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/lyft/envoy-mobile/issues/332
@@ -65,6 +62,12 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                   {{"name", "assertion"}, {"location", std::string(location)}});
               event_tracker_.track(event, event_tracker_.context);
             });
+        bug_handler_registration_ =
+            Assert::addEnvoyBugFailureRecordAction([this](const char* location) {
+              const auto event = Bridge::Utility::makeEnvoyMap(
+                  {{"name", "bug"}, {"location", std::string(location)}});
+              event_tracker_.track(event, event_tracker_.context);
+            });
       }
 
       if (logger_.log) {
@@ -99,8 +102,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           ASSERT(Thread::MainThread::isMainThread());
 
+          network_configurator_ =
+              Network::ConfiguratorHandle{server_->serverFactoryContext()}.get();
           logInterfaces();
-
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -108,9 +112,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
           stat_name_set_ = client_scope_->symbolTable().makeSet("pulse");
           auto api_listener = server_->listenerManager().apiListener()->get().http();
           ASSERT(api_listener.has_value());
-          http_client_ = std::make_unique<Http::Client>(
-              api_listener.value(), *dispatcher_, server_->serverFactoryContext().scope(),
-              preferred_network_, server_->api().randomGenerator());
+          http_client_ = std::make_unique<Http::Client>(api_listener.value(), *dispatcher_,
+                                                        server_->serverFactoryContext().scope(),
+                                                        server_->api().randomGenerator());
           dispatcher_->drain(server_->dispatcher());
           if (callbacks_.on_engine_running != nullptr) {
             callbacks_.on_engine_running(callbacks_.context);
@@ -124,10 +128,12 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset(nullptr);
+  network_configurator_.reset();
   client_scope_.reset(nullptr);
   stat_name_set_.reset();
   log_delegate_ptr_.reset(nullptr);
   main_common.reset(nullptr);
+  bug_handler_registration_.reset(nullptr);
   assert_handler_registration_.reset(nullptr);
 
   callbacks_.on_exit(callbacks_.context);
@@ -276,6 +282,12 @@ Http::Client& Engine::httpClient() {
   return *http_client_;
 }
 
+Network::Configurator& Engine::networkConfigurator() {
+  RELEASE_ASSERT(dispatcher_->isThreadSafe(),
+                 "networkConfigurator must be accessed from dispatcher's context");
+  return *network_configurator_;
+}
+
 void Engine::flushStats() {
   ASSERT(dispatcher_->isThreadSafe(), "flushStats must be called from the dispatcher's context");
 
@@ -289,19 +301,19 @@ void Engine::drainConnections() {
 }
 
 void Engine::logInterfaces() {
-  auto v4_vec = Network::MobileUtility::enumerateV4Interfaces();
+  auto v4_vec = network_configurator_->enumerateV4Interfaces();
   std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec.end(), std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
 
-  auto v6_vec = Network::MobileUtility::enumerateV6Interfaces();
+  auto v6_vec = network_configurator_->enumerateV6Interfaces();
   std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec.end(), std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
-  ENVOY_LOG_EVENT(debug, "socket_selection_get_v4_interfaces", v4_names);
-  ENVOY_LOG_EVENT(debug, "socket_selection_get_v6_interfaces", v6_names);
+  ENVOY_LOG_EVENT(debug, "network_configuration_get_v4_interfaces", v4_names);
+  ENVOY_LOG_EVENT(debug, "network_configuration_get_v6_interfaces", v6_names);
 }
 
 } // namespace Envoy

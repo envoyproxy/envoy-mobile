@@ -5,13 +5,33 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
-    name = "mobile_utility_lib",
-    srcs = ["mobile_utility.cc"],
-    hdrs = ["mobile_utility.h"],
-    copts = ["-Ithird_party/android"],
+    name = "configurator_lib",
+    srcs = [
+        "configurator.cc",
+    ] + select({
+        "//bazel:include_ifaddrs": [
+            "//third_party:android/ifaddrs-android.h",
+            "//third_party:android/LocalArray.h",
+            "//third_party:android/ScopedFd.h",
+        ],
+        "//conditions:default": [],
+    }),
+    hdrs = ["configurator.h"],
+    copts = select({
+        "//bazel:include_ifaddrs": ["-DINCLUDE_IFADDRS"],
+        "//conditions:default": [],
+    }),
     repository = "@envoy",
     deps = [
+        "//library/common/types:c_types_lib",
+        "@envoy//envoy/network:socket_interface",
+        "@envoy//envoy/singleton:manager_interface",
         "@envoy//source/common/common:assert_lib",
+        "@envoy//source/common/common:scalar_to_byte_vector_lib",
+        "@envoy//source/common/common:utility_lib",
+        "@envoy//source/common/network:addr_family_aware_socket_option_lib",
+        "@envoy//source/common/network:socket_option_lib",
+        "@envoy//source/extensions/common/dynamic_forward_proxy:dns_cache_manager_impl",
     ],
 )
 

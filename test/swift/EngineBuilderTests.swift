@@ -137,20 +137,6 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
-  func testAddingPlatformFiltersToConfigurationWhenRunningEnvoy() {
-    let expectation = self.expectation(description: "Run called with expected data")
-    MockEnvoyEngine.onRunWithConfig = { config, _ in
-      XCTAssertEqual(1, config.httpPlatformFilterFactories.count)
-      expectation.fulfill()
-    }
-
-    _ = EngineBuilder()
-      .addEngineType(MockEnvoyEngine.self)
-      .addPlatformFilter(TestFilter.init)
-      .build()
-    self.waitForExpectations(timeout: 0.01)
-  }
-
   func testAddingDNSFailureRefreshSecondsAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -162,6 +148,48 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addDNSFailureRefreshSeconds(base: 1234, max: 5678)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingH2ConnectionKeepaliveIdleIntervalMSAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(234, config.h2ConnectionKeepaliveIdleIntervalMilliseconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addH2ConnectionKeepaliveIdleIntervalMilliseconds(234)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingH2ConnectionKeepaliveTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(234, config.h2ConnectionKeepaliveTimeoutSeconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addH2ConnectionKeepaliveTimeoutSeconds(234)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingPlatformFiltersToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(1, config.httpPlatformFilterFactories.count)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addPlatformFilter(TestFilter.init)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -190,6 +218,20 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addStreamIdleTimeoutSeconds(42)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingPerTryIdleTimeoutSecondsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(21, config.perTryIdleTimeoutSeconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addPerTryIdleTimeoutSeconds(21)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -274,8 +316,12 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
       dnsPreresolveHostnames: "[test]",
+      enableInterfaceBinding: false,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
+      h2ConnectionKeepaliveTimeoutSeconds: 333,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
+      perTryIdleTimeoutSeconds: 777,
       appVersion: "v1.2.3",
       appId: "com.envoymobile.ios",
       virtualClusters: "[test]",
@@ -296,8 +342,13 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_max_interval 500s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
+    XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
+
+    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
+    XCTAssertTrue(resolvedYAML.contains("&per_try_idle_timeout 777s"))
 
     XCTAssertFalse(resolvedYAML.contains("admin: *admin_interface"))
 
@@ -328,8 +379,12 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
       dnsPreresolveHostnames: "[test]",
+      enableInterfaceBinding: false,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
+      h2ConnectionKeepaliveTimeoutSeconds: 333,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
+      perTryIdleTimeoutSeconds: 700,
       appVersion: "v1.2.3",
       appId: "com.envoymobile.ios",
       virtualClusters: "[test]",
