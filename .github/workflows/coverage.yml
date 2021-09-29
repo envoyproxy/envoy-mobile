@@ -11,6 +11,9 @@ jobs:
     name: coverage
     runs-on: ubuntu-18.04
     timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
     container:
       image: envoyproxy/envoy-build-ubuntu:b51ac7a0f2cb5dd729984a379a301ce029ac765d
     steps:
