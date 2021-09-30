@@ -2,8 +2,8 @@
 
 #include "envoy/upstream/retry.h"
 
-#include "library/common/extensions/retry/options/interface_binding/predicate.pb.h"
-#include "library/common/extensions/retry/options/interface_binding/predicate.pb.validate.h"
+#include "library/common/extensions/retry/options/network_configuration/predicate.pb.h"
+#include "library/common/extensions/retry/options/network_configuration/predicate.pb.validate.h"
 #include "library/common/network/configurator.h"
 
 namespace Envoy {
@@ -14,7 +14,7 @@ namespace Options {
 class NetworkConfigurationRetryOptionsPredicate : public Upstream::RetryOptionsPredicate {
 public:
   explicit NetworkConfigurationRetryOptionsPredicate(
-      const envoymobile::extensions::retry::options::interface_binding::
+      const envoymobile::extensions::retry::options::network_configuration::
           NetworkConfigurationOptionsPredicate&,
       Upstream::RetryExtensionFactoryContext& context);
 

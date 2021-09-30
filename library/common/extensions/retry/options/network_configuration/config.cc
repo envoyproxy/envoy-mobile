@@ -1,4 +1,4 @@
-#include "library/common/extensions/retry/options/interface_binding/config.h"
+#include "library/common/extensions/retry/options/network_configuration/config.h"
 
 #include "envoy/registry/registry.h"
 

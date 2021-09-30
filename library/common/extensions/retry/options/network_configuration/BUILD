@@ -15,7 +15,7 @@ envoy_proto_library(
 )
 
 envoy_cc_extension(
-    name = "interface_binding_retry_options_predicate_lib",
+    name = "network_configuration_retry_options_predicate_lib",
     hdrs = ["predicate.h"],
     repository = "@envoy",
     deps = [
@@ -31,7 +31,7 @@ envoy_cc_extension(
     hdrs = ["config.h"],
     repository = "@envoy",
     deps = [
-        ":interface_binding_retry_options_predicate_lib",
+        ":network_configuration_retry_options_predicate_lib",
         ":predicate_cc_proto",
         "@envoy//envoy/upstream:retry_interface",
     ],
