@@ -91,7 +91,7 @@ public class QuicTest {
   public void testQuicLoadUrl() throws Exception {
     ExperimentalCronetEngine cronetEngine = mBuilder.build();
     String quicURL = QuicTestServer.getServerURL();
-    Thread.sleep(100000);
+    // Thread.sleep(100000);
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
     // Although the native stack races QUIC and SPDY for the first request,
     // since there is no http server running on the corresponding TCP port,
@@ -113,7 +113,7 @@ public class QuicTest {
     // after kUpdatePrefsDelayMs in http_server_properties_manager.cc.
     while (true) {
       Log.i(TAG, "Still waiting for pref file update.....");
-      Thread.sleep(10000);
+      // Thread.sleep(10000);
       boolean contains = false;
       try {
         if (fileContainsString("local_prefs.json", "quic"))

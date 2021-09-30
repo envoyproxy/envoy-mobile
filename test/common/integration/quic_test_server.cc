@@ -124,7 +124,7 @@ QuicTestServer::QuicTestServer()
             - name: remote_service
               domains: ["*"]
               routes:
-              - match: { prefix: "/simple" }
+              - match: { prefix: "/" }
                 direct_response: { status: 200 }
           http3_protocol_options:
           http_filters:
@@ -149,12 +149,12 @@ void QuicTestServer::startQuicTestServer() {
   upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
   upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 
-  Network::TransportSocketFactoryPtr factory =
-      createUpstreamTlsContext(factory_context_); // Network::Test::createRawBufferSocketFactory();
+  Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
+      // Network::Test::createRawBufferSocketFactory();
 
   int port = 0; // let the kernel pick a port that is not in use (avoids test races)
   aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
-                                                   upstream_config_, false);
+                                                   upstream_config_, true);
 
   aupstream->setLastRequestHeaders(Http::TestRequestHeaderMapImpl{
                                             {"response_size_bytes", "2"}});

@@ -14,6 +14,7 @@ import io.envoyproxy.envoymobile.RequestMethod;
 import io.envoyproxy.envoymobile.ResponseHeaders;
 import io.envoyproxy.envoymobile.ResponseTrailers;
 import io.envoyproxy.envoymobile.Stream;
+import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -70,59 +71,58 @@ public class QuicTestServerTest {
       + "               certificate_chain:\n"
       + "                 inline_string: |\n"
       + "                   -----BEGIN CERTIFICATE-----\n"
-      + "                   MIIEbDCCA1SgAwIBAgIUJuVBh0FKfFgIcO++ljWm7D47eYUwDQYJKoZIhvcNAQEL\n"
-      + "                   BQAwdjELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcM\n"
+      + "                   MIIEPjCCAyagAwIBAgIUEuy1WgSCzX6mojPirk7Th6uhNHowDQYJKoZIhvcNAQEL\n"
+      + "                   BQAwfzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcM\n"
       + "                   DVNhbiBGcmFuY2lzY28xDTALBgNVBAoMBEx5ZnQxGTAXBgNVBAsMEEx5ZnQgRW5n\n"
-      + "                   aW5lZXJpbmcxEDAOBgNVBAMMB1Rlc3QgQ0EwHhcNMjAwODA1MTkxNjAxWhcNMjIw\n"
-      + "                   ODA1MTkxNjAxWjCBpjELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWEx\n"
-      + "                   FjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoMBEx5ZnQxGTAXBgNVBAsM\n"
-      + "                   EEx5ZnQgRW5naW5lZXJpbmcxGjAYBgNVBAMMEVRlc3QgQmFja2VuZCBUZWFtMSQw\n"
-      + "                   IgYJKoZIhvcNAQkBFhViYWNrZW5kLXRlYW1AbHlmdC5jb20wggEiMA0GCSqGSIb3\n"
-      + "                   DQEBAQUAA4IBDwAwggEKAoIBAQC9JgaI7hxjPM0tsUna/QmivBdKbCrLnLW9Teak\n"
-      + "                   RH/Ebg68ovyvrRIlybDT6XhKi+iVpzVY9kqxhGHgrFDgGLBakVMiYJ5EjIgHfoo4\n"
-      + "                   UUAHwIYbunJluYCgANzpprBsvTC/yFYDVMqUrjvwHsoYYVm36io994k9+t813b70\n"
-      + "                   o0l7/PraBsKkz8NcY2V2mrd/yHn/0HAhv3hl6iiJme9yURuDYQrae2ACSrQtsbel\n"
-      + "                   KwdZ/Re71Z1awz0OQmAjMa2HuCop+Q/1QLnqBekT5+DH1qKUzJ3Jkq6NRkERXOpi\n"
-      + "                   87j04rtCBteCogrO67qnuBZ2lH3jYEMb+lQdLkyNMLltBSdLAgMBAAGjgcAwgb0w\n"
-      + "                   DAYDVR0TAQH/BAIwADALBgNVHQ8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIG\n"
-      + "                   CCsGAQUFBwMBMEEGA1UdEQQ6MDiGHnNwaWZmZTovL2x5ZnQuY29tL2JhY2tlbmQt\n"
-      + "                   dGVhbYIIbHlmdC5jb22CDHd3dy5seWZ0LmNvbTAdBgNVHQ4EFgQU2XcTZbc0xKZf\n"
-      + "                   gNVKSvAbMZJCBoYwHwYDVR0jBBgwFoAUlkvaLFO0vpXGk3Pip6SfLg1yGIcwDQYJ\n"
-      + "                   KoZIhvcNAQELBQADggEBAFW05aca3hSiEz/g593GAV3XP4lI5kYUjGjbPSy/HmLr\n"
-      + "                   rdv/u3bGfacywAPo7yld+arMzd35tIYEqnhoq0+/OxPeyhwZXVVUatg5Oknut5Zv\n"
-      + "                   2+8l+mVW+8oFCXRqr2gwc8Xt4ByYN+HaNUYfoucnjDplOPukkfSuRhbxqnkhA14v\n"
-      + "                   Lri2EbISX14sXf2VQ9I0dkm1hXUxiO0LlA1Z7tvJac9zPSoa6Oljke4D1iH2jzwF\n"
-      + "                   Yn7S/gGvVQgkTmWrs3S3TGyBDi4GTDhCF1R+ESvXz8z4UW1MrCSdYUXbRtsT7sbE\n"
-      + "                   CjlFYuUyxCi1oe3IHCeXVDo/bmzwGQPDuF3WaDNSYWU=\n"
+      + "                   aW5lZXJpbmcxGTAXBgNVBAMMEFRlc3QgVXBzdHJlYW0gQ0EwHhcNMjAwODA1MTkx\n"
+      + "                   NjAyWhcNMjIwODA1MTkxNjAyWjCBgzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh\n"
+      + "                   bGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoMBEx5ZnQx\n"
+      + "                   GTAXBgNVBAsMEEx5ZnQgRW5naW5lZXJpbmcxHTAbBgNVBAMMFFRlc3QgVXBzdHJl\n"
+      + "                   YW0gU2VydmVyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtpiYA4/I\n"
+      + "                   NuflkPe4L/GTslmngNQUCo8TzPXG0gt7uoxr4FeuVy7AaD28S2/hwhbl+bDtHTQY\n"
+      + "                   mvBUwNMsYzpND2eQ3sSIumdeLzBEKP2mnnZ9gE/Zd2TIuZl686RpDq0B6ZdZSpCu\n"
+      + "                   bqQmmPFLiRNH8JViJZMN5yqMt7T5oq+DnCYQZllqmpAwd6NnhKALrYmZ87oqc0zh\n"
+      + "                   kf+5amP7zMYKkwQuRwcx4QPZkEp3+qhszolpAJ52dFGJ+pLuUVDg0Gf0cnxLjFKc\n"
+      + "                   6vcTlj4tsymR4ci58MHRt4EdGdhShw0oaj67gRRfU4Vj61I2ZAVH07kL0mjO2TZT\n"
+      + "                   EKrOEJJ7/dtxdwIDAQABo4GsMIGpMAwGA1UdEwEB/wQCMAAwCwYDVR0PBAQDAgXg\n"
+      + "                   MB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAtBgNVHREEJjAkggoqLmx5\n"
+      + "                   ZnQuY29thwR/AAABhxAAAAAAAAAAAAAAAAAAAAABMB0GA1UdDgQWBBQeoC5wxwX5\n"
+      + "                   k3ggIN/844/6jKx9czAfBgNVHSMEGDAWgBQ7Zh1TopMm7SY1RCOEO8L1G8IAZDAN\n"
+      + "                   BgkqhkiG9w0BAQsFAAOCAQEA18wEg8LnPm99cIouFUFMAO+BpiY2KVa9Bu6x07m9\n"
+      + "                   quNFv7/4mLt87sk/umD3LH/tDjqW0D84vhG9a+0yDq7ZrD/P5eK3R+yBINwhe4/x\n"
+      + "                   obJlThEsbcZF1FkMnq1rt53izukyQLLQwoVxidQl3HCg3hosWmpH1VBPgwoize6V\n"
+      + "                   aAhKLW0n+JSfIE1d80nvZdYlHuCnS6UhLmAbTBCnwT0aGTfzT0Dd4KlYiY8vGZRu\n"
+      + "                   tXOw4MzKtJcOL3t7Zpz2mhqN25dyiuyvKEhLXdx48aemwa2t6ISfFKsd0/glnNe/\n"
+      + "                   PFZMakzKv1G0xLGURjsInCZ0kePAmerfZN6CBZDo4laYEg==\n"
       + "                   -----END CERTIFICATE-----\n"
       + "               private_key:\n"
       + "                 inline_string: |\n"
       + "                   -----BEGIN RSA PRIVATE KEY-----\n"
-      + "                   MIIEpAIBAAKCAQEAvSYGiO4cYzzNLbFJ2v0JorwXSmwqy5y1vU3mpER/xG4OvKL8\n"
-      + "                   r60SJcmw0+l4Sovolac1WPZKsYRh4KxQ4BiwWpFTImCeRIyIB36KOFFAB8CGG7py\n"
-      + "                   ZbmAoADc6aawbL0wv8hWA1TKlK478B7KGGFZt+oqPfeJPfrfNd2+9KNJe/z62gbC\n"
-      + "                   pM/DXGNldpq3f8h5/9BwIb94ZeooiZnvclEbg2EK2ntgAkq0LbG3pSsHWf0Xu9Wd\n"
-      + "                   WsM9DkJgIzGth7gqKfkP9UC56gXpE+fgx9ailMydyZKujUZBEVzqYvO49OK7QgbX\n"
-      + "                   gqIKzuu6p7gWdpR942BDG/pUHS5MjTC5bQUnSwIDAQABAoIBADEMwlcSAFSPuNln\n"
-      + "                   hzJ9udj0k8md4T8p5Usw/2WLyeJDdBjg30wjQniAJBXgDmyueWMNmFz4iYgdP1CG\n"
-      + "                   /vYOEPV7iCZ7Da/TDZd77hYKo+MevuhD4lSU1VEoyCDjNA8OxKyHJB77BwmlYS+0\n"
-      + "                   nE3UOPLji47EOVfUTbvnRBSmn3DCSHkQiRIUP1xMivoiZgKJn+D+FxSMwwiq2pQR\n"
-      + "                   5tdo7nh2A8RxlYUbaD6i4poUB26HVm8vthXahNEkLpXQOz8MWRzs6xOdDHRzi9kT\n"
-      + "                   ItRLa4A/3LIATqviQ2EpwcALHXcULcNUMTHORC1EHPvheWR5nLuRllYzN4ReoeHC\n"
-      + "                   3+A5KEkCgYEA52rlh/22/rLckCWugjyJic17vkg46feSOGhjuP2LelrIxNlg491y\n"
-      + "                   o28n8lQPSVnEp3/sT7Y3quVvdboq4DC9LTzq52f6/mCYh9UQRpljuSmFqC2MPG46\n"
-      + "                   Zl5KLEVLzhjC8aTWkhVINSpz9vauXderOpFYlPW32lnRTjJWE276kj8CgYEA0T2t\n"
-      + "                   ULnn7TBvRSpmeWzEBA5FFo2QYkYvwrcVe0pfUltV6pf05xUmMXYFjpezSTEmPhh6\n"
-      + "                   +dZdhwxDk+6j8Oo61rTWucDsIqMj5ZT1hPNph8yQtb5LRlRbLGVrirU9Tp7xTgMq\n"
-      + "                   3uRA2Eka1d98dDBsEbMIVFSZ2MX3iezSGRL6j/UCgYEAxZQ82HjEDn2DVwb1EXjC\n"
-      + "                   LQdliTZ8cTXQf5yQ19aRiSuNkpPN536ga+1xe7JNQuEDx8auafg3Ww98tFT4WmUC\n"
-      + "                   f2ctX9klMJ4kXISK2twHioVq+gW5X7b04YXLajTX3eTCPDHyiNLmzY2raMWAZdrG\n"
-      + "                   9MA3kyafjCt3Sn4rg3gTM10CgYEAtJ8WRpJEd8aQttcUIItYZdvfnclUMtE9l0su\n"
-      + "                   GwCnalN3xguol/X0w0uLHn0rgeoQhhfhyFtY3yQiDcg58tRvODphBXZZIMlNSnic\n"
-      + "                   vEjW9ygKXyjGmA5nqdpezB0JsB2aVep8Dm5g35Ozu52xNCc8ksbGUO265Jp3xbMN\n"
-      + "                   5iEw9CUCgYBmfoPnJwzA5S1zMIqESUdVH6p3UwHU/+XTY6JHAnEVsE+BuLe3ioi7\n"
-      + "                   6dU4rFd845MCkunBlASLV8MmMbod9xU0vTVHPtmANaUCPxwUIxXQket09t19Dzg7\n"
-      + "                   A23sE+5myXtcfz6YrPhbLkijV4Nd7fmecodwDckvpBaWTMrv52/Www==\n"
+      + "                   MIIEpAIBAAKCAQEAtpiYA4/INuflkPe4L/GTslmngNQUCo8TzPXG0gt7uoxr4Feu\n"
+      + "                   Vy7AaD28S2/hwhbl+bDtHTQYmvBUwNMsYzpND2eQ3sSIumdeLzBEKP2mnnZ9gE/Z\n"
+      + "                   d2TIuZl686RpDq0B6ZdZSpCubqQmmPFLiRNH8JViJZMN5yqMt7T5oq+DnCYQZllq\n"
+      + "                   mpAwd6NnhKALrYmZ87oqc0zhkf+5amP7zMYKkwQuRwcx4QPZkEp3+qhszolpAJ52\n"
+      + "                   dFGJ+pLuUVDg0Gf0cnxLjFKc6vcTlj4tsymR4ci58MHRt4EdGdhShw0oaj67gRRf\n"
+      + "                   U4Vj61I2ZAVH07kL0mjO2TZTEKrOEJJ7/dtxdwIDAQABAoIBACz6E1+1N/0GTA7U\n"
+      + "                   ZgMxP09MNC1QkAs1yQvQcoPknjqKQjxFfMUu1+gVZN80FOjpGQbTJOTvoyvvDQFe\n"
+      + "                   Qu3CO58SxKWKxZ8cvR9khTWPnU4lI67KfGejZKoK+zUuh049IV53kGAEmWLZfkRo\n"
+      + "                   E1IVdL/3G/DjcyZA3d6WbnM7RnDcqORPnig4lq5HxN76eBdssbxtrAi3Sjy3ChMy\n"
+      + "                   BLInnryF4UtaT5xqR26YjgtFmYkunrgXTe1i/ewQgBBkSPXcNr7or69hCCv0SG9e\n"
+      + "                   vRsv1r+Uug3/iRZDjEhKBmXWNAZJ/IsDF37ywiyeBdUY+klDX+mWz+0BB0us8b4u\n"
+      + "                   LxoZQTECgYEA2Gu9EVC0RMrQ9FF5AgKKJWmZKkOn346RkPrtbl5lbuUgnVdBXJjr\n"
+      + "                   wfMZVTD/8E/tMN4EMSGmC9bxCpRRzhrphrm7SHGD6b9O30DH9q0TV0r0A8IG/bMO\n"
+      + "                   xJLYjrYVxtEE+KckzvyvfIefbDG7wYkI3u+ObmjBg9t6jcErKlI/PdkCgYEA1/1E\n"
+      + "                   T+cpR16iOPz1mz+f/GU4YmPkdSDj/PrjMv0c1OTDvdPiZPpLkhLUKiICnKSKbYjX\n"
+      + "                   Ko8fdZc3cmakgD1dXtAfR7Tf/hXQIR5+iHD48I5e9DVlkqMNDObfj82ohTFKVe/P\n"
+      + "                   ZSwgDiAPTMFxWr26u/GzY5D3adCQYJyKE2wTh88CgYEAu7vpzGVnmu0ciXNLNvUh\n"
+      + "                   BQcvODxsGT9BArTI1Z7I+oOD4TjZmAuHJz1L0lypB7stk+BjXoND2K1hdr3moJUz\n"
+      + "                   0gy3a0YdGd07++nkDBVi26xHNCNRkS2MN/TyKgnFpiuW1mOXSH5lc+7p2h7iMiY/\n"
+      + "                   LbQ8p4Xzp//xtZnFafbiqTECgYEAwDN5KZ1r5z24H/xCVv+cT46HSU7ZCr3VA9cC\n"
+      + "                   fOouUOitouu9J9xviTJGKKQRLPFi2awOxKmN9ic1SRE7y35P60JKw5WaSdGBXydy\n"
+      + "                   s9nMPMyEhM5Lb9y2jUeZo68ACl5dZvG63a4RbGBtHQF67KOvWvXvi2eCM2BMShyi\n"
+      + "                   5jujeZMCgYAjewq1hVqL1FOD8sIFpmndsH3+Dfc7BJ/erqGOX9bQYGvJO4nCe+7K\n"
+      + "                   4o8qFQf4jwdxu0iNxYJIMdn+l4/pz2e7GUFHjgMduUclf27Qj1p+8EyYqp6cmkzM\n"
+      + "                   8mcwRkYo3aM70EmUu0Xxi3d5O5F1bIJ5MkgXaX/zSF2N02B3jXroxQ==\n"
       + "                   -----END RSA PRIVATE KEY-----\n"
       + "     filters:\n"
       + "     - name: envoy.filters.network.http_connection_manager\n"
@@ -191,7 +191,7 @@ public class QuicTestServerTest {
       + "     typed_config:\n"
       + "       \"@type\": " + quicUpstreamType + "\n"
       + "       upstream_tls_context:\n"
-      + "         sni: lyft.com";
+      + "         sni: localhost";
 
   private static Engine engine;
 
@@ -235,7 +235,8 @@ public class QuicTestServerTest {
                                                              .setUrl(QuicTestServer.getServerURL());
 
     QuicTestServerTest.Response response = sendRequest(requestScenario);
-
+    System.err.println(response.getBodyAsString());
+    System.err.println(response.getHeaders());
     assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
     assertThat(response.getBodyAsString()).isEqualTo("hello, world");
     assertThat(response.getEnvoyError()).isNull();
@@ -299,7 +300,6 @@ public class QuicTestServerTest {
       RequestHeadersBuilder requestHeadersBuilder =
           new RequestHeadersBuilder(method, url.getProtocol(), url.getAuthority(), url.getPath());
       headers.forEach(entry -> requestHeadersBuilder.add(entry.getKey(), entry.getValue()));
-      // HTTP1 is the only way to send HTTP requests (not HTTPS)
       return requestHeadersBuilder.build();
     }
 
