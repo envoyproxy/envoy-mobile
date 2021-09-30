@@ -30,12 +30,19 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - id: build_url
+        name: 'Generate build results URL'
+        run: |
+          UUID=$(uuid)
+          echo "Follow build results in: https://envoy.cluster.engflow.com/invocation/$UUID"
+          echo "::set-output name=uuid=$UUID"
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.check_context.outputs.run_tests == 'true'
         run: |
           bazel test --test_output=all \
+            --invocation_id=steps.build_url.uuid \
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --config=remote-ci-linux-asan \
