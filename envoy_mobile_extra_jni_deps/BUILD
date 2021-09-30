@@ -6,6 +6,6 @@ envoy_package()
 
 envoy_cc_library(
     name = "extra_jni_dep",
-    repository="@envoy",
+    repository = "@envoy",
     visibility = ["//visibility:public"],
 )
