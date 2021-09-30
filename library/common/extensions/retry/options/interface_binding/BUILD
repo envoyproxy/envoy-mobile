@@ -1,0 +1,37 @@
+load(
+    "@envoy//bazel:envoy_build_system.bzl",
+    "envoy_cc_extension",
+    "envoy_extension_package",
+    "envoy_proto_library",
+)
+
+licenses(["notice"])  # Apache 2
+
+envoy_extension_package()
+
+envoy_proto_library(
+    name = "predicate",
+    srcs = ["predicate.proto"],
+)
+
+envoy_cc_extension(
+    name = "interface_binding_retry_options_predicate_lib",
+    hdrs = ["predicate.h"],
+    repository = "@envoy",
+    deps = [
+        ":predicate_cc_proto",
+        "@envoy//envoy/upstream:retry_interface",
+    ],
+)
+
+envoy_cc_extension(
+    name = "config",
+    srcs = ["config.cc"],
+    hdrs = ["config.h"],
+    repository = "@envoy",
+    deps = [
+        ":interface_binding_retry_options_predicate_lib",
+        ":predicate_cc_proto",
+        "@envoy//envoy/upstream:retry_interface",
+    ],
+)
