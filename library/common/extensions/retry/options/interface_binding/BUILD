@@ -20,6 +20,7 @@ envoy_cc_extension(
     repository = "@envoy",
     deps = [
         ":predicate_cc_proto",
+                "//library/common/network:configurator_lib",
         "@envoy//envoy/upstream:retry_interface",
     ],
 )
