@@ -11,9 +11,9 @@ namespace Extensions {
 namespace Retry {
 namespace Options {
 
-InterfaceBindingRetryOptionsPredicate::InterfaceBindingRetryOptionsPredicate(
+NetworkConfigurationRetryOptionsPredicate::NetworkConfigurationRetryOptionsPredicate(
     const envoymobile::extensions::retry::options::interface_binding::
-        InterfaceBindingOptionsPredicate&,
+        NetworkConfigurationOptionsPredicate&,
     Upstream::RetryExtensionFactoryContext& context) {
   network_configurator_ = context.singletonManager().getTyped<Configurator>(
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator));
@@ -21,7 +21,7 @@ InterfaceBindingRetryOptionsPredicate::InterfaceBindingRetryOptionsPredicate(
 }
 
 UpdateOptionsReturn
-InterfaceBindingRetryOptionsPredicate::updateOptions(const UpdateOptionsParameters&) const {
+NetworkConfigurationRetryOptionsPredicate::updateOptions(const UpdateOptionsParameters&) const {
   return {network_configurator_->getUpstreamSocketOptions(
       network_configurator_->getPreferredNetwork(), false /* not being used? */)};
 }

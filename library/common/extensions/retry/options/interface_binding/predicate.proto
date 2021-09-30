@@ -4,5 +4,5 @@ package envoymobile.extensions.retry.options.interface_binding;
 
 import "validate/validate.proto";
 
-message InterfaceBindingOptionsPredicate {
+message NetworkConfigurationOptionsPredicate {
 }

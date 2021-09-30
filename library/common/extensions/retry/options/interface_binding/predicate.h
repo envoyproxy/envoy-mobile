@@ -11,11 +11,11 @@ namespace Extensions {
 namespace Retry {
 namespace Options {
 
-class InterfaceBindingRetryOptionsPredicate : public Upstream::RetryOptionsPredicate {
+class NetworkConfigurationRetryOptionsPredicate : public Upstream::RetryOptionsPredicate {
 public:
-  explicit InterfaceBindingRetryOptionsPredicate(
+  explicit NetworkConfigurationRetryOptionsPredicate(
       const envoymobile::extensions::retry::options::interface_binding::
-          InterfaceBindingOptionsPredicate&,
+          NetworkConfigurationOptionsPredicate&,
       Upstream::RetryExtensionFactoryContext& context);
 
   UpdateOptionsReturn updateOptions(const UpdateOptionsParameters&) const { return {}; }

@@ -7,7 +7,7 @@ namespace Extensions {
 namespace Retry {
 namespace Options {
 
-REGISTER_FACTORY(InterfaceBindingRetryOptionsPredicateFactory,
+REGISTER_FACTORY(NetworkConfigurationRetryOptionsPredicateFactory,
                  Upstream::RetryOptionsPredicateFactory);
 
 }
