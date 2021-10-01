@@ -40,7 +40,6 @@ cc_library(
         "@envoy//bazel:dbg_build": ["-Wl,--build-id=sha1"],
         "//conditions:default": ["-Wl,-s"],
     }),
-    linkshared = True,
     deps = [
         ":jni_utility_lib",
         ":ndk_jni_support",
