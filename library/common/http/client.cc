@@ -13,6 +13,7 @@
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
+#include "library/common/network/configurator.h"
 
 namespace Envoy {
 namespace Http {
@@ -39,6 +40,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
+  direct_stream_.saveLatestStreamIntel();
   if (end_stream) {
     closeStream();
   }
@@ -72,6 +74,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
+  direct_stream_.saveLatestStreamIntel();
   if (end_stream) {
     closeStream();
   }
@@ -114,7 +117,7 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
 
-  bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), end_stream,
+  bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), send_end_stream,
                             streamIntel(), bridge_callbacks_.context);
   if (send_end_stream) {
     onComplete();
@@ -131,6 +134,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
+  direct_stream_.saveLatestStreamIntel();
   closeStream(); // Trailers always indicate the end of the stream.
 
   // For explicit flow control, don't send data unless prompted.
@@ -244,12 +248,14 @@ void Client::DirectStreamCallbacks::onCancel() {
 }
 
 envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
-  const auto& info = direct_stream_.request_decoder_->streamInfo();
-  envoy_stream_intel stream_intel{-1, -1, -1};
-  stream_intel.connection_id = info.upstreamConnectionId().value_or(-1);
-  stream_intel.stream_id = static_cast<uint64_t>(direct_stream_.stream_handle_);
-  stream_intel.attempt_count = info.attemptCount().value_or(-1);
-  return stream_intel;
+  return direct_stream_.stream_intel_;
+}
+
+void Client::DirectStream::saveLatestStreamIntel() {
+  const auto& info = request_decoder_->streamInfo();
+  stream_intel_.connection_id = info.upstreamConnectionId().value_or(-1);
+  stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
+  stream_intel_.attempt_count = info.attemptCount().value_or(0);
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
@@ -524,30 +530,10 @@ const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
 // Long-term we will be working to generally provide more responsive connection handling within
 // Envoy itself.
 
-const size_t ClustersPerPool = 3;
-const char* BaseClusters[ClustersPerPool] = {
-    "base",
-    "base_wlan",
-    "base_wwan",
-};
-
-const char* H2Clusters[ClustersPerPool] = {
-    "base_h2",
-    "base_wlan_h2",
-    "base_wwan_h2",
-};
-
-const char* ClearTextClusters[ClustersPerPool] = {
-    "base_clear",
-    "base_wlan_clear",
-    "base_wwan_clear",
-};
-
-const char* AlpnClusters[ClustersPerPool] = {
-    "base_alpn",
-    "base_wlan_alpn",
-    "base_wwan_alpn",
-};
+const char* BaseCluster = "base";
+const char* H2Cluster = "base_h2";
+const char* ClearTextCluster = "base_clear";
+const char* AlpnCluster = "base_alpn";
 
 } // namespace
 
@@ -558,25 +544,21 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // - Force http/1.1 if request scheme is http (cleartext).
   const char* cluster{};
   auto h2_header = headers.get(H2UpstreamHeader);
-  auto network = preferred_network_.load();
-  ASSERT(network >= 0 && network < ClustersPerPool,
-         "preferred_network_ must be valid index into cluster array");
-
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    cluster = ClearTextClusters[network];
+    cluster = ClearTextCluster;
   } else if (!h2_header.empty()) {
     ASSERT(h2_header.size() == 1);
     const auto value = h2_header[0]->value().getStringView();
     if (value == "http2") {
-      cluster = H2Clusters[network];
+      cluster = H2Cluster;
     } else if (value == "alpn") {
-      cluster = AlpnClusters[network];
+      cluster = AlpnCluster;
     } else {
       RELEASE_ASSERT(value == "http1", fmt::format("using unsupported protocol version {}", value));
-      cluster = BaseClusters[network];
+      cluster = BaseCluster;
     }
   } else {
-    cluster = BaseClusters[network];
+    cluster = BaseCluster;
   }
 
   if (!h2_header.empty()) {

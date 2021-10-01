@@ -39,6 +39,9 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
+- &enable_interface_binding false
+- &h2_connection_keepalive_idle_interval 100000s
+- &h2_connection_keepalive_timeout 10s
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -46,6 +49,7 @@ const std::string config_header = R"(
 - &statsd_host 127.0.0.1
 - &statsd_port 8125
 - &stream_idle_timeout 15s
+- &per_try_idle_timeout 15s
 - &virtual_clusters []
 
 !ignore stats_defs:
@@ -65,21 +69,6 @@ const std::string config_header = R"(
       "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
-
-!ignore protocol_defs: &base_protocol_options_defs
-    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-      auto_config:
-        http2_protocol_options: {}
-        http_protocol_options:
-          header_key_format:
-            stateful_formatter:
-              name: preserve_case
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-      upstream_http_protocol_options:
-        auto_sni: true
-        auto_san_validation: true
 
 !ignore protocol_defs: &http1_protocol_options_defs
     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
@@ -131,6 +120,24 @@ R"(
 )";
 
 const char* config_template = R"(
+!ignore base_protocol_options_defs: &base_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    auto_config:
+      http2_protocol_options:
+        connection_keepalive:
+          connection_idle_interval: *h2_connection_keepalive_idle_interval
+          timeout: *h2_connection_keepalive_timeout
+      http_protocol_options:
+        header_key_format:
+          stateful_formatter:
+            name: preserve_case
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+    upstream_http_protocol_options:
+      auto_sni: true
+      auto_san_validation: true
+
 !ignore custom_listener_defs:
   fake_remote_listener: &fake_remote_listener
     name: fake_remote_listener
@@ -223,11 +230,16 @@ static_resources:
                   cluster_header: x-envoy-mobile-cluster
                   timeout: 0s
                   retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
                     retry_back_off:
                       base_interval: 0.25s
                       max_interval: 60s
           http_filters:
 #{custom_filters}
+          - name: envoy.filters.http.network_configuration
+            typed_config:
+              "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
+              enable_interface_binding: *enable_interface_binding
           - name: envoy.filters.http.local_error
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
@@ -235,14 +247,21 @@ static_resources:
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
               dns_cache_config: &dns_cache_config
-                name: dynamic_forward_proxy_cache_config
+                name: base_dns_cache
 )"              // TODO: Support API for overriding prefetch_hostnames:
                 // https://github.com/envoyproxy/envoy-mobile/issues/1534
 R"(
                 preresolve_hostnames: *dns_preresolve_hostnames
 )"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
 R"(
-                dns_lookup_family: V4_ONLY
+                dns_lookup_family: V4_PREFERRED
+)"              // On mobile, backgrounding might cause the host to be past its TTL without good
+                // reason. Given the host would be deleted, and new streams for a given domain
+                // would have to wait for resolution, it is better to not delete existing hosts;
+                // especially since deletion only happens when re-resolving is already in progress.
+                // There is no way to disable so the value below is equivalent to 24 hours.
+R"(
+                host_ttl: 86400s
                 dns_refresh_rate: *dns_refresh_rate
                 dns_failure_refresh_rate:
                   base_interval: *dns_fail_base_interval
@@ -306,43 +325,7 @@ R"(
       max_ejection_time: 0.001s
       interval: 1s
     typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wlan
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wwan
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_clear
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wlan_clear
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *http1_protocol_options_defs
-  - name: base_wwan_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
@@ -360,24 +343,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-  - name: base_wlan_h2
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_h2_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-  - name: base_wwan_h2
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_h2_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
+    typed_extension_protocol_options: *base_protocol_options
   - name: base_alpn
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -386,27 +352,7 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options_defs
-  - name: base_wlan_alpn
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options_defs
-  - name: base_wwan_alpn
-    http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    outlier_detection: *base_outlier_detection
-    typed_extension_protocol_options: *base_protocol_options_defs
+    typed_extension_protocol_options: *base_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:

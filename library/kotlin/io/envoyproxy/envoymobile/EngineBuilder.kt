@@ -35,8 +35,12 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
+  private var enableInterfaceBinding = false
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
+  private var perTryIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
   private var appId = "unspecified"
   private var virtualClusters = "[]"
@@ -149,6 +153,44 @@ open class EngineBuilder(
   }
 
   /**
+   * Specify whether sockets may attempt to bind to a specific interface, based on network
+   * conditions.
+   *
+   * @param enableInterfaceBinding whether to allow interface binding.
+   *
+   * @return This builder.
+   */
+  fun enableInterfaceBinding(enableInterfaceBinding: Boolean): EngineBuilder {
+    this.enableInterfaceBinding = enableInterfaceBinding
+    return this
+  }
+
+  /**
+   * Add a rate at which to ping h2 connections on new stream creation if the connection has
+   * sat idle.
+   *
+   * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
+   *
+   * @return this builder.
+   */
+  fun addH2ConnectionKeepaliveIdleIntervalMilliseconds(idleIntervalMs: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveIdleIntervalMilliseconds = idleIntervalMs
+    return this
+  }
+
+  /**
+   * Add a rate at which to timeout h2 pings.
+   *
+   * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   *
+   * @return this builder.
+   */
+  fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
+    this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
+    return this
+  }
+
+  /**
    * Add an interval at which to flush Envoy stats.
    *
    * @param statsFlushSeconds interval at which to flush Envoy stats.
@@ -169,6 +211,18 @@ open class EngineBuilder(
    */
   fun addStreamIdleTimeoutSeconds(streamIdleTimeoutSeconds: Int): EngineBuilder {
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds
+    return this
+  }
+
+  /**
+   * Add a custom per try idle timeout for HTTP streams. Defaults to 15 seconds.
+   *
+   * @param perTryIdleTimeoutSeconds per try idle timeout for HTTP streams.
+   *
+   * @return this builder.
+   */
+  fun addPerTryIdleTimeoutSeconds(perTryIdleTimeoutSeconds: Int): EngineBuilder {
+    this.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds
     return this
   }
 
@@ -321,9 +375,10 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds,
-            dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
-            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
+            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -335,9 +390,10 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds,
-            dnsPreresolveHostnames, statsFlushSeconds, streamIdleTimeoutSeconds, appVersion, appId,
-            virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
+            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
           logLevel
         )

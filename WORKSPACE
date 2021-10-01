@@ -45,7 +45,7 @@ declare_python_abi(name = "python_abi", python_version = "3")
 
 # Note: proguard is failing for API 30+
 android_sdk_repository(name = "androidsdk", api_level = 29)
-android_ndk_repository(name = "androidndk", path = "/Users/runner/Library/Android/sdk/ndk/21.3.6528147", api_level = 21)
+android_ndk_repository(name = "androidndk", api_level = 21)
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
@@ -59,10 +59,11 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "engflow_remote_config",
-    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
+    create_java_configs = False,
     exec_properties = {
         "Pool": "linux",
     },
@@ -70,7 +71,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang",
-    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -86,7 +87,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang_asan",
-    digest = "sha256:375bf44de0d891f881fd38d7732db411f1f34ec6200eac2f1c9fedf4ad0e474d",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -99,6 +100,25 @@ rbe_autoconfig(
         # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
         # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
         "dockerAddCapabilities": "SYS_PTRACE",
+    },
+    create_java_configs = False,
+)
+
+rbe_autoconfig(
+    name = "engflow_remote_config_clang_coverage",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
+    registry = "docker.io",
+    repository = "envoyproxy/envoy-build-ubuntu",
+    use_legacy_platform_definition = False,
+    env = {
+        "CC": "/opt/llvm/bin/clang",
+        "CXX": "/opt/llvm/bin/clang++",
+        "GCOV": "/opt/llvm/bin/llvm-profdata",
+        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
+    },
+    exec_properties = {
+        "Pool": "linux",
     },
     create_java_configs = False,
 )

@@ -21,8 +21,12 @@ open class EngineBuilder: NSObject {
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
   private var dnsQueryTimeoutSeconds: UInt32 = 25
   private var dnsPreresolveHostnames: String = "[]"
+  private var enableInterfaceBinding: Bool = false
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
+  private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
+  private var perTryIdleTimeoutSeconds: UInt32 = 15
   private var appVersion: String = "unspecified"
   private var appId: String = "unspecified"
   private var virtualClusters: String = "[]"
@@ -130,6 +134,44 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Specify whether sockets may attempt to bind to a specific interface, based on network
+  /// conditions.
+  ///
+  /// - parameter enableInterfaceBinding: whether to allow interface binding.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableInterfaceBinding(_ enableInterfaceBinding: Bool) -> Self {
+    self.enableInterfaceBinding = enableInterfaceBinding
+    return self
+  }
+
+  /// Add a rate at which to ping h2 connections on new stream creation if the connection has
+  /// sat idle.
+  ///
+  /// - parameter h2ConnectionKeepaliveIdleIntervalMilliseconds: Rate in milliseconds.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addH2ConnectionKeepaliveIdleIntervalMilliseconds(
+    _ h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32) -> Self {
+    self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
+      h2ConnectionKeepaliveIdleIntervalMilliseconds
+    return self
+  }
+
+  /// Add a rate at which to timeout h2 pings.
+  ///
+  /// - parameter h2ConnectionKeepaliveTimeoutSeconds: Rate in seconds to timeout h2 pings.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addH2ConnectionKeepaliveTimeoutSeconds(
+    _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
+    self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+    return self
+  }
+
   /// Add an interval at which to flush Envoy stats.
   ///
   /// - parameter statsFlushSeconds: Interval at which to flush Envoy stats.
@@ -149,6 +191,17 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func addStreamIdleTimeoutSeconds(_ streamIdleTimeoutSeconds: UInt32) -> Self {
     self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds
+    return self
+  }
+
+  /// Add a custom per try idle timeout for HTTP streams. Defaults to 15 seconds.
+  ///
+  /// - parameter perTryIdleSeconds: Idle timeout for HTTP streams.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addPerTryIdleTimeoutSeconds(_ perTryIdleTimeoutSeconds: UInt32) -> Self {
+    self.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds
     return self
   }
 
@@ -299,8 +352,13 @@ open class EngineBuilder: NSObject {
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
       dnsQueryTimeoutSeconds: self.dnsQueryTimeoutSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
+      enableInterfaceBinding: self.enableInterfaceBinding,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds:
+        self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
+      h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
+      perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,
       appVersion: self.appVersion,
       appId: self.appId,
       virtualClusters: self.virtualClusters,
