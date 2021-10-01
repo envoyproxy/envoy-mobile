@@ -39,7 +39,7 @@ cc_library(
 )""")
 
 _default_extra_jni_deps = repository_rule(
-  implementation = _default_extra_jni_deps_impl,
+    implementation = _default_extra_jni_deps_impl,
 )
 
 def envoy_mobile_dependencies():
