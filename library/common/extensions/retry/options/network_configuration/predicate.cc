@@ -9,7 +9,7 @@ NetworkConfigurationRetryOptionsPredicate::NetworkConfigurationRetryOptionsPredi
     const envoymobile::extensions::retry::options::network_configuration::
         NetworkConfigurationOptionsPredicate&,
     Upstream::RetryExtensionFactoryContext& context) {
-  network_configurator_ = Network::NullableConfiguratorHandle{context.singletonManager()}.get();
+  network_configurator_ = Network::ConfiguratorHandle{context.singletonManager()}.get();
   RELEASE_ASSERT(network_configurator_ != nullptr, "unexpected nullptr network configurator");
 }
 

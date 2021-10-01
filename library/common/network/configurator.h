@@ -72,9 +72,9 @@ using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
 /**
  * Provides access to the singleton Configurator.
  */
-class ConfiguratorHandle {
+class ConfiguratorFactory {
 public:
-  ConfiguratorHandle(Server::Configuration::FactoryContextBase& context) : context_(context) {}
+  ConfiguratorFactory(Server::Configuration::FactoryContextBase& context) : context_(context) {}
 
   /**
    * @returns singleton Configurator instance.
@@ -88,9 +88,9 @@ private:
 /**
  * Provides nullable access to the singleton Configurator.
  */
-class NullableConfiguratorHandle {
+class ConfiguratorHandle {
 public:
-  NullableConfiguratorHandle(Singleton::Manager& singleton_manager)
+  ConfiguratorHandle(Singleton::Manager& singleton_manager)
       : singleton_manager_(singleton_manager) {}
 
   /**

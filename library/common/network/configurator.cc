@@ -137,7 +137,7 @@ std::vector<std::string> Configurator::enumerateInterfaces([[maybe_unused]] unsi
   return names;
 }
 
-ConfiguratorSharedPtr ConfiguratorHandle::get() {
+ConfiguratorSharedPtr ConfiguratorFactory::get() {
   return context_.singletonManager().getTyped<Configurator>(
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator), [&] {
         Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl cache_manager_factory{
@@ -146,7 +146,7 @@ ConfiguratorSharedPtr ConfiguratorHandle::get() {
       });
 }
 
-ConfiguratorSharedPtr NullableConfiguratorHandle::get() {
+ConfiguratorSharedPtr ConfiguratorHandle::get() {
   return singleton_manager_.getTyped<Configurator>(
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator));
 }

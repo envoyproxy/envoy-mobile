@@ -25,7 +25,7 @@ TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTest) {
   Upstream::RetryExtensionFactoryContextImpl retry_extension_factory_context{
       *mock_factory_context.singleton_manager_};
 
-  auto configurator = Network::ConfiguratorHandle(mock_factory_context).get();
+  auto configurator = Network::ConfiguratorFactory(mock_factory_context).get();
   ASSERT_NE(nullptr, configurator);
 
   auto factory = Registry::FactoryRegistry<Upstream::RetryOptionsPredicateFactory>::getFactory(
