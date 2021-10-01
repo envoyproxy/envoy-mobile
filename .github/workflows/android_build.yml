@@ -85,6 +85,9 @@ jobs:
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
       - name: 'Check connectivity'
         run: adb logcat -e "received headers with status 200" -m 1
+      - name: 'Log app run'
+        if: ${{ failure() || cancelled() }}
+        run: abd logcat
   kotlinhelloworld:
     name: kotlin_helloworld
     needs: androidbuild
@@ -128,3 +131,6 @@ jobs:
           adb shell am start -n io.envoyproxy.envoymobile.helloenvoykotlin/.MainActivity
       - name: 'Check connectivity'
         run: adb logcat -e "received headers with status 200" -m 1
+      - name: 'Log app run'
+        if: ${{ failure() || cancelled() }}
+        run: abd logcat
