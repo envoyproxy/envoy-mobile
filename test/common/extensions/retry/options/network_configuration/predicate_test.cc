@@ -39,6 +39,20 @@ TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTest) {
             predicate->updateOptions({mock_stream_info, nullptr}).new_upstream_socket_options_);
 }
 
+TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTestWithoutConfigurator) {
+  NiceMock<Server::Configuration::MockFactoryContext> mock_factory_context;
+  Upstream::RetryExtensionFactoryContextImpl retry_extension_factory_context{
+      *mock_factory_context.singleton_manager_};
+
+  auto factory = Registry::FactoryRegistry<Upstream::RetryOptionsPredicateFactory>::getFactory(
+      "envoy.retry_options_predicates.network_configuration");
+  ASSERT_NE(nullptr, factory);
+
+  auto proto_config = factory->createEmptyConfigProto();
+  EXPECT_DEATH(factory->createOptionsPredicate(*proto_config, retry_extension_factory_context),
+               "unexpected nullptr network configurator");
+}
+
 } // namespace
 } // namespace Options
 } // namespace Retry
