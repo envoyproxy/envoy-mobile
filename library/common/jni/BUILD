@@ -31,6 +31,12 @@ cc_library(
         "android_jni_interface.cc",
         "jni_interface.cc",
     ],
+    copts = ["-std=c++17"],
+    linkopts = [
+        "-lm",
+        "-llog",
+        "-Wl,-s",
+    ],
     deps = [
         ":jni_utility_lib",
         ":ndk_jni_support",
