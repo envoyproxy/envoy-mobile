@@ -18,9 +18,10 @@
 
 #include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/local_error/config.h"
+#include "library/common/extensions/filters/http/network_configuration/config.h"
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
 #include "library/common/extensions/filters/http/route_cache_reset/config.h"
-#include "library/common/extensions/filters/http/socket_selection/config.h"
+#include "library/common/extensions/retry/options/network_configuration/config.h"
 
 namespace Envoy {
 class ExtensionRegistry {

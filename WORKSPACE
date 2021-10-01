@@ -59,7 +59,7 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 
 rbe_autoconfig(
     name = "engflow_remote_config",
-    digest = "sha256:239015d203837f2bdcd4cfdd710d7db60acc3fb1f002f1c926b92b42c59afdd6",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -71,7 +71,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang",
-    digest = "sha256:239015d203837f2bdcd4cfdd710d7db60acc3fb1f002f1c926b92b42c59afdd6",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -87,7 +87,7 @@ rbe_autoconfig(
 
 rbe_autoconfig(
     name = "engflow_remote_config_clang_asan",
-    digest = "sha256:239015d203837f2bdcd4cfdd710d7db60acc3fb1f002f1c926b92b42c59afdd6",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
     registry = "docker.io",
     repository = "envoyproxy/envoy-build-ubuntu",
     use_legacy_platform_definition = False,
@@ -100,6 +100,25 @@ rbe_autoconfig(
         # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
         # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
         "dockerAddCapabilities": "SYS_PTRACE",
+    },
+    create_java_configs = False,
+)
+
+rbe_autoconfig(
+    name = "engflow_remote_config_clang_coverage",
+    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
+    registry = "docker.io",
+    repository = "envoyproxy/envoy-build-ubuntu",
+    use_legacy_platform_definition = False,
+    env = {
+        "CC": "/opt/llvm/bin/clang",
+        "CXX": "/opt/llvm/bin/clang++",
+        "GCOV": "/opt/llvm/bin/llvm-profdata",
+        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
+        "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
+    },
+    exec_properties = {
+        "Pool": "linux",
     },
     create_java_configs = False,
 )

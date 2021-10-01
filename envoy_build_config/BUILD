@@ -29,8 +29,9 @@ envoy_cc_library(
         "@envoy//source/extensions/upstreams/http/generic:config",
         "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
         "@envoy_mobile//library/common/extensions/filters/http/local_error:config",
+        "@envoy_mobile//library/common/extensions/filters/http/network_configuration:config",
         "@envoy_mobile//library/common/extensions/filters/http/platform_bridge:config",
         "@envoy_mobile//library/common/extensions/filters/http/route_cache_reset:config",
-        "@envoy_mobile//library/common/extensions/filters/http/socket_selection:config",
+        "@envoy_mobile//library/common/extensions/retry/options/network_configuration:config",
     ],
 )
