@@ -32,6 +32,8 @@ cc_library(
         "jni_interface.cc",
     ],
     copts = ["-std=c++17"],
+    # We need this to ensure that we link this into the .so even though there are no code references.
+    alwayslink = True,
     linkopts = [
         "-lm",
         "-llog",
