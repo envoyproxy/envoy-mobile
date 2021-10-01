@@ -32,8 +32,6 @@ cc_library(
         "jni_interface.cc",
     ],
     copts = ["-std=c++17"],
-    # We need this to ensure that we link this into the .so even though there are no code references.
-    alwayslink = True,
     linkopts = [
         "-lm",
         "-llog",
@@ -47,6 +45,8 @@ cc_library(
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
     ],
+    # We need this to ensure that we link this into the .so even though there are no code references.
+    alwayslink = True,
 )
 
 # Main dynamic library for the Envoy Mobile aar
