@@ -1,10 +1,4 @@
-#pragma once
-
-#include "envoy/upstream/retry.h"
-
-#include "library/common/extensions/retry/options/network_configuration/predicate.pb.h"
-#include "library/common/extensions/retry/options/network_configuration/predicate.pb.validate.h"
-#include "library/common/network/configurator.h"
+#include "library/common/extensions/retry/options/network_configuration/predicate.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -15,15 +9,13 @@ NetworkConfigurationRetryOptionsPredicate::NetworkConfigurationRetryOptionsPredi
     const envoymobile::extensions::retry::options::network_configuration::
         NetworkConfigurationOptionsPredicate&,
     Upstream::RetryExtensionFactoryContext& context) {
-  network_configurator_ = context.singletonManager().getTyped<Configurator>(
-      SINGLETON_MANAGER_REGISTERED_NAME(network_configurator));
+  network_configurator_ = Network::NullableConfiguratorHandle{context.singletonManager()}.get();
   RELEASE_ASSERT(network_configurator_ != nullptr, "unexpected nullptr network configurator");
 }
 
-UpdateOptionsReturn
-NetworkConfigurationRetryOptionsPredicate::updateOptions(const UpdateOptionsParameters&) const {
-  return {network_configurator_->getUpstreamSocketOptions(
-      network_configurator_->getPreferredNetwork(), false /* not being used? */)};
+Upstream::RetryOptionsPredicate::UpdateOptionsReturn
+NetworkConfigurationRetryOptionsPredicate::updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const {
+  return {};
 }
 
 } // namespace Options

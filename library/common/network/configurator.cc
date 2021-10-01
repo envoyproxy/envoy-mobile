@@ -146,5 +146,10 @@ ConfiguratorSharedPtr ConfiguratorHandle::get() {
       });
 }
 
+ConfiguratorSharedPtr NullableConfiguratorHandle::get() {
+  return singleton_manager_.getTyped<Configurator>(
+      SINGLETON_MANAGER_REGISTERED_NAME(network_configurator));
+}
+
 } // namespace Network
 } // namespace Envoy

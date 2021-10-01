@@ -13,12 +13,12 @@ namespace Options {
 
 class NetworkConfigurationRetryOptionsPredicate : public Upstream::RetryOptionsPredicate {
 public:
-  explicit NetworkConfigurationRetryOptionsPredicate(
+  NetworkConfigurationRetryOptionsPredicate(
       const envoymobile::extensions::retry::options::network_configuration::
           NetworkConfigurationOptionsPredicate&,
       Upstream::RetryExtensionFactoryContext& context);
 
-  UpdateOptionsReturn updateOptions(const UpdateOptionsParameters&) const { return {}; }
+  Upstream::RetryOptionsPredicate::UpdateOptionsReturn updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const override;
 
 private:
   Network::ConfiguratorSharedPtr network_configurator_;

@@ -16,6 +16,7 @@ envoy_proto_library(
 
 envoy_cc_extension(
     name = "network_configuration_retry_options_predicate_lib",
+    srcs = ["predicate.cc"],
     hdrs = ["predicate.h"],
     repository = "@envoy",
     deps = [
