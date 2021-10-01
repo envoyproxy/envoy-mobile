@@ -90,7 +90,8 @@ private:
  */
 class NullableConfiguratorHandle {
 public:
-  NullableConfiguratorHandle(Singleton::Manager& singleton_manager) : singleton_manager_(singleton_manager) {}
+  NullableConfiguratorHandle(Singleton::Manager& singleton_manager)
+      : singleton_manager_(singleton_manager) {}
 
   /**
    * @returns singleton Configurator instance. Can be nullptr if it hasn't been created.

@@ -15,19 +15,23 @@ namespace Extensions {
 namespace Retry {
 namespace Options {
 
-class NetworkConfigurationRetryOptionsPredicateFactory : public Upstream::RetryOptionsPredicateFactory {
+class NetworkConfigurationRetryOptionsPredicateFactory
+    : public Upstream::RetryOptionsPredicateFactory {
 public:
   Upstream::RetryOptionsPredicateConstSharedPtr
   createOptionsPredicate(const Protobuf::Message& config,
                          Upstream::RetryExtensionFactoryContext& context) override {
     return std::make_shared<NetworkConfigurationRetryOptionsPredicate>(
-        MessageUtil::downcastAndValidate<const envoymobile::extensions::retry::options::
-                                             network_configuration::NetworkConfigurationOptionsPredicate&>(
+        MessageUtil::downcastAndValidate<
+            const envoymobile::extensions::retry::options::network_configuration::
+                NetworkConfigurationOptionsPredicate&>(
             config, ProtobufMessage::getStrictValidationVisitor()),
         context);
   }
 
-  std::string name() const override { return "envoy.retry_options_predicates.network_configuration"; }
+  std::string name() const override {
+    return "envoy.retry_options_predicates.network_configuration";
+  }
 
   ProtobufTypes::MessagePtr createEmptyConfigProto() override {
     return std::make_unique<envoymobile::extensions::retry::options::network_configuration::

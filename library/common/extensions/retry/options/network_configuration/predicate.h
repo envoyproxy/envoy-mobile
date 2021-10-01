@@ -18,7 +18,8 @@ public:
           NetworkConfigurationOptionsPredicate&,
       Upstream::RetryExtensionFactoryContext& context);
 
-  Upstream::RetryOptionsPredicate::UpdateOptionsReturn updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const override;
+  Upstream::RetryOptionsPredicate::UpdateOptionsReturn
+  updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const override;
 
 private:
   Network::ConfiguratorSharedPtr network_configurator_;

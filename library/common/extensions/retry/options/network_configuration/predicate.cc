@@ -14,7 +14,8 @@ NetworkConfigurationRetryOptionsPredicate::NetworkConfigurationRetryOptionsPredi
 }
 
 Upstream::RetryOptionsPredicate::UpdateOptionsReturn
-NetworkConfigurationRetryOptionsPredicate::updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const {
+NetworkConfigurationRetryOptionsPredicate::updateOptions(
+    const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const {
   return {};
 }
 
