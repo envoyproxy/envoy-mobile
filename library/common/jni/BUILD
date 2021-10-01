@@ -36,7 +36,11 @@ cc_library(
         "-lm",
         "-llog",
         "-Wl,-s",
-    ],
+    ] + select({
+        "@envoy//bazel:dbg_build": ["-Wl,--build-id=sha1"],
+        "//conditions:default": ["-Wl,-s"],
+    }),
+    linkshared = True,
     deps = [
         ":jni_utility_lib",
         ":ndk_jni_support",
@@ -53,7 +57,10 @@ cc_binary(
         "-lm",
         "-llog",
         "-Wl,-s",
-    ],
+    ] + select({
+        "@envoy//bazel:dbg_build": ["-Wl,--build-id=sha1"],
+        "//conditions:default": ["-Wl,-s"],
+    }),
     linkshared = True,
     deps = [
         ":envoy_jni_lib",
