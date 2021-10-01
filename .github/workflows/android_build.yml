@@ -87,7 +87,7 @@ jobs:
         run: adb logcat -e "received headers with status 200" -m 1
       - name: 'Log app run'
         if: ${{ failure() || cancelled() }}
-        run: abd logcat
+        run: adb logcat
   kotlinhelloworld:
     name: kotlin_helloworld
     needs: androidbuild
@@ -133,4 +133,4 @@ jobs:
         run: adb logcat -e "received headers with status 200" -m 1
       - name: 'Log app run'
         if: ${{ failure() || cancelled() }}
-        run: abd logcat
+        run: adb logcat
