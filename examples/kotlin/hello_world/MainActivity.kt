@@ -113,7 +113,7 @@ class MainActivity : Activity() {
       .newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, _, _ ->
         val status = responseHeaders.httpStatus ?: 0L
-        val message = "received headers with status $status"
+        val message = "TEST INCORRECT MESSAGE $status"
 
         val sb = StringBuilder()
         for ((name, value) in responseHeaders.headers) {
