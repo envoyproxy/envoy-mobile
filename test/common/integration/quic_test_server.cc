@@ -152,9 +152,9 @@ void QuicTestServer::startQuicTestServer() {
   Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
       // Network::Test::createRawBufferSocketFactory();
 
-  int port = 0; // let the kernel pick a port that is not in use (avoids test races)
+  int port = 34210; // let the kernel pick a port that is not in use (avoids test races)
   aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
-                                                   upstream_config_, true);
+                                                   upstream_config_, false);
 
   aupstream->setLastRequestHeaders(Http::TestRequestHeaderMapImpl{
                                             {"response_size_bytes", "2"}});

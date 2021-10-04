@@ -136,11 +136,8 @@ public class QuicTestServerTest {
       + "           - name: remote_service\n"
       + "             domains: [\"*\"]\n"
       + "             routes:\n"
-      + "             - match: { prefix: \"/base\" }\n"
-      + "               direct_response:\n"
-      + "                 status: 200\n"
-      + "                 body:\n"
-      + "                   inline_string: \"hello, world\"\n"
+      + "             - match: { prefix: \"/\" }\n"
+      + "               route: { host_rewrite_literal: 127.0.0.1, cluster: h3_remote }\n"
       + "         http3_protocol_options:\n"
       + "         http_filters:\n"
       + "         - name: envoy.router\n"
@@ -160,7 +157,7 @@ public class QuicTestServerTest {
       + "           domains: [\"*\"]\n"
       + "           routes:\n"
       + "           - match: { prefix: \"/\" }\n"
-      + "             route: { host_rewrite_literal: lyft.com, cluster: h3_remote }\n"
+      + "             route: { host_rewrite_literal: www.lyft.com, cluster: h3_remote }\n"
       + "       http_filters:\n"
       + "       - name: envoy.router\n"
       + "         typed_config:\n"
@@ -180,18 +177,17 @@ public class QuicTestServerTest {
       + "             socket_address: { address: 127.0.0.1, port_value: 10101 }\n"
       + "   typed_extension_protocol_options:\n"
       + "     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:\n"
-      +
-      "       \"@type\": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions\n"
+      + "       \"@type\": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions\n"
       + "       explicit_http_config:\n"
       + "         http3_protocol_options: {}\n"
       + "       common_http_protocol_options:\n"
-      + "         idle_timeout: 1s\n"
+      + "         idle_timeout: 10s\n"
       + "   transport_socket:\n"
       + "     name: envoy.transport_sockets.quic\n"
       + "     typed_config:\n"
       + "       \"@type\": " + quicUpstreamType + "\n"
       + "       upstream_tls_context:\n"
-      + "         sni: localhost";
+      + "         sni: www.lyft.com";
 
   private static Engine engine;
 
@@ -300,6 +296,7 @@ public class QuicTestServerTest {
       RequestHeadersBuilder requestHeadersBuilder =
           new RequestHeadersBuilder(method, url.getProtocol(), url.getAuthority(), url.getPath());
       headers.forEach(entry -> requestHeadersBuilder.add(entry.getKey(), entry.getValue()));
+      // requestHeadersBuilder.add("x-envoy-mobile-upstream-protocol", "http3");
       return requestHeadersBuilder.build();
     }
 
