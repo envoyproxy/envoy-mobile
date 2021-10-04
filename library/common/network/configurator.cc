@@ -67,30 +67,83 @@ SINGLETON_MANAGER_REGISTRATION(network_configurator);
 
 constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 
-std::atomic<envoy_network_t> Configurator::preferred_network_{ENVOY_NET_GENERIC};
+std::atomic<Configurator::NetworkState> Configurator::network_state_{Configurator::NetworkState{1, ENVOY_NET_GENERIC, 3, false}};
 
-envoy_network_t Configurator::setPreferredNetwork(envoy_network_t network) {
+uint64_t Configurator::setPreferredNetwork(envoy_network_t network) {
   ENVOY_LOG_EVENT(debug, "network_configuration_network_change", std::to_string(network));
-  return preferred_network_.exchange(network);
+
+  Configurator::NetworkState expected_state = network_state_.load();
+  Configurator::NetworkState new_state;
+  do {
+    // ++configuration_key_, network_ = network, remaining_faults_ = 1, overridden_ = false
+    new_state = Configurator::NetworkState{expected_state.configuration_key_ + 1, network, 1, false};
+  } while(network_state_.compare_exchange_weak(expected_state, new_state));
+
+  return new_state.configuration_key_;
 }
 
-envoy_network_t Configurator::getPreferredNetwork() { return preferred_network_.load(); }
+envoy_network_t Configurator::getPreferredNetwork() { return network_state_.load().network_; }
 
-bool Configurator::overrideInterface(envoy_network_t) { return false; }
+// If the configuration_key isn't current, don't do anything.
+// If there was no fault (i.e. success) reset remaining_faults_ to 3.
+// If there was a network fault, decrement remaining_faults_.
+//   - At 0, increment configuration_key, reset remaining_faults_ to 1 and toggle overridden_.
+void Configurator::reportNetworkUsage(uint64_t configuration_key, bool network_fault) {
+  //ENVOY_LOG(trace, "network_configuration_report_usage {} {}", configuration_key, network_fault);
 
-void Configurator::refreshDns(envoy_network_t network) {
-  // refreshDns is intended to be queued on Envoy's event loop, whereas preferred_network_ is
-  // updated synchronously. In the event that multiple refreshes become queued on the event loop,
+  Configurator::NetworkState expected_state = network_state_.load();
+  Configurator::NetworkState new_state;
+  do {
+    // If the configuration_key isn't current, don't do anything.
+    if (configuration_key != expected_state.configuration_key_) {
+      return;
+    }
+
+    uint64_t new_configuration_key = configuration_key;
+    envoy_network_t network = expected_state.network_;
+    uint_least8_t remaining_faults = expected_state.remaining_faults_;
+    bool overridden = expected_state.overridden_;
+
+    if (!network_fault) {
+      // If there was no fault (i.e. success) reset remaining_faults_ to 3.
+      remaining_faults = 3;
+    } else {
+      // If there was a network fault, decrement remaining_faults_.
+      remaining_faults--;
+      ASSERT(remaining_faults >= 0);
+
+      // At 0, increment configuration_key, reset remaining_faults_ to 1 and toggle overridden_.
+      if (remaining_faults == 0) {
+        ++new_configuration_key;
+        overridden = !overridden;
+        remaining_faults = 1;
+      }
+    }
+
+    new_state = Configurator::NetworkState{new_configuration_key, network, remaining_faults, overridden};
+  } while(network_state_.compare_exchange_weak(expected_state, new_state));
+
+  // If overridden state changed, refresh dns.
+  if (expected_state.overridden_ != new_state.overridden_) {
+    refreshDns(new_state.configuration_key_);
+  }
+}
+
+bool Configurator::overrideInterface(envoy_network_t) { return network_state_.load().overridden_; }
+
+void Configurator::refreshDns(uint64_t configuration_key) {
+  // refreshDns must be queued on Envoy's event loop, whereas network_state_ is updated
+  // synchronously. In the event that multiple refreshes become queued on the event loop,
   // this avoids triggering a refresh for a non-current network.
   // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
   // flip-flop scenarios.
-  if (network != preferred_network_.load()) {
-    ENVOY_LOG_EVENT(debug, "network_configuration_dns_flipflop", std::to_string(network));
+  if (configuration_key != network_state_.load().configuration_key_) {
+    ENVOY_LOG_EVENT(debug, "network_configuration_dns_flipflop", std::to_string(configuration_key));
     return;
   }
 
   if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {
-    ENVOY_LOG_EVENT(debug, "network_configuration_refresh_dns", std::to_string(network));
+    ENVOY_LOG_EVENT(debug, "network_configuration_refresh_dns", std::to_string(configuration_key));
     dns_cache->forceRefreshHosts();
   } else {
     ENVOY_LOG_EVENT(warn, "network_configuration_dns_cache_missing", BaseDnsCache);
