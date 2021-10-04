@@ -23,16 +23,18 @@ public:
   NetworkConfigurationFilter(Network::ConfiguratorSharedPtr network_configurator,
                              bool enable_interface_binding)
       : network_configurator_(network_configurator),
-        enable_interface_binding_(enable_interface_binding), override_interface_(false) {}
+        enable_interface_binding_(enable_interface_binding) {}
 
   // Http::StreamDecoderFilter
-  Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& headers,
-                                          bool end_stream) override;
+  Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap&, bool) override;
+  // Http::StreamEncoderFilter
+  Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap&, bool) override;
+  // Http::StreamFilterBase
+  Http::LocalErrorStatus onLocalReply(const LocalReplyData&) override;
 
 private:
   Network::ConfiguratorSharedPtr network_configurator_;
   bool enable_interface_binding_;
-  bool override_interface_;
 };
 
 } // namespace NetworkConfiguration

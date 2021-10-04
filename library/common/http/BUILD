@@ -21,6 +21,7 @@ envoy_cc_library(
         "//library/common/network:configurator_lib",
         "//library/common/network:synthetic_address_lib",
         "//library/common/types:c_types_lib",
+        "//library/common/stream_info:aux_stream_info_lib",
         "@envoy//envoy/buffer:buffer_interface",
         "@envoy//envoy/common:scope_tracker_interface",
         "@envoy//envoy/event:deferred_deletable",

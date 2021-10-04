@@ -16,12 +16,32 @@ namespace Network {
 using DnsCacheManagerSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCacheManagerSharedPtr;
 
 /**
- * Network utility routines related to mobile clients.
+ * Object responsible for tracking network state, especially with respect to multiple interfaces,
+ * and providing auxiliary configuration to network connections.
+ *
+ * The current version of the Network::Configurator can be configured in 2 modes with these
+ * general properties:
+ *
+ * Standard
+ * - Use (effectively) per-network pools of connections.
+ * - Trigger a refresh of cached DNS addresses on network change.
+ *
+ * Bound Interface Overrides
+ * - Maintain a separate network_override boolean.
+ * - For a given state, after 1+ successes and 3 consecutive faults or 0 successes and 1 fault,
+ *   toggle the boolean. For the purpose of this heuristic, a fault is a request that terminates
+ *   having received 0 transmitted bytes, and a success is anything else.
+ * - When the boolean is true, supply additional socket options that bind new connections to
+ *   a different active network interface from the likely OS default, in a best effort fashion.
+ * - Trigger a refresh of cached DNS on network state change.
+ *
+ * Note the latter configuration is experimental. The heuristic and the behavior are subject to
+ * change.
  */
 class Configurator : public Logger::Loggable<Logger::Id::upstream>, public Singleton::Instance {
 public:
   Configurator(DnsCacheManagerSharedPtr dns_cache_manager)
-      : dns_cache_manager_(dns_cache_manager) {}
+      : enable_interface_binding_{false}, dns_cache_manager_(dns_cache_manager) {}
 
   /**
    * @returns a list of local network interfaces supporting IPv4.
@@ -48,21 +68,31 @@ public:
   envoy_network_t getPreferredNetwork();
 
   /**
-   * @returns whether to override the specified network interface based on internal heuristics.
+   * Call to report on the current viability of the passed network configuration after an attempt
+   * at transmission (e.g., an HTTP request).
+   * @param network_fault, whether a transmission attempt terminated w/o receiving upstream bytes.
    */
-  bool overrideInterface(envoy_network_t network);
+  void reportNetworkUsage(uint16_t configuration_key, bool network_fault);
 
   /**
    * Sets the current OS default/preferred network class.
-   * @param network, the network preference.
+   * @param network, the OS-preferred network.
+   * @returns configuration key to associate with any related calls.
    */
-  static envoy_network_t setPreferredNetwork(envoy_network_t network);
+  static uint16_t setPreferredNetwork(envoy_network_t network);
+
+  /**
+   * Sets whether subsequent calls for upstream socket options may leverage options that bind
+   * to specific network interfaces.
+   * @param enabled, whether to enable interface binding.
+   */
+  void setInterfaceBindingEnabled(bool enabled);
 
   /**
    * Refresh DNS in response to preferred network update. May be no-op.
-   * @param network, the updated network.
+   * @param configuration_key, key provided by this class representing the current configuration.
    */
-  void refreshDns(envoy_network_t network);
+  void refreshDns(uint16_t configuration_key);
 
   /**
    * @returns the current socket options that should be used for connections.
@@ -70,11 +100,30 @@ public:
   Socket::OptionsSharedPtr getUpstreamSocketOptions(envoy_network_t network,
                                                     bool override_interface);
 
+  /**
+   * @param options, upstream connection options to which additional options should be appended.
+   * @returns configuration key to associate with any related calls.
+   */
+  uint16_t addUpstreamSocketOptions(Socket::OptionsSharedPtr options);
+
 private:
+  // This struct is intentionally 64-bits for cheap atomic operations on most relevant archs.
+  // This means configuration key will overflow at 2^16 state changes, but in practice no single
+  // operation is ever likely to last that long.
+  struct NetworkState {
+    // The configuration key is passed through calls dispatched on the run loop to determine if
+    // they're still valid/relevant at time of execution.
+    uint16_t configuration_key_;
+    uint16_t network_;
+    uint16_t remaining_faults_;
+    uint16_t overridden_;
+  };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
   const std::string getActiveAlternateInterface(envoy_network_t network, unsigned short family);
+
+  bool enable_interface_binding_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
-  static std::atomic<envoy_network_t> preferred_network_;
+  static std::atomic<NetworkState> network_state_;
 };
 
 using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
