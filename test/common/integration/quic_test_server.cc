@@ -150,16 +150,17 @@ void QuicTestServer::startQuicTestServer() {
   upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 
   Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
-      // Network::Test::createRawBufferSocketFactory();
+
+  // Network::TransportSocketFactoryPtr factory = Network::Test::createRawBufferSocketFactory();
 
   int port = 34210; // let the kernel pick a port that is not in use (avoids test races)
   aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
                                                    upstream_config_, false);
 
-  aupstream->setLastRequestHeaders(Http::TestRequestHeaderMapImpl{
-                                            {"response_size_bytes", "2"}});
   aupstream->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
-                                           Http::TestResponseHeaderMapImpl({{":status", "203"}})));
+                                           Http::TestResponseHeaderMapImpl({{":status", "200"}})));
+  aupstream->setResponseTrailers(std::make_unique<Http::TestResponseTrailerMapImpl>(
+                                                  Http::TestResponseTrailerMapImpl({{"foo", "bar"}})));
 
   // see what port was selected.
   std::cerr << "Upstream now listening on " << aupstream->localAddress()->asString() << "\n";
