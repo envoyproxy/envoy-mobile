@@ -18,6 +18,7 @@ object EnvoyMobileTestSuite {
       .enableAnnotationInfo()
       .enableMethodInfo()
       .ignoreClassVisibility()
+      .acceptPackages("io.envoyproxy", "test.kotlin.integration", "org.chromium.net")
       .scan()
     scan.getClassesWithMethodAnnotation(junitTestAnnotation)
       .asSequence()
