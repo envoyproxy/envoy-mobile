@@ -18,7 +18,6 @@ object EnvoyMobileTestSuite {
       .enableAnnotationInfo()
       .enableMethodInfo()
       .ignoreClassVisibility()
-      .acceptPackages("io.envoyproxy")
       .scan()
     scan.getClassesWithMethodAnnotation(junitTestAnnotation)
       .asSequence()
