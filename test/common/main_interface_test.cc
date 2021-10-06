@@ -568,7 +568,7 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
                                       const auto new_map = toMap(map);
                                       if (new_map.count("foo") && new_map.at("foo") == "bar") {
                                         auto* test_context = static_cast<engine_test_context*>(
-                                          const_cast<void*>(context));
+                                            const_cast<void*>(context));
                                         test_context->on_event.Notify();
                                       }
                                     } /*track*/,
@@ -606,17 +606,16 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
                                     } /*on_exit*/,
                                     &test_context /*context*/};
 
-  envoy_event_tracker event_tracker{[](envoy_map map, const void* context) -> void {
-                                      const auto new_map = toMap(map);
-                                      if (new_map.count("name") &&
-                                          new_map.at("name") == "assertion") {
-                                        EXPECT_EQ(new_map.at("location"), "foo_location");
-                                        auto* test_context = static_cast<engine_test_context*>(
-                                            const_cast<void*>(context));
-                                        test_context->on_event.Notify();
-                                      }
-                                    } /*track*/,
-                                    &test_context /*context*/};
+  envoy_event_tracker event_tracker{
+      [](envoy_map map, const void* context) -> void {
+        const auto new_map = toMap(map);
+        if (new_map.count("name") && new_map.at("name") == "assertion") {
+          EXPECT_EQ(new_map.at("location"), "foo_location");
+          auto* test_context = static_cast<engine_test_context*>(const_cast<void*>(context));
+          test_context->on_event.Notify();
+        }
+      } /*track*/,
+      &test_context /*context*/};
 
   init_engine(engine_cbs, {}, event_tracker);
   run_engine(0, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
