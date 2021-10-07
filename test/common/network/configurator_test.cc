@@ -40,15 +40,14 @@ TEST_F(ConfiguratorTest, RefreshDnsForOtherNetworkDoesntTriggerDnsRefresh) {
 }
 
 TEST_F(ConfiguratorTest, EnumerateInterfacesFiltersByFlags) {
-  const std::string loopback{"lo0"};
   // Select loopback.
   auto loopbacks = configurator_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, 0);
-  EXPECT_EQ(loopback, loopbacks[0]);
+  EXPECT_EQ(loopbacks[0].rfind("lo", 0), 0);
 
   // Reject loopback.
   auto nonloopbacks = configurator_->enumerateInterfaces(AF_INET, 0, IFF_LOOPBACK);
   for (const auto& interface : nonloopbacks) {
-    EXPECT_NE(loopback, interface);
+    EXPECT_NE(interface.rfind("lo", 0), 0);
   }
 
   // Select AND reject loopback.
