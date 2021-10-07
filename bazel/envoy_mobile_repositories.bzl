@@ -26,7 +26,7 @@ def upstream_envoy_overrides():
         strip_prefix = "protobuf-3.16.0",
         urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v3.16.0/protobuf-all-3.16.0.tar.gz"],
     )
-    
+
     # Workaround old NDK version breakages https://github.com/lyft/envoy-mobile/issues/934
     http_archive(
         name = "com_github_libevent_libevent",
