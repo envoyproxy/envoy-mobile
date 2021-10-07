@@ -109,29 +109,7 @@ common_tls_context:
 
 QuicTestServer::QuicTestServer()
     : api_(Api::createApiForTest(stats_store_, time_system_)),
-      version_(Network::Address::IpVersion::v4),
-      config_helper_(version_, *api_, ConfigHelper::baseConfig() + R"EOF(
-    filter_chains:
-      filters:
-      - name: envoy.filters.network.http_connection_manager
-        typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-          codec_type: HTTP3
-          stat_prefix: remote_hcm
-          route_config:
-            name: remote_route
-            virtual_hosts:
-            - name: remote_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                direct_response: { status: 200 }
-          http3_protocol_options:
-          http_filters:
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-    )EOF") {
+      version_(Network::Address::IpVersion::v4) {
   ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
   ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
 
@@ -156,9 +134,10 @@ void QuicTestServer::startQuicTestServer() {
   int port = 34210; // let the kernel pick a port that is not in use (avoids test races)
   aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
                                                    upstream_config_, false);
+  // upstream = std::make_unique<FakeUpstream>(std::move(factory), port, version_, upstream_config_);
 
-  aupstream->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
-                                           Http::TestResponseHeaderMapImpl({{":status", "200"}})));
+  //aupstream->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
+    //                                       Http::TestResponseHeaderMapImpl({{":status", "200"}})));
   aupstream->setResponseTrailers(std::make_unique<Http::TestResponseTrailerMapImpl>(
                                                   Http::TestResponseTrailerMapImpl({{"foo", "bar"}})));
 

@@ -28,7 +28,6 @@ private:
   Event::GlobalTimeSystem time_system_;
   Api::ApiPtr api_;
   Network::Address::IpVersion version_;
-  ConfigHelper config_helper_;
   std::unique_ptr<FakeUpstream> upstream;
   std::unique_ptr<AutonomousUpstream> aupstream;
 

@@ -49,6 +49,7 @@ public class QuicTestServerTest {
 
   private static final String quicUpstreamType =
       "type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport";
+
   private static final String config =
       "static_resources:\n"
       + " listeners:\n"
@@ -204,7 +205,6 @@ public class QuicTestServerTest {
       RequestHeadersBuilder requestHeadersBuilder =
           new RequestHeadersBuilder(method, url.getProtocol(), url.getAuthority(), url.getPath());
       headers.forEach(entry -> requestHeadersBuilder.add(entry.getKey(), entry.getValue()));
-      // requestHeadersBuilder.add("x-envoy-mobile-upstream-protocol", "http3");
       return requestHeadersBuilder.build();
     }
 

@@ -28,9 +28,6 @@ public final class QuicTestServer {
     TestFilesInstaller.installIfNeeded(context);
     nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context),
                               UrlUtils.getIsolatedTestRoot());
-
-    // sBlock.block();
-    // sBlock.close();
     sServerRunning = true;
   }
 
@@ -50,8 +47,7 @@ public final class QuicTestServer {
   }
 
   public static String getServerHost() {
-    // return CronetTestUtil.QUIC_FAKE_HOST;
-    return "127.0.0.1";
+    return "test.example.com";
   }
 
   public static int getServerPort() { return nativeGetServerPort(); }
