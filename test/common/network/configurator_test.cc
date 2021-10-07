@@ -1,6 +1,6 @@
-#include "test/extensions/common/dynamic_forward_proxy/mocks.h"
-
 #include <net/if.h>
+
+#include "test/extensions/common/dynamic_forward_proxy/mocks.h"
 
 #include "gtest/gtest.h"
 #include "library/common/network/configurator.h"
