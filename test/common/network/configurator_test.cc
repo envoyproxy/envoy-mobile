@@ -1,5 +1,7 @@
 #include "test/extensions/common/dynamic_forward_proxy/mocks.h"
 
+#include <net/if.h>
+
 #include "gtest/gtest.h"
 #include "library/common/network/configurator.h"
 
@@ -35,6 +37,23 @@ TEST_F(ConfiguratorTest, RefreshDnsForOtherNetworkDoesntTriggerDnsRefresh) {
   EXPECT_CALL(*dns_cache_, forceRefreshHosts()).Times(0);
   Configurator::setPreferredNetwork(ENVOY_NET_WLAN);
   configurator_->refreshDns(ENVOY_NET_WWAN);
+}
+
+TEST_F(ConfiguratorTest, EnumerateInterfacesFiltersByFlags) {
+  const std::string loopback{"lo0"};
+  // Select loopback.
+  auto loopbacks = configurator_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, 0);
+  EXPECT_EQ(loopback, loopbacks[0]);
+
+  // Reject loopback.
+  auto nonloopbacks = configurator_->enumerateInterfaces(AF_INET, 0, IFF_LOOPBACK);
+  for (const auto& interface : nonloopbacks) {
+    EXPECT_NE(loopback, interface);
+  }
+
+  // Select AND reject loopback.
+  auto empty = configurator_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, IFF_LOOPBACK);
+  EXPECT_EQ(empty.size(), 0);
 }
 
 } // namespace Network
