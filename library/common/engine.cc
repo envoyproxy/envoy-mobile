@@ -37,6 +37,7 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
 
 envoy_status_t Engine::main(const std::string config, const std::string log_level) {
   // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
+  Thread::MainThread main_thread_;
   std::unique_ptr<EngineCommon> main_common;
   const std::string name = "envoy";
   const std::string config_flag = "--config-yaml";
