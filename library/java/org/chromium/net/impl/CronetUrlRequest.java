@@ -541,8 +541,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         }
 
         @Override
-        public void onSendWindowAvailable(EnvoyStreamIntel streamIntel) {
-        }
+        public void onSendWindowAvailable(EnvoyStreamIntel streamIntel) {}
       }, false);
       mStream.sendHeaders(envoyRequestHeaders, mUploadDataProvider == null);
       if (mUploadDataProvider != null) {
