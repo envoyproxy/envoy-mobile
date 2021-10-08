@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - name: FOO
+        run: echo "FOO"
       - id: check_context
         name: 'Check whether to run'
         run: |
