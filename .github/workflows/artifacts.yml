@@ -2,9 +2,8 @@ name: artifacts
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    tags:
+      - v*
 
 jobs:
   main_android_dist_ci:
@@ -116,6 +115,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           bazelisk build \
+            --announce_rc \
             --config=release-ios \
             --ios_multi_cpus=i386,x86_64,armv7,arm64 \
             --config=remote-ci-macos \
