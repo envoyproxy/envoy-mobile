@@ -46,9 +46,7 @@ public final class QuicTestServer {
     return "https://" + getServerHost() + ":" + getServerPort() + "/";
   }
 
-  public static String getServerHost() {
-    return "test.example.com";
-  }
+  public static String getServerHost() { return "test.example.com"; }
 
   public static int getServerPort() { return nativeGetServerPort(); }
 

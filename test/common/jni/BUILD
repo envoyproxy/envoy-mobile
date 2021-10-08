@@ -4,13 +4,6 @@ licenses(["notice"])  # Apache 2
 
 envoy_package()
 
-### Targets for local execution
-## OS X binary (.jnilib) for NDK testing
-#envoy_mobile_so_to_jni_lib_test(
-#    name = "libquic_test_server_jni.jnilib",
-#    native_dep = "libquic_test_server_jni.so",
-#)
-
 # dynamic library for the Envoy Mobile aar
 cc_binary(
     name = "libquic_test_server_jni.so",

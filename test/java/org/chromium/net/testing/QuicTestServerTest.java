@@ -87,7 +87,8 @@ public class QuicTestServerTest {
       + "             socket_address: { address: 127.0.0.1, port_value: 34210 }\n"
       + "   typed_extension_protocol_options:\n"
       + "     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:\n"
-      + "       \"@type\": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions\n"
+      +
+      "       \"@type\": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions\n"
       + "       explicit_http_config:\n"
       + "         http3_protocol_options: {}\n"
       + "       common_http_protocol_options:\n"
@@ -198,13 +199,12 @@ public class QuicTestServerTest {
     private URL url;
     private RequestMethod method = null;
     private final List<ByteBuffer> bodyChunks = new ArrayList<>();
-    private final List<Map.Entry<String, String>> headers = new ArrayList<>();
     private final boolean closeBodyStream = false;
 
     RequestHeaders getHeaders() {
       RequestHeadersBuilder requestHeadersBuilder =
           new RequestHeadersBuilder(method, url.getProtocol(), url.getAuthority(), url.getPath());
-      headers.forEach(entry -> requestHeadersBuilder.add(entry.getKey(), entry.getValue()));
+      requestHeadersBuilder.add("no_trailers", "0");
       return requestHeadersBuilder.build();
     }
 

@@ -112,15 +112,14 @@ QuicTestServer::QuicTestServer()
       version_(Network::Address::IpVersion::v4) {
   ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
   ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
-
 }
 
 void QuicTestServer::startQuicTestServer() {
   // pre-setup: see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
   ProcessWide process_wide;
   Thread::MutexBasicLockable lock;
-  Logger::Context logging_state(spdlog::level::level_enum::err, "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false,
-                                   false);
+  Logger::Context logging_state(spdlog::level::level_enum::err,
+                                "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false, false);
   // end pre-setup
 
   FakeUpstreamConfig upstream_config_{time_system_};
@@ -129,27 +128,15 @@ void QuicTestServer::startQuicTestServer() {
 
   Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
 
-  // Network::TransportSocketFactoryPtr factory = Network::Test::createRawBufferSocketFactory();
-
-  int port = 34210; // let the kernel pick a port that is not in use (avoids test races)
+  int port = 34210;
   aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
                                                    upstream_config_, false);
-  // upstream = std::make_unique<FakeUpstream>(std::move(factory), port, version_, upstream_config_);
 
-  //aupstream->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
-    //                                       Http::TestResponseHeaderMapImpl({{":status", "200"}})));
-  aupstream->setResponseTrailers(std::make_unique<Http::TestResponseTrailerMapImpl>(
-                                                  Http::TestResponseTrailerMapImpl({{"foo", "bar"}})));
-
-  // see what port was selected.
+  // see upstream address
   std::cerr << "Upstream now listening on " << aupstream->localAddress()->asString() << "\n";
-
 }
 
-void QuicTestServer::shutdownQuicTestServer() {
-  aupstream.reset();
-  //    FAIL() << "this way blaze will give you a test log";
-}
+void QuicTestServer::shutdownQuicTestServer() { aupstream.reset(); }
 
 int QuicTestServer::getServerPort() { return aupstream->localAddress()->ip()->port(); }
 } // namespace Envoy

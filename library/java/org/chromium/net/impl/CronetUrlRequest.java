@@ -563,7 +563,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     headers.computeIfAbsent(":authority", unused -> new ArrayList<>()).add(url.getAuthority());
     headers.computeIfAbsent(":method", unused -> new ArrayList<>()).add(initialMethod);
-    headers.computeIfAbsent(":path", unused -> new ArrayList<>()).add(url.getFile().isEmpty() ? "/" : url.getFile());
+    headers.computeIfAbsent(":path", unused -> new ArrayList<>())
+        .add(url.getFile().isEmpty() ? "/" : url.getFile());
     headers.computeIfAbsent(":scheme", unused -> new ArrayList<>()).add(url.getProtocol());
 
     boolean hasUserAgent = false;

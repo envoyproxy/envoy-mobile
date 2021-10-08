@@ -5,19 +5,12 @@
 
 // test_runner setups
 #include "source/common/common/logger.h"
-#include "source/common/common/logger_delegates.h"
 #include "source/exe/process_wide.h"
-#include "test/mocks/access_log/mocks.h"
-
-#include "gtest/gtest.h"
 
 #include "absl/strings/str_format.h"
 #include "envoy/extensions/transport_sockets/quic/v3/quic_transport.pb.h"
 #include "test/mocks/server/transport_socket_factory_context.h"
-#include "test/test_common/environment.h"
-#include "test/integration/fake_upstream.h"
 #include "test/integration/autonomous_upstream.h"
-#include "test/config/utility.h"
 #include "test/test_common/network_utility.h"
 
 namespace Envoy {
@@ -28,7 +21,6 @@ private:
   Event::GlobalTimeSystem time_system_;
   Api::ApiPtr api_;
   Network::Address::IpVersion version_;
-  std::unique_ptr<FakeUpstream> upstream;
   std::unique_ptr<AutonomousUpstream> aupstream;
 
   void setup();
