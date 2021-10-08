@@ -34,9 +34,9 @@ public:
   std::vector<std::string> enumerateV6Interfaces();
 
   /**
-   * @param family, network family of the interface
-   * @param select_flags, flags which MUST be set for each returned interface
-   * @param reject_flags, flags which MUST NOT be set for any returned interface
+   * @param family, network family of the interface.
+   * @param select_flags, flags which MUST be set for each returned interface.
+   * @param reject_flags, flags which MUST NOT be set for any returned interface.
    * @returns a list of local network interfaces filtered by the providered flags.
    */
   std::vector<std::string> enumerateInterfaces(unsigned short family, unsigned int select_flags,

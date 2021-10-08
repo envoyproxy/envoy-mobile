@@ -149,13 +149,17 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
 
 const std::string Configurator::getActiveAlternateInterface(envoy_network_t network,
                                                             unsigned short family) {
-  if (network == ENVOY_NET_WLAN) {
+  // Attempt to derive an active interface that differs from the passed network parameter.
+  if (network == ENVOY_NET_WWAN) {
+    // Network is cellular, so look for a WiFi interface.
+    // WiFi should always support multicast, and will not be point-to-point.
     auto interfaces =
         enumerateInterfaces(family, IFF_UP | IFF_MULTICAST, IFF_LOOPBACK | IFF_POINTOPOINT);
     return interfaces.size() > 0 ? interfaces[0] : "";
-  } else if (network == ENVOY_NET_WWAN) {
-    auto interfaces =
-        enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK | IFF_MULTICAST);
+  } else if (network == ENVOY_NET_WLAN) {
+    // Network is WiFi, so look for a cellular interface.
+    // Cellular networks should be point-to-point.
+    auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK);
     return interfaces.size() > 0 ? interfaces[0] : "";
   } else {
     return "";
@@ -179,10 +183,7 @@ Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
     if (!ifa->ifa_addr || ifa->ifa_addr->sa_family != family) {
       continue;
     }
-    if ((ifa->ifa_flags & select_flags) != select_flags) {
-      continue;
-    }
-    if ((ifa->ifa_flags & reject_flags) != 0) {
+    if ((ifa->ifa_flags & (select_flags ^ reject_flags) != select_flags) {
       continue;
     }
     names.push_back(std::string{ifa->ifa_name});
