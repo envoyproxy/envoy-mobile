@@ -2,8 +2,9 @@ name: artifacts
 
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - main
+  pull_request:
 
 jobs:
   main_android_dist_ci:
