@@ -27,6 +27,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           current_release_version=$(git describe --tag --abbrev=0)
+          bazelisk clean --expunge
           bazelisk build \
               --config=release-android \
               --fat_apk_cpu=x86 \
