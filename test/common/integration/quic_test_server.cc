@@ -68,32 +68,6 @@ common_tls_context:
         4o8qFQf4jwdxu0iNxYJIMdn+l4/pz2e7GUFHjgMduUclf27Qj1p+8EyYqp6cmkzM
         8mcwRkYo3aM70EmUu0Xxi3d5O5F1bIJ5MkgXaX/zSF2N02B3jXroxQ==
         -----END RSA PRIVATE KEY-----
-  validation_context:
-    trusted_ca:
-      inline_string: |
-        -----BEGIN CERTIFICATE-----
-        MIID3TCCAsWgAwIBAgIUdCu/mLip3X/We37vh3BA9u/nxakwDQYJKoZIhvcNAQEL
-        BQAwdjELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcM
-        DVNhbiBGcmFuY2lzY28xDTALBgNVBAoMBEx5ZnQxGTAXBgNVBAsMEEx5ZnQgRW5n
-        aW5lZXJpbmcxEDAOBgNVBAMMB1Rlc3QgQ0EwHhcNMjAwODA1MTkxNjAwWhcNMjIw
-        ODA1MTkxNjAwWjB2MQswCQYDVQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEW
-        MBQGA1UEBwwNU2FuIEZyYW5jaXNjbzENMAsGA1UECgwETHlmdDEZMBcGA1UECwwQ
-        THlmdCBFbmdpbmVlcmluZzEQMA4GA1UEAwwHVGVzdCBDQTCCASIwDQYJKoZIhvcN
-        AQEBBQADggEPADCCAQoCggEBALu2Ihi4DmaQG7zySZlWyM9SjxOXCI5840V7Hn0C
-        XoiI8sQQmKSC2YCzsaphQoJ0lXCi6Y47o5FkooYyLeNDQTGS0nh+IWm5RCyochtO
-        fnaKPv/hYxhpyFQEwkJkbF1Zt1s6j2rq5MzmbWZx090uXZEE82DNZ9QJaMPu6VWt
-        iwGoGoS5HF5HNlUVxLNUsklNH0ZfDafR7/LC2ty1vO1c6EJ6yCGiyJZZ7Ilbz27Q
-        HPAUd8CcDNKCHZDoMWkLSLN3Nj1MvPVZ5HDsHiNHXthP+zV8FQtloAuZ8Srsmlyg
-        rJREkc7gF3f6HrH5ShNhsRFFc53NUjDbYZuha1u4hiOE8lcCAwEAAaNjMGEwDwYD
-        VR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYDVR0OBBYEFJZL2ixTtL6V
-        xpNz4qekny4NchiHMB8GA1UdIwQYMBaAFJZL2ixTtL6VxpNz4qekny4NchiHMA0G
-        CSqGSIb3DQEBCwUAA4IBAQAcgG+AaCdrUFEVJDn9UsO7zqzQ3c1VOp+WAtAU8OQK
-        Oc4vJYVVKpDs8OZFxmukCeqm1gz2zDeH7TfgCs5UnLtkplx1YO1bd9qvserJVHiD
-        LAK+Yl24ZEbrHPaq0zI1RLchqYUOGWmi51pcXi1gsfc8DQ3GqIXoai6kYJeV3jFJ
-        jxpQSR32nx6oNN/6kVKlgmBjlWrOy7JyDXGim6Z97TzmS6Clctewmw/5gZ9g+M8e
-        g0ZdFbFkNUjzSNm44hiDX8nR6yJRn+gLaARaJvp1dnT+MlvofZuER17WYKH4OyMs
-        ie3qKR3an4KC20CtFbpZfv540BVuTTOCtQ5xqZ/LTE78
-        -----END CERTIFICATE-----
 )EOF");
   TestUtility::loadFromYaml(yaml, tls_context);
   envoy::extensions::transport_sockets::quic::v3::QuicDownstreamTransport quic_config;
@@ -116,6 +90,7 @@ QuicTestServer::QuicTestServer()
 
 void QuicTestServer::startQuicTestServer() {
   // pre-setup: see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
+  Thread::TestThread test_thread;
   ProcessWide process_wide;
   Thread::MutexBasicLockable lock;
   Logger::Context logging_state(spdlog::level::level_enum::err,

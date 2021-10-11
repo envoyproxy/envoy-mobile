@@ -68,4 +68,6 @@ public final class QuicTestServer {
   private static native void nativeStartQuicTestServer(String filePath, String testDataDir);
   private static native void nativeShutdownQuicTestServer();
   private static native int nativeGetServerPort();
+
+  private QuicTestServer() {}
 }

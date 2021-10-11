@@ -14,14 +14,14 @@ cc_binary(
     ],
     copts = ["-std=c++17"],
     linkopts = [
+        "-lm",
     ],
     linkshared = True,
     deps = [
-        "//bazel:jni",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
         "//library/common/jni:base_java_jni_lib",
-        "//library/common/jni:java_jni_support",
         "//test/common/integration:quic_test_server_interface_lib",
+        "@envoy_mobile_extra_jni_deps//:extra_jni_dep",
     ],
 )
