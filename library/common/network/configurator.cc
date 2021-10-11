@@ -183,7 +183,7 @@ Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
     if (!ifa->ifa_addr || ifa->ifa_addr->sa_family != family) {
       continue;
     }
-    if ((ifa->ifa_flags & (select_flags ^ reject_flags) != select_flags) {
+    if ((ifa->ifa_flags & (select_flags ^ reject_flags)) != select_flags) {
       continue;
     }
     names.push_back(std::string{ifa->ifa_name});
