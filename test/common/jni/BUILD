@@ -11,6 +11,7 @@ cc_binary(
     srcs = [
         "quic_test_server_jni_interface.cc",
         "@local_jdk//:jni_header",
+        "@local_jdk//:jni_md_header-linux",
     ],
     copts = ["-std=c++17"],
     linkopts = [
