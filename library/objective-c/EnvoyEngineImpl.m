@@ -418,7 +418,14 @@ static void ios_track_event(envoy_map map, const void *context) {
   }
 
   _engineHandle = init_engine(native_callbacks, native_logger, native_event_tracker);
-  [EnvoyNetworkMonitor startReachabilityIfNeeded];
+
+  // TODO(jpsim): Add configuration option to use path monitor - https://jira.lyft.net/browse/LCN-267
+  if (@available(iOS 12, *)) {
+    [EnvoyNetworkMonitor startPathMonitorIfNeeded];
+  } else {
+    [EnvoyNetworkMonitor startReachabilityIfNeeded];
+  }
+
   return self;
 }
 
