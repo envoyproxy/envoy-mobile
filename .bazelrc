@@ -210,11 +210,7 @@ build:remote-ci-linux-coverage --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 #############################################################################
-build:remote-ci-macos --crosstool_top=@engflow_remote_config_macos//cc:toolchain
-build:remote-ci-macos --extra_execution_platforms=@engflow_remote_config_macos//config:platform
-build:remote-ci-macos --extra_toolchains=@engflow_remote_config_macos//config:cc-toolchain
-build:remote-ci-macos --host_platform=@engflow_remote_config_macos//config:platform
-build:remote-ci-macos --platforms=@engflow_remote_config_macos//config:platform
+build:remote-ci-macos --remote_default_exec_properties=Pool=macos
 build:remote-ci-macos --config=remote-ci-common
 build:remote-ci-macos --xcode_version_config=//ci:xcode_config
 #############################################################################
