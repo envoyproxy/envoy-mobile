@@ -210,7 +210,6 @@ build:remote-ci-linux-coverage --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 #############################################################################
 # remote-ci-macos: These options are macOS-only
 #############################################################################
-build:remote-ci-macos --remote_default_platform_properties="properties:{name:'Pool' value:'macos'}"
 build:remote-ci-macos --remote_default_exec_properties=Pool=macos
 build:remote-ci-macos --config=remote-ci-common
 build:remote-ci-macos --xcode_version_config=//ci:xcode_config
