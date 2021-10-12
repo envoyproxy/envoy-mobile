@@ -15,6 +15,18 @@ def envoy_mobile_repositories():
     python_repos()
 
 def upstream_envoy_overrides():
+    # Workaround due to a Detekt version compatibility with protobuf: https://github.com/envoyproxy/envoy-mobile/issues/1869
+    http_archive(
+        name = "com_google_protobuf",
+        patch_args = ["-p1"],
+        patches = [
+            "@envoy_mobile//bazel:protobuf.patch",
+        ],
+        sha256 = "d7371dc2d46fddac1af8cb27c0394554b068768fc79ecaf5be1a1863e8ff3392",
+        strip_prefix = "protobuf-3.16.0",
+        urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v3.16.0/protobuf-all-3.16.0.tar.gz"],
+    )
+
     # Workaround old NDK version breakages https://github.com/lyft/envoy-mobile/issues/934
     http_archive(
         name = "com_github_libevent_libevent",
@@ -74,9 +86,9 @@ def swift_repos():
 def kotlin_repos():
     http_archive(
         name = "rules_jvm_external",
-        sha256 = "1bbf2e48d07686707dd85357e9a94da775e1dbd7c464272b3664283c9c716d26",
-        strip_prefix = "rules_jvm_external-2.10",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/2.10.zip",
+        sha256 = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140",
+        strip_prefix = "rules_jvm_external-4.1",
+        url = "https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip",
     )
 
     http_archive(
@@ -111,14 +123,6 @@ def kotlin_repos():
         sha256 = "1e08cd6c61f893417b14930ca342950f5f22f71f929a38a8c4bbfeae2a80d03e",
         strip_prefix = "rules_proto_grpc-0.2.0",
         urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
-    )
-
-    # Dokka 0.10.0 introduced a bug which makes the CLI tool error out:
-    # https://github.com/Kotlin/dokka/issues/942
-    http_jar(
-        name = "kotlin_dokka",
-        sha256 = "4c73eee92dd652ea8e2afd7b20732cf863d4938a30f634d12c88fe64def89fd8",
-        url = "https://github.com/Kotlin/dokka/releases/download/0.9.18/dokka-fatjar-0.9.18.jar",
     )
 
     http_file(

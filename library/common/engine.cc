@@ -100,10 +100,10 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
     postinit_callback_handler_ = main_common->server()->lifecycleNotifier().registerCallback(
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
-          ASSERT(Thread::MainThread::isMainThread());
+          ASSERT(Thread::MainThread::isMainOrTestThread());
 
           network_configurator_ =
-              Network::ConfiguratorHandle{server_->serverFactoryContext()}.get();
+              Network::ConfiguratorFactory{server_->serverFactoryContext()}.get();
           logInterfaces();
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
@@ -302,13 +302,15 @@ void Engine::drainConnections() {
 
 void Engine::logInterfaces() {
   auto v4_vec = network_configurator_->enumerateV4Interfaces();
-  std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec.end(), std::string{},
+  auto v4_vec_unique_end = std::unique(v4_vec.begin(), v4_vec.end());
+  std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec_unique_end, std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
 
   auto v6_vec = network_configurator_->enumerateV6Interfaces();
-  std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec.end(), std::string{},
+  auto v6_vec_unique_end = std::unique(v6_vec.begin(), v6_vec.end());
+  std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec_unique_end, std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
