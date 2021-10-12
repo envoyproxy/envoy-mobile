@@ -23,7 +23,7 @@ jobs:
       - id: check_context
         name: 'Check whether to run'
         run: |
-          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only origin/main | grep -qe common/ -e ^.github/workflows/coverage.yml ; then
+          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only origin/main | grep -qe common/ -e ^.github/workflows/coverage.yml -e ^\.bazelrc$ ; then
             echo "Coverage will run."
             echo "::set-output name=run_coverage::true"
           else
