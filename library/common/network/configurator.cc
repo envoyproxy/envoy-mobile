@@ -137,9 +137,7 @@ void Configurator::reportNetworkUsage(uint16_t configuration_key, bool network_f
   }
 }
 
-void Configurator::setInterfaceBindingEnabled(bool enabled) {
-  enable_interface_binding_ = enabled;
-}
+void Configurator::setInterfaceBindingEnabled(bool enabled) { enable_interface_binding_ = enabled; }
 
 void Configurator::refreshDns(uint16_t configuration_key) {
   // refreshDns must be queued on Envoy's event loop, whereas network_state_ is updated
@@ -212,7 +210,8 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
 
 uint16_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr options) {
   NetworkState state = network_state_.load();
-  auto new_options = getUpstreamSocketOptions(static_cast<envoy_network_t>(state.network_), state.overridden_);
+  auto new_options =
+      getUpstreamSocketOptions(static_cast<envoy_network_t>(state.network_), state.overridden_);
   options->insert(options->end(), new_options->begin(), new_options->end());
   return state.configuration_key_;
 }

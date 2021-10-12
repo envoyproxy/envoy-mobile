@@ -9,20 +9,20 @@ namespace {
 // TODO(goaway): This is a hack; it would preferable to use a unique key on StreamInfo.
 // Long-term it might be preferabale to store AuxStreamInfo directly on StreamInfo as an
 // extension. This would simplify management considerably.
-//struct StreamInfoHash {
+// struct StreamInfoHash {
 //  size_t operator()(const StreamInfo& object) const {
 //    return reinterpret_cast<size_t>(std::addressof(object));
 //  }
 //};
 //
-//inline bool operator == (const StreamInfo& lhs, const StreamInfo& rhs) {
+// inline bool operator == (const StreamInfo& lhs, const StreamInfo& rhs) {
 //    return &lhs == &rhs;
 //}
 
 } // namespace
 
-//static std::unordered_map<std::reference_wrapper<const StreamInfo>, AuxStreamInfoPtr, std::hash<StreamInfoHash>> internal_map_{};
-
+// static std::unordered_map<std::reference_wrapper<const StreamInfo>, AuxStreamInfoPtr,
+// std::hash<StreamInfoHash>> internal_map_{};
 
 static std::unordered_map<const StreamInfo*, AuxStreamInfoPtr> internal_map_{};
 

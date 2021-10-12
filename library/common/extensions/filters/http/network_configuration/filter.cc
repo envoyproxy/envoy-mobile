@@ -22,7 +22,8 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::decodeHeaders(Http::Reques
   return Http::FilterHeadersStatus::Continue;
 }
 
-Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::ResponseHeaderMap&, bool) {
+Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::ResponseHeaderMap&,
+                                                                    bool) {
   ENVOY_LOG(debug, "NetworkConfigurationFilter::encodeHeaders");
 
   auto& aux_stream_info = StreamInfo::AuxProvider::get(decoder_callbacks_->streamInfo());

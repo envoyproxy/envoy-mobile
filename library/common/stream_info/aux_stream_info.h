@@ -1,8 +1,8 @@
 #pragma once
 
-#include "library/common/types/c_types.h"
-
 #include "envoy/stream_info/stream_info.h"
+
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace StreamInfo {
