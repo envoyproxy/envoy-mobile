@@ -83,7 +83,7 @@ common_tls_context:
 
 QuicTestServer::QuicTestServer()
     : api_(Api::createApiForTest(stats_store_, time_system_)),
-      version_(Network::Address::IpVersion::v4) {
+      version_(Network::Address::IpVersion::v4), port_(34210), upstream_config_(time_system_) {
   ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
   ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
 }
@@ -97,21 +97,19 @@ void QuicTestServer::startQuicTestServer() {
                                 "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false, false);
   // end pre-setup
 
-  FakeUpstreamConfig upstream_config{time_system_};
-  upstream_config.upstream_protocol_ = Http::CodecType::HTTP3;
-  upstream_config.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
+  upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
+  upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 
   Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
 
-  int port = 34210;
-  aupstream_ = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
-                                                    upstream_config, false);
+  upstream_ = std::make_unique<AutonomousUpstream>(std::move(factory), port_, version_,
+                                                   upstream_config_, false);
 
   // see upstream address
-  std::cerr << "Upstream now listening on " << aupstream_->localAddress()->asString() << "\n";
+  ENVOY_LOG_MISC(debug, "Upstream now listening on {}", upstream_->localAddress()->asString());
 }
 
-void QuicTestServer::shutdownQuicTestServer() { aupstream_.reset(); }
+void QuicTestServer::shutdownQuicTestServer() { upstream_.reset(); }
 
-int QuicTestServer::getServerPort() { return aupstream_->localAddress()->ip()->port(); }
+int QuicTestServer::getServerPort() { return upstream_->localAddress()->ip()->port(); }
 } // namespace Envoy

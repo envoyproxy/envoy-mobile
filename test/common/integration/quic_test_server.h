@@ -21,9 +21,10 @@ private:
   Event::GlobalTimeSystem time_system_;
   Api::ApiPtr api_;
   Network::Address::IpVersion version_;
-  std::unique_ptr<AutonomousUpstream> aupstream_;
+  std::unique_ptr<AutonomousUpstream> upstream_;
+  FakeUpstreamConfig upstream_config_;
+  int port_;
 
-  void setup();
   Network::TransportSocketFactoryPtr createUpstreamTlsContext(
       testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>&);
 
