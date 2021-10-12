@@ -10,7 +10,7 @@ cc_binary(
     testonly = True,
     srcs = [
         "quic_test_server_jni_interface.cc",
-        "@bazel_tools//tools/jdk:current_java_runtime",
+        "@bazel_tools//tools/jdk:remote_jdk11",
         #        "@local_jdk//:jni_header",
         #        "@local_jdk//:jni_md_header-linux",
     ],
