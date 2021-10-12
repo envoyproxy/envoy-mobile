@@ -80,7 +80,8 @@ cc_binary(
     srcs = [
         "android_test_jni_interface.cc",
         "jni_interface.cc",
-        "@local_jdk//:jni_header",
+        "@bazel_tools//tools/jdk:remote_jdk11",
+#        "@local_jdk//:jni_header",
     ],
     copts = ["-std=c++17"],
     linkopts = [
@@ -121,7 +122,8 @@ cc_library(
     srcs = [
         "jni_utility.cc",
         "jni_version.cc",
-        "@local_jdk//:jni_header",
+        "@bazel_tools//tools/jdk:remote_jdk11",
+#        "@local_jdk//:jni_header",
     ],
     hdrs = [
         "jni_utility.h",
@@ -145,7 +147,8 @@ cc_library(
     name = "java_jni_support",
     srcs = [
         "java_jni_support.cc",
-        "@local_jdk//:jni_header",
+        "@bazel_tools//tools/jdk:remote_jdk11",
+#        "@local_jdk//:jni_header",
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
