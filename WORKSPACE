@@ -74,7 +74,7 @@ rbe_autoconfig(
     use_legacy_platform_definition = False,
     create_java_configs = False,
     exec_properties = {
-        "Pool": "linux",
+        "Pool": "macos",
     },
 )
 
