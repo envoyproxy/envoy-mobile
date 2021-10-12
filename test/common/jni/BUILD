@@ -10,7 +10,9 @@ cc_binary(
     testonly = True,
     srcs = [
         "quic_test_server_jni_interface.cc",
+        "@bazel_tools//tools/jdk:current_java_runtime",
         "@local_jdk//:jni_header",
+        "@local_jdk//:jni_md_header-linux",
     ],
     copts = ["-std=c++17"],
     linkopts = [

@@ -5,7 +5,7 @@ namespace Envoy {
 Network::TransportSocketFactoryPtr QuicTestServer::createUpstreamTlsContext(
     testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>& factory_context) {
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
-  Extensions::TransportSockets::Tls::ContextManagerImpl context_manager_{time_system_};
+  Extensions::TransportSockets::Tls::ContextManagerImpl context_manager{time_system_};
 
   const std::string yaml = absl::StrFormat(
       R"EOF(
@@ -97,21 +97,21 @@ void QuicTestServer::startQuicTestServer() {
                                 "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false, false);
   // end pre-setup
 
-  FakeUpstreamConfig upstream_config_{time_system_};
-  upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
-  upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
+  FakeUpstreamConfig upstream_config{time_system_};
+  upstream_config.upstream_protocol_ = Http::CodecType::HTTP3;
+  upstream_config.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 
   Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
 
   int port = 34210;
-  aupstream = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
-                                                   upstream_config_, false);
+  aupstream_ = std::make_unique<AutonomousUpstream>(std::move(factory), port, version_,
+                                                    upstream_config, false);
 
   // see upstream address
-  std::cerr << "Upstream now listening on " << aupstream->localAddress()->asString() << "\n";
+  std::cerr << "Upstream now listening on " << aupstream_->localAddress()->asString() << "\n";
 }
 
-void QuicTestServer::shutdownQuicTestServer() { aupstream.reset(); }
+void QuicTestServer::shutdownQuicTestServer() { aupstream_.reset(); }
 
-int QuicTestServer::getServerPort() { return aupstream->localAddress()->ip()->port(); }
+int QuicTestServer::getServerPort() { return aupstream_->localAddress()->ip()->port(); }
 } // namespace Envoy

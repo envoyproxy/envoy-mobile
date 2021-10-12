@@ -29,6 +29,5 @@ int get_server_port() {
   if (auto e = quic_test_server()) {
     return e->getServerPort();
   }
-  // TODO (colibie) write a more suitable error code
-  return 1; // failure
+  return -1; // failure
 }

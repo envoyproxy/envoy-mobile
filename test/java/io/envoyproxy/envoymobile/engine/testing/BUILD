@@ -1,5 +1,4 @@
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
-load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_android_test")
 
 licenses(["notice"])  # Apache 2
@@ -9,55 +8,37 @@ envoy_package()
 android_library(
     name = "testing",
     srcs = [
-        "CertTestUtil.java",
-        "ConditionVariable.java",
-        "ContextUtils.java",
-        "CronetTestRule.java",
-        "FailurePhase.java",
-        "Feature.java",
-        "FileUtils.java",
-        "MetricsTestUtil.java",
-        "MockUrlRequestJobFactory.java",
-        "NativeTestServer.java",
-        "PathUtils.java",
-        "StrictModeContext.java",
-        "TestFilesInstaller.java",
-        "TestUploadDataProvider.java",
-        "TestUrlRequestCallback.java",
-        "UrlUtils.java",
+        "QuicTestServer.java",
     ],
     data = glob(["data/*"]),
     visibility = ["//test:__subpackages__"],
     deps = [
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
-        "//library/java/org/chromium/net",
-        "//library/java/org/chromium/net/impl:cronvoy",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
-        "@maven//:androidx_annotation_annotation",
-        "@maven//:androidx_test_monitor",
-        "@maven//:com_squareup_okhttp3_mockwebserver",
-        "@maven//:com_squareup_okio_okio",
+        "//test/java/org/chromium/net/testing",
         "@maven//:junit_junit",
     ],
 )
 
 envoy_mobile_android_test(
-    name = "cronet_test_rule_test",
+    name = "quic_test_server_test",
     srcs = [
-        "CronetTestRuleTest.java",
+        "QuicTestServerTest.java",
     ],
+    library_path = "library/common/jni:test/common/jni",
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
+        "//test/common/jni:libquic_test_server_jni.so",
     ],
     deps = [
         ":testing",
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_engine_lib",
-        "//library/java/org/chromium/net/impl:cronvoy",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
+        "//test/java/org/chromium/net/testing",
     ],
 )

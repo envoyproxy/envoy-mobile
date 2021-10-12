@@ -1,8 +1,10 @@
-package org.chromium.net.testing;
+package io.envoyproxy.envoymobile.engine.testing;
 
 import android.content.Context;
 import android.os.ConditionVariable;
 import android.util.Log;
+import org.chromium.net.testing.UrlUtils;
+import org.chromium.net.testing.TestFilesInstaller;
 
 /**
  * Wrapper class to start a Quic test server.
@@ -28,6 +30,8 @@ public final class QuicTestServer {
     TestFilesInstaller.installIfNeeded(context);
     nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context),
                               UrlUtils.getIsolatedTestRoot());
+    sBlock.block();
+    sBlock.close();
     sServerRunning = true;
   }
 
@@ -55,8 +59,8 @@ public final class QuicTestServer {
   public static final String getServerCertKey() { return KEY_USED; }
 
   public static long createMockCertVerifier() {
-    TestFilesInstaller.installIfNeeded(ContextUtils.getApplicationContext());
-    return MockCertVerifier.createMockCertVerifier(CERTS_USED, true);
+    // to be implemented
+    return 0L;
   }
 
   // @CalledByNative

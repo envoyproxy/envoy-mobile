@@ -21,7 +21,7 @@ private:
   Event::GlobalTimeSystem time_system_;
   Api::ApiPtr api_;
   Network::Address::IpVersion version_;
-  std::unique_ptr<AutonomousUpstream> aupstream;
+  std::unique_ptr<AutonomousUpstream> aupstream_;
 
   void setup();
   Network::TransportSocketFactoryPtr createUpstreamTlsContext(
