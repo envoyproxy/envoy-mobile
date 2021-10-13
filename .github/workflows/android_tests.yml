@@ -82,6 +82,7 @@ jobs:
         run: |
           bazel clean --expunge
           bazel test \
+            --config=remote-ci-debug \
             --test_output=all \
             --build_tests_only \
             --config=remote-ci-macos \
