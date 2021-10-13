@@ -32,9 +32,14 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::Respon
                                                                     bool) {
   ENVOY_LOG(debug, "NetworkConfigurationFilter::encodeHeaders");
 
+  auto& stream_info = decoder_callbacks_->streamInfo();
+  auto filter_state = stream_info.filterState();
+  if (!filter_state->hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
+    return Http::FilterHeadersStatus::Continue;
+  }
+
   auto& extra_stream_info =
-      decoder_callbacks_->streamInfo().filterState()->getDataMutable<StreamInfo::ExtraStreamInfo>(
-          StreamInfo::ExtraStreamInfo::key());
+      filter_state->getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
   network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(), false);
 
   return Http::FilterHeadersStatus::Continue;
@@ -44,9 +49,13 @@ Http::LocalErrorStatus NetworkConfigurationFilter::onLocalReply(const LocalReply
   ENVOY_LOG(debug, "NetworkConfigurationFilter::onLocalReply");
 
   auto& stream_info = decoder_callbacks_->streamInfo();
+  auto filter_state = stream_info.filterState();
+  if (!filter_state->hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
+    return Http::LocalErrorStatus::ContinueAndResetStream;
+  }
+
   auto& extra_stream_info =
-      decoder_callbacks_->streamInfo().filterState()->getDataMutable<StreamInfo::ExtraStreamInfo>(
-          StreamInfo::ExtraStreamInfo::key());
+      filter_state->getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
 
   bool success_status = static_cast<int>(reply.code_) < 400;
   bool fault = !success_status && !stream_info.firstUpstreamRxByteReceived().has_value();
