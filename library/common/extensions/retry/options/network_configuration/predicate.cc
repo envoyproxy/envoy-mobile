@@ -1,6 +1,6 @@
 #include "library/common/extensions/retry/options/network_configuration/predicate.h"
 
-#include "library/common/stream_info/aux_stream_info.h"
+#include "library/common/stream_info/extra_stream_info.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -20,7 +20,9 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
     const Upstream::RetryOptionsPredicate::UpdateOptionsParameters& parameters) const {
 
   const auto& stream_info = parameters.retriable_request_stream_info_;
-  auto& aux_stream_info = StreamInfo::AuxProvider::get(stream_info);
+  auto& extra_stream_info = const_cast<StreamInfo::ExtraStreamInfo&>(stream_info.filterState()
+      .getDataReadOnly<StreamInfo::ExtraStreamInfo>(
+          StreamInfo::ExtraStreamInfo::key()));
 
   bool fault = !stream_info.firstUpstreamRxByteReceived().has_value();
   // TODO(goaway): The predicate has no inherent way to know the prior configuration key so we need
@@ -30,11 +32,11 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
   // 3. store a metadata map in stream info (also needs to be non-const here)
   // 4. store in an extension point on stream info for adding extra fields
   // Here we use option 2), but 4) seems like a cleaner long-term strategy.
-  RELEASE_ASSERT(aux_stream_info.configuration_key_.has_value(), "aux stream info missing");
-  network_configurator_->reportNetworkUsage(aux_stream_info.configuration_key_.value(), fault);
+  RELEASE_ASSERT(extra_stream_info.configuration_key_.has_value(), "extra stream info missing");
+  network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(), fault);
 
   auto options = std::make_shared<Network::Socket::Options>();
-  aux_stream_info.configuration_key_ = network_configurator_->addUpstreamSocketOptions(options);
+  extra_stream_info.configuration_key_ = network_configurator_->addUpstreamSocketOptions(options);
   Upstream::RetryOptionsPredicate::UpdateOptionsReturn ret{options};
   return ret;
 }

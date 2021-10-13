@@ -14,7 +14,7 @@
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
 #include "library/common/network/configurator.h"
-#include "library/common/stream_info/aux_stream_info.h"
+#include "library/common/stream_info/extra_stream_info.h"
 
 namespace Envoy {
 namespace Http {
@@ -337,8 +337,6 @@ void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks 
   direct_stream->request_decoder_ =
       &api_listener_.newStream(*direct_stream->callbacks_, true /* is_internally_created */);
 
-  auto aux_info = StreamInfo::AuxProvider::create(direct_stream->request_decoder_->streamInfo());
-  aux_info.stream_id_ = new_stream_handle;
   streams_.emplace(new_stream_handle, std::move(direct_stream));
   ENVOY_LOG(debug, "[S{}] start stream", new_stream_handle);
 }
@@ -503,8 +501,6 @@ void Client::removeStream(envoy_stream_t stream_handle) {
       fmt::format(
           "[S{}] removeStream is a private method that is only called with stream ids that exist",
           stream_handle));
-
-  StreamInfo::AuxProvider::clear(direct_stream->request_decoder_->streamInfo());
 
   // The DirectStream should live through synchronous code that already has a reference to it.
   // Hence why it is scheduled for deferred deletion. If this was all that was needed then it
