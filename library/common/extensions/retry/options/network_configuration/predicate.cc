@@ -19,19 +19,25 @@ Upstream::RetryOptionsPredicate::UpdateOptionsReturn
 NetworkConfigurationRetryOptionsPredicate::updateOptions(
     const Upstream::RetryOptionsPredicate::UpdateOptionsParameters& parameters) const {
 
+  auto options = std::make_shared<Network::Socket::Options>();
+
   const auto& stream_info = parameters.retriable_request_stream_info_;
-  auto& extra_stream_info = const_cast<StreamInfo::ExtraStreamInfo&>(
-      stream_info.filterState().getDataReadOnly<StreamInfo::ExtraStreamInfo>(
-          StreamInfo::ExtraStreamInfo::key()));
+  auto& filter_state = const_cast<StreamInfo::FilterState&>(stream_info.filterState());
+  if (!filter_state.hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
+    return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
+  }
+
+  auto& extra_stream_info =
+      filter_state.getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
+  if (!extra_stream_info.configuration_key_.has_value()) {
+    return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
+  }
 
   bool fault = !stream_info.firstUpstreamRxByteReceived().has_value();
-  RELEASE_ASSERT(extra_stream_info.configuration_key_.has_value(), "configuration key missing");
   network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(), fault);
-
-  auto options = std::make_shared<Network::Socket::Options>();
   extra_stream_info.configuration_key_ = network_configurator_->addUpstreamSocketOptions(options);
-  Upstream::RetryOptionsPredicate::UpdateOptionsReturn ret{options};
-  return ret;
+
+  return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{options};
 }
 
 } // namespace Options
