@@ -39,6 +39,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
         run: |
           bazel test \
             --test_output=all \
