@@ -25,14 +25,7 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
           StreamInfo::ExtraStreamInfo::key()));
 
   bool fault = !stream_info.firstUpstreamRxByteReceived().has_value();
-  // TODO(goaway): The predicate has no inherent way to know the prior configuration key so we need
-  // some way to retrieve it. Options:
-  // 1. store the configuration key directly in stream info (but it would need to be non-const)
-  // 2. store a unique identifier in stream info that can be keyed in a singleton "extra info" map
-  // 3. store a metadata map in stream info (also needs to be non-const here)
-  // 4. store in an extension point on stream info for adding extra fields
-  // Here we use option 2), but 4) seems like a cleaner long-term strategy.
-  RELEASE_ASSERT(extra_stream_info.configuration_key_.has_value(), "extra stream info missing");
+  RELEASE_ASSERT(extra_stream_info.configuration_key_.has_value(), "configuration key missing");
   network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(), fault);
 
   auto options = std::make_shared<Network::Socket::Options>();
