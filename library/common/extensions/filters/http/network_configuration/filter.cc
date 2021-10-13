@@ -14,13 +14,11 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::decodeHeaders(Http::Reques
 
   auto& stream_info = decoder_callbacks_->streamInfo();
   stream_info.filterState()->setData(
-      StreamInfo::ExtraStreamInfo::key(),
-      std::make_unique<StreamInfo::ExtraStreamInfo>(),
+      StreamInfo::ExtraStreamInfo::key(), std::make_unique<StreamInfo::ExtraStreamInfo>(),
       StreamInfo::FilterState::StateType::Mutable, StreamInfo::FilterState::LifeSpan::Request);
 
-  auto& extra_stream_info = stream_info.filterState()
-      ->getDataMutable<StreamInfo::ExtraStreamInfo>(
-          StreamInfo::ExtraStreamInfo::key());
+  auto& extra_stream_info = stream_info.filterState()->getDataMutable<StreamInfo::ExtraStreamInfo>(
+      StreamInfo::ExtraStreamInfo::key());
 
   auto options = std::make_shared<Network::Socket::Options>();
   network_configurator_->setInterfaceBindingEnabled(enable_interface_binding_);
@@ -34,8 +32,8 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::Respon
                                                                     bool) {
   ENVOY_LOG(debug, "NetworkConfigurationFilter::encodeHeaders");
 
-  auto& extra_stream_info = decoder_callbacks_->streamInfo().filterState()
-      ->getDataMutable<StreamInfo::ExtraStreamInfo>(
+  auto& extra_stream_info =
+      decoder_callbacks_->streamInfo().filterState()->getDataMutable<StreamInfo::ExtraStreamInfo>(
           StreamInfo::ExtraStreamInfo::key());
   network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(), false);
 
@@ -46,8 +44,8 @@ Http::LocalErrorStatus NetworkConfigurationFilter::onLocalReply(const LocalReply
   ENVOY_LOG(debug, "NetworkConfigurationFilter::onLocalReply");
 
   auto& stream_info = decoder_callbacks_->streamInfo();
-  auto& extra_stream_info = decoder_callbacks_->streamInfo().filterState()
-      ->getDataMutable<StreamInfo::ExtraStreamInfo>(
+  auto& extra_stream_info =
+      decoder_callbacks_->streamInfo().filterState()->getDataMutable<StreamInfo::ExtraStreamInfo>(
           StreamInfo::ExtraStreamInfo::key());
 
   bool success_status = static_cast<int>(reply.code_) < 400;

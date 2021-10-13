@@ -20,8 +20,8 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
     const Upstream::RetryOptionsPredicate::UpdateOptionsParameters& parameters) const {
 
   const auto& stream_info = parameters.retriable_request_stream_info_;
-  auto& extra_stream_info = const_cast<StreamInfo::ExtraStreamInfo&>(stream_info.filterState()
-      .getDataReadOnly<StreamInfo::ExtraStreamInfo>(
+  auto& extra_stream_info = const_cast<StreamInfo::ExtraStreamInfo&>(
+      stream_info.filterState().getDataReadOnly<StreamInfo::ExtraStreamInfo>(
           StreamInfo::ExtraStreamInfo::key()));
 
   bool fault = !stream_info.firstUpstreamRxByteReceived().has_value();
