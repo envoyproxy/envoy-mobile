@@ -389,7 +389,8 @@ static void ios_track_event(envoy_map map, const void *context) {
 
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
-                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker {
+                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
+                  useNetworkPathMonitor:(BOOL)useNetworkPathMonitor {
   self = [super init];
   if (!self) {
     return nil;
@@ -419,9 +420,13 @@ static void ios_track_event(envoy_map map, const void *context) {
 
   _engineHandle = init_engine(native_callbacks, native_logger, native_event_tracker);
 
-  // TODO(jpsim): Add configuration option to use path monitor - https://jira.lyft.net/browse/LCN-267
-  if (@available(iOS 12, *)) {
-    [EnvoyNetworkMonitor startPathMonitorIfNeeded];
+  if (useNetworkPathMonitor) {
+    if (@available(iOS 12, *)) {
+      [EnvoyNetworkMonitor startPathMonitorIfNeeded];
+    } else {
+      NSLog(@"[Envoy] Cannot use NWPathMonitor on iOS < 12. Falling back to `SCNetworkReachability`");
+      [EnvoyNetworkMonitor startReachabilityIfNeeded];
+    }
   } else {
     [EnvoyNetworkMonitor startReachabilityIfNeeded];
   }
