@@ -27,6 +27,18 @@ final class EngineBuilderTests: XCTestCase {
     MockEnvoyEngine.onRunWithTemplate = nil
   }
 
+  func testUseNetworkPathMonitorDefaultsToFalse() {
+    let builder = EngineBuilder()
+    XCTAssertFalse(builder.useNetworkPathMonitor)
+  }
+
+  @available(iOS 12, *)
+  func testUseNetworkPathMonitorSetsToTrue() {
+    let builder = EngineBuilder()
+      .enableNetworkPathMonitor()
+    XCTAssertTrue(builder.useNetworkPathMonitor)
+  }
+
   func testCustomConfigTemplateUsesSpecifiedYAMLWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithTemplate = { yaml, _, _ in
