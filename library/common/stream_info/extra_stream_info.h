@@ -12,5 +12,7 @@ struct ExtraStreamInfo : public FilterState::Object {
   static const std::string& key();
 };
 
+using ExtraStreamInfoPtr = std::unique_ptr<ExtraStreamInfo>;
+
 } // namespace StreamInfo
 } // namespace Envoy

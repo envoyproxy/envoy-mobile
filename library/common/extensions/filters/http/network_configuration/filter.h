@@ -8,6 +8,7 @@
 #include "library/common/extensions/filters/http/network_configuration/filter.pb.h"
 #include "library/common/network/configurator.h"
 #include "library/common/types/c_types.h"
+#include "library/common/stream_info/extra_stream_info.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -22,11 +23,12 @@ class NetworkConfigurationFilter final : public Http::PassThroughFilter,
 public:
   NetworkConfigurationFilter(Network::ConfiguratorSharedPtr network_configurator,
                              bool enable_interface_binding)
-      : network_configurator_(network_configurator),
+      : network_configurator_(network_configurator), tmp_extra_stream_info_(std::make_unique<StreamInfo::ExtraStreamInfo>()),
+        extra_stream_info_(*tmp_extra_stream_info_),
         enable_interface_binding_(enable_interface_binding) {}
 
   // Http::StreamDecoderFilter
-  Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap&, bool) override;
+  void setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) override;
   // Http::StreamEncoderFilter
   Http::FilterHeadersStatus encodeHeaders(Http::ResponseHeaderMap&, bool) override;
   // Http::StreamFilterBase
@@ -34,6 +36,10 @@ public:
 
 private:
   Network::ConfiguratorSharedPtr network_configurator_;
+  // Don't use this; it will be moved into FilterState.
+  StreamInfo::ExtraStreamInfoPtr tmp_extra_stream_info_;
+  // Use this instead.
+  StreamInfo::ExtraStreamInfo& extra_stream_info_;
   bool enable_interface_binding_;
 };
 
