@@ -10,7 +10,7 @@ For local test runs, you can simply ``cd envoy`` and make changes.  These change
 not be reflected when you create a draft pull request so can not be used to verify
 that the Envoy Mobile build bots will pass.
 
-To test Envoy changes against CI, make those changes in your Envoy repo, push that branch to github
+To test Envoy changes against CI, make those changes in your Envoy repo, push that branch to GitHub
 and change the ``.gitmodules`` file in the Envoy Mobile repo to point to your Envoy branch like so::
 
 
