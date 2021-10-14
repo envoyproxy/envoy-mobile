@@ -36,9 +36,6 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-      - name: 'Clean'
-        continue-on-error: true
-        run: bazel clean --expunge
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
