@@ -22,6 +22,7 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
   auto options = std::make_shared<Network::Socket::Options>();
 
   const auto& stream_info = parameters.retriable_request_stream_info_;
+  // TODO(goaway): Remove const_cast hack after https://github.com/envoyproxy/envoy/pull/18625
   auto& filter_state = const_cast<StreamInfo::FilterState&>(stream_info.filterState());
   if (!filter_state.hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
     return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
