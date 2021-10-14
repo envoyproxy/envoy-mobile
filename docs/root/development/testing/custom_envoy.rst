@@ -21,4 +21,3 @@ and change the ``.gitmodules`` file in the Envoy Mobile repo to point to your En
 
 You should then be able to test the changes locally with  ``git submodule update --init``
 as well as remotely.
-
