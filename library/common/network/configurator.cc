@@ -136,7 +136,7 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
       // toggle socket_mode_.
       if (network_state_.remaining_faults_ == 0) {
         configuration_updated = true;
-        network_state_.configuration_key_++;
+        configuration_key = ++network_state_.configuration_key_;
         network_state_.socket_mode_ = network_state_.socket_mode_ == DefaultPreferredNetworkMode
                                           ? AlternateBoundInterfaceMode
                                           : DefaultPreferredNetworkMode;
@@ -147,21 +147,25 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
 
   // If configuration state changed, refresh dns.
   if (configuration_updated) {
-    refreshDns(network_state_.configuration_key_);
+    refreshDns(configuration_key);
   }
 }
 
 void Configurator::setInterfaceBindingEnabled(bool enabled) { enable_interface_binding_ = enabled; }
 
 void Configurator::refreshDns(envoy_netconf_t configuration_key) {
-  // refreshDns must be queued on Envoy's event loop, whereas network_state_ is updated
-  // synchronously. In the event that multiple refreshes become queued on the event loop,
-  // this avoids triggering a refresh for a non-current network.
-  // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
-  // flip-flop scenarios.
-  if (configuration_key != network_state_.configuration_key_) {
-    ENVOY_LOG_EVENT(debug, "netconf_dns_flipflop", std::to_string(configuration_key));
-    return;
+  {
+    Thread::LockGuard lock{network_state_.mutex_};
+
+    // refreshDns must be queued on Envoy's event loop, whereas network_state_ is updated
+    // synchronously. In the event that multiple refreshes become queued on the event loop,
+    // this check avoids triggering a refresh for a non-current network.
+    // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
+    // flip-flop scenarios.
+    if (configuration_key != network_state_.configuration_key_) {
+      ENVOY_LOG_EVENT(debug, "netconf_dns_flipflop", std::to_string(configuration_key));
+      return;
+    }
   }
 
   if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {

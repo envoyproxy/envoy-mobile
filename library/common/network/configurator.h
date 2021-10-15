@@ -124,10 +124,10 @@ private:
   struct NetworkState {
     // The configuration key is passed through calls dispatched on the run loop to determine if
     // they're still valid/relevant at time of execution.
-    envoy_netconf_t configuration_key_;
-    envoy_network_t network_;
-    uint8_t remaining_faults_;
-    envoy_socket_mode_t socket_mode_;
+    envoy_netconf_t configuration_key_ ABSL_GUARDED_BY(mutex_);
+    envoy_network_t network_ ABSL_GUARDED_BY(mutex_);
+    uint8_t remaining_faults_ ABSL_GUARDED_BY(mutex_);
+    envoy_socket_mode_t socket_mode_ ABSL_GUARDED_BY(mutex_);
     Thread::MutexBasicLockable mutex_;
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
