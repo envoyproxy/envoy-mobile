@@ -88,7 +88,7 @@ envoy_status_t reset_stream(envoy_stream_t stream) {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
-  uint64_t configuration_key = Envoy::Network::Configurator::setPreferredNetwork(network);
+  envoy_netconf_t configuration_key = Envoy::Network::Configurator::setPreferredNetwork(network);
   if (auto e = engine()) {
     e->dispatcher().post([configuration_key]() -> void {
       if (auto e = engine())

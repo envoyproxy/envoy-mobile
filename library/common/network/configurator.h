@@ -10,6 +10,8 @@
 
 #include "library/common/types/c_types.h"
 
+typedef uint16_t envoy_netconf_t;
+
 namespace Envoy {
 namespace Network {
 
@@ -72,14 +74,14 @@ public:
    * at transmission (e.g., an HTTP request).
    * @param network_fault, whether a transmission attempt terminated w/o receiving upstream bytes.
    */
-  void reportNetworkUsage(uint16_t configuration_key, bool network_fault);
+  void reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault);
 
   /**
    * Sets the current OS default/preferred network class.
    * @param network, the OS-preferred network.
    * @returns configuration key to associate with any related calls.
    */
-  static uint16_t setPreferredNetwork(envoy_network_t network);
+  static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
   /**
    * Sets whether subsequent calls for upstream socket options may leverage options that bind
@@ -92,7 +94,7 @@ public:
    * Refresh DNS in response to preferred network update. May be no-op.
    * @param configuration_key, key provided by this class representing the current configuration.
    */
-  void refreshDns(uint16_t configuration_key);
+  void refreshDns(envoy_netconf_t configuration_key);
 
   /**
    * @returns the current socket options that should be used for connections.
@@ -104,26 +106,24 @@ public:
    * @param options, upstream connection options to which additional options should be appended.
    * @returns configuration key to associate with any related calls.
    */
-  uint16_t addUpstreamSocketOptions(Socket::OptionsSharedPtr options);
+  envoy_netconf_t addUpstreamSocketOptions(Socket::OptionsSharedPtr options);
 
 private:
-  // This struct is intentionally 64-bits for cheap atomic operations on most relevant archs.
-  // This means configuration key will overflow at 2^16 state changes, but in practice no single
-  // operation is ever likely to last that long.
   struct NetworkState {
     // The configuration key is passed through calls dispatched on the run loop to determine if
     // they're still valid/relevant at time of execution.
-    uint16_t configuration_key_;
-    uint16_t network_;
-    uint16_t remaining_faults_;
-    uint16_t overridden_;
+    envoy_netconf_t configuration_key_;
+    envoy_network_t network_;
+    uint8_t remaining_faults_;
+    bool overridden_;
+    Thread::MutexBasicLockable mutex_;
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
   const std::string getActiveAlternateInterface(envoy_network_t network, unsigned short family);
 
   bool enable_interface_binding_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
-  static std::atomic<NetworkState> network_state_;
+  static NetworkState network_state_;
 };
 
 using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;

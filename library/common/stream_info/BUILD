@@ -10,6 +10,7 @@ envoy_cc_library(
     hdrs = ["extra_stream_info.h"],
     repository = "@envoy",
     deps = [
+        "//library/common/network:configurator_lib",
         "//library/common/types:c_types_lib",
         "@envoy//envoy/stream_info:stream_info_interface",
     ],

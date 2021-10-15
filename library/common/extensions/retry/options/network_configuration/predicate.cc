@@ -21,10 +21,12 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
 
   auto options = std::make_shared<Network::Socket::Options>();
 
-  const auto& stream_info = parameters.retriable_request_stream_info_;
-  // TODO(goaway): Remove const_cast hack after https://github.com/envoyproxy/envoy/pull/18625
-  auto& filter_state = const_cast<StreamInfo::FilterState&>(stream_info.filterState());
+  auto& stream_info = parameters.retriable_request_stream_info_;
+  StreamInfo::FilterStateSharedPtr& filter_state = stream_info.filterState();
+  // ExtraStreamInfo is added by the NetworkConfigurationFilter and should normally always be
+  // present - this check is mostly defensive.
   if (!filter_state.hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
+    ENVOY_LOG(warn, "extra stream info is missing");
     return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
   }
 

@@ -67,85 +67,77 @@ SINGLETON_MANAGER_REGISTRATION(network_configurator);
 
 constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 
-std::atomic<Configurator::NetworkState> Configurator::network_state_{
-    Configurator::NetworkState{1, ENVOY_NET_GENERIC, 3, false}};
+Configurator::NetworkState Configurator::network_state_{
+    Configurator::NetworkState{1, ENVOY_NET_GENERIC, 3, false, Thread::MutexBasicLockable{}}};
 
-uint16_t Configurator::setPreferredNetwork(envoy_network_t network) {
+envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
+  Thread::LockGuard lock{network_state_.mutex_};
   ENVOY_LOG_EVENT(debug, "network_configuration_network_change", std::to_string(network));
 
-  Configurator::NetworkState expected_state = network_state_.load();
-  Configurator::NetworkState new_state;
-  do {
-    // ++configuration_key_, network_ = network, remaining_faults_ = 1, overridden_ = false
-    uint16_t new_configuration_key = expected_state.configuration_key_ + 1;
-    new_state =
-        Configurator::NetworkState{new_configuration_key, static_cast<uint16_t>(network), 1, false};
-  } while (!network_state_.compare_exchange_weak(expected_state, new_state));
+  network_state_.configuration_key_++;
+  network_state_.network_ = network;
+  network_state_.remaining_faults_ = 1;
+  network_state_.overridden_ = false;
 
-  return new_state.configuration_key_;
+  return network_state_.configuration_key_;
 }
 
 envoy_network_t Configurator::getPreferredNetwork() {
-  return static_cast<envoy_network_t>(network_state_.load().network_);
+  Thread::LockGuard lock{network_state_.mutex_};
+  return network_state_.network_;
 }
 
 // If the configuration_key isn't current, don't do anything.
 // If there was no fault (i.e. success) reset remaining_faults_ to 3.
 // If there was a network fault, decrement remaining_faults_.
 //   - At 0, increment configuration_key, reset remaining_faults_ to 1 and toggle overridden_.
-void Configurator::reportNetworkUsage(uint16_t configuration_key, bool network_fault) {
+void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault) {
   if (!enable_interface_binding_) {
     return;
   }
 
-  Configurator::NetworkState expected_state = network_state_.load();
-  Configurator::NetworkState new_state;
-  do {
+  bool configuration_updated = false;
+  {
+    Thread::LockGuard lock{network_state_.mutex_};
+
     // If the configuration_key isn't current, don't do anything.
-    if (configuration_key != expected_state.configuration_key_) {
+    if (configuration_key != network_state_.configuration_key_) {
       return;
     }
 
-    uint16_t new_configuration_key = configuration_key;
-    uint16_t network = expected_state.network_;
-    uint16_t remaining_faults = expected_state.remaining_faults_;
-    bool overridden = expected_state.overridden_;
-
     if (!network_fault) {
       // If there was no fault (i.e. success) reset remaining_faults_ to 3.
-      remaining_faults = 3;
+      network_state_.remaining_faults_ = 3;
     } else {
       // If there was a network fault, decrement remaining_faults_.
-      remaining_faults--;
-      ASSERT(remaining_faults >= 0);
+      network_state_.remaining_faults_--;
+      ASSERT(network_state_.remaining_faults_ >= 0);
 
       // At 0, increment configuration_key, reset remaining_faults_ to 1 and toggle overridden_.
-      if (remaining_faults == 0) {
-        ++new_configuration_key;
-        overridden = !overridden;
-        remaining_faults = 1;
+      if (network_state_.remaining_faults_ == 0) {
+        configuration_updated = true;
+        network_state_.configuration_key_++;
+        network_state_.overridden_ = !network_state_.overridden_;
+        network_state_.remaining_faults_ = 1;
       }
     }
-
-    new_state =
-        Configurator::NetworkState{new_configuration_key, network, remaining_faults, overridden};
-  } while (!network_state_.compare_exchange_weak(expected_state, new_state));
+  }
 
   // If overridden state changed, refresh dns.
-  if (expected_state.overridden_ != new_state.overridden_) {
-    refreshDns(new_state.configuration_key_);
+  if (configuration_updated) {
+    refreshDns(network_state_.configuration_key_);
   }
 }
 
 void Configurator::setInterfaceBindingEnabled(bool enabled) { enable_interface_binding_ = enabled; }
 
-void Configurator::refreshDns(uint16_t configuration_key) {
+void Configurator::refreshDns(envoy_netconf_t configuration_key) {
   // refreshDns must be queued on Envoy's event loop, whereas network_state_ is updated
   // synchronously. In the event that multiple refreshes become queued on the event loop,
   // this avoids triggering a refresh for a non-current network.
   // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
   // flip-flop scenarios.
-  if (configuration_key != network_state_.load().configuration_key_) {
+  if (configuration_key != network_state_.configuration_key_) {
     ENVOY_LOG_EVENT(debug, "network_configuration_dns_flipflop", std::to_string(configuration_key));
     return;
   }
@@ -208,12 +200,22 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
   return options;
 }
 
-uint16_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr options) {
-  NetworkState state = network_state_.load();
+envoy_netconf_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr options) {
+  envoy_netconf_t configuration_key;
+  envoy_network_t network;
+  bool overridden;
+
+  {
+    Thread::LockGuard lock{network_state_.mutex_};
+    configuration_key = network_state_.configuration_key_;
+    network = network_state_.network_;
+    overridden = network_state_.overridden;
+  }
+
   auto new_options =
-      getUpstreamSocketOptions(static_cast<envoy_network_t>(state.network_), state.overridden_);
+      getUpstreamSocketOptions(network, overridden_);
   options->insert(options->end(), new_options->begin(), new_options->end());
-  return state.configuration_key_;
+  return configuration_key;
 }
 
 const std::string Configurator::getActiveAlternateInterface(envoy_network_t network,
