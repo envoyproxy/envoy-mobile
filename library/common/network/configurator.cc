@@ -67,11 +67,15 @@ SINGLETON_MANAGER_REGISTRATION(network_configurator);
 
 constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 
+// The number of faults allowed on a newly-established connection before switching socket mode.
 constexpr unsigned int InitialFaultThreshold = 1;
+// THe number of faults allowed on a previously-successful connection (i.e. able to send and receive
+// L7 bytes) before switching socket mode.
 constexpr unsigned int MaxFaultThreshold = 3;
 
 Configurator::NetworkState Configurator::network_state_{1, ENVOY_NET_GENERIC, MaxFaultThreshold,
-                                                        false, Thread::MutexBasicLockable{}};
+                                                        DefaultPreferredNetworkMode,
+                                                        Thread::MutexBasicLockable{}};
 
 envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
@@ -80,7 +84,7 @@ envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   network_state_.configuration_key_++;
   network_state_.network_ = network;
   network_state_.remaining_faults_ = 1;
-  network_state_.overridden_ = false;
+  network_state_.socket_mode_ = DefaultPreferredNetworkMode;
 
   return network_state_.configuration_key_;
 }
@@ -90,9 +94,9 @@ envoy_network_t Configurator::getPreferredNetwork() {
   return network_state_.network_;
 }
 
-bool Configurator::getOverrideStatus() {
+envoy_socket_mode_t Configurator::getSocketMode() {
   Thread::LockGuard lock{network_state_.mutex_};
-  return network_state_.overridden_;
+  return network_state_.socket_mode_;
 }
 
 envoy_netconf_t Configurator::getConfigurationKey() {
@@ -100,11 +104,12 @@ envoy_netconf_t Configurator::getConfigurationKey() {
   return network_state_.configuration_key_;
 }
 
-// If the configuration_key isn't current, don't do anything.
-// If there was no fault (i.e. success) reset remaining_faults_ to MaxFaultTreshold.
-// If there was a network fault, decrement remaining_faults_.
+// This call contains the main heuristic that will determine if the network configurator switches
+// socket modes: If the configuration_key isn't current, don't do anything. If there was no fault
+// (i.e. success) reset remaining_faults_ to MaxFaultTreshold. If there was a network fault,
+// decrement remaining_faults_.
 //   - At 0, increment configuration_key, reset remaining_faults_ to InitialFaultThreshold and
-//     toggle overridden_.
+//     toggle socket_mode_.
 void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault) {
   if (!enable_interface_binding_) {
     return;
@@ -128,11 +133,13 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
       ASSERT(network_state_.remaining_faults_ >= 0);
 
       // At 0, increment configuration_key, reset remaining_faults_ to InitialFaultThreshold and
-      // toggle overridden_.
+      // toggle socket_mode_.
       if (network_state_.remaining_faults_ == 0) {
         configuration_updated = true;
         network_state_.configuration_key_++;
-        network_state_.overridden_ = !network_state_.overridden_;
+        network_state_.socket_mode_ = network_state_.socket_mode_ == DefaultPreferredNetworkMode
+                                          ? AlternateBoundInterfaceMode
+                                          : DefaultPreferredNetworkMode;
         network_state_.remaining_faults_ = InitialFaultThreshold;
       }
     }
@@ -174,10 +181,12 @@ std::vector<std::string> Configurator::enumerateV6Interfaces() {
 }
 
 Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t network,
-                                                                bool override_interface) {
-  if (enable_interface_binding_ && override_interface && network != ENVOY_NET_GENERIC) {
+                                                                envoy_socket_mode_t socket_mode) {
+  if (enable_interface_binding_ && socket_mode == AlternateBoundInterfaceMode &&
+      network != ENVOY_NET_GENERIC) {
     return getAlternateInterfaceSocketOptions(network);
   }
+
   // Envoy uses the hash signature of overridden socket options to choose a connection pool.
   // Setting a dummy socket option is a hack that allows us to select a different
   // connection pool without materially changing the socket configuration.
@@ -218,16 +227,16 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
 envoy_netconf_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr options) {
   envoy_netconf_t configuration_key;
   envoy_network_t network;
-  bool overridden;
+  envoy_socket_mode_t socket_mode;
 
   {
     Thread::LockGuard lock{network_state_.mutex_};
     configuration_key = network_state_.configuration_key_;
     network = network_state_.network_;
-    overridden = network_state_.overridden_;
+    socket_mode = network_state_.socket_mode_;
   }
 
-  auto new_options = getUpstreamSocketOptions(network, overridden);
+  auto new_options = getUpstreamSocketOptions(network, socket_mode);
   options->insert(options->end(), new_options->begin(), new_options->end());
   return configuration_key;
 }

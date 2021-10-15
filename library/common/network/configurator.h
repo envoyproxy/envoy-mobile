@@ -17,6 +17,21 @@
  */
 typedef uint16_t envoy_netconf_t;
 
+/**
+ * These values specificy the behavior of the network configurator with respect to the upstream
+ * socket options it supplies.
+ */
+typedef enum {
+  // In this mode, the configurator will provide socket options that result in the creation of a
+  // distinct connection pool for a given value of preferred network.
+  DefaultPreferredNetworkMode = 0,
+  // In this mode, the configurator will provide socket options that intentionally attempt to
+  // override the current preferred network type with an alternative, via interface-binding socket
+  // options. Note this mode is experimental, and it will not be enabled at all unless
+  // enable_interface_binding_ is set to true.
+  AlternateBoundInterfaceMode = 1,
+} envoy_socket_mode_t;
+
 namespace Envoy {
 namespace Network {
 
@@ -24,26 +39,8 @@ using DnsCacheManagerSharedPtr = Extensions::Common::DynamicForwardProxy::DnsCac
 
 /**
  * Object responsible for tracking network state, especially with respect to multiple interfaces,
- * and providing auxiliary configuration to network connections.
- *
- * The current version of the Network::Configurator can be configured in 2 modes with these
- * general properties:
- *
- * Standard
- * - Use (effectively) per-network pools of connections.
- * - Trigger a refresh of cached DNS addresses on network change.
- *
- * Bound Interface Overrides
- * - Maintain a separate network_override boolean.
- * - For a given state, after 1+ successes and 3 consecutive faults or 0 successes and 1 fault,
- *   toggle the boolean. For the purpose of this heuristic, a fault is a request that terminates
- *   having received 0 transmitted bytes, and a success is anything else.
- * - When the boolean is true, supply additional socket options that bind new connections to
- *   a different active network interface from the likely OS default, in a best effort fashion.
- * - Trigger a refresh of cached DNS on network state change.
- *
- * Note the latter configuration is experimental. The heuristic and the behavior are subject to
- * change.
+ * and providing auxiliary configuration to network connections, in the form of upstream socket
+ * options.
  */
 class Configurator : public Logger::Loggable<Logger::Id::upstream>, public Singleton::Instance {
 public:
@@ -75,11 +72,9 @@ public:
   envoy_network_t getPreferredNetwork();
 
   /**
-   * When override status is true, the configurator will provide socket options that intentionally
-   * override the current preferred network type via interface binding.
-   * @returns true if current socket configuration will attempt interface binding.
+   * @returns the current mode used to determine upstream socket options.
    */
-  bool getOverrideStatus();
+  envoy_socket_mode_t getSocketMode();
 
   /**
    * @returns configuration key representing current network state.
@@ -117,7 +112,7 @@ public:
    * @returns the current socket options that should be used for connections.
    */
   Socket::OptionsSharedPtr getUpstreamSocketOptions(envoy_network_t network,
-                                                    bool override_interface);
+                                                    envoy_socket_mode_t socket_mode);
 
   /**
    * @param options, upstream connection options to which additional options should be appended.
@@ -132,7 +127,7 @@ private:
     envoy_netconf_t configuration_key_;
     envoy_network_t network_;
     uint8_t remaining_faults_;
-    bool overridden_;
+    envoy_socket_mode_t socket_mode_;
     Thread::MutexBasicLockable mutex_;
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
