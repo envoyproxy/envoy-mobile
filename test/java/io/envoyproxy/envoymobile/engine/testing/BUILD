@@ -32,6 +32,7 @@ envoy_mobile_android_test(
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
         "//test/common/jni:libquic_test_server_jni.so",
+        "//test/common/jni:libquic_test_server_jni.jnilib",
     ],
     deps = [
         ":testing",
