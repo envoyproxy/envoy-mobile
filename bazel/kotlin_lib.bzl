@@ -52,6 +52,7 @@ def envoy_mobile_so_to_jni_lib(name, native_dep, testonly = False):
 
     return native.genrule(
         name = name,
+        testonly = testonly,
         outs = [output],
         srcs = [native_dep],
         cmd = """
