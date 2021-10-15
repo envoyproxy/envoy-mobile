@@ -8,6 +8,7 @@ envoy_package()
 # OS X binary (.jnilib) for Quic Test Server
 envoy_mobile_so_to_jni_lib(
     name = "quic_test_server_jni.jnilib",
+    testonly = True,
     native_dep = "libquic_test_server_jni.so",
 )
 
