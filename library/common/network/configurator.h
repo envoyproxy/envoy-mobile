@@ -10,6 +10,11 @@
 
 #include "library/common/types/c_types.h"
 
+/**
+ * This type identifies a snapshot of network configuration state. It's returned from calls that
+ * may alter current state, and passed back as a parameter to this API to determine if calls
+ * remain valid/relevant at time of execution.
+ */
 typedef uint16_t envoy_netconf_t;
 
 namespace Envoy {
@@ -68,6 +73,18 @@ public:
    * @returns the current OS default/preferred network class.
    */
   envoy_network_t getPreferredNetwork();
+
+  /**
+   * When override status is true, the configurator will provide socket options that intentionally
+   * override the current preferred network type via interface binding.
+   * @returns true if current socket configuration will attempt interface binding.
+   */
+  bool getOverrideStatus();
+
+  /**
+   * @returns configuration key representing current network state.
+   */
+  envoy_netconf_t getConfigurationKey();
 
   /**
    * Call to report on the current viability of the passed network configuration after an attempt

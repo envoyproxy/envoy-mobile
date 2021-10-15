@@ -75,7 +75,7 @@ Configurator::NetworkState Configurator::network_state_{1, ENVOY_NET_GENERIC, Ma
 
 envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
-  ENVOY_LOG_EVENT(debug, "network_configuration_network_change", std::to_string(network));
+  ENVOY_LOG_EVENT(debug, "netconf_network_change", std::to_string(network));
 
   network_state_.configuration_key_++;
   network_state_.network_ = network;
@@ -88,6 +88,16 @@ envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
 envoy_network_t Configurator::getPreferredNetwork() {
   Thread::LockGuard lock{network_state_.mutex_};
   return network_state_.network_;
+}
+
+bool Configurator::getOverrideStatus() {
+  Thread::LockGuard lock{network_state_.mutex_};
+  return network_state_.overridden_;
+}
+
+envoy_netconf_t Configurator::getConfigurationKey() {
+  Thread::LockGuard lock{network_state_.mutex_};
+  return network_state_.configuration_key_;
 }
 
 // If the configuration_key isn't current, don't do anything.
@@ -143,15 +153,15 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key) {
   // Note this does NOT completely prevent parallel refreshes from being triggered in multiple
   // flip-flop scenarios.
   if (configuration_key != network_state_.configuration_key_) {
-    ENVOY_LOG_EVENT(debug, "network_configuration_dns_flipflop", std::to_string(configuration_key));
+    ENVOY_LOG_EVENT(debug, "netconf_dns_flipflop", std::to_string(configuration_key));
     return;
   }
 
   if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {
-    ENVOY_LOG_EVENT(debug, "network_configuration_refresh_dns", std::to_string(configuration_key));
+    ENVOY_LOG_EVENT(debug, "netconf_refresh_dns", std::to_string(configuration_key));
     dns_cache->forceRefreshHosts();
   } else {
-    ENVOY_LOG_EVENT(warn, "network_configuration_dns_cache_missing", BaseDnsCache);
+    ENVOY_LOG_EVENT(warn, "netconf_dns_cache_missing", BaseDnsCache);
   }
 }
 
