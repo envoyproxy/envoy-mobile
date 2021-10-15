@@ -29,8 +29,10 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::Respon
                                                                     bool) {
   ENVOY_LOG(debug, "NetworkConfigurationFilter::encodeHeaders");
   // Report request status to network configurator, so that socket configuration may be adapted
-  // to current network conditions.
-  network_configurator_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(), false);
+  // to current network conditions. Receiving headers from upstream always means some level of
+  // network transmission was successful, so we unconditionally set network_fault to false.
+  network_configurator_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
+                                            false /* network_fault */);
 
   return Http::FilterHeadersStatus::Continue;
 }
@@ -39,11 +41,17 @@ Http::LocalErrorStatus NetworkConfigurationFilter::onLocalReply(const LocalReply
   ENVOY_LOG(debug, "NetworkConfigurationFilter::onLocalReply");
 
   bool success_status = static_cast<int>(reply.code_) < 400;
-  bool fault = !success_status &&
-               !decoder_callbacks_->streamInfo().firstUpstreamRxByteReceived().has_value();
+  // Envoy uses local replies to report various local errors, including networking failures (which
+  // Envoy Mobile later surfaces as errors). As a proxy for the many different types of network
+  // errors, this code interprets any local error where a stream received no bytes from the upstream
+  // as a network fault. This status is passed to the configurator below when we report network
+  // usage, where it may be factored into future socket configuration.
+  bool network_fault = !success_status &&
+                       !decoder_callbacks_->streamInfo().firstUpstreamRxByteReceived().has_value();
   // Report request status to network configurator, so that socket configuration may be adapted
   // to current network conditions.
-  network_configurator_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(), fault);
+  network_configurator_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
+                                            network_fault);
 
   return Http::LocalErrorStatus::ContinueAndResetStream;
 }
