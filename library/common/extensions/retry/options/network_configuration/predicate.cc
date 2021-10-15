@@ -37,7 +37,10 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
   }
 
   bool fault = !stream_info.firstUpstreamRxByteReceived().has_value();
+  // Report request status to network configurator, so that socket configuration may be adapted
+  // to current network conditions.
   network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(), fault);
+  // Update socket configuration for next retry attempt.
   extra_stream_info.configuration_key_ = network_configurator_->addUpstreamSocketOptions(options);
 
   return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{options};

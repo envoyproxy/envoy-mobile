@@ -67,8 +67,11 @@ SINGLETON_MANAGER_REGISTRATION(network_configurator);
 
 constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 
-Configurator::NetworkState Configurator::network_state_{
-    Configurator::NetworkState{1, ENVOY_NET_GENERIC, 3, false, Thread::MutexBasicLockable{}}};
+constexpr unsigned int InitialFaultThreshold = 1;
+constexpr unsigned int MaxFaultThreshold = 3;
+
+Configurator::NetworkState Configurator::network_state_{1, ENVOY_NET_GENERIC, MaxFaultThreshold,
+                                                        false, Thread::MutexBasicLockable{}};
 
 envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
@@ -88,9 +91,10 @@ envoy_network_t Configurator::getPreferredNetwork() {
 }
 
 // If the configuration_key isn't current, don't do anything.
-// If there was no fault (i.e. success) reset remaining_faults_ to 3.
+// If there was no fault (i.e. success) reset remaining_faults_ to MaxFaultTreshold.
 // If there was a network fault, decrement remaining_faults_.
-//   - At 0, increment configuration_key, reset remaining_faults_ to 1 and toggle overridden_.
+//   - At 0, increment configuration_key, reset remaining_faults_ to InitialFaultThreshold and
+//     toggle overridden_.
 void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault) {
   if (!enable_interface_binding_) {
     return;
@@ -106,24 +110,25 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
     }
 
     if (!network_fault) {
-      // If there was no fault (i.e. success) reset remaining_faults_ to 3.
+      // If there was no fault (i.e. success) reset remaining_faults_ to MaxFaultThreshold.
       network_state_.remaining_faults_ = 3;
     } else {
       // If there was a network fault, decrement remaining_faults_.
       network_state_.remaining_faults_--;
       ASSERT(network_state_.remaining_faults_ >= 0);
 
-      // At 0, increment configuration_key, reset remaining_faults_ to 1 and toggle overridden_.
+      // At 0, increment configuration_key, reset remaining_faults_ to InitialFaultThreshold and
+      // toggle overridden_.
       if (network_state_.remaining_faults_ == 0) {
         configuration_updated = true;
         network_state_.configuration_key_++;
         network_state_.overridden_ = !network_state_.overridden_;
-        network_state_.remaining_faults_ = 1;
+        network_state_.remaining_faults_ = InitialFaultThreshold;
       }
     }
   }
 
-  // If overridden state changed, refresh dns.
+  // If configuration state changed, refresh dns.
   if (configuration_updated) {
     refreshDns(network_state_.configuration_key_);
   }
@@ -212,8 +217,7 @@ envoy_netconf_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr 
     overridden = network_state_.overridden_;
   }
 
-  auto new_options =
-      getUpstreamSocketOptions(network, overridden);
+  auto new_options = getUpstreamSocketOptions(network, overridden);
   options->insert(options->end(), new_options->begin(), new_options->end());
   return configuration_key;
 }

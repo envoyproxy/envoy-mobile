@@ -7,8 +7,8 @@
 
 #include "library/common/extensions/filters/http/network_configuration/filter.pb.h"
 #include "library/common/network/configurator.h"
-#include "library/common/types/c_types.h"
 #include "library/common/stream_info/extra_stream_info.h"
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -23,8 +23,8 @@ class NetworkConfigurationFilter final : public Http::PassThroughFilter,
 public:
   NetworkConfigurationFilter(Network::ConfiguratorSharedPtr network_configurator,
                              bool enable_interface_binding)
-      : network_configurator_(network_configurator), tmp_extra_stream_info_(std::make_unique<StreamInfo::ExtraStreamInfo>()),
-        extra_stream_info_(*tmp_extra_stream_info_),
+      : network_configurator_(network_configurator),
+        extra_stream_info_(nullptr), // always set in setDecoderFilterCallbacks
         enable_interface_binding_(enable_interface_binding) {}
 
   // Http::StreamDecoderFilter
@@ -36,10 +36,7 @@ public:
 
 private:
   Network::ConfiguratorSharedPtr network_configurator_;
-  // Don't use this; it will be moved into FilterState.
-  StreamInfo::ExtraStreamInfoPtr tmp_extra_stream_info_;
-  // Use this instead.
-  StreamInfo::ExtraStreamInfo& extra_stream_info_;
+  StreamInfo::ExtraStreamInfo* extra_stream_info_;
   bool enable_interface_binding_;
 };
 
