@@ -209,11 +209,11 @@ envoy_netconf_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr 
     Thread::LockGuard lock{network_state_.mutex_};
     configuration_key = network_state_.configuration_key_;
     network = network_state_.network_;
-    overridden = network_state_.overridden;
+    overridden = network_state_.overridden_;
   }
 
   auto new_options =
-      getUpstreamSocketOptions(network, overridden_);
+      getUpstreamSocketOptions(network, overridden);
   options->insert(options->end(), new_options->begin(), new_options->end());
   return configuration_key;
 }

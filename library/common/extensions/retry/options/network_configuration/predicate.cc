@@ -22,16 +22,16 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
   auto options = std::make_shared<Network::Socket::Options>();
 
   auto& stream_info = parameters.retriable_request_stream_info_;
-  StreamInfo::FilterStateSharedPtr& filter_state = stream_info.filterState();
+  auto filter_state = stream_info.filterState();
   // ExtraStreamInfo is added by the NetworkConfigurationFilter and should normally always be
   // present - this check is mostly defensive.
-  if (!filter_state.hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
+  if (!filter_state->hasData<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key())) {
     ENVOY_LOG(warn, "extra stream info is missing");
     return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
   }
 
   auto& extra_stream_info =
-      filter_state.getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
+      filter_state->getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
   if (!extra_stream_info.configuration_key_.has_value()) {
     return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
   }
