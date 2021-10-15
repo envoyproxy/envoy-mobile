@@ -28,6 +28,5 @@ cc_binary(
         "//library/common/api:c_types",
         "//library/common/jni:base_java_jni_lib",
         "//test/common/integration:quic_test_server_interface_lib",
-        "@envoy_mobile_extra_jni_deps//:extra_jni_dep",
     ],
 )
