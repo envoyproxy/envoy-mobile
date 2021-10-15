@@ -11,9 +11,27 @@
 #include "library/common/types/c_types.h"
 
 /**
- * This type identifies a snapshot of network configuration state. It's returned from calls that
- * may alter current state, and passed back as a parameter to this API to determine if calls
+ * envoy_netconf_t identifies a snapshot of network configuration state. It's returned from calls
+ * that may alter current state, and passed back as a parameter to this API to determine if calls
  * remain valid/relevant at time of execution.
+ *
+ * Currently, there are two primary circumstances this is used:
+ * 1. When network type changes, a refreshDNS call will be scheduled on the event dispatcher, along
+ * with a configuration key of this type. If network type changes again before that refresh
+ * executes, the refresh is now stale, another refresh task will have been queued, and it should no
+ * longer execute. The configuration key allows the configurator to determine if the refreshDNS call
+ * is representative of current configuration.
+ * 2. When a request is configured with a certain set of socket options and begins, it is given a
+ * configuration key. The heuristic in reportNetworkUsage relies on characteristics of the
+ * request/response to make future decisions about socket options, but needs to be able to correctly
+ * associate these metrics with their original configuration. If network state changes while the
+ * request/response are in-flight, the configurator can determine the relevance of associated
+ * metrics through the configuration key.
+ *
+ * Additionally, in the future, more advanced heuristics may maintain multiple parallel
+ * configurations across different interfaces/network types. In these more complicated scenarios, a
+ * configuration key will be able to identify not only if the configuration is current, but also
+ * which of several current configurations is relevant.
  */
 typedef uint16_t envoy_netconf_t;
 

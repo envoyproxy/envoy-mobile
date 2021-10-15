@@ -69,7 +69,7 @@ constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 
 // The number of faults allowed on a newly-established connection before switching socket mode.
 constexpr unsigned int InitialFaultThreshold = 1;
-// THe number of faults allowed on a previously-successful connection (i.e. able to send and receive
+// The number of faults allowed on a previously-successful connection (i.e. able to send and receive
 // L7 bytes) before switching socket mode.
 constexpr unsigned int MaxFaultThreshold = 3;
 
@@ -111,7 +111,11 @@ envoy_netconf_t Configurator::getConfigurationKey() {
 //   - At 0, increment configuration_key, reset remaining_faults_ to InitialFaultThreshold and
 //     toggle socket_mode_.
 void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault) {
+  ENVOY_LOG(debug, "reportNetworkUsage(configuration_key: {}, network_fault: {})",
+            configuration_key, network_fault);
+
   if (!enable_interface_binding_) {
+    ENVOY_LOG(debug, "bailing due to interface binding being disabled");
     return;
   }
 
@@ -121,16 +125,20 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
 
     // If the configuration_key isn't current, don't do anything.
     if (configuration_key != network_state_.configuration_key_) {
+      ENVOY_LOG(debug, "bailing due to stale configuration key");
       return;
     }
 
     if (!network_fault) {
       // If there was no fault (i.e. success) reset remaining_faults_ to MaxFaultThreshold.
-      network_state_.remaining_faults_ = 3;
+      ENVOY_LOG(debug, "resetting fault threshold");
+      network_state_.remaining_faults_ = MaxFaultThreshold;
     } else {
       // If there was a network fault, decrement remaining_faults_.
+      ASSERT(network_state_.remaining_faults_ > 0);
       network_state_.remaining_faults_--;
-      ASSERT(network_state_.remaining_faults_ >= 0);
+      ENVOY_LOG(debug, "decrementing remaining faults; {} remaining",
+                network_state_.remaining_faults_);
 
       // At 0, increment configuration_key, reset remaining_faults_ to InitialFaultThreshold and
       // toggle socket_mode_.
@@ -141,6 +149,10 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
                                           ? AlternateBoundInterfaceMode
                                           : DefaultPreferredNetworkMode;
         network_state_.remaining_faults_ = InitialFaultThreshold;
+        ENVOY_LOG_EVENT(debug, "netconf_mode_switch",
+                        network_state_.socket_mode_ == DefaultPreferredNetworkMode
+                            ? "DefaultPreferredNetworkMode"
+                            : "AlternateBoundInterfaceMode");
       }
     }
   }
