@@ -36,7 +36,7 @@
 typedef uint16_t envoy_netconf_t;
 
 /**
- * These values specificy the behavior of the network configurator with respect to the upstream
+ * These values specify the behavior of the network configurator with respect to the upstream
  * socket options it supplies.
  */
 typedef enum {
