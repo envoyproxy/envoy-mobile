@@ -13,9 +13,7 @@ cc_binary(
         "@local_jdk//:jni_header",
     ],
     copts = ["-std=c++17"],
-    linkopts = [
-        "-lm",
-    ],
+    linkopts = ["-lm"],
     linkshared = True,
     deps = [
         "//library/common:envoy_main_interface_lib",
