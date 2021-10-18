@@ -49,6 +49,4 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --define=signal_trace=disabled \
-            //test/java/org/chromium/net/urlconnection:urlconnection_test
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+            //test/java/org/chromium/net/impl:cronvoy_test
