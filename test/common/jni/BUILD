@@ -24,8 +24,6 @@ cc_binary(
     linkopts = ["-lm"],
     linkshared = True,
     deps = [
-        "//library/common:envoy_main_interface_lib",
-        "//library/common/api:c_types",
         "//library/common/jni:base_java_jni_lib",
         "//test/common/integration:quic_test_server_interface_lib",
     ],

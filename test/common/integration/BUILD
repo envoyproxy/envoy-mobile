@@ -37,21 +37,11 @@ envoy_cc_test_library(
         "quic_test_server_interface.cc",
     ],
     hdrs = ["quic_test_server_interface.h"],
-    data = [
-        "@envoy//test/config/integration/certs",
-    ],
     repository = "@envoy",
     deps = [
-        "@envoy//source/common/quic:active_quic_listener_lib",
-        "@envoy//source/common/quic:quic_factory_lib",
-        "@envoy//source/common/quic:quic_stat_names_lib",
-        "@envoy//source/common/stats:isolated_store_lib",
         "@envoy//test:test_pch",
         "@envoy//source/exe:process_wide_lib",
         "@envoy//test/integration:autonomous_upstream_lib",
-        "@envoy//test/test_common:network_utility_lib",
-        "@envoy_api//envoy/extensions/filters/common/matcher/action/v3:pkg_cc_proto",
-        "@envoy_api//envoy/extensions/transport_sockets/quic/v3:pkg_cc_proto",
     ] + select({
         "@envoy//bazel:disable_signal_trace": [],
         "//conditions:default": [
