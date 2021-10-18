@@ -39,11 +39,8 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
         run: |
-          bazel clean --expunge
           bazel test \
-            --config=remote-ci-debug \
             --test_output=all \
             --build_tests_only \
             --config=remote-ci-macos \
