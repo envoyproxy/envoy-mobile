@@ -69,15 +69,6 @@ rbe_autoconfig(
     },
 )
 
-#rbe_autoconfig(
-#    name = "engflow_remote_config_macos",
-#    use_legacy_platform_definition = False,
-#    create_java_configs = False,
-#    exec_properties = {
-#        "Pool": "macos",
-#    },
-#)
-
 rbe_autoconfig(
     name = "engflow_remote_config_clang",
     digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",

@@ -13,6 +13,7 @@ import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.Inet6Address;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -143,7 +144,7 @@ public class CronvoyEngineTest {
   @Test
   public void get_cancelOnResponseStarted() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
-    mockWebServer.start();
+    mockWebServer.start(Inet6Address.getByName("[::1]"), 0);
     RequestScenario requestScenario = new RequestScenario().cancelOnResponseStarted();
 
     Response response = sendRequest(requestScenario);
