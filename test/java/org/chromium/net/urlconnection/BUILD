@@ -31,7 +31,4 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/java/org/chromium/net/testing",
     ],
-    exec_properties = {
-            "sandboxNetwork": "standard",
-        },
 )
