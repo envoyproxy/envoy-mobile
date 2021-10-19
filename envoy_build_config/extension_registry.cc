@@ -10,7 +10,9 @@
 #include "source/extensions/filters/http/router/config.h"
 #include "source/extensions/filters/network/http_connection_manager/config.h"
 #include "source/extensions/http/original_ip_detection/xff/config.h"
+#ifdef __APPLE__
 #include "source/extensions/network/dns_resolver/apple/apple_dns_impl.h"
+#endif
 #include "source/extensions/stat_sinks/metrics_service/config.h"
 #include "source/extensions/transport_sockets/raw_buffer/config.h"
 #include "source/extensions/transport_sockets/tls/cert_validator/default_validator.h"
@@ -46,8 +48,10 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
-  Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
+#ifdef __APPLE__
   Envoy::Network::forceRegisterAppleDnsResolverFactory();
+#endif
+  Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
 
   // TODO: add a "force initialize" function to the upstream code, or clean up the upstream code
   // in such a way that does not depend on the statically initialized variable.

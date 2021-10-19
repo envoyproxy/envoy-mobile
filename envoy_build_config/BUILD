@@ -21,7 +21,6 @@ envoy_cc_library(
         "@envoy//source/extensions/filters/http/dynamic_forward_proxy:config",
         "@envoy//source/extensions/filters/http/router:config",
         "@envoy//source/extensions/filters/network/http_connection_manager:config",
-        "@envoy//source/extensions/network/dns_resolver/apple:config",
         "@envoy//source/extensions/stat_sinks/metrics_service:config",
         "@envoy//source/extensions/stat_sinks/statsd:config",
         "@envoy//source/extensions/transport_sockets/raw_buffer:config",
@@ -34,5 +33,10 @@ envoy_cc_library(
         "@envoy_mobile//library/common/extensions/filters/http/platform_bridge:config",
         "@envoy_mobile//library/common/extensions/filters/http/route_cache_reset:config",
         "@envoy_mobile//library/common/extensions/retry/options/network_configuration:config",
-    ],
+    ] + select({
+        "//bazel:apple": [
+            "@envoy//source/extensions/network/dns_resolver/apple:config",
+        ],
+        "//conditions:default": [],
+    }),
 )
