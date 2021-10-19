@@ -80,7 +80,7 @@ public class CronvoyEngineTest {
   @Test
   public void get_simple() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     // HttpMethod is not set on purpose - should default to "GET" because there is no request body.
     RequestScenario requestScenario = new RequestScenario().addResponseBuffers(13);
 
@@ -94,7 +94,7 @@ public class CronvoyEngineTest {
   @Test
   public void get_noBody() throws Exception {
     mockWebServer.enqueue(new MockResponse().setResponseCode(HTTP_OK));
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario =
         new RequestScenario().addResponseBuffers(1); // At least one byte must be available.
 
@@ -108,7 +108,7 @@ public class CronvoyEngineTest {
   @Test
   public void get_withSmallBuffers() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario().addResponseBuffers(4, 3, 5, 1);
 
     Response response = sendRequest(requestScenario);
@@ -119,7 +119,7 @@ public class CronvoyEngineTest {
   @Test
   public void get_withNotEnoughBuffer() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario().addResponseBuffers(11);
 
     // Message comes from Preconditions.checkHasRemaining()
@@ -131,7 +131,7 @@ public class CronvoyEngineTest {
     // Note: throttle must be long enough to trickle the chunking.
     mockWebServer.enqueue(
         new MockResponse().throttleBody(5, 1, TimeUnit.SECONDS).setBody("hello, world"));
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario().addResponseBuffers(13);
 
     Response response = sendRequest(requestScenario);
@@ -144,7 +144,7 @@ public class CronvoyEngineTest {
   @Test
   public void get_cancelOnResponseStarted() throws Exception {
     mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario().cancelOnResponseStarted();
 
     Response response = sendRequest(requestScenario);
@@ -164,7 +164,7 @@ public class CronvoyEngineTest {
         return new MockResponse().setBody("This is the response Body");
       }
     });
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     // HttpMethod is not set on purpose - should default to "POST" because there is a request body.
     RequestScenario requestScenario = new RequestScenario()
                                           .addResponseBuffers(30)
@@ -191,7 +191,7 @@ public class CronvoyEngineTest {
         return new MockResponse().setBody("This is the response Body");
       }
     });
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario()
                                           .addResponseBuffers(30)
                                           .setHttpMethod(RequestMethod.POST)
@@ -222,7 +222,7 @@ public class CronvoyEngineTest {
         return new MockResponse().setResponseCode(HTTP_BAD_REQUEST);
       }
     });
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario()
                                           .addResponseBuffers(30)
                                           .setHttpMethod(RequestMethod.GET)
@@ -258,7 +258,7 @@ public class CronvoyEngineTest {
         return new MockResponse().setResponseCode(HTTP_BAD_REQUEST);
       }
     });
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario()
                                           .addResponseBuffers(30)
                                           .setHttpMethod(RequestMethod.GET)
@@ -298,7 +298,7 @@ public class CronvoyEngineTest {
         return new MockResponse().setResponseCode(HTTP_BAD_REQUEST);
       }
     });
-    mockWebServer.start(Inet6Address.getLoopbackAddress(), 0);
+    mockWebServer.start(Inet6Address.getLocalHost(), 0);
     RequestScenario requestScenario = new RequestScenario()
                                           .addResponseBuffers(30)
                                           .setHttpMethod(RequestMethod.POST)
