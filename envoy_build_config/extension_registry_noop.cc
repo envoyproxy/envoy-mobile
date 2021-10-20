@@ -1,4 +1,4 @@
-#include "extension_registry_noop.h"
+#include "extension_registry_platform_additions.h"
 
 namespace Envoy {
 
