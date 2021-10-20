@@ -1,7 +1,5 @@
 #pragma once
 
-#include "source/extensions/network/dns_resolver/apple/apple_dns_impl.h"
-
 namespace Envoy {
 class ExtensionRegistryPlatformAdditions {
 public:
