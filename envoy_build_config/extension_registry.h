@@ -16,10 +16,7 @@
 #include "source/extensions/transport_sockets/tls/config.h"
 #include "source/extensions/upstreams/http/generic/config.h"
 
-#ifdef __APPLE__
-#include "source/extensions/network/dns_resolver/apple/apple_dns_impl.h"
-#endif
-
+#include "extension_registry_platform_additions.h"
 #include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/local_error/config.h"
 #include "library/common/extensions/filters/http/network_configuration/config.h"
