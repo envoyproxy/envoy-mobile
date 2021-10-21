@@ -152,8 +152,8 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
         if (network_state_.socket_mode_ == DefaultPreferredNetworkMode) {
           ENVOY_LOG_EVENT(debug, "netconf_mode_switch", "DefaultPreferredNetworkMode");
         } else if (network_state_.socket_mode_ == AlternateBoundInterfaceMode) {
-          auto& v4_interface = getActiveAlternateInterface(network, AF_INET);
-          auto& v6_interface = getActiveAlternateInterface(network, AF_INET6);
+          auto& v4_interface = getActiveAlternateInterface(network_state_.network_, AF_INET);
+          auto& v6_interface = getActiveAlternateInterface(network_state_.network_, AF_INET6);
           ENVOY_LOG_EVENT(debug, "netconf_mode_switch", "AlternateBoundInterfaceMode [{}|{}]",
                           v4_interface, v6_interface);
         }
