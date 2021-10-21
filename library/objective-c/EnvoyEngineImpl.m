@@ -390,7 +390,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
                            eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
-                  useNetworkPathMonitor:(BOOL)useNetworkPathMonitor {
+               enableNetworkPathMonitor:(BOOL)enableNetworkPathMonitor {
   self = [super init];
   if (!self) {
     return nil;
@@ -420,7 +420,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 
   _engineHandle = init_engine(native_callbacks, native_logger, native_event_tracker);
 
-  if (useNetworkPathMonitor) {
+  if (enableNetworkPathMonitor) {
     if (@available(iOS 12, *)) {
       [EnvoyNetworkMonitor startPathMonitorIfNeeded];
     } else {

@@ -33,7 +33,7 @@ open class EngineBuilder: NSObject {
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
-  private(set) var useNetworkPathMonitor = false
+  private(set) var enableNetworkPathMonitor = false
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
@@ -300,8 +300,8 @@ open class EngineBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   @available(iOS 12, *)
-  public func enableNetworkPathMonitor() -> Self {
-    self.useNetworkPathMonitor = true
+  public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
+    self.enableNetworkPathMonitor = enableNetworkPathMonitor
     return self
   }
 
@@ -354,7 +354,7 @@ open class EngineBuilder: NSObject {
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
                                       eventTracker: self.eventTracker,
-                                      useNetworkPathMonitor: self.useNetworkPathMonitor)
+                                      enableNetworkPathMonitor: self.enableNetworkPathMonitor)
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
