@@ -17,6 +17,10 @@ envoy_mobile_android_test(
         "UploadDataProvidersTest.java",
         "UrlResponseInfoTest.java",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
@@ -30,10 +34,6 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/java/org/chromium/net/testing",
     ],
-    exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
-        "sandboxNetwork": "standard",
-    },
 )
 
 envoy_mobile_android_test(
@@ -41,6 +41,10 @@ envoy_mobile_android_test(
     srcs = [
         "CronetUrlRequestContextTest.java",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
@@ -54,10 +58,6 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/java/org/chromium/net/testing",
     ],
-    exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
-        "sandboxNetwork": "standard",
-    },
 )
 
 envoy_mobile_android_test(
@@ -65,6 +65,10 @@ envoy_mobile_android_test(
     srcs = [
         "CronetUrlRequestTest.java",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
@@ -78,8 +82,4 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/java/org/chromium/net/testing",
     ],
-    exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
-        "sandboxNetwork": "standard",
-    },
 )
