@@ -10,9 +10,9 @@ jobs:
   sizecurrent:
     name: size_current
     runs-on: ubuntu-18.04
-    timeout-minutes: 90
+    timeout-minutes: 120
     container:
-      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+      image: envoyproxy/envoy-build-ubuntu:8ca107a75ee98b255aa59db2ab40fd0800a3ce99
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
@@ -21,7 +21,14 @@ jobs:
         with:
           submodules: true
       - name: 'Build test binary'
-        run: bazel build //test/performance:test_binary_size --config=sizeopt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazel build \
+            --config=sizeopt \
+            --config=remote-ci-linux-clang \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/performance:test_binary_size
       - uses: actions/upload-artifact@v2
         with:
           name: sizecurrent
@@ -31,7 +38,7 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 90
     container:
-      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+      image: envoyproxy/envoy-build-ubuntu:8ca107a75ee98b255aa59db2ab40fd0800a3ce99
       env:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
@@ -40,9 +47,15 @@ jobs:
         with:
           submodules: true
       - name: 'Build test binary'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout main && git pull origin main && git submodule update
-          bazel build //test/performance:test_binary_size --config=sizeopt
+          bazel build \
+            --config=sizeopt \
+            --config=remote-ci-linux-clang \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/performance:test_binary_size
       - uses: actions/upload-artifact@v2
         with:
           name: sizemain
@@ -53,7 +66,7 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 30
     container:
-      image: envoyproxy/envoy-build-ubuntu:e33c93e6d79804bf95ff80426d10bdcc9096c785
+      image: envoyproxy/envoy-build-ubuntu:8ca107a75ee98b255aa59db2ab40fd0800a3ce99
     steps:
       - uses: actions/checkout@v1
       - uses: actions/download-artifact@v2

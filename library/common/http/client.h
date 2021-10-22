@@ -43,10 +43,9 @@ struct HttpClientStats {
 class Client : public Logger::Loggable<Logger::Id::http> {
 public:
   Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
-         std::atomic<envoy_network_t>& preferred_network, Random::RandomGenerator& random)
+         Random::RandomGenerator& random)
       : api_listener_(api_listener), dispatcher_(dispatcher),
         stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
-        preferred_network_(preferred_network),
         address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random) {}
 
   /**
@@ -133,6 +132,8 @@ private:
     void onComplete();
     void onCancel();
     void onError();
+    void onSendWindowAvailable();
+
     // Remove the stream and clear up state if possible, else set up deferred
     // removal path.
     void removeStream();
@@ -171,14 +172,14 @@ private:
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
     envoy_stream_intel streamIntel();
+    envoy_error streamError();
 
     DirectStream& direct_stream_;
     const envoy_http_callbacks bridge_callbacks_;
     Client& http_client_;
-    absl::optional<envoy_error_code_t> error_code_;
-    absl::optional<envoy_data> error_message_;
-    absl::optional<int32_t> error_attempt_count_;
+    absl::optional<envoy_error> error_;
     bool success_{};
+
     // Buffered response data when in explicit flow control mode.
     Buffer::InstancePtr response_data_;
     ResponseTrailerMapPtr response_trailers_;
@@ -217,14 +218,21 @@ private:
       return parent_.address_;
     }
     absl::string_view responseDetails() override { return response_details_; }
-    // TODO: https://github.com/lyft/envoy-mobile/issues/825
-    void readDisable(bool /*disable*/) override {}
+    // This is called any time upstream buffers exceed the configured flow
+    // control limit, to attempt halt the flow of data from the mobile client
+    // or to resume the flow of data when buffers have been drained.
+    //
+    // It only has an effect in explicit flow control mode, where when all buffers are drained,
+    // on_send_window_available callbacks are called.
+    void readDisable(bool disable) override;
     uint32_t bufferLimit() override { return 65000; }
     // Not applicable
     void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
-      PANIC("buffer accounts unsupported");
+      // Acounting became default in https://github.com/envoyproxy/envoy/pull/17702 but is a no=op.
     }
     void setFlushTimeout(std::chrono::milliseconds) override {}
+
+    const StreamInfo::BytesMeterSharedPtr& bytesMeter() override { return bytes_meter_; }
 
     // ScopeTrackedObject
     void dumpState(std::ostream& os, int indent_level = 0) const override;
@@ -232,6 +240,9 @@ private:
     void setResponseDetails(absl::string_view response_details) {
       response_details_ = response_details;
     }
+
+    // Saves latest "Intel" data as it may not be available when accessed.
+    void saveLatestStreamIntel();
 
     const envoy_stream_t stream_handle_;
 
@@ -242,6 +253,13 @@ private:
     Client& parent_;
     // Response details used by the connection manager.
     absl::string_view response_details_;
+    // Tracks read disable calls. Different buffers can call read disable, and
+    // the stack should not consider itself "ready to write" until all
+    // read-disable calls have been unwound.
+    uint32_t read_disable_count_{};
+    // Set true in explicit flow control mode if the library has sent body data and may want to
+    // send more when buffer is available.
+    bool wants_write_notification_{};
     // True if the bridge should operate in explicit flow control mode.
     //
     // In this mode only one callback can be sent to the bridge until more is
@@ -251,6 +269,9 @@ private:
     // back, avoids excessive buffering of response bodies if the response body is
     // read faster than the mobile caller can process it.
     bool explicit_flow_control_ = false;
+    // Latest intel data retrieved from the StreamInfo.
+    envoy_stream_intel stream_intel_;
+    StreamInfo::BytesMeterSharedPtr bytes_meter_;
   };
 
   using DirectStreamSharedPtr = std::shared_ptr<DirectStream>;
@@ -285,7 +306,7 @@ private:
   };
   DirectStreamSharedPtr getStream(envoy_stream_t stream_handle, GetStreamFilters filters);
   void removeStream(envoy_stream_t stream_handle);
-  void setDestinationCluster(RequestHeaderMap& headers, bool alternate);
+  void setDestinationCluster(RequestHeaderMap& headers);
 
   ApiListener& api_listener_;
   Event::ProvisionalDispatcher& dispatcher_;
@@ -296,7 +317,6 @@ private:
   // The set of closed streams, where end stream has been received from upstream
   // but not yet communicated to the mobile library.
   absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> closed_streams_;
-  std::atomic<envoy_network_t>& preferred_network_;
   // Shared synthetic address across DirectStreams.
   Network::Address::InstanceConstSharedPtr address_;
   Random::RandomGenerator& random_;

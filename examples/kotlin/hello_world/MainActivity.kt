@@ -47,22 +47,21 @@ class MainActivity : Activity() {
 
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.DEBUG)
+      .enableInterfaceBinding(true)
       .addPlatformFilter(::DemoFilter)
       .addPlatformFilter(::BufferDemoFilter)
       .addPlatformFilter(::AsyncDemoFilter)
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
-      .addNativeFilter("envoy.filters.http.test_accessor", "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_accessor.TestAccessor\",\"accessor_name\":\"demo-accessor\",\"expected_string\":\"PlatformString\"}")
       .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .setEventTracker({
         for (entry in it.entries) {
-          Log.d("MainActivity", String.format("Event emitted: %s1, %s2", entry.key, entry.value))
+          Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
         }
       })
-      .addNativeFilter(
-        "envoy.filters.http.test_event_tracker",
-        "{\"@type\":\"type.googleapis.com/envoymobile.extensions.filters.http.test_event_tracker.TestEventTracker\",\"attributes\":{\"foo\":\"bar\"}}"
-      )
+      .setLogger {
+        Log.d("MainActivity", it)
+      }
       .build()
 
     recyclerView = findViewById(R.id.recycler_view) as RecyclerView

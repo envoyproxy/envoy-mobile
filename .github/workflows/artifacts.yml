@@ -8,7 +8,7 @@ on:
 jobs:
   main_android_dist_ci:
     name: main_android_dist_ci
-    runs-on: macOS-latest
+    runs-on: macos-11
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v1
@@ -22,12 +22,16 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - name: 'Build envoy.aar distributable'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           current_release_version=$(git describe --tag --abbrev=0)
           bazelisk build \
               --config=release-android \
               --fat_apk_cpu=x86 \
               --define=pom_version=$current_release_version \
+              --config=remote-ci-macos \
+              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
               //:android_dist_ci
       - name: 'Tar artifacts'
         run: tar -czvf envoy_mobile.tar.gz dist/envoy.aar dist/envoy-pom.xml dist/envoy-javadoc.jar dist/envoy-sources.jar
@@ -98,7 +102,7 @@ jobs:
 
   main_ios_dist:
     name: main_ios_dist
-    runs-on: macOS-latest
+    runs-on: macos-11
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v1
@@ -107,7 +111,15 @@ jobs:
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Build Envoy.framework distributable'
-        run: bazelisk build --config=release-ios --ios_multi_cpus=i386,x86_64,armv7,arm64 //:ios_dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bazelisk build \
+            --config=release-ios \
+            --ios_multi_cpus=i386,x86_64,armv7,arm64 \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //:ios_dist
       - name: 'Create temporary directory for artifact to produce properly named zip'
         run: mkdir -p dist/ios_artifact/Envoy.framework
       - name: 'Move artifact to directory for zipping'
@@ -119,7 +131,7 @@ jobs:
 
   main_ios_cocoapods:
     name: main_ios_cocoapods
-    runs-on: macOS-latest
+    runs-on: macos-11
     timeout-minutes: 45
     needs: [main_ios_dist]
     steps:

@@ -12,8 +12,14 @@ kt_jvm_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "@maven//:io_github_classgraph_classgraph",
         "@maven//:junit_junit",
     ],
+)
+
+config_setting(
+    name = "include_ifaddrs",
+    values = {"define": "include_ifaddrs=true"},
 )
 
 exports_files([
@@ -29,6 +35,11 @@ alias(
 alias(
     name = "jni",
     actual = "@bazel_tools//tools/jdk:jni",
+)
+
+alias(
+    name = "jni_header",
+    actual = "@bazel_tools//tools/jdk:jni_header",
 )
 
 # autoformat requires that there be no @bazel_tools references outside of //bazel,

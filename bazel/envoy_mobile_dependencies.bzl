@@ -18,15 +18,35 @@ filegroup(
     name = "extra_swift_srcs",
     srcs = ["empty.swift"],
     visibility = ["//visibility:public"],
+)
+
+objc_library(
+    name = "extra_private_dep",
+    module_name = "FakeDep",
+    visibility = ["//visibility:public"],
 )""")
 
 _default_extra_swift_sources = repository_rule(
     implementation = _default_extra_swift_sources_impl,
 )
 
+def _default_extra_jni_deps_impl(ctx):
+    ctx.file("WORKSPACE", "")
+    ctx.file("BUILD.bazel", """
+cc_library(
+    name = "extra_jni_dep",
+    visibility = ["//visibility:public"],
+)""")
+
+_default_extra_jni_deps = repository_rule(
+    implementation = _default_extra_jni_deps_impl,
+)
+
 def envoy_mobile_dependencies():
     if not native.existing_rule("envoy_mobile_extra_swift_sources"):
         _default_extra_swift_sources(name = "envoy_mobile_extra_swift_sources")
+    if not native.existing_rule("envoy_mobile_extra_jni_deps"):
+        _default_extra_jni_deps(name = "envoy_mobile_extra_jni_deps")
 
     swift_dependencies()
     kotlin_dependencies()
@@ -45,6 +65,9 @@ def kotlin_dependencies():
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
             "androidx.recyclerview:recyclerview:1.1.0",
             "androidx.core:core:1.3.2",
+            # Dokka
+            "org.jetbrains.dokka:dokka-cli:1.5.31",
+            "org.jetbrains.dokka:javadoc-plugin:1.5.31",
             # Test artifacts
             "org.assertj:assertj-core:3.12.0",
             "junit:junit:4.12",
@@ -52,6 +75,7 @@ def kotlin_dependencies():
             "org.mockito:mockito-core:2.28.2",
             "com.squareup.okhttp3:okhttp:4.9.1",
             "com.squareup.okhttp3:mockwebserver:4.9.1",
+            "io.github.classgraph:classgraph:4.8.121",
             # Android test artifacts
             "androidx.test:core:1.3.0",
             "androidx.test:rules:1.3.0",

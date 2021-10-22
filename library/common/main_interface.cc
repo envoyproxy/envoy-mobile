@@ -3,17 +3,18 @@
 #include <atomic>
 #include <string>
 
+#include "absl/synchronization/notification.h"
 #include "library/common/api/external.h"
 #include "library/common/engine.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/http/client.h"
+#include "library/common/network/configurator.h"
 
 // NOLINT(namespace-envoy)
 
 static Envoy::EngineSharedPtr strong_engine_;
 static Envoy::EngineWeakPtr engine_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
-static std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
 
 static std::shared_ptr<Envoy::Engine> engine() {
   // TODO(goaway): enable configurable heap-based allocation
@@ -87,7 +88,13 @@ envoy_status_t reset_stream(envoy_stream_t stream) {
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
-  preferred_network_.store(network);
+  envoy_netconf_t configuration_key = Envoy::Network::Configurator::setPreferredNetwork(network);
+  if (auto e = engine()) {
+    e->dispatcher().post([configuration_key]() -> void {
+      if (auto e = engine())
+        e->networkConfigurator().refreshDns(configuration_key);
+    });
+  }
   return ENVOY_SUCCESS;
 }
 
@@ -157,6 +164,63 @@ envoy_status_t record_histogram_value(envoy_engine_t, const char* elements, envo
   return ENVOY_FAILURE;
 }
 
+namespace {
+struct AdminCallContext {
+  envoy_status_t status_{};
+  envoy_data response_{};
+
+  absl::Mutex mutex_{};
+  absl::Notification data_received_{};
+};
+
+absl::optional<envoy_data> blockingAdminCall(absl::string_view path, absl::string_view method,
+                                             std::chrono::milliseconds timeout) {
+  if (auto e = engine()) {
+    // Use a shared ptr here so that we can safely exit this scope in case of a timeout,
+    // allowing the dispatched lambda to clean itself up when it's done.
+    auto context = std::make_shared<AdminCallContext>();
+    const auto status = e->dispatcher().post(
+        [context, path = std::string(path), method = std::string(method)]() -> void {
+          if (auto e = engine()) {
+            absl::MutexLock lock(&context->mutex_);
+
+            context->status_ = e->makeAdminCall(path, method, context->response_);
+            context->data_received_.Notify();
+          }
+        });
+
+    if (status == ENVOY_FAILURE) {
+      return {};
+    }
+
+    if (context->data_received_.WaitForNotificationWithTimeout(
+            absl::Milliseconds(timeout.count()))) {
+      absl::MutexLock lock(&context->mutex_);
+
+      if (context->status_ == ENVOY_FAILURE) {
+        return {};
+      }
+
+      return context->response_;
+    } else {
+      ENVOY_LOG_MISC(warn, "timed out waiting for admin response");
+    }
+  }
+
+  return {};
+}
+} // namespace
+
+envoy_status_t dump_stats(envoy_engine_t, envoy_data* out) {
+  auto maybe_data = blockingAdminCall("/stats?usedonly", "GET", std::chrono::milliseconds(100));
+  if (maybe_data) {
+    *out = *maybe_data;
+    return ENVOY_SUCCESS;
+  }
+
+  return ENVOY_FAILURE;
+}
+
 void flush_stats(envoy_engine_t) {
   if (auto e = engine()) {
     e->dispatcher().post([]() {
@@ -176,8 +240,7 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
                            envoy_event_tracker event_tracker) {
   // TODO(goaway): return new handle once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  strong_engine_ =
-      std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker, preferred_network_);
+  strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker);
   engine_ = strong_engine_;
   return 1;
 }
@@ -185,7 +248,6 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
 envoy_status_t run_engine(envoy_engine_t, const char* config, const char* log_level) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-
   if (auto e = engine()) {
     e->run(config, log_level);
     return ENVOY_SUCCESS;
@@ -199,4 +261,18 @@ void terminate_engine(envoy_engine_t) {
   auto e = strong_engine_;
   strong_engine_.reset();
   e->terminate();
+}
+
+envoy_status_t drain_connections(envoy_engine_t) {
+  // This will change once multiple engine support is in place.
+  // https://github.com/lyft/envoy-mobile/issues/332
+  if (auto e = engine()) {
+    e->dispatcher().post([]() {
+      if (auto e = engine()) {
+        e->drainConnections();
+      }
+    });
+    return ENVOY_SUCCESS;
+  }
+  return ENVOY_FAILURE;
 }

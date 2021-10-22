@@ -12,6 +12,7 @@ envoy_cc_library(
     hdrs = ["extension_registry.h"],
     repository = "@envoy",
     deps = [
+        "extension_registry_platform_additions",
         "@envoy//source/common/network:socket_lib",
         "@envoy//source/common/upstream:logical_dns_cluster_lib",
         "@envoy//source/extensions/clusters/dynamic_forward_proxy:cluster",
@@ -29,9 +30,23 @@ envoy_cc_library(
         "@envoy//source/extensions/upstreams/http/generic:config",
         "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
         "@envoy_mobile//library/common/extensions/filters/http/local_error:config",
+        "@envoy_mobile//library/common/extensions/filters/http/network_configuration:config",
         "@envoy_mobile//library/common/extensions/filters/http/platform_bridge:config",
         "@envoy_mobile//library/common/extensions/filters/http/route_cache_reset:config",
-        "@envoy_mobile//library/common/extensions/filters/http/test_accessor:config",
-        "@envoy_mobile//library/common/extensions/filters/http/test_event_tracker:config",
+        "@envoy_mobile//library/common/extensions/retry/options/network_configuration:config",
     ],
+)
+
+envoy_cc_library(
+    name = "extension_registry_platform_additions",
+    srcs = select({
+        "@envoy//bazel:apple": ["extension_registry_apple.cc"],
+        "//conditions:default": ["extension_registry_noop.cc"],
+    }),
+    hdrs = ["extension_registry_platform_additions.h"],
+    repository = "@envoy",
+    deps = select({
+        "@envoy//bazel:apple": ["@envoy//source/extensions/network/dns_resolver/apple:config"],
+        "//conditions:default": [],
+    }),
 )

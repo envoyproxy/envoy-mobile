@@ -36,7 +36,7 @@ After the stream client is obtained, it should be stored and used to start netwo
 This type is used to configure an instance of ``Engine`` before finally
 creating the engine using ``.build()``.
 
-Available builders are 1:1 between iOS/Android, and are documented below.
+Available builders are nearly all 1:1 between iOS/Android, and are documented below.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``addConnectTimeoutSeconds``
@@ -174,7 +174,7 @@ Specify the rate at which Envoy Mobile should flush its queued stats.
 
 Specifies the length of time a stream should wait without a headers or data event before timing out.
 Defaults to 15 seconds.
-See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-idle-timeout>`_
+See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#envoy-v3-api-field-extensions-filters-network-http-connection-manager-v3-httpconnectionmanager-stream-idle-timeout>`__
 for further information.
 
 **Example**::
@@ -184,6 +184,23 @@ for further information.
 
   // Swift
   builder.addStreamIdleTimeoutSeconds(5)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addPerTryIdleTimeoutSeconds``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specifies the length of time a retry (including the initial attempt) should wait without a headers
+or data event before timing out. Defaults to 15 seconds.
+See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/route/v3/route_components.proto.html#config-route-v3-retrypolicy>`__
+for further information.
+
+**Example**::
+
+  // Kotlin
+  builder.addPerTryIdleTimeoutSeconds(5L)
+
+  // Swift
+  builder.addPerTryIdleTimeoutSeconds(5)
 
 ~~~~~~~~~~~~~~~~~
 ``addAppVersion``
@@ -321,6 +338,25 @@ Specify a closure to be called by Envoy to access arbitrary strings from Platfor
 
   // Swift
   builder.addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableNetworkPathMonitor``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Configure the engine to use ``NWPathMonitor`` rather than ``SCNetworkReachability``
+on supported platforms (iOS 12+) to update the preferred Envoy network cluster (e.g. WLAN vs WWAN).
+
+.. attention::
+
+    Only available on iOS 12 or later.
+
+**Example**::
+
+  // Kotlin
+  // N/A
+
+  // Swift
+  builder.enableNetworkPathMonitor()
 
 ----------------------
 Advanced configuration

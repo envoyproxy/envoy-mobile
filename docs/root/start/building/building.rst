@@ -55,8 +55,7 @@ See `ci/mac_ci_setup.sh` for the specific NDK version used during builds.
 iOS requirements
 ----------------
 
-- Xcode 12.4
-- Swift 5.x
+- Xcode 13.0
 - Note: Requirements are listed in the :repo:`.bazelrc file <.bazelrc>` and CI scripts
 
 .. _android_aar:

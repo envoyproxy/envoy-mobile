@@ -301,8 +301,12 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) UInt32 dnsFailureRefreshSecondsMax;
 @property (nonatomic, assign) UInt32 dnsQueryTimeoutSeconds;
 @property (nonatomic, strong) NSString *dnsPreresolveHostnames;
+@property (nonatomic, assign) BOOL enableInterfaceBinding;
+@property (nonatomic, assign) UInt32 h2ConnectionKeepaliveIdleIntervalMilliseconds;
+@property (nonatomic, assign) UInt32 h2ConnectionKeepaliveTimeoutSeconds;
 @property (nonatomic, assign) UInt32 statsFlushSeconds;
 @property (nonatomic, assign) UInt32 streamIdleTimeoutSeconds;
+@property (nonatomic, assign) UInt32 perTryIdleTimeoutSeconds;
 @property (nonatomic, strong) NSString *appVersion;
 @property (nonatomic, strong) NSString *appId;
 @property (nonatomic, strong) NSString *virtualClusters;
@@ -315,26 +319,33 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /**
  Create a new instance of the configuration.
  */
-- (instancetype)
-    initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
-                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
-            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
-                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
-     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
-      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
-           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
-           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
-                statsFlushSeconds:(UInt32)statsFlushSeconds
-         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
-                       appVersion:(NSString *)appVersion
-                            appId:(NSString *)appId
-                  virtualClusters:(NSString *)virtualClusters
-           directResponseMatchers:(NSString *)directResponseMatchers
-                  directResponses:(NSString *)directResponses
-                nativeFilterChain:(NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
-              platformFilterChain:(NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
-                  stringAccessors:
-                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)stringAccessors;
+- (instancetype)initWithAdminInterfaceEnabled:(BOOL)adminInterfaceEnabled
+                                  GrpcStatsDomain:(nullable NSString *)grpcStatsDomain
+                            connectTimeoutSeconds:(UInt32)connectTimeoutSeconds
+                                dnsRefreshSeconds:(UInt32)dnsRefreshSeconds
+                     dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
+                      dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
+                           dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+                           dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                           enableInterfaceBinding:(BOOL)enableInterfaceBinding
+    h2ConnectionKeepaliveIdleIntervalMilliseconds:
+        (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
+              h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
+                                statsFlushSeconds:(UInt32)statsFlushSeconds
+                         streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
+                         perTryIdleTimeoutSeconds:(UInt32)perTryIdleTimeoutSeconds
+                                       appVersion:(NSString *)appVersion
+                                            appId:(NSString *)appId
+                                  virtualClusters:(NSString *)virtualClusters
+                           directResponseMatchers:(NSString *)directResponseMatchers
+                                  directResponses:(NSString *)directResponses
+                                nativeFilterChain:
+                                    (NSArray<EnvoyNativeFilterConfig *> *)nativeFilterChain
+                              platformFilterChain:
+                                  (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
+                                  stringAccessors:
+                                      (NSDictionary<NSString *, EnvoyStringAccessor *> *)
+                                          stringAccessors;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -374,10 +385,13 @@ extern const int kEnvoyFailure;
  running.
  @param logger Logging interface.
  @param eventTracker Event tracking interface.
+ @param enableNetworkPathMonitor Configure the engine to use `NWPathMonitor` to observe network
+ reachability.
  */
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
-                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker;
+                           eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
+               enableNetworkPathMonitor:(BOOL)enableNetworkPathMonitor;
 /**
  Run the Envoy engine with the provided configuration and log level.
 
@@ -462,9 +476,20 @@ extern const int kEnvoyFailure;
  */
 - (int)recordHistogramValue:(NSString *)elements tags:(EnvoyTags *)tags value:(NSUInteger)value;
 
+/**
+ Attempt to trigger a stat flush.
+ */
 - (void)flushStats;
 
+/**
+ Retrieve the value of all active stats. Note that this function may block for some time.
+ @return The list of active stats and their values, or empty string of the operation failed
+ */
+- (NSString *)dumpStats;
+
 - (void)terminate;
+
+- (void)drainConnections;
 
 @end
 
@@ -496,9 +521,15 @@ extern const int kEnvoyFailure;
 // Monitors network changes in order to update Envoy network cluster preferences.
 @interface EnvoyNetworkMonitor : NSObject
 
-// Start monitoring reachability, updating the preferred Envoy network cluster on changes.
+// Start monitoring reachability using `SCNetworkReachability`, updating the
+// preferred Envoy network cluster on changes.
 // This is typically called by `EnvoyEngine` automatically on startup.
 + (void)startReachabilityIfNeeded;
+
+// Start monitoring reachability using `NWPathMonitor`, updating the
+// preferred Envoy network cluster on changes.
+// This is typically called by `EnvoyEngine` automatically on startup.
++ (void)startPathMonitorIfNeeded API_AVAILABLE(ios(12));
 
 @end
 

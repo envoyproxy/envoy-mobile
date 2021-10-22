@@ -53,6 +53,7 @@ public:
     uint32_t on_complete_calls;
     uint32_t on_error_calls;
     uint32_t on_cancel_calls;
+    uint32_t on_send_window_available_calls;
     std::string expected_status_;
     bool end_stream_with_headers_;
     std::string body_data_;
@@ -92,6 +93,11 @@ public:
     bridge_callbacks_.on_cancel = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_cancel_calls++;
+      return nullptr;
+    };
+    bridge_callbacks_.on_send_window_available = [](envoy_stream_intel, void* context) -> void* {
+      callbacks_called* cc = static_cast<callbacks_called*>(context);
+      cc->on_send_window_available_calls++;
       return nullptr;
     };
     bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
@@ -139,104 +145,17 @@ public:
   ResponseEncoder* response_encoder_{};
   NiceMock<Event::MockProvisionalDispatcher> dispatcher_;
   envoy_http_callbacks bridge_callbacks_;
-  callbacks_called cc_ = {0, 0, 0, 0, 0, 0, "200", true, ""};
-  std::atomic<envoy_network_t> preferred_network_{ENVOY_NET_GENERIC};
-  uint64_t alt_cluster_ = 0;
+  callbacks_called cc_ = {0, 0, 0, 0, 0, 0, 0, "200", true, ""};
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
   bool explicit_flow_control_{GetParam()};
-  Client http_client_{api_listener_, dispatcher_, stats_store_, preferred_network_, random_};
+  Client http_client_{api_listener_, dispatcher_, stats_store_, random_};
   envoy_stream_t stream_ = 1;
 };
 
 INSTANTIATE_TEST_SUITE_P(TestModes, ClientTest, ::testing::Bool());
 
-TEST_P(ClientTest, SetDestinationCluster) {
-  ON_CALL(random_, random()).WillByDefault(ReturnPointee(&alt_cluster_));
-
-  // Create a stream, and set up request_decoder_ and response_encoder_
-  createStream();
-
-  // Send request headers. Sending multiple headers is illegal and the upstream codec would not
-  // accept it. However, given we are just trying to test preferred network headers and using mocks
-  // this is fine.
-
-  TestRequestHeaderMapImpl headers1;
-  HttpTestUtility::addDefaultHeaders(headers1);
-  headers1.setScheme("https");
-  envoy_headers c_headers1 = Utility::toBridgeHeaders(headers1);
-
-  preferred_network_.store(ENVOY_NET_GENERIC);
-
-  TestRequestHeaderMapImpl expected_headers1{
-      {":scheme", "https"},
-      {":method", "GET"},
-      {":authority", "host"},
-      {":path", "/"},
-      {"x-envoy-mobile-cluster", "base"},
-      {"x-forwarded-proto", "https"},
-  };
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers1), false));
-  http_client_.sendHeaders(stream_, c_headers1, false);
-
-  TestRequestHeaderMapImpl headers2;
-  HttpTestUtility::addDefaultHeaders(headers2);
-  headers2.setScheme("https");
-  envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
-
-  preferred_network_.store(ENVOY_NET_WLAN);
-  alt_cluster_ = 1;
-
-  TestRequestHeaderMapImpl expected_headers2{
-      {":scheme", "https"},
-      {":method", "GET"},
-      {":authority", "host"},
-      {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wlan_alt"},
-      {"x-forwarded-proto", "https"},
-  };
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
-  http_client_.sendHeaders(stream_, c_headers2, false);
-
-  TestRequestHeaderMapImpl headers3;
-  HttpTestUtility::addDefaultHeaders(headers3);
-  headers3.setScheme("https");
-  envoy_headers c_headers3 = Utility::toBridgeHeaders(headers3);
-
-  preferred_network_.store(ENVOY_NET_WWAN);
-  alt_cluster_ = 0;
-
-  TestRequestHeaderMapImpl expected_headers3{
-      {":scheme", "https"},
-      {":method", "GET"},
-      {":authority", "host"},
-      {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wwan"},
-      {"x-forwarded-proto", "https"},
-  };
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
-  http_client_.sendHeaders(stream_, c_headers3, true);
-
-  // Encode response headers.
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  TestResponseHeaderMapImpl response_headers{{":status", "200"}};
-  response_encoder_->encodeHeaders(response_headers, true);
-  ASSERT_EQ(cc_.on_headers_calls, 1);
-  // Ensure that the callbacks on the bridge_callbacks_ were called.
-  ASSERT_EQ(cc_.on_complete_calls, 1);
-}
-
 TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
-  ON_CALL(random_, random()).WillByDefault(ReturnPointee(&alt_cluster_));
-
   // Create a stream, and set up request_decoder_ and response_encoder_
   createStream();
 
@@ -249,15 +168,12 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
   headers1.setScheme("https");
   envoy_headers c_headers1 = Utility::toBridgeHeaders(headers1);
 
-  preferred_network_.store(ENVOY_NET_GENERIC);
-  alt_cluster_ = 1;
-
   TestResponseHeaderMapImpl expected_headers1{
       {":scheme", "https"},
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_h2_alt"},
+      {"x-envoy-mobile-cluster", "base_h2"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -265,63 +181,18 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
   EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers1), false));
   http_client_.sendHeaders(stream_, c_headers1, false);
 
-  TestRequestHeaderMapImpl headers2{{"x-envoy-mobile-upstream-protocol", "http2"}};
-  HttpTestUtility::addDefaultHeaders(headers2);
-  headers2.setScheme("https");
-  envoy_headers c_headers2 = Utility::toBridgeHeaders(headers2);
-
-  preferred_network_.store(ENVOY_NET_WLAN);
-  alt_cluster_ = 0;
-
-  TestResponseHeaderMapImpl expected_headers2{
-      {":scheme", "https"},
-      {":method", "GET"},
-      {":authority", "host"},
-      {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wlan_h2"},
-      {"x-forwarded-proto", "https"},
-  };
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers2), false));
-  http_client_.sendHeaders(stream_, c_headers2, false);
-
-  TestRequestHeaderMapImpl headers3{{"x-envoy-mobile-upstream-protocol", "http2"}};
-  HttpTestUtility::addDefaultHeaders(headers3);
-  headers3.setScheme("https");
-  envoy_headers c_headers3 = Utility::toBridgeHeaders(headers3);
-
-  preferred_network_.store(ENVOY_NET_WWAN);
-  alt_cluster_ = 1;
-
-  TestResponseHeaderMapImpl expected_headers3{
-      {":scheme", "https"},
-      {":method", "GET"},
-      {":authority", "host"},
-      {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wwan_h2_alt"},
-      {"x-forwarded-proto", "https"},
-  };
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers3), true));
-  http_client_.sendHeaders(stream_, c_headers3, true);
-
   // Setting ALPN
   TestRequestHeaderMapImpl headers_alpn{{"x-envoy-mobile-upstream-protocol", "alpn"}};
   HttpTestUtility::addDefaultHeaders(headers_alpn);
   headers_alpn.setScheme("https");
   envoy_headers c_headers_alpn = Utility::toBridgeHeaders(headers_alpn);
 
-  preferred_network_.store(ENVOY_NET_WWAN);
-  alt_cluster_ = 1;
-
   TestResponseHeaderMapImpl expected_headers_alpn{
       {":scheme", "https"},
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wwan_alpn_alt"},
+      {"x-envoy-mobile-cluster", "base_alpn"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -335,15 +206,12 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
   headers4.setScheme("https");
   envoy_headers c_headers4 = Utility::toBridgeHeaders(headers4);
 
-  preferred_network_.store(ENVOY_NET_WWAN);
-  alt_cluster_ = 0;
-
   TestResponseHeaderMapImpl expected_headers4{
       {":scheme", "https"},
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_wwan"},
+      {"x-envoy-mobile-cluster", "base"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -488,12 +356,16 @@ TEST_P(ClientTest, MultipleDataStream) {
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body"), false));
   http_client_.sendData(stream_, c_data, false);
+  // The buffer is not full: expect an on_send_window_available call in explicit_flow_control mode.
+  EXPECT_EQ(cc_.on_send_window_available_calls, explicit_flow_control_ ? 1 : 0);
 
   // Send second request data.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
   EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(request_decoder_, decodeData(BufferStringEqual("request body2"), true));
   http_client_.sendData(stream_, c_data2, true);
+  // The stream is done: no further on_send_window_available calls should happen.
+  EXPECT_EQ(cc_.on_send_window_available_calls, explicit_flow_control_ ? 1 : 0);
 
   // Encode response headers and data.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(3);
@@ -570,7 +442,7 @@ TEST_P(ClientTest, MultipleStreams) {
   ON_CALL(request_decoder2, streamInfo()).WillByDefault(ReturnRef(stream_info_));
   ResponseEncoder* response_encoder2{};
   envoy_http_callbacks bridge_callbacks_2;
-  callbacks_called cc2 = {0, 0, 0, 0, 0, 0, "200", true, ""};
+  callbacks_called cc2 = {0, 0, 0, 0, 0, 0, 0, "200", true, ""};
   bridge_callbacks_2.context = &cc2;
   bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
                                      void* context) -> void* {
@@ -628,61 +500,7 @@ TEST_P(ClientTest, MultipleStreams) {
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
-TEST_P(ClientTest, EnvoyLocalReplyNotAnError) {
-  cc_.expected_status_ = "503";
-
-  envoy_headers c_headers = defaultRequestHeaders();
-
-  // Create a stream, and set up request_decoder_ and response_encoder_
-  createStream();
-
-  // Send request headers.
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
-  http_client_.sendHeaders(stream_, c_headers, true);
-
-  // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
-  // 503 should have an ENVOY_CONNECTION_FAILURE error code.
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  TestResponseHeaderMapImpl response_headers{{":status", "503"}};
-  response_encoder_->encodeHeaders(response_headers, true);
-  // Ensure that the callbacks on the bridge_callbacks_ were called.
-  ASSERT_EQ(cc_.on_headers_calls, 1);
-  ASSERT_EQ(cc_.on_complete_calls, 1);
-  ASSERT_EQ(cc_.on_error_calls, 0);
-}
-
-TEST_P(ClientTest, EnvoyLocalReplyNon503NotAnError) {
-  cc_.expected_status_ = "504";
-
-  // Create a stream, and set up request_decoder_ and response_encoder_
-  createStream();
-
-  // Send request headers.
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  envoy_headers c_headers = defaultRequestHeaders();
-  EXPECT_CALL(request_decoder_, decodeHeaders_(_, true));
-  http_client_.sendHeaders(stream_, c_headers, true);
-
-  // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
-  // non-503 should have an ENVOY_UNDEFINED_ERROR error code.
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
-  EXPECT_CALL(dispatcher_, popTrackedObject(_));
-  EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  TestResponseHeaderMapImpl response_headers{{":status", "504"}};
-  response_encoder_->encodeHeaders(response_headers, true);
-  // Ensure that the callbacks on the bridge_callbacks_ were called.
-  ASSERT_EQ(cc_.on_headers_calls, 1);
-  ASSERT_EQ(cc_.on_complete_calls, 1);
-  ASSERT_EQ(cc_.on_error_calls, 0);
-}
-
-TEST_P(ClientTest, EnvoyResponseWithErrorCode) {
-  cc_.expected_status_ = "218";
+TEST_P(ClientTest, EnvoyLocalError) {
   // Override the on_error default with some custom checks.
   bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
     EXPECT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
@@ -705,16 +523,13 @@ TEST_P(ClientTest, EnvoyResponseWithErrorCode) {
 
   // Encode response headers. A non-200 code triggers an on_error callback chain. In particular, a
   // 503 should have an ENVOY_CONNECTION_FAILURE error code.
-  EXPECT_CALL(dispatcher_, pushTrackedObject(_)).Times(2);
-  EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(2);
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
-  TestResponseHeaderMapImpl response_headers{
-      {":status", "218"},
-      {"x-internal-error-code", std::to_string(ENVOY_CONNECTION_FAILURE)},
-      {"x-internal-error-message", "no internet"},
-      {"x-envoy-attempt-count", "123"},
-  };
-  response_encoder_->encodeHeaders(response_headers, true);
+  stream_info_.setResponseCode(503);
+  stream_info_.setResponseCodeDetails("nope");
+  stream_info_.setAttemptCount(123);
+  response_encoder_->getStream().resetStream(Http::StreamResetReason::ConnectionFailure);
   ASSERT_EQ(cc_.on_headers_calls, 0);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
   ASSERT_EQ(cc_.on_complete_calls, 0);
@@ -763,7 +578,7 @@ TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
     EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
     EXPECT_EQ(error.message.length, 0);
-    EXPECT_EQ(error.attempt_count, -1);
+    EXPECT_EQ(error.attempt_count, 0);
     // This will use envoy_noop_release.
     release_envoy_error(error);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
