@@ -7,10 +7,14 @@ envoy_package()
 
 android_library(
     name = "testing",
+    testonly = True,
     srcs = [
         "QuicTestServer.java",
     ],
-    data = glob(["data/*"]),
+    data = glob(["data/*"]) + [
+        "//test/common/jni:libquic_test_server_jni.jnilib",
+        "//test/common/jni:libquic_test_server_jni.so",
+    ],
     visibility = ["//test:__subpackages__"],
     deps = [
         "//test/java/org/chromium/net/testing",
@@ -26,8 +30,6 @@ envoy_mobile_android_test(
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
-        "//test/common/jni:libquic_test_server_jni.so",
-        "//test/common/jni:libquic_test_server_jni.jnilib",
     ],
     deps = [
         ":testing",

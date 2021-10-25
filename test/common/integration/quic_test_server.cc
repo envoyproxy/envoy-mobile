@@ -90,9 +90,6 @@ QuicTestServer::QuicTestServer()
 
 void QuicTestServer::startQuicTestServer() {
   // pre-setup: see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
-  Thread::TestThread test_thread;
-  ProcessWide process_wide;
-  Thread::MutexBasicLockable lock;
   Logger::Context logging_state(spdlog::level::level_enum::err,
                                 "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false, false);
   // end pre-setup

@@ -8,6 +8,7 @@
 #include "envoy/extensions/transport_sockets/quic/v3/quic_transport.pb.h"
 #include "test/mocks/server/transport_socket_factory_context.h"
 #include "test/integration/autonomous_upstream.h"
+#include "test/config/utility.h"
 
 namespace Envoy {
 class QuicTestServer {
@@ -20,6 +21,9 @@ private:
   std::unique_ptr<AutonomousUpstream> upstream_;
   FakeUpstreamConfig upstream_config_;
   int port_;
+  Thread::TestThread test_thread_;
+  ProcessWide process_wide;
+  Thread::MutexBasicLockable lock;
 
   Network::TransportSocketFactoryPtr createUpstreamTlsContext(
       testing::NiceMock<Server::Configuration::MockTransportSocketFactoryContext>&);

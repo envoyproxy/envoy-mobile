@@ -1,7 +1,4 @@
 #include <jni.h>
-
-#include <iostream>
-
 #include "test/common/integration/quic_test_server_interface.h"
 
 #include "library/common/jni/jni_support.h"
