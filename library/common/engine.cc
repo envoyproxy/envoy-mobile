@@ -302,9 +302,10 @@ void Engine::drainConnections() {
 
 void Engine::logInterfaces() {
   auto v4_pairs = network_configurator_->enumerateV4Interfaces();
-  std::vector<absl::string_view> v4_vec;
+  std::vector<std::string> v4_vec;
   v4_vec.resize(v4_pairs.size());
-  std::transform(v4_pairs.begin(), v4_pairs.end(), v4_vec.begin(), std::get<0, std::string>);
+  std::transform(v4_pairs.begin(), v4_pairs.end(), v4_vec.begin(),
+                 [](Network::InterfacePair& pair) { return std::get<0>(pair); });
 
   auto v4_vec_unique_end = std::unique(v4_vec.begin(), v4_vec.end());
   std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec_unique_end, std::string{},
@@ -312,7 +313,11 @@ void Engine::logInterfaces() {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
 
-  auto v6_vec = network_configurator_->enumerateV6Interfaces();
+  auto v6_pairs = network_configurator_->enumerateV6Interfaces();
+  std::vector<std::string> v6_vec;
+  v6_vec.resize(v6_pairs.size());
+  std::transform(v6_pairs.begin(), v6_pairs.end(), v6_vec.begin(),
+                 [](Network::InterfacePair& pair) { return std::get<0>(pair); });
   auto v6_vec_unique_end = std::unique(v6_vec.begin(), v6_vec.end());
   std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec_unique_end, std::string{},
                                          [](std::string acc, std::string next) {

@@ -240,8 +240,7 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
   // Android
   options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
       std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v4_pair)),
-      std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v6_pair))
-  ));
+      std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v6_pair))));
 #endif
 
   return options;
