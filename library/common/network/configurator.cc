@@ -239,9 +239,9 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
 #else
   // Android
   options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
-      envoy::config::core::v3::SocketOption::STATE_PREBIND,
-      std::make_shared<SrcAddrSocketOptionImpl>(std::get<2>(v4_pair)),
-      std::make_shared<SrcAddrSocketOptionImpl>(std::get<2>(v6_pair)));
+      std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v4_pair)),
+      std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v6_pair))
+  ));
 #endif
 
   return options;

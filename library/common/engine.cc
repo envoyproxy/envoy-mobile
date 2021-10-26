@@ -301,7 +301,11 @@ void Engine::drainConnections() {
 }
 
 void Engine::logInterfaces() {
-  auto v4_vec = network_configurator_->enumerateV4Interfaces();
+  auto v4_pairs = network_configurator_->enumerateV4Interfaces();
+  std::vector<absl::string_view> v4_vec;
+  v4_vec.resize(v4_pairs.size());
+  std::transform(v4_pairs.begin(), v4_pairs.end(), v4_vec.begin(), std::get<0, std::string>);
+
   auto v4_vec_unique_end = std::unique(v4_vec.begin(), v4_vec.end());
   std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec_unique_end, std::string{},
                                          [](std::string acc, std::string next) {
