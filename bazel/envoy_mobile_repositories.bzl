@@ -76,7 +76,7 @@ def upstream_envoy_overrides():
         sha256 = "081ed0f9f89805c2d96335c3acfa993b39a0a5b4b4cef7edb68dd2210a13458c",
         strip_prefix = "json-3.10.2",
         urls = ["https://github.com/nlohmann/json/archive/v3.10.2.tar.gz"],
-    ),
+    )
 
 def swift_repos():
     http_archive(
