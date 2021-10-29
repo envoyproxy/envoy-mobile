@@ -53,6 +53,17 @@
 #include <ifaddrs.h>
 #endif
 
+#if defined( __APPLE__)
+constexpr absl::string_view WlanPrefix = "en";
+constexpr absl::string_view WwanPrefix = "pdp_ip";
+#elif defined(__ANDROID_API__)
+constexpr absl::string_view WlanPrefix = "wlan";
+constexpr absl::string_view WwanPrefix = "rmnet";
+#else
+constexpr absl::string_view WlanPrefix = "";
+constexpr absl::string_view WwanPrefix = "";
+#endif
+
 namespace Envoy {
 namespace Network {
 
@@ -283,15 +294,31 @@ InterfacePair Configurator::getActiveAlternateInterface(envoy_network_t network,
     // WiFi should always support multicast, and will not be point-to-point.
     auto interfaces =
         enumerateInterfaces(family, IFF_UP | IFF_MULTICAST, IFF_LOOPBACK | IFF_POINTOPOINT);
-    return interfaces.size() > 0 ? interfaces[0] : std::make_pair("", nullptr);
+    for (const auto& interface : interfaces) {
+      // Look for interface with name that matches the expected prefix.
+      // TODO(goaway): This is quite brittle. It would be an improvement to:
+      //   1) Improve the scoping via flags.
+      //   2) Prioritize interfaces by prefix instead of simply filtering them.
+      if (std::get<const std::string>(interface).rfind(WlanPrefix, 0), 0) {
+        return interface;
+      }
+    }
   } else if (network == ENVOY_NET_WLAN) {
     // Network is WiFi, so look for a cellular interface.
     // Cellular networks should be point-to-point.
     auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK);
-    return interfaces.size() > 0 ? interfaces[0] : std::make_pair("", nullptr);
-  } else {
-    return std::make_pair("", nullptr);
+    for (const auto& interface : interfaces) {
+      // Look for interface with name that matches the expected prefix.
+      // TODO(goaway): This is quite brittle. It would be an improvement to:
+      //   1) Improve the scoping via flags.
+      //   2) Prioritize interfaces by prefix instead of simply filtering them.
+      if (std::get<const std::string>(interface).rfind(WwanPrefix, 0), 0) {
+        return interface;
+      }
+    }
   }
+
+  return std::make_pair("", nullptr);
 }
 
 std::vector<InterfacePair>
