@@ -3,14 +3,13 @@
 
 #include "source/common/network/utility.h"
 
-#include "library/common/network/src_addr_socket_option_impl.h"
-
 #include "test/mocks/common.h"
 #include "test/mocks/network/mocks.h"
 #include "test/test_common/printers.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "library/common/network/src_addr_socket_option_impl.h"
 
 using testing::_;
 
