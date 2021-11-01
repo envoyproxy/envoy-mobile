@@ -235,6 +235,9 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
 
 #ifdef IP_BOUND_IF
   // iOS
+  // On platforms where it exists, IP_BOUND_IF/IPV6_BOUND_IF provide a straightfoward way to bind
+  // a socket explicitly to specific interface. (The Linux alternative is SO_BINDTODEVICE, but has
+  // other restriction; see below.)
   int v4_idx = if_nametoindex(std::get<const std::string>(v4_pair).c_str());
   int v6_idx = if_nametoindex(std::get<const std::string>(v6_pair).c_str());
   options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
@@ -242,6 +245,11 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
       ENVOY_SOCKET_IPV6_BOUND_IF, v6_idx));
 #else
   // Android
+  // SO_BINDTODEVICE is defined on Android, but applying it requires root privileges (or more
+  // specifically, CAP_NET_RAW). As a workaround, this binds the socket to the interface by
+  // attaching "synthetic" socket option, which sets the socket's source address to the local
+  // address of the interface. This is not quite as precise, since it's possible that multiple
+  // interfaces share the same local address, but this is all best-effort anyways.
   options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
       std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v4_pair)),
       std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v6_pair))));
