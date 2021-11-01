@@ -104,7 +104,10 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
           network_configurator_ =
               Network::ConfiguratorFactory{server_->serverFactoryContext()}.get();
-          logInterfaces();
+          auto v4_interfaces = network_configurator_->enumerateV4Interfaces();
+          auto v6_interfaces = network_configurator_->enumerateV4Interfaces();
+          logInterfaces("netconf_get_v4_interfaces", v4_interfaces);
+          logInterfaces("netconf_get_v6_interfaces", v6_interfaces);
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -300,31 +303,18 @@ void Engine::drainConnections() {
   server_->clusterManager().drainConnections();
 }
 
-void Engine::logInterfaces() {
-  auto v4_pairs = network_configurator_->enumerateV4Interfaces();
-  std::vector<std::string> v4_vec;
-  v4_vec.resize(v4_pairs.size());
-  std::transform(v4_pairs.begin(), v4_pairs.end(), v4_vec.begin(),
+void Engine::logInterfaces(absl::string_view event, std::vector<Network::InterfacePair>& interfaces) {
+  std::vector<std::string> names;
+  names.resize(interfaces.size());
+  std::transform(interfaces.begin(), interfaces.end(), names.begin(),
                  [](Network::InterfacePair& pair) { return std::get<0>(pair); });
 
-  auto v4_vec_unique_end = std::unique(v4_vec.begin(), v4_vec.end());
-  std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec_unique_end, std::string{},
+  auto unique_end = std::unique(names.begin(), names.end());
+  std::string all_names = std::accumulate(names.begin(), unique_end, std::string{},
                                          [](std::string acc, std::string next) {
                                            return acc.empty() ? next : std::move(acc) + "," + next;
                                          });
-
-  auto v6_pairs = network_configurator_->enumerateV6Interfaces();
-  std::vector<std::string> v6_vec;
-  v6_vec.resize(v6_pairs.size());
-  std::transform(v6_pairs.begin(), v6_pairs.end(), v6_vec.begin(),
-                 [](Network::InterfacePair& pair) { return std::get<0>(pair); });
-  auto v6_vec_unique_end = std::unique(v6_vec.begin(), v6_vec.end());
-  std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec_unique_end, std::string{},
-                                         [](std::string acc, std::string next) {
-                                           return acc.empty() ? next : std::move(acc) + "," + next;
-                                         });
-  ENVOY_LOG_EVENT(debug, "netconf_get_v4_interfaces", v4_names);
-  ENVOY_LOG_EVENT(debug, "netconf_get_v6_interfaces", v6_names);
+  ENVOY_LOG_EVENT(debug, event, all_names);
 }
 
 } // namespace Envoy
