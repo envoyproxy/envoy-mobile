@@ -53,7 +53,7 @@
 #include <ifaddrs.h>
 #endif
 
-#if defined( __APPLE__)
+#if defined(__APPLE__)
 constexpr absl::string_view WlanPrefix = "en";
 constexpr absl::string_view WwanPrefix = "pdp_ip";
 #elif defined(__ANDROID_API__)
