@@ -235,7 +235,7 @@ Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_
 
 #ifdef IP_BOUND_IF
   // iOS
-  // On platforms where it exists, IP_BOUND_IF/IPV6_BOUND_IF provide a straightfoward way to bind
+  // On platforms where it exists, IP_BOUND_IF/IPV6_BOUND_IF provide a straightforward way to bind
   // a socket explicitly to specific interface. (The Linux alternative is SO_BINDTODEVICE, but has
   // other restriction; see below.)
   int v4_idx = if_nametoindex(std::get<const std::string>(v4_pair).c_str());
