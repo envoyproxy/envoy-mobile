@@ -303,7 +303,8 @@ void Engine::drainConnections() {
   server_->clusterManager().drainConnections();
 }
 
-void Engine::logInterfaces(absl::string_view event, std::vector<Network::InterfacePair>& interfaces) {
+void Engine::logInterfaces(absl::string_view event,
+                           std::vector<Network::InterfacePair>& interfaces) {
   std::vector<std::string> names;
   names.resize(interfaces.size());
   std::transform(interfaces.begin(), interfaces.end(), names.begin(),
@@ -311,9 +312,9 @@ void Engine::logInterfaces(absl::string_view event, std::vector<Network::Interfa
 
   auto unique_end = std::unique(names.begin(), names.end());
   std::string all_names = std::accumulate(names.begin(), unique_end, std::string{},
-                                         [](std::string acc, std::string next) {
-                                           return acc.empty() ? next : std::move(acc) + "," + next;
-                                         });
+                                          [](std::string acc, std::string next) {
+                                            return acc.empty() ? next : std::move(acc) + "," + next;
+                                          });
   ENVOY_LOG_EVENT(debug, event, all_names);
 }
 

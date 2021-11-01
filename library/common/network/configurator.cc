@@ -226,8 +226,10 @@ Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t 
 Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_network_t network) {
   auto v4_pair = getActiveAlternateInterface(network, AF_INET);
   auto v6_pair = getActiveAlternateInterface(network, AF_INET6);
-  ENVOY_LOG(debug, "found active alternate interface (ipv4): {} {}", std::get<0>(v4_pair), std::get<1>(v4_pair));
-  ENVOY_LOG(debug, "found active alternate interface (ipv6): {} {}", std::get<0>(v6_pair), std::get<1>(v6_pair));
+  ENVOY_LOG(debug, "found active alternate interface (ipv4): {} {}", std::get<0>(v4_pair),
+            std::get<1>(v4_pair));
+  ENVOY_LOG(debug, "found active alternate interface (ipv6): {} {}", std::get<0>(v6_pair),
+            std::get<1>(v6_pair));
 
   auto options = std::make_shared<Socket::Options>();
 
