@@ -72,10 +72,11 @@ def upstream_envoy_overrides():
     http_archive(
         name = "com_github_nlohmann_json",
         # 3.10.4 introduced incompatible changes with Envoy Mobile. Until Envoy Mobile updates it's
-        # minimum iOS version to 13+ this dependency cannot be updated.
+        # minimum iOS version to 13+ this dependency needs to be patched.
+        patches = ["@envoy_mobile//bazel:json.patch"],
         sha256 = "081ed0f9f89805c2d96335c3acfa993b39a0a5b4b4cef7edb68dd2210a13458c",
-        strip_prefix = "json-3.10.2",
-        urls = ["https://github.com/nlohmann/json/archive/v3.10.2.tar.gz"],
+        strip_prefix = "json-3.10.4",
+        urls = ["https://github.com/nlohmann/json/archive/v3.10.4.tar.gz"],
         build_file = "@envoy//bazel/external:json.BUILD",
     )
 
