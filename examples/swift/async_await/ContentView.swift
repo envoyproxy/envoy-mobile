@@ -79,7 +79,9 @@ private extension StreamClient {
                    let firstContentLength = contentLengthValue.first,
                    let contentLengthInt = Int64(firstContentLength)
                 {
-                    logger("Uploaded \(ByteCountFormatter().string(fromByteCount: contentLengthInt)) of data")
+                    let formattedByteCount = ByteCountFormatter()
+                        .string(fromByteCount: contentLengthInt)
+                    logger("Uploaded \(formattedByteCount) of data")
                     return
                 }
 
@@ -111,6 +113,6 @@ private extension Data {
 // MARK: - Networking Concurrent Queue
 
 private extension DispatchQueue {
-    static let networking = DispatchQueue(label: "com.lyft.envoymobile.networking", qos: .userInitiated,
-                                          attributes: .concurrent)
+    static let networking = DispatchQueue(label: "com.lyft.envoymobile.networking",
+                                          qos: .userInitiated, attributes: .concurrent)
 }
