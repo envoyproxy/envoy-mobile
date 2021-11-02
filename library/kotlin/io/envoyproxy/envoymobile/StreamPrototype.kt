@@ -46,9 +46,9 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
   }
 
   /**
-   * Specifies how to determine the length of data to send for a given ByteBuffer.
+   * Specify how to determine the length of data to send for a given ByteBuffer.
    *
-   * @param enabled Use ByteBuffer postion when true, otherwise use its capacity.
+   * @param enabled Use ByteBuffer's position when true, otherwise use its capacity.
    */
   fun setUseByteBufferPosition(enabled: Boolean): StreamPrototype {
     this.useByteBufferPosition = enabled
