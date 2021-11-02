@@ -90,7 +90,7 @@ jobs:
         name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app
+        run: bazelisk build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/async_await:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
       - env:
