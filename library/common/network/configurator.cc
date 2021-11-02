@@ -299,7 +299,7 @@ InterfacePair Configurator::getActiveAlternateInterface(envoy_network_t network,
       // TODO(goaway): This is quite brittle. It would be an improvement to:
       //   1) Improve the scoping via flags.
       //   2) Prioritize interfaces by prefix instead of simply filtering them.
-      if (std::get<const std::string>(interface).rfind(WlanPrefix, 0), 0) {
+      if (std::get<const std::string>(interface).rfind(WlanPrefix, 0) == 0) {
         return interface;
       }
     }
@@ -312,7 +312,7 @@ InterfacePair Configurator::getActiveAlternateInterface(envoy_network_t network,
       // TODO(goaway): This is quite brittle. It would be an improvement to:
       //   1) Improve the scoping via flags.
       //   2) Prioritize interfaces by prefix instead of simply filtering them.
-      if (std::get<const std::string>(interface).rfind(WwanPrefix, 0), 0) {
+      if (std::get<const std::string>(interface).rfind(WwanPrefix, 0) == 0) {
         return interface;
       }
     }
