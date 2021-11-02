@@ -7,7 +7,7 @@ licenses(["notice"])  # Apache 2
 
 envoy_package()
 
-envoy_cc_library(
+cc_library(
     name = "jni_utility_lib",
     srcs = [
         "jni_utility.cc",
@@ -18,9 +18,9 @@ envoy_cc_library(
         "jni_utility.h",
         "jni_version.h",
     ],
-    repository = "@envoy",
     deps = [
         "//library/common/types:c_types_lib",
+        "//bazel:jni",
         "@envoy//source/common/common:assert_lib",
     ],
 )
