@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jni.h>
+#include "jni_import.h"
 
 #include "library/common/types/c_types.h"
 

@@ -1,13 +1,24 @@
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_so_to_jni_lib")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library", "envoy_package")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("//bazel:envoy_mobile_test_extensions.bzl", "TEST_EXTENSIONS")
 
 licenses(["notice"])  # Apache 2
 
 envoy_package()
 
-envoy_cc_library(
+cc_library(
+    name = "jni_import_lib",
+    srcs = [
+        "jni_import.h"
+    ]
+    deps = select({
+        "//bazel:android_os": [],
+        "//conditions:default": [ "//bazel:jni"],
+    })
+)
+
+cc_library(
     name = "jni_utility_lib",
     srcs = [
         "jni_utility.cc",
@@ -18,8 +29,8 @@ envoy_cc_library(
         "jni_utility.h",
         "jni_version.h",
     ],
-    repository = "@envoy",
     deps = [
+        ":jni_import_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ],
@@ -90,7 +101,7 @@ cc_binary(
     deps = [
         "base_java_jni_lib",
         ":java_jni_support",
-        "//bazel:jni",
+        ":jni_import_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
     ],
@@ -122,7 +133,6 @@ cc_library(
     srcs = [
         "jni_utility.cc",
         "jni_version.cc",
-        "//bazel:jni_header",
     ],
     hdrs = [
         "jni_utility.h",
@@ -134,7 +144,7 @@ cc_library(
     ],
     deps = [
         ":java_jni_support",
-        "//bazel:jni",
+        ":jni_import_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
@@ -153,7 +163,7 @@ cc_library(
     linkopts = [
         "-lm",
     ],
-    deps = ["//bazel:jni"],
+    deps = [":jni_import_lib"],
 )
 
 # Utility implementation for NDK JNI
@@ -164,6 +174,9 @@ cc_library(
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
+    deps = [
+        ":jni_import_lib",
+    ],
     linkopts = [
         "-lm",
         "-llog",

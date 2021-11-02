@@ -1,5 +1,5 @@
 #include <ares.h>
-#include <jni.h>
+#include "jni_import.h"
 
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
