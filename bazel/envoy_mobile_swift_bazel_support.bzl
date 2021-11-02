@@ -3,7 +3,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 def swift_support():
     http_archive(
         name = "build_bazel_apple_support",
-        sha256 = "595a6652d8d65380a3d764826bf1a856a8cc52371bbd961dfcd942fdb14bc133",
-        strip_prefix = "apple_support-e16463ef91ed77622c17441f9569bda139d45b18",
-        urls = ["https://github.com/bazelbuild/apple_support/archive/e16463ef91ed77622c17441f9569bda139d45b18.tar.gz"],
+        sha256 = "c02a8c902f405e5ea12b815f426fbe429bc39a2628b290e50703d956d40f5542",
+        strip_prefix = "apple_support-0.10.0",
+        urls = ["https://github.com/bazelbuild/apple_support/archive/0.10.0.tar.gz"],
     )
