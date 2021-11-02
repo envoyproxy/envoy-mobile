@@ -9,7 +9,8 @@ import java.nio.ByteBuffer
  * Constructed using `StreamPrototype`, and used to write to the network.
  */
 open class Stream(
-  private val underlyingStream: EnvoyHTTPStream
+  private val underlyingStream: EnvoyHTTPStream,
+  private val useByteBufferPosition: Boolean
 ) {
   /**
    * Send headers over the stream.
@@ -35,18 +36,23 @@ open class Stream(
   }
 
   /**
-   * For sending data to an associated stream.
+   * For sending data to an associated stream. By default, the length sent is the
+   * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
+   * if the Stream was configured to do so - see [StreamPrototype.useByteBufferPosition].
    *
    * @param data Data to send over the stream.
    * @return This stream, for chaining syntax.
    */
   open fun sendData(data: ByteBuffer): Stream {
-    underlyingStream.sendData(data, false)
+    var length = if (useByteBufferPosition) data.position() else data.capacity()
+    underlyingStream.sendData(data, length, false)
     return this
   }
 
   /**
-   * Close the stream with trailers.
+   * Close the stream with trailers. By default, the length sent is the
+   * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
+   * if the Stream was configured to do so - see [StreamPrototype.useByteBufferPosition].
    *
    * @param trailers Trailers with which to close the stream.
    */
@@ -60,7 +66,8 @@ open class Stream(
    * @param data Data with which to close the stream.
    */
   open fun close(data: ByteBuffer) {
-    underlyingStream.sendData(data, true)
+    var length = if (useByteBufferPosition) data.position() else data.capacity()
+    underlyingStream.sendData(data, length, true)
   }
 
   /**
