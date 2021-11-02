@@ -303,6 +303,10 @@ void Engine::drainConnections() {
   server_->clusterManager().drainConnections();
 }
 
+Upstream::ClusterManager& Engine::getClusterManager() {
+  return server_->clusterManager();
+}
+
 void Engine::logInterfaces(absl::string_view event,
                            std::vector<Network::InterfacePair>& interfaces) {
   std::vector<std::string> names;

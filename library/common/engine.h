@@ -127,6 +127,8 @@ public:
    */
   void drainConnections();
 
+  Upstream::ClusterManager& getClusterManager();
+
 private:
   envoy_status_t main(std::string config, std::string log_level);
   static void logInterfaces(absl::string_view event,

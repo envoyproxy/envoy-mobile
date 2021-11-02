@@ -200,6 +200,8 @@ void terminate_engine(envoy_engine_t engine);
  */
 envoy_status_t drain_connections(envoy_engine_t engine);
 
+Envoy::Upstream::ClusterManager& get_cluster_manager(envoy_engine_t engine);
+
 #ifdef __cplusplus
 } // functions
 #endif
