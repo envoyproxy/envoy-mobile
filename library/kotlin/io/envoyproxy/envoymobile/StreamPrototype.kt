@@ -49,6 +49,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * Specify how to determine the length of data to send for a given ByteBuffer.
    *
    * @param enabled Use ByteBuffer's position when true, otherwise use its capacity.
+   * @return This stream, for chaining syntax.
    */
   fun setUseByteBufferPosition(enabled: Boolean): StreamPrototype {
     this.useByteBufferPosition = enabled
