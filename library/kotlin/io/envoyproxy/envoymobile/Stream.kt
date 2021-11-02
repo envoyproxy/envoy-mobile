@@ -38,7 +38,10 @@ open class Stream(
   /**
    * For sending data to an associated stream. By default, the length sent is the
    * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
-   * if the Stream was configured to do so - see [StreamPrototype.useByteBufferPosition].
+   * if the Stream was configured to do so - see **[StreamPrototype.useByteBufferPosition]**.
+   *
+   * Note: the provided ByteBuffer won't be mutated in any case. On the other hand, until the
+   *       stream is closed, any further mutations may lead to an unpredictable outcome.
    *
    * @param data Data to send over the stream.
    * @return This stream, for chaining syntax.
@@ -50,9 +53,7 @@ open class Stream(
   }
 
   /**
-   * Close the stream with trailers. By default, the length sent is the
-   * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
-   * if the Stream was configured to do so - see [StreamPrototype.useByteBufferPosition].
+   * Close the stream with trailers.
    *
    * @param trailers Trailers with which to close the stream.
    */
@@ -61,7 +62,12 @@ open class Stream(
   }
 
   /**
-   * Close the stream with a data frame.
+   * Close the stream with a data frame. By default, the length sent is the
+   * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
+   * if the Stream was configured to do so - see **[StreamPrototype.useByteBufferPosition]**.
+   *
+   * Note: the provided ByteBuffer won't be mutated in any case. On the other hand, until the
+   *       stream is closed, any further mutations may lead to an unpredictable outcome.
    *
    * @param data Data with which to close the stream.
    */
