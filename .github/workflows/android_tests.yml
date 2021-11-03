@@ -48,7 +48,6 @@ jobs:
             --build_tests_only \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            --runs_per_test=10 \
             //test/kotlin/...
   javatestsmac:
     name: java_tests_mac
@@ -78,6 +77,9 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
+      - name: 'Bazel clean'
+        continue-on-error: true
+        run: bazel clean --expunge
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
