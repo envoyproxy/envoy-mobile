@@ -14,6 +14,12 @@ extern "C" { // functions
 #endif
 
 /**
+ * Get the Engine object 
+ * @return Engine, engine object .
+ */
+static std::shared_ptr<Envoy::Engine> engine();
+
+/**
  * Initialize an underlying HTTP stream.
  * @param engine, handle to the engine that will manage this stream.
  * @return envoy_stream_t, handle to the underlying stream.
@@ -199,8 +205,6 @@ void terminate_engine(envoy_engine_t engine);
  * @return envoy_status_t, the resulting status of the operation.
  */
 envoy_status_t drain_connections(envoy_engine_t engine);
-
-Envoy::Upstream::ClusterManager& get_cluster_manager(envoy_engine_t engine);
 
 #ifdef __cplusplus
 } // functions

@@ -276,10 +276,3 @@ envoy_status_t drain_connections(envoy_engine_t) {
   }
   return ENVOY_FAILURE;
 }
-
-Envoy::Upstream::ClusterManager& get_cluster_manager(envoy_engine_t){
-  if (auto e = engine()) {
-    return e->getClusterManager();
-  }
-  return {};
-}

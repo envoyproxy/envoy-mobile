@@ -127,6 +127,9 @@ public:
    */
   void drainConnections();
 
+  /**
+   * Get 
+   */
   Upstream::ClusterManager& getClusterManager();
 
 private:
