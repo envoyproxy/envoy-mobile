@@ -11,8 +11,9 @@ envoy_mobile_android_test(
         "AndroidEnvoyEngineStartUpTest.java",
     ],
     exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        # TODO(lfpino): Remove these once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
+        "Pool": "macos",
     },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
@@ -29,8 +30,9 @@ envoy_mobile_android_test(
         "AndroidEnvoyFlowTest.java",
     ],
     exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        # TODO(lfpino): Remove these once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
+        "Pool": "macos",
     },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
@@ -47,8 +49,9 @@ envoy_mobile_android_test(
         "AndroidEnvoyExplicitFlowTest.java",
     ],
     exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        # TODO(lfpino): Remove these once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
+        "Pool": "macos",
     },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",

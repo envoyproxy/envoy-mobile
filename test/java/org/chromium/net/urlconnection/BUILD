@@ -18,8 +18,9 @@ envoy_mobile_android_test(
         "TestUtil.java",
     ],
     exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        # TODO(lfpino): Remove these once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
+        "Pool": "macos",
     },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
