@@ -165,7 +165,6 @@ private:
     // Bytes will only be sent up once, even if the bytes available are fewer
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
-    bool remoteEndStreamReceived() { return remote_end_stream_received_; }
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }

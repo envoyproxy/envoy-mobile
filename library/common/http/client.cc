@@ -462,7 +462,8 @@ void Client::cancelStream(envoy_stream_t stream) {
     // response code details are set on all possible paths for streams.
     direct_stream->setResponseDetails(getCancelDetails());
 
-    if (!direct_stream->callbacks_->remoteEndStreamReceived()) {
+    // Only run the reset callback if the stream is still open.
+    if (getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS)) {
       // The runResetCallbacks call synchronously causes Envoy to defer delete the HCM's
       // ActiveStream. We have some concern that this could potentially race a terminal callback
       // scheduled on the same iteration of the event loop. If we see violations in the callback
