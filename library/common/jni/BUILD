@@ -10,12 +10,12 @@ envoy_package()
 cc_library(
     name = "jni_import_lib",
     srcs = [
-        "jni_import.h"
+        "jni_import.h",
     ],
     deps = select({
         "//bazel:android_os": [],
-        "//conditions:default": [ "//bazel:jni"],
-    })
+        "//conditions:default": ["//bazel:jni"],
+    }),
 )
 
 cc_library(
@@ -163,7 +163,9 @@ cc_library(
     linkopts = [
         "-lm",
     ],
-    deps = [":jni_import_lib"],
+    deps = [
+        ":jni_import_lib",
+    ],
 )
 
 # Utility implementation for NDK JNI
@@ -174,11 +176,11 @@ cc_library(
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
-    deps = [
-        ":jni_import_lib",
-    ],
     linkopts = [
         "-lm",
         "-llog",
+    ],
+    deps = [
+        ":jni_import_lib",
     ],
 )
