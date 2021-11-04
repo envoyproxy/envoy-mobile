@@ -2,9 +2,9 @@
 
 #include <string>
 
-#include "jni_import.h"
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/jni/import/jni_import.h"
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
 #include "library/common/jni/jni_version.h"

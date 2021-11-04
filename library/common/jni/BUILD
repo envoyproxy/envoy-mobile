@@ -8,18 +8,6 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 cc_library(
-    name = "jni_import_lib",
-    srcs = [
-        "jni_import.h",
-    ],
-    deps = select({
-        "@envoy//bazel:linux": ["//bazel:jni"],
-        "@envoy//bazel:apple": ["//bazel:jni"],
-        "//conditions:default": [],
-    }),
-)
-
-cc_library(
     name = "jni_utility_lib",
     srcs = [
         "jni_utility.cc",
@@ -31,7 +19,7 @@ cc_library(
         "jni_version.h",
     ],
     deps = [
-        ":jni_import_lib",
+        "//library/common/jni/import:jni_import_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ],
@@ -102,9 +90,9 @@ cc_binary(
     deps = [
         "base_java_jni_lib",
         ":java_jni_support",
-        ":jni_import_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
+        "//library/common/jni/import:jni_import_lib",
     ],
 )
 
@@ -145,7 +133,7 @@ cc_library(
     ],
     deps = [
         ":java_jni_support",
-        ":jni_import_lib",
+        "//library/common/jni/import:jni_import_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
@@ -165,7 +153,7 @@ cc_library(
         "-lm",
     ],
     deps = [
-        ":jni_import_lib",
+        "//library/common/jni/import:jni_import_lib",
     ],
 )
 
@@ -182,6 +170,6 @@ cc_library(
         "-llog",
     ],
     deps = [
-        ":jni_import_lib",
+        "//library/common/jni/import:jni_import_lib",
     ],
 )

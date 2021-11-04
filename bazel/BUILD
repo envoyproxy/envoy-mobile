@@ -36,13 +36,7 @@ alias(
 alias(
     name = "jni",
     actual = "@bazel_tools//tools/jdk:jni",
-    visibility = ["//library/common/jni:__pkg__"],
-)
-
-alias(
-    name = "jni_header",
-    actual = "@bazel_tools//tools/jdk:jni_header",
-    visibility = ["//library/common/jni:__pkg__"],
+    visibility = ["//library/common/jni/import:__pkg__"],
 )
 
 # autoformat requires that there be no @bazel_tools references outside of //bazel,
