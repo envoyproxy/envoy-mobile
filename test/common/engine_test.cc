@@ -107,7 +107,7 @@ TEST_F(EngineTest, AccessEngineAfterInitialization) {
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   std::shared_ptr<Envoy::Engine> accessed_engine = engine();
-  [[maybe_unused]] Envoy::Upstream::ClusterManager& cm = accessed_engine->getClusterManager();
+  accessed_engine->getClusterManager();
 }
 
 } // namespace Envoy
