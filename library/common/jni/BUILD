@@ -81,7 +81,6 @@ cc_binary(
     srcs = [
         "android_test_jni_interface.cc",
         "jni_interface.cc",
-        "//bazel:jni_header",
     ],
     copts = ["-std=c++17"],
     linkopts = [
@@ -145,7 +144,6 @@ cc_library(
     name = "java_jni_support",
     srcs = [
         "java_jni_support.cc",
-        "//bazel:jni_header",
     ],
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
