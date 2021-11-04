@@ -14,6 +14,7 @@ cc_library(
     ],
     deps = select({
         "@envoy//bazel:linux": ["//bazel:jni"],
+        "@envoy//bazel:apple": ["//bazel:jni"],
         "//conditions:default": [],
     }),
 )
