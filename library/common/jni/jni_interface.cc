@@ -1,8 +1,8 @@
 #include <ares.h>
-#include "jni_import.h"
 
 #include <string>
 
+#include "jni_import.h"
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/jni/jni_support.h"

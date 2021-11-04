@@ -1,6 +1,6 @@
 #include <ares.h>
-#include "jni_import.h"
 
+#include "jni_import.h"
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
 #include "library/common/main_interface.h"

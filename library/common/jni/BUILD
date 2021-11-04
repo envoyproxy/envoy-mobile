@@ -11,7 +11,7 @@ cc_library(
     name = "jni_import_lib",
     srcs = [
         "jni_import.h"
-    ]
+    ],
     deps = select({
         "//bazel:android_os": [],
         "//conditions:default": [ "//bazel:jni"],
