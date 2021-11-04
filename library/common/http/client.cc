@@ -453,6 +453,8 @@ void Client::cancelStream(envoy_stream_t stream) {
   Client::DirectStreamSharedPtr direct_stream =
       getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
   if (direct_stream) {
+    bool stream_was_open =
+        getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS) != nullptr;
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
 
@@ -463,7 +465,7 @@ void Client::cancelStream(envoy_stream_t stream) {
     direct_stream->setResponseDetails(getCancelDetails());
 
     // Only run the reset callback if the stream is still open.
-    if (getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS)) {
+    if (stream_was_open) {
       // The runResetCallbacks call synchronously causes Envoy to defer delete the HCM's
       // ActiveStream. We have some concern that this could potentially race a terminal callback
       // scheduled on the same iteration of the event loop. If we see violations in the callback
