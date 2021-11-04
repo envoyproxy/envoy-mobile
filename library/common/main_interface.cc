@@ -16,7 +16,7 @@ static Envoy::EngineSharedPtr strong_engine_;
 static Envoy::EngineWeakPtr engine_;
 static std::atomic<envoy_stream_t> current_stream_handle_{0};
 
-static std::shared_ptr<Envoy::Engine> engine() {
+std::shared_ptr<Envoy::Engine> engine() {
   // TODO(goaway): enable configurable heap-based allocation
   return engine_.lock();
 }

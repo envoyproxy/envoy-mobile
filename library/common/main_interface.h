@@ -4,20 +4,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "engine.h"
 #include "library/common/config/templates.h"
 #include "library/common/types/c_types.h"
 
 // NOLINT(namespace-envoy)
 
+/**
+ * Get the Singleton engine object that is initialized with C functions 
+ * @return Engine, engine object.
+ */
+[[maybe_unused]] std::shared_ptr<Envoy::Engine> engine();
+
 #ifdef __cplusplus
 extern "C" { // functions
 #endif
-
-/**
- * Get the Engine object 
- * @return Engine, engine object .
- */
-static std::shared_ptr<Envoy::Engine> engine();
 
 /**
  * Initialize an underlying HTTP stream.
