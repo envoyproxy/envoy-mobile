@@ -13,8 +13,8 @@ cc_library(
         "jni_import.h",
     ],
     deps = select({
-        "//bazel:android_os": [],
-        "//conditions:default": ["//bazel:jni"],
+        "@envoy//bazel:linux": ["//bazel:jni"],
+        "//conditions:default": [""],
     }),
 )
 
