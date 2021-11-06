@@ -148,6 +148,33 @@ public class AndroidEnvoyFlowTest {
   }
 
   @Test
+  public void post_simple_withoutByteBufferPosition() throws Exception {
+    mockWebServer.setDispatcher(new Dispatcher() {
+      @Override
+      public MockResponse dispatch(RecordedRequest recordedRequest) {
+        assertThat(recordedRequest.getMethod()).isEqualTo(RequestMethod.POST.name());
+        assertThat(recordedRequest.getBody().readUtf8()).isEqualTo("55555");
+        return new MockResponse().setBody("This is my response Body");
+      }
+    });
+    ByteBuffer requestBody = ByteBuffer.allocateDirect(5);
+    requestBody.put("55555".getBytes());
+    requestBody.position(3); // The position should be ignored - only capacity matters.
+    mockWebServer.start();
+    RequestScenario requestScenario = new RequestScenario()
+                                          .setHttpMethod(RequestMethod.POST)
+                                          .setUrl(mockWebServer.url("get/flowers").toString())
+                                          .addBody(requestBody)
+                                          .closeBodyStream();
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
+    assertThat(response.getBodyAsString()).isEqualTo("This is my response Body");
+    assertThat(response.getEnvoyError()).isNull();
+  }
+
+  @Test
   public void post_simple_withByteBufferPosition() throws Exception {
     mockWebServer.setDispatcher(new Dispatcher() {
       @Override
@@ -159,14 +186,14 @@ public class AndroidEnvoyFlowTest {
     });
     ByteBuffer requestBody = ByteBuffer.allocateDirect(100);
     requestBody.put("This is my request body with spurious data".getBytes());
-    requestBody.position(23); // Only the first 23 bytes should be sent
+    requestBody.position(23); // Only the first 23 bytes should be sent - the String size is 42.
     mockWebServer.start();
     RequestScenario requestScenario = new RequestScenario()
                                           .useByteBufferPosition()
                                           .setHttpMethod(RequestMethod.POST)
                                           .setUrl(mockWebServer.url("get/flowers").toString())
-                                          .addHeader("content-length", "23")
-                                          .addBody("This is my request body");
+                                          .addBody("This is my request body")
+                                          .closeBodyStream();
 
     Response response = sendRequest(requestScenario);
 
