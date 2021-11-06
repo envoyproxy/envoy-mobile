@@ -280,7 +280,7 @@ public final class CronetUploadDataStream extends UploadDataSink {
 
   /**
    * Initializes upload length by getting it from data provider, then follows with sending the
-   * first chunck of the request body. These two initial tasks are not launched by the network
+   * first chunk of the request body. These two initial tasks are not launched by the network
    * Thread.
    */
   void initializeWithRequest() {

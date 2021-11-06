@@ -82,6 +82,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
   private final CronetUrlRequestContext mRequestContext;
   private final AtomicBoolean mWaitingOnRedirect = new AtomicBoolean(false);
   private final AtomicBoolean mWaitingOnRead = new AtomicBoolean(false);
+  private volatile ByteBuffer mUserCurrentReadBuffer = null;
 
   /**
    * This is the source of thread safety in this class - no other synchronization is performed. By
@@ -102,7 +103,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
   private String mInitialMethod;
   private CronetUploadDataStream mUploadDataStream;
   private final Executor mUserExecutor;
-  private final AtomicReference<ByteBuffer> mUserCurrentReadBuffer = new AtomicReference<>();
   private final VersionSafeCallbacks.UrlRequestCallback mCallback;
   private final ConditionVariable mStartBlock = new ConditionVariable();
 
@@ -236,6 +236,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
   }
 
+  @Override
   public void read(final ByteBuffer buffer) {
     Preconditions.checkDirect(buffer);
     Preconditions.checkHasRemaining(buffer);
@@ -247,10 +248,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
         onSucceeded(mUrlResponseInfo);
         return;
       }
-      if (!mUserCurrentReadBuffer.compareAndSet(null, buffer)) {
-        throw new IllegalStateException("userCurrentReadBuffer should be clear");
-      }
-      mStream.get().readData(buffer.remaining());
+      mUserCurrentReadBuffer = buffer;
+      mCronvoyCallbacks.readData(buffer.remaining());
     }
     // When mWaitingOnRead is true (did not throw), it means that we were duly waiting
     // for the User to invoke this method. If the mState.compareAndSet() failed, it means
@@ -643,7 +642,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
   private class CronvoyHttpCallbacks implements EnvoyHTTPCallbacks {
 
     private final AtomicInteger mCancelState = new AtomicInteger(CancelState.READY);
-    private volatile boolean mEndStream = false; // Accessed by diferrent Threads
+    private volatile boolean mEndStream = false; // Accessed by different Threads
 
     @Override
     public Executor getExecutor() {
@@ -653,7 +652,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onHeaders(Map<String, List<String>> headers, boolean endStream,
                           EnvoyStreamIntel streamIntel) {
-      if (isAbandonned()) {
+      if (isAbandoned()) {
         return;
       }
       mEndStream = endStream;
@@ -694,7 +693,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
           checkCallingThread();
           try {
             if (locationField != null) {
-              mCronvoyCallbacks = null; // Makes CronvoyHttpCallbacks abandonned.
+              mCronvoyCallbacks = null; // Makes CronvoyHttpCallbacks abandoned.
               mStream.set(null);
               mPendingRedirectUrl = URI.create(mCurrentUrl).resolve(locationField).toString();
               mWaitingOnRedirect.set(true);
@@ -718,7 +717,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onData(ByteBuffer data, boolean endStream, EnvoyStreamIntel streamIntel) {
-      if (isAbandonned()) {
+      if (isAbandoned()) {
         return;
       }
       mEndStream = endStream;
@@ -740,10 +739,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
         public void run() {
           checkCallingThread();
           try {
-            ByteBuffer sinkBuffer = mUserCurrentReadBuffer.getAndSet(null);
-            sinkBuffer.put(data);
+            ByteBuffer userBuffer = mUserCurrentReadBuffer;
+            mUserCurrentReadBuffer = null; // Avoid the reference to a potentially large buffer.
+            userBuffer.put(data); // NPE ==> BUG, BufferOverflowException ==> User not behaving.
             mWaitingOnRead.set(true);
-            mCallback.onReadCompleted(CronetUrlRequest.this, mUrlResponseInfo, sinkBuffer);
+            mCallback.onReadCompleted(CronetUrlRequest.this, mUrlResponseInfo, userBuffer);
           } catch (Throwable t) {
             onCallbackException(t);
           }
@@ -754,7 +754,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onTrailers(Map<String, List<String>> trailers, EnvoyStreamIntel streamIntel) {
-      if (isAbandonned()) {
+      if (isAbandoned()) {
         return;
       }
       mEndStream = true;
@@ -772,7 +772,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onError(int errorCode, String message, int attemptCount,
                         EnvoyStreamIntel streamIntel) {
-      if (isAbandonned()) {
+      if (isAbandoned()) {
         return;
       }
       mEndStream = true;
@@ -794,7 +794,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onCancel(EnvoyStreamIntel streamIntel) {
-      if (isAbandonned()) {
+      if (isAbandoned()) {
         return;
       }
       mEndStream = true;
@@ -814,7 +814,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onSendWindowAvailable(EnvoyStreamIntel streamIntel) {
-      if (isAbandonned()) {
+      if (isAbandoned()) {
         return;
       }
       @State int originalState;
@@ -840,7 +840,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
      */
     void send(ByteBuffer buffer, boolean finalChunk) {
       EnvoyHTTPStream stream = mStream.get();
-      if (isAbandonned() || mEndStream ||
+      if (isAbandoned() || mEndStream ||
           !mCancelState.compareAndSet(CancelState.READY, CancelState.BUSY)) {
         return; // Cancelled - to late to send something.
       }
@@ -858,20 +858,30 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
     }
 
+    void readData(int remaining) {
+      EnvoyHTTPStream stream = mStream.get();
+      if (!mCancelState.compareAndSet(CancelState.READY, CancelState.BUSY)) {
+        return; // Cancelled - to late to send something.
+      }
+      stream.readData(remaining);
+      if (!mCancelState.compareAndSet(CancelState.BUSY, CancelState.READY)) {
+        stream.cancel();
+      }
+    }
+
     /**
      * Cancels the Stream if the state permits - can be called by any Thread. Returns true is the
      * cancel was effectively sent.
      */
-    boolean cancel() {
+    void cancel() {
       EnvoyHTTPStream stream = mStream.get();
-      if (isAbandonned() || mEndStream) {
-        return false;
+      if (isAbandoned() || mEndStream) {
+        return;
       }
       @CancelState int oldState = mCancelState.getAndSet(CancelState.CANCELLED);
       if (oldState == CancelState.READY) {
         stream.cancel();
       }
-      return oldState != CancelState.CANCELLED;
     }
 
     private UrlResponseInfoImpl createUrlResponseInfoImpl(Map<String, List<String>> responseHeaders,
@@ -929,7 +939,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       return true;
     }
 
-    private boolean isAbandonned() {
+    private boolean isAbandoned() {
       return this != mCronvoyCallbacks || mState.get() == State.AWAITING_FOLLOW_REDIRECT;
     }
 

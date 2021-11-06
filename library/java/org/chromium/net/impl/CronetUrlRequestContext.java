@@ -85,7 +85,7 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
     synchronized (mLock) {
       mEngine = builder.createEngine(() -> {
         mNetworkThread = Thread.currentThread();
-        mNetworkThread.setPriority(threadPriority);
+        android.os.Process.setThreadPriority(threadPriority);
         mInitCompleted.open();
         Runnable taskToExecuteWhenInitializationIsCompleted =
             mInitializationCompleter.getAndSet(() -> {});
