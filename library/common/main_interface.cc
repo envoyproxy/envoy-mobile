@@ -21,6 +21,19 @@ std::shared_ptr<Envoy::Engine> engine() {
   return engine_.lock();
 }
 
+bool runOnEngineDispatcher(envoy_engine_t,
+                           std::function<void(std::shared_ptr<Envoy::Engine>)> func) {
+  if (auto e = engine()) {
+    e->dispatcher().post([func]() {
+      if (auto e = engine()) {
+        func(e);
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
 envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,

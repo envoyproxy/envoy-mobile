@@ -11,10 +11,13 @@
 // NOLINT(namespace-envoy)
 
 /**
- * Get the Singleton engine object that is initialized with C functions 
- * @return Engine, engine object.
+ * Execute function with engine if it exists.
+ * @param envoy_engine_t, handle to the engine which will be used to execute the function.
+ * @param func, void function that will be executed if engine exists.
+ * @return bool, True if engine exists else false.
  */
-[[maybe_unused]] std::shared_ptr<Envoy::Engine> engine();
+bool runOnEngineDispatcher(envoy_engine_t engine,
+                           std::function<void(std::shared_ptr<Envoy::Engine>)> func);
 
 #ifdef __cplusplus
 extern "C" { // functions

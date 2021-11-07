@@ -97,17 +97,14 @@ TEST_F(EngineTest, AccessEngineAfterInitialization) {
                                          static_cast<engine_test_context*>(context);
                                      engine_running->on_engine_running.Notify();
                                    } /*on_engine_running*/,
-                                   [](void* context) -> void {
-                                     auto* exit = static_cast<engine_test_context*>(context);
-                                     exit->on_exit.Notify();
-                                   } /*on_exit*/,
-                                   &test_context /*context*/};
+                                   [](void*) -> void {} /*on_exit*/, &test_context /*context*/};
 
   engine_ = std::make_unique<EngineHandle>(callbacks, level);
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  std::shared_ptr<Envoy::Engine> accessed_engine = engine();
-  accessed_engine->getClusterManager();
+  bool isRun = runOnEngineDispatcher(
+      1, [](std::shared_ptr<Envoy::Engine> engine) { engine->getClusterManager(); });
+  ASSERT_TRUE(isRun);
 }
 
 } // namespace Envoy

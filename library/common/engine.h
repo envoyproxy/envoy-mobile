@@ -128,7 +128,7 @@ public:
   void drainConnections();
 
   /**
-   * Get cluster manager from the engine 
+   * Get cluster manager from the Engine.
    */
   Upstream::ClusterManager& getClusterManager();
 
