@@ -85,6 +85,7 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --define=signal_trace=disabled \
+            --runs_per_test=10 \
             //test/java/...
   kotlintestslinux:
     # Only kotlin tests are executed since with linux:
