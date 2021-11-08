@@ -103,13 +103,13 @@ TEST_F(EngineTest, AccessEngineAfterInitialization) {
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   bool isRun = runOnEngineDispatcher(
-      1, [](std::shared_ptr<Envoy::Engine> engine) { engine->getClusterManager(); });
+      1, [](Envoy::Engine& engine) { engine.getClusterManager(); });
   ASSERT_TRUE(isRun);
 
   engine_.reset();
 
   bool isRunAfterEngineTerminate = runOnEngineDispatcher(
-      1, [](std::shared_ptr<Envoy::Engine> engine) { engine->getClusterManager(); });
+      1, [](Envoy::Engine& engine) { engine.getClusterManager(); });
   ASSERT_FALSE(isRunAfterEngineTerminate);
 }
 

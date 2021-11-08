@@ -22,11 +22,11 @@ static std::shared_ptr<Envoy::Engine> engine() {
 }
 
 bool runOnEngineDispatcher(envoy_engine_t,
-                           std::function<void(std::shared_ptr<Envoy::Engine>)> func) {
+                           std::function<void(Envoy::Engine&)> func) {
   if (auto e = engine()) {
     e->dispatcher().post([func]() {
       if (auto e = engine()) {
-        func(e);
+        func(*e);
       }
     });
     return true;

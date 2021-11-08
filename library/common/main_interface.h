@@ -17,7 +17,7 @@
  * @return bool, True if engine exists else false.
  */
 bool runOnEngineDispatcher(envoy_engine_t engine,
-                           std::function<void(std::shared_ptr<Envoy::Engine>)> func);
+                           std::function<void(Envoy::Engine&)> func);
 
 #ifdef __cplusplus
 extern "C" { // functions
