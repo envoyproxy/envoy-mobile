@@ -105,6 +105,12 @@ TEST_F(EngineTest, AccessEngineAfterInitialization) {
   bool isRun = runOnEngineDispatcher(
       1, [](std::shared_ptr<Envoy::Engine> engine) { engine->getClusterManager(); });
   ASSERT_TRUE(isRun);
+
+  engine_.reset();
+
+  bool isRunAfterEngineTerminate = runOnEngineDispatcher(
+      1, [](std::shared_ptr<Envoy::Engine> engine) { engine->getClusterManager(); });
+  ASSERT_FALSE(isRunAfterEngineTerminate);
 }
 
 } // namespace Envoy
