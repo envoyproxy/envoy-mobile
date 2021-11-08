@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 #include "library/common/config/templates.h"
 #include "library/common/engine.h"
+#include "library/common/engine_handle.h"
 #include "library/common/main_interface.h"
 
 namespace Envoy {
@@ -102,15 +103,22 @@ TEST_F(EngineTest, AccessEngineAfterInitialization) {
   engine_ = std::make_unique<EngineHandle>(callbacks, level);
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  bool isRun = runOnEngineDispatcher(
-      1, [](Envoy::Engine& engine) { engine.getClusterManager(); });
-  ASSERT_TRUE(isRun);
+  absl::Notification getClusterManagerInvoked;
+  // Scheduling on the dispatcher should work, the engine is running.
+  EXPECT_EQ(ENVOY_SUCCESS, ::EngineHandle::runOnEngineDispatcher(
+                               1, [&getClusterManagerInvoked](Envoy::Engine& engine) {
+                                 engine.getClusterManager();
+                                 getClusterManagerInvoked.Notify();
+                               }));
+
+  // Validate that we actually invoked the function.
+  EXPECT_TRUE(getClusterManagerInvoked.WaitForNotificationWithTimeout(absl::Seconds(1)));
 
   engine_.reset();
 
-  bool isRunAfterEngineTerminate = runOnEngineDispatcher(
-      1, [](Envoy::Engine& engine) { engine.getClusterManager(); });
-  ASSERT_FALSE(isRunAfterEngineTerminate);
+  // Now that the engine has been shut down, we no longer expect scheduling to work.
+  EXPECT_EQ(ENVOY_FAILURE, ::EngineHandle::runOnEngineDispatcher(
+                               1, [](Envoy::Engine& engine) { engine.getClusterManager(); }));
 }
 
 } // namespace Envoy

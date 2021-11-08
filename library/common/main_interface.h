@@ -10,15 +10,6 @@
 
 // NOLINT(namespace-envoy)
 
-/**
- * Execute function with engine if it exists.
- * @param envoy_engine_t, handle to the engine which will be used to execute the function.
- * @param func, void function that will be executed if engine exists.
- * @return bool, True if engine exists else false.
- */
-bool runOnEngineDispatcher(envoy_engine_t engine,
-                           std::function<void(Envoy::Engine&)> func);
-
 #ifdef __cplusplus
 extern "C" { // functions
 #endif
