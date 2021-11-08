@@ -4,8 +4,9 @@
 #include "library/common/main_interface.h"
 #include "library/common/types/c_types.h"
 
-// TODO(snowp): No good reason for this to not be in Envoy::, but I had issues declaring the friend functions
-// when using it, so disable for now.
+// TODO(snowp): No good reason for this to not be in Envoy::, but I had issues declaring the friend
+// functions when using it, so disable for now.
+
 // NOLINT(namespace-envoy)
 
 /**
