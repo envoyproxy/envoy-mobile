@@ -197,13 +197,16 @@ build:remote-ci-linux-coverage --host_platform=@engflow_remote_config_clang_cove
 build:remote-ci-linux-coverage --platforms=@engflow_remote_config_clang_coverage//config:platform
 build:remote-ci-linux-coverage --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
 build:remote-ci-linux-coverage --java_toolchain=@bazel_tools//tools/jdk:toolchain_java11
-# Flags to run tests locally which are necessary since Bazel C++ LLVM coverage isn't fully supported for remote builds
-# TODO(lfpino): Reference upstream Bazel issue here on the incompatibility of remote test execution and LLVM coverage.
+# We set --remote_download_outputs to 'all' because coverage generation doesn't work with 'minimal' or 'toplevel'
+# See https://github.com/bazelbuild/bazel/issues/12592 for details.
 build:remote-ci-linux-coverage --remote_download_outputs=all
+# Flags to run tests locally which are necessary since Bazel C++ LLVM coverage isn't fully supported for remote builds
 build:remote-ci-linux-coverage --strategy=TestRunner=local,remote
 build:remote-ci-linux-coverage --strategy=CoverageReport=local,remote
 # Bazel remote caching is incompatible with C++ LLVM coverage so we need to deactivate it for coverage builds
-# TODO(lfpino): Reference upstream Bazel issue here on the incompatibility of remote caching and LLVM coverage.
+# Bazel LLVM C++ coverage generation seems to be incompatible with remote caching.
+# See original experiments in https://github.com/envoyproxy/envoy-mobile/pull/1757 and a similar Bazel issue
+# in https://github.com/tweag/rules_haskell/issues/1613
 build:remote-ci-linux-coverage --noremote_accept_cached
 build:remote-ci-linux-coverage --config=remote-ci-common
 # IPv6 tests fail on CI
