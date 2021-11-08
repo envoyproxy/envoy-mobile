@@ -4,6 +4,10 @@
 #include "library/common/main_interface.h"
 #include "library/common/types/c_types.h"
 
+// TODO(snowp): No good reason for this to not be in Envoy::, but I had issues declaring the friend functions
+// when using it, so disable for now.
+// NOLINT(namespace-envoy)
+
 /**
  * Wrapper class around the singleton engine handle. This allows us to use C++ access modifiers to
  * control what functionality dependent code is able to access. Furthermore, this allows C++ access
