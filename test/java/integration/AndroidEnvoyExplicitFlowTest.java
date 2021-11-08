@@ -38,7 +38,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -111,7 +110,6 @@ public class AndroidEnvoyExplicitFlowTest {
   }
 
   @Test
-  @Ignore("Segmentation Fault")
   public void get_withDirectExecutor() throws Exception {
     mockWebServer.start();
     for (int i = 0; i < 100; i++) {
