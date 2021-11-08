@@ -19,14 +19,10 @@ envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
                             bool explicit_flow_control) {
-  if (EngineHandle::runOnEngineDispatcher(
-          1, [stream, callbacks, explicit_flow_control](auto& engine) -> void {
-            engine.httpClient().startStream(stream, callbacks, explicit_flow_control);
-          })) {
-    return ENVOY_SUCCESS;
-  }
-
-  return ENVOY_FAILURE;
+  return EngineHandle::runOnEngineDispatcher(
+      1, [stream, callbacks, explicit_flow_control](auto& engine) -> void {
+        engine.httpClient().startStream(stream, callbacks, explicit_flow_control);
+      });
 }
 
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
@@ -214,8 +210,5 @@ void terminate_engine(envoy_engine_t) {
 envoy_status_t drain_connections(envoy_engine_t e) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  if (EngineHandle::runOnEngineDispatcher(e, [](auto& engine) { engine.drainConnections(); })) {
-    return ENVOY_SUCCESS;
-  }
-  return ENVOY_FAILURE;
+  return EngineHandle::runOnEngineDispatcher(e, [](auto& engine) { engine.drainConnections(); });
 }
