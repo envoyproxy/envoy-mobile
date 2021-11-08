@@ -320,7 +320,7 @@ void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
   std::stringstream ss;
   const char* spaces = spacesForLevel(indent_level);
 
-  ss << spaces << "DirectStream" << DUMP_MEMBER(stream_handle_) << std::endl;
+  ss << spaces << "DirectStream:" << DUMP_MEMBER(stream_handle_) << std::endl;
   ENVOY_LOG(error, "\n{}", ss.str());
 }
 
