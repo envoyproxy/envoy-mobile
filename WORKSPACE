@@ -43,7 +43,6 @@ python_configure(name = "local_config_python", python_version = "3")
 load("//bazel:python.bzl", "declare_python_abi")
 declare_python_abi(name = "python_abi", python_version = "3")
 
-# Note: proguard is failing for API 30+
 android_sdk_repository(name = "androidsdk", api_level = 30)
 android_ndk_repository(name = "androidndk", api_level = 21)
 
