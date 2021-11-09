@@ -45,6 +45,7 @@ jobs:
             --build_tests_only \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --flaky_test_attempts=3 \
             //test/kotlin/...
   javatestsmac:
     name: java_tests_mac
@@ -85,6 +86,7 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --define=signal_trace=disabled \
+            --flaky_test_attempts=3 \
             --runs_per_test=10 \
             //test/java/...
   kotlintestslinux:
@@ -130,4 +132,5 @@ jobs:
             --config=remote-ci-linux-clang \
             --config=remote-ci-linux-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --flaky_test_attempts=3 \
             //test/kotlin/...
