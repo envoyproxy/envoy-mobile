@@ -107,7 +107,7 @@ class EngineBuilderTest {
     engineBuilder.addH2StreamBufferLimitBytes(888)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.h2addH2StreamBufferLimitBytes).isEqualTo(888)
+    assertThat(engine.envoyConfiguration!!.h2StreamBufferLimitBytes).isEqualTo(888)
   }
 
   @Test

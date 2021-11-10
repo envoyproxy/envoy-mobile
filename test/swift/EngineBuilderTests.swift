@@ -414,7 +414,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: false,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
-      h2BufferLimitBytes: 333,
+      h2StreamBufferLimitBytes: 333,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 700,
