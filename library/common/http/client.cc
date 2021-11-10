@@ -81,18 +81,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   }
 
   // The response_data_ is systematically assigned here because resumeData can
-<<<<<<< HEAD
-  // incur an asynchronous callback to sendDataToBridge. It might look like
-  // safe to only set the response_data_ after invoking sendDataToBridge in this
-  // method - it is not - you get that stacktrace once in a while by doing so:
-  // Stack: [0x00007fe3c60a4000,0x00007fe3c68a3000],  sp=0x00007fe3c68a1170,  free space=8180k
-  // Http::calculateBytesToSend(Envoy::Buffer::Instance const&, unsigned int)+0x33
-  // Http::Client::DirectStreamCallbacks::sendDataToBridge(Envoy::Buffer::Instance&, bool)+0x31c
-  // Http::Client::DirectStreamCallbacks::resumeData(int)+0x886
-  // Http::Client::readData(long, unsigned long)+0x332
-=======
   // incur an asynchronous callback to sendDataToBridge.
->>>>>>> main
   if (explicit_flow_control_ && !response_data_) {
     response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
         [this]() -> void { this->onBufferedDataDrained(); },
@@ -260,6 +249,20 @@ void Client::DirectStreamCallbacks::onCancel() {
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
   bridge_callbacks_.on_cancel(streamIntel(), bridge_callbacks_.context);
+}
+
+void Client::DirectStreamCallbacks::onHasBufferedData() {
+  // This call is potentially asynchronous, and may occur for a closed stream.
+  if (!remote_end_stream_received_) {
+    direct_stream_.runHighWatermarkCallbacks();
+  }
+}
+
+void Client::DirectStreamCallbacks::onBufferedDataDrained() {
+  // This call is potentially asynchronous, and may occur for a closed stream.
+  if (!remote_end_stream_received_) {
+    direct_stream_.runLowWatermarkCallbacks();
+  }
 }
 
 envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {

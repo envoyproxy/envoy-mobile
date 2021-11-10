@@ -1422,7 +1422,6 @@ public class CronetUrlRequestContextTest {
   @SmallTest
   @Feature({"Cronet"})
   @RequiresMinApi(6) // setThreadPriority added in API 6: crrev.com/472449
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1902")
   public void testCronetEngineThreadPriority() throws Exception {
     ExperimentalCronetEngine.Builder builder = new ExperimentalCronetEngine.Builder(getContext());
     // Try out of bounds thread priorities.

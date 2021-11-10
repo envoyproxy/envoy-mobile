@@ -68,7 +68,7 @@ public final class CronetTestRule implements TestRule {
 
     private static ExperimentalCronetEngine createEngine(Context context) {
       ExperimentalCronetEngine.Builder builder = new ExperimentalCronetEngine.Builder(context);
-      ((CronetEngineBuilderImpl)builder.getBuilderDelegate()).setLogLevel("warn");
+      ((CronetEngineBuilderImpl)builder.getBuilderDelegate()).setLogLevel("info");
       return builder.enableQuic(true).build();
     }
 

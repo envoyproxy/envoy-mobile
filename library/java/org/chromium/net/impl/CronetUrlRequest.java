@@ -858,12 +858,12 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
     }
 
-    void readData(int remaining) {
+    void readData(int size) {
       EnvoyHTTPStream stream = mStream.get();
       if (!mCancelState.compareAndSet(CancelState.READY, CancelState.BUSY)) {
         return; // Cancelled - to late to send something.
       }
-      stream.readData(remaining);
+      stream.readData(size);
       if (!mCancelState.compareAndSet(CancelState.BUSY, CancelState.READY)) {
         stream.cancel();
       }
