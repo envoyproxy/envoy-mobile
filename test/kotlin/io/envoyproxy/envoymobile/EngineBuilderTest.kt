@@ -104,10 +104,10 @@ class EngineBuilderTest {
   fun `specifying H2 Stream buffer limit overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
-    engineBuilder.addH2StreamBufferBytes(888)
+    engineBuilder.addH2StreamBufferLimitBytes(888)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.h2addH2StreamBufferBytes).isEqualTo(888)
+    assertThat(engine.envoyConfiguration!!.h2addH2StreamBufferLimitBytes).isEqualTo(888)
   }
 
   @Test

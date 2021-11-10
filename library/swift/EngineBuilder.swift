@@ -177,11 +177,11 @@ open class EngineBuilder: NSObject {
 
    /// Add the limit that h2 streams are able to buffer.
    ///
-   /// - parameter h2StreamBufferBytes: Size in bytes that h2 streams are allowed to buffer.
+   /// - parameter h2StreamBufferLimitBytes: Size in bytes that h2 streams are allowed to buffer.
    ///
    /// - returns: This builder.
-  public func addH2StreamBufferBytes(_ h2StreamBufferBytes: UInt32) -> Self {
-    self.h2StreamBufferBytes = h2StreamBufferBytes
+  public func addH2StreamBufferLimitBytes(_ h2StreamBufferLimitBytes: UInt32) -> Self {
+    self.h2StreamBufferLimitBytes = h2StreamBufferLimitBytes
     return self
   }
 
@@ -380,7 +380,7 @@ open class EngineBuilder: NSObject {
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
-      h2StreamBufferBytes: self.h2StreamBufferBytes,
+      h2StreamBufferLimitBytes: self.h2StreamBufferLimitBytes,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,

@@ -194,12 +194,12 @@ open class EngineBuilder(
   /**
    * Add the limit that h2 streams are able to buffer.
    *
-   * @param h2StreamBufferBytes size in bytes that h2 streams are allowed to buffer.
+   * @param h2StreamBufferLimitBytes size in bytes that h2 streams are allowed to buffer.
    *
    * @return this builder.
    */
-  fun addH2StreamBufferBytes(h2StreamBufferBytes: Int): EngineBuilder {
-    this.h2StreamBufferBytes = h2StreamBufferBytes
+  fun addH2StreamBufferLimitBytes(h2StreamBufferLimitBytes: Int): EngineBuilder {
+    this.h2StreamBufferLimitBytes = h2StreamBufferLimitBytes
     return this
   }
 
@@ -389,7 +389,7 @@ open class EngineBuilder(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferBytes,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferLimitBytes,
             statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
             appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
@@ -404,7 +404,7 @@ open class EngineBuilder(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferBytes,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferLimitBytes,
             statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
             appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
