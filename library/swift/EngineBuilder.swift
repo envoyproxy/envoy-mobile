@@ -25,7 +25,7 @@ open class EngineBuilder: NSObject {
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   // 10Mb default (10 * 1024 * 1024)
-  private var h2StreamBufferLimitBytes: UInt32 = 10485760;
+  private var h2StreamBufferLimitBytes: UInt32 = 10485760
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var perTryIdleTimeoutSeconds: UInt32 = 15

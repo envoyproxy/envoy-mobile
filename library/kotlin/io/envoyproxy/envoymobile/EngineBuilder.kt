@@ -390,9 +390,10 @@ open class EngineBuilder(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferLimitBytes,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
-            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            h2StreamBufferLimitBytes, statsFlushSeconds, streamIdleTimeoutSeconds,
+            perTryIdleTimeoutSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
+            platformFilterChain, stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -405,9 +406,10 @@ open class EngineBuilder(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferLimitBytes,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
-            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            h2StreamBufferLimitBytes, statsFlushSeconds, streamIdleTimeoutSeconds,
+            perTryIdleTimeoutSeconds, appVersion, appId, virtualClusters, nativeFilterChain,
+            platformFilterChain, stringAccessors
           ),
           logLevel
         )
