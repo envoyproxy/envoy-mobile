@@ -84,12 +84,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   // incur an asynchronous callback to sendDataToBridge.
   if (explicit_flow_control_ && !response_data_) {
     response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
-        [this]() -> void {
-          // This call is asynchronous, and may occur for a closed stream.
-          if (!this->remote_end_stream_received_) {
-            this->onBufferedDataDrained();
-          }
-        },
+        [this]() -> void { this->onBufferedDataDrained(); },
         [this]() -> void { this->onHasBufferedData(); }, []() -> void {});
     // Default to 1M per stream. This is fairly arbitrary and will result in
     // Envoy buffering up to 1M + flow-control-window for HTTP/2 and HTTP/3,
@@ -254,6 +249,20 @@ void Client::DirectStreamCallbacks::onCancel() {
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
   bridge_callbacks_.on_cancel(streamIntel(), bridge_callbacks_.context);
+}
+
+void Client::DirectStreamCallbacks::onHasBufferedData() {
+  // This call is potentially asynchronous, and may occur for a closed stream.
+  if (!remote_end_stream_received_) {
+    direct_stream_.runHighWatermarkCallbacks();
+  }
+}
+
+void Client::DirectStreamCallbacks::onBufferedDataDrained() {
+  // This call is potentially asynchronous, and may occur for a closed stream.
+  if (!remote_end_stream_received_) {
+    direct_stream_.runLowWatermarkCallbacks();
+  }
 }
 
 envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
