@@ -39,7 +39,7 @@ open class EngineBuilder(
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   // 10Mb default (10 * 1024 * 1024)
-  private var h2StreamBufferLimitBytes = 10485760;
+  private var h2StreamBufferLimitBytes = 10485760
   private var streamIdleTimeoutSeconds = 15
   private var perTryIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
