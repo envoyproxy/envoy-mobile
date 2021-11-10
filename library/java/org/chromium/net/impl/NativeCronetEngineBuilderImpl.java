@@ -37,6 +37,8 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private boolean mEnableInterfaceBinding = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
   private int mH2ConnectionKeepaliveTimeoutSeconds = 10;
+  // 10Mb default (10 * 1024 * 1024)
+  private int mH2StreamBufferLimitBytes = 10485760;
   private int mStatsFlushSeconds = 60;
   private int mStreamIdleTimeoutSeconds = 15;
   private int mPerTryIdleTimeoutSeconds = 15;
@@ -76,7 +78,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
         mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mEnableInterfaceBinding,
-        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
+        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds, mH2StreamBufferLimitBytes,
         mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
         mAppId, mVirtualClusters, mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
   }

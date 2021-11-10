@@ -42,6 +42,7 @@ const std::string config_header = R"(
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
+- &h2_stream_buffer_limit_bytes 1048576
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -213,6 +214,8 @@ static_resources:
           stat_prefix: hcm
           server_header_transformation: PASS_THROUGH
           stream_idle_timeout: *stream_idle_timeout
+          http2_protocol_options:
+            initial_stream_window_size: *h2_stream_buffer_limit_bytes
           route_config:
             name: api_router
             virtual_hosts:

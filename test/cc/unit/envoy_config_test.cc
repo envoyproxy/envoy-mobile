@@ -21,6 +21,7 @@ TEST(TestConfig, ConfigIsApplied) {
       .addDnsPreresolveHostnames("[hostname]")
       .addH2ConnectionKeepaliveIdleIntervalMilliseconds(222)
       .addH2ConnectionKeepaliveTimeoutSeconds(333)
+      .addH2StreamBufferLimitBytes(888)
       .addStatsFlushSeconds(654)
       .addVirtualClusters("[virtual-clusters]")
       .setAppVersion("1.2.3")
@@ -38,6 +39,7 @@ TEST(TestConfig, ConfigIsApplied) {
       "- &dns_preresolve_hostnames [hostname]",
       "- &h2_connection_keepalive_idle_interval 0.222s",
       "- &h2_connection_keepalive_timeout 333s",
+      "- &h2_stream_buffer_limit_bytes 888",
       "- &stats_flush_interval 654s",
       "- &virtual_clusters [virtual-clusters]",
       ("- &metadata { device_os: probably-ubuntu-on-CI, "

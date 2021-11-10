@@ -23,6 +23,7 @@ public class EnvoyConfiguration {
   public final String dnsPreresolveHostnames;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
+  public final Integer h2StreamBufferLimitBytes;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
   public final Integer streamIdleTimeoutSeconds;
@@ -51,6 +52,7 @@ public class EnvoyConfiguration {
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   * @param h2StreamBufferLimitBytes     size in bytes that h2 streams are allowed to buffer.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
    * @param perTryIdleTimeoutSeconds     per try idle timeout for HTTP streams.
@@ -67,7 +69,7 @@ public class EnvoyConfiguration {
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
                             String dnsPreresolveHostnames, boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-                            int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
+                            int h2ConnectionKeepaliveTimeoutSeconds, int h2StreamBufferLimitBytes, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
                             String appVersion, String appId, String virtualClusters,
                             List<EnvoyNativeFilterConfig> nativeFilterChain,
@@ -86,6 +88,7 @@ public class EnvoyConfiguration {
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+    this.h2StreamBufferLimitBytes = h2StreamBufferLimitBytes;
     this.statsFlushSeconds = statsFlushSeconds;
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
     this.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds;
@@ -141,6 +144,8 @@ public class EnvoyConfiguration {
                               h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
                               h2ConnectionKeepaliveTimeoutSeconds))
+        .append(String.format("- &h2_stream_buffer_limit_bytes %s\n",
+                              h2StreamBufferLimitBytes))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &per_try_idle_timeout %ss\n", perTryIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",

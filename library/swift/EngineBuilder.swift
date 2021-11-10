@@ -24,6 +24,8 @@ open class EngineBuilder: NSObject {
   private var enableInterfaceBinding: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
+  // 10Mb default (10 * 1024 * 1024)
+  private var h2StreamBufferLimitBytes: UInt32 = 10485760;
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var perTryIdleTimeoutSeconds: UInt32 = 15
@@ -170,6 +172,16 @@ open class EngineBuilder: NSObject {
   public func addH2ConnectionKeepaliveTimeoutSeconds(
     _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+    return self
+  }
+
+   /// Add the limit that h2 streams are able to buffer.
+   ///
+   /// - parameter h2StreamBufferBytes: Size in bytes that h2 streams are allowed to buffer.
+   ///
+   /// - returns: This builder.
+  public func addH2StreamBufferBytes(_ h2StreamBufferBytes: UInt32) -> Self {
+    self.h2StreamBufferBytes = h2StreamBufferBytes
     return self
   }
 
@@ -368,6 +380,7 @@ open class EngineBuilder: NSObject {
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
+      h2StreamBufferBytes: self.h2StreamBufferBytes,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,

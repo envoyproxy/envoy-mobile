@@ -38,7 +38,8 @@ open class EngineBuilder(
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
-  private var statsFlushSeconds = 60
+  // 10Mb default (10 * 1024 * 1024)
+  private var h2StreamBufferLimitBytes = 10485760;
   private var streamIdleTimeoutSeconds = 15
   private var perTryIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
@@ -187,6 +188,18 @@ open class EngineBuilder(
    */
   fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
     this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
+    return this
+  }
+
+  /**
+   * Add the limit that h2 streams are able to buffer.
+   *
+   * @param h2StreamBufferBytes size in bytes that h2 streams are allowed to buffer.
+   *
+   * @return this builder.
+   */
+  fun addH2StreamBufferBytes(h2StreamBufferBytes: Int): EngineBuilder {
+    this.h2StreamBufferBytes = h2StreamBufferBytes
     return this
   }
 
@@ -376,7 +389,7 @@ open class EngineBuilder(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferBytes,
             statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
             appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),
@@ -391,7 +404,7 @@ open class EngineBuilder(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
             dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds, h2StreamBufferBytes,
             statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
             appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
           ),

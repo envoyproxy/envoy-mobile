@@ -16,6 +16,7 @@
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
+                              h2StreamBufferBytes:(UInt32)h2StreamBufferBytes
                                 statsFlushSeconds:(UInt32)statsFlushSeconds
                          streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
                          perTryIdleTimeoutSeconds:(UInt32)perTryIdleTimeoutSeconds
@@ -48,6 +49,7 @@
   self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+  sefl.h2StreamBufferBytes = h2StreamBufferBytes;
   self.statsFlushSeconds = statsFlushSeconds;
   self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
   self.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds;
@@ -126,6 +128,8 @@
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
+  [definitions appendFormat:@"- &h2_stream_buffer_limit_bytes %lu\n",
+                            (unsigned long)self.h2StreamBufferLimitBytes];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
   [definitions

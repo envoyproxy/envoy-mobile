@@ -28,7 +28,7 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", true, 222, 333, 888, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(), emptyMap()
     )
@@ -54,6 +54,9 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_timeout 333s")
 
+    // H2 Buffer Limit
+    assertThat(resolvedTemplate).contains("&h2_stream_buffer_limit_bytes 888")
+
     // Metadata
     assertThat(resolvedTemplate).contains("os: Android")
     assertThat(resolvedTemplate).contains("app_version: v1.2.3")
@@ -77,7 +80,7 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolve templates with invalid templates will throw on build`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", false, 123, 123, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", false, 123, 123, 888, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
       emptyList(), emptyList(), emptyMap()
     )
 
@@ -92,7 +95,7 @@ class EnvoyConfigurationTest {
   @Test
   fun `cannot configure both statsD and gRPC stat sink`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", 5050, 123, 234, 345, 456, 321, "[hostname]", false, 123, 123, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", 5050, 123, 234, 345, 456, 321, "[hostname]", false, 123, 123, 888, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
       emptyList(), emptyList(), emptyMap()
     )
 
