@@ -8,6 +8,8 @@ on:
 
 jobs:
   kotlintestsmac:
+    # revert to //test/kotlin/... once fixed
+    # https://github.com/envoyproxy/envoy-mobile/issues/1932
     name: kotlin_tests_mac
     runs-on: macos-11
     timeout-minutes: 90
@@ -45,8 +47,12 @@ jobs:
             --build_tests_only \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+<<<<<<< HEAD
             --flaky_test_attempts=3 \
             //test/kotlin/...
+=======
+            //test/kotlin/io/...
+>>>>>>> b3d693348d7200e5dfab07b8130a84a0399ef6e3
   javatestsmac:
     name: java_tests_mac
     runs-on: macos-11
