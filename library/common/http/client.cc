@@ -85,6 +85,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   if (explicit_flow_control_ && !response_data_) {
     response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
         [this]() -> void {
+          // This call is asynchronous, and may occur for a closed stream.
           if (!this->remote_end_stream_received_) {
             this->onBufferedDataDrained();
           }
