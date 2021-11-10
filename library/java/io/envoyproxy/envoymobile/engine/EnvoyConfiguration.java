@@ -69,10 +69,10 @@ public class EnvoyConfiguration {
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
                             String dnsPreresolveHostnames, boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-                            int h2ConnectionKeepaliveTimeoutSeconds, int h2StreamBufferLimitBytes, int statsFlushSeconds,
-                            int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
-                            String appVersion, String appId, String virtualClusters,
-                            List<EnvoyNativeFilterConfig> nativeFilterChain,
+                            int h2ConnectionKeepaliveTimeoutSeconds, int h2StreamBufferLimitBytes,
+                            int statsFlushSeconds, int streamIdleTimeoutSeconds,
+                            int perTryIdleTimeoutSeconds, String appVersion, String appId,
+                            String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
                             List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
                             Map<String, EnvoyStringAccessor> stringAccessors) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
@@ -144,8 +144,7 @@ public class EnvoyConfiguration {
                               h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
                               h2ConnectionKeepaliveTimeoutSeconds))
-        .append(String.format("- &h2_stream_buffer_limit_bytes %s\n",
-                              h2StreamBufferLimitBytes))
+        .append(String.format("- &h2_stream_buffer_limit_bytes %s\n", h2StreamBufferLimitBytes))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &per_try_idle_timeout %ss\n", perTryIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",

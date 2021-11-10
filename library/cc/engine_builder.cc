@@ -67,8 +67,7 @@ EngineBuilder::addH2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepaliv
   return *this;
 }
 
-EngineBuilder&
-EngineBuilder::addH2StreamBufferLimitBytes(int h2_stream_buffer_limit_bytes) {
+EngineBuilder& EngineBuilder::addH2StreamBufferLimitBytes(int h2_stream_buffer_limit_bytes) {
   this->h2_stream_buffer_limit_bytes_ = h2_stream_buffer_limit_bytes;
   return *this;
 }
@@ -110,8 +109,7 @@ std::string EngineBuilder::generateConfigStr() {
        fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_ / 1000.0)},
       {"h2_connection_keepalive_timeout",
        fmt::format("{}s", this->h2_connection_keepalive_timeout_seconds_)},
-      {"h2_stream_buffer_limit_bytes",
-       fmt::format("{}s", this->h2_stream_buffer_limit_bytes_)},
+      {"h2_stream_buffer_limit_bytes", fmt::format("{}s", this->h2_stream_buffer_limit_bytes_)},
       {
           "metadata",
           fmt::format("{{ device_os: {}, app_version: {}, app_id: {} }}", this->device_os_,
