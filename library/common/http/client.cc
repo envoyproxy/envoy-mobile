@@ -81,6 +81,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   }
 
   // The response_data_ is systematically assigned here because resumeData can
+<<<<<<< HEAD
   // incur an asynchronous callback to sendDataToBridge. It might look like
   // safe to only set the response_data_ after invoking sendDataToBridge in this
   // method - it is not - you get that stacktrace once in a while by doing so:
@@ -89,6 +90,9 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
   // Http::Client::DirectStreamCallbacks::sendDataToBridge(Envoy::Buffer::Instance&, bool)+0x31c
   // Http::Client::DirectStreamCallbacks::resumeData(int)+0x886
   // Http::Client::readData(long, unsigned long)+0x332
+=======
+  // incur an asynchronous callback to sendDataToBridge.
+>>>>>>> main
   if (explicit_flow_control_ && !response_data_) {
     response_data_ = std::make_unique<Buffer::WatermarkBuffer>(
         [this]() -> void { this->onBufferedDataDrained(); },
