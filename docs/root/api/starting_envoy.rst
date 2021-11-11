@@ -209,7 +209,7 @@ for further information.
 Specifies the limit in bytes that the engine will buffer for h2 streams when using Envoy filters
 that buffer data e.g., any filter added via ``addPlatformFilter``.
 
-**Example::
+**Example**::
 
   // Kotlin
   builder.addH2StreamBufferLimitBytes(5242880)
