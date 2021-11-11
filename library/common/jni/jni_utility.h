@@ -33,6 +33,8 @@ jbyteArray native_data_to_array(JNIEnv* env, envoy_data data);
 
 jlongArray native_stream_intel_to_array(JNIEnv* env, envoy_stream_intel stream_intel);
 
+jlongArray native_stream_metrics_to_array(JNIEnv* env, envoy_stream_metrics stream_metrics);
+
 /**
  * Utility function that copies envoy_map to a java HashMap jobject.
  *

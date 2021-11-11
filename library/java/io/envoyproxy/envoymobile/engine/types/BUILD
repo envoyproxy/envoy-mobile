@@ -14,6 +14,7 @@ java_library(
         "EnvoyOnEngineRunning.java",
         "EnvoyStatus.java",
         "EnvoyStreamIntel.java",
+        "EnvoyStreamMetrics.java",
         "EnvoyStringAccessor.java",
     ],
     visibility = ["//visibility:public"],

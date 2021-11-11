@@ -4,6 +4,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilter
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamMetrics
 import java.nio.ByteBuffer
 
 /*

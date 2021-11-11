@@ -66,4 +66,7 @@ public interface EnvoyHTTPCallbacks {
    * @param streamIntel,  contains internal HTTP stream metrics, context, and other details.
    */
   void onSendWindowAvailable(EnvoyStreamIntel streamIntel);
+
+  // TODO(alyssawilk) comment.
+  void onStreamEndedMetrics(EnvoyStreamMetrics streamMetrics);
 }

@@ -141,4 +141,21 @@ class JvmCallbackContext {
 
     return null;
   }
+
+  /**
+   * Dispatches onStreamEndedMetrics notice up to the platform
+   *
+   * @param streamMetrics, internal HTTP stream metrics, context, and other details.
+   * @return Object, not used for response callbacks.
+   */
+  public Object onStreamEndedMetrics(long[] streamMetrics) {
+    callbacks.getExecutor().execute(new Runnable() {
+      public void run() {
+        // This call is atomically gated at the call-site and will only happen once.
+        callbacks.onStreamEndedMetrics(new EnvoyStreamMetricsImpl(streamMetrics));
+      }
+    });
+
+    return null;
+  }
 }

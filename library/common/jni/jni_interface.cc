@@ -751,6 +751,25 @@ static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void*
   return result;
 }
 
+static void* jvm_on_stream_ended_metrics(envoy_stream_metrics stream_metrics, void* context) {
+  jni_log("[Envoy]", "jvm_on_stream_ended_metrics");
+
+  JNIEnv* env = get_env();
+  jobject j_context = static_cast<jobject>(context);
+
+  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onStreamEndedMetrics =
+      env->GetMethodID(jcls_JvmObserverContext, "onStreamEndedMetrics", "([J)Ljava/lang/Object;");
+
+  jlongArray j_stream_metrics = native_stream_metrics_to_array(env, stream_metrics);
+
+  jobject result = env->CallObjectMethod(j_context, jmid_onStreamEndedMetrics, j_stream_metrics);
+
+  env->DeleteLocalRef(j_stream_metrics);
+  env->DeleteLocalRef(jcls_JvmObserverContext);
+  return result;
+}
+
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
@@ -815,6 +834,7 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_complete,
                                            jvm_on_cancel,
                                            jvm_on_send_window_available,
+                                           jvm_on_stream_ended_metrics,
                                            retained_context};
   envoy_status_t result = start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks,
                                        explicit_flow_control);

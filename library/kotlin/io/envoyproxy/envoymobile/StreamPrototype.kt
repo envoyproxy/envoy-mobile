@@ -132,6 +132,16 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
   }
 
   /**
+   * TODO(alyssawilk) comment.
+   */
+  fun setOnStreamendedMetrics(
+    closure: (streamMetrics: StreamMetrics) -> Unit
+  ): StreamPrototype {
+    callbacks.onStreamEndedMetrics = closure
+    return this
+  }
+
+  /**
    * Create engine callbacks using the provided queue.
    *
    * @param executor Executor on which to receive callback events.

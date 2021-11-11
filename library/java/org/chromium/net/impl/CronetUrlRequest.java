@@ -6,6 +6,7 @@ import androidx.annotation.IntDef;
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamMetrics;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.MalformedURLException;
@@ -833,6 +834,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
       mUploadDataStream.readDataReady(); // Have the next request body chunk to be sent.
     }
 
+    @Override
+    public void onStreamEndedMetrics(EnvoyStreamMetrics streamMetrics) {}
     /**
      * Sends one chunk of the request body if the state permits. This method is not re-entrant, but
      * by contract this method can only be invoked once for the first chunk, and then once per

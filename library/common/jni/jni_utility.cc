@@ -93,6 +93,32 @@ jlongArray native_stream_intel_to_array(JNIEnv* env, envoy_stream_intel stream_i
   return j_array;
 }
 
+jlongArray native_stream_metrics_to_array(JNIEnv* env, envoy_stream_metrics stream_metrics) {
+  jlongArray j_array = env->NewLongArray(14);
+  jlong* critical_array = static_cast<jlong*>(env->GetPrimitiveArrayCritical(j_array, nullptr));
+  RELEASE_ASSERT(critical_array != nullptr, "unable to allocate memory in jni_utility");
+
+  critical_array[0] = static_cast<jlong>(stream_metrics.request_start_ms);
+  critical_array[1] = static_cast<jlong>(stream_metrics.dns_start_ms);
+  critical_array[2] = static_cast<jlong>(stream_metrics.dns_end_ms);
+  critical_array[3] = static_cast<jlong>(stream_metrics.connect_start_ms);
+  critical_array[4] = static_cast<jlong>(stream_metrics.connect_end_ms);
+  critical_array[5] = static_cast<jlong>(stream_metrics.ssl_start_ms);
+  critical_array[6] = static_cast<jlong>(stream_metrics.ssl_end_ms);
+  critical_array[7] = static_cast<jlong>(stream_metrics.sending_start_ms);
+  critical_array[8] = static_cast<jlong>(stream_metrics.sending_end_ms);
+  critical_array[9] = static_cast<jlong>(stream_metrics.response_start_ms);
+  critical_array[10] = static_cast<jlong>(stream_metrics.request_end_ms);
+  critical_array[11] = static_cast<jlong>(stream_metrics.socket_reused);
+  critical_array[12] = static_cast<jlong>(stream_metrics.sent_byte_count);
+  critical_array[13] = static_cast<jlong>(stream_metrics.received_byte_count);
+
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  env->ReleasePrimitiveArrayCritical(j_array, critical_array, 0);
+  return j_array;
+}
+
 jobject native_map_to_map(JNIEnv* env, envoy_map map) {
   jclass jcls_hashMap = env->FindClass("java/util/HashMap");
   jmethodID jmid_hashMapInit = env->GetMethodID(jcls_hashMap, "<init>", "(I)V");
