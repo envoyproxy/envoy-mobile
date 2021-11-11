@@ -202,6 +202,21 @@ for further information.
   // Swift
   builder.addPerTryIdleTimeoutSeconds(5)
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addH2StreamBufferLimitBytes``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specifies the limit in bytes that the engine will buffer for h2 streams when using Envoy filters
+that buffer data e.g., any filter added via ``addPlatformFilter``.
+
+**Example::
+
+  // Kotlin
+  builder.addH2StreamBufferLimitBytes(5242880)
+
+  // Swift
+  builder.addH2StreamBufferLimitBytes(5242880)
+
 ~~~~~~~~~~~~~~~~~
 ``addAppVersion``
 ~~~~~~~~~~~~~~~~~
