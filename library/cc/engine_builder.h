@@ -18,6 +18,9 @@ public:
   EngineBuilder& addLogLevel(LogLevel log_level);
   EngineBuilder& setOnEngineRunning(std::function<void()> closure);
 
+  using LoggerFunc = std::function<void(absl::string_view)>;
+  EngineBuilder& addLogger(LoggerFunc logger);
+
   EngineBuilder& addGrpcStatsDomain(const std::string& stats_domain);
   EngineBuilder& addConnectTimeoutSeconds(int connect_timeout_seconds);
   EngineBuilder& addDnsRefreshSeconds(int dns_refresh_seconds);
@@ -48,6 +51,7 @@ public:
 private:
   LogLevel log_level_ = LogLevel::info;
   EngineCallbacksSharedPtr callbacks_;
+  LoggerFunc logger_;
 
   std::string config_template_;
   std::string stats_domain_ = "0.0.0.0";

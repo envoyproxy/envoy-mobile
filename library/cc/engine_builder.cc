@@ -17,6 +17,11 @@ EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::addLogger(LoggerFunc logger) {
+  logger_ = logger;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::setOnEngineRunning(std::function<void()> closure) {
   this->callbacks_->on_engine_running = closure;
   return *this;
@@ -132,17 +137,27 @@ std::string EngineBuilder::generateConfigStr() {
   return config_str;
 }
 
+namespace {
+void cc_engine_on_log(envoy_data data, const void* context) {
+  auto& log = *reinterpret_cast<const EngineBuilder::LoggerFunc*>(context);
+
+  log(absl::string_view(reinterpret_cast<const char*>(data.bytes), data.length));
+}
+void cc_logger_delete(const void* logger) {
+  delete reinterpret_cast<const EngineBuilder::LoggerFunc*>(logger);
+}
+} // namespace
 EngineSharedPtr EngineBuilder::build() {
-  envoy_logger null_logger;
-  null_logger.log = nullptr;
-  null_logger.release = envoy_noop_const_release;
-  null_logger.context = nullptr;
+  envoy_logger logger;
+  logger.log = cc_engine_on_log;
+  logger.release = cc_logger_delete;
+  logger.context = new LoggerFunc(logger_);
 
   envoy_event_tracker null_tracker{};
 
   auto config_str = this->generateConfigStr();
   auto envoy_engine =
-      init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
+      init_engine(this->callbacks_->asEnvoyEngineCallbacks(), logger, null_tracker);
   run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
 
   // we can't construct via std::make_shared
