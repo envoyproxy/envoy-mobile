@@ -5,11 +5,24 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
+    name = "engine_builder_lib",
+    repository = "@envoy",
+    hdrs = [
+        "engine_builder.h",
+    ],
+    srcs = [
+        "engine_builder.cc",
+    ],
+    deps = [
+        ":envoy_engine_cc_lib_no_stamp",
+    ]
+)
+
+envoy_cc_library(
     name = "envoy_engine_cc_lib_no_stamp",
     srcs = [
         "bridge_utility.cc",
         "engine.cc",
-        "engine_builder.cc",
         "engine_callbacks.cc",
         "headers.cc",
         "headers_builder.cc",
@@ -33,7 +46,6 @@ envoy_cc_library(
     hdrs = [
         "bridge_utility.h",
         "engine.h",
-        "engine_builder.h",
         "engine_callbacks.h",
         "envoy_error.h",
         "headers.h",
@@ -67,10 +79,11 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
-    name = "envoy_engine_cc_lib",
+    name = "envoy_engine_cc_lienvoy_engine_cc_libb",
     repository = "@envoy",
     deps = [
         ":envoy_engine_cc_lib_no_stamp",
+        ":engine_builder_lib",
         "//library/common:engine_common_lib_stamped",
     ],
 )
