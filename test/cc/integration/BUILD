@@ -10,6 +10,7 @@ envoy_cc_test(
     repository = "@envoy",
     deps = [
         "//library/cc:envoy_engine_cc_lib_no_stamp",
+        "//library/cc:engine_builder_lib",
     ],
 )
 
@@ -19,5 +20,6 @@ envoy_cc_test(
     repository = "@envoy",
     deps = [
         "//library/cc:envoy_engine_cc_lib_no_stamp",
+        "//library/cc:engine_builder_lib",
     ],
 )
