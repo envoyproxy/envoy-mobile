@@ -60,6 +60,9 @@ envoy_cc_library(
     external_deps = ["abseil_optional"],
     repository = "@envoy",
     visibility = ["//visibility:public"],
+    copts = [
+        "-std=c++20",
+    ],
     deps = [
         "//library/common:envoy_main_interface_lib_no_stamp",
         "//library/common/data:utility_lib",
