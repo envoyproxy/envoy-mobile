@@ -58,7 +58,7 @@ envoy_cc_library(
         "upstream_http_protocol.h",
     ],
     copts = [
-        "-std=c++20",
+        "-std=c++2a",
     ],
     external_deps = ["abseil_optional"],
     repository = "@envoy",
