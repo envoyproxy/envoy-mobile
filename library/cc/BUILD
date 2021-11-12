@@ -6,16 +6,16 @@ envoy_package()
 
 envoy_cc_library(
     name = "engine_builder_lib",
-    repository = "@envoy",
-    hdrs = [
-        "engine_builder.h",
-    ],
     srcs = [
         "engine_builder.cc",
     ],
+    hdrs = [
+        "engine_builder.h",
+    ],
+    repository = "@envoy",
     deps = [
         ":envoy_engine_cc_lib_no_stamp",
-    ]
+    ],
 )
 
 envoy_cc_library(
@@ -82,8 +82,8 @@ envoy_cc_library(
     name = "envoy_engine_cc_lienvoy_engine_cc_libb",
     repository = "@envoy",
     deps = [
-        ":envoy_engine_cc_lib_no_stamp",
         ":engine_builder_lib",
+        ":envoy_engine_cc_lib_no_stamp",
         "//library/common:engine_common_lib_stamped",
     ],
 )
