@@ -9,7 +9,7 @@ namespace Envoy {
 namespace Platform {
 
 EngineBuilder::EngineBuilder(std::string config_template)
-    : config_template_(config_template), callbacks_(std::make_shared<EngineCallbacks>()) {}
+    : callbacks_(std::make_shared<EngineCallbacks>()), config_template_(config_template) {}
 EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {}
 
 EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
