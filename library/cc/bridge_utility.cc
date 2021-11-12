@@ -45,7 +45,7 @@ RawHeaderMap envoyHeadersAsRawHeaderMap(envoy_headers raw_headers) {
     headers[key].push_back(value);
   }
   // free instead of release_envoy_headers
-  // because we already free each envoy_data piecewise
+  // because we already free each envoy_data individually
   // during calls to envoy_data_as_string
   free(raw_headers.entries);
   return headers;
