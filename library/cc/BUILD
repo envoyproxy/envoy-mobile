@@ -57,9 +57,6 @@ envoy_cc_library(
         "trailers.h",
         "upstream_http_protocol.h",
     ],
-    copts = [
-        "-std=c++2a",
-    ],
     external_deps = ["abseil_optional"],
     repository = "@envoy",
     visibility = ["//visibility:public"],
