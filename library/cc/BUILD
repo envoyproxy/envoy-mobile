@@ -79,7 +79,7 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
-    name = "envoy_engine_cc_lienvoy_engine_cc_libb",
+    name = "envoy_engine_cc_lib",
     repository = "@envoy",
     deps = [
         ":engine_builder_lib",
