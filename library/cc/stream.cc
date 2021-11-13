@@ -11,23 +11,23 @@ Stream::Stream(envoy_stream_t handle) : handle_(handle) {}
 
 Stream& Stream::sendHeaders(RequestHeadersSharedPtr headers, bool end_stream) {
   envoy_headers raw_headers = rawHeaderMapAsEnvoyHeaders(headers->allHeaders());
-  ::send_headers(this->handle_, raw_headers, end_stream);
+  ::send_headers(handle_, raw_headers, end_stream);
   return *this;
 }
 
 Stream& Stream::sendData(envoy_data data) {
-  ::send_data(this->handle_, data, false);
+  ::send_data(handle_, data, false);
   return *this;
 }
 
 void Stream::close(RequestTrailersSharedPtr trailers) {
   envoy_headers raw_headers = rawHeaderMapAsEnvoyHeaders(trailers->allHeaders());
-  ::send_trailers(this->handle_, raw_headers);
+  ::send_trailers(handle_, raw_headers);
 }
 
-void Stream::close(envoy_data data) { ::send_data(this->handle_, data, true); }
+void Stream::close(envoy_data data) { ::send_data(handle_, data, true); }
 
-void Stream::cancel() { reset_stream(this->handle_); }
+void Stream::cancel() { reset_stream(handle_); }
 
 } // namespace Platform
 } // namespace Envoy

@@ -21,7 +21,7 @@ envoy_engine_callbacks EngineCallbacks::asEnvoyEngineCallbacks() {
   return envoy_engine_callbacks{
       .on_engine_running = &c_on_engine_running,
       .on_exit = &c_on_exit,
-      .context = new EngineCallbacksSharedPtr(this->shared_from_this()),
+      .context = new EngineCallbacksSharedPtr(shared_from_this()),
   };
 }
 
