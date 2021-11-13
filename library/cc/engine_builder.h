@@ -19,7 +19,7 @@ public:
   EngineBuilder& setOnEngineRunning(std::function<void()> closure);
 
   using LoggerFunc = std::function<void(absl::string_view)>;
-  EngineBuilder& addLogger(LoggerFunc logger);
+  EngineBuilder& setLogger(LoggerFunc logger);
 
   EngineBuilder& addGrpcStatsDomain(const std::string& stats_domain);
   EngineBuilder& addConnectTimeoutSeconds(int connect_timeout_seconds);
