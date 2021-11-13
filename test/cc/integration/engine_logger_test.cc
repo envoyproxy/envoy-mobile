@@ -5,7 +5,8 @@
 
 namespace Envoy {
 namespace {
-TEST(EngineLoggerTest, CanRegisterLogger) {
+
+TEST(EngineLoggerTest, SetLogger) {
   auto engine_builder = Platform::EngineBuilder();
   absl::Notification startup_log_seen;
   auto engine = engine_builder.addLogLevel(Platform::LogLevel::debug)
@@ -18,6 +19,19 @@ TEST(EngineLoggerTest, CanRegisterLogger) {
                     .build();
 
   startup_log_seen.WaitForNotification();
+
+  engine->terminate();
+}
+
+// Verifies that we can start up without specifying a logger.
+TEST(EngineLoggerTest, LoggerNotSet) {
+  auto engine_builder = Platform::EngineBuilder();
+  absl::Notification startup;
+  auto engine = engine_builder.addLogLevel(Platform::LogLevel::debug)
+                    .setOnEngineRunning([&]() { startup.Notify(); })
+                    .build();
+
+  startup.WaitForNotification();
 
   engine->terminate();
 }

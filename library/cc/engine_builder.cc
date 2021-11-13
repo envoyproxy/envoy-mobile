@@ -150,10 +150,14 @@ void cc_logger_delete(const void* logger) {
 }
 } // namespace
 EngineSharedPtr EngineBuilder::build() {
-  envoy_logger logger;
-  logger.log = cc_engine_on_log;
-  logger.release = cc_logger_delete;
-  logger.context = new LoggerFunc(logger_);
+  envoy_logger logger{};
+  if (logger_ != nullptr) {
+    logger.log = cc_engine_on_log;
+    logger.release = cc_logger_delete;
+    logger.context = new LoggerFunc(logger_);
+  } else {
+    logger.release = envoy_noop_const_release;
+  }
 
   envoy_event_tracker null_tracker{};
 
