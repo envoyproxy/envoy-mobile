@@ -199,11 +199,11 @@ PYBIND11_MODULE(envoy_engine, m) {
       .value("Reset", RetryRule::Reset);
 
   py::class_<RetryPolicy, RetryPolicySharedPtr>(m, "RetryPolicy")
-      .def_readwrite("max_retry_count", &RetryPolicy::max_retry_count)
-      .def_readwrite("retry_on", &RetryPolicy::retry_on)
-      .def_readwrite("retry_status_codes", &RetryPolicy::retry_status_codes)
-      .def_readwrite("per_try_timeout_ms", &RetryPolicy::per_try_timeout_ms)
-      .def_readwrite("total_upstream_timeout_ms", &RetryPolicy::total_upstream_timeout_ms);
+      .def_readwrite("max_retry_count", &RetryPolicy::max_retry_count_)
+      .def_readwrite("retry_on", &RetryPolicy::retry_on_)
+      .def_readwrite("retry_status_codes", &RetryPolicy::retry_status_codes_)
+      .def_readwrite("per_try_timeout_ms", &RetryPolicy::per_try_timeout_ms_)
+      .def_readwrite("total_upstream_timeout_ms", &RetryPolicy::total_upstream_timeout_ms_);
 
   // TODO(crockeo): fill out stubs here once stats client impl
   py::class_<PulseClient, PulseClientSharedPtr>(m, "PulseClient");
