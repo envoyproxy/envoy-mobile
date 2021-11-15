@@ -4,10 +4,7 @@
 #include "library/common/main_interface.h"
 #include "library/common/types/c_types.h"
 
-// TODO(snowp): No good reason for this to not be in Envoy::, but I had issues declaring the friend
-// functions when using it, so disable for now.
-
-// NOLINT(namespace-envoy)
+namespace Envoy {
 
 /**
  * Wrapper class around the singleton engine handle. This allows us to use C++ access modifiers to
@@ -31,12 +28,19 @@ private:
     return engine_.lock();
   }
 
-  static Envoy::EngineSharedPtr strong_engine_;
-  static Envoy::EngineWeakPtr engine_;
+  static envoy_engine_t initEngine(envoy_engine_callbacks callbacks, envoy_logger logger,
+                                   envoy_event_tracker event_tracker);
+  static envoy_status_t runEngine(envoy_engine_t, const char* config, const char* log_level);
+  static void terminateEngine(envoy_engine_t);
 
-  // Allow a specific list of functions to access the internal static state.
-  friend envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
-                                    envoy_event_tracker event_tracker);
-  friend envoy_status_t run_engine(envoy_engine_t, const char* config, const char* log_level);
-  friend void terminate_engine(envoy_engine_t engine);
+  static EngineSharedPtr strong_engine_;
+  static EngineWeakPtr engine_;
+
+  // Allow a specific list of functions to access the internal setup/teardown functionality.
+  friend envoy_engine_t(::init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
+                                      envoy_event_tracker event_tracker));
+  friend envoy_status_t(::run_engine(envoy_engine_t, const char* config, const char* log_level));
+  friend void ::terminate_engine(envoy_engine_t engine);
 };
+
+} // namespace Envoy

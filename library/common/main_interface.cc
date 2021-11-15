@@ -19,28 +19,28 @@ envoy_stream_t init_stream(envoy_engine_t) { return current_stream_handle_++; }
 
 envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
                             bool explicit_flow_control) {
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       1 /* engine */, [stream, callbacks, explicit_flow_control](auto& engine) -> void {
         engine.httpClient().startStream(stream, callbacks, explicit_flow_control);
       });
 }
 
 envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream) {
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       1 /* engine */, ([stream, headers, end_stream](auto& engine) -> void {
         engine.httpClient().sendHeaders(stream, headers, end_stream);
       }));
 }
 
 envoy_status_t read_data(envoy_stream_t stream, size_t bytes_to_read) {
-  return EngineHandle::runOnEngineDispatcher(1 /* engine */,
-                                             [stream, bytes_to_read](auto& engine) -> void {
-                                               engine.httpClient().readData(stream, bytes_to_read);
-                                             });
+  return Envoy::EngineHandle::runOnEngineDispatcher(
+      1 /* engine */, [stream, bytes_to_read](auto& engine) -> void {
+        engine.httpClient().readData(stream, bytes_to_read);
+      });
 }
 
 envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream) {
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       1 /* engine */, [stream, data, end_stream](auto& engine) -> void {
         engine.httpClient().sendData(stream, data, end_stream);
       });
@@ -50,22 +50,23 @@ envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream
 envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
 
 envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
-  return EngineHandle::runOnEngineDispatcher(1 /* engine */,
-                                             [stream, trailers](auto& engine) -> void {
-                                               engine.httpClient().sendTrailers(stream, trailers);
-                                             });
+  return Envoy::EngineHandle::runOnEngineDispatcher(
+      1 /* engine */, [stream, trailers](auto& engine) -> void {
+        engine.httpClient().sendTrailers(stream, trailers);
+      });
 }
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       1 /* engine */, [stream](auto& engine) -> void { engine.httpClient().cancelStream(stream); });
 }
 
 envoy_status_t set_preferred_network(envoy_network_t network) {
   envoy_netconf_t configuration_key = Envoy::Network::Configurator::setPreferredNetwork(network);
-  EngineHandle::runOnEngineDispatcher(1 /* engine */, [configuration_key](auto& engine) -> void {
-    engine.networkConfigurator().refreshDns(configuration_key);
-  });
+  Envoy::EngineHandle::runOnEngineDispatcher(
+      1 /* engine */, [configuration_key](auto& engine) -> void {
+        engine.networkConfigurator().refreshDns(configuration_key);
+      });
   // TODO(snowp): Should this return failure ever?
   return ENVOY_SUCCESS;
 }
@@ -74,7 +75,7 @@ envoy_status_t record_counter_inc(envoy_engine_t e, const char* elements, envoy_
                                   uint64_t count) {
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, count](auto& engine) -> void {
         engine.recordCounterInc(name, tags, count);
       });
@@ -84,7 +85,7 @@ envoy_status_t record_gauge_set(envoy_engine_t e, const char* elements, envoy_st
                                 uint64_t value) {
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, value](auto& engine) -> void {
         engine.recordGaugeSet(name, tags, value);
       });
@@ -94,7 +95,7 @@ envoy_status_t record_gauge_add(envoy_engine_t e, const char* elements, envoy_st
                                 uint64_t amount) {
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, amount](auto& engine) -> void {
         engine.recordGaugeAdd(name, tags, amount);
       });
@@ -104,7 +105,7 @@ envoy_status_t record_gauge_sub(envoy_engine_t e, const char* elements, envoy_st
                                 uint64_t amount) {
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, amount](auto& engine) -> void {
         engine.recordGaugeSub(name, tags, amount);
       });
@@ -114,7 +115,7 @@ envoy_status_t record_histogram_value(envoy_engine_t e, const char* elements, en
                                       uint64_t value, envoy_histogram_stat_unit_t unit_measure) {
   // TODO: use specific engine once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  return EngineHandle::runOnEngineDispatcher(
+  return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, value, unit_measure](auto& engine) -> void {
         engine.recordHistogramValue(name, tags, value, unit_measure);
       });
@@ -136,7 +137,7 @@ absl::optional<envoy_data> blockingAdminCall(envoy_engine_t e, absl::string_view
   // allowing the dispatched lambda to clean itself up when it's done.
   auto context = std::make_shared<AdminCallContext>();
 
-  auto status = EngineHandle::runOnEngineDispatcher(
+  auto status = Envoy::EngineHandle::runOnEngineDispatcher(
       e, [context, path = std::string(path), method = std::string(method)](auto& engine) -> void {
         absl::MutexLock lock(&context->mutex_);
 
@@ -175,7 +176,7 @@ envoy_status_t dump_stats(envoy_engine_t e, envoy_data* out) {
 }
 
 void flush_stats(envoy_engine_t e) {
-  EngineHandle::runOnEngineDispatcher(e, [](auto& engine) { engine.flushStats(); });
+  Envoy::EngineHandle::runOnEngineDispatcher(e, [](auto& engine) { engine.flushStats(); });
 }
 
 envoy_status_t register_platform_api(const char* name, void* api) {
@@ -185,33 +186,18 @@ envoy_status_t register_platform_api(const char* name, void* api) {
 
 envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
                            envoy_event_tracker event_tracker) {
-  // TODO(goaway): return new handle once multiple engine support is in place.
-  // https://github.com/lyft/envoy-mobile/issues/332
-  EngineHandle::strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker);
-  EngineHandle::engine_ = EngineHandle::strong_engine_;
-  return 1;
+  return Envoy::EngineHandle::initEngine(callbacks, logger, event_tracker);
 }
 
-envoy_status_t run_engine(envoy_engine_t, const char* config, const char* log_level) {
-  // This will change once multiple engine support is in place.
-  // https://github.com/lyft/envoy-mobile/issues/332
-  if (auto e = EngineHandle::engine()) {
-    e->run(config, log_level);
-    return ENVOY_SUCCESS;
-  }
-
-  return ENVOY_FAILURE;
+envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level) {
+  return Envoy::EngineHandle::runEngine(engine, config, log_level);
 }
 
-void terminate_engine(envoy_engine_t) {
-  // Reset the primary handle to the engine, but retain it long enough to synchronously terminate.
-  auto e = EngineHandle::strong_engine_;
-  EngineHandle::strong_engine_.reset();
-  e->terminate();
-}
+void terminate_engine(envoy_engine_t engine) { Envoy::EngineHandle::terminateEngine(engine); }
 
 envoy_status_t drain_connections(envoy_engine_t e) {
   // This will change once multiple engine support is in place.
   // https://github.com/lyft/envoy-mobile/issues/332
-  return EngineHandle::runOnEngineDispatcher(e, [](auto& engine) { engine.drainConnections(); });
+  return Envoy::EngineHandle::runOnEngineDispatcher(
+      e, [](auto& engine) { engine.drainConnections(); });
 }
