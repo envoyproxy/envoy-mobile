@@ -24,6 +24,7 @@ void* c_on_headers(envoy_headers headers, bool end_stream, envoy_stream_intel, v
     auto on_headers = stream_callbacks->on_headers.value();
     on_headers(builder.build(), end_stream);
   }
+  release_envoy_headers(headers);
   return context;
 }
 
@@ -33,6 +34,7 @@ void* c_on_data(envoy_data data, bool end_stream, envoy_stream_intel, void* cont
     auto on_data = stream_callbacks->on_data.value();
     on_data(data, end_stream);
   }
+  release_envoy_data(data);
   return context;
 }
 
@@ -47,6 +49,7 @@ void* c_on_trailers(envoy_headers metadata, envoy_stream_intel, void* context) {
     auto on_trailers = stream_callbacks->on_trailers.value();
     on_trailers(builder.build());
   }
+  release_envoy_headers(metadata);
   return context;
 }
 
@@ -61,6 +64,8 @@ void* c_on_error(envoy_error raw_error, envoy_stream_intel, void* context) {
     auto on_error = stream_callbacks->on_error.value();
     on_error(error);
   }
+  release_envoy_error(raw_error);
+
   delete stream_callbacks_ptr;
   return nullptr;
 }

@@ -23,7 +23,7 @@ jobs:
       - id: check_context
         name: 'Check whether to run'
         run: |
-          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only origin/main | grep -qe common/ -e bazel/ -e ^\.bazelrc$ -e ^envoy$ -e ^WORKSPACE$ -e ^.github/workflows/tsan.yml$ ; then
+          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only origin/main | grep -qe common/ -e cc/ -e bazel/ -e ^\.bazelrc$ -e ^envoy$ -e ^WORKSPACE$ -e ^.github/workflows/tsan.yml$ ; then
             echo "Tests will run."
             echo "::set-output name=run_tests::true"
           else
@@ -45,4 +45,4 @@ jobs:
           --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
           --config=remote-ci-linux-tsan \
-          //test/common/...
+          -- //test/common/... //test/cc/...
