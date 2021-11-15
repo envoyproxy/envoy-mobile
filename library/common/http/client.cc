@@ -51,11 +51,11 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
   // Track success for later bookkeeping (stream could still be reset).
   success_ = CodeUtility::is2xx(response_status);
 
-  ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
-            direct_stream_.stream_handle_, end_stream, headers);
   if (end_stream) {
     sendMetrics();
   }
+  ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
+            direct_stream_.stream_handle_, end_stream, headers);
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream, streamIntel(),
                                bridge_callbacks_.context);
   response_headers_forwarded_ = true;
@@ -120,13 +120,12 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
   // Only send end stream if all data is being sent.
   bool send_end_stream = end_stream && (bytes_to_send == data.length());
 
-  ENVOY_LOG(debug,
-            "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
-            direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
-
   if (send_end_stream) {
     sendMetrics();
   }
+  ENVOY_LOG(debug,
+            "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
+            direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
   bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), send_end_stream,
                             streamIntel(), bridge_callbacks_.context);
   if (send_end_stream) {
@@ -158,10 +157,10 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 }
 
 void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMap& trailers) {
+  sendMetrics();
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
 
-  sendMetrics();
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), streamIntel(),
                                 bridge_callbacks_.context);
   onComplete();
@@ -265,11 +264,11 @@ void Client::DirectStreamCallbacks::onError() {
   ASSERT(!http_client_.getStream(direct_stream_.stream_handle_,
                                  GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
 
+  sendMetrics();
   ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
-  sendMetrics();
   bridge_callbacks_.on_error(error_.value(), streamIntel(), bridge_callbacks_.context);
 }
 
@@ -280,9 +279,10 @@ void Client::DirectStreamCallbacks::onSendWindowAvailable() {
 
 void Client::DirectStreamCallbacks::onCancel() {
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
+  sendMetrics();
+
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
-  sendMetrics();
   bridge_callbacks_.on_cancel(streamIntel(), bridge_callbacks_.context);
 }
 
