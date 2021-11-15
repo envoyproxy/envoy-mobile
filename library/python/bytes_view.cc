@@ -28,7 +28,6 @@ envoy_data pyBytesAsEnvoyData(py::bytes bytes) {
 // we just copy it over to python-land.
 py::bytes envoyDataAsPyBytes(envoy_data data) {
   auto bytes = py::bytes((const char*)data.bytes, data.length);
-  release_envoy_data(data);
   return bytes;
 }
 
