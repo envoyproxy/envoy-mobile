@@ -29,6 +29,7 @@ public:
   StreamPrototype& setOnComplete(OnCompleteCallback closure);
   StreamPrototype& setOnCancel(OnCancelCallback closure);
   StreamPrototype& setOnSendWindowAvailable(OnSendWindowAvailableCallback closure);
+  StreamPrototype& setOnStreamEndedMetrics(OnStreamEndedMetricsCallback closure);
 
 private:
   EngineSharedPtr engine_;

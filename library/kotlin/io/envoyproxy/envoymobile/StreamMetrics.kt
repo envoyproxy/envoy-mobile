@@ -22,5 +22,11 @@ class StreamMetrics constructor(
   val sentByteCount: Long,
   val receivedByteCount: Long
 ) {
-  constructor(base: EnvoyStreamMetrics) : this(base.requestStartMs, base.dnsStartMs, base.dnsEndMs, base.connectStartMs, base.connectEndMs, base.sslStartMs, base.sslEndMs, base.sendingStartMs, base.sendingEndMs, base.responseStartMs, base.requestEndMs, base.socketReused, base.sentByteCount, base.receivedByteCount)
+  constructor(base: EnvoyStreamMetrics) : this(base.requestStartMs, base.dnsStartMs, base.dnsEndMs,
+                                               base.connectStartMs, base.connectEndMs,
+                                               base.sslStartMs, base.sslEndMs, base.sendingStartMs,
+                                               base.sendingEndMs,
+                                               base.responseStartMs, base.requestEndMs,
+                                               base.socketReused, base.sentByteCount,
+                                               base.receivedByteCount)
 }

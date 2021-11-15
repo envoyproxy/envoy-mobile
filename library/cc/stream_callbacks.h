@@ -24,7 +24,7 @@ using OnErrorCallback = std::function<void(EnvoyErrorSharedPtr error)>;
 using OnCompleteCallback = std::function<void()>;
 using OnCancelCallback = std::function<void()>;
 using OnSendWindowAvailableCallback = std::function<void()>;
-using OnStreamEndedMetricsCallbac = std::function<void(envoy_stream_metrics)>;
+using OnStreamEndedMetricsCallback = std::function<void(envoy_stream_metrics)>;
 
 // See library/common/types/c_types.h for what these callbacks should do.
 struct StreamCallbacks : public std::enable_shared_from_this<StreamCallbacks> {
