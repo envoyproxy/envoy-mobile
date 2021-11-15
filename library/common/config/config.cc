@@ -196,6 +196,15 @@ const char* config_template = R"(
             address:
               socket_address: { address: 127.0.0.1, port_value: 10101 }
 
+typed_dns_resolver_config:
+  name: envoy.network.dns_resolver.cares
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
+    resolvers:
+    - socket_address:
+        address: "8.8.8.8"
+    use_resolvers_as_fallback: true
+
 static_resources:
   listeners:
 #{custom_listeners}
