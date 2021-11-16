@@ -99,12 +99,6 @@ void* c_on_send_window_available(envoy_stream_intel, void* context) {
 }
 
 void* c_on_stream_ended_metrics(envoy_stream_metrics metrics, void* context) {
-  auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
-  auto stream_callbacks = *stream_callbacks_ptr;
-  if (stream_callbacks->on_stream_ended_metrics.has_value()) {
-    auto on_stream_ended_metrics = stream_callbacks->on_stream_ended_metrics.value();
-    on_stream_ended_metrics(metrics);
-  }
   return nullptr;
 }
 
