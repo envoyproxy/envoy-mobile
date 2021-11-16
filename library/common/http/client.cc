@@ -167,28 +167,6 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
 }
 
 void Client::DirectStreamCallbacks::sendMetrics() {
-  if (!bridge_callbacks_.on_stream_ended_metrics) {
-    // No metrics requested.
-    return;
-  }
-  envoy_stream_metrics metrics;
-  metrics.request_start_ms = direct_stream_.latency_info_.request_start_ms;
-  metrics.dns_start_ms = 0;     // TODO(alyssawilk) set.
-  metrics.dns_end_ms = 0;       // TODO(alyssawilk) set.
-  metrics.connect_start_ms = 0; // TODO(alyssawilk) set.
-  metrics.connect_end_ms = 0;   // TODO(alyssawilk) set.
-  metrics.ssl_start_ms = 0;     // TODO(alyssawilk) set.
-  metrics.ssl_end_ms = 0;       // TODO(alyssawilk) set.
-  metrics.sending_start_ms = direct_stream_.latency_info_.sending_start_ms;
-  metrics.sending_end_ms = direct_stream_.latency_info_.sending_end_ms;
-  metrics.response_start_ms = direct_stream_.latency_info_.response_start_ms;
-  metrics.request_end_ms = direct_stream_.latency_info_.request_end_ms;
-  metrics.socket_reused = 0; // TODO(alyssawilk) set.
-  metrics.sent_byte_count = direct_stream_.latency_info_.sent_byte_count;
-  metrics.received_byte_count = direct_stream_.latency_info_.received_byte_count;
-  ENVOY_LOG(debug, "[S{}] dispatching end stream metrics for stream:\n",
-            direct_stream_.stream_handle_);
-  bridge_callbacks_.on_stream_ended_metrics(metrics, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
