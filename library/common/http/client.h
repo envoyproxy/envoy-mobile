@@ -255,8 +255,8 @@ private:
       response_details_ = response_details;
     }
 
-    // Saves latest "Intel" data as it may not be available when accessed.
-    void saveLatestStreamIntel();
+    // Latches stream information as it may not be available when accessed.
+    void saveLatestStreamInfo();
 
     // Latches latency info from stream info before it goes away.
     void saveLatencyInfo();

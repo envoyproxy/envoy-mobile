@@ -41,7 +41,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+  direct_stream_.saveLatestStreamInfo();
   if (end_stream) {
     closeStream();
   }
@@ -78,7 +78,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+  direct_stream_.saveLatestStreamInfo();
   if (end_stream) {
     closeStream();
   }
@@ -143,7 +143,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+  direct_stream_.saveLatestStreamInfo();
   closeStream(); // Trailers always indicate the end of the stream.
 
   // For explicit flow control, don't send data unless prompted.
@@ -223,7 +223,6 @@ void Client::DirectStreamCallbacks::closeStream() {
 
   auto& client = direct_stream_.parent_;
   auto stream = client.getStream(direct_stream_.stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS);
-  direct_stream_.saveLatencyInfo();
   ASSERT(stream != nullptr);
   if (stream) {
     client.closed_streams_.emplace(direct_stream_.stream_handle_, std::move(stream));
@@ -310,11 +309,12 @@ void setFromOptional(long& to_set, absl::optional<std::chrono::nanoseconds> time
   }
 }
 
-void Client::DirectStream::saveLatestStreamIntel() {
+void Client::DirectStream::saveLatestStreamInfo() {
   const auto& info = request_decoder_->streamInfo();
   stream_intel_.connection_id = info.upstreamConnectionId().value_or(-1);
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
   stream_intel_.attempt_count = info.attemptCount().value_or(0);
+  saveLatencyInfo();
 }
 
 void Client::DirectStream::saveLatencyInfo() {
@@ -368,6 +368,7 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   // This seems in line with other codec implementations, and so the assumption is that this is in
   // line with upstream expectations.
   // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
+  saveLatencyInfo();
   runResetCallbacks(reason);
   if (!parent_.getStream(stream_handle_, GetStreamFilters::ALLOW_FOR_ALL_STREAMS)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
