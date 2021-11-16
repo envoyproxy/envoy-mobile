@@ -16,7 +16,6 @@ typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
 
 /// Contains internal HTTP stream metrics, context, and other details.
 typedef envoy_stream_intel EnvoyStreamIntel;
-typedef envoy_stream_metrics EnvoyStreamMetrics;
 
 #pragma mark - EnvoyHTTPCallbacks
 

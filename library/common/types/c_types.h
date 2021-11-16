@@ -158,20 +158,37 @@ typedef struct {
  * Contains internal HTTP stream metrics which are only sent at stream end.
  */
 typedef struct {
-  // TODO(alyssawilk) comment all of these.
+  // The time the request started, in ms since the epoch.
   uint64_t request_start_ms;
+  // The time the DNS resolution for this request started, in ms since the epoch.
   uint64_t dns_start_ms;
+  // The time the DNS resolution for this request completed, in ms since the epoch.
   uint64_t dns_end_ms;
+  // The time the upstream connection started, in ms since the epoch.
+  // This may not be set if socket_reused is false.
   uint64_t connect_start_ms;
+  // The time the upstream connection completed, in ms since the epoch.
+  // This may not be set if socket_reused is false.
   uint64_t connect_end_ms;
+  // The time the SSL handshake started, in ms since the epoch.
+  // This may not be set if socket_reused is false.
   uint64_t ssl_start_ms;
+  // The time the SSL handshake completed, in ms since the epoch.
+  // This may not be set if socket_reused is false.
   uint64_t ssl_end_ms;
+  // The time the first byte of the request was sent upstream, in ms since the epoch.
   uint64_t sending_start_ms;
+  // The time the last byte of the request was sent upstream, in ms since the epoch.
   uint64_t sending_end_ms;
+  // The time the first byte of the response was received, in ms since the epoch.
   uint64_t response_start_ms;
+  // The time the last byte of the request was received, in ms since the epoch.
   uint64_t request_end_ms;
+  // True if the upstream socket had been used previously.
   uint64_t socket_reused;
+  // The number of bytes sent upstream.
   uint64_t sent_byte_count;
+  // The number of bytes received from upstream.
   uint64_t received_byte_count;
 } envoy_stream_metrics;
 
@@ -399,7 +416,7 @@ typedef void* (*envoy_on_send_window_available_f)(envoy_stream_intel stream_inte
 /**
  * Callback signature called on stream end with information about timing characterics.
  *
- * This should be called once for all streams when the stream suceeds, fails, or
+ * This should be called once for all streams when the stream succeeds, fails, or
  * is canceled.
  *
  * @param stream_metrics, contains internal stream metrics, context, and other details.

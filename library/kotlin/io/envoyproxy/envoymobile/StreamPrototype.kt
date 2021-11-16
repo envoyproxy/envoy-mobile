@@ -132,7 +132,10 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
   }
 
   /**
-   * TODO(alyssawilk) comment.
+   * Specify a callback to be called once on stream end, with detailed stream metrics.
+   *
+   * @param closure Closure which will be called when the stream ends
+   * @return This stream, for chaining syntax.
    */
   fun setOnStreamendedMetrics(
     closure: (streamMetrics: StreamMetrics) -> Unit
