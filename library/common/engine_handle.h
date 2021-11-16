@@ -37,9 +37,9 @@ private:
   static EngineWeakPtr engine_;
 
   // Allow a specific list of functions to access the internal setup/teardown functionality.
-  friend envoy_engine_t(::init_engine(envoy_engine_callbacks callbacks, envoy_logger logger,
-                                      envoy_event_tracker event_tracker));
-  friend envoy_status_t(::run_engine(envoy_engine_t, const char* config, const char* log_level));
+  friend envoy_engine_t(::init_engine)(envoy_engine_callbacks callbacks, envoy_logger logger,
+                                       envoy_event_tracker event_tracker);
+  friend envoy_status_t(::run_engine)(envoy_engine_t, const char* config, const char* log_level);
   friend void ::terminate_engine(envoy_engine_t engine);
 };
 
