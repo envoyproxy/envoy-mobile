@@ -53,6 +53,7 @@
 #include <ifaddrs.h>
 #endif
 
+// Prefixes used to prefer well-known interface names.
 #if defined(__APPLE__)
 constexpr absl::string_view WlanPrefix = "en";
 constexpr absl::string_view WwanPrefix = "pdp_ip";
@@ -60,6 +61,7 @@ constexpr absl::string_view WwanPrefix = "pdp_ip";
 constexpr absl::string_view WlanPrefix = "wlan";
 constexpr absl::string_view WwanPrefix = "rmnet";
 #else
+// An empty prefix is essentially the same as disabling filtering since it will always match.
 constexpr absl::string_view WlanPrefix = "";
 constexpr absl::string_view WwanPrefix = "";
 #endif
@@ -299,7 +301,7 @@ InterfacePair Configurator::getActiveAlternateInterface(envoy_network_t network,
       // TODO(goaway): This is quite brittle. It would be an improvement to:
       //   1) Improve the scoping via flags.
       //   2) Prioritize interfaces by prefix instead of simply filtering them.
-      if (std::get<const std::string>(interface).rfind(WlanPrefix, 0) == 0) {
+      if (absl::StartsWith(std::get<const std::string>(interface), WlanPrefix)) {
         return interface;
       }
     }
@@ -312,7 +314,7 @@ InterfacePair Configurator::getActiveAlternateInterface(envoy_network_t network,
       // TODO(goaway): This is quite brittle. It would be an improvement to:
       //   1) Improve the scoping via flags.
       //   2) Prioritize interfaces by prefix instead of simply filtering them.
-      if (std::get<const std::string>(interface).rfind(WwanPrefix, 0) == 0) {
+      if (absl::StartsWith(std::get<const std::string>(interface), WwanPrefix)) {
         return interface;
       }
     }
