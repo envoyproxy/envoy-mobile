@@ -6,7 +6,7 @@ import org.junit.Test
 
 private const val TEST_CONFIG =
 """
-fixture_template:
+fixture_templat:
 - name: mock
   filters:
 #{custom_filters}
