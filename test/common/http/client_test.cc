@@ -508,6 +508,7 @@ TEST_P(ClientTest, MultipleStreams) {
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc_.on_headers_calls, 1);
+  ASSERT_EQ(cc_.on_stream_ended_metrics_calls, 1);
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
@@ -544,6 +545,7 @@ TEST_P(ClientTest, EnvoyLocalError) {
   ASSERT_EQ(cc_.on_headers_calls, 0);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
   ASSERT_EQ(cc_.on_complete_calls, 0);
+  ASSERT_EQ(cc_.on_stream_ended_metrics_calls, 1);
   ASSERT_EQ(cc_.on_error_calls, 1);
 }
 
@@ -558,6 +560,7 @@ TEST_P(ClientTest, ResetStreamLocal) {
   EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(2);
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   http_client_.cancelStream(stream_);
+  ASSERT_EQ(cc_.on_stream_ended_metrics_calls, 1);
   ASSERT_EQ(cc_.on_cancel_calls, 1);
   ASSERT_EQ(cc_.on_error_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);
