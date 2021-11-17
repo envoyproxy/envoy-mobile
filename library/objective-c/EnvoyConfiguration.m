@@ -106,6 +106,8 @@
                                                          withString:customRoutes];
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_filters}"
                                                          withString:customFilters];
+  templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{global_dns}"
+                                                         withString:@""];
 
   NSMutableString *definitions =
       [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];

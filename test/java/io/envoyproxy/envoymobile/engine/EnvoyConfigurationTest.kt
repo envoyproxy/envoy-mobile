@@ -10,6 +10,8 @@ fixture_template:
 - name: mock
   filters:
 #{custom_filters}
+
+#{global_dns}
 """
 
 private const val PLATFORM_FILTER_CONFIG =
@@ -23,6 +25,12 @@ private const val NATIVE_FILTER_CONFIG =
     typed_config: {{ native_filter_typed_config }}
 """
 
+private const val DNS_RESOLVER =
+"""
+typed_dns_resolver_config:
+  name: envoy.network.dns_resolver.cares
+"""
+
 class EnvoyConfigurationTest {
 
   @Test
@@ -34,7 +42,7 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, DNS_RESOLVER
     )
     assertThat(resolvedTemplate).contains("&connect_timeout 123s")
 
@@ -46,6 +54,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_fail_max_interval 456s")
     assertThat(resolvedTemplate).contains("&dns_query_timeout 321s")
     assertThat(resolvedTemplate).contains("&dns_preresolve_hostnames [hostname]")
+    assertThat(resolvedTemplate).contains("envoy.network.dns_resolver.cares")
 
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding true")

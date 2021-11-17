@@ -283,6 +283,13 @@ public class JniLibrary {
   public static native String nativeFilterTemplateString();
 
   /**
+   * Provides a configuration template that is used for building DNS resolver settings
+   *
+   * @return A template that is used for constructing DNS resolver settings
+   */
+  public static native String androidDNSResolverTemplateString();
+
+  /**
    * Register a string accessor to get strings from the platform.
    *
    * @param accessorName, unique name identifying this accessor.

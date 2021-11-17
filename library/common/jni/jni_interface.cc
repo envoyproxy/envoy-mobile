@@ -150,6 +150,14 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplateString(JNIE
   return result;
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_androidDNSResolverTemplateString(JNIEnv* env,
+                                                                                  jclass // class
+) {
+  jstring result = env->NewStringUTF(android_dns_resolver_template);
+  return result;
+}
+
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
     JNIEnv* env,
     jclass, // class

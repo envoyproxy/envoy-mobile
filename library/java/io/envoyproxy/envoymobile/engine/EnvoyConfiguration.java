@@ -104,12 +104,13 @@ public class EnvoyConfiguration {
    * @param templateYAML the template configuration to resolve.
    * @param platformFilterTemplateYAML helper template to build platform http filters.
    * @param nativeFilterTemplateYAML helper template to build native http filters.
+   * @param androidDNSResolverTemplateYAML helper template to build the global DNS resolver settings.
    * @return String, the resolved template.
    * @throws ConfigurationException, when the template provided is not fully
    *                                 resolved.
    */
   String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
-                         final String nativeFilterTemplateYAML) {
+                         final String nativeFilterTemplateYAML, final String androidDNSResolverTemplateYAML) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -127,6 +128,8 @@ public class EnvoyConfiguration {
 
     String processedTemplate =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
+
+    processedTemplate = processedTemplate.replace("#{global_dns}", androidDNSResolverTemplateYAML);
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))

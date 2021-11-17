@@ -8,6 +8,7 @@ import XCTest
 private let kMockTemplate =
 """
 fixture_template:
+#{global_dns}
 - name: mock
   clusters:
 #{custom_clusters}
@@ -357,6 +358,8 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_max_interval 500s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
+    XCTAssertFalse(resolvedYAML.contains("#{global_dns}"))
+
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
 
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
