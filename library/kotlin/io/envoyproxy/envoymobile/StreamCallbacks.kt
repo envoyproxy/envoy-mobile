@@ -2,7 +2,7 @@ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamMetrics
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 
@@ -21,7 +21,7 @@ internal class StreamCallbacks {
   var onCancel: ((streamIntel: StreamIntel) -> Unit)? = null
   var onError: ((error: EnvoyError, streamIntel: StreamIntel) -> Unit)? = null
   var onSendWindowAvailable: ((streamIntel: StreamIntel) -> Unit)? = null
-  var onStreamEndedMetrics: ((streamMetrics: StreamMetrics) -> Unit)? = null
+  var onComplete: ((finalStreamIntel: FinalStreamIntel) -> Unit)? = null
 }
 
 /**
@@ -72,7 +72,7 @@ internal class EnvoyHTTPCallbacksAdapter(
     callbacks.onSendWindowAvailable?.invoke(StreamIntel(streamIntel))
   }
 
-  override fun onStreamEndedMetrics(streamMetrics: EnvoyStreamMetrics) {
-    callbacks.onStreamEndedMetrics?.invoke(StreamMetrics(streamMetrics))
+  override fun onComplete(finalStreamIntel: EnvoyFinalStreamIntel) {
+    callbacks.onComplete?.invoke(FinalStreamIntel(finalStreamIntel))
   }
 }

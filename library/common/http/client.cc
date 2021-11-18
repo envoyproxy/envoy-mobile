@@ -51,9 +51,6 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
   // Track success for later bookkeeping (stream could still be reset).
   success_ = CodeUtility::is2xx(response_status);
 
-  if (end_stream) {
-    sendMetrics();
-  }
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream, streamIntel(),
@@ -120,9 +117,6 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
   // Only send end stream if all data is being sent.
   bool send_end_stream = end_stream && (bytes_to_send == data.length());
 
-  if (send_end_stream) {
-    sendMetrics();
-  }
   ENVOY_LOG(debug,
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
@@ -157,7 +151,6 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 }
 
 void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMap& trailers) {
-  sendMetrics();
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
 
@@ -166,29 +159,21 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
   onComplete();
 }
 
-void Client::DirectStreamCallbacks::sendMetrics() {
-  if (!bridge_callbacks_.on_stream_ended_metrics) {
-    // No metrics requested.
-    return;
-  }
-  envoy_stream_metrics metrics;
-  metrics.request_start_ms = direct_stream_.latency_info_.request_start_ms;
-  metrics.dns_start_ms = 0;     // TODO(alyssawilk) set.
-  metrics.dns_end_ms = 0;       // TODO(alyssawilk) set.
-  metrics.connect_start_ms = 0; // TODO(alyssawilk) set.
-  metrics.connect_end_ms = 0;   // TODO(alyssawilk) set.
-  metrics.ssl_start_ms = 0;     // TODO(alyssawilk) set.
-  metrics.ssl_end_ms = 0;       // TODO(alyssawilk) set.
-  metrics.sending_start_ms = direct_stream_.latency_info_.sending_start_ms;
-  metrics.sending_end_ms = direct_stream_.latency_info_.sending_end_ms;
-  metrics.response_start_ms = direct_stream_.latency_info_.response_start_ms;
-  metrics.request_end_ms = direct_stream_.latency_info_.request_end_ms;
-  metrics.socket_reused = 0; // TODO(alyssawilk) set.
-  metrics.sent_byte_count = direct_stream_.latency_info_.sent_byte_count;
-  metrics.received_byte_count = direct_stream_.latency_info_.received_byte_count;
-  ENVOY_LOG(debug, "[S{}] dispatching end stream metrics for stream:\n",
-            direct_stream_.stream_handle_);
-  bridge_callbacks_.on_stream_ended_metrics(metrics, bridge_callbacks_.context);
+void Client::DirectStreamCallbacks::setFinalStreamIntel(envoy_final_stream_intel& final_intel) {
+  final_intel.request_start_ms = direct_stream_.latency_info_.request_start_ms;
+  final_intel.dns_start_ms = 0;     // TODO(alyssawilk) set.
+  final_intel.dns_end_ms = 0;       // TODO(alyssawilk) set.
+  final_intel.connect_start_ms = 0; // TODO(alyssawilk) set.
+  final_intel.connect_end_ms = 0;   // TODO(alyssawilk) set.
+  final_intel.ssl_start_ms = 0;     // TODO(alyssawilk) set.
+  final_intel.ssl_end_ms = 0;       // TODO(alyssawilk) set.
+  final_intel.sending_start_ms = direct_stream_.latency_info_.sending_start_ms;
+  final_intel.sending_end_ms = direct_stream_.latency_info_.sending_end_ms;
+  final_intel.response_start_ms = direct_stream_.latency_info_.response_start_ms;
+  final_intel.request_end_ms = direct_stream_.latency_info_.request_end_ms;
+  final_intel.socket_reused = 0; // TODO(alyssawilk) set.
+  final_intel.sent_byte_count = direct_stream_.latency_info_.sent_byte_count;
+  final_intel.received_byte_count = direct_stream_.latency_info_.received_byte_count;
 }
 
 void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
@@ -240,7 +225,10 @@ void Client::DirectStreamCallbacks::onComplete() {
   } else {
     http_client_.stats().stream_failure_.inc();
   }
-  bridge_callbacks_.on_complete(streamIntel(), bridge_callbacks_.context);
+
+  envoy_final_stream_intel final_intel;
+  setFinalStreamIntel(final_intel);
+  bridge_callbacks_.on_complete(final_intel, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -263,7 +251,6 @@ void Client::DirectStreamCallbacks::onError() {
   ASSERT(!http_client_.getStream(direct_stream_.stream_handle_,
                                  GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
 
-  sendMetrics();
   ENVOY_LOG(debug, "[S{}] dispatching to platform remote reset stream",
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
@@ -278,7 +265,6 @@ void Client::DirectStreamCallbacks::onSendWindowAvailable() {
 
 void Client::DirectStreamCallbacks::onCancel() {
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
-  sendMetrics();
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();

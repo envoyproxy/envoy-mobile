@@ -65,7 +65,7 @@ void* c_on_error(envoy_error raw_error, envoy_stream_intel, void* context) {
   return nullptr;
 }
 
-void* c_on_complete(envoy_stream_intel, void* context) {
+void* c_on_complete(envoy_final_stream_intel, void* context) {
   auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
   auto stream_callbacks = *stream_callbacks_ptr;
   if (stream_callbacks->on_complete.has_value()) {
@@ -97,15 +97,6 @@ void* c_on_send_window_available(envoy_stream_intel, void* context) {
   delete stream_callbacks_ptr;
   return nullptr;
 }
-
-void* c_on_stream_ended_metrics(envoy_stream_metrics metrics, void* context) {
-  auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
-  auto stream_callbacks = *stream_callbacks_ptr;
-  if (stream_callbacks->on_stream_ended_metrics.has_value()) {
-    auto on_stream_ended_metrics = stream_callbacks->on_stream_ended_metrics.value();
-    on_stream_ended_metrics(metrics);
-  }
-  return nullptr;
 }
 
 } // namespace
@@ -120,7 +111,6 @@ envoy_http_callbacks StreamCallbacks::asEnvoyHttpCallbacks() {
       .on_complete = &c_on_complete,
       .on_cancel = &c_on_cancel,
       .on_send_window_available = &c_on_send_window_available,
-      .on_stream_ended_metrics = &c_on_stream_ended_metrics,
       .context = new StreamCallbacksSharedPtr(this->shared_from_this()),
   };
 }

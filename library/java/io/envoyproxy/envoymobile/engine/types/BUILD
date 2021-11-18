@@ -6,6 +6,7 @@ java_library(
     name = "envoy_c_types_lib",
     srcs = [
         "EnvoyEventTracker.java",
+        "EnvoyFinalStreamIntel.java",
         "EnvoyHTTPCallbacks.java",
         "EnvoyHTTPFilter.java",
         "EnvoyHTTPFilterCallbacks.java",
@@ -14,7 +15,6 @@ java_library(
         "EnvoyOnEngineRunning.java",
         "EnvoyStatus.java",
         "EnvoyStreamIntel.java",
-        "EnvoyStreamMetrics.java",
         "EnvoyStringAccessor.java",
     ],
     visibility = ["//visibility:public"],

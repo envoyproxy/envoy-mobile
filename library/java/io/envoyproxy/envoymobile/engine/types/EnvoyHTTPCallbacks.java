@@ -68,10 +68,9 @@ public interface EnvoyHTTPCallbacks {
   void onSendWindowAvailable(EnvoyStreamIntel streamIntel);
 
   /**
-   * Called once before onCancel, onError, or before stream completion with metrics about the
-   * stream.
+   * Called once after the final data for the stream has been received.
    *
-   * @param streamMetrics,  contains once time HTTP stream metrics.
+   * @param finalStreamIntel,  contains final internal HTTP stream metrics.
    */
-  void onStreamEndedMetrics(EnvoyStreamMetrics streamMetrics);
+  void onComplete(EnvoyFinalStreamIntel finalStreamIntel);
 }

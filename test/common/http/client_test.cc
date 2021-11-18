@@ -54,7 +54,6 @@ public:
     uint32_t on_error_calls;
     uint32_t on_cancel_calls;
     uint32_t on_send_window_available_calls;
-    uint32_t on_stream_ended_metrics_calls;
     std::string expected_status_;
     bool end_stream_with_headers_;
     std::string body_data_;
@@ -64,7 +63,7 @@ public:
     bridge_callbacks_.context = &cc_;
 
     // Set up default bridge callbacks. Indivividual tests can override.
-    bridge_callbacks_.on_complete = [](envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_final_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_complete_calls++;
       return nullptr;
@@ -99,11 +98,6 @@ public:
     bridge_callbacks_.on_send_window_available = [](envoy_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_send_window_available_calls++;
-      return nullptr;
-    };
-    bridge_callbacks_.on_stream_ended_metrics = [](envoy_stream_metrics, void* context) -> void* {
-      callbacks_called* cc = static_cast<callbacks_called*>(context);
-      cc->on_stream_ended_metrics_calls++;
       return nullptr;
     };
     bridge_callbacks_.on_trailers = [](envoy_headers c_trailers, envoy_stream_intel,
@@ -151,7 +145,7 @@ public:
   ResponseEncoder* response_encoder_{};
   NiceMock<Event::MockProvisionalDispatcher> dispatcher_;
   envoy_http_callbacks bridge_callbacks_;
-  callbacks_called cc_ = {0, 0, 0, 0, 0, 0, 0, 0, "200", true, ""};
+  callbacks_called cc_ = {0, 0, 0, 0, 0, 0, 0, "200", true, ""};
   NiceMock<Random::MockRandomGenerator> random_;
   Stats::IsolatedStoreImpl stats_store_;
   bool explicit_flow_control_{GetParam()};
@@ -448,7 +442,7 @@ TEST_P(ClientTest, MultipleStreams) {
   ON_CALL(request_decoder2, streamInfo()).WillByDefault(ReturnRef(stream_info_));
   ResponseEncoder* response_encoder2{};
   envoy_http_callbacks bridge_callbacks_2;
-  callbacks_called cc2 = {0, 0, 0, 0, 0, 0, 0, 0, "200", true, ""};
+  callbacks_called cc2 = {0, 0, 0, 0, 0, 0, 0, "200", true, ""};
   bridge_callbacks_2.context = &cc2;
   bridge_callbacks_2.on_headers = [](envoy_headers c_headers, bool end_stream, envoy_stream_intel,
                                      void* context) -> void* {
@@ -459,14 +453,9 @@ TEST_P(ClientTest, MultipleStreams) {
     *on_headers_called2 = true;
     return nullptr;
   };
-  bridge_callbacks_2.on_complete = [](envoy_stream_intel, void* context) -> void* {
+  bridge_callbacks_2.on_complete = [](envoy_final_stream_intel, void* context) -> void* {
     callbacks_called* cc = static_cast<callbacks_called*>(context);
     cc->on_complete_calls++;
-    return nullptr;
-  };
-  bridge_callbacks_2.on_stream_ended_metrics = [](envoy_stream_metrics, void* context) -> void* {
-    callbacks_called* cc = static_cast<callbacks_called*>(context);
-    cc->on_stream_ended_metrics_calls++;
     return nullptr;
   };
 
@@ -508,7 +497,6 @@ TEST_P(ClientTest, MultipleStreams) {
   TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   response_encoder_->encodeHeaders(response_headers, true);
   ASSERT_EQ(cc_.on_headers_calls, 1);
-  ASSERT_EQ(cc_.on_stream_ended_metrics_calls, 1);
   ASSERT_EQ(cc_.on_complete_calls, 1);
 }
 
@@ -545,7 +533,6 @@ TEST_P(ClientTest, EnvoyLocalError) {
   ASSERT_EQ(cc_.on_headers_calls, 0);
   // Ensure that the callbacks on the bridge_callbacks_ were called.
   ASSERT_EQ(cc_.on_complete_calls, 0);
-  ASSERT_EQ(cc_.on_stream_ended_metrics_calls, 1);
   ASSERT_EQ(cc_.on_error_calls, 1);
 }
 
@@ -560,7 +547,6 @@ TEST_P(ClientTest, ResetStreamLocal) {
   EXPECT_CALL(dispatcher_, popTrackedObject(_)).Times(2);
   EXPECT_CALL(dispatcher_, deferredDelete_(_));
   http_client_.cancelStream(stream_);
-  ASSERT_EQ(cc_.on_stream_ended_metrics_calls, 1);
   ASSERT_EQ(cc_.on_cancel_calls, 1);
   ASSERT_EQ(cc_.on_error_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);

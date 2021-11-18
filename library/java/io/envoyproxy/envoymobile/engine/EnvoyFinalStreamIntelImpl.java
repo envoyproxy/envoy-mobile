@@ -1,8 +1,8 @@
 package io.envoyproxy.envoymobile.engine;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamMetrics;
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
 
-class EnvoyStreamMetricsImpl implements EnvoyStreamMetrics {
+class EnvoyFinalStreamIntelImpl implements EnvoyFinalStreamIntel {
   private long requestStartMs;
   private long dnsStartMs;
   private long dnsEndMs;
@@ -18,7 +18,7 @@ class EnvoyStreamMetricsImpl implements EnvoyStreamMetrics {
   private long sentByteCount;
   private long receivedByteCount;
 
-  EnvoyStreamMetricsImpl(long[] values) {
+  EnvoyFinalStreamIntelImpl(long[] values) {
     requestStartMs = values[0];
     dnsStartMs = values[1];
     dnsEndMs = values[2];

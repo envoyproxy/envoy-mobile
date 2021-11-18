@@ -50,10 +50,5 @@ StreamPrototype& StreamPrototype::setOnSendWindowAvailable(OnSendWindowAvailable
   return *this;
 }
 
-StreamPrototype& StreamPrototype::setOnStreamEndedMetrics(OnStreamEndedMetricsCallback closure) {
-  this->callbacks_->on_stream_ended_metrics = closure;
-  return *this;
-}
-
 } // namespace Platform
 } // namespace Envoy

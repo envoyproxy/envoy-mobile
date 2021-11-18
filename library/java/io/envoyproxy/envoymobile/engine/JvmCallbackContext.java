@@ -141,18 +141,17 @@ class JvmCallbackContext {
 
     return null;
   }
-
   /**
-   * Dispatches onStreamEndedMetrics notice up to the platform
+   * Called with final stream metrics after the final headers/data/trailers call.
    *
-   * @param streamMetrics, internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel, final internal HTTP stream metrics for the end of stream.
    * @return Object, not used for response callbacks.
    */
-  public Object onStreamEndedMetrics(long[] streamMetrics) {
+  public Object onComplete(long[] finalStreamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         // This call is atomically gated at the call-site and will only happen once.
-        callbacks.onStreamEndedMetrics(new EnvoyStreamMetricsImpl(streamMetrics));
+        callbacks.onComplete(new EnvoyFinalStreamIntelImpl(finalStreamIntel));
       }
     });
 

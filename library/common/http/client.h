@@ -178,7 +178,7 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
-    void sendMetrics();
+    void setFinalStreamIntel(envoy_final_stream_intel& final_intel);
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }

@@ -665,9 +665,22 @@ jvm_http_filter_on_resume_response(envoy_headers* headers, envoy_data* data,
                                    stream_intel, context);
 }
 
-static void* jvm_on_complete(envoy_stream_intel, void* context) {
-  jni_delete_global_ref(context);
-  return NULL;
+static void* jvm_on_complete(envoy_final_stream_intel final_stream_intel, void* context) {
+  jni_log("[Envoy]", "jvm_on_complete");
+
+  JNIEnv* env = get_env();
+  jobject j_context = static_cast<jobject>(context);
+
+  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
+  jmethodID jmid_onComplete =
+      env->GetMethodID(jcls_JvmObserverContext, "onComplete", "([J)Ljava/lang/Object;");
+
+  jlongArray j_final_stream_intel = native_final_stream_intel_to_array(env, final_stream_intel);
+  jobject result = env->CallObjectMethod(j_context, jmid_onComplete, j_final_stream_intel);
+
+  env->DeleteLocalRef(j_final_stream_intel);
+  env->DeleteLocalRef(jcls_JvmObserverContext);
+  return result;
 }
 
 static void* call_jvm_on_error(envoy_error error, envoy_stream_intel stream_intel, void* context) {
@@ -751,25 +764,6 @@ static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void*
   return result;
 }
 
-static void* jvm_on_stream_ended_metrics(envoy_stream_metrics stream_metrics, void* context) {
-  jni_log("[Envoy]", "jvm_on_stream_ended_metrics");
-
-  JNIEnv* env = get_env();
-  jobject j_context = static_cast<jobject>(context);
-
-  jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
-  jmethodID jmid_onStreamEndedMetrics =
-      env->GetMethodID(jcls_JvmObserverContext, "onStreamEndedMetrics", "([J)Ljava/lang/Object;");
-
-  jlongArray j_stream_metrics = native_stream_metrics_to_array(env, stream_metrics);
-
-  jobject result = env->CallObjectMethod(j_context, jmid_onStreamEndedMetrics, j_stream_metrics);
-
-  env->DeleteLocalRef(j_stream_metrics);
-  env->DeleteLocalRef(jcls_JvmObserverContext);
-  return result;
-}
-
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
@@ -834,7 +828,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                                            jvm_on_complete,
                                            jvm_on_cancel,
                                            jvm_on_send_window_available,
-                                           jvm_on_stream_ended_metrics,
                                            retained_context};
   envoy_status_t result = start_stream(static_cast<envoy_stream_t>(stream_handle), native_callbacks,
                                        explicit_flow_control);

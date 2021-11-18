@@ -141,7 +141,8 @@ typedef struct {
 } envoy_error;
 
 /**
- * Contains internal HTTP stream metrics, context, and other details.
+ * Contains internal HTTP stream metrics, context, and other details which are
+ * sent with most callbacks.
  *
  * Note these values may change over the lifecycle of a stream.
  */
@@ -155,7 +156,7 @@ typedef struct {
 } envoy_stream_intel;
 
 /**
- * Contains internal HTTP stream metrics which are only sent at stream end.
+ * Contains internal HTTP stream metrics which sent at stream end.
  */
 typedef struct {
   // The time the request started, in ms since the epoch.
@@ -190,7 +191,7 @@ typedef struct {
   uint64_t sent_byte_count;
   // The number of bytes received from upstream.
   uint64_t received_byte_count;
-} envoy_stream_metrics;
+} envoy_final_stream_intel;
 
 #ifdef __cplusplus
 extern "C" { // utility functions
@@ -353,7 +354,7 @@ typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_i
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_complete_f)(envoy_final_stream_intel stream_intel, void* context);
 
 /**
  * Callback signature for when an HTTP stream is cancelled.
@@ -414,20 +415,6 @@ typedef void (*envoy_logger_release_f)(const void* context);
 typedef void* (*envoy_on_send_window_available_f)(envoy_stream_intel stream_intel, void* context);
 
 /**
- * Callback signature called on stream end with information about timing characterics.
- *
- * This should be called once for all streams when the stream succeeds, fails, or
- * is canceled.
- *
- * @param stream_metrics, contains internal stream metrics, context, and other details.
- * @param context, contains the necessary state to carry out platform-specific dispatch and
- * execution.
- * @return void*, return context (may be unused).
- */
-typedef void* (*envoy_on_stream_ended_metrics_f)(envoy_stream_metrics stream_metrics,
-                                                 void* context);
-
-/**
  * Called when envoy's event tracker tracks an event.
  *
  * @param event, the dictionary with attributes that describe the event.
@@ -452,7 +439,6 @@ typedef struct {
   envoy_on_complete_f on_complete;
   envoy_on_cancel_f on_cancel;
   envoy_on_send_window_available_f on_send_window_available;
-  envoy_on_stream_ended_metrics_f on_stream_ended_metrics;
   // Context passed through to callbacks to provide dispatch and execution state.
   void* context;
 } envoy_http_callbacks;

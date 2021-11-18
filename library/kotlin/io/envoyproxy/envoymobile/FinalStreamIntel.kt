@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamMetrics
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
 
  /**
  * Exposes one time HTTP stream metrics, context, and other details.
@@ -23,7 +23,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStreamMetrics
  * @param sentByteCount The number of bytes sent upstream.
  * @param receivedByteCount The number of bytes received from upstream.
  */
-class StreamMetrics constructor(
+class FinalStreamIntel constructor(
   val requestStartMs: Long,
   val dnsStartMs: Long,
   val dnsEndMs: Long,
@@ -39,7 +39,7 @@ class StreamMetrics constructor(
   val sentByteCount: Long,
   val receivedByteCount: Long
 ) {
-  constructor(base: EnvoyStreamMetrics) : this(base.requestStartMs, base.dnsStartMs, base.dnsEndMs,
+  constructor(base: EnvoyFinalStreamIntel) : this(base.requestStartMs, base.dnsStartMs, base.dnsEndMs,
                                                base.connectStartMs, base.connectEndMs,
                                                base.sslStartMs, base.sslEndMs, base.sendingStartMs,
                                                base.sendingEndMs,

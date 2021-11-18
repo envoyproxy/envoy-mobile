@@ -1,9 +1,9 @@
 package io.envoyproxy.envoymobile.engine.types;
 
 /**
- * Exposes internal HTTP stream metrics, context, and other details.
+ * Exposes internal HTTP stream metrics, context, and other details sent once on stream end.
  */
-public interface EnvoyStreamMetrics {
+public interface EnvoyFinalStreamIntel {
   /*
    * The time the request started, in ms since the epoch.
    */
