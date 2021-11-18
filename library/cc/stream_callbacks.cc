@@ -97,7 +97,6 @@ void* c_on_send_window_available(envoy_stream_intel, void* context) {
   delete stream_callbacks_ptr;
   return nullptr;
 }
-}
 
 } // namespace
 
