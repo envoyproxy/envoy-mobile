@@ -12,6 +12,7 @@ import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
 import io.envoyproxy.envoymobile.StreamIntel
+import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.engine.JniLibrary
 import java.nio.ByteBuffer
@@ -108,9 +109,9 @@ class CancelStreamTest {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError, streamIntel: StreamIntel) {}
+    override fun onError(error: EnvoyError, finalStreamIntel: FinalStreamIntel) {}
 
-    override fun onCancel(streamIntel: StreamIntel) {
+    override fun onCancel(finalStreamIntel: FinalStreamIntel) {
       latch.countDown()
     }
   }

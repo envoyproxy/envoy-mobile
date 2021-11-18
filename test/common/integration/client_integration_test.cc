@@ -83,7 +83,7 @@ public:
       cc_->terminal_callback->setReady();
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_error = [](envoy_error error, envoy_final_stream_intel, void* context) -> void* {
       release_envoy_error(error);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_error_calls++;

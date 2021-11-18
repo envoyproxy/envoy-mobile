@@ -255,7 +255,9 @@ void Client::DirectStreamCallbacks::onError() {
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
-  bridge_callbacks_.on_error(error_.value(), streamIntel(), bridge_callbacks_.context);
+  envoy_final_stream_intel final_intel;
+  setFinalStreamIntel(final_intel);
+  bridge_callbacks_.on_error(error_.value(), final_intel, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -268,7 +270,9 @@ void Client::DirectStreamCallbacks::onCancel() {
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
-  bridge_callbacks_.on_cancel(streamIntel(), bridge_callbacks_.context);
+  envoy_final_stream_intel final_intel;
+  setFinalStreamIntel(final_intel);
+  bridge_callbacks_.on_cancel(final_intel, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onHasBufferedData() {

@@ -772,7 +772,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onError(int errorCode, String message, int attemptCount,
-                        EnvoyStreamIntel streamIntel) {
+                        EnvoyFinalStreamIntel finalStreamIntel) {
       if (isAbandoned()) {
         return;
       }
@@ -794,7 +794,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     @Override
-    public void onCancel(EnvoyStreamIntel streamIntel) {
+    public void onCancel(EnvoyFinalStreamIntel finalStreamIntel) {
       if (isAbandoned()) {
         return;
       }

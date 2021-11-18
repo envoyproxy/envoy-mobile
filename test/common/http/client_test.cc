@@ -77,7 +77,7 @@ public:
       cc->on_headers_calls++;
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error, envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_error = [](envoy_error, envoy_final_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_error_calls++;
       return nullptr;
@@ -90,7 +90,7 @@ public:
       release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_cancel = [](envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_cancel = [](envoy_final_stream_intel, void* context) -> void* {
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_cancel_calls++;
       return nullptr;
@@ -502,7 +502,8 @@ TEST_P(ClientTest, MultipleStreams) {
 
 TEST_P(ClientTest, EnvoyLocalError) {
   // Override the on_error default with some custom checks.
-  bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
+  bridge_callbacks_.on_error = [](envoy_error error, envoy_final_stream_intel,
+                                  void* context) -> void* {
     EXPECT_EQ(error.error_code, ENVOY_CONNECTION_FAILURE);
     EXPECT_EQ(error.attempt_count, 123);
     callbacks_called* cc = static_cast<callbacks_called*>(context);
@@ -575,7 +576,8 @@ TEST_P(ClientTest, DoubleResetStreamLocal) {
 TEST_P(ClientTest, RemoteResetAfterStreamStart) {
   cc_.end_stream_with_headers_ = false;
 
-  bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
+  bridge_callbacks_.on_error = [](envoy_error error, envoy_final_stream_intel,
+                                  void* context) -> void* {
     EXPECT_EQ(error.error_code, ENVOY_STREAM_RESET);
     EXPECT_EQ(error.message.length, 0);
     EXPECT_EQ(error.attempt_count, 0);

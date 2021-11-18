@@ -90,18 +90,18 @@ class JvmCallbackContext {
   /**
    * Dispatches error received from the JNI layer up to the platform.
    *
-   * @param errorCode,    the error code.
-   * @param message,      the error message.
-   * @param attemptCount, the number of times an operation was attempted before firing this error.
-   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
-   * @return Object,      not used for response callbacks.
+   * @param errorCode,         the error code.
+   * @param message,           the error message.
+   * @param attemptCount,      the number of times an operation was attempted before firing this error.
+   * @param finalStreamIntel,  final internal HTTP stream metrics, context, and other details.
+   * @return Object,           not used for response callbacks.
    */
-  public Object onError(int errorCode, byte[] message, int attemptCount, long[] streamIntel) {
+  public Object onError(int errorCode, byte[] message, int attemptCount, long[] finalStreamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         String errorMessage = new String(message);
         callbacks.onError(errorCode, errorMessage, attemptCount,
-                          new EnvoyStreamIntelImpl(streamIntel));
+                          new EnvoyFinalStreamIntelImpl(finalStreamIntel));
       }
     });
 
@@ -111,14 +111,14 @@ class JvmCallbackContext {
   /**
    * Dispatches cancellation notice up to the platform
    *
-   * @param streamIntel, internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel, final internal HTTP stream metrics, context, and other details.
    * @return Object, not used for response callbacks.
    */
-  public Object onCancel(long[] streamIntel) {
+  public Object onCancel(long[] finalStreamIntel) {
     callbacks.getExecutor().execute(new Runnable() {
       public void run() {
         // This call is atomically gated at the call-site and will only happen once.
-        callbacks.onCancel(new EnvoyStreamIntelImpl(streamIntel));
+        callbacks.onCancel(new EnvoyFinalStreamIntelImpl(finalStreamIntel));
       }
     });
 

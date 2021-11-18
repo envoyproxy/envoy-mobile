@@ -255,7 +255,7 @@ TEST(MainInterfaceTest, ResetStream) {
                                   nullptr /* on_trailers */,
                                   nullptr /* on_error */,
                                   nullptr /* on_complete */,
-                                  [](envoy_stream_intel, void* context) -> void* {
+                                  [](envoy_final_stream_intel, void* context) -> void* {
                                     auto* on_cancel_notification =
                                         static_cast<absl::Notification*>(context);
                                     on_cancel_notification->Notify();

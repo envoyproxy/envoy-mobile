@@ -137,12 +137,12 @@ typedef envoy_filter_resume_status (*envoy_filter_on_resume_f)(
 /**
  * Function signature for on-cancellation filter invocations.
  */
-typedef void (*envoy_filter_on_cancel_f)(envoy_stream_intel stream_intel, const void* context);
+typedef void (*envoy_filter_on_cancel_f)(envoy_final_stream_intel final_stream_intel, const void* context);
 
 /**
  * Function signature for on-error filter invocations.
  */
-typedef void (*envoy_filter_on_error_f)(envoy_error error, envoy_stream_intel stream_intel,
+typedef void (*envoy_filter_on_error_f)(envoy_error error, envoy_final_stream_intel final_stream_intel,
                                         const void* context);
 
 /**
