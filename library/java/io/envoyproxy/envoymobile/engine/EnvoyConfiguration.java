@@ -140,6 +140,9 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
+        .append(String("- &dns_resolvers [{\"socket_address\":{\"address\":\"8.8.8.8\"}}]");
+        // FIXME: change default to false
+        .append(String("- &dns_use_resolvers_as_fallback true");
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
