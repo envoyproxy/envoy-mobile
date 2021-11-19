@@ -49,7 +49,7 @@ const std::string config_header = R"(
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
 - &dns_resolvers [{"socket_address":{"address":"8.8.8.8"}}]
-- &dns_use_resolvers_as_fallback false
+- &dns_use_resolvers_as_fallback true
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
