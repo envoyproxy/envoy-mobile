@@ -151,8 +151,8 @@ public class EnvoyConfiguration {
           .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameserversAsString));
           .append(String("- &dns_use_resolvers_as_fallback true"));
         } else {
-          .append(String("- &dns_resolvers [{\"socket_address\":{\"address\":\"8.8.8.8\"}}]");
-          .append(String("- &dns_use_resolvers_as_fallback true");
+          .append(String("- &dns_resolvers [{\"socket_address\":{\"address\":\"8.8.8.8\"}}]"));
+          .append(String("- &dns_use_resolvers_as_fallback true"));
         }
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
