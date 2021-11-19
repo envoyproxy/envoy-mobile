@@ -21,6 +21,7 @@ public class EnvoyConfiguration {
   public final Integer dnsQueryTimeoutSeconds;
   public final Boolean enableInterfaceBinding;
   public final String dnsPreresolveHostnames;
+  public final List<String> dnsFallbackNameservers;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
@@ -47,6 +48,7 @@ public class EnvoyConfiguration {
    * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on failure.
    * @param dnsQueryTimeoutSeconds       rate in seconds to timeout DNS queries.
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
+   * @param dnsFallbackNameservers       addresses to use as DNS name server fallback.
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
@@ -65,7 +67,7 @@ public class EnvoyConfiguration {
                             @Nullable Integer statsdPort, int connectTimeoutSeconds,
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
-                            String dnsPreresolveHostnames, boolean enableInterfaceBinding,
+                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers, boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
@@ -82,6 +84,7 @@ public class EnvoyConfiguration {
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
     this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
+    this.dnsFallbackNameservers = dnsFallbackNameservers;
     this.enableInterfaceBinding = enableInterfaceBinding;
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
@@ -128,6 +131,15 @@ public class EnvoyConfiguration {
     String processedTemplate =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
+    String dnsFallbackNameserversAsString;
+    if (!dnsFallbackNameservers.isEmpty()) {
+      StringJoiner sj = new StringJoiner(",", "[", "]");
+      for (String nameserver : dnsFallbackNameservers) {
+        sj.add(String.format("{\"socket_address\":{\"address\":\"%s\"}}", nameserver));
+      }
+      dnsFallbackNameserversAsString = sj.toString();
+    }
+
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
         .append(String.format("- &dns_refresh_rate %ss\n", dnsRefreshSeconds))
@@ -135,6 +147,13 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
+        if (!dnsFallbackNameservers.isEmpty()) {
+          .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameserversAsString));
+          .append(String("- &dns_use_resolvers_as_fallback true"));
+        } else {
+          .append(String("- &dns_resolvers [{\"socket_address\":{\"address\":\"8.8.8.8\"}}]");
+          .append(String("- &dns_use_resolvers_as_fallback true");
+        }
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
