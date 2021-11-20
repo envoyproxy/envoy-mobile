@@ -147,13 +147,8 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
-        if (!dnsFallbackNameservers.isEmpty()) {
-          .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameserversAsString));
-          .append(String("- &dns_use_resolvers_as_fallback true"));
-        } else {
-          .append(String("- &dns_resolvers [{\"socket_address\":{\"address\":\"8.8.8.8\"}}]"));
-          .append(String("- &dns_use_resolvers_as_fallback true"));
-        }
+        .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameservers.isEmpty() ? "[]" : dnsFallbackNameserversAsString));
+        .append(String.format("- &dns_use_resolvers_as_fallback %s", dnsFallbackNameservers.isEmpty() ? "false" : "true"));
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
