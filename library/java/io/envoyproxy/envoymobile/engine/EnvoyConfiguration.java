@@ -67,7 +67,8 @@ public class EnvoyConfiguration {
                             @Nullable Integer statsdPort, int connectTimeoutSeconds,
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
-                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers, boolean enableInterfaceBinding,
+                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
+                            boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
@@ -147,8 +148,11 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
-        .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameservers.isEmpty() ? "[]" : dnsFallbackNameserversAsString));
-        .append(String.format("- &dns_use_resolvers_as_fallback %s", dnsFallbackNameservers.isEmpty() ? "false" : "true"));
+        .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameservers.isEmpty()
+                                                           ? "[]"
+                                                           : dnsFallbackNameserversAsString))
+        .append(String.format("- &dns_use_resolvers_as_fallback %s",
+                              dnsFallbackNameservers.isEmpty() ? "false" : "true"))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
