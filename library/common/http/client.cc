@@ -22,7 +22,8 @@ namespace {
 
 void setFromOptional(uint64_t& to_set, const absl::optional<MonotonicTime>& time) {
   if (time.has_value()) {
-    to_set = std::chrono::duration_cast<std::chrono::milliseconds>(time.value().time_since_epoch()).count();
+    to_set = std::chrono::duration_cast<std::chrono::milliseconds>(time.value().time_since_epoch())
+                 .count();
   }
 }
 
@@ -34,7 +35,8 @@ void setFromOptional(long& to_set, absl::optional<std::chrono::nanoseconds> time
 
 void setFromOptional(long& to_set, const absl::optional<MonotonicTime>& time) {
   if (time.has_value()) {
-    to_set = std::chrono::duration_cast<std::chrono::milliseconds>(time.value().time_since_epoch()).count();
+    to_set = std::chrono::duration_cast<std::chrono::milliseconds>(time.value().time_since_epoch())
+                 .count();
   }
 }
 
@@ -186,14 +188,15 @@ void Client::DirectStreamCallbacks::setFinalStreamIntel(envoy_final_stream_intel
 
   final_intel.request_start_ms = direct_stream_.latency_info_.request_start_ms;
   if (direct_stream_.latency_info_.upstream_info_) {
-    StreamInfo::UpstreamTiming& timing = direct_stream_.latency_info_.upstream_info_->upstreamTiming();
+    StreamInfo::UpstreamTiming& timing =
+        direct_stream_.latency_info_.upstream_info_->upstreamTiming();
     setFromOptional(final_intel.sending_start_ms, timing.first_upstream_tx_byte_sent_);
     setFromOptional(final_intel.sending_end_ms, timing.last_upstream_tx_byte_sent_);
     setFromOptional(final_intel.response_start_ms, timing.first_upstream_rx_byte_received_);
     setFromOptional(final_intel.connect_start_ms, timing.upstream_connect_start_);
     setFromOptional(final_intel.connect_end_ms, timing.upstream_connect_complete_);
     setFromOptional(final_intel.ssl_start_ms, timing.upstream_connect_complete_);
-    setFromOptional(final_intel.ssl_end_ms , timing.upstream_handshake_complete_);
+    setFromOptional(final_intel.ssl_end_ms, timing.upstream_handshake_complete_);
   }
   final_intel.dns_start_ms = direct_stream_.latency_info_.dns_start_ms;
   final_intel.dns_end_ms = direct_stream_.latency_info_.dns_end_ms;
