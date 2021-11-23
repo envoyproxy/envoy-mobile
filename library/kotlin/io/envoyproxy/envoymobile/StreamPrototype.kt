@@ -25,7 +25,8 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return The new stream.
    */
   open fun start(executor: Executor = Executors.newSingleThreadExecutor()): Stream {
-    val engineStream = engine.startStream(createCallbacks(executor), explicitFlowControl)
+    val engineStream = engine.startStream(createCallbacks(executor),
+                                          explicitFlowControl)
     return Stream(engineStream, useByteBufferPosition)
   }
 
@@ -107,7 +108,8 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit
+    closure: (error: EnvoyError, streamIntel: StreamIntel,
+              finalStreamIntel: FinalStreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onError = closure
     return this

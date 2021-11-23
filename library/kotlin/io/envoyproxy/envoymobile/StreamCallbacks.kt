@@ -19,7 +19,8 @@ internal class StreamCallbacks {
   var onData: ((data: ByteBuffer, endStream: Boolean, streamIntel: StreamIntel) -> Unit)? = null
   var onTrailers: ((trailers: ResponseTrailers, streamIntel: StreamIntel) -> Unit)? = null
   var onCancel: ((streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit)? = null
-  var onError: ((error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit)? = null
+  var onError: ((error: EnvoyError, streamIntel: StreamIntel,
+                 finalStreamIntel: FinalStreamIntel) -> Unit)? = null
   var onSendWindowAvailable: ((streamIntel: StreamIntel) -> Unit)? = null
   var onComplete: ((streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit)? = null
 }
