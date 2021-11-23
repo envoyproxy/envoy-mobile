@@ -99,6 +99,7 @@ class GRPCReceiveErrorTest {
     override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       receivedError.countDown()
     }
+    override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
 
     override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       notCancelled.countDown()

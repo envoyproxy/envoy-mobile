@@ -110,6 +110,7 @@ class CancelStreamTest {
     }
 
     override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
+    override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
 
     override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       latch.countDown()

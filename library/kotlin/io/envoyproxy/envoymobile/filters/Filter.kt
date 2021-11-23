@@ -112,6 +112,12 @@ internal class EnvoyHTTPFilterAdapter(
     }
   }
 
+  override fun onComplete(streamIntel: EnvoyStreamIntel, finalStreamIntel: EnvoyFinalStreamIntel) {
+    (filter as? ResponseFilter)?.let { responseFilter ->
+      responseFilter.onComplete(StreamIntel(streamIntel), FinalStreamIntel(finalStreamIntel))
+    }
+  }
+
   override fun setRequestFilterCallbacks(callbacks: EnvoyHTTPFilterCallbacks) {
     (filter as? AsyncRequestFilter)?.let { asyncRequestFilter ->
       asyncRequestFilter.setRequestFilterCallbacks(RequestFilterCallbacksImpl(callbacks))

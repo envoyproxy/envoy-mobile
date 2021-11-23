@@ -113,6 +113,20 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
     return this
   }
 
+/**
+   * Specify a callback for when a stream is complete.
+   * If the closure is called, the stream is complete.
+   *
+   * @param closure Closure which will be called when an error occurs.
+   * @return This stream, for chaining syntax.
+   */
+  fun setOnComplete(
+    closure: (streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit
+  ): StreamPrototype {
+    callbacks.onComplete = closure
+    return this
+  }
+
   /**
    * Specify a callback for when the stream is canceled.
    * If the closure is called, the stream is complete.

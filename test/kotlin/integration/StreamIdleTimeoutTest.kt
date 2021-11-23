@@ -136,6 +136,7 @@ class CancelStreamTest {
       assertThat(error.errorCode).isEqualTo(4)
       latch.countDown()
     }
+    override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
 
     override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       fail<CancelStreamTest>("Unexpected call to onCancel filter callback")

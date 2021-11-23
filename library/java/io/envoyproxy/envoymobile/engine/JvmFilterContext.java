@@ -235,6 +235,19 @@ class JvmFilterContext {
     return null;
   }
 
+  /**
+   * Dispatches stream completion notice up to the platform.
+   *
+   * @param streamIntel,  internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel, final internal HTTP stream metrics, context, and other details.
+   * @return Object,     not used in HTTP filters.
+   */
+  public Object onComplete(long[] streamIntel, long[] finalStreamIntel) {
+    filter.onComplete(new EnvoyStreamIntelImpl(streamIntel),
+                    new EnvoyFinalStreamIntelImpl(finalStreamIntel));
+    return null;
+  }
+
   private static byte[][] toJniHeaders(Object headers) {
     return JniBridgeUtility.toJniHeaders((Map<String, List<String>>)headers);
   }

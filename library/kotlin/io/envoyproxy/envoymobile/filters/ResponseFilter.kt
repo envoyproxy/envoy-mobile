@@ -69,4 +69,16 @@ interface ResponseFilter : Filter {
    * @param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
    */
   fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel)
+
+/**
+   * Called at most once when the stream is complete.
+   *
+   * This should be considered a terminal state, and invalidates any previous attempts to
+   * `stopIteration{...}`.
+   *
+   * @param streamIntel: Internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
+   */
+  fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel)
+
 }

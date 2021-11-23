@@ -124,4 +124,14 @@ public interface EnvoyHTTPFilter {
    *     details.
    */
   void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalSteamIntel);
+
+  /**
+   * Called when the async HTTP stream is complete.
+   *
+   * @param streamIntel,  contains internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel, contains final internal HTTP stream metrics, context, and other
+   *     details.
+   */
+  void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalSteamIntel);
+
 }
