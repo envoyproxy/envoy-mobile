@@ -38,15 +38,14 @@ struct HttpClientStats {
 };
 
 struct LatencyInfo {
-  // TODO(alyssawilk) simplify these as downstreamTiming and upstreamTiming are
-  // exposed.
   long request_start_ms = 0;
   long request_end_ms = 0;
-  long sending_start_ms = 0;
-  long sending_end_ms = 0;
-  long response_start_ms = 0;
+  long dns_start_ms = 0;
+  long dns_end_ms = 0;
   long sent_byte_count = 0;
   long received_byte_count = 0;
+  // Latest latency info received from StreamInfo.
+  std::shared_ptr<StreamInfo::UpstreamInfo> upstream_info_;
 };
 
 /**
@@ -259,7 +258,7 @@ private:
     void saveLatestStreamIntel();
 
     // Latches latency info from stream info before it goes away.
-    void saveLatencyInfo();
+    void saveFinalStreamIntel();
 
     const envoy_stream_t stream_handle_;
 
@@ -288,7 +287,6 @@ private:
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
     envoy_stream_intel stream_intel_;
-    // Latest latency info received from StreamInfo.
     LatencyInfo latency_info_;
     StreamInfo::BytesMeterSharedPtr bytes_meter_;
   };
