@@ -772,7 +772,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onError(int errorCode, String message, int attemptCount,
-                        EnvoyFinalStreamIntel finalStreamIntel) {
+                        EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
       if (isAbandoned()) {
         return;
       }
@@ -794,7 +794,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     @Override
-    public void onCancel(EnvoyFinalStreamIntel finalStreamIntel) {
+    public void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
       if (isAbandoned()) {
         return;
       }
@@ -835,7 +835,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     @Override
-    public void onComplete(EnvoyFinalStreamIntel finalStreamIntel) {}
+    public void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {}
 
     /**
      * Sends one chunk of the request body if the state permits. This method is not re-entrant, but

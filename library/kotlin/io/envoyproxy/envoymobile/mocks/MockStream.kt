@@ -105,7 +105,7 @@ class MockStream internal constructor(underlyingStream: MockEnvoyHTTPStream) : S
    * Simulate the stream receiving a cancellation signal from Envoy.
    */
   fun receiveCancel() {
-    mockStream.callbacks.onCancel(mockFinalStreamIntel)
+    mockStream.callbacks.onCancel(mockStreamIntel, mockFinalStreamIntel)
   }
 
   /**
@@ -114,6 +114,6 @@ class MockStream internal constructor(underlyingStream: MockEnvoyHTTPStream) : S
    * @param error The error to receive.
    */
   fun receiveError(error: EnvoyError) {
-    mockStream.callbacks.onError(error.errorCode, error.message, error.attemptCount ?: 0, mockFinalStreamIntel)
+    mockStream.callbacks.onError(error.errorCode, error.message, error.attemptCount ?: 0, mockStreamIntel, mockFinalStreamIntel)
   }
 }

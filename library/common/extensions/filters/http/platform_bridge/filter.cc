@@ -152,7 +152,7 @@ void PlatformBridgeFilter::onDestroy() {
   // If the filter chain is destroyed before a response is received, treat as cancellation.
   if (!response_filter_base_->state_.stream_complete_ && platform_filter_.on_cancel) {
     ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_cancel", filter_name_);
-    platform_filter_.on_cancel(finalStreamIntel(), platform_filter_.instance_context);
+    platform_filter_.on_cancel(streamIntel(), finalStreamIntel(), platform_filter_.instance_context);
   }
 
   // Allow nullptr as no-op only if nothing was initialized.
@@ -180,7 +180,7 @@ Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& 
     envoy_error_code_t error_code = Bridge::Utility::errorCodeFromLocalStatus(reply.code_);
     envoy_data error_message = Data::Utility::copyToBridgeData(reply.details_);
     int32_t attempts = static_cast<int32_t>(info.attemptCount().value_or(0));
-    platform_filter_.on_error({error_code, error_message, attempts}, finalStreamIntel(),
+    platform_filter_.on_error({error_code, error_message, attempts}, streamIntel(), finalStreamIntel(),
                               platform_filter_.instance_context);
   }
 
@@ -471,7 +471,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
   }
 
   if (platform_filter_.on_error) {
-    platform_filter_.on_error({error_code, error_message, attempt_count}, finalStreamIntel(),
+    platform_filter_.on_error({error_code, error_message, attempt_count}, streamIntel(), finalStreamIntel(),
                               platform_filter_.instance_context);
   } else {
     release_envoy_data(error_message);

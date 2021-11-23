@@ -93,11 +93,11 @@ class ReceiveErrorTest {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError, finalStreamIntel: FinalStreamIntel) {
+    override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       receivedError.countDown()
     }
 
-    override fun onCancel(finalStreamIntel: FinalStreamIntel) {
+    override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       notCancelled.countDown()
     }
   }
@@ -126,11 +126,13 @@ class ReceiveErrorTest {
       .setOnResponseData { _, _, _ -> fail("Data received instead of expected error") }
       // The unmatched expectation will cause a local reply which gets translated in Envoy Mobile to
       // an error.
-      .setOnError { error, _ ->
+      .setOnError { error, _, _ ->
         errorCode = error.errorCode
         callbackReceivedError.countDown()
       }
-      .setOnCancel { fail("Unexpected call to onCancel response callback") }
+      .setOnCancel { _, _->
+        fail("Unexpected call to onCancel response callback")
+      }
       .start()
       .sendHeaders(requestHeader, true)
 

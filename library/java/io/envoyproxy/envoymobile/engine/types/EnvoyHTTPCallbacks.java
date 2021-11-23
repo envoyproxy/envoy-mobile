@@ -47,18 +47,20 @@ public interface EnvoyHTTPCallbacks {
    *                      -1 is used in scenarios where it does not make sense to have an attempt
    *                      count for an error. This is different from 0, which intentionally conveys
    *                      that the action was _not_ executed.
+   * @param streamIntel,  contains internal HTTP stream metrics, context, and other details.
    * @param finalStreamIntel,  contains final internal HTTP stream metrics, context, and other
    *     details.
    */
-  void onError(int errorCode, String message, int attemptCount,
+  void onError(int errorCode, String message, int attemptCount, EnvoyStreamIntel streamIntel,
                EnvoyFinalStreamIntel finalStreamIntel);
 
   /**
    * Called when the async HTTP stream is canceled.
+   * @param streamIntel,  contains internal HTTP stream metrics, context, and other details.
    * @param finalStreamIntel,  contains final internal HTTP stream metrics, context, and other
    *     details.
    */
-  void onCancel(EnvoyFinalStreamIntel finalStreamIntel);
+  void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel);
 
   /**
    * Callback signature which notify when there is buffer available for request body upload.
@@ -74,7 +76,8 @@ public interface EnvoyHTTPCallbacks {
   /**
    * Called once after the final data for the stream has been received.
    *
+   * @param streamIntel,  contains internal HTTP stream metrics, context, and other details.
    * @param finalStreamIntel,  contains final internal HTTP stream metrics.
    */
-  void onComplete(EnvoyFinalStreamIntel finalStreamIntel);
+  void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel);
 }

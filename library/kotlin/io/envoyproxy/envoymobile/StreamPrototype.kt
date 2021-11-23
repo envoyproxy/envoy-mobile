@@ -107,7 +107,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError, finalStreamIntel: FinalStreamIntel) -> Unit
+    closure: (error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onError = closure
     return this
@@ -121,7 +121,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnCancel(
-    closure: (finalStreamIntel: FinalStreamIntel) -> Unit
+    closure: (streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onCancel = closure
     return this

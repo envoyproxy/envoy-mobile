@@ -228,7 +228,7 @@ void Client::DirectStreamCallbacks::onComplete() {
 
   envoy_final_stream_intel final_intel;
   setFinalStreamIntel(final_intel);
-  bridge_callbacks_.on_complete(final_intel, bridge_callbacks_.context);
+  bridge_callbacks_.on_complete(streamIntel(), final_intel, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -257,7 +257,7 @@ void Client::DirectStreamCallbacks::onError() {
 
   envoy_final_stream_intel final_intel;
   setFinalStreamIntel(final_intel);
-  bridge_callbacks_.on_error(error_.value(), final_intel, bridge_callbacks_.context);
+  bridge_callbacks_.on_error(error_.value(), streamIntel(), final_intel, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -272,7 +272,7 @@ void Client::DirectStreamCallbacks::onCancel() {
   http_client_.stats().stream_cancel_.inc();
   envoy_final_stream_intel final_intel;
   setFinalStreamIntel(final_intel);
-  bridge_callbacks_.on_cancel(final_intel, bridge_callbacks_.context);
+  bridge_callbacks_.on_cancel(streamIntel(), final_intel, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onHasBufferedData() {

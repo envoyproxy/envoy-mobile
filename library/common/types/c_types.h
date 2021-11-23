@@ -336,12 +336,14 @@ typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, envoy_stream_intel 
  * This is a TERMINAL callback. Exactly one terminal callback will be called per stream.
  *
  * @param envoy_error, the error received/caused by the async HTTP stream.
- * @param final_stream_intel, contains final_internal stream metrics, context, and other details.
+ * @param stream_intel, contains internal stream metrics, context, and other details.
+ * @param final_stream_intel, contains final internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_error_f)(envoy_error error, envoy_final_stream_intel final_stream_intel,
+typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_intel,
+                                  envoy_final_stream_intel final_stream_intel,
                                   void* context);
 
 /**
@@ -350,23 +352,25 @@ typedef void* (*envoy_on_error_f)(envoy_error error, envoy_final_stream_intel fi
  * This is a TERMINAL callback. Exactly one terminal callback will be called per stream.
  *
  * @param stream_intel, contains internal stream metrics, context, and other details.
+ * @param final_stream_intel, contains final internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_complete_f)(envoy_final_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel, envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Callback signature for when an HTTP stream is cancelled.
  *
  * This is a TERMINAL callback. Exactly one terminal callback will be called per stream.
  *
+ * @param stream_intel, contains internal stream metrics, context, and other details.
  * @param final_stream_intel, contains final internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_cancel_f)(envoy_final_stream_intel final_stream_intel, void* context);
+typedef void* (*envoy_on_cancel_f)(envoy_stream_intel stream_intel, envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Called when the envoy engine is exiting.

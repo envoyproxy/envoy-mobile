@@ -96,11 +96,11 @@ class GRPCReceiveErrorTest {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError, finalStreamIntel: FinalStreamIntel) {
+    override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       receivedError.countDown()
     }
 
-    override fun onCancel(finalStreamIntel: FinalStreamIntel) {
+    override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
       notCancelled.countDown()
     }
   }
@@ -125,10 +125,12 @@ class GRPCReceiveErrorTest {
       .newGRPCStreamPrototype()
       .setOnResponseHeaders { _, _, _ -> }
       .setOnResponseMessage { _, _ -> }
-      .setOnError { _, _ ->
+      .setOnError { _, _, _ ->
         callbackReceivedError.countDown()
       }
-      .setOnCancel { fail("Unexpected call to onCancel response callback") }
+      .setOnCancel { _, _ ->
+        fail("Unexpected call to onCancel response callback")
+      }
       .start()
       .sendHeaders(requestHeader, false)
       .sendMessage(ByteBuffer.wrap(ByteArray(5)))

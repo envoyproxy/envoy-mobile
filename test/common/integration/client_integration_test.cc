@@ -77,13 +77,14 @@ public:
       release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_complete = [](envoy_final_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_stream_intel, envoy_final_stream_intel,
+                                       void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_complete_calls++;
       cc_->terminal_callback->setReady();
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error error, envoy_final_stream_intel,
+    bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, envoy_final_stream_intel,
                                     void* context) -> void* {
       release_envoy_error(error);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
