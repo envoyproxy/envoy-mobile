@@ -133,5 +133,4 @@ public interface EnvoyHTTPFilter {
    *     details.
    */
   void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalSteamIntel);
-
 }

@@ -244,7 +244,7 @@ class JvmFilterContext {
    */
   public Object onComplete(long[] streamIntel, long[] finalStreamIntel) {
     filter.onComplete(new EnvoyStreamIntelImpl(streamIntel),
-                    new EnvoyFinalStreamIntelImpl(finalStreamIntel));
+                      new EnvoyFinalStreamIntelImpl(finalStreamIntel));
     return null;
   }
 

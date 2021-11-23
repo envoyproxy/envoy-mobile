@@ -674,7 +674,7 @@ static void* call_jvm_on_complete(envoy_stream_intel stream_intel,
 
   jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
   jmethodID jmid_onComplete =
-      env->GetMethodID(jcls_JvmObserverContext, "onComplete", "([J)Ljava/lang/Object;");
+      env->GetMethodID(jcls_JvmObserverContext, "onComplete", "([J[J)Ljava/lang/Object;");
 
   jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
   jlongArray j_final_stream_intel = native_final_stream_intel_to_array(env, final_stream_intel);
@@ -695,7 +695,7 @@ static void* call_jvm_on_error(envoy_error error, envoy_stream_intel stream_inte
 
   jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
   jmethodID jmid_onError =
-      env->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI[J)Ljava/lang/Object;");
+      env->GetMethodID(jcls_JvmObserverContext, "onError", "(I[BI[J[J)Ljava/lang/Object;");
 
   jbyteArray j_error_message = native_data_to_array(env, error.message);
   jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
@@ -728,7 +728,7 @@ static void* call_jvm_on_cancel(envoy_stream_intel stream_intel,
 
   jclass jcls_JvmObserverContext = env->GetObjectClass(j_context);
   jmethodID jmid_onCancel =
-      env->GetMethodID(jcls_JvmObserverContext, "onCancel", "([J)Ljava/lang/Object;");
+      env->GetMethodID(jcls_JvmObserverContext, "onCancel", "([J[J)Ljava/lang/Object;");
 
   jlongArray j_stream_intel = native_stream_intel_to_array(env, stream_intel);
   jlongArray j_final_stream_intel = native_final_stream_intel_to_array(env, final_stream_intel);
@@ -743,7 +743,7 @@ static void* call_jvm_on_cancel(envoy_stream_intel stream_intel,
 }
 
 static void* jvm_on_complete(envoy_stream_intel stream_intel,
-                           envoy_final_stream_intel final_stream_intel, void* context) {
+                             envoy_final_stream_intel final_stream_intel, void* context) {
   void* result = call_jvm_on_complete(stream_intel, final_stream_intel, context);
   jni_delete_global_ref(context);
   return result;

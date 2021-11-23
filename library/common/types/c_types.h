@@ -343,8 +343,7 @@ typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, envoy_stream_intel 
  * @return void*, return context (may be unused).
  */
 typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_intel,
-                                  envoy_final_stream_intel final_stream_intel,
-                                  void* context);
+                                  envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Callback signature for when an HTTP stream bi-directionally completes without error.
@@ -357,7 +356,8 @@ typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_i
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel, envoy_final_stream_intel final_stream_intel, void* context);
+typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel,
+                                     envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Callback signature for when an HTTP stream is cancelled.
@@ -370,7 +370,8 @@ typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel, envoy_fina
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_cancel_f)(envoy_stream_intel stream_intel, envoy_final_stream_intel final_stream_intel, void* context);
+typedef void* (*envoy_on_cancel_f)(envoy_stream_intel stream_intel,
+                                   envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Called when the envoy engine is exiting.

@@ -41,7 +41,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamInfo();
+  direct_stream_.saveLatestStreamIntel();
   if (end_stream) {
     closeStream();
   }
@@ -75,7 +75,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamInfo();
+  direct_stream_.saveLatestStreamIntel();
   if (end_stream) {
     closeStream();
   }
@@ -120,6 +120,7 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
   ENVOY_LOG(debug,
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
+
   bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), send_end_stream,
                             streamIntel(), bridge_callbacks_.context);
   if (send_end_stream) {
@@ -137,7 +138,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamInfo();
+  direct_stream_.saveLatestStreamIntel();
   closeStream(); // Trailers always indicate the end of the stream.
 
   // For explicit flow control, don't send data unless prompted.
@@ -299,7 +300,7 @@ void setFromOptional(long& to_set, absl::optional<std::chrono::nanoseconds> time
   }
 }
 
-void Client::DirectStream::saveLatestStreamInfo() {
+void Client::DirectStream::saveLatestStreamIntel() {
   const auto& info = request_decoder_->streamInfo();
   stream_intel_.connection_id = info.upstreamConnectionId().value_or(-1);
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);

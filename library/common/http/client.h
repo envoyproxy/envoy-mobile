@@ -256,7 +256,7 @@ private:
     }
 
     // Latches stream information as it may not be available when accessed.
-    void saveLatestStreamInfo();
+    void saveLatestStreamIntel();
 
     // Latches latency info from stream info before it goes away.
     void saveLatencyInfo();
