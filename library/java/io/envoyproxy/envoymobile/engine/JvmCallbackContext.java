@@ -92,7 +92,8 @@ class JvmCallbackContext {
    *
    * @param errorCode,         the error code.
    * @param message,           the error message.
-   * @param attemptCount,      the number of times an operation was attempted before firing this error.
+   * @param attemptCount,      the number of times an operation was attempted before firing this
+   *     error.
    * @param finalStreamIntel,  final internal HTTP stream metrics, context, and other details.
    * @return Object,           not used for response callbacks.
    */

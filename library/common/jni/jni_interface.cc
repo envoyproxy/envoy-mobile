@@ -683,7 +683,8 @@ static void* jvm_on_complete(envoy_final_stream_intel final_stream_intel, void* 
   return result;
 }
 
-static void* call_jvm_on_error(envoy_error error, envoy_final_stream_intel final_stream_intel, void* context) {
+static void* call_jvm_on_error(envoy_error error, envoy_final_stream_intel final_stream_intel,
+                               void* context) {
   jni_log("[Envoy]", "jvm_on_error");
   JNIEnv* env = get_env();
   jobject j_context = static_cast<jobject>(context);
@@ -705,7 +706,8 @@ static void* call_jvm_on_error(envoy_error error, envoy_final_stream_intel final
   return result;
 }
 
-static void* jvm_on_error(envoy_error error, envoy_final_stream_intel final_stream_intel, void* context) {
+static void* jvm_on_error(envoy_error error, envoy_final_stream_intel final_stream_intel,
+                          void* context) {
   void* result = call_jvm_on_error(error, final_stream_intel, context);
   jni_delete_global_ref(context);
   return result;
@@ -741,7 +743,8 @@ static void jvm_http_filter_on_error(envoy_error error, envoy_final_stream_intel
   call_jvm_on_error(error, final_stream_intel, const_cast<void*>(context));
 }
 
-static void jvm_http_filter_on_cancel(envoy_final_stream_intel final_stream_intel, const void* context) {
+static void jvm_http_filter_on_cancel(envoy_final_stream_intel final_stream_intel,
+                                      const void* context) {
   call_jvm_on_cancel(final_stream_intel, const_cast<void*>(context));
 }
 

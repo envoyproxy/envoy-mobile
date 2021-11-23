@@ -472,7 +472,7 @@ Http::FilterHeadersStatus PlatformBridgeFilter::encodeHeaders(Http::ResponseHead
 
   if (platform_filter_.on_error) {
     platform_filter_.on_error({error_code, error_message, attempt_count}, finalStreamIntel(),
-                               platform_filter_.instance_context);
+                              platform_filter_.instance_context);
   } else {
     release_envoy_data(error_message);
   }

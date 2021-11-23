@@ -215,7 +215,8 @@ class JvmFilterContext {
    */
   public Object onError(int errorCode, byte[] message, int attemptCount, long[] finalStreamIntel) {
     String errorMessage = new String(message);
-    filter.onError(errorCode, errorMessage, attemptCount, new EnvoyFinalStreamIntelImpl(finalStreamIntel));
+    filter.onError(errorCode, errorMessage, attemptCount,
+                   new EnvoyFinalStreamIntelImpl(finalStreamIntel));
     return null;
   }
 
