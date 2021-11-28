@@ -9,8 +9,7 @@ import java.nio.ByteBuffer
  * Constructed using `StreamPrototype`, and used to write to the network.
  */
 open class Stream(
-  private val underlyingStream: EnvoyHTTPStream,
-  private val useByteBufferPosition: Boolean
+  private val underlyingStream: EnvoyHTTPStream
 ) {
   /**
    * Send headers over the stream.
@@ -36,19 +35,13 @@ open class Stream(
   }
 
   /**
-   * For sending data to an associated stream. By default, the length sent is the
-   * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
-   * if the Stream was configured to do so - see **[StreamPrototype.useByteBufferPosition]**.
-   *
-   * Note: the provided ByteBuffer won't be mutated in any case. On the other hand, until the
-   *       stream is closed, any further mutations may lead to an unpredictable outcome.
+   * For sending data to an associated stream.
    *
    * @param data Data to send over the stream.
    * @return This stream, for chaining syntax.
    */
   open fun sendData(data: ByteBuffer): Stream {
-    var length = if (useByteBufferPosition) data.position() else data.capacity()
-    underlyingStream.sendData(data, length, false)
+    underlyingStream.sendData(data, false)
     return this
   }
 
@@ -62,18 +55,12 @@ open class Stream(
   }
 
   /**
-   * Close the stream with a data frame. By default, the length sent is the
-   * **[ByteBuffer.capacity]**. However, the length will rather be **[ByteBuffer.position]**
-   * if the Stream was configured to do so - see **[StreamPrototype.useByteBufferPosition]**.
-   *
-   * Note: the provided ByteBuffer won't be mutated in any case. On the other hand, until the
-   *       stream is closed, any further mutations may lead to an unpredictable outcome.
+   * Close the stream with a data frame.
    *
    * @param data Data with which to close the stream.
    */
   open fun close(data: ByteBuffer) {
-    var length = if (useByteBufferPosition) data.position() else data.capacity()
-    underlyingStream.sendData(data, length, true)
+    underlyingStream.sendData(data, true)
   }
 
   /**
