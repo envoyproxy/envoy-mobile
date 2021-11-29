@@ -39,6 +39,8 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
+- &dns_resolvers [{"socket_address":{"address":"8.8.8.8"}}]
+- &dns_use_resolvers_as_fallback true
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
@@ -196,6 +198,13 @@ const char* config_template = R"(
             address:
               socket_address: { address: 127.0.0.1, port_value: 10101 }
 
+typed_dns_resolver_config:
+  name: envoy.network.dns_resolver.cares
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
+    resolvers: *dns_resolvers
+    use_resolvers_as_fallback: *dns_use_resolvers_as_fallback
+
 static_resources:
   listeners:
 #{custom_listeners}
@@ -267,6 +276,12 @@ R"(
                   base_interval: *dns_fail_base_interval
                   max_interval: *dns_fail_max_interval
                 dns_query_timeout: *dns_query_timeout
+                typed_dns_resolver_config:
+                  name: envoy.network.dns_resolver.cares
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
+                    resolvers: *dns_resolvers
+                    use_resolvers_as_fallback: *dns_use_resolvers_as_fallback
           # TODO: make this configurable for users.
           - name: envoy.filters.http.decompressor
             typed_config:
