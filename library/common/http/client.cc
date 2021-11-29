@@ -188,7 +188,7 @@ void Client::DirectStreamCallbacks::setFinalStreamIntel(envoy_final_stream_intel
 
   final_intel.request_start_ms = direct_stream_.latency_info_.request_start_ms;
   if (direct_stream_.latency_info_.upstream_info_) {
-    StreamInfo::UpstreamTiming& timing =
+    const StreamInfo::UpstreamTiming& timing =
         direct_stream_.latency_info_.upstream_info_->upstreamTiming();
     setFromOptional(final_intel.sending_start_ms, timing.first_upstream_tx_byte_sent_);
     setFromOptional(final_intel.sending_end_ms, timing.last_upstream_tx_byte_sent_);
@@ -332,19 +332,25 @@ void Client::DirectStream::saveLatestStreamIntel() {
 }
 
 void Client::DirectStream::saveFinalStreamIntel() {
-  auto& info = request_decoder_->streamInfo();
+  const auto& info = request_decoder_->streamInfo();
   latency_info_.request_start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                        info.startTimeMonotonic().time_since_epoch())
                                        .count();
   latency_info_.sent_byte_count = info.bytesSent();
   latency_info_.received_byte_count = info.bytesReceived();
-  latency_info_.upstream_info_ = request_decoder_->streamInfo().upstreamInfo();
   setFromOptional(latency_info_.request_end_ms, info.lastDownstreamRxByteReceived(),
                   latency_info_.request_start_ms);
   setFromOptional(latency_info_.dns_start_ms,
-                  info.downstreamTiming().getValue("envoy.dynamic_forward_proxy.dns_start_ms"));
+                  request_decoder_->streamInfo().downstreamTiming().getValue(
+                      "envoy.dynamic_forward_proxy.dns_start_ms"));
   setFromOptional(latency_info_.dns_end_ms,
-                  info.downstreamTiming().getValue("envoy.dynamic_forward_proxy.dns_end_ms"));
+                  request_decoder_->streamInfo().downstreamTiming().getValue(
+                      "envoy.dynamic_forward_proxy.dns_end_ms"));
+  // TODO(alyssawilk) sort out why upstream info is problematic for cronvoy tests.
+  return;
+  if (info.upstreamInfo().has_value()) {
+    latency_info_.upstream_info_ = request_decoder_->streamInfo().upstreamInfo();
+  }
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {

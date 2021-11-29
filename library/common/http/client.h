@@ -45,7 +45,7 @@ struct LatencyInfo {
   long sent_byte_count = 0;
   long received_byte_count = 0;
   // Latest latency info received from StreamInfo.
-  std::shared_ptr<StreamInfo::UpstreamInfo> upstream_info_;
+  std::shared_ptr<StreamInfo::UpstreamInfo> upstream_info_{};
 };
 
 /**
