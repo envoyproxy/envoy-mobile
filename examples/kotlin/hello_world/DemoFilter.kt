@@ -49,4 +49,8 @@ class DemoFilter : ResponseFilter {
   override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
     Log.d("DemoFilter", "On cancel!")
   }
+
+  @Suppress("EmptyFunctionBlock")
+  override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+  }
 }

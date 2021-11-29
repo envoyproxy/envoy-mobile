@@ -64,4 +64,8 @@ class BufferDemoFilter : ResponseFilter {
   @Suppress("EmptyFunctionBlock")
   override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
   }
+
+  @Suppress("EmptyFunctionBlock")
+  override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+  }
 }
