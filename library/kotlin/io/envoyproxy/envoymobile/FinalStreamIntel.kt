@@ -27,6 +27,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
  * @param sentByteCount The number of bytes sent upstream.
  * @param receivedByteCount The number of bytes received from upstream.
  */
+@Suppress("LongParameterList")
 class FinalStreamIntel constructor(
   val requestStartMs: Long,
   val dnsStartMs: Long,
