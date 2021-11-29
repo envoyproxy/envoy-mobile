@@ -6,11 +6,11 @@ import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterResumeStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
+import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.ResponseFilterCallbacks
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
 import io.envoyproxy.envoymobile.StreamIntel
-import io.envoyproxy.envoymobile.FinalStreamIntel
 import java.nio.ByteBuffer
 import java.util.Timer
 import kotlin.concurrent.schedule
@@ -79,8 +79,11 @@ class AsyncDemoFilter : AsyncResponseFilter {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onError(error: EnvoyError, streamIntel: StreamIntel,
-                       finalStreamIntel: FinalStreamIntel) {
+  override fun onError(
+    error: EnvoyError,
+    streamIntel: StreamIntel,
+    finalStreamIntel: FinalStreamIntel
+  ) {
   }
 
   @Suppress("EmptyFunctionBlock")

@@ -80,5 +80,4 @@ interface ResponseFilter : Filter {
    * @param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
    */
   fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel)
-
 }
