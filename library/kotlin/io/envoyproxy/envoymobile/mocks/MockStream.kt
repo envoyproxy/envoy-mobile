@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 import java.nio.ByteBuffer
 
 /**
@@ -31,7 +31,7 @@ class MockStream internal constructor(underlyingStream: MockEnvoyHTTPStream) : S
     override fun getRequestEndMs(): Long { return 0 }
     override fun getSocketReused(): Boolean { return false }
     override fun getSentByteCount(): Long { return 0 }
-    override fun getReceivedByteCount(): Long {return 0}
+    override fun getReceivedByteCount(): Long { return 0 }
   }
   /**
    * Closure that will be called when request headers are sent.
