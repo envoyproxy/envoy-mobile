@@ -109,7 +109,7 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
-                         final String nativeFilterTemplateYAML) {
+                         final String nativeFilterTemplateYAML, final String dnsTemplateYAML) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -125,8 +125,13 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(filterConfig);
     }
 
-    String processedTemplate =
+    String firstProcess =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
+
+    String dnsResolverConfigFirst = dnsTemplateYAML.replace("{{ dns_resolvers }}", "[{\"socket_address\":{\"address\":\"8.8.8.8\"}}]");
+    String dnsResolverConfig = dnsResolverConfigFirst.replace("{{ dns_use_resolvers_as_fallback }}", "true");
+
+    String processedTemplate = firstProcess.replace("#{dns_resolver_config}", dnsResolverConfig);
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
