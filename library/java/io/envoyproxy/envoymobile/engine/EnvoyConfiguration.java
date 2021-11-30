@@ -125,13 +125,17 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(filterConfig);
     }
 
-    String firstProcess =
+    String addedCustomFilters =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
-    String dnsResolverConfigFirst = dnsTemplateYAML.replace("{{ dns_resolvers }}", "[{\"socket_address\":{\"address\":\"8.8.8.8\"}}]");
-    String dnsResolverConfig = dnsResolverConfigFirst.replace("{{ dns_use_resolvers_as_fallback }}", "true");
+    // TODO: use defaults for now. Subsequent PR will add user ability to override. These defaults
+    // are a noop.
+    String dnsResolverConfigFirst = dnsTemplateYAML.replace("{{ dns_resolvers }}", "[]");
+    String dnsResolverConfig =
+        dnsResolverConfigFirst.replace("{{ dns_use_resolvers_as_fallback }}", "false");
 
-    String processedTemplate = firstProcess.replace("#{dns_resolver_config}", dnsResolverConfig);
+    String processedTemplate =
+        addedCustomFilters.replace("#{dns_resolver_config}", dnsResolverConfig);
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
