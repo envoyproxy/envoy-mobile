@@ -6,7 +6,6 @@ import io.envoyproxy.envoymobile.EnvoyError
 import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
-import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.ResponseFilter
@@ -132,13 +131,12 @@ class CancelStreamTest {
       return FilterTrailersStatus.StopIteration()
     }
 
-    override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+    override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
       assertThat(error.errorCode).isEqualTo(4)
       latch.countDown()
     }
-    override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
 
-    override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+    override fun onCancel(streamIntel: StreamIntel) {
       fail<CancelStreamTest>("Unexpected call to onCancel filter callback")
     }
   }
@@ -165,7 +163,7 @@ class CancelStreamTest {
       .build()
 
     client.newStreamPrototype()
-      .setOnError { error, _, _ ->
+      .setOnError { error, _ ->
         assertThat(error.errorCode).isEqualTo(4)
         callbackExpectation.countDown()
       }

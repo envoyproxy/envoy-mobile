@@ -61,7 +61,6 @@ envoy_mobile_kt_library(
         "StreamClient.kt",
         "StreamClientImpl.kt",
         "StreamIntel.kt",
-        "FinalStreamIntel.kt",
         "StreamPrototype.kt",
         "StringAccessor.kt",
         "Trailers.kt",
