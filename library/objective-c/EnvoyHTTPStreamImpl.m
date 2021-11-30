@@ -83,7 +83,7 @@ static void *ios_on_send_window_available(envoy_stream_intel stream_intel, void 
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
-    // TODO(jpsim): fix this up to call ios_on_send_window_available
+    // TODO(jpsim): add EnvoyHTTPCallbacks.onSendWindowAvailable
     if (callbacks.onCancel) {
       callbacks.onCancel(stream_intel);
     }
