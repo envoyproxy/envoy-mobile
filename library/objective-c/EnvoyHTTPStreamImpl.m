@@ -62,7 +62,8 @@ static void *ios_on_trailers(envoy_headers trailers, envoy_stream_intel stream_i
   return NULL;
 }
 
-static void *ios_on_complete(envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_complete(envoy_stream_intel stream_intel,
+                             envoy_final_stream_intel final_stream_intel, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
@@ -74,7 +75,8 @@ static void *ios_on_complete(envoy_stream_intel stream_intel, void *context) {
   return NULL;
 }
 
-static void *ios_on_cancel(envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_cancel(envoy_stream_intel stream_intel,
+                           envoy_final_stream_intel final_stream_intel, void *context) {
   // This call is atomically gated at the call-site and will only happen once. It may still fire
   // after a complete response or error callback, but no other callbacks for the stream will ever
   // fire AFTER the cancellation callback.
@@ -93,7 +95,8 @@ static void *ios_on_cancel(envoy_stream_intel stream_intel, void *context) {
   return NULL;
 }
 
-static void *ios_on_error(envoy_error error, envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_error(envoy_error error, envoy_stream_intel stream_intel,
+                          envoy_final_stream_intel final_stream_intel, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
