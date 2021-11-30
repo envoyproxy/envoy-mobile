@@ -106,6 +106,9 @@
                                                          withString:customRoutes];
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_filters}"
                                                          withString:customFilters];
+  // No template is currently needed for Apple-based DNS resolver.
+  templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{dns_resolver_config}"
+                                                         withString:@""];
 
   NSMutableString *definitions =
       [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];
