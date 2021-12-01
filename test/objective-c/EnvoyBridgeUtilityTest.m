@@ -18,7 +18,7 @@ typedef NSDictionary<NSString *, NSString *> EnvoyTags;
   XCTAssertEqual(memcmp(nativeData.bytes, testData.bytes, 3), 0);
 }
 
-- (void)testToManagedNativeString {
+- (void)testToManagedNativeStringUsingUTF8Chars {
   NSString *testString = @"台灣大哥大";
   envoy_data stringData = toManagedNativeString(testString);
   NSString *roundtripString = to_ios_string(stringData);
