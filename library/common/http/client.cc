@@ -412,11 +412,11 @@ void Client::DirectStream::readDisable(bool disable) {
 
 void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
   // TODO(junr03): output to ostream arg - https://github.com/envoyproxy/envoy-mobile/issues/1497.
-  std::stringstream ss;
-  const char* spaces = spacesForLevel(indent_level);
+  //std::stringstream ss;
+  //const char* spaces = spacesForLevel(indent_level);
 
-  ss << spaces << "DirectStream" << DUMP_MEMBER(stream_handle_) << std::endl;
-  ENVOY_LOG(error, "\n{}", ss.str());
+  //ss << spaces << "DirectStream" << DUMP_MEMBER(stream_handle_) << std::endl;
+  ENVOY_LOG(error, "\n{}", stream_handle_);
 }
 
 void Client::startStream(envoy_stream_t new_stream_handle, envoy_http_callbacks bridge_callbacks,
