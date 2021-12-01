@@ -410,7 +410,7 @@ void Client::DirectStream::readDisable(bool disable) {
   }
 }
 
-void Client::DirectStream::dumpState(std::ostream&, int indent_level) const {
+void Client::DirectStream::dumpState(std::ostream&, [[maybe_unused]] int indent_level) const {
   // TODO(junr03): output to ostream arg - https://github.com/envoyproxy/envoy-mobile/issues/1497.
   //std::stringstream ss;
   const char* spaces = spacesForLevel(indent_level);
