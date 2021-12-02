@@ -284,8 +284,6 @@ public class JniLibrary {
    */
   public static native String nativeFilterTemplateString();
 
-  public static native String dnsTemplateString();
-
   /**
    * Register a string accessor to get strings from the platform.
    *

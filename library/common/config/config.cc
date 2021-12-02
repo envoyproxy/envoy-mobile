@@ -24,15 +24,6 @@ const char* native_filter_template = R"(
             typed_config: {{ native_filter_typed_config }}
 )";
 
-const char* dns_template = R"(
-                typed_dns_resolver_config:
-                  name: envoy.network.dns_resolver.cares
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
-                    resolvers: {{ dns_resolvers }}
-                    use_resolvers_as_fallback: {{ dns_use_resolvers_as_fallback }}
-)";
-
 const char* route_cache_reset_filter_insert = R"(
           - name: envoy.filters.http.route_cache_reset
             typed_config:
@@ -48,6 +39,7 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
+- &dns_resolver_config {}
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
@@ -276,7 +268,9 @@ R"(
                   base_interval: *dns_fail_base_interval
                   max_interval: *dns_fail_max_interval
                 dns_query_timeout: *dns_query_timeout
-#{dns_resolver_config}
+                typed_dns_resolver_config:
+                  name: *dns_resolver_name
+                  typed_config: *dns_resolver_config
           # TODO: make this configurable for users.
           - name: envoy.filters.http.decompressor
             typed_config:

@@ -19,8 +19,6 @@ extern const char* platform_filter_template;
  */
 extern const char* native_filter_template;
 
-extern const char* dns_template;
-
 /**
  * Number of spaces to indent custom cluster entries.
  */

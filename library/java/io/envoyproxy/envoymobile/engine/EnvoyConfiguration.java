@@ -109,7 +109,7 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
-                         final String nativeFilterTemplateYAML, final String dnsTemplateYAML) {
+                         final String nativeFilterTemplateYAML) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -125,17 +125,12 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(filterConfig);
     }
 
-    String addedCustomFilters =
+    String processedTemplate =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
-    // TODO: use defaults for now. Subsequent PR will add user ability to override. These defaults
-    // are a noop.
-    String dnsResolverConfigFirst = dnsTemplateYAML.replace("{{ dns_resolvers }}", "[]");
+    // TODO: using default no-op. Subsequent change will allow user override.
     String dnsResolverConfig =
-        dnsResolverConfigFirst.replace("{{ dns_use_resolvers_as_fallback }}", "false");
-
-    String processedTemplate =
-        addedCustomFilters.replace("#{dns_resolver_config}", dnsResolverConfig);
+        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false}";
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
@@ -144,6 +139,8 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
+        .append("- &dns_resolver_name envoy.network.dns_resolver.cares\n")
+        .append(String.format("- &dns_resolver_config %s\n", dnsResolverConfig))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
