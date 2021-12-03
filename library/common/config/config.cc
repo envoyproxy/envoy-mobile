@@ -39,6 +39,7 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_preresolve_hostnames []
+- &dns_resolver_name envoy.network.dns_resolver.cares
 - &dns_resolver_config {}
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
