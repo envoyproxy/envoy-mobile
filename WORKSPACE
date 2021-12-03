@@ -1,3 +1,4 @@
+# No-op triggering builds
 workspace(name = "envoy_mobile")
 
 load("@envoy_mobile//bazel:envoy_mobile_repositories.bzl", "envoy_mobile_repositories")
