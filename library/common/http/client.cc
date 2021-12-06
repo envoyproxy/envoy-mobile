@@ -256,9 +256,7 @@ void Client::DirectStreamCallbacks::onComplete() {
     http_client_.stats().stream_failure_.inc();
   }
 
-  envoy_final_stream_intel final_intel;
-  setFinalStreamIntel(final_intel);
-  bridge_callbacks_.on_complete(streamIntel(), final_intel, bridge_callbacks_.context);
+  bridge_callbacks_.on_complete(streamIntel(), envoy_final_stream_intel_, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -346,10 +344,10 @@ void Client::DirectStream::saveFinalStreamIntel() {
   setFromOptional(latency_info_.dns_end_ms,
                   request_decoder_->streamInfo().downstreamTiming().getValue(
                       "envoy.dynamic_forward_proxy.dns_end_ms"));
-  // TODO(alyssawilk) sort out why upstream info is problematic for cronvoy tests.
-  return;
   if (info.upstreamInfo().has_value()) {
     latency_info_.upstream_info_ = request_decoder_->streamInfo().upstreamInfo();
+    callbacks_->setFinalStreamIntel(callbacks_->envoy_final_stream_intel_);
+    latency_info_.upstream_info_ = nullptr;
   }
 }
 

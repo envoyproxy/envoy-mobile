@@ -179,6 +179,8 @@ private:
 
     void setFinalStreamIntel(envoy_final_stream_intel& final_intel);
 
+    envoy_final_stream_intel envoy_final_stream_intel_;
+
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
 
