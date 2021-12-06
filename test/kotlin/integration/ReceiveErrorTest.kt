@@ -6,7 +6,6 @@ import io.envoyproxy.envoymobile.EnvoyError
 import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
-import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.GRPCRequestHeadersBuilder
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
@@ -93,12 +92,11 @@ class ReceiveErrorTest {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+    override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
       receivedError.countDown()
     }
-    override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
 
-    override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+    override fun onCancel(streamIntel: StreamIntel) {
       notCancelled.countDown()
     }
   }
@@ -127,13 +125,11 @@ class ReceiveErrorTest {
       .setOnResponseData { _, _, _ -> fail("Data received instead of expected error") }
       // The unmatched expectation will cause a local reply which gets translated in Envoy Mobile to
       // an error.
-      .setOnError { error, _, _ ->
+      .setOnError { error, _ ->
         errorCode = error.errorCode
         callbackReceivedError.countDown()
       }
-      .setOnCancel { _, _ ->
-        fail("Unexpected call to onCancel response callback")
-      }
+      .setOnCancel { fail("Unexpected call to onCancel response callback") }
       .start()
       .sendHeaders(requestHeader, true)
 

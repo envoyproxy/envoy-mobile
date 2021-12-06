@@ -5,7 +5,6 @@ import io.envoyproxy.envoymobile.EnvoyError
 import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
-import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
@@ -41,19 +40,11 @@ class DemoFilter : ResponseFilter {
     return FilterTrailersStatus.Continue(trailers)
   }
 
-  override fun onError(
-    error: EnvoyError,
-    streamIntel: StreamIntel,
-    finalStreamIntel: FinalStreamIntel
-  ) {
+  override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
     Log.d("DemoFilter", "On error!")
   }
 
-  override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+  override fun onCancel(streamIntel: StreamIntel) {
     Log.d("DemoFilter", "On cancel!")
-  }
-
-  @Suppress("EmptyFunctionBlock")
-  override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
   }
 }
