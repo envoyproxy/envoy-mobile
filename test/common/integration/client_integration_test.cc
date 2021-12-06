@@ -25,7 +25,7 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
       Http::ResponseHeaderMapImpl::create();
   transformed_headers->setFormatter(
       std::make_unique<
-          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>());
+          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(false));
   Http::Utility::toEnvoyHeaders(*transformed_headers, headers);
   return transformed_headers;
 }
