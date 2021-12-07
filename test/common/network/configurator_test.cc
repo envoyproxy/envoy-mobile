@@ -122,16 +122,15 @@ TEST_F(ConfiguratorTest, ReportNetworkUsageDisregardsCallsWithStaleConfiguration
 }
 
 TEST_F(ConfiguratorTest, EnumerateInterfacesFiltersByFlags) {
+  // TODO(jpsim): Update this test now that getifaddrs works
+
   // Select loopback.
-  // TODO(jpsim): Re-enable test
-  // auto loopbacks = configurator_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, 0);
-  // EXPECT_EQ(std::get<const std::string>(loopbacks[0]).rfind("lo", 0), 0);
+  auto loopbacks = configurator_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, 0);
+  EXPECT_EQ(loopbacks.size(), 0);
 
   // Reject loopback.
   auto nonloopbacks = configurator_->enumerateInterfaces(AF_INET, 0, IFF_LOOPBACK);
-  for (const auto& interface : nonloopbacks) {
-    EXPECT_NE(std::get<const std::string>(interface).rfind("lo", 0), 0);
-  }
+  EXPECT_EQ(nonloopbacks.size(), 0);
 
   // Select AND reject loopback.
   auto empty = configurator_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, IFF_LOOPBACK);
