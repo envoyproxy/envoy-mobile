@@ -17,6 +17,9 @@ typedef NSDictionary<NSString *, NSString *> EnvoyEvent;
 /// Contains internal HTTP stream metrics, context, and other details.
 typedef envoy_stream_intel EnvoyStreamIntel;
 
+// Contains one time HTTP stream metrics, context, and other details.
+typedef envoy_final_stream_intel EnvoyFinalStreamIntel;
+
 #pragma mark - EnvoyHTTPCallbacks
 
 /// Interface that can handle callbacks from an HTTP stream.
