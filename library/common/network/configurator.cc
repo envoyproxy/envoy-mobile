@@ -3,8 +3,8 @@
 #include <net/if.h>
 
 #include "envoy/common/platform.h"
-#include "source/common/api/os_sys_calls_impl.h"
 
+#include "source/common/api/os_sys_calls_impl.h"
 #include "source/common/common/assert.h"
 #include "source/common/common/scalar_to_byte_vector.h"
 #include "source/common/common/utility.h"
@@ -321,8 +321,7 @@ Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
   }
 
   Api::InterfaceAddressVector interface_addresses{};
-  const Api::SysCallIntResult rc =
-        Api::OsSysCallsSingleton::get().getifaddrs(interface_addresses);
+  const Api::SysCallIntResult rc = Api::OsSysCallsSingleton::get().getifaddrs(interface_addresses);
   RELEASE_ASSERT(!rc.return_value_, fmt::format("getiffaddrs error: {}", rc.errno_));
 
   for (const auto& interface_address : interface_addresses) {
@@ -336,7 +335,8 @@ Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
       continue;
     }
 
-    pairs.push_back(std::make_pair(interface_address.interface_name_, interface_address.interface_addr_));
+    pairs.push_back(
+        std::make_pair(interface_address.interface_name_, interface_address.interface_addr_));
   }
 
   return pairs;
