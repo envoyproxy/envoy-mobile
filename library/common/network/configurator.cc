@@ -329,10 +329,10 @@ Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
                                   [[maybe_unused]] unsigned int reject_flags) {
   std::vector<InterfacePair> pairs{};
 
-#ifdef SUPPORTS_GETIFADDRS
   struct ifaddrs* interfaces = nullptr;
   struct ifaddrs* ifa = nullptr;
 
+  // TODO(jpsim): Use OsSysCallsSingleton
   const int rc = getifaddrs(&interfaces);
   RELEASE_ASSERT(!rc, "getifaddrs failed");
 
@@ -355,7 +355,6 @@ Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
   }
 
   freeifaddrs(interfaces);
-#endif // SUPPORTS_GETIFADDRS
 
   return pairs;
 }
