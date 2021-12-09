@@ -1,4 +1,4 @@
-#include "library/common/network/configurator.h"
+#include "library/common/network/android.h"
 
 #include <net/if.h>
 
