@@ -183,27 +183,27 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
   onComplete();
 }
 
-void Client::DirectStreamCallbacks::setFinalStreamIntel(envoy_final_stream_intel& final_intel) {
-  memset(&final_intel, 0, sizeof(envoy_final_stream_intel));
-
-  final_intel.request_start_ms = direct_stream_.latency_info_.request_start_ms;
-  if (direct_stream_.latency_info_.upstream_info_) {
-    const StreamInfo::UpstreamTiming& timing =
-        direct_stream_.latency_info_.upstream_info_->upstreamTiming();
-    setFromOptional(final_intel.sending_start_ms, timing.first_upstream_tx_byte_sent_);
-    setFromOptional(final_intel.sending_end_ms, timing.last_upstream_tx_byte_sent_);
-    setFromOptional(final_intel.response_start_ms, timing.first_upstream_rx_byte_received_);
-    setFromOptional(final_intel.connect_start_ms, timing.upstream_connect_start_);
-    setFromOptional(final_intel.connect_end_ms, timing.upstream_connect_complete_);
-    setFromOptional(final_intel.ssl_start_ms, timing.upstream_connect_complete_);
-    setFromOptional(final_intel.ssl_end_ms, timing.upstream_handshake_complete_);
+void Client::DirectStreamCallbacks::setFinalStreamIntel(
+    const StreamInfo::UpstreamInfo* upstream_info) {
+  envoy_final_stream_intel_.request_start_ms = direct_stream_.latency_info_.request_start_ms;
+  if (upstream_info) {
+    const StreamInfo::UpstreamTiming& timing = upstream_info->upstreamTiming();
+    setFromOptional(envoy_final_stream_intel_.sending_start_ms,
+                    timing.first_upstream_tx_byte_sent_);
+    setFromOptional(envoy_final_stream_intel_.sending_end_ms, timing.last_upstream_tx_byte_sent_);
+    setFromOptional(envoy_final_stream_intel_.response_start_ms,
+                    timing.first_upstream_rx_byte_received_);
+    setFromOptional(envoy_final_stream_intel_.connect_start_ms, timing.upstream_connect_start_);
+    setFromOptional(envoy_final_stream_intel_.connect_end_ms, timing.upstream_connect_complete_);
+    setFromOptional(envoy_final_stream_intel_.ssl_start_ms, timing.upstream_connect_complete_);
+    setFromOptional(envoy_final_stream_intel_.ssl_end_ms, timing.upstream_handshake_complete_);
   }
-  final_intel.dns_start_ms = direct_stream_.latency_info_.dns_start_ms;
-  final_intel.dns_end_ms = direct_stream_.latency_info_.dns_end_ms;
-  final_intel.request_end_ms = direct_stream_.latency_info_.request_end_ms;
-  final_intel.socket_reused = 0; // TODO(alyssawilk) set.
-  final_intel.sent_byte_count = direct_stream_.latency_info_.sent_byte_count;
-  final_intel.received_byte_count = direct_stream_.latency_info_.received_byte_count;
+  envoy_final_stream_intel_.dns_start_ms = direct_stream_.latency_info_.dns_start_ms;
+  envoy_final_stream_intel_.dns_end_ms = direct_stream_.latency_info_.dns_end_ms;
+  envoy_final_stream_intel_.request_end_ms = direct_stream_.latency_info_.request_end_ms;
+  envoy_final_stream_intel_.socket_reused = 0; // TODO(alyssawilk) set.
+  envoy_final_stream_intel_.sent_byte_count = direct_stream_.latency_info_.sent_byte_count;
+  envoy_final_stream_intel_.received_byte_count = direct_stream_.latency_info_.received_byte_count;
 }
 
 void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
@@ -256,7 +256,8 @@ void Client::DirectStreamCallbacks::onComplete() {
     http_client_.stats().stream_failure_.inc();
   }
 
-  bridge_callbacks_.on_complete(streamIntel(), envoy_final_stream_intel_, bridge_callbacks_.context);
+  bridge_callbacks_.on_complete(streamIntel(), envoy_final_stream_intel_,
+                                bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -283,9 +284,13 @@ void Client::DirectStreamCallbacks::onError() {
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
-  envoy_final_stream_intel final_intel;
-  setFinalStreamIntel(final_intel);
-  bridge_callbacks_.on_error(error_.value(), streamIntel(), final_intel, bridge_callbacks_.context);
+  if (direct_stream_.request_decoder_) {
+    const auto& info = direct_stream_.request_decoder_->streamInfo();
+    setFinalStreamIntel(info.upstreamInfo().has_value() ? &info.upstreamInfo().value().get()
+                                                        : nullptr);
+  }
+  bridge_callbacks_.on_error(error_.value(), streamIntel(), envoy_final_stream_intel_,
+                             bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -298,9 +303,12 @@ void Client::DirectStreamCallbacks::onCancel() {
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
-  envoy_final_stream_intel final_intel;
-  setFinalStreamIntel(final_intel);
-  bridge_callbacks_.on_cancel(streamIntel(), final_intel, bridge_callbacks_.context);
+  if (direct_stream_.request_decoder_) {
+    const auto& info = direct_stream_.request_decoder_->streamInfo();
+    setFinalStreamIntel(info.upstreamInfo().has_value() ? &info.upstreamInfo().value().get()
+                                                        : nullptr);
+  }
+  bridge_callbacks_.on_cancel(streamIntel(), envoy_final_stream_intel_, bridge_callbacks_.context);
 }
 
 void Client::DirectStreamCallbacks::onHasBufferedData() {
@@ -345,9 +353,7 @@ void Client::DirectStream::saveFinalStreamIntel() {
                   request_decoder_->streamInfo().downstreamTiming().getValue(
                       "envoy.dynamic_forward_proxy.dns_end_ms"));
   if (info.upstreamInfo().has_value()) {
-    latency_info_.upstream_info_ = request_decoder_->streamInfo().upstreamInfo();
-    callbacks_->setFinalStreamIntel(callbacks_->envoy_final_stream_intel_);
-    latency_info_.upstream_info_ = nullptr;
+    callbacks_->setFinalStreamIntel(request_decoder_->streamInfo().upstreamInfo().get());
   }
 }
 

@@ -44,8 +44,6 @@ struct LatencyInfo {
   long dns_end_ms = 0;
   long sent_byte_count = 0;
   long received_byte_count = 0;
-  // Latest latency info received from StreamInfo.
-  std::shared_ptr<StreamInfo::UpstreamInfo> upstream_info_{};
 };
 
 /**
@@ -177,9 +175,7 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
-    void setFinalStreamIntel(envoy_final_stream_intel& final_intel);
-
-    envoy_final_stream_intel envoy_final_stream_intel_;
+    void setFinalStreamIntel(const StreamInfo::UpstreamInfo* upstream_info);
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
@@ -194,6 +190,7 @@ private:
     Client& http_client_;
     absl::optional<envoy_error> error_;
     bool success_{};
+    envoy_final_stream_intel envoy_final_stream_intel_;
 
     // Buffered response data when in explicit flow control mode.
     Buffer::InstancePtr response_data_;
