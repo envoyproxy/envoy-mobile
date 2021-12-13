@@ -31,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw shutdown
-          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_dist
+          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_dist --noremote_accept_cached
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
   swifthelloworld:
