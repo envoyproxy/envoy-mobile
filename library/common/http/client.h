@@ -42,8 +42,6 @@ struct LatencyInfo {
   long request_end_ms = 0;
   long dns_start_ms = 0;
   long dns_end_ms = 0;
-  long sent_byte_count = 0;
-  long received_byte_count = 0;
 };
 
 /**
@@ -175,7 +173,8 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
-    void setFinalStreamIntel(const StreamInfo::UpstreamInfo* upstream_info);
+    void setFinalStreamIntel(const StreamInfo::UpstreamInfo* upstream_info,
+                             const StreamInfo::BytesMeter* bytes_meter);
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }

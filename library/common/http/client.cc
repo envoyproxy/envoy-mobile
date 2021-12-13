@@ -184,7 +184,7 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
 }
 
 void Client::DirectStreamCallbacks::setFinalStreamIntel(
-    const StreamInfo::UpstreamInfo* upstream_info) {
+    const StreamInfo::UpstreamInfo* upstream_info, const StreamInfo::BytesMeter* bytes_meter) {
   envoy_final_stream_intel_.request_start_ms = direct_stream_.latency_info_.request_start_ms;
   if (upstream_info) {
     const StreamInfo::UpstreamTiming& timing = upstream_info->upstreamTiming();
@@ -202,8 +202,10 @@ void Client::DirectStreamCallbacks::setFinalStreamIntel(
   envoy_final_stream_intel_.dns_end_ms = direct_stream_.latency_info_.dns_end_ms;
   envoy_final_stream_intel_.request_end_ms = direct_stream_.latency_info_.request_end_ms;
   envoy_final_stream_intel_.socket_reused = 0; // TODO(alyssawilk) set.
-  envoy_final_stream_intel_.sent_byte_count = direct_stream_.latency_info_.sent_byte_count;
-  envoy_final_stream_intel_.received_byte_count = direct_stream_.latency_info_.received_byte_count;
+  if (bytes_meter) {
+    envoy_final_stream_intel_.sent_byte_count = bytes_meter->wireBytesSent();
+    envoy_final_stream_intel_.received_byte_count = bytes_meter->wireBytesReceived();
+  }
 }
 
 void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
@@ -285,9 +287,9 @@ void Client::DirectStreamCallbacks::onError() {
   http_client_.stats().stream_failure_.inc();
 
   if (direct_stream_.request_decoder_) {
-    const auto& info = direct_stream_.request_decoder_->streamInfo();
-    setFinalStreamIntel(info.upstreamInfo().has_value() ? &info.upstreamInfo().value().get()
-                                                        : nullptr);
+    setFinalStreamIntel(
+        direct_stream_.request_decoder_->streamInfo().upstreamInfo().get(),
+        direct_stream_.request_decoder_->streamInfo().getUpstreamBytesMeter().get());
   }
   bridge_callbacks_.on_error(error_.value(), streamIntel(), envoy_final_stream_intel_,
                              bridge_callbacks_.context);
@@ -304,9 +306,9 @@ void Client::DirectStreamCallbacks::onCancel() {
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
   if (direct_stream_.request_decoder_) {
-    const auto& info = direct_stream_.request_decoder_->streamInfo();
-    setFinalStreamIntel(info.upstreamInfo().has_value() ? &info.upstreamInfo().value().get()
-                                                        : nullptr);
+    setFinalStreamIntel(
+        direct_stream_.request_decoder_->streamInfo().upstreamInfo().get(),
+        direct_stream_.request_decoder_->streamInfo().getUpstreamBytesMeter().get());
   }
   bridge_callbacks_.on_cancel(streamIntel(), envoy_final_stream_intel_, bridge_callbacks_.context);
 }
@@ -342,8 +344,6 @@ void Client::DirectStream::saveFinalStreamIntel() {
   latency_info_.request_start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                        info.startTimeMonotonic().time_since_epoch())
                                        .count();
-  latency_info_.sent_byte_count = info.bytesSent();
-  latency_info_.received_byte_count = info.bytesReceived();
   setFromOptional(latency_info_.request_end_ms, info.lastDownstreamRxByteReceived(),
                   latency_info_.request_start_ms);
   setFromOptional(latency_info_.dns_start_ms,
@@ -352,9 +352,8 @@ void Client::DirectStream::saveFinalStreamIntel() {
   setFromOptional(latency_info_.dns_end_ms,
                   request_decoder_->streamInfo().downstreamTiming().getValue(
                       "envoy.dynamic_forward_proxy.dns_end_ms"));
-  if (info.upstreamInfo().has_value()) {
-    callbacks_->setFinalStreamIntel(request_decoder_->streamInfo().upstreamInfo().get());
-  }
+  callbacks_->setFinalStreamIntel(request_decoder_->streamInfo().upstreamInfo().get(),
+                                  request_decoder_->streamInfo().getUpstreamBytesMeter().get());
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
