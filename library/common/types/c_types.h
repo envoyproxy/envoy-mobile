@@ -153,6 +153,8 @@ typedef struct {
   int64_t connection_id;
   // The number of internal attempts to carry out a request/operation. 0 if not present.
   uint64_t attempt_count;
+  // The number of bytes sent upstream.
+  uint64_t sent_byte_count;
 } envoy_stream_intel;
 
 /**
