@@ -57,6 +57,8 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - uses: actions/cache@v2
@@ -99,6 +101,8 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Download aar'
