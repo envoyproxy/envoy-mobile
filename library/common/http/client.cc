@@ -189,6 +189,7 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
 
 void Client::DirectStreamCallbacks::closeStream() {
   remote_end_stream_received_ = true;
+  // Latch stream intel on stream completion, as the stream info will go away.
   direct_stream_.saveFinalStreamIntel();
 
   auto& client = direct_stream_.parent_;
@@ -218,10 +219,6 @@ void Client::DirectStreamCallbacks::onComplete() {
 void Client::DirectStreamCallbacks::onError() {
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] remote reset stream", direct_stream_.stream_handle_);
-
-  // Take a snapshot here - this method may return due to explicit flow control.
-  // The StreamInfo may get reclaimed before the user's ack - better doing this now.
-  direct_stream_.saveFinalStreamIntel();
 
   // When using explicit flow control, if any response data has been sent (e.g. headers), response
   // errors must be deferred until after resumeData has been called.
@@ -257,6 +254,8 @@ void Client::DirectStreamCallbacks::onCancel() {
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
+  // Attempt to latch the latest stream info. This will be a no-op if the stream
+  // is already complete.
   direct_stream_.saveFinalStreamIntel();
   bridge_callbacks_.on_cancel(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
 }
@@ -293,8 +292,7 @@ void Client::DirectStream::saveLatestStreamIntel() {
 }
 
 void Client::DirectStream::saveFinalStreamIntel() {
-  if (!request_decoder_ ||
-      !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
+  if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
   StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
@@ -333,15 +331,15 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   // This seems in line with other codec implementations, and so the assumption is that this is in
   // line with upstream expectations.
   // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
+  saveFinalStreamIntel(); // Take a snapshot now in case the stream gets destroyed.
   runResetCallbacks(reason);
   if (!parent_.getStream(stream_handle_, GetStreamFilters::ALLOW_FOR_ALL_STREAMS)) {
-    saveFinalStreamIntel(); // Take a snapshot now in case the stream gets reclaimed meanwhile.
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
     // while still open locally. In this case the stream will already have been removed from
     // our stream maps due to the remote closure.
     return;
   }
-  callbacks_->onError(); // onError() invokes saveFinalStreamIntel()
+  callbacks_->onError();
 }
 
 void Client::DirectStream::readDisable(bool disable) {
