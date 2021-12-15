@@ -110,7 +110,7 @@ public:
 
   // Used to fill response code details for streams that are cancelled via cancelStream.
   const std::string& getCancelDetails() {
-    CONSTRUCT_ON_FIRST_USE(std::string, "client cancelled stream");
+    CONSTRUCT_ON_FIRST_USE(std::string, "client_cancelled_stream");
   }
 
 private:
@@ -273,7 +273,7 @@ private:
     // read faster than the mobile caller can process it.
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
-    envoy_stream_intel stream_intel_;
+    envoy_stream_intel stream_intel_{-1, -1, 0};
     // Final intel data retrieved from the StreamInfo.
     envoy_final_stream_intel envoy_final_stream_intel_;
     StreamInfo::BytesMeterSharedPtr bytes_meter_;

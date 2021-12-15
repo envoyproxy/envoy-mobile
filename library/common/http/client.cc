@@ -7,6 +7,7 @@
 #include "source/common/http/header_map_impl.h"
 #include "source/common/http/headers.h"
 #include "source/common/http/utility.h"
+#include "source/common/stream_info/utility.h"
 
 #include "library/common/bridge/utility.h"
 #include "library/common/buffer/bridge_fragment.h"
@@ -299,7 +300,9 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
 
 void Client::DirectStream::saveLatestStreamIntel() {
   const auto& info = request_decoder_->streamInfo();
-  stream_intel_.connection_id = info.upstreamConnectionId().value_or(-1);
+  if (info.upstreamInfo()) {
+    stream_intel_.connection_id = info.upstreamInfo()->upstreamConnectionId().value_or(-1);
+  }
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
   stream_intel_.attempt_count = info.attemptCount().value_or(0);
 }
@@ -326,8 +329,8 @@ void Client::DirectStream::saveFinalStreamIntel() {
       std::chrono::duration_cast<std::chrono::milliseconds>(
           stream_info.startTimeMonotonic().time_since_epoch())
           .count();
-  setFromOptional(envoy_final_stream_intel_.request_end_ms,
-                  stream_info.lastDownstreamRxByteReceived(),
+  StreamInfo::TimingUtility timing(info);
+  setFromOptional(envoy_final_stream_intel_.request_end_ms, timing.lastDownstreamRxByteReceived(),
                   envoy_final_stream_intel_.request_start_ms);
   setFromOptional(envoy_final_stream_intel_.dns_start_ms,
                   request_decoder_->streamInfo().downstreamTiming().getValue(
