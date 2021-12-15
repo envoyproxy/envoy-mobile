@@ -329,7 +329,7 @@ void Client::DirectStream::saveFinalStreamIntel() {
       std::chrono::duration_cast<std::chrono::milliseconds>(
           stream_info.startTimeMonotonic().time_since_epoch())
           .count();
-  StreamInfo::TimingUtility timing(info);
+  StreamInfo::TimingUtility timing(stream_info);
   setFromOptional(envoy_final_stream_intel_.request_end_ms, timing.lastDownstreamRxByteReceived(),
                   envoy_final_stream_intel_.request_start_ms);
   setFromOptional(envoy_final_stream_intel_.dns_start_ms,
