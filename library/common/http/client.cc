@@ -199,6 +199,7 @@ void Client::DirectStreamCallbacks::closeStream() {
     size_t erased = client.streams_.erase(direct_stream_.stream_handle_);
     ASSERT(erased == 1, "closeStream should always remove one entry from the streams map");
   }
+  direct_stream_.request_decoder_ = nullptr;
 }
 
 void Client::DirectStreamCallbacks::onComplete() {
@@ -292,10 +293,11 @@ void Client::DirectStream::saveLatestStreamIntel() {
 }
 
 void Client::DirectStream::saveFinalStreamIntel() {
-  if (!request_decoder_) {
-    return; // When a Cancel/Error occurs too soon, this won't have been set yet.
+  if (!request_decoder_ ||
+      !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
+    return;
   }
-//  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
+  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
