@@ -295,7 +295,7 @@ void Client::DirectStream::saveFinalStreamIntel() {
   if (!request_decoder_) {
     return; // When a Cancel/Error occurs too soon, this won't have been set yet.
   }
-  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
+//  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
