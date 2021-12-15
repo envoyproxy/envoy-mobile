@@ -35,6 +35,7 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
+  private var enableHappyEyeballs = false
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
@@ -149,6 +150,18 @@ open class EngineBuilder(
    */
   fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
     this.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return this
+  }
+
+  /**
+   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+   *
+   * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
+   *
+   * @return This builder.
+   */
+  fun enableHappyEyeballs(enableHappyEyeballs: Boolean): EngineBuilder {
+    this.enableHappyEyeballs = enableHappyEyeballs
     return this
   }
 
@@ -375,7 +388,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableHappyEyeballs, enableInterfaceBinding,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
             statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
             appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
@@ -390,7 +403,7 @@ open class EngineBuilder(
           EnvoyConfiguration(
             adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
             dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
+            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableHappyEyeballs, enableInterfaceBinding,
             h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
             statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
             appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors

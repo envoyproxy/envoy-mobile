@@ -45,6 +45,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_fail_base_interval 345s")
     assertThat(resolvedTemplate).contains("&dns_fail_max_interval 456s")
     assertThat(resolvedTemplate).contains("&dns_query_timeout 321s")
+    assertThat(resolvedTemplate).contains("&dns_lookup_family V4_PREFERRED")
     assertThat(resolvedTemplate).contains("&dns_preresolve_hostnames [hostname]")
 
     // Interface Binding
