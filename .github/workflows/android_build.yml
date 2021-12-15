@@ -30,6 +30,8 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
       - name: 'Install dependencies'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./ci/mac_ci_setup.sh
