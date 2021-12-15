@@ -72,8 +72,12 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   absl::string_view alpn = "";
   uint64_t response_status = Utility::getResponseStatus(headers);
-  if (direct_stream_.request_decoder_->streamInfo().upstreamSslConnection()) {
-    alpn = direct_stream_.request_decoder_->streamInfo().upstreamSslConnection()->alpn();
+  if (direct_stream_.request_decoder_->streamInfo().upstreamInfo() &&
+      direct_stream_.request_decoder_->streamInfo().upstreamInfo()->upstreamSslConnection()) {
+    alpn = direct_stream_.request_decoder_->streamInfo()
+               .upstreamInfo()
+               ->upstreamSslConnection()
+               ->alpn();
   }
 
   // Track success for later bookkeeping (stream could still be reset).
