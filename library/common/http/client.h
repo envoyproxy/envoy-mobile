@@ -166,8 +166,6 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
-    void setFinalStreamIntel(StreamInfo::StreamInfo& stream_info);
-
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
 
@@ -181,7 +179,6 @@ private:
     Client& http_client_;
     absl::optional<envoy_error> error_;
     bool success_{};
-    envoy_final_stream_intel envoy_final_stream_intel_;
 
     // Buffered response data when in explicit flow control mode.
     Buffer::InstancePtr response_data_;
@@ -277,6 +274,8 @@ private:
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
     envoy_stream_intel stream_intel_;
+    // Final intel data retrieved from the StreamInfo.
+    envoy_final_stream_intel envoy_final_stream_intel_;
     StreamInfo::BytesMeterSharedPtr bytes_meter_;
   };
 

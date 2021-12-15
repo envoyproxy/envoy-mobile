@@ -61,7 +61,7 @@ public class AndroidEnvoyExplicitFlowTest {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .addLogLevel(LogLevel.INFO)
+                 .addLogLevel(LogLevel.DEBUG)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
@@ -94,7 +94,7 @@ public class AndroidEnvoyExplicitFlowTest {
     assertThat(response.getNbResponseChunks()).isEqualTo(1);
     assertThat(response.getStreamIntels().size()).isEqualTo(3);
     assertThat(response.getStreamIntels().get(2).getAttemptCount()).isEqualTo(1);
-    assertThat(response.getFinalStreamIntel().getSentByteCount()).isEqualTo(12); // Hello, world
+    assertThat(response.getFinalStreamIntel().getSentByteCount()).isEqualTo(75);
   }
 
   @Test
@@ -116,7 +116,7 @@ public class AndroidEnvoyExplicitFlowTest {
     assertThat(response.getNbResponseChunks()).isEqualTo(1);
     assertThat(response.getStreamIntels().size()).isEqualTo(3);
     assertThat(response.getStreamIntels().get(2).getAttemptCount()).isEqualTo(1);
-    assertThat(response.getFinalStreamIntel().getSentByteCount()).isEqualTo(12); // Hello, world
+    assertThat(response.getFinalStreamIntel().getSentByteCount()).isEqualTo(75);
   }
 
   @Test
