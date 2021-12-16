@@ -154,7 +154,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a list of IPv4 addresses to use as fallback DNS name servers.
+   * Add a list of IP addresses to use as fallback DNS name servers.
    *
    * @param dnsFallbackNameservers addresses to use.
    *
