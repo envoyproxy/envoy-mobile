@@ -140,6 +140,9 @@ public class EnvoyConfiguration {
       }
       dnsFallbackNameserversAsString = sj.toString();
     }
+    // TODO: using default no-op. Subsequent change will allow user override.
+    String dnsResolverConfig =
+        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false}";
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
@@ -148,11 +151,8 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
-        .append(String.format("- &dns_resolvers %s\n", dnsFallbackNameservers.isEmpty()
-                                                           ? "[]"
-                                                           : dnsFallbackNameserversAsString))
-        .append(String.format("- &dns_use_resolvers_as_fallback %s",
-                              dnsFallbackNameservers.isEmpty() ? "false" : "true"))
+        .append("- &dns_resolver_name envoy.network.dns_resolver.cares\n")
+        .append(String.format("- &dns_resolver_config %s\n", dnsResolverConfig))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
