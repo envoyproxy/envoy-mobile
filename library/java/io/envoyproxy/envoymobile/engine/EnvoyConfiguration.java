@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
@@ -132,7 +133,7 @@ public class EnvoyConfiguration {
     String processedTemplate =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
-    String dnsFallbackNameserversAsString;
+    String dnsFallbackNameserversAsString = "[]";
     if (!dnsFallbackNameservers.isEmpty()) {
       StringJoiner sj = new StringJoiner(",", "[", "]");
       for (String nameserver : dnsFallbackNameservers) {
@@ -140,9 +141,10 @@ public class EnvoyConfiguration {
       }
       dnsFallbackNameserversAsString = sj.toString();
     }
-    // TODO: using default no-op. Subsequent change will allow user override.
-    String dnsResolverConfig =
-        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false}";
+
+    String dnsResolverConfig = String.format(
+        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":%s,\"use_resolvers_as_fallback\": %s}",
+        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true");
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))

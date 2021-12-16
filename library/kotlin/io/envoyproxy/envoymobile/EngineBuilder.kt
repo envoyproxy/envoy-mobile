@@ -35,7 +35,7 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
-  private var dnsFallbackNameservers =   mutableListOf<String>()
+  private var dnsFallbackNameservers = listOf<String>()
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
@@ -160,7 +160,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addDNSPreresolveHostnames(dnsFallbackNameservers: List<String>): EngineBuilder {
+  fun addDNSFallbackNameservers(dnsFallbackNameservers: List<String>): EngineBuilder {
     this.dnsFallbackNameservers = dnsFallbackNameservers
     return this
   }
