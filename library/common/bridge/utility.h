@@ -12,7 +12,22 @@ namespace Utility {
 
 envoy_error_code_t errorCodeFromLocalStatus(Http::Code status);
 
-envoy_map makeEnvoyMap(std::vector<std::pair<std::string, std::string>> pairs);
+// Helper that converts a C++ map-like (i.e. anything that iterates over a pair of strings) type
+// into an envoy_map, copying all the values.
+template <class T> envoy_map makeEnvoyMap(const T& map) {
+  envoy_map new_map;
+  new_map.length = std::size(map);
+  new_map.entries = new envoy_map_entry[std::size(map)];
+
+  uint64_t i = 0;
+  for (const auto& e : map) {
+    new_map.entries[i].key = Envoy::Data::Utility::copyToBridgeData(e.first);
+    new_map.entries[i].value = Envoy::Data::Utility::copyToBridgeData(e.second);
+    i++;
+  }
+
+  return new_map;
+}
 
 } // namespace Utility
 } // namespace Bridge
