@@ -202,7 +202,9 @@ envoy_stream_intel PlatformBridgeFilter::streamIntel() {
   auto& info = decoder_callbacks_->streamInfo();
   // FIXME: Stream handle cannot currently be set from the filter context.
   envoy_stream_intel stream_intel{-1, -1, 0};
-  stream_intel.connection_id = info.upstreamConnectionId().value_or(-1);
+  if (info.upstreamInfo()) {
+    stream_intel.connection_id = info.upstreamInfo()->upstreamConnectionId().value_or(-1);
+  }
   stream_intel.attempt_count = info.attemptCount().value_or(0);
   return stream_intel;
 }
@@ -535,7 +537,7 @@ void PlatformBridgeFilter::resumeDecoding() {
   // 1) adding support to Envoy for (optionally) retaining the dispatcher, or
   // 2) retaining the engine to transitively retain the dispatcher via Envoy's ownership graph, or
   // 3) dispatching via a safe intermediary
-  // Relevant: https://github.com/lyft/envoy-mobile/issues/332
+  // Relevant: https://github.com/envoyproxy/envoy-mobile/issues/332
   dispatcher_.post([weak_self]() -> void {
     if (auto self = weak_self.lock()) {
       // Delegate to base implementation for request and response path.
