@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "library/common/data/utility.h"
-
 namespace Envoy {
 namespace Bridge {
 namespace Utility {
@@ -19,6 +17,10 @@ envoy_error_code_t errorCodeFromLocalStatus(Http::Code status) {
   default:
     return ENVOY_UNDEFINED_ERROR;
   }
+}
+
+envoy_map makeEnvoyMap(std::initializer_list<std::pair<std::string, std::string>> map) {
+  return makeEnvoyMap<std::initializer_list<std::pair<std::string, std::string>>>(map);
 }
 
 } // namespace Utility
