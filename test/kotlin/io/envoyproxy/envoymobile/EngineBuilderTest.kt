@@ -81,7 +81,7 @@ class EngineBuilderTest {
   }
 
   @Test
-  fun `specifying native filters overrides default`() {
+  fun `specifying dns fallback nameservers overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
     engineBuilder.addDNSFallbackNameservers(listOf<String>("8.8.8.8"))

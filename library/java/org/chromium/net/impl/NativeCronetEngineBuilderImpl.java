@@ -76,9 +76,10 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
-        mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers, mEnableInterfaceBinding,
-        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
-        mAppId, mVirtualClusters, mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
+        mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers,
+        mEnableInterfaceBinding, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
+        mH2ConnectionKeepaliveTimeoutSeconds, mStatsFlushSeconds, mStreamIdleTimeoutSeconds,
+        mPerTryIdleTimeoutSeconds, mAppVersion, mAppId, mVirtualClusters, mNativeFilterChain,
+        mPlatformFilterChain, mStringAccessors);
   }
 }
