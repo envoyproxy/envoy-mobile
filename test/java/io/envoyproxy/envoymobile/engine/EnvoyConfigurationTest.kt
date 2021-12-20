@@ -28,7 +28,7 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", false, true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", false, false, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(), emptyMap()
     )
@@ -49,7 +49,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_preresolve_hostnames [hostname]")
 
     // Interface Binding
-    assertThat(resolvedTemplate).contains("&enable_interface_binding true")
+    assertThat(resolvedTemplate).contains("&enable_interface_binding false")
 
     // H2 Ping
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
@@ -73,6 +73,25 @@ class EnvoyConfigurationTest {
     // Filters
     assertThat(resolvedTemplate).contains("filter_name")
     assertThat(resolvedTemplate).contains("test_config")
+  }
+
+  @Test
+  fun `resolving with overridden values sets appropriate config`() {
+    val envoyConfiguration = EnvoyConfiguration(
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", true, true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
+      emptyList(), emptyMap()
+    )
+
+    val resolvedTemplate = envoyConfiguration.resolveTemplate(
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG
+    )
+
+    // DNS
+    assertThat(resolvedTemplate).contains("&dns_lookup_family ALL")
+
+    // Interface Binding
+    assertThat(resolvedTemplate).contains("&enable_interface_binding true")
   }
 
   @Test
