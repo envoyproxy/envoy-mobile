@@ -358,7 +358,7 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_max_interval 500s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
-    XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family V4_PREFERRED"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
 
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
@@ -384,6 +384,41 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("filter_name: TestFilter"))
     XCTAssertTrue(resolvedYAML.contains("name: filter_name"))
     XCTAssertTrue(resolvedYAML.contains("typed_config: test_config"))
+  }
+
+  func testResolvesYAMLWithAlternativeValues() throws {
+    let config = EnvoyConfiguration(
+      adminInterfaceEnabled: false,
+      grpcStatsDomain: "stats.envoyproxy.io",
+      connectTimeoutSeconds: 200,
+      dnsRefreshSeconds: 300,
+      dnsFailureRefreshSecondsBase: 400,
+      dnsFailureRefreshSecondsMax: 500,
+      dnsQueryTimeoutSeconds: 800,
+      dnsPreresolveHostnames: "[test]",
+      enableHappyEyeballs: true,
+      enableInterfaceBinding: true,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
+      h2ConnectionKeepaliveTimeoutSeconds: 333,
+      statsFlushSeconds: 600,
+      streamIdleTimeoutSeconds: 700,
+      perTryIdleTimeoutSeconds: 777,
+      appVersion: "v1.2.3",
+      appId: "com.envoymobile.ios",
+      virtualClusters: "[test]",
+      directResponseMatchers: "",
+      directResponses: "",
+      nativeFilterChain: [
+        EnvoyNativeFilterConfig(name: "filter_name", typedConfig: "test_config"),
+      ],
+      platformFilterChain: [
+        EnvoyHTTPFilterFactory(filterName: "TestFilter", factory: TestFilter.init),
+      ],
+      stringAccessors: [:]
+    )
+    let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
+    XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family ALL"))
+    XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding true"))
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
