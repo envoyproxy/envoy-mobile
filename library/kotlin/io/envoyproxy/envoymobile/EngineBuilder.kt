@@ -380,6 +380,7 @@ open class EngineBuilder(
    *
    * @return A new instance of Envoy.
    */
+  @Suppress("LongMethod")
   fun build(): Engine {
     return when (configuration) {
       is Custom -> {
