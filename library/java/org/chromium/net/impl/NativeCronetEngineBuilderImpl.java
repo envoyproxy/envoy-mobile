@@ -34,6 +34,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private int mDnsFailureRefreshSecondsMax = 10;
   private int mDnsQueryTimeoutSeconds = 25;
   private String mDnsPreresolveHostnames = "[]";
+  private List<String> mDnsFallbackNameservers = Collections.emptyList();
   private boolean mEnableHappyEyeballs = false;
   private boolean mEnableInterfaceBinding = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
@@ -76,10 +77,10 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
-        mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mEnableHappyEyeballs,
-        mEnableInterfaceBinding, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
-        mH2ConnectionKeepaliveTimeoutSeconds, mStatsFlushSeconds, mStreamIdleTimeoutSeconds,
-        mPerTryIdleTimeoutSeconds, mAppVersion, mAppId, mVirtualClusters, mNativeFilterChain,
-        mPlatformFilterChain, mStringAccessors);
+        mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers,
+        mEnableHappyEyeballs, mEnableInterfaceBinding,
+        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
+        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
+        mAppId, mVirtualClusters, mNativeFilterChain, mPlatformFilterChain, mStringAccessors);
   }
 }
