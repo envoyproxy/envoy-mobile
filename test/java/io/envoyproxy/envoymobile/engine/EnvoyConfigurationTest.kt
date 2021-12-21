@@ -28,7 +28,7 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", false, false, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", true, true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(), emptyMap()
     )
@@ -45,11 +45,11 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_fail_base_interval 345s")
     assertThat(resolvedTemplate).contains("&dns_fail_max_interval 456s")
     assertThat(resolvedTemplate).contains("&dns_query_timeout 321s")
-    assertThat(resolvedTemplate).contains("&dns_lookup_family V4_PREFERRED")
+    assertThat(resolvedTemplate).contains("&dns_lookup_family ALL")
     assertThat(resolvedTemplate).contains("&dns_preresolve_hostnames [hostname]")
 
     // Interface Binding
-    assertThat(resolvedTemplate).contains("&enable_interface_binding false")
+    assertThat(resolvedTemplate).contains("&enable_interface_binding true")
 
     // H2 Ping
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
@@ -76,9 +76,9 @@ class EnvoyConfigurationTest {
   }
 
   @Test
-  fun `resolving with overridden values sets appropriate config`() {
+  fun `resolving with alternate values also sets appropriate config`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", true, true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", false, false, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(), emptyMap()
     )
@@ -88,10 +88,10 @@ class EnvoyConfigurationTest {
     )
 
     // DNS
-    assertThat(resolvedTemplate).contains("&dns_lookup_family ALL")
+    assertThat(resolvedTemplate).contains("&dns_lookup_family V4_PREFERRED")
 
     // Interface Binding
-    assertThat(resolvedTemplate).contains("&enable_interface_binding true")
+    assertThat(resolvedTemplate).contains("&enable_interface_binding false")
   }
 
   @Test
