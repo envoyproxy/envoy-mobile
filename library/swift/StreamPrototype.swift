@@ -138,7 +138,7 @@ public class StreamPrototype: NSObject {
   ///
   /// - returns: This stream, for chaining syntax.
   @discardableResult
-  public func setOnCancel(
+  public func setOnComplete(
     closure: @escaping (_ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
   ) -> StreamPrototype {
     self.callbacks.onCancel = closure

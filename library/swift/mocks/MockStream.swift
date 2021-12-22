@@ -81,6 +81,6 @@ public final class MockStream: Stream {
   public func receiveError(_ error: EnvoyError) {
     self.mockStream.callbacks.onError(error.errorCode, error.message,
                                       Int32(error.attemptCount ?? 0),
-                                      EnvoyStreamIntel())
+                                      EnvoyStreamIntel(), EnvoyFinalStreamIntel())
   }
 }
