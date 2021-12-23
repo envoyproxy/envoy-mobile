@@ -20,10 +20,11 @@ public class EnvoyConfiguration {
   public final Integer dnsFailureRefreshSecondsBase;
   public final Integer dnsFailureRefreshSecondsMax;
   public final Integer dnsQueryTimeoutSeconds;
-  public final Boolean enableHappyEyeballs;
-  public final Boolean enableInterfaceBinding;
   public final String dnsPreresolveHostnames;
   public final List<String> dnsFallbackNameservers;
+  public final Boolean dnsFilterUnroutableFamilies;
+  public final Boolean enableHappyEyeballs;
+  public final Boolean enableInterfaceBinding;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
@@ -51,6 +52,7 @@ public class EnvoyConfiguration {
    * @param dnsQueryTimeoutSeconds       rate in seconds to timeout DNS queries.
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
    * @param dnsFallbackNameservers       addresses to use as DNS name server fallback.
+   * @param dnsFilterUnroutableFamilies  whether to filter unroutable IP families or not.
    * @param enableHappyEyeballs          whether to enable RFC 6555 handling for IPv4/IPv6.
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
@@ -70,7 +72,7 @@ public class EnvoyConfiguration {
                             @Nullable Integer statsdPort, int connectTimeoutSeconds,
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
-                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
+                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers, Boolean dnsFilterUnroutableFamilies,
                             boolean enableHappyEyeballs, boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
@@ -89,6 +91,7 @@ public class EnvoyConfiguration {
     this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
     this.dnsFallbackNameservers = dnsFallbackNameservers;
+    this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies;
     this.enableHappyEyeballs = enableHappyEyeballs;
     this.enableInterfaceBinding = enableInterfaceBinding;
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
@@ -146,8 +149,8 @@ public class EnvoyConfiguration {
     }
 
     String dnsResolverConfig = String.format(
-        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":%s,\"use_resolvers_as_fallback\": %s}",
-        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true");
+        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":%s,\"use_resolvers_as_fallback\": %s, \"filter_unroutable_families\": %s}",
+        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true", dnsFilterUnroutableFamilies? "false" : "true");
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))

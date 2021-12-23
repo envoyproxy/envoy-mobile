@@ -129,6 +129,19 @@ Add a list of IP addresses to use as fallback DNS name servers.
   // Kotlin
   builder.addDNSFallbackNameservers(listOf<String>("8.8.8.8"))
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableDNSFilterUnroutableFamilies``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attention::
+
+  This API is only available for Kotlin.
+
+Specify whether to filter unroutable IP families during DNS resolution or not.
+
+  // Kotlin
+  builder.enableDNSFilterUnroutableFamilies(true)
+
 ~~~~~~~~~~~~~~~
 ``addLogLevel``
 ~~~~~~~~~~~~~~~
