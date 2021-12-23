@@ -209,10 +209,14 @@ TEST(MainInterfaceTest, SendMetadata) {
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
   envoy_http_callbacks stream_cbs{
-      nullptr /* on_headers */,  nullptr /* on_data */,
-      nullptr /* on_metadata */, nullptr /* on_trailers */,
-      nullptr /* on_error */,    nullptr /* on_complete */,
-      nullptr /* on_cancel */,   nullptr /* on_send_window_available */,
+      nullptr /* on_headers */,
+      nullptr /* on_data */,
+      nullptr /* on_metadata */,
+      nullptr /* on_trailers */,
+      nullptr /* on_error */,
+      nullptr /* on_complete */,
+      [](envoy_stream_intel, envoy_final_stream_intel, void*) -> void* { return nullptr; } /* on_cancel */,
+      nullptr /* on_send_window_available */,
       nullptr /* context */,
   };
 
