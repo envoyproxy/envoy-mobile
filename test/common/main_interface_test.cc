@@ -215,7 +215,9 @@ TEST(MainInterfaceTest, SendMetadata) {
       nullptr /* on_trailers */,
       nullptr /* on_error */,
       nullptr /* on_complete */,
-      [](envoy_stream_intel, envoy_final_stream_intel, void*) -> void* { return nullptr; } /* on_cancel */,
+      [](envoy_stream_intel, envoy_final_stream_intel, void*) -> void* {
+        return nullptr;
+      } /* on_cancel */,
       nullptr /* on_send_window_available */,
       nullptr /* context */,
   };
