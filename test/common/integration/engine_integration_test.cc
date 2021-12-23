@@ -1,10 +1,9 @@
-#include "gtest/gtest.h"
-
 #include "test/integration/integration.h"
 
-#include "library/common/types/c_types.h"
+#include "gtest/gtest.h"
 #include "library/common/bridge/utility.h"
 #include "library/common/main_interface.h"
+#include "library/common/types/c_types.h"
 
 namespace Envoy {
 namespace {
@@ -15,8 +14,8 @@ public:
       : api_(Envoy::Api::createApiForTest(stats_, time_)),
         dispatcher_(api_->allocateDispatcher("test_thread")) {
     callbacks_.context = this;
-    callbacks_.on_error = +[](envoy_error error, envoy_stream_intel, envoy_final_stream_intel,
-                              void*) -> void* {
+    callbacks_.on_error =
+        +[](envoy_error error, envoy_stream_intel, envoy_final_stream_intel, void*) -> void* {
       release_envoy_error(error);
       // We don't expect to see errors with the current flows, update if we need more complex tests.
       EXPECT_TRUE(false);

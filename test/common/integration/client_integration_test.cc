@@ -240,12 +240,6 @@ TEST_P(ClientIntegrationTest, ActiveStreamsResetOnShutdown) {
     http_client_->cancelAllStreams();
   });
 
-  // Envoy::FakeHttpConnectionPtr upstream_connection;
-  // ASSERT_TRUE(fake_upstreams_.front()->waitForHttpConnection(*BaseIntegrationTest::dispatcher_, upstream_connection));
-
-  // dispatcher_->post([&]() -> void {
-  // });
-
   terminal_callback_.waitReady();
   EXPECT_EQ(cc_.on_cancel_calls, 1);
 }
