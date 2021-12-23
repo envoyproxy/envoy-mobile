@@ -72,8 +72,9 @@ public class EnvoyConfiguration {
                             @Nullable Integer statsdPort, int connectTimeoutSeconds,
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
-                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers, Boolean dnsFilterUnroutableFamilies,
-                            boolean enableHappyEyeballs, boolean enableInterfaceBinding,
+                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
+                            Boolean dnsFilterUnroutableFamilies, boolean enableHappyEyeballs,
+                            boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
@@ -150,7 +151,8 @@ public class EnvoyConfiguration {
 
     String dnsResolverConfig = String.format(
         "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":%s,\"use_resolvers_as_fallback\": %s, \"filter_unroutable_families\": %s}",
-        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true", dnsFilterUnroutableFamilies? "false" : "true");
+        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true",
+        dnsFilterUnroutableFamilies ? "false" : "true");
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
