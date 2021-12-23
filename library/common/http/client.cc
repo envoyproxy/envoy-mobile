@@ -498,6 +498,7 @@ void Client::cancelStream(envoy_stream_t stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
 
+    ENVOY_LOG(debug, "[S{}] canceling stream", stream);
     direct_stream->callbacks_->onCancel();
 
     // Since https://github.com/envoyproxy/envoy/pull/13052, the connection manager expects that
@@ -514,6 +515,13 @@ void Client::cancelStream(envoy_stream_t stream) {
       // reset from a wide variety of contexts without apparent issue.
       direct_stream->runResetCallbacks(StreamResetReason::RemoteReset);
     }
+  }
+}
+
+void Client::cancelAllStreams() {
+  ENVOY_LOG(debug, "canceling all streams");
+  while (!streams_.empty()) {
+    cancelStream(streams_.begin()->first);
   }
 }
 

@@ -19,3 +19,19 @@ envoy_cc_test(
         "@envoy//test/server:utility_lib",
     ],
 )
+
+envoy_cc_test(
+    name = "engine_integration_test",
+    srcs = ["engine_integration_test.cc"],
+    repository = "@envoy",
+    deps = [
+        "//library/common/http:client_lib",
+        "//library/common/http:header_utility_lib",
+        "//library/common/types:c_types_lib",
+        "//library/common/bridge:utility_lib",
+        "//library/common:envoy_main_interface_lib_no_stamp",
+        "@envoy//test/common/http:common_lib",
+        "@envoy//test/integration:http_integration_lib",
+        "@envoy//test/server:utility_lib",
+    ],
+)

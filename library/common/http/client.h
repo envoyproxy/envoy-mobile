@@ -105,6 +105,12 @@ public:
    */
   void cancelStream(envoy_stream_t stream);
 
+  /**
+   * Cancel all active streams. This is equivalent to calling cancelStream on all streams that
+   * haven't already completed.
+   */
+  void cancelAllStreams();
+
   const HttpClientStats& stats() const;
   Event::ScopeTracker& scopeTracker() const { return dispatcher_; }
 

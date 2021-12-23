@@ -162,6 +162,8 @@ envoy_status_t Engine::terminate() {
 
     ASSERT(event_dispatcher_);
 
+    event_dispatcher_->post([this]() { http_client_->cancelAllStreams(); });
+
     // Exit the event loop and finish up in Engine::run(...)
     if (std::this_thread::get_id() == main_thread_.get_id()) {
       // TODO(goaway): figure out some way to support this.
