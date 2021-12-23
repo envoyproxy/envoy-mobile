@@ -119,7 +119,7 @@ final class EngineBuilderTests: XCTestCase {
 
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
-      .enableInterfaceBinding()
+      .enableInterfaceBinding(true)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
