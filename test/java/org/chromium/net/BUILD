@@ -60,7 +60,6 @@ envoy_mobile_android_test(
     ],
 )
 
-# FIXME(carloseltuerto): this test has become flaky and needs to be debugged.
 envoy_mobile_android_test(
     name = "cronet_url_request_test",
     srcs = [
