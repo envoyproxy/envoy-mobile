@@ -1,61 +1,48 @@
 diff --git a/include/nlohmann/detail/conversions/from_json.hpp b/include/nlohmann/detail/conversions/from_json.hpp
-index 71e32aaf7..6a4575ecb 100644
+index 71e32aaf7..66d38bd05 100644
 --- a/include/nlohmann/detail/conversions/from_json.hpp
 +++ b/include/nlohmann/detail/conversions/from_json.hpp
 @@ -448,7 +448,7 @@ void from_json(const BasicJsonType& j, std::unordered_map<Key, Value, Hash, KeyE
      }
  }
-
+ 
 -#ifdef JSON_HAS_CPP_17
-+#if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
++if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
  template<typename BasicJsonType>
  void from_json(const BasicJsonType& j, std::filesystem::path& p)
  {
 diff --git a/include/nlohmann/detail/conversions/to_json.hpp b/include/nlohmann/detail/conversions/to_json.hpp
-index 79fdb3233..6a4aa7ff3 100644
+index 79fdb3233..4949d13ea 100644
 --- a/include/nlohmann/detail/conversions/to_json.hpp
 +++ b/include/nlohmann/detail/conversions/to_json.hpp
 @@ -391,7 +391,7 @@ void to_json(BasicJsonType& j, const T& t)
      to_json_tuple_impl(j, t, make_index_sequence<std::tuple_size<T>::value> {});
  }
-
+ 
 -#ifdef JSON_HAS_CPP_17
-+#if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
++if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
  template<typename BasicJsonType>
  void to_json(BasicJsonType& j, const std::filesystem::path& p)
  {
 diff --git a/single_include/nlohmann/json.hpp b/single_include/nlohmann/json.hpp
-index 87475ab31..c999784a2 100644
+index 87475ab31..05639f6d2 100644
 --- a/single_include/nlohmann/json.hpp
 +++ b/single_include/nlohmann/json.hpp
 @@ -4379,7 +4379,7 @@ void from_json(const BasicJsonType& j, std::unordered_map<Key, Value, Hash, KeyE
      }
  }
-
+ 
 -#ifdef JSON_HAS_CPP_17
-+#if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
++if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
  template<typename BasicJsonType>
  void from_json(const BasicJsonType& j, std::filesystem::path& p)
  {
 @@ -5002,7 +5002,7 @@ void to_json(BasicJsonType& j, const T& t)
      to_json_tuple_impl(j, t, make_index_sequence<std::tuple_size<T>::value> {});
  }
-
+ 
 -#ifdef JSON_HAS_CPP_17
-+#if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
++if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
  template<typename BasicJsonType>
  void to_json(BasicJsonType& j, const std::filesystem::path& p)
  {
-diff --git a/test/src/unit-regression2.cpp b/test/src/unit-regression2.cpp
-index f0c4ef451..0184d2c96 100644
---- a/test/src/unit-regression2.cpp
-+++ b/test/src/unit-regression2.cpp
-@@ -728,7 +728,7 @@ TEST_CASE("regression tests 2")
-         CHECK(j == k);
-     }
-
--#ifdef JSON_HAS_CPP_17
-+#if defined(JSON_HAS_CPP_17) && (defined(__APPLE__) && (defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__) && __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 130000))
-     SECTION("issue #3070 - Version 3.10.3 breaks backward-compatibility with 3.10.2 ")
-     {
-         std::filesystem::path text_path("/tmp/text.txt");
