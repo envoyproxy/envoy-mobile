@@ -146,11 +146,11 @@ private:
     Http1StreamEncoderOptionsOptRef http1StreamEncoderOptions() override { return absl::nullopt; }
     void encode1xxHeaders(const ResponseHeaderMap&) override {
       // TODO(goaway): implement?
-      NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+      PANIC("not implemented");
     }
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
 
-    void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+    void encodeMetadata(const MetadataMapVector&) override { PANIC("not implemented"); }
 
     void onHasBufferedData();
     void onBufferedDataDrained();
@@ -166,12 +166,15 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
+    void setFinalStreamIntel(StreamInfo::StreamInfo& stream_info);
+
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
 
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
     envoy_stream_intel streamIntel();
+    envoy_final_stream_intel& finalStreamIntel();
     envoy_error streamError();
 
     DirectStream& direct_stream_;
@@ -274,7 +277,6 @@ private:
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
     envoy_stream_intel stream_intel_{-1, -1, 0};
-    // Final intel data retrieved from the StreamInfo.
     envoy_final_stream_intel envoy_final_stream_intel_;
     StreamInfo::BytesMeterSharedPtr bytes_meter_;
   };
