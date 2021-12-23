@@ -50,7 +50,8 @@ void* c_on_trailers(envoy_headers metadata, envoy_stream_intel, void* context) {
   return context;
 }
 
-void* c_on_error(envoy_error raw_error, envoy_stream_intel, void* context) {
+void* c_on_error(envoy_error raw_error, envoy_stream_intel, envoy_final_stream_intel,
+                 void* context) {
   auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
   auto stream_callbacks = *stream_callbacks_ptr;
   if (stream_callbacks->on_error.has_value()) {
@@ -65,7 +66,7 @@ void* c_on_error(envoy_error raw_error, envoy_stream_intel, void* context) {
   return nullptr;
 }
 
-void* c_on_complete(envoy_stream_intel, void* context) {
+void* c_on_complete(envoy_stream_intel, envoy_final_stream_intel, void* context) {
   auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
   auto stream_callbacks = *stream_callbacks_ptr;
   if (stream_callbacks->on_complete.has_value()) {
@@ -76,7 +77,7 @@ void* c_on_complete(envoy_stream_intel, void* context) {
   return nullptr;
 }
 
-void* c_on_cancel(envoy_stream_intel, void* context) {
+void* c_on_cancel(envoy_stream_intel, envoy_final_stream_intel, void* context) {
   auto stream_callbacks_ptr = static_cast<StreamCallbacksSharedPtr*>(context);
   auto stream_callbacks = *stream_callbacks_ptr;
   if (stream_callbacks->on_cancel.has_value()) {
@@ -102,15 +103,15 @@ void* c_on_send_window_available(envoy_stream_intel, void* context) {
 
 envoy_http_callbacks StreamCallbacks::asEnvoyHttpCallbacks() {
   return envoy_http_callbacks{
-      .on_headers = &c_on_headers,
-      .on_data = &c_on_data,
-      .on_metadata = nullptr,
-      .on_trailers = &c_on_trailers,
-      .on_error = &c_on_error,
-      .on_complete = &c_on_complete,
-      .on_cancel = &c_on_cancel,
-      .on_send_window_available = &c_on_send_window_available,
-      .context = new StreamCallbacksSharedPtr(this->shared_from_this()),
+      &c_on_headers,
+      &c_on_data,
+      nullptr,
+      &c_on_trailers,
+      &c_on_error,
+      &c_on_complete,
+      &c_on_cancel,
+      &c_on_send_window_available,
+      new StreamCallbacksSharedPtr(shared_from_this()),
   };
 }
 

@@ -38,7 +38,10 @@ const std::string config_header = R"(
 - &dns_fail_base_interval 2s
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
+- &dns_lookup_family V4_PREFERRED
 - &dns_preresolve_hostnames []
+- &dns_resolver_name envoy.network.dns_resolver.cares
+- &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
@@ -196,6 +199,10 @@ const char* config_template = R"(
             address:
               socket_address: { address: 127.0.0.1, port_value: 10101 }
 
+typed_dns_resolver_config:
+  name: *dns_resolver_name
+  typed_config: *dns_resolver_config
+
 static_resources:
   listeners:
 #{custom_listeners}
@@ -252,9 +259,7 @@ static_resources:
                 // https://github.com/envoyproxy/envoy-mobile/issues/1534
 R"(
                 preresolve_hostnames: *dns_preresolve_hostnames
-)"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
-R"(
-                dns_lookup_family: V4_PREFERRED
+                dns_lookup_family: *dns_lookup_family
 )"              // On mobile, backgrounding might cause the host to be past its TTL without good
                 // reason. Given the host would be deleted, and new streams for a given domain
                 // would have to wait for resolution, it is better to not delete existing hosts;
@@ -267,6 +272,9 @@ R"(
                   base_interval: *dns_fail_base_interval
                   max_interval: *dns_fail_max_interval
                 dns_query_timeout: *dns_query_timeout
+                typed_dns_resolver_config:
+                  name: *dns_resolver_name
+                  typed_config: *dns_resolver_config
           # TODO: make this configurable for users.
           - name: envoy.filters.http.decompressor
             typed_config:

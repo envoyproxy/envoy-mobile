@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.StringJoiner;
 import javax.annotation.Nullable;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
@@ -19,8 +20,10 @@ public class EnvoyConfiguration {
   public final Integer dnsFailureRefreshSecondsBase;
   public final Integer dnsFailureRefreshSecondsMax;
   public final Integer dnsQueryTimeoutSeconds;
+  public final Boolean enableHappyEyeballs;
   public final Boolean enableInterfaceBinding;
   public final String dnsPreresolveHostnames;
+  public final List<String> dnsFallbackNameservers;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
@@ -47,6 +50,8 @@ public class EnvoyConfiguration {
    * @param dnsFailureRefreshSecondsMax  max rate in seconds to refresh DNS on failure.
    * @param dnsQueryTimeoutSeconds       rate in seconds to timeout DNS queries.
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
+   * @param dnsFallbackNameservers       addresses to use as DNS name server fallback.
+   * @param enableHappyEyeballs          whether to enable RFC 6555 handling for IPv4/IPv6.
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
@@ -65,7 +70,8 @@ public class EnvoyConfiguration {
                             @Nullable Integer statsdPort, int connectTimeoutSeconds,
                             int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
                             int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
-                            String dnsPreresolveHostnames, boolean enableInterfaceBinding,
+                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
+                            boolean enableHappyEyeballs, boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
                             int h2ConnectionKeepaliveTimeoutSeconds, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
@@ -82,6 +88,8 @@ public class EnvoyConfiguration {
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
     this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
+    this.dnsFallbackNameservers = dnsFallbackNameservers;
+    this.enableHappyEyeballs = enableHappyEyeballs;
     this.enableInterfaceBinding = enableInterfaceBinding;
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
@@ -128,6 +136,19 @@ public class EnvoyConfiguration {
     String processedTemplate =
         templateYAML.replace("#{custom_filters}", customFiltersBuilder.toString());
 
+    String dnsFallbackNameserversAsString = "[]";
+    if (!dnsFallbackNameservers.isEmpty()) {
+      StringJoiner sj = new StringJoiner(",", "[", "]");
+      for (String nameserver : dnsFallbackNameservers) {
+        sj.add(String.format("{\"socket_address\":{\"address\":\"%s\"}}", nameserver));
+      }
+      dnsFallbackNameserversAsString = sj.toString();
+    }
+
+    String dnsResolverConfig = String.format(
+        "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":%s,\"use_resolvers_as_fallback\": %s}",
+        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true");
+
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
         .append(String.format("- &dns_refresh_rate %ss\n", dnsRefreshSeconds))
@@ -135,6 +156,10 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
+        .append(String.format("- &dns_lookup_family %s\n",
+                              enableHappyEyeballs ? "ALL" : "V4_PREFERRED"))
+        .append("- &dns_resolver_name envoy.network.dns_resolver.cares\n")
+        .append(String.format("- &dns_resolver_config %s\n", dnsResolverConfig))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",

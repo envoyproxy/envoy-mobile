@@ -55,8 +55,6 @@ public final class GRPCStreamPrototype: NSObject {
     var buffer = Data()
     var state = GRPCMessageProcessor.State.expectingCompressionFlag
     self.underlyingStream.setOnResponseData { chunk, _, streamIntel in
-      // This closure deliberately retains `self` while the underlying handler's
-      // `onData` closure is kept in memory so that messages/errors can be processed.
       // Appending might result in extra copying that can be optimized in the future.
       buffer.append(chunk)
       // gRPC always sends trailers, so the stream will not complete here.
@@ -137,7 +135,7 @@ private enum GRPCMessageProcessor {
       }
 
       guard compressionFlag == 0 else {
-        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
+        // TODO: Support gRPC compression https://github.com/envoyproxy/envoy-mobile/issues/501
         buffer.removeAll()
         state = .expectingCompressionFlag
         return

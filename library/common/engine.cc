@@ -7,6 +7,7 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
+#include "library/common/network/android.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
@@ -17,12 +18,12 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
       dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
-  // https://github.com/lyft/envoy-mobile/issues/332
+  // https://github.com/envoyproxy/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
 
   // TODO(Augustyniak): Capturing an address of event_tracker_ and registering it in the API
   // registry may lead to crashes at Engine shutdown. To be figured out as part of
-  // https://github.com/lyft/envoy-mobile/issues/332
+  // https://github.com/envoyproxy/envoy-mobile/issues/332
   Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
 }
 
@@ -104,8 +105,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
           network_configurator_ =
               Network::ConfiguratorFactory{server_->serverFactoryContext()}.get();
+          Envoy::Network::Android::Utility::setAlternateGetifaddrs();
           auto v4_interfaces = network_configurator_->enumerateV4Interfaces();
-          auto v6_interfaces = network_configurator_->enumerateV4Interfaces();
+          auto v6_interfaces = network_configurator_->enumerateV6Interfaces();
           logInterfaces("netconf_get_v4_interfaces", v4_interfaces);
           logInterfaces("netconf_get_v6_interfaces", v6_interfaces);
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
@@ -301,6 +303,12 @@ void Engine::drainConnections() {
   ASSERT(dispatcher_->isThreadSafe(),
          "drainConnections must be called from the dispatcher's context");
   server_->clusterManager().drainConnections();
+}
+
+Upstream::ClusterManager& Engine::getClusterManager() {
+  ASSERT(dispatcher_->isThreadSafe(),
+         "getClusterManager must be called from the dispatcher's context");
+  return server_->clusterManager();
 }
 
 void Engine::logInterfaces(absl::string_view event,
