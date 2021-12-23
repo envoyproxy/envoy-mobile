@@ -90,7 +90,7 @@ class EnvoyConfigurationTest {
     )
 
     // DNS
-    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false, \"filter_unroutable_families\": true}")
+    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false, \"filter_unroutable_families\": false}")
     assertThat(resolvedTemplate).contains("&dns_lookup_family V4_PREFERRED")
 
     // Interface Binding
