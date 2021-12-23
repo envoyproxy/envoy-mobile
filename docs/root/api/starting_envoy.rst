@@ -394,10 +394,10 @@ Specify whether sockets may attempt to bind to a specific interface, based on ne
 **Example**::
 
   // Kotlin
-  builder.enableHappyEyeballs(true)
+  builder.enableInterfaceBinding(true)
 
   // Swift
-  builder.enableHappyEyeballs(true)
+  builder.enableInterfaceBinding(true)
 
 ----------------------
 Advanced configuration
