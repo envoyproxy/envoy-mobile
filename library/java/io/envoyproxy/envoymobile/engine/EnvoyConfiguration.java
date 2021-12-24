@@ -151,8 +151,8 @@ public class EnvoyConfiguration {
 
     String dnsResolverConfig = String.format(
         "{\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":%s,\"use_resolvers_as_fallback\": %s, \"filter_unroutable_families\": %s}",
-        dnsFallbackNameserversAsString, dnsFallbackNameservers.isEmpty() ? "false" : "true",
-        dnsFilterUnroutableFamilies ? "false" : "true");
+        dnsFallbackNameserversAsString, !dnsFallbackNameservers.isEmpty() ? "true" : "false",
+        dnsFilterUnroutableFamilies ? "true" : "false");
 
     StringBuilder configBuilder = new StringBuilder("!ignore platform_defs:\n");
     configBuilder.append(String.format("- &connect_timeout %ss\n", connectTimeoutSeconds))
