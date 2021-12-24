@@ -61,7 +61,7 @@ public class AndroidEnvoyExplicitFlowTest {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .addLogLevel(LogLevel.DEBUG)
+                 .addLogLevel(LogLevel.OFF)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
@@ -412,6 +412,41 @@ public class AndroidEnvoyExplicitFlowTest {
     assertThat(response.isCancelled()).isTrue();
     assertThat(response.getRequestChunkSent()).isOne();
     assertThat(response.getEnvoyError()).isNull();
+  }
+
+  @Test
+  public void post_multipleRequests_randomBehavior() throws Exception {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    List<Throwable> errors = new ArrayList<>();
+    mockWebServer.start();
+    for (int i = 0; i < 100; i++) {
+      executorService.submit(() -> {
+        try {
+          mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
+          RequestScenario requestScenario =
+              new RequestScenario()
+                  .setHttpMethod(RequestMethod.GET)
+                  .setUrl(mockWebServer.url("get/flowers").toString())
+                  .addBody("This is my body part 1")
+                  .addBody("This is my body part 2")
+                  .setResponseBufferSize(20); // Larger than the response body size
+          if (Math.random() > 0.5d) {
+            requestScenario.cancelUploadOnChunk(1);
+          }
+          if (Math.random() > 0.5d) {
+            requestScenario.waitOnReadData();
+          } else if (Math.random() > 0.5d) {
+            requestScenario.useDirectExecutor();
+          }
+          sendRequest(requestScenario);
+        } catch (Throwable t) {
+          errors.add(t);
+        }
+      });
+    }
+    executorService.shutdown();
+    executorService.awaitTermination(20, TimeUnit.SECONDS);
+    assertThat(errors).isEmpty();
   }
 
   private Response sendRequest(RequestScenario requestScenario) throws Exception {
