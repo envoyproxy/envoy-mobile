@@ -41,9 +41,11 @@ envoy_cc_test_library(
     ],
     repository = "@envoy",
     deps = [
-        "@envoy//test/mocks/server:transport_socket_factory_context_mocks",
         "@envoy//source/exe:process_wide_lib",
+        "@envoy//test/config:utility_lib",
         "@envoy//test/integration:autonomous_upstream_lib",
+        "@envoy//test/mocks/server:transport_socket_factory_context_mocks",
+        "@envoy//test/test_common:environment_lib",
     ] + select({
         "@envoy//bazel:disable_signal_trace": [],
         "//conditions:default": [
