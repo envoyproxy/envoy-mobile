@@ -8,12 +8,12 @@
 namespace Envoy {
 namespace Platform {
 
-EngineBuilder::EngineBuilder(std::string config_template) : config_template_(config_template) {}
+EngineBuilder::EngineBuilder(std::string config_template)
+    : callbacks_(std::make_shared<EngineCallbacks>()), config_template_(config_template) {}
 EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {}
 
 EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
   this->log_level_ = log_level;
-  this->callbacks_ = std::make_shared<EngineCallbacks>();
   return *this;
 }
 
@@ -100,6 +100,10 @@ std::string EngineBuilder::generateConfigStr() {
       {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
       {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
       {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},
+      {"dns_resolver_name", "envoy.network.dns_resolver.cares"},
+      {"dns_resolver_config",
+       "{\"@type\":\"type.googleapis.com/"
+       "envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\"}"},
       {"h2_connection_keepalive_idle_interval",
        fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_ / 1000.0)},
       {"h2_connection_keepalive_timeout",

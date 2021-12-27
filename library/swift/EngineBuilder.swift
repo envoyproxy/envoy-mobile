@@ -21,6 +21,7 @@ open class EngineBuilder: NSObject {
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
   private var dnsQueryTimeoutSeconds: UInt32 = 25
   private var dnsPreresolveHostnames: String = "[]"
+  private var enableHappyEyeballs: Bool = false
   private var enableInterfaceBinding: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
@@ -33,6 +34,7 @@ open class EngineBuilder: NSObject {
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
+  private(set) var enableNetworkPathMonitor = false
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
@@ -131,6 +133,17 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func addDNSPreresolveHostnames(dnsPreresolveHostnames: String) -> Self {
     self.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return self
+  }
+
+  /// Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+  ///
+  /// - parameter enableHappyEyeballs: whether to enable RFC 6555 handling for IPv4/IPv6.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableHappyEyeballs(_ enableHappyEyeballs: Bool) -> Self {
+    self.enableHappyEyeballs = enableHappyEyeballs
     return self
   }
 
@@ -294,6 +307,16 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Configure the engine to use `NWPathMonitor` to observe network reachability.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  @available(iOS 12, *)
+  public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
+    self.enableNetworkPathMonitor = enableNetworkPathMonitor
+    return self
+  }
+
   /// Add the App Version of the App using this Envoy Client.
   ///
   /// - parameter appVersion: The version.
@@ -320,7 +343,7 @@ open class EngineBuilder: NSObject {
   ///
   /// - parameter virtualClusters: The JSON configuration string for virtual clusters.
   ///
-  /// returns: This builder.
+  /// - returns: This builder.
   @discardableResult
   public func addVirtualClusters(_ virtualClusters: String) -> Self {
     self.virtualClusters = virtualClusters
@@ -331,7 +354,7 @@ open class EngineBuilder: NSObject {
   /// used for development/debugging purposes only. Enabling it in production may open
   /// your app to security vulnerabilities.
   ///
-  /// returns: This builder.
+  /// - returns: This builder.
   @discardableResult
   public func enableAdminInterface() -> Self {
     self.adminInterfaceEnabled = true
@@ -342,7 +365,8 @@ open class EngineBuilder: NSObject {
   ///
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
-                                      eventTracker: self.eventTracker)
+                                      eventTracker: self.eventTracker,
+                                      enableNetworkPathMonitor: self.enableNetworkPathMonitor)
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
@@ -352,6 +376,7 @@ open class EngineBuilder: NSObject {
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
       dnsQueryTimeoutSeconds: self.dnsQueryTimeoutSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
+      enableHappyEyeballs: self.enableHappyEyeballs,
       enableInterfaceBinding: self.enableInterfaceBinding,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
@@ -386,7 +411,7 @@ open class EngineBuilder: NSObject {
   /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
   /// A new instance of this engine will be created when `build()` is called.
   /// Used for testing, as initializing with `EnvoyEngine.Type` results in a
-  /// segfault: https://github.com/lyft/envoy-mobile/issues/334
+  /// segfault: https://github.com/envoyproxy/envoy-mobile/issues/334
   @discardableResult
   func addEngineType(_ engineType: EnvoyEngine.Type) -> Self {
     self.engineType = engineType

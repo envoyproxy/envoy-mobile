@@ -9,13 +9,13 @@ To get started, you can use `this quick start guide
 
 Ensure that the ``envoy`` **submodule** is initialized when cloning by using ``--recursive``:
 
-``git clone https://github.com/lyft/envoy-mobile.git --recursive``
+``git clone https://github.com/envoyproxy/envoy-mobile.git --recursive``
 
 If the repo was not initially cloned recursively, you can manually initialize the Envoy submodule:
 
 ``git submodule update --init``
 
-.. _releases: https://github.com/lyft/envoy-mobile/releases
+.. _releases: https://github.com/envoyproxy/envoy-mobile/releases
 
 ------------------
 Bazel requirements
@@ -24,8 +24,9 @@ Bazel requirements
 Envoy Mobile is compiled using the version of Bazel specified in the
 :repo:`.bazelversion <.bazelversion>` file.
 
-To simplify build consistency across environments, bazelisk is used.
-Follow `these Envoy instructions <https://github.com/envoyproxy/envoy/blob/master/bazel/README.md#installing-bazelisk-as-bazel>`_ to install bazelisk as bazel.
+To simplify build consistency across environments, the `./bazelw` script manages
+using the correct version. Instead of using `bazel build ...` use `./bazelw build ...`
+for all bazel commands.
 
 --------------------
 Java requirements
@@ -39,7 +40,7 @@ Make sure that Java 8 set on `PATH` and that `JAVA_HOME` is set to the appropria
 Android requirements
 --------------------
 
-- Android SDK Platform 29
+- Android SDK Platform 30
 - Android NDK 21
 
 For local builds, set ``ANDROID_HOME`` and ``ANDROID_NDK_HOME`` to point to the location of these installs. For example,
@@ -67,7 +68,7 @@ Android AAR
 Envoy Mobile can be compiled into an ``.aar`` file for use with Android apps.
 This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and may be run locally:
 
-``bazelisk build android_dist --config=android --fat_apk_cpu=<arch1,arch2>``
+``./bazelw build android_dist --config=android --fat_apk_cpu=<arch1,arch2>``
 
 Upon completion of the build, you'll see an ``envoy.aar`` file at :repo:`dist/envoy.aar <dist>`.
 
@@ -80,7 +81,7 @@ an example of how this artifact may be used.
 **When building the artifact for release** (usage outside of development), be sure to include the
 ``--config=release-android`` option, along with the architectures for which the artifact is being built:
 
-``bazelisk build android_dist --config=release-android --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a``
+``./bazelw build android_dist --config=release-android --fat_apk_cpu=x86,armeabi-v7a,arm64-v8a``
 
 For a demo of a working app using this artifact, see the :ref:`hello_world` example.
 
@@ -93,7 +94,7 @@ iOS static framework
 Envoy Mobile supports being compiled into a ``.framework`` for consumption by iOS apps.
 This command is defined in the main :repo:`BUILD <BUILD>` file of the repo, and may be run locally:
 
-``bazelisk build ios_dist --config=ios``
+``./bazelw build ios_dist --config=ios``
 
 Upon completion of the build, you'll see a ``Envoy.framework`` directory at
 :repo:`dist/Envoy.framework <dist>`.
@@ -107,7 +108,7 @@ example of how this artifact may be used.
 **When building the artifact for release** (usage outside of development), be sure to include the
 ``--config=release-ios`` option, along with the architectures for which the artifact is being built:
 
-``bazelisk build ios_dist --config=release-ios --ios_multi_cpus=i386,x86_64,armv7,arm64``
+``./bazelw build ios_dist --config=release-ios --ios_multi_cpus=i386,x86_64,armv7,arm64``
 
 For a demo of a working app using this artifact, see the :ref:`hello_world` example.
 
@@ -171,7 +172,7 @@ Android
 To deploy Envoy Mobile's aar to your local maven repository, run the following commands::
 
     # To build Envoy Mobile. --fat_apk_cpu takes in a list of architectures: [x86|armeabi-v7a|arm64-v8a].
-    bazelisk build android_dist --config=android --fat_apk_cpu=x86
+    ./bazelw build android_dist --config=android --fat_apk_cpu=x86
 
     # To publish to local maven.
     dist/sonatype_nexus_upload.py --files dist/envoy.aar dist/envoy-pom.xml --local

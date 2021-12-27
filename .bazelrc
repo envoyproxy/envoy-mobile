@@ -16,15 +16,21 @@ build --spawn_strategy=local
 build --verbose_failures
 build --workspace_status_command=envoy/bazel/get_workspace_status
 build --xcode_version=13.0
-build --javabase=@bazel_tools//tools/jdk:jdk
+build --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
+build --javabase=@bazel_tools//tools/jdk:remote_jdk11
+build --tool_java_runtime_version=remotejdk_11
+build --java_runtime_version=remotejdk_11
+# https://github.com/bazelbuild/rules_jvm_external/issues/445
+build --repo_env=JAVA_HOME=../bazel_tools/jdk
 build --define disable_known_issue_asserts=true
 build --define cxxopts=-std=c++17
-# https://github.com/bazelbuild/bazel/issues/10674#issuecomment-658208918
-build --incompatible_objc_compile_info_migration
 # Unset per_object_debug_info. Causes failures on Android Linux release builds.
 build --features=-per_object_debug_info
 # Suppress deprecated declaration warnings due to extensive transitive noise from protobuf.
 build --copt -Wno-deprecated-declarations
+
+# Enable source map for debugging in IDEs
+build:dbg --copt="-fdebug-compilation-dir" --copt="/proc/self/cwd"
 
 # Default flags for builds targeting iOS
 # Manual stamping is necessary in order to get versioning information in the iOS
@@ -84,8 +90,6 @@ build:release-android --compilation_mode=opt
 
 # Instrument Envoy Mobile's C++ code for coverage
 build:coverage --instrumentation_filter="//library/common[/:]"
-build:coverage --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
-build:coverage --javabase=@bazel_tools//tools/jdk:remote_jdk11
 
 #############################################################################
 # Experimental EngFlow Remote Execution Configs
@@ -111,7 +115,6 @@ build:remote-ci-common --spawn_strategy=remote,sandboxed,local
 build:remote-ci-common --grpc_keepalive_time=61s
 #############################################################################
 # remote-ci-linux: These options are linux-only using GCC by default
-# TODO(lfpino): Add --remote_default_exec_properties=Pool=linux once the pool is defined
 #############################################################################
 # Common Engflow flags
 build:remote-ci-linux --define=EXECUTOR=remote
@@ -210,9 +213,11 @@ build:remote-ci-linux-coverage --config=remote-ci-common
 build:remote-ci-linux-coverage --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 #############################################################################
 # remote-ci-macos: These options are macOS-only
-# TODO(lfpino): Add --remote_default_exec_properties=Pool=macos once the pool is defined
 #############################################################################
 build:remote-ci-macos --config=remote-ci-common
+build:remote-ci-macos --host_platform=//ci/platform:macos
+build:remote-ci-macos --platforms=//ci/platform:macos
+build:remote-ci-macos --extra_execution_platforms=//ci/platform:macos
 build:remote-ci-macos --xcode_version_config=//ci:xcode_config
 #############################################################################
 # remote-ci-debug: Various Bazel debugging flags

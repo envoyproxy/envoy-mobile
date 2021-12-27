@@ -72,11 +72,11 @@ Android configuration
 
 2. Build and run the example app:
 
-``bazelisk mobile-install //examples/kotlin/hello_world:hello_envoy_kt --fat_apk_cpu=armeabi-v7a``
+``./bazelw mobile-install //examples/kotlin/hello_world:hello_envoy_kt --fat_apk_cpu=armeabi-v7a``
 
 ~~~~~~~~~~~
 Open issues
 ~~~~~~~~~~~
 
 For current issues with device conditions, please see issues with the
-`perf/device label <https://github.com/lyft/envoy-mobile/labels/perf%2Fdevice>`_.
+`perf/device label <https://github.com/envoyproxy/envoy-mobile/labels/perf%2Fdevice>`_.

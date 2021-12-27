@@ -25,7 +25,7 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
       Http::ResponseHeaderMapImpl::create();
   transformed_headers->setFormatter(
       std::make_unique<
-          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>());
+          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(false));
   Http::Utility::toEnvoyHeaders(*transformed_headers, headers);
   return transformed_headers;
 }
@@ -77,13 +77,15 @@ public:
       release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_complete = [](envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_stream_intel, envoy_final_stream_intel,
+                                       void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_complete_calls++;
       cc_->terminal_callback->setReady();
       return nullptr;
     };
-    bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, void* context) -> void* {
+    bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, envoy_final_stream_intel,
+                                    void* context) -> void* {
       release_envoy_error(error);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_error_calls++;
@@ -333,7 +335,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   Http::TestRequestHeaderMapImpl headers{{"FoO", "bar"}};
   headers.header_map_->setFormatter(
       std::make_unique<
-          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>());
+          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(false));
   headers.header_map_->formatter().value().get().processKey("FoO");
   HttpTestUtility::addDefaultHeaders(headers);
   envoy_headers c_headers = Http::Utility::toBridgeHeaders(headers);

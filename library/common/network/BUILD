@@ -8,6 +8,7 @@ envoy_cc_library(
     name = "configurator_lib",
     srcs = [
         "configurator.cc",
+        "android.cc",
     ] + select({
         "//bazel:include_ifaddrs": [
             "//third_party:android/ifaddrs-android.h",
@@ -16,13 +17,17 @@ envoy_cc_library(
         ],
         "//conditions:default": [],
     }),
-    hdrs = ["configurator.h"],
+    hdrs = [
+        "android.h",
+        "configurator.h",
+    ],
     copts = select({
         "//bazel:include_ifaddrs": ["-DINCLUDE_IFADDRS"],
         "//conditions:default": [],
     }),
     repository = "@envoy",
     deps = [
+        "//library/common/network:src_addr_socket_option_lib",
         "//library/common/types:c_types_lib",
         "@envoy//envoy/network:socket_interface",
         "@envoy//envoy/singleton:manager_interface",
@@ -32,6 +37,18 @@ envoy_cc_library(
         "@envoy//source/common/network:addr_family_aware_socket_option_lib",
         "@envoy//source/common/network:socket_option_lib",
         "@envoy//source/extensions/common/dynamic_forward_proxy:dns_cache_manager_impl",
+    ],
+)
+
+envoy_cc_library(
+    name = "src_addr_socket_option_lib",
+    srcs = ["src_addr_socket_option_impl.cc"],
+    hdrs = ["src_addr_socket_option_impl.h"],
+    repository = "@envoy",
+    deps = [
+        "@envoy//envoy/network:address_interface",
+        "@envoy//source/common/network:socket_option_lib",
+        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
     ],
 )
 

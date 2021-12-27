@@ -7,6 +7,7 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
+#include "library/common/network/android.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
@@ -17,12 +18,12 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
       dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()) {
   // Ensure static factory registration occurs on time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
-  // https://github.com/lyft/envoy-mobile/issues/332
+  // https://github.com/envoyproxy/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
 
   // TODO(Augustyniak): Capturing an address of event_tracker_ and registering it in the API
   // registry may lead to crashes at Engine shutdown. To be figured out as part of
-  // https://github.com/lyft/envoy-mobile/issues/332
+  // https://github.com/envoyproxy/envoy-mobile/issues/332
   Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
 }
 
@@ -104,7 +105,11 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
           network_configurator_ =
               Network::ConfiguratorFactory{server_->serverFactoryContext()}.get();
-          logInterfaces();
+          Envoy::Network::Android::Utility::setAlternateGetifaddrs();
+          auto v4_interfaces = network_configurator_->enumerateV4Interfaces();
+          auto v6_interfaces = network_configurator_->enumerateV6Interfaces();
+          logInterfaces("netconf_get_v4_interfaces", v4_interfaces);
+          logInterfaces("netconf_get_v6_interfaces", v6_interfaces);
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
           // StatNameSet is lock-free, the benefit of using it is being able to create StatsName
           // on-the-fly without risking contention on system with lots of threads.
@@ -300,22 +305,25 @@ void Engine::drainConnections() {
   server_->clusterManager().drainConnections();
 }
 
-void Engine::logInterfaces() {
-  auto v4_vec = network_configurator_->enumerateV4Interfaces();
-  auto v4_vec_unique_end = std::unique(v4_vec.begin(), v4_vec.end());
-  std::string v4_names = std::accumulate(v4_vec.begin(), v4_vec_unique_end, std::string{},
-                                         [](std::string acc, std::string next) {
-                                           return acc.empty() ? next : std::move(acc) + "," + next;
-                                         });
+Upstream::ClusterManager& Engine::getClusterManager() {
+  ASSERT(dispatcher_->isThreadSafe(),
+         "getClusterManager must be called from the dispatcher's context");
+  return server_->clusterManager();
+}
 
-  auto v6_vec = network_configurator_->enumerateV6Interfaces();
-  auto v6_vec_unique_end = std::unique(v6_vec.begin(), v6_vec.end());
-  std::string v6_names = std::accumulate(v6_vec.begin(), v6_vec_unique_end, std::string{},
-                                         [](std::string acc, std::string next) {
-                                           return acc.empty() ? next : std::move(acc) + "," + next;
-                                         });
-  ENVOY_LOG_EVENT(debug, "network_configuration_get_v4_interfaces", v4_names);
-  ENVOY_LOG_EVENT(debug, "network_configuration_get_v6_interfaces", v6_names);
+void Engine::logInterfaces(absl::string_view event,
+                           std::vector<Network::InterfacePair>& interfaces) {
+  std::vector<std::string> names;
+  names.resize(interfaces.size());
+  std::transform(interfaces.begin(), interfaces.end(), names.begin(),
+                 [](Network::InterfacePair& pair) { return std::get<0>(pair); });
+
+  auto unique_end = std::unique(names.begin(), names.end());
+  std::string all_names = std::accumulate(names.begin(), unique_end, std::string{},
+                                          [](std::string acc, std::string next) {
+                                            return acc.empty() ? next : std::move(acc) + "," + next;
+                                          });
+  ENVOY_LOG_EVENT(debug, event, all_names);
 }
 
 } // namespace Envoy

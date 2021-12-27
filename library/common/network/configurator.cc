@@ -4,13 +4,17 @@
 
 #include "envoy/common/platform.h"
 
+#include "source/common/api/os_sys_calls_impl.h"
 #include "source/common/common/assert.h"
 #include "source/common/common/scalar_to_byte_vector.h"
 #include "source/common/common/utility.h"
 #include "source/common/network/addr_family_aware_socket_option_impl.h"
+#include "source/common/network/address_impl.h"
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_manager_impl.h"
 
-// Used on Linux/Android
+#include "library/common/network/src_addr_socket_option_impl.h"
+
+// Used on Linux (requires root/CAP_NET_RAW)
 #ifdef SO_BINDTODEVICE
 #define ENVOY_SOCKET_SO_BINDTODEVICE ENVOY_MAKE_SOCKET_OPTION_NAME(SOL_SOCKET, SO_BINDTODEVICE)
 #else
@@ -46,22 +50,21 @@
 
 #define DEFAULT_IP_TTL 64
 
-#ifdef SUPPORTS_GETIFADDRS
-#include <ifaddrs.h>
+// Prefixes used to prefer well-known interface names.
+#if defined(__APPLE__)
+constexpr absl::string_view WlanPrefix = "en";
+constexpr absl::string_view WwanPrefix = "pdp_ip";
+#elif defined(__ANDROID_API__)
+constexpr absl::string_view WlanPrefix = "wlan";
+constexpr absl::string_view WwanPrefix = "rmnet";
+#else
+// An empty prefix is essentially the same as disabling filtering since it will always match.
+constexpr absl::string_view WlanPrefix = "";
+constexpr absl::string_view WwanPrefix = "";
 #endif
 
 namespace Envoy {
 namespace Network {
-
-#if !defined(SUPPORTS_GETIFADDRS) && defined(INCLUDE_IFADDRS)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-namespace {
-#include "third_party/android/ifaddrs-android.h"
-}
-#pragma clang diagnostic pop
-#define SUPPORTS_GETIFADDRS
-#endif
 
 SINGLETON_MANAGER_REGISTRATION(network_configurator);
 
@@ -149,10 +152,15 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
                                           ? AlternateBoundInterfaceMode
                                           : DefaultPreferredNetworkMode;
         network_state_.remaining_faults_ = InitialFaultThreshold;
-        ENVOY_LOG_EVENT(debug, "netconf_mode_switch",
-                        network_state_.socket_mode_ == DefaultPreferredNetworkMode
-                            ? "DefaultPreferredNetworkMode"
-                            : "AlternateBoundInterfaceMode");
+        if (network_state_.socket_mode_ == DefaultPreferredNetworkMode) {
+          ENVOY_LOG_EVENT(debug, "netconf_mode_switch", "DefaultPreferredNetworkMode");
+        } else if (network_state_.socket_mode_ == AlternateBoundInterfaceMode) {
+          auto v4_pair = getActiveAlternateInterface(network_state_.network_, AF_INET);
+          auto v6_pair = getActiveAlternateInterface(network_state_.network_, AF_INET6);
+          ENVOY_LOG_EVENT(debug, "netconf_mode_switch", "AlternateBoundInterfaceMode [{}|{}]",
+                          std::get<const std::string>(v4_pair),
+                          std::get<const std::string>(v6_pair));
+        }
       }
     }
   }
@@ -188,11 +196,11 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key) {
   }
 }
 
-std::vector<std::string> Configurator::enumerateV4Interfaces() {
+std::vector<InterfacePair> Configurator::enumerateV4Interfaces() {
   return enumerateInterfaces(AF_INET, 0, 0);
 }
 
-std::vector<std::string> Configurator::enumerateV6Interfaces() {
+std::vector<InterfacePair> Configurator::enumerateV6Interfaces() {
   return enumerateInterfaces(AF_INET6, 0, 0);
 }
 
@@ -216,26 +224,36 @@ Socket::OptionsSharedPtr Configurator::getUpstreamSocketOptions(envoy_network_t 
 }
 
 Socket::OptionsSharedPtr Configurator::getAlternateInterfaceSocketOptions(envoy_network_t network) {
-  auto& v4_interface = getActiveAlternateInterface(network, AF_INET);
-  auto& v6_interface = getActiveAlternateInterface(network, AF_INET6);
+  auto v4_pair = getActiveAlternateInterface(network, AF_INET);
+  auto v6_pair = getActiveAlternateInterface(network, AF_INET6);
+  ENVOY_LOG(debug, "found active alternate interface (ipv4): {} {}", std::get<0>(v4_pair),
+            std::get<1>(v4_pair));
+  ENVOY_LOG(debug, "found active alternate interface (ipv6): {} {}", std::get<0>(v6_pair),
+            std::get<1>(v6_pair));
 
   auto options = std::make_shared<Socket::Options>();
 
-  // Android
-#ifdef SO_BINDTODEVICE
-  options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
-      envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_SO_BINDTODEVICE,
-      v4_interface, ENVOY_SOCKET_SO_BINDTODEVICE, v6_interface));
-#endif // SO_BINDTODEVICE
-
-  // iOS
 #ifdef IP_BOUND_IF
-  int v4_idx = if_nametoindex(v4_interface.c_str());
-  int v6_idx = if_nametoindex(v6_interface.c_str());
+  // iOS
+  // On platforms where it exists, IP_BOUND_IF/IPV6_BOUND_IF provide a straightforward way to bind
+  // a socket explicitly to specific interface. (The Linux alternative is SO_BINDTODEVICE, but has
+  // other restriction; see below.)
+  int v4_idx = if_nametoindex(std::get<const std::string>(v4_pair).c_str());
+  int v6_idx = if_nametoindex(std::get<const std::string>(v6_pair).c_str());
   options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
       envoy::config::core::v3::SocketOption::STATE_PREBIND, ENVOY_SOCKET_IP_BOUND_IF, v4_idx,
       ENVOY_SOCKET_IPV6_BOUND_IF, v6_idx));
-#endif // IP_BOUND_IF
+#else
+  // Android
+  // SO_BINDTODEVICE is defined on Android, but applying it requires root privileges (or more
+  // specifically, CAP_NET_RAW). As a workaround, this binds the socket to the interface by
+  // attaching "synthetic" socket option, which sets the socket's source address to the local
+  // address of the interface. This is not quite as precise, since it's possible that multiple
+  // interfaces share the same local address, but this is all best-effort anyways.
+  options->push_back(std::make_shared<AddrFamilyAwareSocketOptionImpl>(
+      std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v4_pair)),
+      std::make_unique<SrcAddrSocketOptionImpl>(std::get<1>(v6_pair))));
+#endif
 
   return options;
 }
@@ -257,52 +275,71 @@ envoy_netconf_t Configurator::addUpstreamSocketOptions(Socket::OptionsSharedPtr 
   return configuration_key;
 }
 
-const std::string Configurator::getActiveAlternateInterface(envoy_network_t network,
-                                                            unsigned short family) {
+InterfacePair Configurator::getActiveAlternateInterface(envoy_network_t network,
+                                                        unsigned short family) {
   // Attempt to derive an active interface that differs from the passed network parameter.
   if (network == ENVOY_NET_WWAN) {
     // Network is cellular, so look for a WiFi interface.
     // WiFi should always support multicast, and will not be point-to-point.
     auto interfaces =
         enumerateInterfaces(family, IFF_UP | IFF_MULTICAST, IFF_LOOPBACK | IFF_POINTOPOINT);
-    return interfaces.size() > 0 ? interfaces[0] : "";
+    for (const auto& interface : interfaces) {
+      // Look for interface with name that matches the expected prefix.
+      // TODO(goaway): This is quite brittle. It would be an improvement to:
+      //   1) Improve the scoping via flags.
+      //   2) Prioritize interfaces by prefix instead of simply filtering them.
+      if (absl::StartsWith(std::get<const std::string>(interface), WlanPrefix)) {
+        return interface;
+      }
+    }
   } else if (network == ENVOY_NET_WLAN) {
     // Network is WiFi, so look for a cellular interface.
     // Cellular networks should be point-to-point.
     auto interfaces = enumerateInterfaces(family, IFF_UP | IFF_POINTOPOINT, IFF_LOOPBACK);
-    return interfaces.size() > 0 ? interfaces[0] : "";
-  } else {
-    return "";
+    for (const auto& interface : interfaces) {
+      // Look for interface with name that matches the expected prefix.
+      // TODO(goaway): This is quite brittle. It would be an improvement to:
+      //   1) Improve the scoping via flags.
+      //   2) Prioritize interfaces by prefix instead of simply filtering them.
+      if (absl::StartsWith(std::get<const std::string>(interface), WwanPrefix)) {
+        return interface;
+      }
+    }
   }
+
+  return std::make_pair("", nullptr);
 }
 
-std::vector<std::string>
+std::vector<InterfacePair>
 Configurator::enumerateInterfaces([[maybe_unused]] unsigned short family,
                                   [[maybe_unused]] unsigned int select_flags,
                                   [[maybe_unused]] unsigned int reject_flags) {
-  std::vector<std::string> names{};
+  std::vector<InterfacePair> pairs{};
 
-#ifdef SUPPORTS_GETIFADDRS
-  struct ifaddrs* interfaces = nullptr;
-  struct ifaddrs* ifa = nullptr;
-
-  const int rc = getifaddrs(&interfaces);
-  RELEASE_ASSERT(!rc, "getifaddrs failed");
-
-  for (ifa = interfaces; ifa != nullptr; ifa = ifa->ifa_next) {
-    if (!ifa->ifa_addr || ifa->ifa_addr->sa_family != family) {
-      continue;
-    }
-    if ((ifa->ifa_flags & (select_flags ^ reject_flags)) != select_flags) {
-      continue;
-    }
-    names.push_back(std::string{ifa->ifa_name});
+  if (!Api::OsSysCallsSingleton::get().supportsGetifaddrs()) {
+    return pairs;
   }
 
-  freeifaddrs(interfaces);
-#endif // SUPPORTS_GETIFADDRS
+  Api::InterfaceAddressVector interface_addresses{};
+  const Api::SysCallIntResult rc = Api::OsSysCallsSingleton::get().getifaddrs(interface_addresses);
+  RELEASE_ASSERT(!rc.return_value_, fmt::format("getiffaddrs error: {}", rc.errno_));
 
-  return names;
+  for (const auto& interface_address : interface_addresses) {
+    const auto family_version = family == AF_INET ? Envoy::Network::Address::IpVersion::v4
+                                                  : Envoy::Network::Address::IpVersion::v6;
+    if (interface_address.interface_addr_->ip()->version() != family_version) {
+      continue;
+    }
+
+    if ((interface_address.interface_flags_ & (select_flags ^ reject_flags)) != select_flags) {
+      continue;
+    }
+
+    pairs.push_back(
+        std::make_pair(interface_address.interface_name_, interface_address.interface_addr_));
+  }
+
+  return pairs;
 }
 
 ConfiguratorSharedPtr ConfiguratorFactory::get() {
