@@ -90,6 +90,7 @@ def upstream_envoy_overrides():
         sha256 = "9e704a66e0f762e80176a80bd201ab11ec460349f47f2f60c5632942bfdcb61d",
         strip_prefix = "quiche-96a9f6bd7f8c1c256e0a59008a84522b95cec3cc",
         urls = ["https://github.com/google/quiche/archive/96a9f6bd7f8c1c256e0a59008a84522b95cec3cc.tar.gz"],
+        build_file = "@envoy//bazel/external:quiche.BUILD",
     )
 
 def swift_repos():
