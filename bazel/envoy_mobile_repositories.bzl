@@ -81,6 +81,31 @@ def upstream_envoy_overrides():
         build_file = "@envoy//bazel/external:json.BUILD",
     )
 
+    http_archive(
+        name = "com_github_nlohmann_json",
+        # 3.10.4 introduced incompatible changes with Envoy Mobile. Until Envoy Mobile updates it's
+        # minimum iOS version to 13+ this dependency needs to be patched.
+        patches = ["@envoy_mobile//bazel:json.patch"],
+        patch_args = ["-p1"],
+        sha256 = "9e704a66e0f762e80176a80bd201ab11ec460349f47f2f60c5632942bfdcb61d",
+        strip_prefix = "quiche-96a9f6bd7f8c1c256e0a59008a84522b95cec3cc",
+        urls = ["https://github.com/google/quiche/archive/96a9f6bd7f8c1c256e0a59008a84522b95cec3cc.tar.gz"],
+        build_file = "@envoy//bazel/external:json.BUILD",
+    )
+
+    com_github_google_quiche = dict(
+        project_name = "QUICHE",
+        project_desc = "QUICHE (QUIC, HTTP/2, Etc) is Google‘s implementation of QUIC and related protocols",
+        project_url = "https://github.com/google/quiche",
+        version = "96a9f6bd7f8c1c256e0a59008a84522b95cec3cc",
+        sha256 = "9e704a66e0f762e80176a80bd201ab11ec460349f47f2f60c5632942bfdcb61d",
+        urls = ["https://github.com/google/quiche/archive/{version}.tar.gz"],
+        strip_prefix = "quiche-{version}",
+        use_category = ["dataplane_core"],
+        release_date = "2021-12-16",
+        cpe = "N/A",
+    ),
+
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
