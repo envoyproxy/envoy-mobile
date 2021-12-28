@@ -472,6 +472,7 @@ static void ios_track_event(envoy_map map, const void *context) {
   api->on_resume_request = ios_http_filter_on_resume_request;
   api->set_response_callbacks = ios_http_filter_set_response_callbacks;
   api->on_resume_response = ios_http_filter_on_resume_response;
+  api->on_complete = ios_http_filter_on_complete;
   api->on_cancel = ios_http_filter_on_cancel;
   api->on_error = ios_http_filter_on_error;
   api->release_filter = ios_http_filter_release;
