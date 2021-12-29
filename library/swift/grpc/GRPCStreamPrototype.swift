@@ -87,7 +87,7 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func setOnError(
-    _ closure: @escaping (_ error: EnvoyError, _ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
+    _ closure: @escaping (_ error: EnvoyError, _ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnError(closure: closure)
     return self
@@ -101,7 +101,7 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnCancel(
-    closure: @escaping (_ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnCancel(closure: closure)
     return self
@@ -115,7 +115,7 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnComplete(
-    closure: @escaping (_ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnComplete(closure: closure)
     return self

@@ -3,7 +3,7 @@ import Foundation
 
 /// Exposes one time HTTP stream metrics, context, and other details.
 @objcMembers
-public final class FinalStreamIntel: NSObject, Error {
+public final class FinalStreamIntel: StreamIntel {
   /// The time the request started, in ms since the epoch.
   public let requestStartMs: UInt64
   /// The time the DNS resolution for this request started, in ms since the epoch.
@@ -36,6 +36,9 @@ public final class FinalStreamIntel: NSObject, Error {
   // NOTE(1): These fields may not be set if socket_reused is false.
 
   public init(
+    streamId: Int64,
+    connectionId: Int64,
+    attemptCount: UInt64,
     requestStartMs: UInt64,
     dnsStartMs: UInt64,
     dnsEndMs: UInt64,
@@ -65,26 +68,30 @@ public final class FinalStreamIntel: NSObject, Error {
     self.socketReused = socketReused
     self.sentByteCount = sentByteCount
     self.receivedByteCount = receivedByteCount
+    super.init(streamId: streamId, connectionId: connectionId, attemptCount: attemptCount)
   }
 }
 
 extension FinalStreamIntel {
-  internal convenience init(_ cStruct: EnvoyFinalStreamIntel) {
+  internal convenience init(_ cIntel: EnvoyStreamIntel, _ cFinalIntel: EnvoyFinalStreamIntel) {
     self.init(
-      requestStartMs: cStruct.request_start_ms,
-      dnsStartMs: cStruct.dns_start_ms,
-      dnsEndMs: cStruct.dns_end_ms,
-      connectStartMs: cStruct.connect_start_ms,
-      connectEndMs: cStruct.connect_end_ms,
-      sslStartMs: cStruct.ssl_start_ms,
-      sslEndMs: cStruct.ssl_end_ms,
-      sendingStartMs: cStruct.sending_start_ms,
-      sendingEndMs: cStruct.sending_end_ms,
-      responseStartMs: cStruct.response_start_ms,
-      requestEndMs: cStruct.request_end_ms,
-      socketReused: cStruct.socket_reused != 0,
-      sentByteCount: cStruct.sent_byte_count,
-      receivedByteCount: cStruct.received_byte_count
+      streamId: cIntel.stream_id,
+      connectionId: cIntel.connection_id,
+      attemptCount: cIntel.attempt_count,
+      requestStartMs: cFinalIntel.request_start_ms,
+      dnsStartMs: cFinalIntel.dns_start_ms,
+      dnsEndMs: cFinalIntel.dns_end_ms,
+      connectStartMs: cFinalIntel.connect_start_ms,
+      connectEndMs: cFinalIntel.connect_end_ms,
+      sslStartMs: cFinalIntel.ssl_start_ms,
+      sslEndMs: cFinalIntel.ssl_end_ms,
+      sendingStartMs: cFinalIntel.sending_start_ms,
+      sendingEndMs: cFinalIntel.sending_end_ms,
+      responseStartMs: cFinalIntel.response_start_ms,
+      requestEndMs: cFinalIntel.request_end_ms,
+      socketReused: cFinalIntel.socket_reused != 0,
+      sentByteCount: cFinalIntel.sent_byte_count,
+      receivedByteCount: cFinalIntel.received_byte_count
     )
   }
 }

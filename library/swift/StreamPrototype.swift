@@ -111,7 +111,7 @@ public class StreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnError(
-    closure: @escaping (_ error: EnvoyError, _ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
+    closure: @escaping (_ error: EnvoyError, _ streamIntel: FinalStreamIntel) -> Void
   ) -> StreamPrototype {
     self.callbacks.onError = closure
     return self
@@ -125,7 +125,7 @@ public class StreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnCancel(
-    closure: @escaping (_ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
   ) -> StreamPrototype {
     self.callbacks.onCancel = closure
     return self
@@ -139,7 +139,7 @@ public class StreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnComplete(
-    closure: @escaping (_ streamIntel: StreamIntel, _ finalStreamIntel: FinalStreamIntel) -> Void
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
   ) -> StreamPrototype {
     self.callbacks.onCancel = closure
     return self

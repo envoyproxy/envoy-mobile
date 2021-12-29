@@ -114,18 +114,15 @@ extension EnvoyHTTPFilter {
       self.onError = { errorCode, message, attemptCount, streamIntel, finalStreamIntel in
         let error = EnvoyError(errorCode: errorCode, message: message,
                                attemptCount: UInt32(exactly: attemptCount), cause: nil)
-        responseFilter.onError(error, streamIntel: StreamIntel(streamIntel),
-                               finalStreamIntel: FinalStreamIntel(finalStreamIntel))
+        responseFilter.onError(error, streamIntel: FinalStreamIntel(streamIntel, finalStreamIntel))
       }
 
       self.onCancel = { streamIntel, finalStreamIntel in
-        responseFilter.onCancel(streamIntel: StreamIntel(streamIntel),
-                                finalStreamIntel: FinalStreamIntel(finalStreamIntel))
+        responseFilter.onCancel(streamIntel: FinalStreamIntel(streamIntel, finalStreamIntel))
       }
 
       self.onComplete = { streamIntel, finalStreamIntel in
-        responseFilter.onComplete(streamIntel: StreamIntel(streamIntel),
-                                  finalStreamIntel: FinalStreamIntel(finalStreamIntel))
+        responseFilter.onComplete(streamIntel: FinalStreamIntel(streamIntel, finalStreamIntel))
       }
     }
 

@@ -44,9 +44,8 @@ public protocol ResponseFilter: Filter {
   /// `stopIteration{...}`.
   ///
   /// - parameter error:       The error that occurred within Envoy.
-  /// - parameter streamIntel: Internal HTTP stream metrics, context, and other details.
-  /// - param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
-  func onError(_ error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel)
+  /// - parameter streamIntel: Final internal HTTP stream metrics, context, and other details.
+  func onError(_ error: EnvoyError, streamIntel: FinalStreamIntel)
 
   /// Called at most once when the client cancels the stream.
   ///
@@ -54,9 +53,8 @@ public protocol ResponseFilter: Filter {
   /// This should be considered a terminal state, and invalidates any previous attempts to
   /// `stopIteration{...}`.
   ///
-  /// - parameter streamIntel: Internal HTTP stream metrics, context, and other details.
-  /// - param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
-  func onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel)
+  /// - parameter streamIntel: Final internal HTTP stream metrics, context, and other details.
+  func onCancel(streamIntel: FinalStreamIntel)
 
   /// Called at most once when the stream completes gracefully.
   ///
@@ -64,7 +62,6 @@ public protocol ResponseFilter: Filter {
   /// This should be considered a terminal state, and invalidates any previous attempts to
   /// `stopIteration{...}`.
   ///
-  /// - parameter streamIntel: Internal HTTP stream metrics, context, and other details.
-  /// - param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
-  func onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel)
+  /// - parameter streamIntel: Final internal HTTP stream metrics, context, and other details.
+  func onComplete(streamIntel: FinalStreamIntel)
 }
