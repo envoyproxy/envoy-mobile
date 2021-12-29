@@ -30,14 +30,17 @@ typedef envoy_final_stream_intel EnvoyFinalStreamIntel;
  */
 @property (nonatomic, assign) dispatch_queue_t dispatchQueue;
 
+// Formatting for block properties is inconsistent and not configurable.
+// clang-format off
+
 /**
  * Called when all headers get received on the async HTTP stream.
  * @param headers the headers received.
  * @param endStream whether the response is headers-only.
  * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onHeaders)
-    (EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy) void (^onHeaders)(
+    EnvoyHeaders *headers, BOOL endStream, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when a data frame gets received on the async HTTP stream.
@@ -46,28 +49,26 @@ typedef envoy_final_stream_intel EnvoyFinalStreamIntel;
  * @param endStream whether the data is the last data frame.
  * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onData)
-    (NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
+@property (nonatomic, copy) void (^onData)(
+    NSData *data, BOOL endStream, EnvoyStreamIntel streamIntel);
 
-// clang-format off
 /**
  * Called when all trailers get received on the async HTTP stream.
  * Note that end stream is implied when on_trailers is called.
  * @param trailers the trailers received.
  * @param streamIntel internal HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onTrailers)
-    (EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
-// clang-format on
+@property (nonatomic, copy) void (^onTrailers)(
+    EnvoyHeaders *trailers, EnvoyStreamIntel streamIntel);
 
 /**
  * Called when the async HTTP stream has an error.
  * @param streamIntel internal HTTP stream metrics, context, and other details.
  * @param finalStreamIntel one time HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onError)
-    (uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel,
-     EnvoyFinalStreamIntel finalStreamIntel);
+@property (nonatomic, copy) void (^onError)(
+    uint64_t errorCode, NSString *message, int32_t attemptCount, EnvoyStreamIntel streamIntel,
+    EnvoyFinalStreamIntel finalStreamIntel);
 
 /**
  * Called when the async HTTP stream is canceled.
@@ -77,8 +78,8 @@ typedef envoy_final_stream_intel EnvoyFinalStreamIntel;
  * @param streamIntel internal HTTP stream metrics, context, and other details.
  * @param finalStreamIntel one time HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onCancel)
-    (EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel);
+@property (nonatomic, copy) void (^onCancel)(
+    EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel);
 
 /**
  * Final call made when an HTTP stream is closed gracefully.
@@ -87,9 +88,10 @@ typedef envoy_final_stream_intel EnvoyFinalStreamIntel;
  * @param streamIntel internal HTTP stream metrics, context, and other details.
  * @param finalStreamIntel one time HTTP stream metrics, context, and other details.
  */
-@property (nonatomic, copy) void (^onComplete)
-    (EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel);
+@property (nonatomic, copy) void (^onComplete)(
+    EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel);
 
+// clang-format on
 @end
 
 #pragma mark - EnvoyHTTPFilter
