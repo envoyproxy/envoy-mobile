@@ -15,17 +15,16 @@ Features:
 
 Bugfixes:
 
-- Prevent  prevent spurious cancellation callbacks from the gRPC error path (:issue:`#1560 <1560>`)
+- Filters: Prevent spurious cancellation callbacks from the gRPC error path (:issue:`#1560 <1560>`)
 - JNI: null terminate strings before passing to NewStringUTF (:issue:`#1589 <1589>`)
 
 Features:
 
-- Stats: expose flushStats on the Engine (:issue:`#1486 <1486>`)
+- Cronvoy: explicit flow control mode (:issue:`#1513 <1513>`)
 - Debugging: add Scope Trackers for ease of debugging (:issue:`#1498 <1498>`)
 - DNS: prefetch DNS hostnames (:issue:`#1535 <1535>`)
-- Cronvoy: explicit flow control mode (:issue:`#1513 <1513>`)
 - Exception Handling: convert Envoy Exceptions to crashes (:issue:`#1505 <1505>`)
-
+- Stats: expose flushStats on the Engine (:issue:`#1486 <1486>`)
 
 0.4.1 (May 28, 2021)
 ====================
