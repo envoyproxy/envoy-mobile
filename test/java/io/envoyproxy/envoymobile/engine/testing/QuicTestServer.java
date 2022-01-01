@@ -3,8 +3,6 @@ package io.envoyproxy.envoymobile.engine.testing;
 import android.content.Context;
 import android.os.ConditionVariable;
 import android.util.Log;
-import org.chromium.net.testing.UrlUtils;
-import org.chromium.net.testing.TestFilesInstaller;
 
 /**
  * Wrapper class to start a Quic test server.
@@ -27,9 +25,7 @@ public final class QuicTestServer {
     if (sServerRunning) {
       throw new IllegalStateException("Quic server is already running");
     }
-    TestFilesInstaller.installIfNeeded(context);
-    nativeStartQuicTestServer(TestFilesInstaller.getInstalledPath(context),
-                              UrlUtils.getIsolatedTestRoot());
+    nativeStartQuicTestServer("path", "file");
     sBlock.block();
     sBlock.close();
     sServerRunning = true;

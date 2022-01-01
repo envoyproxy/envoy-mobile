@@ -1,22 +1,22 @@
 package io.envoyproxy.envoymobile.engine.testing;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.chromium.net.testing.CronetTestRule.getContext;
 
-import io.envoyproxy.envoymobile.LogLevel;
+import android.content.Context;
+import androidx.test.core.app.ApplicationProvider;
 import io.envoyproxy.envoymobile.AndroidEngineBuilder;
 import io.envoyproxy.envoymobile.Custom;
 import io.envoyproxy.envoymobile.Engine;
 import io.envoyproxy.envoymobile.EnvoyError;
+import io.envoyproxy.envoymobile.LogLevel;
 import io.envoyproxy.envoymobile.RequestHeaders;
 import io.envoyproxy.envoymobile.RequestHeadersBuilder;
 import io.envoyproxy.envoymobile.RequestMethod;
 import io.envoyproxy.envoymobile.ResponseHeaders;
 import io.envoyproxy.envoymobile.ResponseTrailers;
 import io.envoyproxy.envoymobile.Stream;
-import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
+import io.envoyproxy.envoymobile.engine.JniLibrary;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,7 +24,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -32,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,6 +39,7 @@ import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
 public class QuicTestServerTest {
+
   private static final String hcmType =
       "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager";
 
@@ -100,44 +99,37 @@ public class QuicTestServerTest {
       + "       upstream_tls_context:\n"
       + "         sni: www.lyft.com";
 
-  private static Engine engine;
+  private final Context appContext = ApplicationProvider.getApplicationContext();
+  private Engine engine;
 
   @BeforeClass
   public static void loadJniLibrary() {
     AndroidJniLibrary.loadTestLibrary();
-    System.loadLibrary("quic_test_server_jni");
-  }
-
-  @AfterClass
-  public static void shutdownEngine() {
-    if (engine != null) {
-      engine.terminate();
-    }
+    JniLibrary.load();
   }
 
   @Before
   public void setUpEngine() throws Exception {
-    if (engine == null) {
-      CountDownLatch latch = new CountDownLatch(1);
-      engine = new AndroidEngineBuilder(getContext().getApplicationContext(), new Custom(config))
-                   .addLogLevel(LogLevel.TRACE)
-                   .setOnEngineRunning(() -> {
-                     latch.countDown();
-                     return null;
-                   })
-                   .build();
-      latch.await(); // Don't launch a request before initialization has completed.
-    }
+    QuicTestServer.startQuicTestServer(appContext);
+    CountDownLatch latch = new CountDownLatch(1);
+    engine = new AndroidEngineBuilder(appContext, new Custom(config))
+                 .addLogLevel(LogLevel.TRACE)
+                 .setOnEngineRunning(() -> {
+                   latch.countDown();
+                   return null;
+                 })
+                 .build();
+    latch.await(); // Don't launch a request before initialization has completed.
   }
 
   @After
-  public void shutdownMockWebServer() throws IOException {
+  public void shutdownEngine() {
+    engine.terminate();
     QuicTestServer.shutdownQuicTestServer();
   }
 
   @Test
   public void get_simple() throws Exception {
-    QuicTestServer.startQuicTestServer(getContext());
     QuicTestServerTest.RequestScenario requestScenario = new QuicTestServerTest.RequestScenario()
                                                              .setHttpMethod(RequestMethod.GET)
                                                              .setUrl(QuicTestServer.getServerURL());
@@ -161,6 +153,7 @@ public class QuicTestServerTest {
                           if (endStream) {
                             latch.countDown();
                           }
+                          System.err.println("EEE");
                           return null;
                         })
                         .setOnResponseData((data, endStream, ignored) -> {
@@ -175,12 +168,12 @@ public class QuicTestServerTest {
                           latch.countDown();
                           return null;
                         })
-                        .setOnError((error, ignored) -> {
+                        .setOnError((error, ignored1, ignored2) -> {
                           response.get().setEnvoyError(error);
                           latch.countDown();
                           return null;
                         })
-                        .setOnCancel((ignored) -> {
+                        .setOnCancel((ignored1, ignored2) -> {
                           response.get().setCancelled();
                           latch.countDown();
                           return null;
@@ -196,6 +189,7 @@ public class QuicTestServerTest {
   }
 
   private static class RequestScenario {
+
     private URL url;
     private RequestMethod method = null;
     private final List<ByteBuffer> bodyChunks = new ArrayList<>();
@@ -233,6 +227,7 @@ public class QuicTestServerTest {
   }
 
   private static class Response {
+
     private final AtomicReference<ResponseHeaders> headers = new AtomicReference<>();
     private final AtomicReference<ResponseTrailers> trailers = new AtomicReference<>();
     private final AtomicReference<EnvoyError> envoyError = new AtomicReference<>();

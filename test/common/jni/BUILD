@@ -18,14 +18,12 @@ cc_binary(
     testonly = True,
     srcs = [
         "quic_test_server_jni_interface.cc",
-        # Currently works only on Linux system but not on mac(issue: double registration of factories).
-        # Uncomment srcs below to trigger tls_ thread error for both linux and mac.
-        #        "//library/common/jni:android_test_jni_interface.cc",
-        #        "//library/common/jni:jni_interface.cc",
+        "//library/common/jni:android_test_jni_interface.cc",
+        "//library/common/jni:jni_interface.cc",
         "@local_jdk//:jni_header",
     ],
     copts = ["-std=c++17"],
-    linkopts = ["-lm"],
+    linkopts = [],
     linkshared = True,
     deps = [
         "//library/common/jni:base_java_jni_lib",

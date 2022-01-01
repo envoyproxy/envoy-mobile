@@ -21,7 +21,7 @@ private:
   std::unique_ptr<AutonomousUpstream> upstream_;
   FakeUpstreamConfig upstream_config_;
   int port_;
-  // Thread::TestThread test_thread_;
+  Thread::SkipAsserts skip_asserts_;
   ProcessWide process_wide;
   Thread::MutexBasicLockable lock;
 
