@@ -23,7 +23,6 @@ cc_binary(
         "@local_jdk//:jni_header",
     ],
     copts = ["-std=c++17"],
-    linkopts = [],
     linkshared = True,
     deps = [
         "//library/common/jni:base_java_jni_lib",
