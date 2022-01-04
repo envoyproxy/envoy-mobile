@@ -17,6 +17,7 @@ envoy_cc_test(
         "@envoy//test/common/http:common_lib",
         "@envoy//test/integration:http_integration_lib",
         "@envoy//test/server:utility_lib",
+        "@envoy//test/test_common:environment_lib",
     ],
 )
 
@@ -38,6 +39,9 @@ envoy_cc_test_library(
     hdrs = [
         "quic_test_server.h",
         "quic_test_server_interface.h",
+    ],
+    data = [
+        "@envoy//test/config/integration/certs",
     ],
     repository = "@envoy",
     deps = [

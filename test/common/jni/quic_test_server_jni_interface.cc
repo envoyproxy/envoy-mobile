@@ -1,4 +1,5 @@
 #include <jni.h>
+
 #include "test/common/integration/quic_test_server_interface.h"
 
 #include "library/common/jni/jni_support.h"
@@ -11,12 +12,9 @@
 
 extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_testing_QuicTestServer_nativeStartQuicTestServer(
-    JNIEnv* env, jclass clazz, jstring file_path, jstring test_data_dir) {
+    JNIEnv* env, jclass clazz) {
   jni_log("[QTS]", "starting server");
   start_server();
-
-  // Call java method to open block
-  env->CallStaticVoidMethod(clazz, env->GetStaticMethodID(clazz, "onServerStarted", "()V"));
 }
 
 extern "C" JNIEXPORT jint JNICALL

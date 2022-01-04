@@ -12,8 +12,6 @@ android_library(
         "QuicTestServer.java",
     ],
     visibility = ["//test:__subpackages__"],
-    deps = [
-    ],
 )
 
 envoy_mobile_android_test(
@@ -21,7 +19,7 @@ envoy_mobile_android_test(
     srcs = [
         "QuicTestServerTest.java",
     ],
-    library_path = "library/common/jni:test/common/jni",
+    library_path = "test/common/jni",
     native_deps = [
         "//test/common/jni:libquic_test_server_jni.so",
         "//test/common/jni:libquic_test_server_jni.jnilib",

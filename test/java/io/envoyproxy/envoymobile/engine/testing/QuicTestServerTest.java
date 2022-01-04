@@ -17,7 +17,6 @@ import io.envoyproxy.envoymobile.ResponseTrailers;
 import io.envoyproxy.envoymobile.Stream;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import io.envoyproxy.envoymobile.engine.JniLibrary;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -30,7 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -110,7 +108,7 @@ public class QuicTestServerTest {
 
   @Before
   public void setUpEngine() throws Exception {
-    QuicTestServer.startQuicTestServer(appContext);
+    QuicTestServer.startQuicTestServer();
     CountDownLatch latch = new CountDownLatch(1);
     engine = new AndroidEngineBuilder(appContext, new Custom(config))
                  .addLogLevel(LogLevel.TRACE)
@@ -135,13 +133,14 @@ public class QuicTestServerTest {
                                                              .setUrl(QuicTestServer.getServerURL());
 
     QuicTestServerTest.Response response = sendRequest(requestScenario);
+
     assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
     assertThat(response.getBodyAsString()).isEqualTo("aaaaaaaaaa");
     assertThat(response.getEnvoyError()).isNull();
   }
 
-  private QuicTestServerTest.Response
-  sendRequest(QuicTestServerTest.RequestScenario requestScenario) throws Exception {
+  private QuicTestServerTest.Response sendRequest(RequestScenario requestScenario)
+      throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<QuicTestServerTest.Response> response =
         new AtomicReference<>(new QuicTestServerTest.Response());
@@ -150,22 +149,14 @@ public class QuicTestServerTest {
                         .newStreamPrototype()
                         .setOnResponseHeaders((responseHeaders, endStream, ignored) -> {
                           response.get().setHeaders(responseHeaders);
-                          if (endStream) {
-                            latch.countDown();
-                          }
-                          System.err.println("EEE");
                           return null;
                         })
                         .setOnResponseData((data, endStream, ignored) -> {
                           response.get().addBody(data);
-                          if (endStream) {
-                            latch.countDown();
-                          }
                           return null;
                         })
                         .setOnResponseTrailers((trailers, ignored) -> {
                           response.get().setTrailers(trailers);
-                          latch.countDown();
                           return null;
                         })
                         .setOnError((error, ignored1, ignored2) -> {
@@ -175,6 +166,10 @@ public class QuicTestServerTest {
                         })
                         .setOnCancel((ignored1, ignored2) -> {
                           response.get().setCancelled();
+                          latch.countDown();
+                          return null;
+                        })
+                        .setOnComplete((ignored1, ignored2) -> {
                           latch.countDown();
                           return null;
                         })
