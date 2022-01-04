@@ -24,14 +24,6 @@ envoy_cc_test(
 # interface libs for quic test server's jni implementation
 envoy_cc_test_library(
     name = "quic_test_server_interface_lib",
-    repository = "@envoy",
-    deps = [
-        ":quic_test_server_interface_lib_no_stamp",
-    ],
-)
-
-envoy_cc_test_library(
-    name = "quic_test_server_interface_lib_no_stamp",
     srcs = [
         "quic_test_server.cc",
         "quic_test_server_interface.cc",
