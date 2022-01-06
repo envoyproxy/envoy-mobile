@@ -212,14 +212,6 @@ build:remote-ci-linux-coverage --config=remote-ci-common
 # IPv6 tests fail on CI
 build:remote-ci-linux-coverage --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 #############################################################################
-# remote-ci-macos: These options are macOS-only
-#############################################################################
-build:remote-ci-macos --config=remote-ci-common
-build:remote-ci-macos --host_platform=//ci/platform:macos
-build:remote-ci-macos --platforms=//ci/platform:macos
-build:remote-ci-macos --extra_execution_platforms=//ci/platform:macos
-build:remote-ci-macos --xcode_version_config=//ci:xcode_config
-#############################################################################
 # remote-ci-debug: Various Bazel debugging flags
 #############################################################################
 common:remote-ci-debug --announce_rc
