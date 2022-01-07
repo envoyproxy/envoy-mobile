@@ -8,6 +8,10 @@ envoy_cc_test(
     name = "client_integration_test",
     srcs = ["client_integration_test.cc"],
     repository = "@envoy",
+    # TODO(jpsim): Fix remote execution for these tests
+    tags = [
+        "no-remote-exec",
+    ],
     deps = [
         "//library/common/extensions/filters/http/local_error:config",
         "//library/common/extensions/filters/http/local_error:filter_cc_proto",
@@ -17,9 +21,5 @@ envoy_cc_test(
         "@envoy//test/common/http:common_lib",
         "@envoy//test/integration:http_integration_lib",
         "@envoy//test/server:utility_lib",
-    ],
-    # TODO(jpsim): Fix remote execution for these tests
-    tags = [
-        "no-remote-exec",
     ],
 )
