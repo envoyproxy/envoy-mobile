@@ -18,4 +18,8 @@ envoy_cc_test(
         "@envoy//test/integration:http_integration_lib",
         "@envoy//test/server:utility_lib",
     ],
+    # TODO(jpsim): Fix remote execution for these tests
+    tags = [
+        "no-remote-exec",
+    ],
 )
