@@ -18,7 +18,7 @@ load("@rules_cc//cc:defs.bzl", "objc_library")
 #     ],
 # )
 #
-def envoy_mobile_swift_test(name, srcs, data = [], deps = [], tags = [], repository = ""):
+def envoy_mobile_swift_test(name, srcs, data = [], deps = [], repository = ""):
     test_lib_name = name + "_lib"
     swift_library(
         name = test_lib_name,
@@ -36,10 +36,9 @@ def envoy_mobile_swift_test(name, srcs, data = [], deps = [], tags = [], reposit
         data = data,
         deps = [test_lib_name],
         minimum_os_version = "11.0",
-        tags = tags,
     )
 
-def envoy_mobile_objc_test(name, srcs, data = [], deps = [], tags = []):
+def envoy_mobile_objc_test(name, srcs, data = [], deps = []):
     test_lib_name = name + "_lib"
     objc_library(
         name = test_lib_name,
@@ -54,5 +53,4 @@ def envoy_mobile_objc_test(name, srcs, data = [], deps = [], tags = []):
         data = data,
         deps = [test_lib_name],
         minimum_os_version = "11.0",
-        tags = tags,
     )
