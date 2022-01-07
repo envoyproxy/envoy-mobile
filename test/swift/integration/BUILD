@@ -34,6 +34,10 @@ envoy_mobile_swift_test(
         ":test_extensions",
         "//library/objective-c:envoy_engine_objc_lib",
     ],
+    # TODO(jpsim): Fix remote execution for these tests
+    tags = [
+        "no-remote-exec",
+    ],
 )
 
 envoy_cc_library(
