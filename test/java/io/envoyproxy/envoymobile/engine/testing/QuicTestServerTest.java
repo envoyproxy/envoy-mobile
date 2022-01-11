@@ -81,7 +81,7 @@ public class QuicTestServerTest {
       + "     - lb_endpoints:\n"
       + "       - endpoint:\n"
       + "           address:\n"
-      + "             socket_address: { address: 127.0.0.1, port_value: 34210 }\n"
+      + "             socket_address: { address: 127.0.0.1, port_value: %s }\n"
       + "   typed_extension_protocol_options:\n"
       + "     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:\n"
       +
@@ -110,7 +110,8 @@ public class QuicTestServerTest {
   public void setUpEngine() throws Exception {
     QuicTestServer.startQuicTestServer();
     CountDownLatch latch = new CountDownLatch(1);
-    engine = new AndroidEngineBuilder(appContext, new Custom(config))
+    engine = new AndroidEngineBuilder(
+                 appContext, new Custom(String.format(config, QuicTestServer.getServerPort())))
                  .addLogLevel(LogLevel.OFF)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
