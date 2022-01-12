@@ -8,6 +8,7 @@ envoy_package()
 android_library(
     name = "testing",
     testonly = True,
+    manifest = "Manifest.xml",
     srcs = [
         "QuicTestServer.java",
     ],
