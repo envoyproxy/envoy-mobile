@@ -18,6 +18,7 @@ Bugfixes:
 - Decompressor: decompress even when `no-transform` is specified  (:issue:`#1995 <1995>`)
 
 Features:
+
 - HTTP: any negotiated ALPN now passed up as `x-envoy-upstream-alpn` header (:issue: `#1965 <1965>`)
 
 
