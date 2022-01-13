@@ -499,12 +499,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("Invalid URL", e);
     }
-
     headers.computeIfAbsent(":authority", unused -> new ArrayList<>()).add(url.getAuthority());
     headers.computeIfAbsent(":method", unused -> new ArrayList<>()).add(initialMethod);
     headers.computeIfAbsent(":path", unused -> new ArrayList<>()).add(url.getFile());
     headers.computeIfAbsent(":scheme", unused -> new ArrayList<>()).add(url.getProtocol());
-
     boolean hasUserAgent = false;
     boolean hasContentType = false;
     for (Map.Entry<String, String> header : headersList) {
