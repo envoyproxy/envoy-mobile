@@ -8,7 +8,6 @@ envoy_package()
 android_library(
     name = "testing",
     testonly = True,
-    manifest = "Manifest.xml",
     srcs = [
         "QuicTestServer.java",
     ],
@@ -20,6 +19,10 @@ envoy_mobile_android_test(
     srcs = [
         "QuicTestServerTest.java",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
     library_path = "test/common/jni",
     native_deps = [
         "//test/common/jni:libquic_test_server_jni.so",
