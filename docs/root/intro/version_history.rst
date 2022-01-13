@@ -4,8 +4,12 @@ Version history
 Pending Release
 ===============
 
-Pending Release
-===============
+Bugfixes:
+
+Features:
+
+0.4.5 (January 13, 2022)
+========================
 
 Based off Envoy `v1.21.0 <https://github.com/envoyproxy/envoy/releases/tag/v1.21.0>`_
 
