@@ -1,5 +1,5 @@
-load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_android_test")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
+load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_android_test")
 
 licenses(["notice"])  # Apache 2
 
