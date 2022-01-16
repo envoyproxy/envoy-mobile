@@ -298,6 +298,9 @@ void Client::DirectStream::saveLatestStreamIntel() {
   }
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
   stream_intel_.attempt_count = info.attemptCount().value_or(0);
+  if (info.getUpstreamBytesMeter()) {
+    stream_intel_.received_byte_count = info.getUpstreamBytesMeter()->wireBytesReceived();
+  }
 }
 
 void Client::DirectStream::saveFinalStreamIntel() {

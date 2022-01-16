@@ -88,7 +88,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
   private final String mUserAgent;
   private final HeadersList mRequestHeaders = new HeadersList();
-  private final List<String> mUrlChain = new ArrayList<>();
   private final CronetUrlRequestContext mRequestContext;
   private final AtomicBoolean mWaitingOnRedirect = new AtomicBoolean(false);
   private final AtomicBoolean mWaitingOnRead = new AtomicBoolean(false);
@@ -131,6 +130,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
   /* These change with redirects. */
   private final AtomicReference<EnvoyHTTPStream> mStream = new AtomicReference<>();
+  private final List<String> mUrlChain = new ArrayList<>();
+  private final List<EnvoyFinalStreamIntel> mEnvoyFinalStreamIntels = new ArrayList<>();
   private CronvoyHttpCallbacks mCronvoyCallbacks;
   private String mCurrentUrl;
   private UrlResponseInfoImpl mUrlResponseInfo;
@@ -631,6 +632,25 @@ public final class CronetUrlRequest extends UrlRequestBase {
     return cronvoyCallbacks != null && cronvoyCallbacks.mEndStream;
   }
 
+  private void recordEnvoyFinalStreamIntel(EnvoyFinalStreamIntel envoyFinalStreamIntel) {
+    mEnvoyFinalStreamIntels.add(envoyFinalStreamIntel);
+    long bytesReceived = 0;
+    // This in only called by the network Thread - no concurrency issue.
+    for (EnvoyFinalStreamIntel intel : mEnvoyFinalStreamIntels) {
+      bytesReceived += intel.getReceivedByteCount();
+    }
+    mUrlResponseInfo.setReceivedByteCount(bytesReceived);
+  }
+
+  private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
+    long bytesReceived = envoyStreamIntel.getReceivedByteCount();
+    // This in only called by the network Thread - no concurrency issue.
+    for (EnvoyFinalStreamIntel intel : mEnvoyFinalStreamIntels) {
+      bytesReceived += intel.getReceivedByteCount();
+    }
+    mUrlResponseInfo.setReceivedByteCount(bytesReceived);
+  }
+
   private static class HeadersList extends ArrayList<Map.Entry<String, String>> {}
 
   private static class DirectExecutor implements Executor {
@@ -666,6 +686,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onHeaders(Map<String, List<String>> headers, boolean endStream,
                           EnvoyStreamIntel streamIntel) {
+      recordEnvoyStreamIntel(streamIntel);
       if (isAbandoned()) {
         return;
       }
@@ -731,6 +752,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onData(ByteBuffer data, boolean endStream, EnvoyStreamIntel streamIntel) {
+      recordEnvoyStreamIntel(streamIntel);
       if (isAbandoned()) {
         return;
       }
@@ -768,6 +790,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onTrailers(Map<String, List<String>> trailers, EnvoyStreamIntel streamIntel) {
+      recordEnvoyStreamIntel(streamIntel);
       if (isAbandoned()) {
         return;
       }
@@ -786,6 +809,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onError(int errorCode, String message, int attemptCount,
                         EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+      recordEnvoyFinalStreamIntel(finalStreamIntel);
       if (isAbandoned()) {
         return;
       }
@@ -808,6 +832,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+      recordEnvoyFinalStreamIntel(finalStreamIntel);
       if (isAbandoned()) {
         return;
       }
@@ -828,6 +853,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onSendWindowAvailable(EnvoyStreamIntel streamIntel) {
+      recordEnvoyStreamIntel(streamIntel);
       if (isAbandoned()) {
         return;
       }
@@ -849,10 +875,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+      recordEnvoyFinalStreamIntel(finalStreamIntel);
       if (isAbandoned()) {
         return;
       }
-      mUrlResponseInfo.setReceivedByteCount(finalStreamIntel.getSentByteCount());
       if (successReady(SucceededState.ON_COMPLETE_RECEIVED)) {
         onSucceeded();
       }
@@ -900,7 +926,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
      */
     void cancel() {
       EnvoyHTTPStream stream = mStream.get();
-      if (isAbandoned() || mEndStream) {
+      if (this != mCronvoyCallbacks || mEndStream) {
         return;
       }
       @CancelState int oldState = mCancelState.getAndSet(CancelState.CANCELLED);

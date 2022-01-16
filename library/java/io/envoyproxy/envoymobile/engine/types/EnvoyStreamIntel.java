@@ -18,4 +18,8 @@ public interface EnvoyStreamIntel {
    * The number of internal attempts to carry out a request/operation.
    */
   public long getAttemptCount();
+  /*
+   * The number of bytes received from upstream.
+   */
+  public long getReceivedByteCount();
 }
