@@ -6,14 +6,14 @@ namespace Envoy {
 namespace StreamInfo {
 namespace {
 
-void setFromOptional(uint64_t& to_set, const absl::optional<MonotonicTime>& time) {
+void setFromOptional(int64_t& to_set, const absl::optional<MonotonicTime>& time) {
   if (time.has_value()) {
     to_set = std::chrono::duration_cast<std::chrono::milliseconds>(time.value().time_since_epoch())
                  .count();
   }
 }
 
-void setFromOptional(uint64_t& to_set, absl::optional<std::chrono::nanoseconds> time, long offset) {
+void setFromOptional(int64_t& to_set, absl::optional<std::chrono::nanoseconds> time, long offset) {
   if (time.has_value()) {
     to_set = offset + std::chrono::duration_cast<std::chrono::milliseconds>(time.value()).count();
   }
@@ -52,6 +52,9 @@ void setFinalStreamIntel(StreamInfo& stream_info, envoy_final_stream_intel& fina
     final_intel.sent_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesSent();
     final_intel.received_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesReceived();
   }
+  std::cout << "extra request_start_ms: " << final_intel.request_start_ms << std::endl;
+  std::cout << "extra dns_start_ms: " << final_intel.dns_start_ms << std::endl;
+  std::cout << "extra dns_end_ms: " << final_intel.dns_end_ms << std::endl;
 }
 
 } // namespace StreamInfo
