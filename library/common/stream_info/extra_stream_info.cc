@@ -52,9 +52,6 @@ void setFinalStreamIntel(StreamInfo& stream_info, envoy_final_stream_intel& fina
     final_intel.sent_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesSent();
     final_intel.received_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesReceived();
   }
-  std::cout << "extra request_start_ms: " << final_intel.request_start_ms << std::endl;
-  std::cout << "extra dns_start_ms: " << final_intel.dns_start_ms << std::endl;
-  std::cout << "extra dns_end_ms: " << final_intel.dns_end_ms << std::endl;
 }
 
 } // namespace StreamInfo
