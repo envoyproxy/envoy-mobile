@@ -304,6 +304,7 @@ void Client::DirectStream::saveFinalStreamIntel() {
   if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
+  memset(&envoy_final_stream_intel_, 0, sizeof(envoy_final_stream_intel_));
   StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
 }
 
