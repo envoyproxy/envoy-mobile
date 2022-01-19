@@ -33,13 +33,13 @@ common_tls_context:
 QuicTestServer::QuicTestServer()
     : api_(Api::createApiForTest(stats_store_, time_system_)),
       version_(Network::Address::IpVersion::v4), upstream_config_(time_system_), port_(0) {
-  ASSERT(!upstream_);
   ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
   ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
   upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 }
 
 void QuicTestServer::startQuicTestServer() {
+  ASSERT(!upstream_);
   // pre-setup: see https://github.com/envoyproxy/envoy/blob/main/test/test_runner.cc
   Logger::Context logging_state(spdlog::level::level_enum::err,
                                 "[%Y-%m-%d %T.%e][%t][%l][%n] [%g:%#] %v", lock, false, false);
