@@ -31,10 +31,21 @@ private:
 public:
   QuicTestServer();
 
+  /**
+   * Starts the server. Can only have one server active per JVM. This is blocking until the port can
+   * start accepting requests.
+   */
   void startQuicTestServer();
 
+  /**
+   * Shutdowns the server. Can be restarted later. This is blocking until the server has freed all
+   * resources.
+   */
   void shutdownQuicTestServer();
 
+  /**
+   * Returns the port that got attributed. Can only be called once the server has been started.
+   */
   int getServerPort();
 };
 

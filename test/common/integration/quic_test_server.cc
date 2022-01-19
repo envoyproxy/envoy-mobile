@@ -14,12 +14,10 @@ common_tls_context:
   alpn_protocols: h3
   tls_certificates:
   - certificate_chain:
-      filename: %s
+      filename: ../envoy/test/config/integration/certs/upstreamcert.pem
     private_key:
-      filename: %s
-)EOF",
-      "../envoy/test/config/integration/certs/upstreamcert.pem",
-      "../envoy/test/config/integration/certs/upstreamkey.pem");
+      filename: ../envoy/test/config/integration/certs/upstreamkey.pem
+)EOF");
   TestUtility::loadFromYaml(yaml, tls_context);
   envoy::extensions::transport_sockets::quic::v3::QuicDownstreamTransport quic_config;
   quic_config.mutable_downstream_tls_context()->MergeFrom(tls_context);
@@ -35,8 +33,10 @@ common_tls_context:
 QuicTestServer::QuicTestServer()
     : api_(Api::createApiForTest(stats_store_, time_system_)),
       version_(Network::Address::IpVersion::v4), upstream_config_(time_system_), port_(0) {
+  ASSERT(!upstream_);
   ON_CALL(factory_context_, api()).WillByDefault(testing::ReturnRef(*api_));
   ON_CALL(factory_context_, scope()).WillByDefault(testing::ReturnRef(stats_store_));
+  upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 }
 
 void QuicTestServer::startQuicTestServer() {
@@ -46,7 +46,6 @@ void QuicTestServer::startQuicTestServer() {
   // end pre-setup
 
   upstream_config_.upstream_protocol_ = Http::CodecType::HTTP3;
-  upstream_config_.udp_fake_upstream_ = FakeUpstreamConfig::UdpConfig();
 
   Network::TransportSocketFactoryPtr factory = createUpstreamTlsContext(factory_context_);
 
@@ -57,7 +56,13 @@ void QuicTestServer::startQuicTestServer() {
   ENVOY_LOG_MISC(debug, "Upstream now listening on {}", upstream_->localAddress()->asString());
 }
 
-void QuicTestServer::shutdownQuicTestServer() { upstream_.reset(); }
+void QuicTestServer::shutdownQuicTestServer() {
+  ASSERT(upstream_);
+  upstream_.reset();
+}
 
-int QuicTestServer::getServerPort() { return upstream_->localAddress()->ip()->port(); }
+int QuicTestServer::getServerPort() {
+  ASSERT(upstream_);
+  return upstream_->localAddress()->ip()->port();
+}
 } // namespace Envoy

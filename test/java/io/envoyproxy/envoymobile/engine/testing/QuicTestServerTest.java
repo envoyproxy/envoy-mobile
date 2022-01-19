@@ -38,13 +38,10 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class QuicTestServerTest {
 
-  private static final String hcmType =
+  private static final String HCM_TYPE =
       "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager";
 
-  private static final String quicDownstreamType =
-      "type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicDownstreamTransport";
-
-  private static final String quicUpstreamType =
+  private static final String QUIC_UPSTREAM_TYPE =
       "type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport";
 
   private static final String config =
@@ -55,7 +52,7 @@ public class QuicTestServerTest {
       + "     socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }\n"
       + "   api_listener:\n"
       + "     api_listener:\n"
-      + "       \"@type\": " + hcmType + "\n"
+      + "       \"@type\": " + HCM_TYPE + "\n"
       + "       stat_prefix: api_hcm\n"
       + "       route_config:\n"
       + "         name: api_router\n"
@@ -93,7 +90,7 @@ public class QuicTestServerTest {
       + "   transport_socket:\n"
       + "     name: envoy.transport_sockets.quic\n"
       + "     typed_config:\n"
-      + "       \"@type\": " + quicUpstreamType + "\n"
+      + "       \"@type\": " + QUIC_UPSTREAM_TYPE + "\n"
       + "       upstream_tls_context:\n"
       + "         sni: www.lyft.com";
 
