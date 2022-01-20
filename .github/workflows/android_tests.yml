@@ -25,6 +25,13 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: 'Java setup'
+        if: steps.check_context.outputs.run_tests == 'true'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
