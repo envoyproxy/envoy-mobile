@@ -46,5 +46,4 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --define=signal_trace=disabled \
-            --runs_per_test \
-            //test/java/...
+            //test/kotlin/io/envoyproxy/envoymobile:engine_builder_test
