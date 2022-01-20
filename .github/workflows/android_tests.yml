@@ -130,5 +130,6 @@ jobs:
             --build_tests_only \
             --config=remote-ci-linux-clang \
             --config=remote-ci-linux-local-java8 \
+            --runs_per_test=10 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/...
