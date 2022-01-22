@@ -305,7 +305,11 @@ void Client::DirectStream::saveFinalStreamIntel() {
   if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
-  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
+  StreamInfo::StreamInfo& stream_info = request_decoder_->streamInfo();
+  if (stream_info.getUpstreamBytesMeter()) {
+    stream_intel_.received_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesReceived();
+  }
+  StreamInfo::setFinalStreamIntel(stream_info, envoy_final_stream_intel_);
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
