@@ -219,9 +219,8 @@ public class CronetUrlRequestTest {
     checkResponseInfoHeader(callback.mRedirectResponseInfoList.get(0), "redirect-header",
                             "header-value");
 
-    // Original bytesReceived: 73
     UrlResponseInfo expected = createUrlResponseInfo(
-        new String[] {NativeTestServer.getRedirectURL()}, "Found", 302, -1, "Content-Length", "92",
+        new String[] {NativeTestServer.getRedirectURL()}, "Found", 302, 72, "Content-Length", "92",
         "Location", "/success.txt", "redirect-header", "header-value");
     mTestRule.assertResponseEquals(expected, callback.mRedirectResponseInfoList.get(0));
 

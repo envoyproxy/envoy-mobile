@@ -41,7 +41,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+  direct_stream_.saveLatestStreamIntel(streamInfo().getUpstreamBytesMeter()->headerBytesReceived());
   if (end_stream) {
     closeStream();
   }
@@ -84,7 +84,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+  direct_stream_.saveLatestStreamIntel(streamInfo().getUpstreamBytesMeter()->wireBytesReceived());
   if (end_stream) {
     closeStream();
   }
@@ -147,7 +147,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+  direct_stream_.saveLatestStreamIntel(streamInfo().getUpstreamBytesMeter()->wireBytesReceived());
   closeStream(); // Trailers always indicate the end of the stream.
 
   // For explicit flow control, don't send data unless prompted.
@@ -291,16 +291,14 @@ envoy_final_stream_intel& Client::DirectStreamCallbacks::finalStreamIntel() {
   return direct_stream_.envoy_final_stream_intel_;
 }
 
-void Client::DirectStream::saveLatestStreamIntel() {
+void Client::DirectStream::saveLatestStreamIntel(uint64_t received_byte_count) {
   const auto& info = request_decoder_->streamInfo();
   if (info.upstreamInfo()) {
     stream_intel_.connection_id = info.upstreamInfo()->upstreamConnectionId().value_or(-1);
   }
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
   stream_intel_.attempt_count = info.attemptCount().value_or(0);
-  if (info.getUpstreamBytesMeter()) {
-    stream_intel_.received_byte_count = info.getUpstreamBytesMeter()->wireBytesReceived();
-  }
+  stream_intel_.received_byte_count = received_byte_count;
 }
 
 void Client::DirectStream::saveFinalStreamIntel() {

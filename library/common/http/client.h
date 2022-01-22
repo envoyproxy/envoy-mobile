@@ -170,6 +170,9 @@ private:
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
+    const StreamInfo::StreamInfo& streamInfo() {
+      return direct_stream_.request_decoder_->streamInfo();
+    }
 
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
@@ -248,7 +251,7 @@ private:
     }
 
     // Latches stream information as it may not be available when accessed.
-    void saveLatestStreamIntel();
+    void saveLatestStreamIntel(uint64_t received_byte_count);
 
     // Latches latency info from stream info before it goes away.
     void saveFinalStreamIntel();
@@ -279,7 +282,7 @@ private:
     // read faster than the mobile caller can process it.
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
-    envoy_stream_intel stream_intel_{-1, -1, 0};
+    envoy_stream_intel stream_intel_{-1, -1, 0, 0};
     envoy_final_stream_intel envoy_final_stream_intel_{-1, -1, -1, -1, -1, -1, -1,
                                                        -1, -1, -1, -1, 0,  0,  0};
     StreamInfo::BytesMeterSharedPtr bytes_meter_;
