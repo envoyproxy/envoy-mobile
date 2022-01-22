@@ -173,6 +173,16 @@ private:
     const StreamInfo::StreamInfo& streamInfo() {
       return direct_stream_.request_decoder_->streamInfo();
     }
+    uint64_t headerBytesReceived() {
+      return streamInfo().getUpstreamBytesMeter()
+                 ? streamInfo().getUpstreamBytesMeter()->headerBytesReceived()
+                 : 0;
+    }
+    uint64_t bytesReceived() {
+      return streamInfo().getUpstreamBytesMeter()
+                 ? streamInfo().getUpstreamBytesMeter()->wireBytesReceived()
+                 : 0;
+    }
 
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);

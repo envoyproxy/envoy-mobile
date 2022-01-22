@@ -41,7 +41,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel(streamInfo().getUpstreamBytesMeter()->headerBytesReceived());
+  direct_stream_.saveLatestStreamIntel(headerBytesReceived());
   if (end_stream) {
     closeStream();
   }
@@ -84,7 +84,7 @@ void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel(streamInfo().getUpstreamBytesMeter()->wireBytesReceived());
+  direct_stream_.saveLatestStreamIntel(bytesReceived());
   if (end_stream) {
     closeStream();
   }
@@ -147,7 +147,7 @@ void Client::DirectStreamCallbacks::encodeTrailers(const ResponseTrailerMap& tra
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel(streamInfo().getUpstreamBytesMeter()->wireBytesReceived());
+  direct_stream_.saveLatestStreamIntel(bytesReceived());
   closeStream(); // Trailers always indicate the end of the stream.
 
   // For explicit flow control, don't send data unless prompted.
@@ -305,11 +305,8 @@ void Client::DirectStream::saveFinalStreamIntel() {
   if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
-  StreamInfo::StreamInfo& stream_info = request_decoder_->streamInfo();
-  if (stream_info.getUpstreamBytesMeter()) {
-    stream_intel_.received_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesReceived();
-  }
-  StreamInfo::setFinalStreamIntel(stream_info, envoy_final_stream_intel_);
+  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
+  stream_intel_.received_byte_count = envoy_final_stream_intel_.received_byte_count;
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
