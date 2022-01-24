@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
 
 /**
@@ -29,6 +30,9 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
  */
 @Suppress("LongParameterList")
 class FinalStreamIntel constructor(
+  streamId: Long,
+  connectionId: Long,
+  attemptCount: Long,
   val requestStartMs: Long,
   val dnsStartMs: Long,
   val dnsEndMs: Long,
@@ -43,8 +47,9 @@ class FinalStreamIntel constructor(
   val socketReused: Boolean,
   val sentByteCount: Long,
   val receivedByteCount: Long
-) {
-  constructor(base: EnvoyFinalStreamIntel) : this(
+) : StreamIntel(streamId, connectionId, attemptCount) {
+  constructor(superBase: EnvoyStreamIntel, base: EnvoyFinalStreamIntel) : this(
+    superBase.streamId, superBase.connectionId, superBase.attemptCount,
     base.requestStartMs, base.dnsStartMs,
     base.dnsEndMs, base.connectStartMs,
     base.connectEndMs, base.sslStartMs,

@@ -93,12 +93,12 @@ class ReceiveErrorTest {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError, streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+    override fun onError(error: EnvoyError, finalStreamIntel: FinalStreamIntel) {
       receivedError.countDown()
     }
-    override fun onComplete(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {}
+    override fun onComplete(finalStreamIntel: FinalStreamIntel) {}
 
-    override fun onCancel(streamIntel: StreamIntel, finalStreamIntel: FinalStreamIntel) {
+    override fun onCancel(finalStreamIntel: FinalStreamIntel) {
       notCancelled.countDown()
     }
   }
@@ -131,7 +131,7 @@ class ReceiveErrorTest {
         errorCode = error.errorCode
         callbackReceivedError.countDown()
       }
-      .setOnCancel { _, _ ->
+      .setOnCancel { _ ->
         fail("Unexpected call to onCancel response callback")
       }
       .start()
