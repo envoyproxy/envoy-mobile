@@ -127,7 +127,7 @@ class ReceiveErrorTest {
       .setOnResponseData { _, _, _ -> fail("Data received instead of expected error") }
       // The unmatched expectation will cause a local reply which gets translated in Envoy Mobile to
       // an error.
-      .setOnError { error, _, _ ->
+      .setOnError { error, _ ->
         errorCode = error.errorCode
         callbackReceivedError.countDown()
       }
