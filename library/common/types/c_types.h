@@ -153,7 +153,10 @@ typedef struct {
   int64_t connection_id;
   // The number of internal attempts to carry out a request/operation. 0 if not present.
   uint64_t attempt_count;
-  // The number of bytes received from upstream.
+  // Mostly the number of bytes received from upstream. When this struct is sent through
+  // the onHeaders callback, its value is the size of the "trimmed" headers" - this does
+  // not include the status line. For all the other callbacks, it is truly what has been
+  // received up to now, not necessarily what has been processed by the callbacks.
   uint64_t received_byte_count;
 } envoy_stream_intel;
 
