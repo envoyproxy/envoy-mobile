@@ -23,6 +23,9 @@ from slack_sdk.errors import SlackApiError
 
 REVIEWERS = {
     'alyssawilk': 'U78RP48V9',
+    'Augustyniak': 'U017R1YHXGQ',
+    'buildbreaker': 'UEUEP1QP4',
+    'jpsim': 'U02KAPRELKA',
     'junr03': 'U79K0Q431',
     'RyanTheOptimist': 'U01SW3JC8GP',
     'goaway': 'U7TDPD3L2',
