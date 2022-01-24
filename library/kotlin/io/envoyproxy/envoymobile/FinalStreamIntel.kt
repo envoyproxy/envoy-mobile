@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 
 /**
  * Exposes one time HTTP stream metrics, context, and other details.
