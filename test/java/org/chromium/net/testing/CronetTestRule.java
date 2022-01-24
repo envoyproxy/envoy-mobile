@@ -253,10 +253,7 @@ public final class CronetTestRule implements TestRule {
     assertEquals(expected.getUrl(), actual.getUrl());
     // Transferred bytes and proxy server are not supported in pure java
     if (!testingJavaImpl()) {
-      // TODO("https://github.com/envoyproxy/envoy-mobile/issues/1426"): remove the "if" crutch
-      if (expected.getReceivedByteCount() >= 0) {
-        assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
-      }
+      assertEquals(expected.getReceivedByteCount(), actual.getReceivedByteCount());
       assertEquals(expected.getProxyServer(), actual.getProxyServer());
       // This is a place where behavior intentionally differs between native and java
       assertEquals(expected.getNegotiatedProtocol(), actual.getNegotiatedProtocol());

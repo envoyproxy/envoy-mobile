@@ -269,7 +269,7 @@ public class CronetUrlRequestTest {
     // Original bytesReceived: 258
     UrlResponseInfo urlResponseInfo = createUrlResponseInfo(
         new String[] {NativeTestServer.getRedirectURL(), NativeTestServer.getSuccessURL()}, "OK",
-        200, -1, "Content-Length", "20", "Content-Type", "text/plain",
+        200, 284, "Content-Length", "20", "Content-Type", "text/plain",
         "Access-Control-Allow-Origin", "*", "header-name", "header-value", "multi-header-name",
         "header-value1", "multi-header-name", "header-value2");
 
@@ -669,7 +669,7 @@ public class CronetUrlRequestTest {
     // Check first redirect (multiredirect.html -> redirect.html)
     // Original receivedBytes: 76
     UrlResponseInfo firstExpectedResponseInfo = createUrlResponseInfo(
-        new String[] {NativeTestServer.getMultiRedirectURL()}, "Found", 302, -1, "Content-Length",
+        new String[] {NativeTestServer.getMultiRedirectURL()}, "Found", 302, 75, "Content-Length",
         "92", "Location", "/redirect.html", "redirect-header0", "header-value");
     UrlResponseInfo firstRedirectResponseInfo = callback.mRedirectResponseInfoList.get(0);
     mTestRule.assertResponseEquals(firstExpectedResponseInfo, firstRedirectResponseInfo);
@@ -679,7 +679,7 @@ public class CronetUrlRequestTest {
     UrlResponseInfo secondExpectedResponseInfo = createUrlResponseInfo(
         new String[] {NativeTestServer.getMultiRedirectURL(), NativeTestServer.getRedirectURL(),
                       NativeTestServer.getSuccessURL()},
-        "OK", 200, -1, "Content-Length", "20", "Content-Type", "text/plain",
+        "OK", 200, 359, "Content-Length", "20", "Content-Type", "text/plain",
         "Access-Control-Allow-Origin", "*", "header-name", "header-value", "multi-header-name",
         "header-value1", "multi-header-name", "header-value2");
 
@@ -2140,6 +2140,12 @@ public class CronetUrlRequestTest {
     final ConditionVariable done = new ConditionVariable();
     UrlRequest.Callback callback = new UrlRequest.Callback() {
       @Override
+      public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+        failedExpectation.set(true);
+        fail();
+      }
+
+      @Override
       public void onRedirectReceived(UrlRequest request, UrlResponseInfo info,
                                      String newLocationUrl) {
         failedExpectation.set(true);
@@ -2154,12 +2160,6 @@ public class CronetUrlRequestTest {
 
       @Override
       public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
-        failedExpectation.set(true);
-        fail();
-      }
-
-      @Override
-      public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
         failedExpectation.set(true);
         fail();
       }

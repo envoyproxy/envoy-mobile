@@ -4,7 +4,6 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
 
 /**
  * Exposes one time HTTP stream metrics, context, and other details.
- * Note: a value of -1 means "not present" for any field where the name is suffixed with "Ms".
  * @param requestStartMs The time the request started, in ms since the epoch.
  * @param dnsStartMs The time the DNS resolution for this request started, in ms since the epoch.
  * @param dnsEndMs The time the DNS resolution for this request completed, in ms since the epoch.

@@ -15,21 +15,20 @@ class MockStream internal constructor(underlyingStream: MockEnvoyHTTPStream) : S
     override fun getStreamId(): Long { return 0 }
     override fun getConnectionId(): Long { return 0 }
     override fun getAttemptCount(): Long { return 0 }
-    override fun getReceivedByteCount(): Long { return 0 }
   }
 
   private val mockFinalStreamIntel = object : EnvoyFinalStreamIntel {
-    override fun getRequestStartMs(): Long { return -1 }
-    override fun getDnsStartMs(): Long { return -1 }
-    override fun getDnsEndMs(): Long { return -1 }
-    override fun getConnectStartMs(): Long { return -1 }
-    override fun getConnectEndMs(): Long { return -1 }
-    override fun getSslStartMs(): Long { return -1 }
-    override fun getSslEndMs(): Long { return -1 }
-    override fun getSendingStartMs(): Long { return -1 }
-    override fun getSendingEndMs(): Long { return -1 }
-    override fun getResponseStartMs(): Long { return -1 }
-    override fun getRequestEndMs(): Long { return -1 }
+    override fun getRequestStartMs(): Long { return 0 }
+    override fun getDnsStartMs(): Long { return 0 }
+    override fun getDnsEndMs(): Long { return 0 }
+    override fun getConnectStartMs(): Long { return 0 }
+    override fun getConnectEndMs(): Long { return 0 }
+    override fun getSslStartMs(): Long { return 0 }
+    override fun getSslEndMs(): Long { return 0 }
+    override fun getSendingStartMs(): Long { return 0 }
+    override fun getSendingEndMs(): Long { return 0 }
+    override fun getResponseStartMs(): Long { return 0 }
+    override fun getRequestEndMs(): Long { return 0 }
     override fun getSocketReused(): Boolean { return false }
     override fun getSentByteCount(): Long { return 0 }
     override fun getReceivedByteCount(): Long { return 0 }
