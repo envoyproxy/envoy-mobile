@@ -306,6 +306,7 @@ void Client::DirectStream::saveFinalStreamIntel() {
     return;
   }
   StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
+  // stream_intel_ may have an outdated received_byte_count - the final one is correct.
   stream_intel_.received_byte_count = envoy_final_stream_intel_.received_byte_count;
 }
 

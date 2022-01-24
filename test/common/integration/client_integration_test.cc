@@ -36,8 +36,8 @@ typedef struct {
   uint32_t on_complete_calls;
   uint32_t on_error_calls;
   uint32_t on_cancel_calls;
-  uint32_t on_header_received_byte_count;
-  uint32_t on_complete_received_byte_count;
+  uint64_t on_header_received_byte_count;
+  uint64_t on_complete_received_byte_count;
   std::string status;
   ConditionalInitializer* terminal_callback;
 } callbacks_called;
@@ -83,10 +83,10 @@ public:
     bridge_callbacks_.on_complete =
         [](envoy_stream_intel intel, envoy_final_stream_intel final_intel, void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
+      cc_->on_complete_received_byte_count = final_intel.received_byte_count;
       cc_->on_complete_calls++;
       cc_->terminal_callback->setReady();
       EXPECT_EQ(intel.received_byte_count, final_intel.received_byte_count);
-      cc_->on_complete_received_byte_count = final_intel.received_byte_count;
       return nullptr;
     };
     bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, envoy_final_stream_intel,

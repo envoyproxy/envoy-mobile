@@ -701,12 +701,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onHeaders(Map<String, List<String>> headers, boolean endStream,
                           EnvoyStreamIntel streamIntel) {
-      System.err.println("RRRRR: " + streamIntel.getReceivedByteCount());
       mUrlResponseInfo = new UrlResponseInfoImpl();
       recordEnvoyStreamIntel(streamIntel);
-      if (isAbandoned()) {
-        return;
-      }
       mEndStream = endStream;
       List<String> statuses = headers.get(":status");
       final int responseCode =
@@ -774,7 +770,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
         return;
       }
       recordEnvoyStreamIntel(streamIntel);
-      System.err.println("TTTTT: " + streamIntel.getReceivedByteCount());
       mEndStream = endStream;
       @State int originalState;
       @State int updatedState;
@@ -948,7 +943,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
       @CancelState int oldState = mCancelState.getAndSet(CancelState.CANCELLED);
       if (oldState == CancelState.READY) {
-        System.err.println("CANCELLING");
         stream.cancel();
       }
     }
