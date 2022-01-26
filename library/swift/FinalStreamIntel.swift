@@ -55,7 +55,7 @@ public final class FinalStreamIntel: StreamIntel {
     requestEndMs: Int64,
     socketReused: Bool,
     sentByteCount: UInt64,
-    receivedByteCount: UInt64
+    receivedByteCount: UInt64,
     responseFlags: UInt64
   ) {
     self.requestStartMs = requestStartMs
@@ -96,7 +96,7 @@ extension FinalStreamIntel {
       requestEndMs: cFinalIntel.request_end_ms,
       socketReused: cFinalIntel.socket_reused != 0,
       sentByteCount: cFinalIntel.sent_byte_count,
-      receivedByteCount: cFinalIntel.received_byte_count
+      receivedByteCount: cFinalIntel.received_byte_count,
       responseFlags: cFinalIntel.response_flags
     )
   }
