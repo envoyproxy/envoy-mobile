@@ -170,6 +170,13 @@ build:remote-ci-linux-tsan --host_platform=@engflow_remote_config_clang_asan//co
 build:remote-ci-linux-tsan --platforms=@engflow_remote_config_clang_asan//config:platform
 build:remote-ci-linux-tsan --config=remote-ci-common
 #############################################################################
+# remote-ci-linux-local-java8: These options are linux-only using a local Java 8 (JDK)
+#############################################################################
+build:remote-ci-linux-local-java8 --extra_toolchains=@local_jdk//:all
+build:remote-ci-linux-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
+build:remote-ci-linux-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
+build:remote-ci-linux-local-java8 --config=remote-ci-common
+#############################################################################
 # remote-ci-linux-coverage: These options are Linux-only using Clang and LLVM coverage
 #############################################################################
 # Clang environment variables (keep in sync with @engflow_remote_config_clang_coverage)
@@ -212,6 +219,13 @@ build:remote-ci-macos --host_platform=//ci/platform:macos
 build:remote-ci-macos --platforms=//ci/platform:macos
 build:remote-ci-macos --extra_execution_platforms=//ci/platform:macos
 build:remote-ci-macos --xcode_version_config=//ci:xcode_config
+#############################################################################
+# remote-ci-macos-local-java8: These options are macOS-only using a local Java 8 (JDK)
+#############################################################################
+build:remote-ci-linux-local-java8 --extra_toolchains=@local_jdk//:all
+build:remote-ci-linux-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
+build:remote-ci-linux-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
+build:remote-ci-linux-local-java8 --config=remote-ci-common
 #############################################################################
 # remote-ci-debug: Various Bazel debugging flags
 #############################################################################

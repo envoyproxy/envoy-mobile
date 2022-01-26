@@ -27,6 +27,13 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: 'Java setup'
+        if: steps.check_context.outputs.run_tests == 'true'
+        uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+          java-package: jdk
+          architecture: x64
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
@@ -35,10 +42,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./bazelw --host_jvm_args=-XX:+StartAttachListener test \
+          ./bazelw test \
             --test_output=all \
             --build_tests_only \
             --config=remote-ci-macos \
+            --config=remote-ci-macos-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/io/envoyproxy/envoymobile:engine_builder_test \
             //test/kotlin/io/envoyproxy/envoymobile:pulse_client_impl_test
