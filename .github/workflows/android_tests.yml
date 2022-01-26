@@ -45,6 +45,7 @@ jobs:
           ./bazelw test \
             --test_output=all \
             --build_tests_only \
+            --config=remote-ci-debug \
             --config=remote-ci-macos \
             --config=remote-ci-macos-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
