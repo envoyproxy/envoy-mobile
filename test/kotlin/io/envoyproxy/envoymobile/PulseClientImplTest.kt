@@ -1,4 +1,4 @@
-catpackage io.envoyproxy.envoymobile
+package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import org.assertj.core.api.Assertions.assertThat
