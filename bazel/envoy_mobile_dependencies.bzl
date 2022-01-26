@@ -69,6 +69,7 @@ def kotlin_dependencies():
             "org.jetbrains.dokka:dokka-cli:1.5.31",
             "org.jetbrains.dokka:javadoc-plugin:1.5.31",
             # Test artifacts
+            "net.bytebuddy:byte-buddy:1.9.16",
             "org.assertj:assertj-core:3.12.0",
             "junit:junit:4.12",
             "org.mockito:mockito-inline:2.28.2",
