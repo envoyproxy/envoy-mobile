@@ -223,7 +223,6 @@ build:remote-ci-macos --xcode_version_config=//ci:xcode_config
 # remote-ci-macos-local-java8: These options are macOS-only using a local Java 8 (JDK)
 #############################################################################
 build:remote-ci-macos-local-java8 --define=ABSOLUTE_JAVABASE=/Users/runner/hostedtoolcache/jdk/8.0.322/x64
-build:remote-ci-macos-local-java8 --host_javabase=@bazel_tools//tools/jdk:absolute_javabase
 build:remote-ci-macos-local-java8 --javabase=@bazel_tools//tools/jdk:absolute_javabase
 build:remote-ci-macos-local-java8 --extra_toolchains=@local_jdk//:all
 build:remote-ci-macos-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
