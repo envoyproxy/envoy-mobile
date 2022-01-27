@@ -38,6 +38,8 @@ jobs:
         run: |
           java -version
           whereis java
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
@@ -54,5 +56,3 @@ jobs:
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/io/envoyproxy/envoymobile:engine_builder_test \
             //test/kotlin/io/envoyproxy/envoymobile:pulse_client_impl_test
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
