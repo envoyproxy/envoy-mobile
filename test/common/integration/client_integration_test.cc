@@ -36,7 +36,7 @@ typedef struct {
   uint32_t on_complete_calls;
   uint32_t on_error_calls;
   uint32_t on_cancel_calls;
-  uint64_t on_header_received_byte_count;
+  uint64_t on_header_consumed_bytes_from_response;
   uint64_t on_complete_received_byte_count;
   std::string status;
   ConditionalInitializer* terminal_callback;
@@ -70,7 +70,7 @@ public:
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_headers_calls++;
       cc_->status = response_headers->Status()->value().getStringView();
-      cc_->on_header_received_byte_count = intel.received_byte_count;
+      cc_->on_header_consumed_bytes_from_response = intel.consumed_bytes_from_response;
       return nullptr;
     };
     bridge_callbacks_.on_data = [](envoy_data c_data, bool, envoy_stream_intel,
@@ -80,13 +80,12 @@ public:
       release_envoy_data(c_data);
       return nullptr;
     };
-    bridge_callbacks_.on_complete =
-        [](envoy_stream_intel intel, envoy_final_stream_intel final_intel, void* context) -> void* {
+    bridge_callbacks_.on_complete = [](envoy_stream_intel, envoy_final_stream_intel final_intel,
+                                       void* context) -> void* {
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_complete_received_byte_count = final_intel.received_byte_count;
       cc_->on_complete_calls++;
       cc_->terminal_callback->setReady();
-      EXPECT_EQ(intel.received_byte_count, final_intel.received_byte_count);
       return nullptr;
     };
     bridge_callbacks_.on_error = [](envoy_error error, envoy_stream_intel, envoy_final_stream_intel,
@@ -211,7 +210,7 @@ TEST_P(ClientIntegrationTest, Basic) {
   ASSERT_EQ(cc_.status, "200");
   ASSERT_EQ(cc_.on_data_calls, 2);
   ASSERT_EQ(cc_.on_complete_calls, 1);
-  ASSERT_EQ(cc_.on_header_received_byte_count, 27);
+  ASSERT_EQ(cc_.on_header_consumed_bytes_from_response, 27);
   ASSERT_EQ(cc_.on_complete_received_byte_count, 67);
 
   // stream_success gets charged for 2xx status codes.

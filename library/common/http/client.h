@@ -170,19 +170,6 @@ private:
 
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
-    const StreamInfo::StreamInfo& streamInfo() {
-      return direct_stream_.request_decoder_->streamInfo();
-    }
-    uint64_t headerBytesReceived() {
-      return streamInfo().getUpstreamBytesMeter()
-                 ? streamInfo().getUpstreamBytesMeter()->headerBytesReceived()
-                 : 0;
-    }
-    uint64_t bytesReceived() {
-      return streamInfo().getUpstreamBytesMeter()
-                 ? streamInfo().getUpstreamBytesMeter()->wireBytesReceived()
-                 : 0;
-    }
 
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
@@ -261,7 +248,7 @@ private:
     }
 
     // Latches stream information as it may not be available when accessed.
-    void saveLatestStreamIntel(uint64_t received_byte_count);
+    void saveLatestStreamIntel();
 
     // Latches latency info from stream info before it goes away.
     void saveFinalStreamIntel();
