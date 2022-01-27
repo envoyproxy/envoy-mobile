@@ -44,11 +44,10 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   // Capture some metadata before potentially closing the stream.
   absl::string_view alpn = "";
-  uint64_t response_status = Utility::getResponseStatus(headers);
   if (direct_stream_.request_decoder_) {
     direct_stream_.saveLatestStreamIntel();
     const auto& info = direct_stream_.request_decoder_->streamInfo();
-    // Set ghe initial number of byte consumed from the response by this non terminal callbacks.
+    // Set the initial number of bytes consumed for the non terminal callbacks.
     direct_stream_.stream_intel_.consumed_bytes_from_response =
         info.getUpstreamBytesMeter() ? info.getUpstreamBytesMeter()->headerBytesReceived() : 0;
     // Capture the alpn if available.
@@ -62,6 +61,7 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
   }
 
   // Track success for later bookkeeping (stream could still be reset).
+  uint64_t response_status = Utility::getResponseStatus(headers);
   success_ = CodeUtility::is2xx(response_status);
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
@@ -127,7 +127,7 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
 
   // Cap by bytes_to_send_ if and only if applying explicit flow control.
   uint32_t bytes_to_send = calculateBytesToSend(data, bytes_to_send_);
-  // Update the number of byte consumed by this non terminal callbacks from the response.
+  // Update the number of bytes consumed by this non terminal callback.
   direct_stream_.stream_intel_.consumed_bytes_from_response += bytes_to_send;
   // Only send end stream if all data is being sent.
   bool send_end_stream = end_stream && (bytes_to_send == data.length());
