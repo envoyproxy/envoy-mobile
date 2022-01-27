@@ -6,13 +6,13 @@ class EnvoyStreamIntelImpl implements EnvoyStreamIntel {
   private long streamId;
   private long connectionId;
   private long attemptCount;
-  private long receivedByteCount;
+  private long consumedBytesFromResponse;
 
   EnvoyStreamIntelImpl(long[] values) {
     streamId = values[0];
     connectionId = values[1];
     attemptCount = values[2];
-    receivedByteCount = values[3];
+    consumedBytesFromResponse = values[3];
   }
 
   @Override
@@ -31,7 +31,7 @@ class EnvoyStreamIntelImpl implements EnvoyStreamIntel {
   }
 
   @Override
-  public long getReceivedByteCount() {
-    return receivedByteCount;
+  public long getConsumedBytesFromResponse() {
+    return consumedBytesFromResponse;
   }
 }

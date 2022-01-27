@@ -662,7 +662,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
   }
 
   private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
-    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getReceivedByteCount() +
+    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getConsumedBytesFromResponse() +
                                           mBytesReceivedFromRedirects);
   }
 
@@ -732,7 +732,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
 
       if (locationField != null) {
-        mBytesReceivedFromLastRedirect = streamIntel.getReceivedByteCount();
+        mBytesReceivedFromLastRedirect = streamIntel.getConsumedBytesFromResponse();
         cancel(); // Abort the the original request - we are being redirected.
       }
 
