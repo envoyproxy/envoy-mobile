@@ -91,6 +91,15 @@ build:release-android --compilation_mode=opt
 # Instrument Envoy Mobile's C++ code for coverage
 build:coverage --instrumentation_filter="//library/common[/:]"
 
+# Local Java 8 toolchain configuration
+build:local-java8 --host_javabase=@local_jdk//:all
+build:local-java8 --javabase=@local_jdk//:all
+build:local-java8 --extra_toolchains=@local_jdk//:all
+build:local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
+build:local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
+build:local-java8 --java_language_version=8
+build:local-java8 --java_runtime_version=localjdk_8
+
 #############################################################################
 # Experimental EngFlow Remote Execution Configs
 #############################################################################
@@ -172,10 +181,7 @@ build:remote-ci-linux-tsan --config=remote-ci-common
 #############################################################################
 # remote-ci-linux-local-java8: These options are linux-only using a local Java 8 (JDK)
 #############################################################################
-build:remote-ci-linux-local-java8 --extra_toolchains=@local_jdk//:all
-build:remote-ci-linux-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
-build:remote-ci-linux-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
-build:remote-ci-linux-local-java8 --config=remote-ci-common
+build:remote-ci-linux-local-java8 --config=local-java8
 #############################################################################
 # remote-ci-linux-coverage: These options are Linux-only using Clang and LLVM coverage
 #############################################################################
@@ -222,13 +228,7 @@ build:remote-ci-macos --xcode_version_config=//ci:xcode_config
 #############################################################################
 # remote-ci-macos-local-java8: These options are macOS-only using a local Java 8 (JDK)
 #############################################################################
-build:remote-ci-macos-local-java8 --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
-build:remote-ci-macos-local-java8 --javabase=@bazel_tools//tools/jdk:remote_jdk11
-build:remote-ci-macos-local-java8 --extra_toolchains=@local_jdk//:all
-build:remote-ci-macos-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
-build:remote-ci-macos-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
-build:remote-ci-macos-local-java8 --java_language_version=8
-build:remote-ci-macos-local-java8 --java_runtime_version=localjdk_8
+build:remote-ci-macos-local-java8 --config=local-java8
 #############################################################################
 # remote-ci-debug: Various Bazel debugging flags
 #############################################################################
