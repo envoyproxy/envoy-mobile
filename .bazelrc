@@ -92,6 +92,7 @@ build:release-android --compilation_mode=opt
 build:coverage --instrumentation_filter="//library/common[/:]"
 
 # Local Java 8 toolchain configuration
+build:local-java8 --test_env=JAVA_HOME=/Users/runner/hostedtoolcache/jdk/8.0.322/x64
 build:local-java8 --host_javabase=@local_jdk//:all
 build:local-java8 --javabase=@local_jdk//:all
 build:local-java8 --extra_toolchains=@local_jdk//:all
