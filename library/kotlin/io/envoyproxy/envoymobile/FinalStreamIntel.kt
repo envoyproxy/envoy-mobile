@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 
 /**
  * Exposes one time HTTP stream metrics, context, and other details.
@@ -26,9 +27,13 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
  * @param socket_reused True if the upstream socket had been used previously.
  * @param sentByteCount The number of bytes sent upstream.
  * @param receivedByteCount The number of bytes received from upstream.
+ * @param responseFlags The response flags for the stream.
  */
 @Suppress("LongParameterList")
 class FinalStreamIntel constructor(
+  streamId: Long,
+  connectionId: Long,
+  attemptCount: Long,
   val requestStartMs: Long,
   val dnsStartMs: Long,
   val dnsEndMs: Long,
@@ -42,9 +47,11 @@ class FinalStreamIntel constructor(
   val requestEndMs: Long,
   val socketReused: Boolean,
   val sentByteCount: Long,
-  val receivedByteCount: Long
-) {
-  constructor(base: EnvoyFinalStreamIntel) : this(
+  val receivedByteCount: Long,
+  val responseFlags: Long
+) : StreamIntel(streamId, connectionId, attemptCount) {
+  constructor(superBase: EnvoyStreamIntel, base: EnvoyFinalStreamIntel) : this(
+    superBase.streamId, superBase.connectionId, superBase.attemptCount,
     base.requestStartMs, base.dnsStartMs,
     base.dnsEndMs, base.connectStartMs,
     base.connectEndMs, base.sslStartMs,
@@ -52,6 +59,6 @@ class FinalStreamIntel constructor(
     base.sendingEndMs,
     base.responseStartMs, base.requestEndMs,
     base.socketReused, base.sentByteCount,
-    base.receivedByteCount
+    base.receivedByteCount, base.responseFlags
   )
 }
