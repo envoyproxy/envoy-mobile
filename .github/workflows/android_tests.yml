@@ -31,13 +31,9 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '9'
+          java-version: '10'
           java-package: jdk
           architecture: x64
-      - name: 'Clean'
-        continue-on-error: true
-        run: |
-          ./bazelw clean --expunge
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh

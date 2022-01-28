@@ -225,9 +225,9 @@ build:remote-ci-macos --xcode_version_config=//ci:xcode_config
 build:remote-ci-macos-local-java8 --host_javabase=@bazel_tools//tools/jdk:jdk
 build:remote-ci-macos-local-java8 --javabase=@bazel_tools//tools/jdk:jdk
 build:remote-ci-macos-local-java8 --extra_toolchains=@local_jdk//:all
-build:remote-ci-macos-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java9
-build:remote-ci-macos-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java9
-build:remote-ci-macos-local-java8 --java_language_version=9
+build:remote-ci-macos-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java10
+build:remote-ci-macos-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java10
+build:remote-ci-macos-local-java8 --java_language_version=10
 build:remote-ci-macos-local-java8 --java_runtime_version=local_jdk
 #############################################################################
 # remote-ci-debug: Various Bazel debugging flags
