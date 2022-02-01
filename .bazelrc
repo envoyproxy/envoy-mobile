@@ -2,7 +2,6 @@
 try-import ./envoy/.bazelrc
 
 # Common flags for all builds
-build --define signal_trace=disabled
 build --define=google_grpc=disabled
 build --define=hot_restart=disabled
 build --define=tcmalloc=disabled
@@ -88,6 +87,7 @@ build:release-ios --compilation_mode=opt
 build:release-android --define=include_ifaddrs=true
 build:release-android --config=release-common
 build:release-android --compilation_mode=opt
+build:release-android --define signal_trace=disabled
 
 # Instrument Envoy Mobile's C++ code for coverage
 build:coverage --instrumentation_filter="//library/common[/:]"
