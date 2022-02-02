@@ -15,7 +15,7 @@ routing PRs, questions, etc. to the right place.
   * General.
 * JP Simard ([jpsim](https://github.com/jpsim)) (jp@lyft.com)
   * iOS (swift/objective-c) platform bindings.
-* Charles Le Bornge ([carloseltuerto](http://github.com/carloseltuerto)) (cleborgne@google.com)
+* Charles Le Borgne ([carloseltuerto](http://github.com/carloseltuerto)) (cleborgne@google.com)
   * Cronvoy.
 
 # Friends of Envoy Mobile
