@@ -20,6 +20,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/2722
+        run: sed -i '/^android_ndk_repository/ d' WORKSPACE
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,6 +48,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/2722
+        run: sed -i '/^android_ndk_repository/ d' WORKSPACE
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

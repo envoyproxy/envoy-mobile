@@ -36,6 +36,8 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/2722
+        run: sed -i '/^android_ndk_repository/ d' WORKSPACE
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
