@@ -53,6 +53,11 @@ void setFinalStreamIntel(StreamInfo& stream_info, envoy_final_stream_intel& fina
     final_intel.received_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesReceived();
   }
   final_intel.response_flags = stream_info.responseFlags();
+
+  std::cout << "setFinalStreamIntel ["
+      << (final_intel.request_end_ms >= final_intel.response_start_ms ? "true" : "false")
+      << "]: requestEndMs[" << final_intel.request_end_ms << "] >= responseStartMs["
+      << final_intel.response_start_ms << "]" << std::endl;
 }
 
 } // namespace StreamInfo
