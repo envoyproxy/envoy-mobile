@@ -44,5 +44,6 @@ platform(
     exec_properties = {
         "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:4965eb16ba40bccf8dbf1cb03a544c8671e5a239396a90fd7159a24195181b2a",
         "OSFamily": "Linux",
+        "Pool": "linux",
     },
 )
