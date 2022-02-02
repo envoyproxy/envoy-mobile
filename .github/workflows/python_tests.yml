@@ -27,6 +27,10 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
