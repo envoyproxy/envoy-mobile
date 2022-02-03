@@ -34,7 +34,7 @@ jobs:
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./ci/mac_ci_setup.sh
       - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/14260
-        run: sed -i 's/# android/android/' WORKSPACE
+        run: sed -i '' 's/# android/android/' WORKSPACE
       - name: 'Build envoy.aar distributable'
         if: steps.check-cache.outputs.cache-hit != 'true'
         env:
@@ -75,7 +75,7 @@ jobs:
       #   ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
       - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/14260
-        run: sed -i 's/# android/android/' WORKSPACE
+        run: sed -i '' 's/# android/android/' WORKSPACE
       - name: 'Start java app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -120,7 +120,7 @@ jobs:
       #   ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
       - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/14260
-        run: sed -i 's/# android/android/' WORKSPACE
+        run: sed -i '' 's/# android/android/' WORKSPACE
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
