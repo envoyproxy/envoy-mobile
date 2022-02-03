@@ -45,6 +45,21 @@ platform(
         "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:4965eb16ba40bccf8dbf1cb03a544c8671e5a239396a90fd7159a24195181b2a",
         "OSFamily": "Linux",
         "Pool": "linux",
+    },
+)
+
+platform(
+    name = "platform-asan",
+    parents = ["@local_config_platform//:host"],
+    constraint_values = [
+        "@bazel_tools//platforms:linux",
+        "@bazel_tools//platforms:x86_64",
+        "@bazel_tools//tools/cpp:clang",
+    ],
+    exec_properties = {
+        "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:4965eb16ba40bccf8dbf1cb03a544c8671e5a239396a90fd7159a24195181b2a",
+        "OSFamily": "Linux",
+        "Pool": "linux",
         # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
         # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
         "dockerAddCapabilities": "SYS_PTRACE",
