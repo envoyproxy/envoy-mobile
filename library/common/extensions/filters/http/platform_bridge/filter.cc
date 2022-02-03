@@ -192,8 +192,8 @@ Http::LocalErrorStatus PlatformBridgeFilter::onLocalReply(const LocalReplyData& 
 envoy_final_stream_intel PlatformBridgeFilter::finalStreamIntel() {
   RELEASE_ASSERT(decoder_callbacks_, "StreamInfo accessed before filter callbacks are set");
   // FIXME: Stream handle cannot currently be set from the filter context.
-  envoy_final_stream_intel final_stream_intel;
-  memset(&final_stream_intel, 0, sizeof(final_stream_intel));
+  envoy_final_stream_intel final_stream_intel{-1, -1, -1, -1, -1, -1, -1, -1,
+                                              -1, -1, -1, 0,  0,  0,  0};
   setFinalStreamIntel(decoder_callbacks_->streamInfo(), final_stream_intel);
   return final_stream_intel;
 }
@@ -202,7 +202,7 @@ envoy_stream_intel PlatformBridgeFilter::streamIntel() {
   RELEASE_ASSERT(decoder_callbacks_, "StreamInfo accessed before filter callbacks are set");
   auto& info = decoder_callbacks_->streamInfo();
   // FIXME: Stream handle cannot currently be set from the filter context.
-  envoy_stream_intel stream_intel{-1, -1, 0};
+  envoy_stream_intel stream_intel{-1, -1, 0, 0};
   if (info.upstreamInfo()) {
     stream_intel.connection_id = info.upstreamInfo()->upstreamConnectionId().value_or(-1);
   }

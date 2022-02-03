@@ -54,9 +54,9 @@ def upstream_envoy_overrides():
     http_archive(
         name = "boringssl",
         patches = ["@envoy_mobile//bazel:boringssl.patch"],
-        sha256 = "70e9d8737e35d67f94b9e742ca59c02c36f30f1d822d5a3706511a23798d8049",
-        strip_prefix = "boringssl-75edea1922aefe415e0e60ac576116634b0a94f8",
-        urls = ["https://github.com/google/boringssl/archive/75edea1922aefe415e0e60ac576116634b0a94f8.tar.gz"],
+        sha256 = "579cb415458e9f3642da0a39a72f79fdfe6dc9c1713b3a823f1e276681b9703e",
+        strip_prefix = "boringssl-648cbaf033401b7fe7acdce02f275b06a88aab5c",
+        urls = ["https://github.com/google/boringssl/archive/648cbaf033401b7fe7acdce02f275b06a88aab5c.tar.gz"],
     )
 
     # Envoy uses rules_python v0.1.0, which does not include tooling for packaging Python.  The
@@ -67,18 +67,6 @@ def upstream_envoy_overrides():
         sha256 = "ecd139e703b41ae2ea115f4f4229b4ea2d70bab908fb75a3b49640f976213009",
         strip_prefix = "rules_python-6f37aa9966f53e063c41b7509a386d53a9f156c3",
         urls = ["https://github.com/bazelbuild/rules_python/archive/6f37aa9966f53e063c41b7509a386d53a9f156c3.tar.gz"],
-    )
-
-    http_archive(
-        name = "com_github_nlohmann_json",
-        # 3.10.4 introduced incompatible changes with Envoy Mobile. Until Envoy Mobile updates it's
-        # minimum iOS version to 13+ this dependency needs to be patched.
-        patches = ["@envoy_mobile//bazel:json.patch"],
-        patch_args = ["-p1"],
-        sha256 = "1155fd1a83049767360e9a120c43c578145db3204d2b309eba49fbbedd0f4ed3",
-        strip_prefix = "json-3.10.4",
-        urls = ["https://github.com/nlohmann/json/archive/v3.10.4.tar.gz"],
-        build_file = "@envoy//bazel/external:json.BUILD",
     )
 
 def swift_repos():
@@ -155,7 +143,7 @@ def kotlin_repos():
 def android_repos():
     http_archive(
         name = "build_bazel_rules_android",
-        urls = ["https://github.com/bazelbuild/rules_android/archive/v0.1.1.zip"],
+        urls = ["https://github.com/bazelbuild/rules_android/archive/refs/tags/v0.1.1.zip"],
         sha256 = "cd06d15dd8bb59926e4d65f9003bfc20f9da4b2519985c27e190cddc8b7a7806",
         strip_prefix = "rules_android-0.1.1",
     )

@@ -15,6 +15,7 @@ class MockStream internal constructor(underlyingStream: MockEnvoyHTTPStream) : S
     override fun getStreamId(): Long { return 0 }
     override fun getConnectionId(): Long { return 0 }
     override fun getAttemptCount(): Long { return 0 }
+    override fun getConsumedBytesFromResponse(): Long { return 0 }
   }
 
   private val mockFinalStreamIntel = object : EnvoyFinalStreamIntel {
@@ -32,6 +33,7 @@ class MockStream internal constructor(underlyingStream: MockEnvoyHTTPStream) : S
     override fun getSocketReused(): Boolean { return false }
     override fun getSentByteCount(): Long { return 0 }
     override fun getReceivedByteCount(): Long { return 0 }
+    override fun getResponseFlags(): Long { return 0 }
   }
   /**
    * Closure that will be called when request headers are sent.

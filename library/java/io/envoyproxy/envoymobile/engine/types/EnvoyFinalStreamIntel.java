@@ -2,6 +2,8 @@ package io.envoyproxy.envoymobile.engine.types;
 
 /**
  * Exposes internal HTTP stream metrics, context, and other details sent once on stream end.
+ *
+ * Note: a value of -1 means "not present" for any field where the name is suffixed with "Ms".
  */
 public interface EnvoyFinalStreamIntel {
   /*
@@ -64,4 +66,10 @@ public interface EnvoyFinalStreamIntel {
    * The number of bytes received from upstream.
    */
   public long getReceivedByteCount();
+  /*
+   * The response flags for the stream. See
+   * https://github.com/envoyproxy/envoy/blob/main/envoy/stream_info/stream_info.h#L39
+   * for values.
+   */
+  public long getResponseFlags();
 }

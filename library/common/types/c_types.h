@@ -153,44 +153,56 @@ typedef struct {
   int64_t connection_id;
   // The number of internal attempts to carry out a request/operation. 0 if not present.
   uint64_t attempt_count;
+  // Number of bytes consumed by the non terminal callbacks out of the response.
+  // NOTE: on terminal callbacks (on_complete, on_error_, on_cancel), this value will not be equal
+  //       to envoy_final_stream_intel.received_byte_count. The latter represents the real number
+  //       of bytes received before decompression. consumed_bytes_from_response omits the number
+  //       number of bytes related to the Status Line, and is after decompression.
+  uint64_t consumed_bytes_from_response;
 } envoy_stream_intel;
 
 /**
  * Contains internal HTTP stream metrics which sent at stream end.
+ *
+ * Note: for the signed fields, -1 means not present.
  */
 typedef struct {
   // The time the request started, in ms since the epoch.
-  uint64_t request_start_ms;
+  int64_t request_start_ms;
   // The time the DNS resolution for this request started, in ms since the epoch.
-  uint64_t dns_start_ms;
+  int64_t dns_start_ms;
   // The time the DNS resolution for this request completed, in ms since the epoch.
-  uint64_t dns_end_ms;
+  int64_t dns_end_ms;
   // The time the upstream connection started, in ms since the epoch.
   // This may not be set if socket_reused is false.
-  uint64_t connect_start_ms;
+  int64_t connect_start_ms;
   // The time the upstream connection completed, in ms since the epoch.
   // This may not be set if socket_reused is false.
-  uint64_t connect_end_ms;
+  int64_t connect_end_ms;
   // The time the SSL handshake started, in ms since the epoch.
   // This may not be set if socket_reused is false.
-  uint64_t ssl_start_ms;
+  int64_t ssl_start_ms;
   // The time the SSL handshake completed, in ms since the epoch.
   // This may not be set if socket_reused is false.
-  uint64_t ssl_end_ms;
+  int64_t ssl_end_ms;
   // The time the first byte of the request was sent upstream, in ms since the epoch.
-  uint64_t sending_start_ms;
+  int64_t sending_start_ms;
   // The time the last byte of the request was sent upstream, in ms since the epoch.
-  uint64_t sending_end_ms;
+  int64_t sending_end_ms;
   // The time the first byte of the response was received, in ms since the epoch.
-  uint64_t response_start_ms;
+  int64_t response_start_ms;
   // The time the last byte of the request was received, in ms since the epoch.
-  uint64_t request_end_ms;
+  int64_t request_end_ms;
   // True if the upstream socket had been used previously.
   uint64_t socket_reused;
   // The number of bytes sent upstream.
   uint64_t sent_byte_count;
   // The number of bytes received from upstream.
   uint64_t received_byte_count;
+  // The final response flags for the stream. See
+  // https://github.com/envoyproxy/envoy/blob/main/envoy/stream_info/stream_info.h
+  // for the ResponseFlag enum.
+  uint64_t response_flags;
 } envoy_final_stream_intel;
 
 #ifdef __cplusplus
