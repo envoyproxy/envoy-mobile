@@ -23,8 +23,13 @@ jobs:
       - id: check_context
         name: 'Check whether to run'
         run: |
-          echo "Coverage will run."
-          echo "::set-output name=run_coverage::true"
+          if git rev-parse --abbrev-ref HEAD | grep -q ^main$ || git diff --name-only origin/main | grep -qe common/ -e ^.github/workflows/coverage.yml ; then
+            echo "Coverage will run."
+            echo "::set-output name=run_coverage::true"
+          else
+            echo "Skipping coverage."
+            echo "::set-output name=run_coverage::false"
+          fi
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
