@@ -11,11 +11,11 @@ build --features=swift.debug_prefix_map
 build --host_force_python=PY3
 build --ios_minimum_os=11.0
 build --ios_simulator_device="iPhone 13"
-build --ios_simulator_version=15.0
+build --ios_simulator_version=15.2
 build --spawn_strategy=local
 build --verbose_failures
 build --workspace_status_command=envoy/bazel/get_workspace_status
-build --xcode_version=13.0
+build --xcode_version=13.2.1
 # https://github.com/bazelbuild/rules_jvm_external/issues/445
 build --repo_env=JAVA_HOME=../bazel_tools/jdk
 build --define disable_known_issue_asserts=true
@@ -147,10 +147,10 @@ build:remote-ci-linux-asan --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 build:remote-ci-linux-asan --action_env=CC=/opt/llvm/bin/clang
 build:remote-ci-linux-asan --action_env=CXX=/opt/llvm/bin/clang++
 build:remote-ci-linux-asan --crosstool_top=//third_party/rbe_configs/cc:toolchain
-build:remote-ci-linux-asan --extra_execution_platforms=//third_party/rbe_configs/config:platform
+build:remote-ci-linux-asan --extra_execution_platforms=//third_party/rbe_configs/config:platform-asan
 build:remote-ci-linux-asan --extra_toolchains=//third_party/rbe_configs/config:cc-toolchain
-build:remote-ci-linux-asan --host_platform=//third_party/rbe_configs/config:platform
-build:remote-ci-linux-asan --platforms=//third_party/rbe_configs/config:platform
+build:remote-ci-linux-asan --host_platform=//third_party/rbe_configs/config:platform-asan
+build:remote-ci-linux-asan --platforms=//third_party/rbe_configs/config:platform-asan
 build:remote-ci-linux-asan --config=remote-ci-common
 #############################################################################
 # remote-ci-linux-tsan: These options are Linux-only using Clang and ThreadSanitizer
