@@ -30,8 +30,6 @@ jobs:
             echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
-      - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/2722
-        run: sed -i '/^android_ndk_repository/ d' WORKSPACE
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true

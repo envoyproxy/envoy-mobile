@@ -27,8 +27,6 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
-      - name: 'Work around android_sdk_repository bug' # https://github.com/bazelbuild/bazel/issues/2722
-        run: sed -i '/^android_ndk_repository/ d' WORKSPACE
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
