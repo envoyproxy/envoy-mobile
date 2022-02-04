@@ -52,11 +52,6 @@ For local builds, set ``ANDROID_HOME`` and ``ANDROID_NDK_HOME`` to point to the 
 
 See `ci/mac_ci_setup.sh` for the specific NDK version used during builds.
 
-You'll also need to uncomment the ``android_sdk_repository`` line in the ``WORKSPACE`` file to work around
-`this bazel issue
-<https://github.com/bazelbuild/bazel/issues/14260>`_. Take care not to check in those changes to source
-control.
-
 ----------------
 iOS requirements
 ----------------
