@@ -40,8 +40,8 @@ python_configure(name = "local_config_python", python_version = "3")
 load("//bazel:python.bzl", "declare_python_abi")
 declare_python_abi(name = "python_abi", python_version = "3")
 
-android_sdk_repository(name = "androidsdk", api_level = 30, build_tools_version = "30.0.2")
+load("//bazel:android_configure.bzl", "android_configure")
+android_configure(name = "local_config_android")
 
-# TODO(jpsim): Uncomment this line once this issue is resolved: https://github.com/bazelbuild/bazel/issues/14260
-# To build any Android targets, uncomment the following line:
-# android_ndk_repository(name = "androidndk", api_level = 21)
+load("@local_config_android//:android_configure.bzl", "android_workspace")
+android_workspace()
