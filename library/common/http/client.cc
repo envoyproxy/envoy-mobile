@@ -310,7 +310,13 @@ void Client::DirectStream::saveFinalStreamIntel() {
   if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
-  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), envoy_final_stream_intel_);
+
+  // TODO(carloseltuerto): this is temporary. StreamInfo has a private field time_source_
+  // Rather expose a new method in StreamInfo which would provide the duration up to now.
+  // Unfortunately, stream_info.requestComplete() is not set yet - this is not an option.
+  RealTimeSource time_source;
+  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), time_source,
+                                  envoy_final_stream_intel_);
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {

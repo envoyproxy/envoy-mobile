@@ -16,7 +16,8 @@ struct ExtraStreamInfo : public FilterState::Object {
 };
 
 // Set fields in final_intel based on stream_info.
-void setFinalStreamIntel(StreamInfo& stream_info, envoy_final_stream_intel& final_intel);
+void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
+                         envoy_final_stream_intel& final_intel);
 
 using ExtraStreamInfoPtr = std::unique_ptr<ExtraStreamInfo>;
 
