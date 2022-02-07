@@ -24,7 +24,6 @@ public:
   void pushTrackedObject(const ScopeTrackedObject* object) override;
   void popTrackedObject(const ScopeTrackedObject* expected_object) override;
   bool trackedObjectStackIsEmpty() const override;
-  TimeSource& timeSource() { return event_dispatcher_->timeSource(); }
 
   /**
    * Drains all queued callbacks to the real dispatcher. Must be called after the underlying
@@ -53,6 +52,11 @@ public:
    * ProvisionalDispatcher::isThreadSafe() is true.
    */
   virtual void deferredDelete(DeferredDeletablePtr&& to_delete);
+
+  /**
+   * Exposes the TimeSource held by the underlying Event::Dispatcher.
+   */
+  virtual TimeSource& timeSource();
 
   // Used for testing.
   Thread::ThreadSynchronizer& synchronizer() { return synchronizer_; }

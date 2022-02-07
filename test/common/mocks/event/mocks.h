@@ -8,9 +8,10 @@
 #include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
 
+#include "test/test_common/test_time.h"
+
 #include "gmock/gmock.h"
 #include "library/common/event/provisional_dispatcher.h"
-#include "test/test_common/test_time.h"
 
 namespace Envoy {
 namespace Event {

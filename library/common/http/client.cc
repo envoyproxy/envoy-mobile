@@ -311,10 +311,6 @@ void Client::DirectStream::saveFinalStreamIntel() {
     return;
   }
 
-    std::cout << "saveFinalStreamIntel parent_ address: " << static_cast<void*>(&parent_) << std::endl;
-    std::cout << "saveFinalStreamIntel parent_.dispatcher_ address: " << static_cast<void*>(&parent_.dispatcher_) << std::endl;
-    std::cout << "saveFinalStreamIntel parent_.dispatcher_.timeSource() address: " << static_cast<void*>(&parent_.dispatcher_.timeSource()) << std::endl;
-
   StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), parent_.dispatcher_.timeSource(),
                                   envoy_final_stream_intel_);
 }
