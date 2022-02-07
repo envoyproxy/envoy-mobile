@@ -23,16 +23,26 @@ const std::string& ExtraStreamInfo::key() {
 
 void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
                          envoy_final_stream_intel& final_intel) {
+  // The wall clock starting time is the one provided by StreamInfo.startTime(). Its Epoch value in
+  // ms goes to final_intel.request_start_ms directly. This is the only value that was taken from
+  // the "wall clock" (a.k.a std::chrono::system_clock:now())
   final_intel.request_start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                      stream_info.startTime().time_since_epoch())
                                      .count();
+
+  // All the following timestamps are monotonic, rebased on the above stream_info.startTime().
+  // StreamInfo.startTimeMonotonic() is used to compute the offset for the rebasing. Both
+  // StreamInfo.startTimeMonotonic() and StreamInfo.startTime() are a snapshot that was taken
+  // at the same time: when invoking the constructor of StreamInfoImpl.
+  // NOTE: it worth noticing that here time_since_epoch() does not return the time since epoch.
+  //       This is particularly counterintuitive, but that's the usual escape hatch to transform
+  //       a duration to a long (int64_t in this case).
   int64_t offset_ms =
       final_intel.request_start_ms - std::chrono::duration_cast<std::chrono::milliseconds>(
                                          stream_info.startTimeMonotonic().time_since_epoch())
                                          .count();
 
   // Unfortunately, stream_info.requestComplete() is not set yet.
-  // Note: StreamInfoImpl.h has a TimeSource field, but not exposed in StreamInfo.
   final_intel.request_end_ms = offset_ms + std::chrono::duration_cast<std::chrono::milliseconds>(
                                                time_source.monotonicTime().time_since_epoch())
                                                .count();
