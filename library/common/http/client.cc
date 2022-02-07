@@ -311,11 +311,11 @@ void Client::DirectStream::saveFinalStreamIntel() {
     return;
   }
 
-  // TODO(carloseltuerto): this is temporary. StreamInfo has a private field time_source_
-  // Rather expose a new method in StreamInfo which would provide the duration up to now.
-  // Unfortunately, stream_info.requestComplete() is not set yet - this is not an option.
-  RealTimeSource time_source;
-  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), time_source,
+    std::cout << "saveFinalStreamIntel parent_ address: " << static_cast<void*>(&parent_) << std::endl;
+    std::cout << "saveFinalStreamIntel parent_.dispatcher_ address: " << static_cast<void*>(&parent_.dispatcher_) << std::endl;
+    std::cout << "saveFinalStreamIntel parent_.dispatcher_.timeSource() address: " << static_cast<void*>(&parent_.dispatcher_.timeSource()) << std::endl;
+
+  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), parent_.dispatcher_.timeSource(),
                                   envoy_final_stream_intel_);
 }
 

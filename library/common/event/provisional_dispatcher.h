@@ -24,6 +24,7 @@ public:
   void pushTrackedObject(const ScopeTrackedObject* object) override;
   void popTrackedObject(const ScopeTrackedObject* expected_object) override;
   bool trackedObjectStackIsEmpty() const override;
+  TimeSource& timeSource() { return event_dispatcher_->timeSource(); }
 
   /**
    * Drains all queued callbacks to the real dispatcher. Must be called after the underlying
