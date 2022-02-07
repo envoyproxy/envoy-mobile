@@ -47,7 +47,9 @@ void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
     setFromOptional(final_intel.connect_start_ms, timing.upstream_connect_start_, offset_ms);
     setFromOptional(final_intel.connect_end_ms, timing.upstream_connect_complete_, offset_ms);
     if (stream_info.protocol().has_value() && stream_info.protocol().value() > Http::Protocol::Http11) {
-      setFromOptional(final_intel.ssl_start_ms, timing.upstream_connect_complete_, offset_ms);
+      if (timing.upstream_handshake_complete_.has_value()) {
+        setFromOptional(final_intel.ssl_start_ms, timing.upstream_connect_complete_, offset_ms);
+      }
       setFromOptional(final_intel.ssl_end_ms, timing.upstream_handshake_complete_, offset_ms);
     }
     final_intel.socket_reused = upstream_info->upstreamNumStreams() > 1;
@@ -65,6 +67,11 @@ void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
     final_intel.received_byte_count = stream_info.getUpstreamBytesMeter()->wireBytesReceived();
   }
   final_intel.response_flags = stream_info.responseFlags();
+}
+
+bool isStreamIdleTimeout(const StreamInfo& stream_info) {
+  return stream_info.responseCodeDetails().has_value() &&
+         stream_info.responseCodeDetails().value() == ResponseCodeDetails::get().StreamIdleTimeout;
 }
 
 } // namespace StreamInfo
