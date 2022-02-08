@@ -43,9 +43,9 @@ void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
                                          .count();
 
   // Unfortunately, stream_info.requestComplete() is not set yet.
-  final_intel.request_end_ms = offset_ms + std::chrono::duration_cast<std::chrono::milliseconds>(
-                                               time_source.monotonicTime().time_since_epoch())
-                                               .count();
+  final_intel.stream_end_ms = offset_ms + std::chrono::duration_cast<std::chrono::milliseconds>(
+                                              time_source.monotonicTime().time_since_epoch())
+                                              .count();
 
   if (stream_info.upstreamInfo()) {
     const auto& upstream_info = stream_info.upstreamInfo();

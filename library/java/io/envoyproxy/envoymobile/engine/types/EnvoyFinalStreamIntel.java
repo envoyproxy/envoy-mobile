@@ -51,9 +51,9 @@ public interface EnvoyFinalStreamIntel {
    */
   public long getResponseStartMs();
   /*
-   * The time the last byte of the request was received, in ms since the epoch.
+   * The time when the stream reached a final state (Error, Cancel, Success), in ms since the epoch.
    */
-  public long getRequestEndMs();
+  public long getStreamEndMs();
   /*
    * True if the upstream socket had been used previously.
    */

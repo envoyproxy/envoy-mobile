@@ -191,8 +191,8 @@ typedef struct {
   int64_t sending_end_ms;
   // The time the first byte of the response was received, in ms since the epoch.
   int64_t response_start_ms;
-  // The time the last byte of the request was received, in ms since the epoch.
-  int64_t request_end_ms;
+  // The time when the stream reached a final state: Error, Cancel, Success.
+  int64_t stream_end_ms;
   // True if the upstream socket had been used previously.
   uint64_t socket_reused;
   // The number of bytes sent upstream.
