@@ -51,6 +51,7 @@ def android_artifacts(name, android_library, manifest, archive_name, native_deps
     # Create the aar
     _classes_jar = _create_classes_jar(name, manifest, android_library)
     _jni_archive = _create_jni_library(name, native_deps)
+    _symbols_archive = _create_symbols_library(name, _jni_archive)
     _aar_output = _create_aar(name, archive_name, _classes_jar, _jni_archive, proguard_rules, visibility)
 
     # Generate other needed files for a maven publish
@@ -156,6 +157,28 @@ def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, vi
         else
             echo "No jni directory found"
         fi
+
+        for so in $$(find jni/ -name '*.so')
+        do
+
+        #     arch=$$(echo $$so|cut -d/ -f2|cut -d- -f1)
+        #     if [[ $$arch =~ "x86_64" ]]; then
+        #       toolchain="x86_64-4.9"
+        #     elif [[ $$arch =~ "x86" ]]; then
+        #       toolchain="x86-4.9"
+        #     elif [[ $$arch =~ "armeabi" ]]; then
+        #       toolchain="arm-linux"
+        #     else 
+        #       toolchain="aarch64-linux"
+        #     fi
+
+	    # env
+            # strip_binary=$$(find $$ANDROID_NDK_HOME -name "-strip"|grep $$toolchain)
+            strip_binary="/home/ubuntu/ephemeral/android/sdk/ndk/21.3.6528147/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+            
+            $$strip_binary --strip-all $$so
+        done
+
         cp $$original_directory/$$src_proguard_txt ./proguard.txt
         cp $$original_directory/$$src_manifest_xml AndroidManifest.xml
         zip -r tmp.aar * > /dev/null
@@ -165,6 +188,31 @@ def _create_aar(name, archive_name, classes_jar, jni_archive, proguard_rules, vi
     )
 
     return _aar_output
+
+def _create_symbols_library(name, jni_archive):
+  native.genrule(
+      name = name + "_symbols_library",
+      outs = [name + "_symbols.zip"],
+      srcs = [
+          jni_archive,
+      ],
+      cmd = """
+      jni_library=$(SRCS)
+
+      mkdir -p symbols
+      unzip $$jni_library > /dev/null
+
+
+      find lib/ -name '*.so'
+      for so in $$(find lib/ -name '*.so')
+      do
+        arch=$$(echo $$so|cut -d/ -f2)
+        objdump --dwarf=info --dwarf=rawline $$so > symbols/$$arch.txt
+      done
+
+      zip $@ symbols/*
+      """,
+  )
 
 def _create_jni_library(name, native_deps = []):
     """
