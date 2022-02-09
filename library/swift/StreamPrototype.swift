@@ -103,6 +103,22 @@ public class StreamPrototype: NSObject {
     return self
   }
 
+  /// Specify a callback for when additional send window becomes available.
+  /// This is only ever called when the library is in explicit flow control mode. When enabled,
+  /// the issuer should wait for this callback after calling sendData, before making another call
+  /// to sendData.
+  ///
+  /// - parameter closure: Closure which will be called when additional send window becomes available.
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func setOnSendWindowAvailable(
+    closure: @escaping (_ streamIntel: StreamIntel) -> Void
+  ) -> StreamPrototype {
+    callbacks.onSendWindowAvailable = closure
+    return self
+  }
+
   /// Specify a callback for when an internal Envoy exception occurs with the stream.
   /// If the closure is called, the stream is complete.
   ///
