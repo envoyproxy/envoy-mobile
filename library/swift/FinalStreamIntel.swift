@@ -5,7 +5,7 @@ import Foundation
 /// Note: -1 means "not present" for the fields of type Int64.
 @objcMembers
 public final class FinalStreamIntel: StreamIntel {
-  /// The time the request started, in ms since the epoch.
+  /// The time the stream started (a.k.a. request started), in ms since the epoch.
   public let streamStartMs: Int64
   /// The time the DNS resolution for this request started, in ms since the epoch.
   public let dnsStartMs: Int64
