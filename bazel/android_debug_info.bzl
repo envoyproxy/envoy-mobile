@@ -20,7 +20,7 @@ def _impl(ctx):
         cc_toolchain = ctx.split_attr._cc_toolchain[platform][cc_common.CcToolchainInfo]
         lib = dep.files.to_list()[0]
         platform_name = platform or ctx.fragments.android.android_cpu
-        objdump_output = ctx.actions.declare_file(platform_name + "/symbols.objdump")
+        objdump_output = ctx.actions.declare_file(platform_name + "/" + platform_name + ".objdump")
 
         ctx.actions.run_shell(
             inputs = [lib],
@@ -41,7 +41,8 @@ def _impl(ctx):
         objdump_outputs.append(objdump_output)
 
     return [
-        DefaultInfo(files = depset(library_outputs + objdump_outputs)),
+        DefaultInfo(files = depset(library_outputs)),
+        OutputGroupInfo(objdump = objdump_outputs),
     ]
 
 android_debug_info = rule(
