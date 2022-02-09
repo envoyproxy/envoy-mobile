@@ -7,7 +7,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
  * Exposes one time HTTP stream metrics, context, and other details.
  *
  * Note: a timestamp field (ends with "Ms") with a value of -1 indicates that it is absent.
- * @param requestStartMs The time the request started, in ms since the epoch.
+ * @param streamStartMs The time the stream started (a.k.a. request started), in ms since the epoch.
  * @param dnsStartMs The time the DNS resolution for this request started, in ms since the epoch.
  * @param dnsEndMs The time the DNS resolution for this request completed, in ms since the epoch.
  * @param connectStartMsThe time the upstream connection started, in ms since the epoch.
@@ -36,7 +36,7 @@ class FinalStreamIntel constructor(
   streamId: Long,
   connectionId: Long,
   attemptCount: Long,
-  val requestStartMs: Long,
+  val streamStartMs: Long,
   val dnsStartMs: Long,
   val dnsEndMs: Long,
   val connectStartMs: Long,
@@ -54,7 +54,7 @@ class FinalStreamIntel constructor(
 ) : StreamIntel(streamId, connectionId, attemptCount) {
   constructor(superBase: EnvoyStreamIntel, base: EnvoyFinalStreamIntel) : this(
     superBase.streamId, superBase.connectionId, superBase.attemptCount,
-    base.requestStartMs, base.dnsStartMs,
+    base.streamStartMs, base.dnsStartMs,
     base.dnsEndMs, base.connectStartMs,
     base.connectEndMs, base.sslStartMs,
     base.sslEndMs, base.sendingStartMs,

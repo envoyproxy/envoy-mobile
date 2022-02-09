@@ -3,7 +3,7 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
 
 class EnvoyFinalStreamIntelImpl implements EnvoyFinalStreamIntel {
-  private long requestStartMs;
+  private long streamStartMs;
   private long dnsStartMs;
   private long dnsEndMs;
   private long connectStartMs;
@@ -20,7 +20,7 @@ class EnvoyFinalStreamIntelImpl implements EnvoyFinalStreamIntel {
   private long responseFlags;
 
   EnvoyFinalStreamIntelImpl(long[] values) {
-    requestStartMs = values[0];
+    streamStartMs = values[0];
     dnsStartMs = values[1];
     dnsEndMs = values[2];
     connectStartMs = values[3];
@@ -38,8 +38,8 @@ class EnvoyFinalStreamIntelImpl implements EnvoyFinalStreamIntel {
   }
 
   @Override
-  public long getRequestStartMs() {
-    return requestStartMs;
+  public long getStreamStartMs() {
+    return streamStartMs;
   }
   @Override
   public long getDnsStartMs() {

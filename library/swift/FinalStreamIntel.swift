@@ -6,7 +6,7 @@ import Foundation
 @objcMembers
 public final class FinalStreamIntel: StreamIntel {
   /// The time the request started, in ms since the epoch.
-  public let requestStartMs: Int64
+  public let streamStartMs: Int64
   /// The time the DNS resolution for this request started, in ms since the epoch.
   public let dnsStartMs: Int64
   /// The time the DNS resolution for this request completed, in ms since the epoch.
@@ -42,7 +42,7 @@ public final class FinalStreamIntel: StreamIntel {
     streamId: Int64,
     connectionId: Int64,
     attemptCount: UInt64,
-    requestStartMs: Int64,
+    streamStartMs: Int64,
     dnsStartMs: Int64,
     dnsEndMs: Int64,
     connectStartMs: Int64,
@@ -58,7 +58,7 @@ public final class FinalStreamIntel: StreamIntel {
     receivedByteCount: UInt64,
     responseFlags: UInt64
   ) {
-    self.requestStartMs = requestStartMs
+    self.streamStartMs = streamStartMs
     self.dnsStartMs = dnsStartMs
     self.dnsEndMs = dnsEndMs
     self.connectStartMs = connectStartMs
@@ -83,7 +83,7 @@ extension FinalStreamIntel {
       streamId: cIntel.stream_id,
       connectionId: cIntel.connection_id,
       attemptCount: cIntel.attempt_count,
-      requestStartMs: cFinalIntel.request_start_ms,
+      streamStartMs: cFinalIntel.stream_start_ms,
       dnsStartMs: cFinalIntel.dns_start_ms,
       dnsEndMs: cFinalIntel.dns_end_ms,
       connectStartMs: cFinalIntel.connect_start_ms,

@@ -104,7 +104,7 @@ jlongArray native_final_stream_intel_to_array(JNIEnv* env,
   jlong* critical_array = static_cast<jlong*>(env->GetPrimitiveArrayCritical(j_array, nullptr));
   RELEASE_ASSERT(critical_array != nullptr, "unable to allocate memory in jni_utility");
 
-  critical_array[0] = static_cast<jlong>(final_stream_intel.request_start_ms);
+  critical_array[0] = static_cast<jlong>(final_stream_intel.stream_start_ms);
   critical_array[1] = static_cast<jlong>(final_stream_intel.dns_start_ms);
   critical_array[2] = static_cast<jlong>(final_stream_intel.dns_end_ms);
   critical_array[3] = static_cast<jlong>(final_stream_intel.connect_start_ms);

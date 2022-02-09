@@ -167,8 +167,8 @@ typedef struct {
  * Note: for the signed fields, -1 means not present.
  */
 typedef struct {
-  // The time the request started, in ms since the epoch.
-  int64_t request_start_ms;
+  // The time the stream started (a.k.a request started), in ms since the epoch.
+  int64_t stream_start_ms;
   // The time the DNS resolution for this request started, in ms since the epoch.
   int64_t dns_start_ms;
   // The time the DNS resolution for this request completed, in ms since the epoch.

@@ -24,9 +24,9 @@ const std::string& ExtraStreamInfo::key() {
 void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
                          envoy_final_stream_intel& final_intel) {
   // The wall clock starting time is the one provided by StreamInfo.startTime(). Its Epoch value in
-  // ms goes to final_intel.request_start_ms directly. This is the only value that was taken from
+  // ms goes to final_intel.stream_start_ms directly. This is the only value that was taken from
   // the "wall clock" (a.k.a std::chrono::system_clock:now())
-  final_intel.request_start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+  final_intel.stream_start_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                                      stream_info.startTime().time_since_epoch())
                                      .count();
 
@@ -38,7 +38,7 @@ void setFinalStreamIntel(StreamInfo& stream_info, TimeSource& time_source,
   //       This is particularly counterintuitive, but that's the usual escape hatch to transform
   //       a duration to a long (int64_t in this case).
   int64_t offset_ms =
-      final_intel.request_start_ms - std::chrono::duration_cast<std::chrono::milliseconds>(
+      final_intel.stream_start_ms - std::chrono::duration_cast<std::chrono::milliseconds>(
                                          stream_info.startTimeMonotonic().time_since_epoch())
                                          .count();
 

@@ -7,9 +7,9 @@ package io.envoyproxy.envoymobile.engine.types;
  */
 public interface EnvoyFinalStreamIntel {
   /*
-   * The time the request started, in ms since the epoch.
+   * The time the stream started (a.k.a request started), in ms since the epoch.
    */
-  public long getRequestStartMs();
+  public long getStreamStartMs();
   /*
    * The time the DNS resolution for this request started, in ms since the epoch.
    */
