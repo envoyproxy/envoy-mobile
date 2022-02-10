@@ -7,8 +7,6 @@
 #import "library/common/main_interface.h"
 #import "library/common/types/c_types.h"
 
-#import <UIKit/UIKit.h>
-
 static void ios_on_engine_running(void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
@@ -601,10 +599,6 @@ static void ios_track_event(envoy_map map, const void *context) {
   // re-enable lifecycle-based stat flushing when
   // https://github.com/envoyproxy/envoy-mobile/issues/748 gets fixed.
   NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-  [notificationCenter addObserver:self
-                         selector:@selector(terminateNotification:)
-                             name:UIApplicationWillTerminateNotification
-                           object:nil];
 }
 
 - (void)terminateNotification:(NSNotification *)notification {

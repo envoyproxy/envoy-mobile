@@ -30,7 +30,7 @@ objc_library(
     sdk_frameworks = [
         "Network",
         "SystemConfiguration",
-        "UIKit",
+        # "UIKit",
     ],
     visibility = ["//visibility:public"],
     deps = [
