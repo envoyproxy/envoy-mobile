@@ -18,7 +18,7 @@ The current support maintainer's GitHub username is defined
   [#envoy-mobile-engflow-ci](https://envoyproxy.slack.com/archives/C02QMNG92A3)).
 
 Even though there is no concrete SLA, the support maintainer will make a
-reasonable effort to engage with discussions within 1-3 business days.
+reasonable effort to engage with discussions within 1 business day.
 
 ## Why is the rotation limited to Lyft employees?
 
