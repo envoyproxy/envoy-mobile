@@ -28,13 +28,14 @@ jobs:
         run: |
           current_release_version=$(git describe --tag --abbrev=0)
           echo $current_release_version
-#          ./bazelw build \
-#              --config=release-android \
-#              --fat_apk_cpu=x86 \
-#              --define=pom_version=$current_release_version \
-#              --config=remote-ci-macos \
-#              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-#              //:android_dist_ci
+          ./bazelw build \
+              --config=release-android \
+              --fat_apk_cpu=x86 \
+              --define=pom_version=$current_release_version \
+              --config=remote-ci-macos \
+              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+              //:android_dist_ci
+          cat dist/envoy-pom.xml
 #      - name: 'Tar artifacts'
 #        run: tar -czvf envoy_mobile.tar.gz dist/envoy.aar dist/envoy-pom.xml dist/envoy-javadoc.jar dist/envoy-sources.jar
 #      - uses: actions/upload-artifact@v2

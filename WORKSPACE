@@ -45,7 +45,7 @@ android_configure(
     name = "local_config_android",
     sdk_api_level = 30,
     ndk_api_level = 21,
-    build_tools_version = "30.0.2"
+#    build_tools_version = "30.0.2"
 )
 
 load("@local_config_android//:android_configure.bzl", "android_workspace")
