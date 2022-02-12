@@ -20,8 +20,8 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-#      - run: ./ci/mac_ci_setup.sh
-#        name: 'Install dependencies'
+      - run: ./ci/mac_ci_setup.sh
+        name: 'Install dependencies'
       - name: 'Build envoy.aar distributable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
