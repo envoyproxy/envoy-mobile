@@ -125,16 +125,17 @@ public class QuicTestServerTest {
   }
 
   @Test
-  public void get_simple() throws Exception {
+  public void get_echoMethod() throws Exception {
     QuicTestServerTest.RequestScenario requestScenario = new QuicTestServerTest.RequestScenario()
-                                                             .setHttpMethod(RequestMethod.GET)
-                                                             .setUrl(QuicTestServer.getServerURL());
+            .setHttpMethod(RequestMethod.GET)
+            .setUrl(QuicTestServer.getEchoMethodURL());
 
     QuicTestServerTest.Response response = sendRequest(requestScenario);
 
     assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
-    assertThat(response.getBodyAsString()).isEqualTo("aaaaaaaaaa");
+    assertThat(response.getBodyAsString()).isEqualTo("GET");
     assertThat(response.getEnvoyError()).isNull();
+    System.err.println(response.getHeaders().allHeaders());
   }
 
   private QuicTestServerTest.Response sendRequest(RequestScenario requestScenario)
