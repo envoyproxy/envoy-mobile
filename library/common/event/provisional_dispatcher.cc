@@ -25,8 +25,12 @@ envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
   Thread::LockGuard lock(state_lock_);
 
   if (drained_) {
-    event_dispatcher_->post(callback);
-    return ENVOY_SUCCESS;
+    if (event_dispatcher_) {
+      event_dispatcher_->post(callback);
+      return ENVOY_SUCCESS;
+    } else {
+      return ENVOY_FAILURE;
+    }
   }
 
   init_queue_.push_back(callback);
