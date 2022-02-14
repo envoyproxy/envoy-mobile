@@ -5,6 +5,10 @@ namespace Envoy {
 envoy_status_t EngineHandle::runOnEngineDispatcher(envoy_engine_t,
                                                    std::function<void(Envoy::Engine&)> func) {
   if (auto e = engine()) {
+    if (e->isTerminated()) {
+      return ENVOY_FAILURE;
+    }
+
     return e->dispatcher().post([func]() {
       if (auto e = engine()) {
         func(*e);
