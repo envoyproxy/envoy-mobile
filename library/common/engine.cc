@@ -179,9 +179,7 @@ envoy_status_t Engine::terminate() {
   return ENVOY_SUCCESS;
 }
 
-bool Engine::isTerminated() {
-  return terminated_;
-}
+bool Engine::isTerminated() { return terminated_; }
 
 Engine::~Engine() { terminate(); }
 
