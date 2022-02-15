@@ -125,7 +125,7 @@ public class QuicTestServerTest {
   }
 
   @Test
-  public void get_echoMethod() throws Exception {
+  public void get_simpleTxt() throws Exception {
     QuicTestServerTest.RequestScenario requestScenario =
         new QuicTestServerTest.RequestScenario()
             .setHttpMethod(RequestMethod.GET)

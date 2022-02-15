@@ -18,7 +18,7 @@ void AutonomousStream::setEndStream(bool end_stream) {
   }
 }
 
-// Check all the special headers and send a customized response based on them.
+// Reply with the canned response if the URI is /simple.txt. Otherwise this is a 503.
 void AutonomousStream::sendResponse() {
   if (headers_->Path()->value() == "/simple.txt") {
     Envoy::Http::ResponseHeaderMapPtr response_headers{
