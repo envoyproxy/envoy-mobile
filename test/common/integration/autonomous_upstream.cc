@@ -29,7 +29,7 @@ void AutonomousStream::sendResponse() {
              {Http::LowerCaseString("X-Original-Url"),
               "https://test.example.com:6121/simple.txt"}})};
     encodeHeaders(*response_headers, /* headers_only_response= */ false);
-    encodeData("This is a simple text file served by QUIC.", /* end_stream= */ true);
+    encodeData("This is a simple text file served by QUIC.\n", /* end_stream= */ true);
   }
 }
 

@@ -134,7 +134,7 @@ public class QuicTestServerTest {
     QuicTestServerTest.Response response = sendRequest(requestScenario);
 
     assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
-    assertThat(response.getBodyAsString()).isEqualTo("This is a simple text file served by QUIC.");
+    assertThat(response.getBodyAsString()).isEqualTo("This is a simple text file served by QUIC.\n");
     assertThat(response.getEnvoyError()).isNull();
   }
 
