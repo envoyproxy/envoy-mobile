@@ -1,39 +1,13 @@
 #include "test/common/integration/autonomous_upstream.h"
 
 namespace Envoy {
-namespace {
-
-void HeaderToInt(const char header_name[], int32_t& return_int,
-                 Http::TestResponseHeaderMapImpl& headers) {
-  const std::string header_value(headers.get_(header_name));
-  if (!header_value.empty()) {
-    uint64_t parsed_value;
-    RELEASE_ASSERT(absl::SimpleAtoi(header_value, &parsed_value) &&
-                       parsed_value < static_cast<uint32_t>(std::numeric_limits<int32_t>::max()),
-                   "");
-    return_int = parsed_value;
-  }
-}
-
-} // namespace
-
-const char AutonomousStream::RESPONSE_SIZE_BYTES[] = "response_size_bytes";
-const char AutonomousStream::RESPONSE_DATA_BLOCKS[] = "response_data_blocks";
-const char AutonomousStream::EXPECT_REQUEST_SIZE_BYTES[] = "expect_request_size_bytes";
-const char AutonomousStream::RESET_AFTER_REQUEST[] = "reset_after_request";
-const char AutonomousStream::CLOSE_AFTER_RESPONSE[] = "close_after_response";
-const char AutonomousStream::NO_TRAILERS[] = "no_trailers";
-const char AutonomousStream::NO_END_STREAM[] = "no_end_stream";
 
 AutonomousStream::AutonomousStream(FakeHttpConnection& parent, Http::ResponseEncoder& encoder,
-                                   AutonomousUpstream& upstream, bool allow_incomplete_streams)
-    : FakeStream(parent, encoder, upstream.timeSystem()), upstream_(upstream),
-      allow_incomplete_streams_(allow_incomplete_streams) {}
+                                   AutonomousUpstream& upstream)
+    : FakeStream(parent, encoder, upstream.timeSystem()) {}
 
 AutonomousStream::~AutonomousStream() {
-  if (!allow_incomplete_streams_) {
-    RELEASE_ASSERT(complete(), "Found that end_stream is not true");
-  }
+  RELEASE_ASSERT(complete(), "Found that end_stream is not true");
 }
 
 // By default, automatically send a response when the request is complete.
@@ -46,42 +20,17 @@ void AutonomousStream::setEndStream(bool end_stream) {
 
 // Check all the special headers and send a customized response based on them.
 void AutonomousStream::sendResponse() {
-  Http::TestResponseHeaderMapImpl headers(*headers_);
-  upstream_.setLastRequestHeaders(*headers_);
-
-  int32_t request_body_length = -1;
-  HeaderToInt(EXPECT_REQUEST_SIZE_BYTES, request_body_length, headers);
-  if (request_body_length >= 0) {
-    EXPECT_EQ(request_body_length, body_.length());
+  if (headers_->Path()->value() == "/simple.txt") {
+    Envoy::Http::ResponseHeaderMapPtr response_headers{
+        Envoy::Http::createHeaderMap<Envoy::Http::ResponseHeaderMapImpl>(
+            {{Envoy::Http::Headers::get().Status, "200"},
+             {Http::LowerCaseString("Cache-Control"), "max-age=0"},
+             {Http::LowerCaseString("Content-Type"), "text/plain"},
+             {Http::LowerCaseString("X-Original-Url"),
+              "https://test.example.com:6121/simple.txt"}})};
+    encodeHeaders(*response_headers, /* headers_only_response= */ false);
+    encodeData("This is a simple text file served by QUIC.", /* end_stream= */ true);
   }
-
-  if (!headers.get_(RESET_AFTER_REQUEST).empty()) {
-    encodeResetStream();
-    return;
-  }
-
-  int32_t response_body_length = 10;
-  HeaderToInt(RESPONSE_SIZE_BYTES, response_body_length, headers);
-
-  int32_t response_data_blocks = 1;
-  HeaderToInt(RESPONSE_DATA_BLOCKS, response_data_blocks, headers);
-
-  pre_response_headers_metadata_ = upstream_.preResponseHeadersMetadata();
-  if (pre_response_headers_metadata_) {
-    encodeMetadata(*pre_response_headers_metadata_);
-  }
-
-  Envoy::Http::ResponseHeaderMapPtr response_headers{
-      Envoy::Http::createHeaderMap<Envoy::Http::ResponseHeaderMapImpl>(
-          {{Envoy::Http::Headers::get().Status, "200"}, {Http::LowerCaseString("Foo"), "bar"}, {Http::LowerCaseString("connection"), "close"}})};
-  encodeHeaders(*response_headers, /* headers_only_response= */ false);
-
-  if (headers_->Path()->value() == "/echo_method") {
-    encodeData(headers_->Method()->value().getStringView(), /* end_stream= */ true);
-  }
-
-    parent_.connection().dispatcher().post(
-        [this]() -> void { parent_.connection().close(Network::ConnectionCloseType::FlushWrite); });
 }
 
 AutonomousHttpConnection::AutonomousHttpConnection(AutonomousUpstream& autonomous_upstream,
@@ -95,8 +44,7 @@ AutonomousHttpConnection::AutonomousHttpConnection(AutonomousUpstream& autonomou
 
 Http::RequestDecoder& AutonomousHttpConnection::newStream(Http::ResponseEncoder& response_encoder,
                                                           bool) {
-  auto stream =
-      new AutonomousStream(*this, response_encoder, upstream_, upstream_.allow_incomplete_streams_);
+  auto stream = new AutonomousStream(*this, response_encoder, upstream_);
   streams_.push_back(FakeStreamPtr{stream});
   return *(stream);
 }
@@ -121,60 +69,5 @@ bool AutonomousUpstream::createListenerFilterChain(Network::ListenerFilterManage
 
 void AutonomousUpstream::createUdpListenerFilterChain(Network::UdpListenerFilterManager&,
                                                       Network::UdpReadFilterCallbacks&) {}
-
-void AutonomousUpstream::setLastRequestHeaders(const Http::HeaderMap& headers) {
-  Thread::LockGuard lock(headers_lock_);
-  last_request_headers_ = std::make_unique<Http::TestRequestHeaderMapImpl>(headers);
-}
-
-std::unique_ptr<Http::TestRequestHeaderMapImpl> AutonomousUpstream::lastRequestHeaders() {
-  Thread::LockGuard lock(headers_lock_);
-  return std::move(last_request_headers_);
-}
-
-void AutonomousUpstream::setResponseTrailers(
-    std::unique_ptr<Http::TestResponseTrailerMapImpl>&& response_trailers) {
-  Thread::LockGuard lock(headers_lock_);
-  response_trailers_ = std::move(response_trailers);
-}
-
-void AutonomousUpstream::setResponseHeaders(
-    std::unique_ptr<Http::TestResponseHeaderMapImpl>&& response_headers) {
-  Thread::LockGuard lock(headers_lock_);
-  response_headers_ = std::move(response_headers);
-}
-
-void AutonomousUpstream::setPreResponseHeadersMetadata(
-    std::unique_ptr<Http::MetadataMapVector>&& metadata) {
-  Thread::LockGuard lock(headers_lock_);
-  pre_response_headers_metadata_ = std::move(metadata);
-}
-
-Http::TestResponseTrailerMapImpl AutonomousUpstream::responseTrailers() {
-  Thread::LockGuard lock(headers_lock_);
-  Http::TestResponseTrailerMapImpl return_trailers = *response_trailers_;
-  return return_trailers;
-}
-
-Http::TestResponseHeaderMapImpl AutonomousUpstream::responseHeaders() {
-  Thread::LockGuard lock(headers_lock_);
-  Http::TestResponseHeaderMapImpl return_headers = *response_headers_;
-  return return_headers;
-}
-
-std::unique_ptr<Http::MetadataMapVector> AutonomousUpstream::preResponseHeadersMetadata() {
-  Thread::LockGuard lock(headers_lock_);
-  return std::move(pre_response_headers_metadata_);
-}
-
-AssertionResult AutonomousUpstream::closeConnection(uint32_t index,
-                                                    std::chrono::milliseconds timeout) {
-  return shared_connections_[index]->executeOnDispatcher(
-      [](Network::Connection& connection) {
-        ASSERT(connection.state() == Network::Connection::State::Open);
-        connection.close(Network::ConnectionCloseType::FlushWrite);
-      },
-      timeout);
-}
 
 } // namespace Envoy

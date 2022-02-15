@@ -34,7 +34,7 @@ import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestFinishedInfo.Metrics;
 import org.chromium.net.UploadDataProvider;
 
-/** UrlRequest, backed by Envoy-Mobile, a.k.a Cronvoy */
+/** UrlRequest, backed by Envoy-Mobile. */
 public final class CronetUrlRequest extends UrlRequestBase {
 
   /**

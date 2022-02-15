@@ -7,12 +7,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class QuicTestServer {
 
-  private static final String ECHO_HEADER_PATH = "/echo_header";
-  private static final String ECHO_METHOD_PATH = "/echo_method";
-  private static final String ECHO_ALL_HEADERS_PATH = "/echo_all_headers";
-  private static final String REDIRECT_TO_ECHO_BODY_PATH = "/redirect_to_echo_body";
-  private static final String ECHO_BODY_PATH = "/echo_body";
-
   private static final AtomicBoolean sServerRunning = new AtomicBoolean();
 
   /*
@@ -50,20 +44,6 @@ public final class QuicTestServer {
     }
     return nativeGetServerPort();
   }
-
-  public static String getEchoBodyURL() { return getUrl(ECHO_BODY_PATH); }
-
-  public static String getEchoHeaderURL(String header) {
-    return getUrl(ECHO_HEADER_PATH + "?" + header);
-  }
-
-  public static String getEchoAllHeadersURL() { return getUrl(ECHO_ALL_HEADERS_PATH); }
-
-  public static String getEchoMethodURL() { return getUrl(ECHO_METHOD_PATH); }
-
-  public static String getRedirectToEchoBody() { return getUrl(REDIRECT_TO_ECHO_BODY_PATH); }
-
-  private static String getUrl(String path) { return getServerURL() + path; }
 
   private static native void nativeStartQuicTestServer();
 
