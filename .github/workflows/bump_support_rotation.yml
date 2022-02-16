@@ -22,16 +22,18 @@ jobs:
           echo "::set-output name=BRANCH_NAME::support-bump-${GITHUB_RUN_ID}"
       - name: Commit Changes
         run: |
-          git remote set-url origin "https://${{ secrets.GITHUB_TOKEN }}@github.com/envoyproxy/envoy-mobile.git/"
+          git remote set-url origin "https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/envoyproxy/envoy-mobile.git/"
           git config --global user.email "${GITHUB_ACTOR}"
           git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
           git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
           git add .github/lyft_maintainers.yml
           git commit -am "Bump Lyft Support Rotation"
+          git push "${{ steps.branch.outputs.BRANCH_NAME }}"
       - name: Submit Pull Request
-        uses: repo-sync/pull-request@v2
-        with:
-          pr_title: Bump Lyft Support Rotation
-          source_branch: ${{ steps.branch.outputs.BRANCH_NAME }}
-          destination_branch: main
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/octocat/hello-world/pulls \
+            -d '{"head":"${{ steps.branch.outputs.BRANCH_NAME }}","base":"main", "title": "Bump Lyft Support Rotation"}'
