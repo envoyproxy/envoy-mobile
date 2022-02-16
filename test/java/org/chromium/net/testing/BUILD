@@ -2,7 +2,7 @@ load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_android_test")
 
-licenses(["notice"])  # Apache 2
+licenses(["notice"])  # Apache 2.
 
 envoy_package()
 
@@ -16,10 +16,13 @@ android_library(
         "FailurePhase.java",
         "Feature.java",
         "FileUtils.java",
+        "Http2TestHandler.java",
+        "Http2TestServer.java",
         "MetricsTestUtil.java",
         "MockUrlRequestJobFactory.java",
         "NativeTestServer.java",
         "PathUtils.java",
+        "ReportingCollector.java",
         "StrictModeContext.java",
         "TestFilesInstaller.java",
         "TestUploadDataProvider.java",
@@ -39,6 +42,12 @@ android_library(
         "@maven//:androidx_test_monitor",
         "@maven//:com_squareup_okhttp3_mockwebserver",
         "@maven//:com_squareup_okio_okio",
+        "@maven//:io_netty_netty_buffer",
+        "@maven//:io_netty_netty_codec_http",
+        "@maven//:io_netty_netty_codec_http2",
+        "@maven//:io_netty_netty_common",
+        "@maven//:io_netty_netty_handler",
+        "@maven//:io_netty_netty_transport",
         "@maven//:junit_junit",
     ],
 )
