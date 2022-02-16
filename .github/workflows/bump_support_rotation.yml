@@ -1,10 +1,10 @@
 name: bump_support_rotation
 
 on:
-  workflow_dispatch:
-  schedule:
-    # Mondays at 2pm UTC (9am EST)
-    - cron: "0 14 * * 1"
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   bump_support_rotation:
