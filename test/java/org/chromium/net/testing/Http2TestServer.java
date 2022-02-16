@@ -133,9 +133,8 @@ public final class Http2TestServer {
                                              String keyFileName, CountDownLatch hangingUrlLatch)
       throws Exception {
     sReportingCollector = new ReportingCollector();
-    Http2TestServerRunnable http2TestServerRunnable = new Http2TestServerRunnable(
-        new File(certFileName),
-        new File(keyFileName), hangingUrlLatch);
+    Http2TestServerRunnable http2TestServerRunnable =
+        new Http2TestServerRunnable(new File(certFileName), new File(keyFileName), hangingUrlLatch);
     new Thread(http2TestServerRunnable).start();
     http2TestServerRunnable.blockUntilStarted();
     return true;
