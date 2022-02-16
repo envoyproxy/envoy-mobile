@@ -25,4 +25,4 @@ reasonable effort to engage with discussions within 1 business day.
 Envoy Mobile is a project maintained by contributors from multiple
 companies, as highlighted in [OWNERS.md](../OWNERS.md), but as the
 project grows we believe it will be helpful to have a point of contact
-within a company that has bee using Envoy Mobile in production.
+within a company that has been using Envoy Mobile in production.
