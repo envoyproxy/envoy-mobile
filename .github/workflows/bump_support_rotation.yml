@@ -9,37 +9,20 @@ on:
 jobs:
   bump_support_rotation:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
       - name: git checkout
         uses: actions/checkout@v2
-        with:
-          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
-          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
       - name: Bump Lyft Support Rotation
         run: ./tools/bump_lyft_support_rotation.sh
-      - name: Set Branch
-        id: branch
-        run: |
-          echo "::set-output name=BRANCH_NAME::support-bump-${GITHUB_RUN_ID}"
-      - name: Commit Changes
-        run: |
-          git config --global user.email "${GITHUB_ACTOR}"
-          git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
-          git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
-          git add .github/lyft_maintainers.yml
-          git commit -am "Bump Lyft Support Rotation"
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.branch.outputs.BRANCH_NAME }}
-      - name: Submit Pull Request
-        run: |
-          curl \
-            -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/octocat/hello-world/pulls \
-            -d '{"head":"${{ steps.branch.outputs.BRANCH_NAME }}","base":"main", "title": "Bump Lyft Support Rotation"}'
+          token: ${{ secrets.CREDENTIALS_GITHUB_PUSH_TOKEN }}
+          title: Bump Lyft Support Rotation
+          commit-message: Bump Lyft Support Rotation
+          committer: GitHub Action <noreply@github.com>
+          base: main
+          delete-branch: true
+          draft: false
+          branch: support-bump
+          branch-suffix: short-commit-hash
