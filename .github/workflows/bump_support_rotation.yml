@@ -28,12 +28,10 @@ jobs:
           git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
           git add .github/lyft_maintainers.yml
           git commit -am "Bump Lyft Support Rotation"
-          git push origin "${{ steps.branch.outputs.BRANCH_NAME }}"
       - name: Submit Pull Request
-        run: |
-          curl \
-            -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/octocat/hello-world/pulls \
-            -d '{"head":"${{ steps.branch.outputs.BRANCH_NAME }}","base":"main", "title": "Bump Lyft Support Rotation"}'
+        uses: repo-sync/pull-request@v2
+        with:
+          pr_title: Bump Lyft Support Rotation
+          source_branch: ${{ steps.branch.outputs.BRANCH_NAME }}
+          destination_branch: main
+          github_token: ${{ secrets.GITHUB_TOKEN }}
