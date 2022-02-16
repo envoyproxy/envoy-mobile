@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: git checkout
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
       - name: Bump Lyft Support Rotation
         run: ./tools/bump_lyft_support_rotation.sh
       - name: Set Branch
@@ -22,13 +25,16 @@ jobs:
           echo "::set-output name=BRANCH_NAME::support-bump-${GITHUB_RUN_ID}"
       - name: Commit Changes
         run: |
-          git remote set-url origin "https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/envoyproxy/envoy-mobile.git/"
           git config --global user.email "${GITHUB_ACTOR}"
           git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
           git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
           git add .github/lyft_maintainers.yml
           git commit -am "Bump Lyft Support Rotation"
-          git push origin "${{ steps.branch.outputs.BRANCH_NAME }}"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.branch.outputs.BRANCH_NAME }}
       - name: Submit Pull Request
         run: |
           curl \
