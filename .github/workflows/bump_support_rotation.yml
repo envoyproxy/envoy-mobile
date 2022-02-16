@@ -28,7 +28,7 @@ jobs:
           git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
           git add .github/lyft_maintainers.yml
           git commit -am "Bump Lyft Support Rotation"
-          git push "${{ steps.branch.outputs.BRANCH_NAME }}"
+          git push origin "${{ steps.branch.outputs.BRANCH_NAME }}"
       - name: Submit Pull Request
         run: |
           curl \
