@@ -22,9 +22,10 @@ jobs:
           echo "::set-output name=BRANCH_NAME::support-bump-${GITHUB_RUN_ID}"
       - name: Commit Changes
         run: |
-          git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
+          git remote set-url origin "https://${{ secrets.GITHUB_TOKEN }}@github.com/envoyproxy/envoy-mobile.git/"
           git config --global user.email "${GITHUB_ACTOR}"
           git config --global user.name "${GITHUB_ACTOR}@users.noreply.github.com"
+          git checkout -b "${{ steps.branch.outputs.BRANCH_NAME }}"
           git add .github/lyft_maintainers.yml
           git commit -am "Bump Lyft Support Rotation"
           git push origin "${{ steps.branch.outputs.BRANCH_NAME }}"
