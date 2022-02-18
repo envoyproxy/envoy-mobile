@@ -297,6 +297,22 @@ R"(
               response_direction_config:
                 common_config:
                   ignore_no_transform_header: true
+          - name: envoy.filters.http.decompressor
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+              decompressor_library:
+                name: text_optimized
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.compression.brotli.decompressor.v3.Brotli
+                  window_bits: 10
+              request_direction_config:
+                common_config:
+                  enabled:
+                    default_value: false
+                    runtime_key: request_decompressor_enabled
+              response_direction_config:
+                common_config:
+                  ignore_no_transform_header: true
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
