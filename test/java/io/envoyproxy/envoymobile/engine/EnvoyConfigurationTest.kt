@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile.engine
 
+import io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.fail
 import org.junit.Test
@@ -28,9 +29,9 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", listOf("8.8.8.8"), true, true, true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
-      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
-      emptyList(), emptyMap()
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", listOf("8.8.8.8"), true,
+      true, true, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
+      TrustChainVerification.ACCEPT_UNTRUSTED, "[test]", listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -72,6 +73,9 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&stream_idle_timeout 678s")
     assertThat(resolvedTemplate).contains("&per_try_idle_timeout 910s")
 
+    // TlS Verification
+    assertThat(resolvedTemplate).contains("&trust_chain_verification ACCEPT_UNTRUSTED")
+
     // Filters
     assertThat(resolvedTemplate).contains("filter_name")
     assertThat(resolvedTemplate).contains("test_config")
@@ -80,9 +84,9 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving with alternate values also sets appropriate config`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", emptyList(), false, false, false, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
-      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
-      emptyList(), emptyMap()
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", emptyList(), false,
+      false, false, 222, 333, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
+      TrustChainVerification.ACCEPT_UNTRUSTED,"[test]", listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -100,8 +104,9 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolve templates with invalid templates will throw on build`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", emptyList(), false, false, false, 123, 123, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
-      emptyList(), emptyList(), emptyMap()
+      false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", emptyList(), false,
+      false, false, 123, 123, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
+      TrustChainVerification.ACCEPT_UNTRUSTED,"[test]", emptyList(), emptyList(), emptyMap()
     )
 
     try {
@@ -115,8 +120,9 @@ class EnvoyConfigurationTest {
   @Test
   fun `cannot configure both statsD and gRPC stat sink`() {
     val envoyConfiguration = EnvoyConfiguration(
-      false, "stats.foo.com", 5050, 123, 234, 345, 456, 321, "[hostname]", emptyList(), false, false, false, 123, 123, 567, 678, 910, "v1.2.3", "com.mydomain.myapp", "[test]",
-      emptyList(), emptyList(), emptyMap()
+      false, "stats.foo.com", 5050, 123, 234, 345, 456, 321, "[hostname]", emptyList(), false,
+      false, false, 123, 123, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
+      TrustChainVerification.ACCEPT_UNTRUSTED,"[test]", emptyList(), emptyList(), emptyMap()
     )
 
     try {
