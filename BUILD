@@ -52,6 +52,7 @@ genrule(
     srcs = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_pom_xml",
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_objdump_collector",
     ],
     outs = ["output_in_dist_directory"],
     cmd = """
@@ -60,6 +61,14 @@ genrule(
     chmod 755 $$2
     cp $$1 dist/envoy.aar
     cp $$2 dist/envoy-pom.xml
+    shift 2
+
+    mkdir -p dist/symbols
+    if [[ -n "$$@" ]]; then
+        chmod 755 $$@
+        cp $$@ dist/symbols
+        tar -cvf dist/symbols.tar dist/symbols
+    fi
     touch $@
     """,
     stamp = True,

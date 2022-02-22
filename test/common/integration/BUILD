@@ -7,11 +7,11 @@ envoy_package()
 envoy_cc_test(
     name = "client_integration_test",
     srcs = ["client_integration_test.cc"],
+    exec_properties = {
+        # TODO(willengflow): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
     repository = "@envoy",
-    # TODO(jpsim): Fix remote execution for these tests
-    tags = [
-        "no-remote-exec",
-    ],
     deps = [
         "//library/common/extensions/filters/http/local_error:config",
         "//library/common/extensions/filters/http/local_error:filter_cc_proto",
@@ -41,9 +41,9 @@ envoy_cc_test_library(
     ],
     repository = "@envoy",
     deps = [
+        ":autonomous_upstream_lib",
         "@envoy//source/exe:process_wide_lib",
         "@envoy//test/config:utility_lib",
-        "@envoy//test/integration:autonomous_upstream_lib",
         "@envoy//test/mocks/server:transport_socket_factory_context_mocks",
         "@envoy//test/test_common:environment_lib",
     ] + select({
@@ -52,4 +52,18 @@ envoy_cc_test_library(
             "@envoy//source/common/signal:sigaction_lib",
         ],
     }),
+)
+
+envoy_cc_test_library(
+    name = "autonomous_upstream_lib",
+    srcs = [
+        "autonomous_upstream.cc",
+    ],
+    hdrs = [
+        "autonomous_upstream.h",
+    ],
+    repository = "@envoy",
+    deps = [
+        "@envoy//test/integration:fake_upstream_lib",
+    ],
 )

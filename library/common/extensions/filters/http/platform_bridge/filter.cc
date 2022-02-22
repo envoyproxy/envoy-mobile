@@ -150,8 +150,18 @@ void PlatformBridgeFilter::onDestroy() {
   ENVOY_LOG(trace, "PlatformBridgeFilter({})::onDestroy", filter_name_);
   alive_ = false;
 
-  // If the filter chain is destroyed before a response is received, treat as cancellation.
-  if (!response_filter_base_->state_.stream_complete_ && platform_filter_.on_cancel) {
+  auto& info = decoder_callbacks_->streamInfo();
+  if (response_filter_base_->state_.stream_complete_ && platform_filter_.on_error &&
+      StreamInfo::isStreamIdleTimeout(info)) {
+    // If the stream info has a response code details with a stream idle timeout, treat as error.
+    ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_error", filter_name_);
+    envoy_data error_message = Data::Utility::copyToBridgeData("Stream idle timeout");
+    auto& info = decoder_callbacks_->streamInfo();
+    int32_t attempts = static_cast<int32_t>(info.attemptCount().value_or(0));
+    platform_filter_.on_error({ENVOY_REQUEST_TIMEOUT, error_message, attempts}, streamIntel(),
+                              finalStreamIntel(), platform_filter_.instance_context);
+  } else if (!response_filter_base_->state_.stream_complete_ && platform_filter_.on_cancel) {
+    // If the filter chain is destroyed before a response is received, treat as cancellation.
     ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_cancel", filter_name_);
     platform_filter_.on_cancel(streamIntel(), finalStreamIntel(),
                                platform_filter_.instance_context);
@@ -194,7 +204,8 @@ envoy_final_stream_intel PlatformBridgeFilter::finalStreamIntel() {
   // FIXME: Stream handle cannot currently be set from the filter context.
   envoy_final_stream_intel final_stream_intel{-1, -1, -1, -1, -1, -1, -1, -1,
                                               -1, -1, -1, 0,  0,  0,  0};
-  setFinalStreamIntel(decoder_callbacks_->streamInfo(), final_stream_intel);
+  setFinalStreamIntel(decoder_callbacks_->streamInfo(), dispatcher_.timeSource(),
+                      final_stream_intel);
   return final_stream_intel;
 }
 
@@ -202,7 +213,7 @@ envoy_stream_intel PlatformBridgeFilter::streamIntel() {
   RELEASE_ASSERT(decoder_callbacks_, "StreamInfo accessed before filter callbacks are set");
   auto& info = decoder_callbacks_->streamInfo();
   // FIXME: Stream handle cannot currently be set from the filter context.
-  envoy_stream_intel stream_intel{-1, -1, 0};
+  envoy_stream_intel stream_intel{-1, -1, 0, 0};
   if (info.upstreamInfo()) {
     stream_intel.connection_id = info.upstreamInfo()->upstreamConnectionId().value_or(-1);
   }

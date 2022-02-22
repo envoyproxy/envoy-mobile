@@ -1,0 +1,29 @@
+name: bump_support_rotation
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Mondays at 2pm UTC (9am EST)
+    - cron: "0 14 * * 1"
+
+jobs:
+  bump_support_rotation:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v2
+      - name: Bump Lyft Support Rotation
+        run: ./tools/bump_lyft_support_rotation.sh
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.CREDENTIALS_GITHUB_PUSH_TOKEN }}
+          title: Bump Lyft Support Rotation
+          commit-message: Bump Lyft Support Rotation
+          committer: GitHub Action <noreply@github.com>
+          base: main
+          delete-branch: true
+          branch: support-bump
+          branch-suffix: short-commit-hash

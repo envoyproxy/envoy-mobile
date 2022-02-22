@@ -153,6 +153,12 @@ typedef struct {
   int64_t connection_id;
   // The number of internal attempts to carry out a request/operation. 0 if not present.
   uint64_t attempt_count;
+  // Number of bytes consumed by the non terminal callbacks out of the response.
+  // NOTE: on terminal callbacks (on_complete, on_error_, on_cancel), this value will not be equal
+  //       to envoy_final_stream_intel.received_byte_count. The latter represents the real number
+  //       of bytes received before decompression. consumed_bytes_from_response omits the number
+  //       number of bytes related to the Status Line, and is after decompression.
+  uint64_t consumed_bytes_from_response;
 } envoy_stream_intel;
 
 /**
@@ -161,8 +167,8 @@ typedef struct {
  * Note: for the signed fields, -1 means not present.
  */
 typedef struct {
-  // The time the request started, in ms since the epoch.
-  int64_t request_start_ms;
+  // The time the stream started (a.k.a request started), in ms since the epoch.
+  int64_t stream_start_ms;
   // The time the DNS resolution for this request started, in ms since the epoch.
   int64_t dns_start_ms;
   // The time the DNS resolution for this request completed, in ms since the epoch.
@@ -185,8 +191,8 @@ typedef struct {
   int64_t sending_end_ms;
   // The time the first byte of the response was received, in ms since the epoch.
   int64_t response_start_ms;
-  // The time the last byte of the request was received, in ms since the epoch.
-  int64_t request_end_ms;
+  // The time when the stream reached a final state: Error, Cancel, Success.
+  int64_t stream_end_ms;
   // True if the upstream socket had been used previously.
   uint64_t socket_reused;
   // The number of bytes sent upstream.
