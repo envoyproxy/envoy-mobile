@@ -19,7 +19,7 @@ public class EnvoyConfiguration {
     VERIFY_TRUST_CHAIN,
     // Connections where the certificate fails verification will be permitted.
     // For HTTP connections, the result of certificate verification can be used in route matching.
-    // Mostly used for testing.
+    // Used for testing.
     ACCEPT_UNTRUSTED;
   }
 
@@ -75,7 +75,7 @@ public class EnvoyConfiguration {
    * @param perTryIdleTimeoutSeconds     per try idle timeout for HTTP streams.
    * @param appVersion                   the App Version of the App using this Envoy Client.
    * @param appId                        the App ID of the App using this Envoy Client.
-   * @param trustChainVerification       wether or not to make TLS verification a passthrough.
+   * @param trustChainVerification       wether to mute TLS Cert verification - for tests only.
    * @param virtualClusters              the JSON list of virtual cluster configs.
    * @param nativeFilterChain            the configuration for native filters.
    * @param httpPlatformFilterFactories  the configuration for platform filters.
@@ -135,7 +135,6 @@ public class EnvoyConfiguration {
   String resolveTemplate(final String templateYAML, final String platformFilterTemplateYAML,
                          final String nativeFilterTemplateYAML) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
-    System.err.println("nativeFilterTemplateYAML\n" +nativeFilterTemplateYAML);
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
       String filterConfig = platformFilterTemplateYAML.replace("{{ platform_filter_name }}",

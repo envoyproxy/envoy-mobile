@@ -380,9 +380,9 @@ open class EngineBuilder(
   }
 
   /**
-   * Set how the TrustChainVerification must be done.
+   * Set how the TrustChainVerification must be handled.
    *
-   * @param trustChainVerification wether or not to make TLS verification a passthrough.
+   * @param trustChainVerification wether to mute TLS Cert verification - for tests only
    *
    * @return this builder.
    */
