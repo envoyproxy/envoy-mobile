@@ -41,20 +41,11 @@ if [ -n "$CIRCLECI" ]; then
     mv ~/.gitconfig ~/.gitconfig_save
 fi
 
-# Required as bazel and a foreign bazelisk are installed in the latest macos vm image, we have
-# to unlink/overwrite them to install bazelisk
-echo "Installing bazelisk"
-brew reinstall --force bazelisk
-if ! brew link --overwrite bazelisk; then
-    echo "Failed to install and link bazelisk"
-    exit 1
-fi
-
-bazel version
+./bazelw version
 
 pip3 install slackclient
 # https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
-sudo xcode-select --switch /Applications/Xcode_13.0.app
+sudo xcode-select --switch /Applications/Xcode_13.2.1.app
 
 # Download and set up ndk 21. Github upgraded to ndk 22 for their Mac image.
 ANDROID_HOME=$ANDROID_SDK_ROOT

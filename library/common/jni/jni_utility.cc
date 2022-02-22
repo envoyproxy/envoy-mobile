@@ -53,7 +53,11 @@ int unbox_integer(JNIEnv* env, jobject boxedInteger) {
 }
 
 envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data) {
-  size_t data_length = env->GetArrayLength(j_data);
+  size_t data_length = static_cast<size_t>(env->GetArrayLength(j_data));
+  return array_to_native_data(env, j_data, data_length);
+}
+
+envoy_data array_to_native_data(JNIEnv* env, jbyteArray j_data, size_t data_length) {
   uint8_t* native_bytes = static_cast<uint8_t*>(safe_malloc(data_length));
   void* critical_data = env->GetPrimitiveArrayCritical(j_data, 0);
   memcpy(native_bytes, critical_data, data_length); // NOLINT(safe-memcpy)
@@ -81,12 +85,41 @@ jbyteArray native_data_to_array(JNIEnv* env, envoy_data data) {
 }
 
 jlongArray native_stream_intel_to_array(JNIEnv* env, envoy_stream_intel stream_intel) {
-  jlongArray j_array = env->NewLongArray(3);
+  jlongArray j_array = env->NewLongArray(4);
   jlong* critical_array = static_cast<jlong*>(env->GetPrimitiveArrayCritical(j_array, nullptr));
   RELEASE_ASSERT(critical_array != nullptr, "unable to allocate memory in jni_utility");
   critical_array[0] = static_cast<jlong>(stream_intel.stream_id);
   critical_array[1] = static_cast<jlong>(stream_intel.connection_id);
   critical_array[2] = static_cast<jlong>(stream_intel.attempt_count);
+  critical_array[3] = static_cast<jlong>(stream_intel.consumed_bytes_from_response);
+  // Here '0' (for which there is no named constant) indicates we want to commit the changes back
+  // to the JVM and free the c array, where applicable.
+  env->ReleasePrimitiveArrayCritical(j_array, critical_array, 0);
+  return j_array;
+}
+
+jlongArray native_final_stream_intel_to_array(JNIEnv* env,
+                                              envoy_final_stream_intel final_stream_intel) {
+  jlongArray j_array = env->NewLongArray(15);
+  jlong* critical_array = static_cast<jlong*>(env->GetPrimitiveArrayCritical(j_array, nullptr));
+  RELEASE_ASSERT(critical_array != nullptr, "unable to allocate memory in jni_utility");
+
+  critical_array[0] = static_cast<jlong>(final_stream_intel.stream_start_ms);
+  critical_array[1] = static_cast<jlong>(final_stream_intel.dns_start_ms);
+  critical_array[2] = static_cast<jlong>(final_stream_intel.dns_end_ms);
+  critical_array[3] = static_cast<jlong>(final_stream_intel.connect_start_ms);
+  critical_array[4] = static_cast<jlong>(final_stream_intel.connect_end_ms);
+  critical_array[5] = static_cast<jlong>(final_stream_intel.ssl_start_ms);
+  critical_array[6] = static_cast<jlong>(final_stream_intel.ssl_end_ms);
+  critical_array[7] = static_cast<jlong>(final_stream_intel.sending_start_ms);
+  critical_array[8] = static_cast<jlong>(final_stream_intel.sending_end_ms);
+  critical_array[9] = static_cast<jlong>(final_stream_intel.response_start_ms);
+  critical_array[10] = static_cast<jlong>(final_stream_intel.stream_end_ms);
+  critical_array[11] = static_cast<jlong>(final_stream_intel.socket_reused);
+  critical_array[12] = static_cast<jlong>(final_stream_intel.sent_byte_count);
+  critical_array[13] = static_cast<jlong>(final_stream_intel.received_byte_count);
+  critical_array[14] = static_cast<jlong>(final_stream_intel.response_flags);
+
   // Here '0' (for which there is no named constant) indicates we want to commit the changes back
   // to the JVM and free the c array, where applicable.
   env->ReleasePrimitiveArrayCritical(j_array, critical_array, 0);
@@ -109,9 +142,10 @@ jobject native_map_to_map(JNIEnv* env, envoy_map map) {
 }
 
 envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
-  uint8_t* direct_address = static_cast<uint8_t*>(env->GetDirectBufferAddress(j_data));
+  // Returns -1 if the buffer is not a direct buffer.
+  jlong data_length = env->GetDirectBufferCapacity(j_data);
 
-  if (direct_address == nullptr) {
+  if (data_length < 0) {
     jclass jcls_ByteBuffer = env->FindClass("java/nio/ByteBuffer");
     // We skip checking hasArray() because only direct ByteBuffers or array-backed ByteBuffers
     // are supported. We will crash here if this is an invalid buffer, but guards may be
@@ -125,9 +159,30 @@ envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data) {
     return native_data;
   }
 
+  return buffer_to_native_data(env, j_data, static_cast<size_t>(data_length));
+}
+
+envoy_data buffer_to_native_data(JNIEnv* env, jobject j_data, size_t data_length) {
+  // Returns nullptr if the buffer is not a direct buffer.
+  uint8_t* direct_address = static_cast<uint8_t*>(env->GetDirectBufferAddress(j_data));
+
+  if (direct_address == nullptr) {
+    jclass jcls_ByteBuffer = env->FindClass("java/nio/ByteBuffer");
+    // We skip checking hasArray() because only direct ByteBuffers or array-backed ByteBuffers
+    // are supported. We will crash here if this is an invalid buffer, but guards may be
+    // implemented in the JVM layer.
+    jmethodID jmid_array = env->GetMethodID(jcls_ByteBuffer, "array", "()[B");
+    jbyteArray array = static_cast<jbyteArray>(env->CallObjectMethod(j_data, jmid_array));
+    env->DeleteLocalRef(jcls_ByteBuffer);
+
+    envoy_data native_data = array_to_native_data(env, array, data_length);
+    env->DeleteLocalRef(array);
+    return native_data;
+  }
+
   envoy_data native_data;
   native_data.bytes = direct_address;
-  native_data.length = env->GetDirectBufferCapacity(j_data);
+  native_data.length = data_length;
   native_data.release = jni_delete_global_ref;
   native_data.context = env->NewGlobalRef(j_data);
 

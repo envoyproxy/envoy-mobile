@@ -35,6 +35,9 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsQueryTimeoutSeconds = 25
   private var dnsPreresolveHostnames = "[]"
+  private var dnsFallbackNameservers = listOf<String>()
+  private var dnsFilterUnroutableFamilies = false
+  private var enableHappyEyeballs = false
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
@@ -149,6 +152,42 @@ open class EngineBuilder(
    */
   fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
     this.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return this
+  }
+
+  /**
+   * Add a list of IP addresses to use as fallback DNS name servers.
+   *
+   * @param dnsFallbackNameservers addresses to use.
+   *
+   * @return this builder.
+   */
+  fun addDNSFallbackNameservers(dnsFallbackNameservers: List<String>): EngineBuilder {
+    this.dnsFallbackNameservers = dnsFallbackNameservers
+    return this
+  }
+
+  /**
+   * Specify whether to filter unroutable IP families during DNS resolution or not.
+   *
+   * @param dnsFilterUnroutableFamilies whether to filter or not.
+   *
+   * @return this builder.
+   */
+  fun enableDNSFilterUnroutableFamilies(dnsFilterUnroutableFamilies: Boolean): EngineBuilder {
+    this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies
+    return this
+  }
+
+  /**
+   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+   *
+   * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
+   *
+   * @return This builder.
+   */
+  fun enableHappyEyeballs(enableHappyEyeballs: Boolean): EngineBuilder {
+    this.enableHappyEyeballs = enableHappyEyeballs
     return this
   }
 
@@ -367,18 +406,37 @@ open class EngineBuilder(
    *
    * @return A new instance of Envoy.
    */
+  @Suppress("LongMethod")
   fun build(): Engine {
     return when (configuration) {
       is Custom -> {
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
-            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            adminInterfaceEnabled,
+            grpcStatsDomain,
+            statsDPort,
+            connectTimeoutSeconds,
+            dnsRefreshSeconds,
+            dnsFailureRefreshSecondsBase,
+            dnsFailureRefreshSecondsMax,
+            dnsQueryTimeoutSeconds,
+            dnsPreresolveHostnames,
+            dnsFallbackNameservers,
+            dnsFilterUnroutableFamilies,
+            enableHappyEyeballs,
+            enableInterfaceBinding,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds,
+            h2ConnectionKeepaliveTimeoutSeconds,
+            statsFlushSeconds,
+            streamIdleTimeoutSeconds,
+            perTryIdleTimeoutSeconds,
+            appVersion,
+            appId,
+            virtualClusters,
+            nativeFilterChain,
+            platformFilterChain,
+            stringAccessors
           ),
           configuration.yaml,
           logLevel
@@ -388,12 +446,30 @@ open class EngineBuilder(
         EngineImpl(
           engineType(),
           EnvoyConfiguration(
-            adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
-            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
+            adminInterfaceEnabled,
+            grpcStatsDomain,
+            statsDPort,
+            connectTimeoutSeconds,
+            dnsRefreshSeconds,
+            dnsFailureRefreshSecondsBase,
+            dnsFailureRefreshSecondsMax,
+            dnsQueryTimeoutSeconds,
+            dnsPreresolveHostnames,
+            dnsFallbackNameservers,
+            dnsFilterUnroutableFamilies,
+            enableHappyEyeballs,
+            enableInterfaceBinding,
+            h2ConnectionKeepaliveIdleIntervalMilliseconds,
+            h2ConnectionKeepaliveTimeoutSeconds,
+            statsFlushSeconds,
+            streamIdleTimeoutSeconds,
+            perTryIdleTimeoutSeconds,
+            appVersion,
+            appId,
+            virtualClusters,
+            nativeFilterChain,
+            platformFilterChain,
+            stringAccessors
           ),
           logLevel
         )

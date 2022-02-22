@@ -1,14 +1,101 @@
 Version history
 ---------------
 
-Next
-====================
+Pending Release
+===============
+
+Bugfixes:
 
 Features:
 
-- Adds support for using `NWPathMonitor <https://developer.apple.com/documentation/network/nwpathmonitor>`_
-  instead of `SCNetworkReachability <https://developer.apple.com/documentation/systemconfiguration/scnetworkreachability>`_
-  on supported platforms (iOS 12+) to update the preferred Envoy network cluster (e.g. WLAN vs WWAN).
+- API: added Envoy's response flags to final stream intel (:issue:`#2009 <2009>`)
+- size: The size of the dynamic library was reduced by ~46% (:issue:`#2053 <2053>`)
+
+0.4.5 (January 13, 2022)
+========================
+
+Based off Envoy `v1.21.0 <https://github.com/envoyproxy/envoy/releases/tag/v1.21.0>`_
+
+Bugfixes:
+
+- Decompressor: decompress even when `no-transform` is specified  (:issue:`#1995 <1995>`)
+
+Features:
+
+- HTTP: any negotiated ALPN now passed up as `x-envoy-upstream-alpn` header (:issue: `#1965 <1965>`)
+
+
+0.4.4 (December 30, 2021)
+=========================
+
+Bugfixes:
+
+- Explicit Flow Control: fix a reset-after-fin bug with explicit flow control (:issue:`#1898 <1898>`)
+- HTTP: solve a race condition when resumeData is too early (:issue:`#1926 <1926>`)
+- HTTP: fix race condition for last resumeData (:issue:`#1936 <1936>`)
+- HTTP: expand response buffer limit to 1Mb (:issue:`#1987 <1987>`)
+- JNI: fix support for non-direct byte buffers (:issue:`#1950 <1950>`)
+- Network: make SrcAddrSocketOptionImpl safely handle null addresses (:issue:`#1905 <1905>`)
+- Obj-c: fix NSString to envoy_data conversion (:issue:`#1958 <1958>`)
+- Observability: fix V6 interface binding logging (:issue:`#1959 <1959>`)
+
+Features:
+
+- Cronvoy: use Explicit Flow Control (:issue:`#1924 <1924>`)
+- DNS: add ability to use fallback nameservers. Android only (:issue:`#1953 <1953>`)
+- DNS: add EngineBuilder API to filter unroutable families (:issue:`#1984 <1984>`)
+- Interface Binding: support interface binding on Android (:issue:`#1897 <1897>`)
+- Interface Binding: filter alt interfaces for binding by well-known prefixes (:issue:`#1901 <1901>`)
+- Network: use NWPathMonitor to determine network reachability on iOS (:issue:`#1874 <1874>`)
+- Networl: add iOS/Android support for enabling Happy Eyeballs (:issue:`#1971 <1971>`)
+- Observability: instrument first active interfaces when switching socket modes (:issue:`#1889 <1889>`)
+
+0.4.3 (October 20, 2021)
+========================
+
+Bugfixes:
+
+- Headers: delete splitting comma-separated header values and add specific logic to the RetryPolicy classes (:issue:`#1752 <1752>`)
+- Headers: prevent nil header value crashes in obj-c (:issue:`#1826 <1826>`)
+
+Features:
+
+- Android: conditionally build internal getifaddrs support (:issue:`#1772 <1772>`)
+- Connection handling: add API to drain connections (:issue:`#1729 <1729>`)
+- Connection handling: remove alternate clusters (:issue:`#1756 <1756>`)
+- DNS: use v4_preferred option (:issue:`#1811 <1811>`)
+- DNS: EngineBuilder API addDnsQueryTimeoutSeconds (:issue:`#1583 <1583>`)
+- HTTP: advertise h2 alpn string when forcing h2 (:issue:`#1737 <1737>`)
+- HTTP: integrate callback-based error path (:issue:`#1592 <1592>`)
+- HTTP: add H2 ping config API (:issue:`#1770 <1770>`)
+- HTTP: per try idle timeout (:issue:`#1805 <1805>`)
+- HTTP: Switching to Envoy Mobile HCM (:issue:`#1716 <1716>`)
+- Interface Binding: allow to be configured in programmatic API (:issue:`#1832 <1832>`)
+- Interface Binding: support conditionally binding active alt interface (:issue:`#1834 <1834>`)
+- Interface Binding: implement initial heuristic for binding alternate interface (:issue:`#1858 <1858>`)
+- Network: introduce singleton configurator (:issue:`#1816 <1816>`)
+- Observability: emit events based on ENVOY_LOG_EVENT (:issue:`#1746 <1746>`)
+- Observability: add engine API to dump stats (:issue:`#1733 <1733>`)
+- Observability: emit envoy event every time envoy bug macro is called (:issue:`#1771 <1771>`)
+- Observability: add method for enabling admin interface (:issue:`#1636 <1636>`)
+- Observability: expose StreamIntel on stream callbacks (:issue:`#1657 <1657>`)
+- Observability: emit events for assertions (:issue:`#1703 <1703>`)
+
+0.4.2 (July 27, 2021)
+=====================
+
+Bugfixes:
+
+- Filters: Prevent spurious cancellation callbacks from the gRPC error path (:issue:`#1560 <1560>`)
+- JNI: null terminate strings before passing to NewStringUTF (:issue:`#1589 <1589>`)
+
+Features:
+
+- Cronvoy: explicit flow control mode (:issue:`#1513 <1513>`)
+- Debugging: add Scope Trackers for ease of debugging (:issue:`#1498 <1498>`)
+- DNS: prefetch DNS hostnames (:issue:`#1535 <1535>`)
+- Exception Handling: convert Envoy Exceptions to crashes (:issue:`#1505 <1505>`)
+- Stats: expose flushStats on the Engine (:issue:`#1486 <1486>`)
 
 0.4.1 (May 28, 2021)
 ====================
@@ -85,7 +172,7 @@ Extensibility:
 - Introduces platform filter interfaces and bridging (:issue:`#795 <795>`, :issue:`#840 <840>`, :issue:`#858 <858>`, :issue:`#913 <913>`, :issue:`#940 <940>`, :issue:`#955 <955>`, :issue:`#943 <943>`, :issue:`#962 <962>`)
 - Introduces Envoy's extension platform (:issue:`#860 <860>`)
 
-Lastly, and perhaps most importantly, we have adopted a formal `inclusive language policy <https://github.com/lyft/envoy-mobile/blob/main/CONTRIBUTING.md#inclusive-language-policy>`_
+Lastly, and perhaps most importantly, we have adopted a formal `inclusive language policy <https://github.com/envoyproxy/envoy-mobile/blob/main/CONTRIBUTING.md#inclusive-language-policy>`_
 (:issue:`#948 <948>`) and updated all necessary locations (:issue:`#944 <944>`, :issue:`#945 <945>`, :issue:`#946 <946>`)
 
 0.3.0 (Mar 26, 2020)

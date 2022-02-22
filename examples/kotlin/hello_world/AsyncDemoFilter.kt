@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterResumeStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
+import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.ResponseFilterCallbacks
 import io.envoyproxy.envoymobile.ResponseHeaders
 import io.envoyproxy.envoymobile.ResponseTrailers
@@ -78,10 +79,17 @@ class AsyncDemoFilter : AsyncResponseFilter {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
+  override fun onError(
+    error: EnvoyError,
+    finalStreamIntel: FinalStreamIntel
+  ) {
   }
 
   @Suppress("EmptyFunctionBlock")
-  override fun onCancel(streamIntel: StreamIntel) {
+  override fun onCancel(finalStreamIntel: FinalStreamIntel) {
+  }
+
+  @Suppress("EmptyFunctionBlock")
+  override fun onComplete(finalStreamIntel: FinalStreamIntel) {
   }
 }

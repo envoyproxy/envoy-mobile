@@ -16,6 +16,7 @@ import java.util.concurrent.Executors
 open class StreamPrototype(private val engine: EnvoyEngine) {
   private val callbacks = StreamCallbacks()
   private var explicitFlowControl = false
+  private var useByteBufferPosition = false
 
   /**
    * Start a new stream.
@@ -24,8 +25,11 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return The new stream.
    */
   open fun start(executor: Executor = Executors.newSingleThreadExecutor()): Stream {
-    val engineStream = engine.startStream(createCallbacks(executor), explicitFlowControl)
-    return Stream(engineStream)
+    val engineStream = engine.startStream(
+      createCallbacks(executor),
+      explicitFlowControl
+    )
+    return Stream(engineStream, useByteBufferPosition)
   }
 
   /**
@@ -45,7 +49,19 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
   }
 
   /**
+   * Specify how to determine the length of data to send for a given ByteBuffer.
+   *
+   * @param enabled Use ByteBuffer's position when true, otherwise use its capacity.
+   * @return This stream, for chaining syntax.
+   */
+  fun setUseByteBufferPosition(enabled: Boolean): StreamPrototype {
+    this.useByteBufferPosition = enabled
+    return this
+  }
+
+  /**
    * Specify a callback for when response headers are received by the stream.
+   * If `endStream` is `true`, the stream is complete, pending an onComplete callback.
    *
    * @param closure Closure which will receive the headers and flag indicating if the stream
    * is headers-only.
@@ -60,7 +76,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
 
   /**
    * Specify a callback for when a data frame is received by the stream.
-   * If `endStream` is `true`, the stream is complete.
+   * If `endStream` is `true`, the stream is complete, pending an onComplete callback.
    *
    * @param closure Closure which will receive the data and flag indicating whether this
    * is the last data frame.
@@ -75,7 +91,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
 
   /**
    * Specify a callback for when trailers are received by the stream.
-   * If the closure is called, the stream is complete.
+   * If the closure is called, the stream is complete, pending an onComplete callback.
    *
    * @param closure Closure which will receive the trailers.
    * @return This stream, for chaining syntax.
@@ -95,9 +111,26 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError, streamIntel: StreamIntel) -> Unit
+    closure: (
+      error: EnvoyError,
+      finalStreamIntel: FinalStreamIntel
+    ) -> Unit
   ): StreamPrototype {
     callbacks.onError = closure
+    return this
+  }
+
+/**
+   * Specify a callback for when a stream is complete.
+   * If the closure is called, the stream is complete.
+   *
+   * @param closure Closure which will be called when an error occurs.
+   * @return This stream, for chaining syntax.
+   */
+  fun setOnComplete(
+    closure: (finalStreamIntel: FinalStreamIntel) -> Unit
+  ): StreamPrototype {
+    callbacks.onComplete = closure
     return this
   }
 
@@ -109,7 +142,7 @@ open class StreamPrototype(private val engine: EnvoyEngine) {
    * @return This stream, for chaining syntax.
    */
   fun setOnCancel(
-    closure: (streamIntel: StreamIntel) -> Unit
+    closure: (finalStreamIntel: FinalStreamIntel) -> Unit
   ): StreamPrototype {
     callbacks.onCancel = closure
     return this

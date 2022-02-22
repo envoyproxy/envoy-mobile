@@ -38,15 +38,17 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
       - name: 'Run Kotlin library tests'
-        if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          bazel test \
+          ./bazelw test \
             --test_output=all \
             --build_tests_only \
+            --config=remote-ci-debug \
             --config=remote-ci-macos \
+            --config=remote-ci-macos-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+<<<<<<< HEAD
 <<<<<<< HEAD
             --flaky_test_attempts=3 \
             //test/kotlin/...

@@ -110,7 +110,7 @@ public:
 
   // Used to fill response code details for streams that are cancelled via cancelStream.
   const std::string& getCancelDetails() {
-    CONSTRUCT_ON_FIRST_USE(std::string, "client cancelled stream");
+    CONSTRUCT_ON_FIRST_USE(std::string, "client_cancelled_stream");
   }
 
 private:
@@ -144,16 +144,16 @@ private:
     void encodeTrailers(const ResponseTrailerMap& trailers) override;
     Stream& getStream() override { return direct_stream_; }
     Http1StreamEncoderOptionsOptRef http1StreamEncoderOptions() override { return absl::nullopt; }
-    void encode100ContinueHeaders(const ResponseHeaderMap&) override {
+    void encode1xxHeaders(const ResponseHeaderMap&) override {
       // TODO(goaway): implement?
-      NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+      PANIC("not implemented");
     }
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
 
-    void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+    void encodeMetadata(const MetadataMapVector&) override { PANIC("not implemented"); }
 
-    void onHasBufferedData() { direct_stream_.runHighWatermarkCallbacks(); }
-    void onBufferedDataDrained() { direct_stream_.runLowWatermarkCallbacks(); }
+    void onHasBufferedData();
+    void onBufferedDataDrained();
 
     // To be called by mobile library when in explicit flow control mode and more data is wanted.
     // If bytes are available, the bytes available (up to the limit of
@@ -166,12 +166,15 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
+    void setFinalStreamIntel(StreamInfo::StreamInfo& stream_info);
+
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
 
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
     envoy_stream_intel streamIntel();
+    envoy_final_stream_intel& finalStreamIntel();
     envoy_error streamError();
 
     DirectStream& direct_stream_;
@@ -225,7 +228,10 @@ private:
     // It only has an effect in explicit flow control mode, where when all buffers are drained,
     // on_send_window_available callbacks are called.
     void readDisable(bool disable) override;
-    uint32_t bufferLimit() override { return 65000; }
+    uint32_t bufferLimit() override {
+      // 1Mb
+      return 1024000;
+    }
     // Not applicable
     void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
       // Acounting became default in https://github.com/envoyproxy/envoy/pull/17702 but is a no=op.
@@ -241,8 +247,11 @@ private:
       response_details_ = response_details;
     }
 
-    // Saves latest "Intel" data as it may not be available when accessed.
+    // Latches stream information as it may not be available when accessed.
     void saveLatestStreamIntel();
+
+    // Latches latency info from stream info before it goes away.
+    void saveFinalStreamIntel();
 
     const envoy_stream_t stream_handle_;
 
@@ -270,7 +279,9 @@ private:
     // read faster than the mobile caller can process it.
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
-    envoy_stream_intel stream_intel_;
+    envoy_stream_intel stream_intel_{-1, -1, 0, 0};
+    envoy_final_stream_intel envoy_final_stream_intel_{-1, -1, -1, -1, -1, -1, -1, -1,
+                                                       -1, -1, -1, 0,  0,  0,  0};
     StreamInfo::BytesMeterSharedPtr bytes_meter_;
   };
 

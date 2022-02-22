@@ -40,6 +40,26 @@ class EngineBuilderTest {
   }
 
   @Test
+  fun `enabling happy eyeballs overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableHappyEyeballs(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.enableHappyEyeballs).isTrue()
+  }
+
+  @Test
+  fun `enabling interface binding overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableInterfaceBinding(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.enableInterfaceBinding).isTrue()
+  }
+
+  @Test
   fun `specifying connection timeout overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
@@ -78,6 +98,26 @@ class EngineBuilderTest {
 
     val engine = engineBuilder.build() as EngineImpl
     assertThat(engine.envoyConfiguration!!.dnsQueryTimeoutSeconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying dns fallback nameservers overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addDNSFallbackNameservers(listOf<String>("8.8.8.8"))
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.dnsFallbackNameservers.size).isEqualTo(1)
+  }
+
+  @Test
+  fun `specifying dns filter unroutable families overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableDNSFilterUnroutableFamilies(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.dnsFilterUnroutableFamilies).isTrue()
   }
 
   @Test

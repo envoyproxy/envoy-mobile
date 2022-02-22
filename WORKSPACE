@@ -1,5 +1,16 @@
 workspace(name = "envoy_mobile")
 
+# TODO[fz]: Remove once envoy updates PGV
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "bazel_gazelle",
+    sha256 = "de69a09dc70417580aabf20a28619bb3ef60d038470c7cf8442fafcf627c21cb",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.24.0/bazel-gazelle-v0.24.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.24.0/bazel-gazelle-v0.24.0.tar.gz",
+    ],
+)
+
 load("@envoy_mobile//bazel:envoy_mobile_repositories.bzl", "envoy_mobile_repositories")
 envoy_mobile_repositories()
 
@@ -40,81 +51,13 @@ python_configure(name = "local_config_python", python_version = "3")
 load("//bazel:python.bzl", "declare_python_abi")
 declare_python_abi(name = "python_abi", python_version = "3")
 
-# Note: proguard is failing for API 30+
-android_sdk_repository(name = "androidsdk", api_level = 29)
-android_ndk_repository(name = "androidndk", api_level = 21)
-
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-
-git_repository(
-    name = "bazel_toolchains",
-    commit = "810ac3490df9113cfaa50a4ee3d204a29c81a24c",
-    remote = "https://github.com/bazelbuild/bazel-toolchains.git",
+load("//bazel:android_configure.bzl", "android_configure")
+android_configure(
+    name = "local_config_android",
+    sdk_api_level = 30,
+    ndk_api_level = 21,
+    build_tools_version = "30.0.2"
 )
 
-load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
-
-rbe_autoconfig(
-    name = "engflow_remote_config",
-    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
-    registry = "docker.io",
-    repository = "envoyproxy/envoy-build-ubuntu",
-    use_legacy_platform_definition = False,
-    create_java_configs = False,
-    exec_properties = {
-        "Pool": "linux",
-    },
-)
-
-rbe_autoconfig(
-    name = "engflow_remote_config_clang",
-    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
-    registry = "docker.io",
-    repository = "envoyproxy/envoy-build-ubuntu",
-    use_legacy_platform_definition = False,
-    env = {
-        "CC": "/opt/llvm/bin/clang",
-        "CXX": "/opt/llvm/bin/clang++",
-    },
-    exec_properties = {
-        "Pool": "linux",
-    },
-    create_java_configs = False,
-)
-
-rbe_autoconfig(
-    name = "engflow_remote_config_clang_asan",
-    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
-    registry = "docker.io",
-    repository = "envoyproxy/envoy-build-ubuntu",
-    use_legacy_platform_definition = False,
-    env = {
-        "CC": "/opt/llvm/bin/clang",
-        "CXX": "/opt/llvm/bin/clang++",
-    },
-    exec_properties = {
-        "Pool": "linux",
-        # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
-        # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
-        "dockerAddCapabilities": "SYS_PTRACE",
-    },
-)
-
-rbe_autoconfig(
-    name = "engflow_remote_config_clang_coverage",
-    digest = "sha256:b4fe088084579339ae8f7a44af899bbebd86a290af56e5ab7cc85ca99a09499c",
-    registry = "docker.io",
-    repository = "envoyproxy/envoy-build-ubuntu",
-    use_legacy_platform_definition = False,
-    env = {
-        "CC": "/opt/llvm/bin/clang",
-        "CXX": "/opt/llvm/bin/clang++",
-        "GCOV": "/opt/llvm/bin/llvm-profdata",
-        "BAZEL_LLVM_COV": "/opt/llvm/bin/llvm-cov",
-        "BAZEL_USE_LLVM_NATIVE_COVERAGE": "1",
-    },
-    exec_properties = {
-        "Pool": "linux",
-    },
-    create_java_configs = False,
-)
+load("@local_config_android//:android_configure.bzl", "android_workspace")
+android_workspace()

@@ -62,19 +62,35 @@ static void *ios_on_trailers(envoy_headers trailers, envoy_stream_intel stream_i
   return NULL;
 }
 
-static void *ios_on_complete(envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_send_window_available(envoy_stream_intel stream_intel, void *context) {
+  ios_context *c = (ios_context *)context;
+  EnvoyHTTPCallbacks *callbacks = c->callbacks;
+  dispatch_async(callbacks.dispatchQueue, ^{
+    if (callbacks.onSendWindowAvailable) {
+      callbacks.onSendWindowAvailable(stream_intel);
+    }
+  });
+  return NULL;
+}
+
+static void *ios_on_complete(envoy_stream_intel stream_intel,
+                             envoy_final_stream_intel final_stream_intel, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
-    // TODO: If the callback queue is not serial, clean up is not currently thread-safe.
+    if (callbacks.onComplete) {
+      callbacks.onComplete(stream_intel, final_stream_intel);
+    }
+
     assert(stream);
     [stream cleanUp];
   });
   return NULL;
 }
 
-static void *ios_on_cancel(envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_cancel(envoy_stream_intel stream_intel,
+                           envoy_final_stream_intel final_stream_intel, void *context) {
   // This call is atomically gated at the call-site and will only happen once. It may still fire
   // after a complete response or error callback, but no other callbacks for the stream will ever
   // fire AFTER the cancellation callback.
@@ -83,7 +99,7 @@ static void *ios_on_cancel(envoy_stream_intel stream_intel, void *context) {
   EnvoyHTTPStreamImpl *stream = c->stream;
   dispatch_async(callbacks.dispatchQueue, ^{
     if (callbacks.onCancel) {
-      callbacks.onCancel(stream_intel);
+      callbacks.onCancel(stream_intel, final_stream_intel);
     }
 
     // TODO: If the callback queue is not serial, clean up is not currently thread-safe.
@@ -93,7 +109,8 @@ static void *ios_on_cancel(envoy_stream_intel stream_intel, void *context) {
   return NULL;
 }
 
-static void *ios_on_error(envoy_error error, envoy_stream_intel stream_intel, void *context) {
+static void *ios_on_error(envoy_error error, envoy_stream_intel stream_intel,
+                          envoy_final_stream_intel final_stream_intel, void *context) {
   ios_context *c = (ios_context *)context;
   EnvoyHTTPCallbacks *callbacks = c->callbacks;
   EnvoyHTTPStreamImpl *stream = c->stream;
@@ -103,7 +120,8 @@ static void *ios_on_error(envoy_error error, envoy_stream_intel stream_intel, vo
                                                         length:error.message.length
                                                       encoding:NSUTF8StringEncoding];
       release_envoy_error(error);
-      callbacks.onError(error.error_code, errorMessage, error.attempt_count, stream_intel);
+      callbacks.onError(error.error_code, errorMessage, error.attempt_count, stream_intel,
+                        final_stream_intel);
     }
 
     // TODO: If the callback queue is not serial, clean up is not currently thread-safe.
@@ -142,10 +160,10 @@ static void *ios_on_error(envoy_error error, envoy_stream_intel stream_intel, vo
   atomic_store(context->closed, NO);
 
   // Create native callbacks
-  // TODO(goaway) fix this up to call ios_on_send_window_available
-  envoy_http_callbacks native_callbacks = {ios_on_headers,  ios_on_data,   ios_on_metadata,
-                                           ios_on_trailers, ios_on_error,  ios_on_complete,
-                                           ios_on_cancel,   ios_on_cancel, context};
+  envoy_http_callbacks native_callbacks = {
+      ios_on_headers, ios_on_data,     ios_on_metadata, ios_on_trailers,
+      ios_on_error,   ios_on_complete, ios_on_cancel,   ios_on_send_window_available,
+      context};
   _nativeCallbacks = native_callbacks;
 
   // We need create the native-held strong ref on this stream before we call start_stream because

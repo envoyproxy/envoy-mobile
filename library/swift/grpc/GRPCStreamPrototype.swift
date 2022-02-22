@@ -55,8 +55,6 @@ public final class GRPCStreamPrototype: NSObject {
     var buffer = Data()
     var state = GRPCMessageProcessor.State.expectingCompressionFlag
     self.underlyingStream.setOnResponseData { chunk, _, streamIntel in
-      // This closure deliberately retains `self` while the underlying handler's
-      // `onData` closure is kept in memory so that messages/errors can be processed.
       // Appending might result in extra copying that can be optimized in the future.
       buffer.append(chunk)
       // gRPC always sends trailers, so the stream will not complete here.
@@ -89,7 +87,7 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func setOnError(
-    _ closure: @escaping (_ error: EnvoyError, _ streamIntel: StreamIntel) -> Void
+    _ closure: @escaping (_ error: EnvoyError, _ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnError(closure: closure)
     return self
@@ -103,9 +101,23 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnCancel(
-    closure: @escaping (_ streamInte: StreamIntel) -> Void
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnCancel(closure: closure)
+    return self
+  }
+
+  /// Specify a callback for when the stream completes gracefully.
+  /// If the closure is called, the stream is complete.
+  ///
+  /// - parameter closure: Closure which will be called when the stream is closed.
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func setOnComplete(
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
+  ) -> GRPCStreamPrototype {
+    self.underlyingStream.setOnComplete(closure: closure)
     return self
   }
 }
@@ -137,7 +149,7 @@ private enum GRPCMessageProcessor {
       }
 
       guard compressionFlag == 0 else {
-        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
+        // TODO: Support gRPC compression https://github.com/envoyproxy/envoy-mobile/issues/501
         buffer.removeAll()
         state = .expectingCompressionFlag
         return
