@@ -75,7 +75,7 @@ public class EnvoyConfiguration {
    * @param perTryIdleTimeoutSeconds     per try idle timeout for HTTP streams.
    * @param appVersion                   the App Version of the App using this Envoy Client.
    * @param appId                        the App ID of the App using this Envoy Client.
-   * @param trustChainVerification       wether to mute TLS Cert verification - for tests only.
+   * @param trustChainVerification       whether to mute TLS Cert verification - for tests.
    * @param virtualClusters              the JSON list of virtual cluster configs.
    * @param nativeFilterChain            the configuration for native filters.
    * @param httpPlatformFilterFactories  the configuration for platform filters.
