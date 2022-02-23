@@ -65,7 +65,7 @@ public class Http2TestServerTest {
   }
 
   @Test
-  public void get_schemeIsHttps() throws Exception {
+  public void getSchemeIsHttps() throws Exception {
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(Http2TestServer.getEchoAllHeadersUrl());
