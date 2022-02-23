@@ -36,7 +36,6 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //:ios_dist \
-            --remote_download_minimal \
             --noremote_accept_cached
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
@@ -68,7 +67,6 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //examples/objective-c/hello_world:app \
-            --remote_download_minimal \
             --noremote_accept_cached
         name: 'Build objective-c app'
       # Run the app in the background and redirect logs.
