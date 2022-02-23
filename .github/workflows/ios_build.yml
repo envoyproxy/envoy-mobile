@@ -35,9 +35,6 @@ jobs:
             --config=ios \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            //:ios_dist \
-            --objc_use_dotd_pruning=false \
-            --experimental_objc_include_scanning=true \
-            --noremote_accept_cached
+            //:ios_dist
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
