@@ -50,6 +50,9 @@ envoy_mobile_kt_test(
     srcs = [
         "PulseClientImplTest.kt",
     ],
+    exec_properties = {
+        "sandboxAllowed": "False",
+    },
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
