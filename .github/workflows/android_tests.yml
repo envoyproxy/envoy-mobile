@@ -49,4 +49,5 @@ jobs:
             --config=remote-ci-macos-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/io/envoyproxy/envoymobile:engine_builder_test \
-            //test/kotlin/io/envoyproxy/envoymobile:pulse_client_impl_test
+            //test/kotlin/io/envoyproxy/envoymobile:pulse_client_impl_test \
+            --jvmopt="-XX:+StartAttachListener"
