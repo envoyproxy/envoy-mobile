@@ -37,7 +37,9 @@ jobs:
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //:ios_dist \
             --objc_use_dotd_pruning=false \
-            --experimental_objc_include_scanning=true
+            --experimental_objc_include_scanning=true \
+            --remote_download_minimal \
+            --noremote_accept_cached
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
   objchelloworld:
@@ -62,7 +64,16 @@ jobs:
         name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app
+        run: |
+          ./bazelw build \
+            --config=ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //examples/objective-c/hello_world:app \
+            --objc_use_dotd_pruning=false \
+            --experimental_objc_include_scanning=true \
+            --remote_download_minimal \
+            --noremote_accept_cached
         name: 'Build objective-c app'
       # Run the app in the background and redirect logs.
       - env:
@@ -74,5 +85,3 @@ jobs:
       - run: cat /tmp/envoy.log
         if: ${{ failure() || cancelled() }}
         name: 'Log app run'
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
