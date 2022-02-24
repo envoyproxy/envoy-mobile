@@ -11,6 +11,7 @@ envoy_mobile_kt_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
     exec_properties = {
+        # TODO(lfpino): Remove this once the JVM paths are allow-listed in the sandbox.
         "sandboxAllowed": "False",
     },
 )
@@ -51,6 +52,7 @@ envoy_mobile_kt_test(
         "PulseClientImplTest.kt",
     ],
     exec_properties = {
+        # TODO(lfpino): Remove this once the JVM paths are allow-listed in the sandbox.
         "sandboxAllowed": "False",
     },
     deps = [
