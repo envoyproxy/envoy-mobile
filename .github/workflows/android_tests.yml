@@ -47,6 +47,7 @@ jobs:
             --build_tests_only \
             --config=remote-ci-macos \
             --config=remote-ci-local-java8 \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/io/...
   javatestsmac:
     name: java_tests_mac

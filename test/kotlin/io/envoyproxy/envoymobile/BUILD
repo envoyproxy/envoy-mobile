@@ -7,13 +7,13 @@ envoy_mobile_kt_test(
     srcs = [
         "EngineBuilderTest.kt",
     ],
-    deps = [
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
-    ],
     exec_properties = {
         # TODO(lfpino): Remove this once the JVM paths are allow-listed in the sandbox.
         "sandboxAllowed": "False",
     },
+    deps = [
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+    ],
 )
 
 envoy_mobile_kt_test(
