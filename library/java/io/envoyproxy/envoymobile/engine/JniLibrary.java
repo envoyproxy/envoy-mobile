@@ -11,8 +11,7 @@ public class JniLibrary {
   private static String envoyLibraryName = "envoy_jni";
 
   // Internal reference to helper object used to load and initialize the native
-  // library.
-  // Volatile to ensure double-checked locking works correctly.
+  // library. Volatile to ensure double-checked locking works correctly.
   private static volatile JavaLoader loader = null;
 
   // Load test libraries based on the jvm_flag `envoy_jni_library_name`.
