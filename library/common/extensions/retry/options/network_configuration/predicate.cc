@@ -35,7 +35,7 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
   StreamInfo::ExtraStreamInfo* extra_stream_info =
       filter_state->getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
 
-  if (!extra_stream_info) {
+  if (extra_stream_info == nullptr) {
     ENVOY_LOG(warn, "extra stream info is missing");
 
     // Returning nullopt results in existing socket options being preserved.
