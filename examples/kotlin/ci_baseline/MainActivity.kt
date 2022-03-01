@@ -54,7 +54,7 @@ class MainActivity : Activity() {
       .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
       .setEventTracker({
-        for (entry in it.entries) 
+        for (entry in it.entries) {
           Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
         }
       })
