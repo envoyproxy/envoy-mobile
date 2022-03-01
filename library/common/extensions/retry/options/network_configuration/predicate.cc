@@ -65,7 +65,7 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
                                             network_fault);
 
   // Update socket configuration for next retry attempt.
-  extra_stream_info.configuration_key_ = network_configurator_->addUpstreamSocketOptions(options);
+  extra_stream_info->configuration_key_ = network_configurator_->addUpstreamSocketOptions(options);
 
   // The options returned here replace any existing socket options used for a prior attempt. At
   // present, all socket options set in Envoy Mobile are provided by the NetworkConfigurator, so
