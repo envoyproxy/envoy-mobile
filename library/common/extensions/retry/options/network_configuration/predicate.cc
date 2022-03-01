@@ -32,12 +32,19 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
     return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
   }
 
-  auto& extra_stream_info =
+  StreamInfo::ExtraStreamInfo* extra_stream_info =
       filter_state->getDataMutable<StreamInfo::ExtraStreamInfo>(StreamInfo::ExtraStreamInfo::key());
+
+  if (!extra_stream_info) {
+    ENVOY_LOG(warn, "extra stream info is missing");
+
+    // Returning nullopt results in existing socket options being preserved.
+    return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{absl::nullopt};
+  }
 
   // This check is also defensive. The NetworkConfigurationFilter should always set this when
   // ExtraStreaminfo is created.
-  if (!extra_stream_info.configuration_key_.has_value()) {
+  if (!extra_stream_info->configuration_key_.has_value()) {
     ENVOY_LOG(warn, "network configuration key is missing");
 
     // Returning nullopt results in existing socket options being preserved.
@@ -54,7 +61,7 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
 
   // Report request status to network configurator, so that socket configuration may be adapted
   // to current network conditions.
-  network_configurator_->reportNetworkUsage(extra_stream_info.configuration_key_.value(),
+  network_configurator_->reportNetworkUsage(extra_stream_info->configuration_key_.value(),
                                             network_fault);
 
   // Update socket configuration for next retry attempt.
