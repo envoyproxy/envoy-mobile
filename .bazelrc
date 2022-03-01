@@ -1,3 +1,5 @@
+common --announce_rc
+
 # Envoy Mobile Bazel build/test options.
 try-import ./envoy/.bazelrc
 
