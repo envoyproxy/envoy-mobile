@@ -37,3 +37,4 @@ matter expert reviews. Feel free to loop them in as needed.
 # Emeritus maintainers
 
 * Michael Rebello ([rebello95](https://github.com/rebello95)) (mrebello@lyft.com)
+* Alan Chiu ([buildbreaker](https://github.com/buildbreaker)) (achiu@lyft.com)
