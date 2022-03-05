@@ -24,6 +24,12 @@ build --define cxxopts=-std=c++17
 build --features=-per_object_debug_info
 # Suppress deprecated declaration warnings due to extensive transitive noise from protobuf.
 build --copt -Wno-deprecated-declarations
+# Abseil Flag literals are compiled out by default on mobile platforms. These flags are needed for
+# Envoy's runtime system. This option prevents them from being compiled out.
+build --copt -DABSL_FLAGS_STRIP_NAMES=0
+
+# Override PGV validation with NOP functions
+build --@com_envoyproxy_protoc_gen_validate//bazel:template-flavor=nop
 
 # Enable source map for debugging in IDEs
 build:dbg --copt="-fdebug-compilation-dir" --copt="/proc/self/cwd"
@@ -71,6 +77,12 @@ build:tsan-dev --test_env="TSAN_OPTIONS=report_atomic_races=0"
 # into a zip file. This shouldn't affect crash reports.
 build:release-common --define=no_debug_info=1
 
+# Compile releases optimizing for size (eg -Os, etc).
+build:release-common --config=sizeopt
+
+# Set default symbols visibility to hidden to reduce .dynstr and the symbol table size
+build:release-common --copt=-fvisibility=hidden
+
 # Flags for release builds targeting iOS
 build:release-ios --apple_bitcode=embedded
 build:release-ios --config=ios
@@ -109,6 +121,11 @@ build:remote-ci-common --spawn_strategy=remote,sandboxed,local
 # Avoid hanging if the remote side closes the connection without a TCP RST. Only
 # sends a keepalive if we don't receive any messages (server updates every 60s).
 build:remote-ci-common --grpc_keepalive_time=61s
+#############################################################################
+# remote-ci-local-java8: Use a local Java 8 (JDK)
+#############################################################################
+build:remote-ci-local-java8 --java_runtime_version=local_jdk
+build:remote-ci-local-java8 --java_language_version=8
 #############################################################################
 # remote-ci-linux: These options are linux-only using GCC by default
 #############################################################################
@@ -165,13 +182,6 @@ build:remote-ci-linux-tsan --extra_toolchains=//third_party/rbe_configs/config:c
 build:remote-ci-linux-tsan --host_platform=//third_party/rbe_configs/config:platform
 build:remote-ci-linux-tsan --platforms=//third_party/rbe_configs/config:platform
 build:remote-ci-linux-tsan --config=remote-ci-common
-#############################################################################
-# remote-ci-linux-local-java8: These options are linux-only using a local Java 8 (JDK)
-#############################################################################
-build:remote-ci-linux-local-java8 --extra_toolchains=@local_jdk//:all
-build:remote-ci-linux-local-java8 --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
-build:remote-ci-linux-local-java8 --java_toolchain=@bazel_tools//tools/jdk:toolchain_java8
-build:remote-ci-linux-local-java8 --config=remote-ci-common
 #############################################################################
 # remote-ci-linux-coverage: These options are Linux-only using Clang and LLVM coverage
 #############################################################################

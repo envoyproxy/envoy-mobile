@@ -39,6 +39,7 @@ const std::string config_header = R"(
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
 - &dns_lookup_family V4_PREFERRED
+- &dns_multiple_addresses false
 - &dns_preresolve_hostnames []
 - &dns_resolver_name envoy.network.dns_resolver.cares
 - &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
@@ -53,6 +54,7 @@ const std::string config_header = R"(
 - &statsd_port 8125
 - &stream_idle_timeout 15s
 - &per_try_idle_timeout 15s
+- &trust_chain_verification VERIFY_TRUST_CHAIN
 - &virtual_clusters []
 
 !ignore stats_defs:
@@ -104,17 +106,6 @@ R"(
   typed_config:
     "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
     common_tls_context:
-      tls_params:
-        tls_maximum_protocol_version: TLSv1_3
-      validation_context:
-        trusted_ca:
-          inline_string: *tls_root_certs
-- &base_tls_h2_socket
-  name: envoy.transport_sockets.tls
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-    common_tls_context:
-      alpn_protocols: [h2]
       tls_params:
         tls_maximum_protocol_version: TLSv1_3
       validation_context:
@@ -360,7 +351,18 @@ R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_tls_h2_socket
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        common_tls_context:
+          alpn_protocols: [h2]
+          tls_params:
+            tls_maximum_protocol_version: TLSv1_3
+          validation_context:
+            trusted_ca:
+              inline_string: *tls_root_certs
+            trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *base_protocol_options
@@ -411,14 +413,17 @@ node:
   id: envoy-mobile
   cluster: envoy-mobile
   metadata: *metadata
-)"
-// Needed due to warning in
-// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
-R"(
 layered_runtime:
   layers:
     - name: static_layer_0
       static_layer:
+        envoy:
+          reloadable_features:
+            allow_multiple_dns_addresses: *dns_multiple_addresses
+)"
+// Needed due to warning in
+// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
+R"(
         overload:
           global_downstream_max_connections: 0xffffffff # uint32 max
 )";
