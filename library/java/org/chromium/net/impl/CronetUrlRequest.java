@@ -2,11 +2,16 @@ package org.chromium.net.impl;
 
 import android.os.ConditionVariable;
 import android.util.Log;
+
 import androidx.annotation.IntDef;
-import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
-import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
-import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
+
+import org.chromium.net.CallbackException;
+import org.chromium.net.CronetException;
+import org.chromium.net.InlineExecutionProhibitedException;
+import org.chromium.net.RequestFinishedInfo;
+import org.chromium.net.RequestFinishedInfo.Metrics;
+import org.chromium.net.UploadDataProvider;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.MalformedURLException;
@@ -27,12 +32,11 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import org.chromium.net.CallbackException;
-import org.chromium.net.CronetException;
-import org.chromium.net.InlineExecutionProhibitedException;
-import org.chromium.net.RequestFinishedInfo;
-import org.chromium.net.RequestFinishedInfo.Metrics;
-import org.chromium.net.UploadDataProvider;
+
+import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
 
 /** UrlRequest, backed by Envoy-Mobile. */
 public final class CronetUrlRequest extends UrlRequestBase {
@@ -870,6 +874,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
       } while (!mState.compareAndSet(originalState, updatedState));
       if (completeAbandonIfAny(originalState, updatedState)) {
         return;
+      }
+      if (mState.compareAndSet(State.READING, State.COMPLETE)) {
+        mCronvoyCallbacks.successReady(SucceededState.FINAL_READ_DONE);
       }
     }
 

@@ -2,6 +2,7 @@
 
 #include "source/common/upstream/logical_dns_cluster.h"
 #include "source/extensions/clusters/dynamic_forward_proxy/cluster.h"
+#include "source/extensions/compression/brotli/decompressor/config.h"
 #include "source/extensions/compression/gzip/decompressor/config.h"
 #include "source/extensions/filters/http/buffer/config.h"
 #include "source/extensions/filters/http/decompressor/config.h"

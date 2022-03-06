@@ -24,6 +24,8 @@ namespace Envoy {
 
 void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::Clusters::DynamicForwardProxy::forceRegisterClusterFactory();
+  Envoy::Extensions::Compression::Brotli::Decompressor::
+      forceRegisterBrotliDecompressorLibraryFactory();
   Envoy::Extensions::Compression::Gzip::Decompressor::forceRegisterGzipDecompressorLibraryFactory();
   Envoy::Extensions::Http::OriginalIPDetection::Xff::forceRegisterXffIPDetectionFactory();
   Envoy::Extensions::HttpFilters::Assertion::forceRegisterAssertionFilterFactory();
