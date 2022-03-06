@@ -4,13 +4,7 @@ import static android.os.Process.THREAD_PRIORITY_LOWEST;
 
 import android.content.Context;
 import android.util.Base64;
-
 import androidx.annotation.IntDef;
-
-import org.chromium.net.CronetEngine;
-import org.chromium.net.ICronetEngineBuilder;
-import org.chromium.net.impl.Annotations.HttpCacheType;
-
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.ICronetEngineBuilder;
+import org.chromium.net.impl.Annotations.HttpCacheType;
 
 /** Implementation of {@link ICronetEngineBuilder} that builds Envoy-Mobile based Cronet engine. */
 public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
