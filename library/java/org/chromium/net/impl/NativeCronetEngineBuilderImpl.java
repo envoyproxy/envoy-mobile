@@ -3,17 +3,6 @@ package org.chromium.net.impl;
 import static io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification.VERIFY_TRUST_CHAIN;
 
 import android.content.Context;
-
-import androidx.annotation.VisibleForTesting;
-
-import org.chromium.net.ExperimentalCronetEngine;
-import org.chromium.net.ICronetEngineBuilder;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import io.envoyproxy.envoymobile.engine.AndroidEngineImpl;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import io.envoyproxy.envoymobile.engine.AndroidNetworkMonitor;
@@ -26,6 +15,12 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.chromium.net.ExperimentalCronetEngine;
+import org.chromium.net.ICronetEngineBuilder;
 
 /**
  * Implementation of {@link ICronetEngineBuilder} that builds native Cronet engine.
