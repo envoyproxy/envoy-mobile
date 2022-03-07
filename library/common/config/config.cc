@@ -46,6 +46,7 @@ const std::string config_header = R"(
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
+- &h2_hostnames []
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -75,7 +76,7 @@ const std::string config_header = R"(
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
 
-!ignore protocol_defs: &http1_protocol_options_defs
+!ignore http1_protocol_options_defs: &http1_protocol_options
     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
       explicit_http_config:
@@ -85,6 +86,19 @@ const std::string config_header = R"(
               name: preserve_case
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+      upstream_http_protocol_options:
+        auto_sni: true
+        auto_san_validation: true
+
+
+!ignore http2_protocol_options_defs: &http2_protocol_options
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicit_http_config:
+        http2_protocol_options:
+          connection_keepalive:
+            connection_idle_interval: *h2_connection_keepalive_idle_interval
+            timeout: *h2_connection_keepalive_timeout
       upstream_http_protocol_options:
         auto_sni: true
         auto_san_validation: true
@@ -114,7 +128,7 @@ R"(
 )";
 
 const char* config_template = R"(
-!ignore base_protocol_options_defs: &base_protocol_options
+!ignore alpn_protocol_options_defs: &alpn_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
     auto_config:
@@ -214,7 +228,25 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-            - name: api
+            - name: h2
+              include_attempt_count_in_response: true
+              virtual_clusters: *virtual_clusters
+              domains: *h2_hostnames
+              routes:
+#{custom_routes}
+              - match: { prefix: "/" }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                - x-envoy-mobile-cluster
+                route:
+                  cluster: base_h2
+                  timeout: 0s
+                  retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
+                    retry_back_off:
+                      base_interval: 0.25s
+                      max_interval: 60s
+            - name: catchall
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
               domains: ["*"]
@@ -349,7 +381,7 @@ R"(
             trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *base_protocol_options
+    typed_extension_protocol_options: *http2_protocol_options
   - name: base_alpn
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED

@@ -42,6 +42,7 @@ open class EngineBuilder(
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
+  private var h2Hostnames = listOf<String>()
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var perTryIdleTimeoutSeconds = 15
@@ -228,6 +229,18 @@ open class EngineBuilder(
    */
   fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
     this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
+    return this
+  }
+
+  /**
+   * Add a list of hostnames to force h2 connections for.
+   *
+   * @param h2Hostnames addresses to use.
+   *
+   * @return this builder.
+   */
+  fun addDNSFallbackNameservers(h2Hostnames: List<String>): EngineBuilder {
+    this.h2Hostnames = h2Hostnames
     return this
   }
 
@@ -442,6 +455,7 @@ open class EngineBuilder(
             enableInterfaceBinding,
             h2ConnectionKeepaliveIdleIntervalMilliseconds,
             h2ConnectionKeepaliveTimeoutSeconds,
+            h2Hostnames,
             statsFlushSeconds,
             streamIdleTimeoutSeconds,
             perTryIdleTimeoutSeconds,
@@ -476,6 +490,7 @@ open class EngineBuilder(
             enableInterfaceBinding,
             h2ConnectionKeepaliveIdleIntervalMilliseconds,
             h2ConnectionKeepaliveTimeoutSeconds,
+            h2Hostnames,
             statsFlushSeconds,
             streamIdleTimeoutSeconds,
             perTryIdleTimeoutSeconds,

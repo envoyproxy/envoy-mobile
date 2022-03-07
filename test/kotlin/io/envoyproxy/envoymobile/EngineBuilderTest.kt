@@ -141,6 +141,16 @@ class EngineBuilderTest {
   }
 
   @Test
+  fun `specifying h2 hostnames overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addDNSFallbackNameservers(listOf<String>("api.foo.bar"))
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration!!.h2Hostnames.size).isEqualTo(1)
+  }
+
+  @Test
   fun `specifying stats flush overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
