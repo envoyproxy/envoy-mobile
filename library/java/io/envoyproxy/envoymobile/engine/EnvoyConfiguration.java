@@ -38,7 +38,7 @@ public class EnvoyConfiguration {
   public final Boolean enableInterfaceBinding;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
-  public final List<String> h2Hostnames;
+  public final List<String> h2RawDomains;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
   public final Integer streamIdleTimeoutSeconds;
@@ -71,7 +71,7 @@ public class EnvoyConfiguration {
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
-   * @param h2Hostnames                  hostnames to force h2 connections for.
+   * @param h2RawDomains                 list of domains to which connections should be raw h2.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
    * @param perTryIdleTimeoutSeconds     per try idle timeout for HTTP streams.
@@ -91,7 +91,7 @@ public class EnvoyConfiguration {
                             Boolean dnsFilterUnroutableFamilies, boolean enableHappyEyeballs,
                             boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-                            int h2ConnectionKeepaliveTimeoutSeconds, List<String> h2Hostnames,
+                            int h2ConnectionKeepaliveTimeoutSeconds, List<String> h2RawDomains,
                             int statsFlushSeconds, int streamIdleTimeoutSeconds,
                             int perTryIdleTimeoutSeconds, String appVersion, String appId,
                             TrustChainVerification trustChainVerification, String virtualClusters,
@@ -114,7 +114,7 @@ public class EnvoyConfiguration {
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
-    this.h2Hostnames = h2Hostnames;
+    this.h2RawDomains = h2RawDomains;
     this.statsFlushSeconds = statsFlushSeconds;
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
     this.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds;
@@ -167,13 +167,13 @@ public class EnvoyConfiguration {
       dnsFallbackNameserversAsString = sj.toString();
     }
 
-    String h2HostnamesAsString = "[]";
-    if (!h2Hostnames.isEmpty()) {
+    String h2RawDomainsAsString = "[]";
+    if (!h2RawDomains.isEmpty()) {
       StringJoiner sj = new StringJoiner(",", "[", "]");
-      for (String hostname : h2Hostnames) {
+      for (String hostname : h2RawDomains) {
         sj.add(String.format("\"%s\"", hostname));
       }
-      h2HostnamesAsString = sj.toString();
+      h2RawDomainsAsString = sj.toString();
     }
 
     String dnsResolverConfig = String.format(
@@ -200,7 +200,7 @@ public class EnvoyConfiguration {
                               h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
                               h2ConnectionKeepaliveTimeoutSeconds))
-        .append(String.format("- &h2_hostnames %s\n", h2HostnamesAsString))
+        .append(String.format("- &h2_raw_domains %s\n", h2RawDomainsAsString))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &per_try_idle_timeout %ss\n", perTryIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",

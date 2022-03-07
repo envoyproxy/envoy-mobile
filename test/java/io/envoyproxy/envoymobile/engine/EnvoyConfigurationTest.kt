@@ -30,7 +30,7 @@ class EnvoyConfigurationTest {
   fun `resolving with default configuration resolves with values`() {
     val envoyConfiguration = EnvoyConfiguration(
       false, "stats.foo.com", null, 123, 234, 345, 456, 321, "[hostname]", listOf("8.8.8.8"), true,
-      true, true, 222, 333, listOf("host.name"), 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
+      true, true, 222, 333, listOf("h2-raw.domain"), 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
       TrustChainVerification.ACCEPT_UNTRUSTED, "[test]",
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
     )
@@ -61,7 +61,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_timeout 333s")
 
     // H2 Hostnames
-    assertThat(resolvedTemplate).contains("&h2_hostnames [\"host.name\"]")
+    assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.domain\"]")
 
     // Metadata
     assertThat(resolvedTemplate).contains("os: Android")

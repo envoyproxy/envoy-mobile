@@ -25,7 +25,7 @@ open class EngineBuilder: NSObject {
   private var enableInterfaceBinding: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
-  private var h2Hostnames: [String] = []
+  private var h2RawDomains: [String] = []
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var perTryIdleTimeoutSeconds: UInt32 = 15
@@ -186,15 +186,16 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Add a list of hostnames to force h2 connections for.
+  /// Add a list of domains to which h2 connections will be established without protocol
+  /// negotiation.
   ///
-  /// - parameter h2Hostnames: Hostnames to use.
+  /// - parameter h2RawDomains: list of domains to which connections should be raw h2.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func addH2Hostnames(
-    _ h2Hostnames: [String]) -> Self {
-    self.h2Hostnames = h2Hostnames
+  public func addH2RawDomains(
+    _ h2RawDomains: [String]) -> Self {
+    self.h2RawDomains = h2RawDomains
     return self
   }
 
@@ -394,7 +395,7 @@ open class EngineBuilder: NSObject {
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
-      h2Hostnames: self.h2Hostnames,
+      h2RawDomains: self.h2RawDomains,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,

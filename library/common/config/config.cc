@@ -46,7 +46,7 @@ const std::string config_header = R"(
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
-- &h2_hostnames []
+- &h2_raw_domains []
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -228,10 +228,10 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-            - name: h2
+            - name: h2_raw
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
-              domains: *h2_hostnames
+              domains: *h2_raw_domains
               routes:
 #{custom_routes}
               - match: { prefix: "/" }
@@ -246,7 +246,7 @@ static_resources:
                     retry_back_off:
                       base_interval: 0.25s
                       max_interval: 60s
-            - name: catchall
+            - name: primary
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
               domains: ["*"]

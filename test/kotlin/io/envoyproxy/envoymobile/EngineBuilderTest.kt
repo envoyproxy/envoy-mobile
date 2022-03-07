@@ -147,7 +147,7 @@ class EngineBuilderTest {
     engineBuilder.addDNSFallbackNameservers(listOf<String>("api.foo.bar"))
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.h2Hostnames.size).isEqualTo(1)
+    assertThat(engine.envoyConfiguration!!.h2RawDomains.size).isEqualTo(1)
   }
 
   @Test
