@@ -615,7 +615,7 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
     const auto value = h2_header[0]->value().getStringView();
     if (value == "http2") {
       cluster = H2Cluster;
-    // FIXME(goaway): No cluster actually forces H1 today except cleartext!
+      // FIXME(goaway): No cluster actually forces H1 today except cleartext!
     } else if (value == "alpn" || value == "http1") {
       cluster = BaseCluster;
     } else {
