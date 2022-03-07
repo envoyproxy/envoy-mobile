@@ -239,7 +239,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addDNSFallbackNameservers(h2Hostnames: List<String>): EngineBuilder {
+  fun addH2Hostnames(h2Hostnames: List<String>): EngineBuilder {
     this.h2Hostnames = h2Hostnames
     return this
   }
