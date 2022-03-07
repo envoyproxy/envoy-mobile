@@ -25,6 +25,7 @@ open class EngineBuilder: NSObject {
   private var enableInterfaceBinding: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
+  private var h2Hostnames: [String] = []
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var perTryIdleTimeoutSeconds: UInt32 = 15
@@ -182,6 +183,18 @@ open class EngineBuilder: NSObject {
   public func addH2ConnectionKeepaliveTimeoutSeconds(
     _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+    return self
+  }
+
+  /// Add a list of hostnames to force h2 connections for.
+  ///
+  /// - parameter h2Hostnames: Hostnames to use.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addH2Hostnames(
+    _ h2Hostnames: [String]) -> Self {
+    self.h2Hostnames = h2Hostnames
     return self
   }
 
@@ -381,6 +394,7 @@ open class EngineBuilder: NSObject {
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
+      h2Hostnames: self.h2Hostnames,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,

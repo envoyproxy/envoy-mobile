@@ -46,7 +46,7 @@ const std::string config_header = R"(
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
-- &h2_hostnames []
+- &h2_hostnames ["api.foo.bar"]
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -239,13 +239,15 @@ static_resources:
               routes:
 #{custom_routes}
               - match:
+                  prefix: "/"
                   headers:
                   - name: ":scheme"
-                    value: http
+                    string_match:
+                      exact: http
                 request_headers_to_remove:
                 - x-forwarded-proto
                 route:
-                  cluster: base
+                  cluster: base_clear
                   timeout: 0s
                   retry_policy:
                     per_try_idle_timeout: *per_try_idle_timeout
