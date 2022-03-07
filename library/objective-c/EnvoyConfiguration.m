@@ -104,14 +104,7 @@
 
   BOOL hasH2Hostnames = self.h2Hostnames.count > 0;
   if (hasH2Hostnames) {
-    templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{fake_remote_responses}"
-                                                           withString:self.directResponses];
-    [customClusters appendString:[[NSString alloc] initWithUTF8String:fake_remote_cluster_insert]];
-    [customListeners
-        appendString:[[NSString alloc] initWithUTF8String:fake_remote_listener_insert]];
-    [customRoutes appendString:self.directResponseMatchers];
-    [customFilters
-        appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
+    // FIXME: build string.
   }
 
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_clusters}"
