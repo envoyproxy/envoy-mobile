@@ -46,6 +46,7 @@ const std::string config_header = R"(
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
+- &h2_hostnames []
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
@@ -214,18 +215,48 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-            - name: api
+            - name: h2
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
-              domains: ["*"]
+              domains: *h2_hostnames
               routes:
 #{custom_routes}
               - match: { prefix: "/" }
                 request_headers_to_remove:
                 - x-forwarded-proto
-                - x-envoy-mobile-cluster
                 route:
-                  cluster_header: x-envoy-mobile-cluster
+                  cluster: base_h2
+                  timeout: 0s
+                  retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
+                    retry_back_off:
+                      base_interval: 0.25s
+                      max_interval: 60s
+            - name: catchall
+              include_attempt_count_in_response: true
+              virtual_clusters: *virtual_clusters
+              domains: ["*"]
+              routes:
+#{custom_routes}
+              - match:
+                  headers:
+                  - name: ":scheme"
+                    value: http
+                request_headers_to_remove:
+                - x-forwarded-proto
+                route:
+                  cluster: base
+                  timeout: 0s
+                  retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
+                    retry_back_off:
+                      base_interval: 0.25s
+                      max_interval: 60s
+              - match: { prefix: "/" }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                route:
+                  cluster: base
                   timeout: 0s
                   retry_policy:
                     per_try_idle_timeout: *per_try_idle_timeout
@@ -321,7 +352,7 @@ R"(
     // Therefore, the ejection time is short and the interval for unejection is tight, but not too
     // tight to cause unnecessary churn.
 R"(
-    typed_extension_protocol_options: *http1_protocol_options_defs
+    typed_extension_protocol_options: *base_protocol_options
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -347,14 +378,6 @@ R"(
             trusted_ca:
               inline_string: *tls_root_certs
             trust_chain_verification: *trust_chain_verification
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *base_protocol_options
-  - name: base_alpn
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *base_protocol_options

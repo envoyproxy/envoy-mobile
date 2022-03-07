@@ -414,7 +414,6 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
-    setDestinationCluster(*internal_headers);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the
     // Http::ConnectionManager set the scheme to http otherwise. In the future we might want to
@@ -585,53 +584,8 @@ void Client::removeStream(envoy_stream_t stream_handle) {
 }
 
 namespace {
-
-const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
 const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
-
-// Alternate clusters included here are a stopgap to make it less likely for a given connection
-// class to suffer "catastrophic" failure of all outbound requests due to a network blip, by
-// distributing requests across a minimum of two potential connections per connection class.
-// Long-term we will be working to generally provide more responsive connection handling within
-// Envoy itself.
-
-const char* BaseCluster = "base";
-const char* H2Cluster = "base_h2";
-const char* ClearTextCluster = "base_clear";
-const char* AlpnCluster = "base_alpn";
-
 } // namespace
-
-void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
-  // Determine upstream cluster:
-  // - Use TLS by default.
-  // - Use http/2 or ALPN if requested explicitly via x-envoy-mobile-upstream-protocol.
-  // - Force http/1.1 if request scheme is http (cleartext).
-  const char* cluster{};
-  auto h2_header = headers.get(H2UpstreamHeader);
-  if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    cluster = ClearTextCluster;
-  } else if (!h2_header.empty()) {
-    ASSERT(h2_header.size() == 1);
-    const auto value = h2_header[0]->value().getStringView();
-    if (value == "http2") {
-      cluster = H2Cluster;
-    } else if (value == "alpn") {
-      cluster = AlpnCluster;
-    } else {
-      RELEASE_ASSERT(value == "http1", fmt::format("using unsupported protocol version {}", value));
-      cluster = BaseCluster;
-    }
-  } else {
-    cluster = BaseCluster;
-  }
-
-  if (!h2_header.empty()) {
-    headers.remove(H2UpstreamHeader);
-  }
-
-  headers.addCopy(ClusterHeader, std::string{cluster});
-}
 
 } // namespace Http
 } // namespace Envoy
