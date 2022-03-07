@@ -76,7 +76,7 @@ const std::string config_header = R"(
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
 
-!ignore protocol_defs: &http1_protocol_options_defs
+!ignore http1_protocol_options_defs: &http1_protocol_options
     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
       explicit_http_config:
@@ -90,7 +90,7 @@ const std::string config_header = R"(
         auto_sni: true
         auto_san_validation: true
 
-!ignore protocol_defs: &http2_protocol_options_defs
+!ignore http2_protocol_options_defs: &http2_protocol_options
     envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
       "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
       explicit_http_config:
@@ -374,7 +374,7 @@ R"(
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *http1_protocol_options_defs
+    typed_extension_protocol_options: *http1_protocol_options
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -394,7 +394,7 @@ R"(
             trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *http2_protocol_options_defs
+    typed_extension_protocol_options: *http2_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
