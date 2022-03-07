@@ -90,6 +90,18 @@ const std::string config_header = R"(
         auto_sni: true
         auto_san_validation: true
 
+!ignore protocol_defs: &http2_protocol_options_defs
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicit_http_config:
+        http2_protocol_options:
+          connection_keepalive:
+            connection_idle_interval: *h2_connection_keepalive_idle_interval
+            timeout: *h2_connection_keepalive_timeout
+      upstream_http_protocol_options:
+        auto_sni: true
+        auto_san_validation: true
+
 !ignore admin_interface_defs: &admin_interface
     address:
       socket_address:
@@ -115,7 +127,7 @@ R"(
 )";
 
 const char* config_template = R"(
-!ignore base_protocol_options_defs: &base_protocol_options
+!ignore alpn_protocol_options_defs: &alpn_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
     auto_config:
@@ -354,7 +366,7 @@ R"(
     // Therefore, the ejection time is short and the interval for unejection is tight, but not too
     // tight to cause unnecessary churn.
 R"(
-    typed_extension_protocol_options: *base_protocol_options
+    typed_extension_protocol_options: *alpn_protocol_options
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -382,7 +394,7 @@ R"(
             trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *base_protocol_options
+    typed_extension_protocol_options: *http2_protocol_options_defs
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
