@@ -76,33 +76,6 @@ const std::string config_header = R"(
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
 
-!ignore http1_protocol_options_defs: &http1_protocol_options
-    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-      explicit_http_config:
-        http_protocol_options:
-          header_key_format:
-            stateful_formatter:
-              name: preserve_case
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-      upstream_http_protocol_options:
-        auto_sni: true
-        auto_san_validation: true
-
-
-!ignore http2_protocol_options_defs: &http2_protocol_options
-    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-      explicit_http_config:
-        http2_protocol_options:
-          connection_keepalive:
-            connection_idle_interval: *h2_connection_keepalive_idle_interval
-            timeout: *h2_connection_keepalive_timeout
-      upstream_http_protocol_options:
-        auto_sni: true
-        auto_san_validation: true
-
 !ignore admin_interface_defs: &admin_interface
     address:
       socket_address:
@@ -128,20 +101,37 @@ R"(
 )";
 
 const char* config_template = R"(
-!ignore alpn_protocol_options_defs: &alpn_protocol_options
+!ignore protocol_options_defs:
+- &h1_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-    auto_config:
-      http2_protocol_options:
-        connection_keepalive:
-          connection_idle_interval: *h2_connection_keepalive_idle_interval
-          timeout: *h2_connection_keepalive_timeout
-      http_protocol_options:
+    explicit_http_config:
+      http_protocol_options: &h1_config
         header_key_format:
           stateful_formatter:
             name: preserve_case
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+    upstream_http_protocol_options:
+      auto_sni: true
+      auto_san_validation: true
+- &h2_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    explicit_http_config:
+      http2_protocol_options: &h2_config
+        connection_keepalive:
+          connection_idle_interval: *h2_connection_keepalive_idle_interval
+          timeout: *h2_connection_keepalive_timeout
+    upstream_http_protocol_options:
+      auto_sni: true
+      auto_san_validation: true
+- &alpn_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    auto_config:
+      http2_protocol_options: *h2_config
+      http_protocol_options: *h1_config
     upstream_http_protocol_options:
       auto_sni: true
       auto_san_validation: true
@@ -353,7 +343,7 @@ R"(
     // Therefore, the ejection time is short and the interval for unejection is tight, but not too
     // tight to cause unnecessary churn.
 R"(
-    typed_extension_protocol_options: *http1_protocol_options_defs
+    typed_extension_protocol_options: *alpn_protocol_options
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -361,7 +351,7 @@ R"(
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *http1_protocol_options_defs
+    typed_extension_protocol_options: *h1_protocol_options
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -381,15 +371,7 @@ R"(
             trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *http2_protocol_options
-  - name: base_alpn
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *base_protocol_options
+    typed_extension_protocol_options: *h2_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
