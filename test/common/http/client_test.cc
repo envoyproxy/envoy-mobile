@@ -177,7 +177,6 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_h2"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -196,7 +195,6 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base_alpn"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
@@ -215,7 +213,6 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
       {":method", "GET"},
       {":authority", "host"},
       {":path", "/"},
-      {"x-envoy-mobile-cluster", "base"},
       {"x-forwarded-proto", "https"},
   };
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
