@@ -235,6 +235,7 @@ static_resources:
               - match: { prefix: "/" }
                 request_headers_to_remove:
                 - x-forwarded-proto
+                - x-envoy-mobile-upstream-protocol
                 route:
                   cluster: base_h2
                   timeout: 0s
@@ -257,6 +258,7 @@ static_resources:
                       exact: http
                 request_headers_to_remove:
                 - x-forwarded-proto
+                - x-envoy-mobile-upstream-protocol
                 route:
                   cluster: base_clear
                   timeout: 0s
@@ -268,6 +270,7 @@ static_resources:
               - match: { prefix: "/" }
                 request_headers_to_remove:
                 - x-forwarded-proto
+                - x-envoy-mobile-upstream-protocol
                 route:
                   cluster: base
                   timeout: 0s

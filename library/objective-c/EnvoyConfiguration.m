@@ -152,7 +152,7 @@
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
-  [definitions appendFormat:@"- &h2_hostnames %@\n", hasH2Hostnames ? @"[]" : @"[]"];
+  [definitions appendFormat:@"- &h2_hostnames %@\n", hasH2Hostnames ? @"[\"host.name\"]" : @"[\"host.name\"]"];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
   [definitions
