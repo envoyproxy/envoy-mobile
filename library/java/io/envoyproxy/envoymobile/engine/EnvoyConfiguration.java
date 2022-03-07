@@ -83,19 +83,21 @@ public class EnvoyConfiguration {
    * @param httpPlatformFilterFactories  the configuration for platform filters.
    * @param stringAccessors              platform string accessors to register.
    */
-  public EnvoyConfiguration(
-      Boolean adminInterfaceEnabled, String grpcStatsDomain, @Nullable Integer statsdPort,
-      int connectTimeoutSeconds, int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
-      int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds, String dnsPreresolveHostnames,
-      List<String> dnsFallbackNameservers, Boolean dnsFilterUnroutableFamilies,
-      boolean enableHappyEyeballs, boolean enableInterfaceBinding,
-      int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
-      List<String> h2Hostnames,
-      int statsFlushSeconds, int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
-      String appVersion, String appId, TrustChainVerification trustChainVerification,
-      String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
-      List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
-      Map<String, EnvoyStringAccessor> stringAccessors) {
+  public EnvoyConfiguration(Boolean adminInterfaceEnabled, String grpcStatsDomain,
+                            @Nullable Integer statsdPort, int connectTimeoutSeconds,
+                            int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
+                            int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds,
+                            String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
+                            Boolean dnsFilterUnroutableFamilies, boolean enableHappyEyeballs,
+                            boolean enableInterfaceBinding,
+                            int h2ConnectionKeepaliveIdleIntervalMilliseconds,
+                            int h2ConnectionKeepaliveTimeoutSeconds, List<String> h2Hostnames,
+                            int statsFlushSeconds, int streamIdleTimeoutSeconds,
+                            int perTryIdleTimeoutSeconds, String appVersion, String appId,
+                            TrustChainVerification trustChainVerification, String virtualClusters,
+                            List<EnvoyNativeFilterConfig> nativeFilterChain,
+                            List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
+                            Map<String, EnvoyStringAccessor> stringAccessors) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
     this.grpcStatsDomain = grpcStatsDomain;
     this.statsdPort = statsdPort;
