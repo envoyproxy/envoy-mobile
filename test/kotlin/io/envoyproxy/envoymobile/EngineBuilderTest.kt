@@ -144,7 +144,7 @@ class EngineBuilderTest {
   fun `specifying h2 hostnames overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
-    engineBuilder.addDNSFallbackNameservers(listOf<String>("api.foo.bar"))
+    engineBuilder.addH2RawDomains(listOf<String>("h2-raw.domain"))
 
     val engine = engineBuilder.build() as EngineImpl
     assertThat(engine.envoyConfiguration!!.h2RawDomains.size).isEqualTo(1)
