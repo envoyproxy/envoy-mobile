@@ -63,6 +63,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private boolean mEnableInterfaceBinding = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
   private int mH2ConnectionKeepaliveTimeoutSeconds = 10;
+  private List<String> mH2RawDomains = Collections.emptyList();
   private int mStatsFlushSeconds = 60;
   private int mStreamIdleTimeoutSeconds = 15;
   private int mPerTryIdleTimeoutSeconds = 15;
@@ -120,8 +121,8 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mDnsQueryTimeoutSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers,
         mEnableDnsFilterUnroutableFamilies, mEnableHappyEyeballs, mEnableInterfaceBinding,
         mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
-        mAppId, mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
-        stringAccessors);
-  }
+        mH2RawDomains, mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds,
+        mAppVersion, mAppId, mTrustChainVerification, mVirtualClusters, nativeFilterChain,
+        platformFilterChain, stringAccessors);
+    }
 }
