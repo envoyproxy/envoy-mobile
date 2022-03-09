@@ -124,5 +124,5 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mH2RawDomains, mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds,
         mAppVersion, mAppId, mTrustChainVerification, mVirtualClusters, nativeFilterChain,
         platformFilterChain, stringAccessors);
-    }
+  }
 }
