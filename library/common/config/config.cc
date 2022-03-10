@@ -76,6 +76,20 @@ const std::string config_header = R"(
       address:
         socket_address: { address: *statsd_host, port_value: *statsd_port }
 
+!ignore protocol_defs: &http1_protocol_options_defs
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicit_http_config:
+        http_protocol_options:
+          header_key_format:
+            stateful_formatter:
+              name: preserve_case
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+      upstream_http_protocol_options:
+        auto_sni: true
+        auto_san_validation: true
+
 !ignore admin_interface_defs: &admin_interface
     address:
       socket_address:
@@ -101,37 +115,20 @@ R"(
 )";
 
 const char* config_template = R"(
-!ignore protocol_options_defs:
-- &h1_protocol_options
+!ignore base_protocol_options_defs: &base_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-    explicit_http_config:
-      http_protocol_options: &h1_config
+    auto_config:
+      http2_protocol_options:
+        connection_keepalive:
+          connection_idle_interval: *h2_connection_keepalive_idle_interval
+          timeout: *h2_connection_keepalive_timeout
+      http_protocol_options:
         header_key_format:
           stateful_formatter:
             name: preserve_case
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-    upstream_http_protocol_options:
-      auto_sni: true
-      auto_san_validation: true
-- &h2_protocol_options
-  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-    explicit_http_config:
-      http2_protocol_options: &h2_config
-        connection_keepalive:
-          connection_idle_interval: *h2_connection_keepalive_idle_interval
-          timeout: *h2_connection_keepalive_timeout
-    upstream_http_protocol_options:
-      auto_sni: true
-      auto_san_validation: true
-- &alpn_protocol_options
-  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-    auto_config:
-      http2_protocol_options: *h2_config
-      http_protocol_options: *h1_config
     upstream_http_protocol_options:
       auto_sni: true
       auto_san_validation: true
@@ -218,25 +215,7 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-            - name: h2_raw
-              include_attempt_count_in_response: true
-              virtual_clusters: *virtual_clusters
-              domains: *h2_raw_domains
-              routes:
-#{custom_routes}
-              - match: { prefix: "/" }
-                request_headers_to_remove:
-                - x-forwarded-proto
-                - x-envoy-mobile-cluster
-                route:
-                  cluster: base_h2
-                  timeout: 0s
-                  retry_policy:
-                    per_try_idle_timeout: *per_try_idle_timeout
-                    retry_back_off:
-                      base_interval: 0.25s
-                      max_interval: 60s
-            - name: primary
+            - name: api
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
               domains: ["*"]
@@ -343,7 +322,7 @@ R"(
     // Therefore, the ejection time is short and the interval for unejection is tight, but not too
     // tight to cause unnecessary churn.
 R"(
-    typed_extension_protocol_options: *alpn_protocol_options
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -351,7 +330,7 @@ R"(
     transport_socket: { name: envoy.transport_sockets.raw_buffer }
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h1_protocol_options
+    typed_extension_protocol_options: *http1_protocol_options_defs
   - name: base_h2
     http2_protocol_options: {}
     connect_timeout: *connect_timeout
@@ -371,7 +350,15 @@ R"(
             trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h2_protocol_options
+    typed_extension_protocol_options: *base_protocol_options
+  - name: base_alpn
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_tls_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *base_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
