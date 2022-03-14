@@ -4,12 +4,13 @@ set -euo pipefail
 
 readonly bazelisk_version="1.10.1"
 
-readonly raw_arch="$(uname -m)"
 if [[ $OSTYPE == darwin* ]]; then
   readonly bazel_os="darwin"
 else
   readonly bazel_os="linux"
 fi
+
+readonly raw_arch="$(uname -m)"
 if [[ "$raw_arch" == "aarch64" || "$raw_arch" == "arm64" ]]; then
   readonly bazel_arch="arm64"
 else
