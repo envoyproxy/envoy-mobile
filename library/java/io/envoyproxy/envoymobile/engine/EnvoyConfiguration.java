@@ -163,11 +163,11 @@ public class EnvoyConfiguration {
       StringBuilder sb = new StringBuilder("[");
       String separator = "";
       for (String nameserver : dnsFallbackNameservers) {
-        sb.add(separator);
+        sb.append(separator);
         separator = ",";
-        sb.add(String.format("{\"socket_address\":{\"address\":\"%s\"}},", nameserver));
+        sb.append(String.format("{\"socket_address\":{\"address\":\"%s\"}},", nameserver));
       }
-      sb.add("]");
+      sb.append("]");
       dnsFallbackNameserversAsString = sb.toString();
     }
 
@@ -176,11 +176,11 @@ public class EnvoyConfiguration {
       StringBuilder sb = new StringBuilder("[");
       String separator = "";
       for (String hostname : h2RawDomains) {
-        sb.add(separator);
+        sb.append(separator);
         separator = ",";
-        sb.add(String.format("\"%s\"", hostname));
+        sb.append(String.format("\"%s\"", hostname));
       }
-      sb.add("]");
+      sb.append("]");
       h2RawDomainsAsString = sb.toString();
     }
 
