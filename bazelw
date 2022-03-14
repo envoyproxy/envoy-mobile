@@ -4,9 +4,8 @@ set -euo pipefail
 
 readonly bazelisk_version="1.10.1"
 
-readonly raw_os="$(uname -s)"
 readonly raw_arch="$(uname -m)"
-if [[ "$raw_os" == "Darwin" ]]; then
+if [[ $OSTYPE == darwin* ]]; then
   readonly bazel_os="darwin"
 else
   readonly bazel_os="linux"
@@ -33,7 +32,7 @@ case "$bazel_platform" in
     ;;
 
   *)
-    echo "Unsupported platform $raw_os $raw_arch" >&2
+    echo "Unsupported platform $OSTYPE $raw_arch" >&2
     exit 1
 esac
 
