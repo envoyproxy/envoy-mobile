@@ -567,7 +567,7 @@ extern const int kEnvoyFailure;
 // Start monitoring reachability using `NWPathMonitor`, updating the
 // preferred Envoy network cluster on changes.
 // This is typically called by `EnvoyEngine` automatically on startup.
-+ (void)startPathMonitorIfNeeded API_AVAILABLE(ios(12));
++ (void)startPathMonitorIfNeeded;
 
 @end
 
