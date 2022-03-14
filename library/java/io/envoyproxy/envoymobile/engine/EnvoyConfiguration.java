@@ -165,7 +165,7 @@ public class EnvoyConfiguration {
       for (String nameserver : dnsFallbackNameservers) {
         sb.append(separator);
         separator = ",";
-        sb.append(String.format("{\"socket_address\":{\"address\":\"%s\"}},", nameserver));
+        sb.append(String.format("{\"socket_address\":{\"address\":\"%s\"}}", nameserver));
       }
       sb.append("]");
       dnsFallbackNameserversAsString = sb.toString();
