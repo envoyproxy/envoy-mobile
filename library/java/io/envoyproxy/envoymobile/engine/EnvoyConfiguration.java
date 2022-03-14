@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.util.StringJoiner;
+import java.util.StringBuilder;
 import javax.annotation.Nullable;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
@@ -160,20 +160,28 @@ public class EnvoyConfiguration {
 
     String dnsFallbackNameserversAsString = "[]";
     if (!dnsFallbackNameservers.isEmpty()) {
-      StringJoiner sj = new StringJoiner(",", "[", "]");
+      StringBuilder sb = new StringBuilder("[");
+      String separator = "";
       for (String nameserver : dnsFallbackNameservers) {
-        sj.add(String.format("{\"socket_address\":{\"address\":\"%s\"}}", nameserver));
+        sb.add(separator);
+        separator = ",";
+        sb.add(String.format("{\"socket_address\":{\"address\":\"%s\"}},", nameserver));
       }
-      dnsFallbackNameserversAsString = sj.toString();
+      sb.add("]");
+      dnsFallbackNameserversAsString = sb.toString();
     }
 
     String h2RawDomainsAsString = "[]";
     if (!h2RawDomains.isEmpty()) {
-      StringJoiner sj = new StringJoiner(",", "[", "]");
+      StringBuilder sb = new StringBuilder("[");
+      String separator = "";
       for (String hostname : h2RawDomains) {
-        sj.add(String.format("\"%s\"", hostname));
+        sb.add(separator);
+        separator = ",";
+        sb.add(String.format("\"%s\"", hostname));
       }
-      h2RawDomainsAsString = sj.toString();
+      sb.add("]");
+      h2RawDomainsAsString = sb.toString();
     }
 
     String dnsResolverConfig = String.format(
