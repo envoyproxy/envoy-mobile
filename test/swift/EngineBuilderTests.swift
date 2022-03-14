@@ -222,6 +222,20 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testAddingH2RawDomainsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(1, config.h2RawDomains.count)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addH2RawDomains(["h2-raw.domain"])
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testAddingPlatformFiltersToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -362,6 +376,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2RawDomains: ["h2-raw.domain"],
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 777,
@@ -391,6 +406,8 @@ final class EngineBuilderTests: XCTestCase {
 
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
+
+    XCTAssertTrue(resolvedYAML.contains("&h2_raw_domains [\"h2-raw.domain\"]"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
     XCTAssertTrue(resolvedYAML.contains("&per_try_idle_timeout 777s"))
@@ -428,6 +445,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: false,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2RawDomains: [],
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 777,
@@ -464,6 +482,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: false,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2RawDomains: [],
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 700,
