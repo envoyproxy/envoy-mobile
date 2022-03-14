@@ -35,7 +35,6 @@ open class EngineBuilder: NSObject {
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
-  private(set) var enableNetworkPathMonitor = false
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
@@ -321,15 +320,6 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Configure the engine to use `NWPathMonitor` to observe network reachability.
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
-    self.enableNetworkPathMonitor = enableNetworkPathMonitor
-    return self
-  }
-
   /// Add the App Version of the App using this Envoy Client.
   ///
   /// - parameter appVersion: The version.
@@ -378,8 +368,7 @@ open class EngineBuilder: NSObject {
   ///
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
-                                      eventTracker: self.eventTracker,
-                                      enableNetworkPathMonitor: self.enableNetworkPathMonitor)
+                                      eventTracker: self.eventTracker)
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
