@@ -146,9 +146,9 @@
                    @"envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\"}\n"];
   [definitions appendFormat:@"- &enable_interface_binding %@\n",
                             self.enableInterfaceBinding ? @"true" : @"false"];
-  [definitions appendFormat:@"- &trust_chain_verification %@\n",
-                            self.enforceTrustChainVerification ? @"VERIFY_TRUST_CHAIN"
-                                                               : @"ACCEPT_UNTRUSTED"];
+  [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
+                                                                     ? @"VERIFY_TRUST_CHAIN"
+                                                                     : @"ACCEPT_UNTRUSTED"];
   [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %.*fs\n", 3,
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
