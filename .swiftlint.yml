@@ -111,8 +111,8 @@ trailing_comma:
 line_length:
   - 100
 type_body_length:
-  - 300 # warning
-  - 400 # error
+  warning: 300
+  error: 400
 file_length:
   warning: 300
   ignore_comment_only_lines: true
