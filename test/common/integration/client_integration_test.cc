@@ -401,13 +401,15 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
 }
 
 TEST_P(ClientIntegrationTest, Timeout) {
-    config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-      auto* listener = bootstrap.mutable_static_resources()->mutable_listeners(1);
-      auto* em_hcm = listener->mutable_api_listener()->mutable_api_listener();
-      auto hcm = MessageUtil::anyConvert<envoy::extensions::filters::network::http_connection_manager::v3::EnvoyMobileHttpConnectionManager>(*em_hcm);
-      hcm.mutable_config()->mutable_stream_idle_timeout()->set_seconds(1);
-      em_hcm->PackFrom(hcm);
-    });
+  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+    auto* listener = bootstrap.mutable_static_resources()->mutable_listeners(1);
+    auto* em_hcm = listener->mutable_api_listener()->mutable_api_listener();
+    auto hcm =
+        MessageUtil::anyConvert<envoy::extensions::filters::network::http_connection_manager::v3::
+                                    EnvoyMobileHttpConnectionManager>(*em_hcm);
+    hcm.mutable_config()->mutable_stream_idle_timeout()->set_seconds(1);
+    em_hcm->PackFrom(hcm);
+  });
 
   autonomous_upstream_ = false;
   initialize();
@@ -461,7 +463,6 @@ TEST_P(ClientIntegrationTest, Timeout) {
   ASSERT_EQ(cc_.on_data_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);
 }
-
 
 } // namespace
 } // namespace Envoy
