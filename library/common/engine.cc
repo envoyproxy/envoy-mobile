@@ -83,11 +83,6 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
       server_ = main_common->server();
       event_dispatcher_ = &server_->dispatcher();
 
-      // The change guarded by this flag breaks our idle timeout handling, so disable this for now
-      // until we can fix it.
-      server_->runtime().mergeValues(
-          {{"envoy.reloadable_features.override_request_timeout_by_gateway_timeout", "false"}});
-
       cv_.notifyAll();
     } catch (const Envoy::NoServingException& e) {
       PANIC(e.what());
