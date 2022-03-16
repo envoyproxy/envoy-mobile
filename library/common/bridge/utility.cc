@@ -8,7 +8,10 @@ namespace Utility {
 
 envoy_error_code_t errorCodeFromLocalStatus(Http::Code status) {
   switch (status) {
+  // Envoy might respond with either RequestTimeout or GatewayTimeout depending on a runtime flag.
   case Http::Code::RequestTimeout:
+    return ENVOY_REQUEST_TIMEOUT;
+  case Http::Code::GatewayTimeout:
     return ENVOY_REQUEST_TIMEOUT;
   case Http::Code::PayloadTooLarge:
     return ENVOY_BUFFER_LIMIT_EXCEEDED;
