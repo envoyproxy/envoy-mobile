@@ -60,7 +60,7 @@ TEST_F(PrefsStoreTest, Basic) {
 
 TEST_F(PrefsStoreTest, Persist) {
   store_->addOrUpdate("foo", "bar");
-  store_->addOrUpdate("ba\nz", "ee\np");
+  store_->addOrUpdate("by\nz", "ee\np");
   ASSERT_TRUE(flush_timer_->enabled_);
   flush_timer_->invokeCallback(); // flush
   EXPECT_TRUE(flush_timer_->enabled_);
@@ -70,12 +70,12 @@ TEST_F(PrefsStoreTest, Persist) {
   flush_interval_ = std::chrono::seconds(0);
   createStore();
   KeyValueStore::ConstIterateCb validate = [](const std::string& key, const std::string&) {
-    EXPECT_TRUE(key == "foo" || key == "ba\nz");
+    EXPECT_TRUE(key == "foo" || key == "by\nz");
     return KeyValueStore::Iterate::Continue;
   };
 
   EXPECT_EQ("bar", store_->get("foo").value());
-  EXPECT_EQ("ee\np", store_->get("ba\nz").value());
+  EXPECT_EQ("ee\np", store_->get("by\nz").value());
   EXPECT_FALSE(store_->get("baz").has_value());
   store_->iterate(validate);
 
