@@ -462,6 +462,7 @@ TEST_P(ClientIntegrationTest, Timeout) {
   ASSERT_EQ(cc_.status, "200");
   ASSERT_EQ(cc_.on_data_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);
+  ASSERT_EQ(cc_.on_error_calls, 1);
 }
 
 } // namespace
