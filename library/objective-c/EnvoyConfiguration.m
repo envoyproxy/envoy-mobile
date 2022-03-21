@@ -136,8 +136,8 @@
                             (unsigned long)self.dnsFailureRefreshSecondsMax];
   [definitions
       appendFormat:@"- &dns_query_timeout %lus\n", (unsigned long)self.dnsQueryTimeoutSeconds];
-  [definitions appendFormat:@"- &dns_min_refresh_rate %lus\n",
-                            (unsigned long)self.dnsMinRefreshSeconds];
+  [definitions
+      appendFormat:@"- &dns_min_refresh_rate %lus\n", (unsigned long)self.dnsMinRefreshSeconds];
   [definitions appendFormat:@"- &dns_preresolve_hostnames %@\n", self.dnsPreresolveHostnames];
   [definitions appendFormat:@"- &dns_lookup_family %@\n",
                             self.enableHappyEyeballs ? @"ALL" : @"V4_PREFERRED"];
@@ -160,8 +160,8 @@
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
   [definitions appendFormat:@"- &h2_raw_domains %@\n", h2RawDomainsString];
-  [definitions appendFormat:@"- &max_connections_per_host %lu\n",
-                            (unsigned long)self.maxConnectionsPerHost];
+  [definitions
+      appendFormat:@"- &max_connections_per_host %lu\n", (unsigned long)self.maxConnectionsPerHost];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
   [definitions
