@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package envoymobile.extensions.key_value.prefs_based;
+
+import "google/protobuf/duration.proto";
+
+import "validate/validate.proto";
+
+message PrefsBasedKeyValueStoreConfig {
+  // The prefs key to store the contents to.
+  string key = 1 [(validate.rules).string = {min_len: 1}];
+
+  // The interval at which the key value store should be flushed.
+  google.protobuf.Duration flush_interval = 2;
+}
