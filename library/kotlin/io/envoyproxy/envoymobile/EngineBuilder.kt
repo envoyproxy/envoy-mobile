@@ -156,7 +156,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addDNSRefreshSeconds(dnsMinRefreshSeconds: Int): EngineBuilder {
+  fun addDNSMinRefreshSeconds(dnsMinRefreshSeconds: Int): EngineBuilder {
     this.dnsMinRefreshSeconds = dnsMinRefreshSeconds
     return this
   }

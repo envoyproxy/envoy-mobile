@@ -96,8 +96,8 @@ public class EnvoyConfiguration {
                             Boolean dnsFilterUnroutableFamilies, boolean enableHappyEyeballs,
                             boolean enableInterfaceBinding,
                             int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-                            int h2ConnectionKeepaliveTimeoutSeconds, int maxConnectionsPerHost,
-                            List<String> h2RawDomains, int statsFlushSeconds,
+                            int h2ConnectionKeepaliveTimeoutSeconds, List<String> h2RawDomains,
+                            int maxConnectionsPerHost, int statsFlushSeconds,
                             int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
                             String appVersion, String appId,
                             TrustChainVerification trustChainVerification, String virtualClusters,
@@ -112,7 +112,7 @@ public class EnvoyConfiguration {
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
     this.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
     this.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
-    this.dnsRefreshSeconds = dnsRefreshSeconds;
+    this.dnsMinRefreshSeconds = dnsMinRefreshSeconds;
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
     this.dnsFallbackNameservers = dnsFallbackNameservers;
     this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies;
@@ -202,7 +202,7 @@ public class EnvoyConfiguration {
         .append(String.format("- &dns_fail_base_interval %ss\n", dnsFailureRefreshSecondsBase))
         .append(String.format("- &dns_fail_max_interval %ss\n", dnsFailureRefreshSecondsMax))
         .append(String.format("- &dns_query_timeout %ss\n", dnsQueryTimeoutSeconds))
-        .append(String.format("- &dns_min_refresh_rate %ss\n", dnsMinRefreshSeconds));
+        .append(String.format("- &dns_min_refresh_rate %ss\n", dnsMinRefreshSeconds))
         .append(String.format("- &dns_preresolve_hostnames %s\n", dnsPreresolveHostnames))
         .append(String.format("- &dns_lookup_family %s\n",
                               enableHappyEyeballs ? "ALL" : "V4_PREFERRED"))
@@ -218,7 +218,7 @@ public class EnvoyConfiguration {
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
                               h2ConnectionKeepaliveTimeoutSeconds))
         .append(String.format("- &h2_raw_domains %s\n", h2RawDomainsAsString))
-        .append(String.format("- &max_connections_per_host %s\n", maxConnectionsPerHost));
+        .append(String.format("- &max_connections_per_host %s\n", maxConnectionsPerHost))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &per_try_idle_timeout %ss\n", perTryIdleTimeoutSeconds))
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",
