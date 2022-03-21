@@ -326,6 +326,7 @@ R"(
         dns_cache_config: *dns_cache_config
     transport_socket: *base_tls_socket
     upstream_connection_options: &upstream_opts
+      set_local_interface_name_on_upstream_connections: true
       tcp_keepalive:
         keepalive_interval: 5
         keepalive_probes: 1
@@ -418,6 +419,7 @@ layered_runtime:
         envoy:
           reloadable_features:
             allow_multiple_dns_addresses: *dns_multiple_addresses
+            override_request_timeout_by_gateway_timeout: false
 )"
 // Needed due to warning in
 // https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
