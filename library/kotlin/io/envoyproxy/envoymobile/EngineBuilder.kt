@@ -260,7 +260,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Set the maximum number of connections to open to a single host.
+   * Set the maximum number of connections to open to a single host. Default is 7.
    *
    * @param maxConnectionsPerHost the maximum number of connections per host.
    *

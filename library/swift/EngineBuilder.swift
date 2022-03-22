@@ -225,7 +225,7 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Set the maximum number of connections to open to a single host.
+  /// Set the maximum number of connections to open to a single host. Default is 7.
   ///
   /// - parameter maxConnectionsPerHost: the maximum number of connections per host.
   ///
