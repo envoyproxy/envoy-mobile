@@ -76,7 +76,7 @@ class EngineBuilderTest {
     engineBuilder.addDNSMinRefreshSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.minDnsRefreshSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration!!.dnsMinRefreshSeconds).isEqualTo(1234)
   }
 
   @Test
