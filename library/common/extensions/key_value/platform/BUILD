@@ -10,8 +10,8 @@ licenses(["notice"])  # Apache 2
 envoy_extension_package()
 
 envoy_proto_library(
-    name = "prefs",
-    srcs = ["prefs.proto"],
+    name = "platform",
+    srcs = ["platform.proto"],
 )
 
 envoy_cc_extension(
@@ -20,7 +20,7 @@ envoy_cc_extension(
     hdrs = ["config.h"],
     repository = "@envoy",
     deps = [
-        ":prefs_cc_proto",
+        ":platform_cc_proto",
         "@envoy//envoy/common:key_value_store_interface",
         "@envoy//envoy/event:dispatcher_interface",
         "@envoy//envoy/filesystem:filesystem_interface",

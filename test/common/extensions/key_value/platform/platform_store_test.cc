@@ -5,8 +5,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "library/common/extensions/key_value/prefs_based/config.h"
-#include "library/common/extensions/key_value/prefs_based/prefs.pb.h"
+#include "library/common/extensions/key_value/platform/config.h"
+#include "library/common/extensions/key_value/platform/platform.pb.h"
 
 using testing::NiceMock;
 
@@ -15,7 +15,7 @@ namespace Extensions {
 namespace KeyValue {
 namespace {
 
-class TestPrefsInterface : public PrefsInterface {
+class TestPlatformInterface : public PlatformInterface {
   virtual void flush(const std::string& key, const std::string& contents) {
     store_.erase(key);
     store_.emplace(key, contents);
@@ -31,24 +31,24 @@ class TestPrefsInterface : public PrefsInterface {
   absl::flat_hash_map<std::string, std::string> store_;
 };
 
-class PrefsStoreTest : public testing::Test {
+class PlatformStoreTest : public testing::Test {
 protected:
-  PrefsStoreTest() { createStore(); }
+  PlatformStoreTest() { createStore(); }
 
   void createStore() {
     flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
     store_ =
-        std::make_unique<PrefsBasedKeyValueStore>(dispatcher_, flush_interval_, mock_prefs_, key_);
+        std::make_unique<PlatformKeyValueStore>(dispatcher_, flush_interval_, mock_platform_, key_);
   }
   NiceMock<Event::MockDispatcher> dispatcher_;
   std::string key_{"key"};
-  std::unique_ptr<PrefsBasedKeyValueStore> store_{};
+  std::unique_ptr<PlatformKeyValueStore> store_{};
   std::chrono::seconds flush_interval_{5};
   Event::MockTimer* flush_timer_ = nullptr;
-  TestPrefsInterface mock_prefs_;
+  TestPlatformInterface mock_platform_;
 };
 
-TEST_F(PrefsStoreTest, Basic) {
+TEST_F(PlatformStoreTest, Basic) {
   EXPECT_EQ(absl::nullopt, store_->get("foo"));
   store_->addOrUpdate("foo", "bar");
   EXPECT_EQ("bar", store_->get("foo").value());
@@ -58,7 +58,7 @@ TEST_F(PrefsStoreTest, Basic) {
   EXPECT_EQ(absl::nullopt, store_->get("foo"));
 }
 
-TEST_F(PrefsStoreTest, Persist) {
+TEST_F(PlatformStoreTest, Persist) {
   store_->addOrUpdate("foo", "bar");
   store_->addOrUpdate("by\nz", "ee\np");
   ASSERT_TRUE(flush_timer_->enabled_);
@@ -90,7 +90,7 @@ TEST_F(PrefsStoreTest, Persist) {
   EXPECT_FALSE(store_->get("bar").has_value());
 }
 
-TEST_F(PrefsStoreTest, Iterate) {
+TEST_F(PlatformStoreTest, Iterate) {
   store_->addOrUpdate("foo", "bar");
   store_->addOrUpdate("baz", "eep");
 

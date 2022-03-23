@@ -9,12 +9,12 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_extension_cc_test(
-    name = "prefs_store_test",
-    srcs = ["prefs_store_test.cc"],
-    extension_names = ["envoy.key_value.prefs_based"],
+    name = "platform_store_test",
+    srcs = ["platform_store_test.cc"],
+    extension_names = ["envoy.key_value.platform"],
     repository = "@envoy",
     deps = [
-        "//library/common/extensions/key_value/prefs_based:config",
+        "//library/common/extensions/key_value/platform:config",
         "@envoy//source/common/common:key_value_store_lib",
         "@envoy//test/mocks/event:event_mocks",
         "@envoy//test/test_common:file_system_for_test_lib",
