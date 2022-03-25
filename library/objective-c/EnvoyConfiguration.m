@@ -152,7 +152,8 @@
       appendFormat:@"- &dns_resolver_config "
                    @"{\"@type\":\"type.googleapis.com/"
                    @"envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\", "
-                   @"\"include_unroutable_families\": %@}\n", self.includeUnroutableFamilies ? @"true" : @"false"];
+                   @"\"include_unroutable_families\": %@}\n",
+                   self.includeUnroutableFamilies ? @"true" : @"false"];
   [definitions appendFormat:@"- &enable_interface_binding %@\n",
                             self.enableInterfaceBinding ? @"true" : @"false"];
   [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
