@@ -147,7 +147,6 @@
                             self.enableHappyEyeballs ? @"true" : @"false"];
   [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
   [definitions appendFormat:@"- &dns_resolver_name envoy.network.dns_resolver.apple\n"];
-  // No additional values are currently needed for Apple-based DNS resolver.
   [definitions
       appendFormat:@"- &dns_resolver_config "
                    @"{\"@type\":\"type.googleapis.com/"
