@@ -2,46 +2,34 @@
 
 namespace Envoy {
 
-envoy_status_t EngineHandle::runOnEngineDispatcher(envoy_engine_t,
+envoy_status_t EngineHandle::runOnEngineDispatcher(envoy_engine_t handle,
                                                    std::function<void(Envoy::Engine&)> func) {
-  if (auto e = engine()) {
-    return e->dispatcher().post([func]() {
-      if (auto e = engine()) {
-        func(*e);
-      }
-    });
-  }
-  return ENVOY_FAILURE;
+  auto engine = reinterpret_cast<Envoy::Engine*>(handle);
+  return engine->dispatcher().post([engine, func]() { func(*engine); });
 }
 
 envoy_engine_t EngineHandle::initEngine(envoy_engine_callbacks callbacks, envoy_logger logger,
                                         envoy_event_tracker event_tracker) {
-  // TODO(goaway): return new handle once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
-  strong_engine_ = std::make_shared<Envoy::Engine>(callbacks, logger, event_tracker);
-  engine_ = strong_engine_;
-  return 1;
+  auto engine = new Envoy::Engine(callbacks, logger, event_tracker);
+  return reinterpret_cast<envoy_engine_t>(engine);
 }
 
-envoy_status_t EngineHandle::runEngine(envoy_engine_t, const char* config, const char* log_level) {
-  // This will change once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
-  if (auto e = engine()) {
-    e->run(config, log_level);
-    return ENVOY_SUCCESS;
-  }
-
-  return ENVOY_FAILURE;
+envoy_status_t EngineHandle::runEngine(envoy_engine_t handle, const char* config,
+                                       const char* log_level) {
+  auto engine = reinterpret_cast<Envoy::Engine*>(handle);
+  engine->run(config, log_level);
+  return ENVOY_SUCCESS;
 }
 
-void EngineHandle::terminateEngine(envoy_engine_t) {
-  // Reset the primary handle to the engine, but retain it long enough to synchronously terminate.
-  auto e = strong_engine_;
-  strong_engine_.reset();
-  e->terminate();
+void EngineHandle::terminateEngine(envoy_engine_t handle) {
+  auto engine = reinterpret_cast<Envoy::Engine*>(handle);
+  engine->terminate();
+  // TODO(jpsim): delete engine to avoid leaking it
 }
 
-EngineSharedPtr EngineHandle::strong_engine_;
-EngineWeakPtr EngineHandle::engine_;
+void EngineHandle::release(envoy_engine_t handle) {
+  auto engine = reinterpret_cast<Envoy::Engine*>(handle);
+  delete engine;
+}
 
 } // namespace Envoy

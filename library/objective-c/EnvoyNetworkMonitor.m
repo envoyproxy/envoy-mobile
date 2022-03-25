@@ -6,27 +6,47 @@
 #import <Network/Network.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
-@implementation EnvoyNetworkMonitor
+// NOLINT(namespace-envoy)
 
-+ (void)startReachabilityIfNeeded {
+@implementation EnvoyNetworkMonitor {
+  envoy_engine_t _engineHandle;
+  nw_path_monitor_t _path_monitor;
+  SCNetworkReachabilityRef _reachability_ref;
+}
+
+- (instancetype)initWithEngine:(envoy_engine_t)engineHandle {
+  self = [super init];
+  if (!self) {
+    return nil;
+  }
+
+  _engineHandle = engineHandle;
+  return self;
+}
+
+- (void)dealloc {
+  if (_path_monitor) {
+    nw_path_monitor_cancel(_path_monitor);
+  }
+}
+
+- (void)startReachabilityIfNeeded {
   static dispatch_once_t reachabilityStarted;
   dispatch_once(&reachabilityStarted, ^{
-    _start_reachability();
+    [self startReachability];
   });
 }
 
-+ (void)startPathMonitorIfNeeded {
+- (void)startPathMonitorIfNeeded {
   static dispatch_once_t monitorStarted;
   dispatch_once(&monitorStarted, ^{
-    _start_path_monitor();
+    [self startPathMonitor];
   });
 }
 
 #pragma mark - Private (Network Path Monitor)
 
-static nw_path_monitor_t _path_monitor;
-
-static void _start_path_monitor() {
+- (void)startPathMonitor {
   _path_monitor = nw_path_monitor_create();
 
   dispatch_queue_attr_t attrs = dispatch_queue_attr_make_with_qos_class(
@@ -58,7 +78,7 @@ static void _start_path_monitor() {
 
     if (network != previousNetworkType) {
       NSLog(@"[Envoy] setting preferred network to %d", network);
-      set_preferred_network(network);
+      set_preferred_network(_engineHandle, network);
       previousNetworkType = network;
     }
 
@@ -92,8 +112,6 @@ static void _start_path_monitor() {
 
 #pragma mark - Private (Reachability)
 
-static SCNetworkReachabilityRef _reachability_ref;
-
 static void _reachability_callback(SCNetworkReachabilityRef target,
                                    SCNetworkReachabilityFlags flags, void *info) {
   if (flags == 0) {
@@ -107,10 +125,11 @@ static void _reachability_callback(SCNetworkReachabilityRef target,
 #endif
 
   NSLog(@"[Envoy] setting preferred network to %@", isUsingWWAN ? @"WWAN" : @"WLAN");
-  set_preferred_network(isUsingWWAN ? ENVOY_NET_WWAN : ENVOY_NET_WLAN);
+  EnvoyNetworkMonitor *monitor = (__bridge EnvoyNetworkMonitor *)info;
+  set_preferred_network(monitor->_engineHandle, isUsingWWAN ? ENVOY_NET_WWAN : ENVOY_NET_WLAN);
 }
 
-static void _start_reachability() {
+- (void)startReachability {
   NSString *name = @"io.envoyproxy.envoymobile.EnvoyNetworkMonitor";
   SCNetworkReachabilityRef reachability =
       SCNetworkReachabilityCreateWithName(nil, [name UTF8String]);
@@ -120,7 +139,7 @@ static void _start_reachability() {
 
   _reachability_ref = reachability;
 
-  SCNetworkReachabilityContext context = {0, NULL, NULL, NULL, NULL};
+  SCNetworkReachabilityContext context = {0, (__bridge void *)self, NULL, NULL, NULL};
   if (!SCNetworkReachabilitySetCallback(_reachability_ref, _reachability_callback, &context)) {
     return;
   }
