@@ -16,7 +16,7 @@
                               enableHappyEyeballs:(BOOL)enableHappyEyeballs
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
                     enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
-                        includeUnroutableFamilies:(BOOL)includeUnroutableFamilies
+                enableDNSFilterUnroutableFamilies:(BOOL)enableDNSFilterUnroutableFamilies
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
@@ -54,7 +54,7 @@
   self.enableHappyEyeballs = enableHappyEyeballs;
   self.enableInterfaceBinding = enableInterfaceBinding;
   self.enforceTrustChainVerification = enforceTrustChainVerification;
-  self.includeUnroutableFamilies = includeUnroutableFamilies;
+  self.enableDNSFilterUnroutableFamilies = enableDNSFilterUnroutableFamilies;
   self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
@@ -152,7 +152,7 @@
                    @"{\"@type\":\"type.googleapis.com/"
                    @"envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\", "
                    @"\"include_unroutable_families\": %@}\n",
-                   self.includeUnroutableFamilies ? @"true" : @"false"];
+                   self.enableDNSFilterUnroutableFamilies ? @"false" : @"true"];
   [definitions appendFormat:@"- &enable_interface_binding %@\n",
                             self.enableInterfaceBinding ? @"true" : @"false"];
   [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
