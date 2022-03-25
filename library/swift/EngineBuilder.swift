@@ -190,7 +190,8 @@ open class EngineBuilder: NSObject {
   /// Specify whether DNS addresses that the system considers to be unroutable should still
   /// be attempted.
   ///
-  /// - parameter includeUnroutableFamilies: whether to include unroutable families of DNS addresses.
+  /// - parameter includeUnroutableFamilies: whether to include unroutable families of DNS
+  ///                                        addresses.
   ///
   /// - returns: This builder.
   @discardableResult
