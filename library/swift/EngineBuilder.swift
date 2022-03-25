@@ -25,6 +25,7 @@ open class EngineBuilder: NSObject {
   private var enableHappyEyeballs: Bool = false
   private var enableInterfaceBinding: Bool = false
   private var enforceTrustChainVerification: Bool = true
+  private var includeUnroutableFamilies: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   private var h2RawDomains: [String] = []
@@ -183,6 +184,18 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func enforceTrustChainVerification(_ enforceTrustChainVerification: Bool) -> Self {
     self.enforceTrustChainVerification = enforceTrustChainVerification
+    return self
+  }
+
+  /// Specify whether DNS addresses that the system considers to be unroutable should still
+  /// be attempted.
+  ///
+  /// - parameter includeUnroutableFamilies: whether to include unroutable families of DNS addresses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func includeUnroutableFamilies(_ includeUnroutableFamilies: Bool) -> Self {
+    self.includeUnroutableFamilies = includeUnroutableFamilies
     return self
   }
 
@@ -430,6 +443,7 @@ open class EngineBuilder: NSObject {
       enableHappyEyeballs: self.enableHappyEyeballs,
       enableInterfaceBinding: self.enableInterfaceBinding,
       enforceTrustChainVerification: self.enforceTrustChainVerification,
+      includeUnroutableFamilies: self.includeUnroutableFamilies,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
