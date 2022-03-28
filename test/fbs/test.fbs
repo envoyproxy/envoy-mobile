@@ -3,5 +3,9 @@ namespace Test;
 table SomeType {
 }
 
+table SomeOtherType {
+	
+}
+
 root_type SomeType;
 

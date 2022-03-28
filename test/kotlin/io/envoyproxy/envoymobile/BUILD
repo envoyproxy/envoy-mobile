@@ -22,7 +22,7 @@ envoy_mobile_kt_test(
         "FlatBuffersTest.kt",
     ],
     deps = [
-        "//test/fbs:test_java_fbs",
+        "//test/fbs:test_kt_lib",
     ],
 )
 

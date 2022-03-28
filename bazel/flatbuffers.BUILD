@@ -1,6 +1,6 @@
-licenses(["notice"])
-
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+
+licenses(["notice"])  # Apache 2
 
 package(
     default_visibility = ["//visibility:public"],
