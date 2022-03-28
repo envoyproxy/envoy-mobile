@@ -1,5 +1,6 @@
 @_implementationOnly import EnvoyEngine
 import Foundation
+import FlatBuffers
 
 /// Builder used for creating and running a new Engine instance.
 @objcMembers
@@ -47,6 +48,7 @@ open class EngineBuilder: NSObject {
   /// Initialize a new builder with standard HTTP library configuration.
   public override init() {
     self.base = .standard
+    let _ = FlatBufferBuilder()
   }
 
   /// Initialize a new builder with a custom full YAML configuration.

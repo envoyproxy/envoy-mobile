@@ -1,0 +1,7 @@
+namespace Test;
+
+table SomeType {
+}
+
+root_type SomeType;
+

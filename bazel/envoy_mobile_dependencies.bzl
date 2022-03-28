@@ -1,6 +1,7 @@
 load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
 load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
@@ -57,10 +58,19 @@ def swift_dependencies():
     apple_rules_dependencies(ignore_version_differences = True)
     swift_rules_dependencies()
 
+    http_archive(
+        name = "swift_flatbuffers",
+        sha256 = "ffd68aebdfb300c9e82582ea38bf4aa9ce65c77344c94d5047f3be754cc756ea",
+        build_file = "//bazel:flatbuffers.BUILD",
+        strip_prefix = "flatbuffers-2.0.0",
+        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.0.zip"],
+    )
+
 def kotlin_dependencies():
     maven_install(
         artifacts = [
             "com.google.code.findbugs:jsr305:3.0.2",
+            "com.google.flatbuffers:flatbuffers-java:2.0.3",
             # Kotlin
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
             "androidx.recyclerview:recyclerview:1.1.0",

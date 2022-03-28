@@ -50,6 +50,7 @@ swift_library(
     private_deps = [
         "//library/objective-c:envoy_engine_objc_lib",
         "@envoy_mobile_extra_swift_sources//:extra_private_dep",
+        "@swift_flatbuffers//:FlatBuffers",
     ],
     visibility = ["//visibility:public"],
 )
