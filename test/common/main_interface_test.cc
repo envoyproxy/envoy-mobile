@@ -288,10 +288,10 @@ TEST(MainInterfaceTest, UsingMainInterfaceWithoutARunningEngine) {
   Http::TestRequestTrailerMapImpl trailers;
   envoy_headers c_trailers = Http::Utility::toBridgeHeaders(trailers);
 
-  EXPECT_EQ(ENVOY_FAILURE, send_headers(0, c_headers, false));
-  EXPECT_EQ(ENVOY_FAILURE, send_data(0, c_data, false));
-  EXPECT_EQ(ENVOY_FAILURE, send_trailers(0, c_trailers));
-  EXPECT_EQ(ENVOY_FAILURE, reset_stream(0));
+  EXPECT_EQ(ENVOY_FAILURE, send_headers(0, 0, c_headers, false));
+  EXPECT_EQ(ENVOY_FAILURE, send_data(0, 0, c_data, false));
+  EXPECT_EQ(ENVOY_FAILURE, send_trailers(0, 0, c_trailers));
+  EXPECT_EQ(ENVOY_FAILURE, reset_stream(0, 0));
 
   // Release memory
   release_envoy_headers(c_headers);
@@ -349,7 +349,7 @@ TEST(MainInterfaceTest, InitEngineReturns1) {
 }
 
 TEST(MainInterfaceTest, PreferredNetwork) {
-  EXPECT_EQ(ENVOY_SUCCESS, set_preferred_network(ENVOY_NET_WLAN));
+  EXPECT_EQ(ENVOY_SUCCESS, set_preferred_network(0, ENVOY_NET_WLAN));
 }
 
 TEST(EngineTest, RecordCounter) {

@@ -49,7 +49,9 @@ envoy_status_t send_data(envoy_engine_t engine, envoy_stream_t stream, envoy_dat
 }
 
 // TODO: implement.
-envoy_status_t send_metadata(envoy_stream_t, envoy_headers) { return ENVOY_FAILURE; }
+envoy_status_t send_metadata(envoy_engine_t, envoy_stream_t, envoy_headers) {
+  return ENVOY_FAILURE;
+}
 
 envoy_status_t send_trailers(envoy_engine_t engine, envoy_stream_t stream, envoy_headers trailers) {
   return Envoy::EngineHandle::runOnEngineDispatcher(
