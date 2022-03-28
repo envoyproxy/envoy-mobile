@@ -92,8 +92,8 @@ public class JniLibrary {
    * @param endStream, supplies whether this is the last data in the stream.
    * @return int,      the resulting status of the operation.
    */
-  protected static native int sendData(long engine, long stream, byte[] data, int length,
-                                       boolean endStream);
+  protected static native int sendDataByteArray(long engine, long stream, byte[] data, int length,
+                                                boolean endStream);
 
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple

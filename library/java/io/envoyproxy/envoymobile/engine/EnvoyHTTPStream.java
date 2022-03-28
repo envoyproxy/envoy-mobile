@@ -81,7 +81,7 @@ public class EnvoyHTTPStream {
     if (data.isDirect()) {
       JniLibrary.sendData(engineHandle, streamHandle, data, length, endStream);
     } else if (data.hasArray()) {
-      JniLibrary.sendData(engineHandle, streamHandle, data.array(), length, endStream);
+      JniLibrary.sendDataByteArray(engineHandle, streamHandle, data.array(), length, endStream);
     } else {
       throw new UnsupportedOperationException("Unsupported ByteBuffer implementation.");
     }

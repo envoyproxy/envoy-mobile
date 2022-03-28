@@ -941,12 +941,9 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
                    static_cast<envoy_stream_t>(stream_handle), byte_count);
 }
 
-// Note: JLjava_nio_ByteBuffer_2IZ is the mangled signature of the java method.
-// https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
 // The Java counterpart guarantees to invoke this method with a non-null direct ByteBuffer where the
 // provided length is between 0 and ByteBuffer.capacity(), inclusively.
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer_2IZ(
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData(
     JNIEnv* env, jclass, jlong engine_handle, jlong stream_handle, jobject data, jint length,
     jboolean end_stream) {
   if (end_stream) {
@@ -957,15 +954,16 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__JLjava_nio_ByteBuffer
                    buffer_to_native_data(env, data, length), end_stream);
 }
 
-// Note: J_3BIZ is the mangled signature of the java method.
-// https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/design.html
 // The Java counterpart guarantees to invoke this method with a non-null jbyteArray where the
 // provided length is between 0 and the size of the jbyteArray, inclusively. And given that this
 // jbyteArray comes from a ByteBuffer, it is also guaranteed that its length will not be greater
 // than 2^31 - this is why the length type is jint.
-extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendData__J_3BIZ(
-    JNIEnv* env, jclass, jlong engine_handle, jlong stream_handle, jbyteArray data, jint length,
-    jboolean end_stream) {
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendDataByteArray(JNIEnv* env, jclass,
+                                                                   jlong engine_handle,
+                                                                   jlong stream_handle,
+                                                                   jbyteArray data, jint length,
+                                                                   jboolean end_stream) {
   if (end_stream) {
     jni_log("[Envoy]", "jvm_send_data_end_stream");
   }
