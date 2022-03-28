@@ -1,7 +1,6 @@
 load("@build_bazel_rules_swift//swift:repositories.bzl", "swift_rules_dependencies")
 load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependencies")
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
