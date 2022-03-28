@@ -16,7 +16,7 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
                envoy_event_tracker event_tracker)
     : callbacks_(callbacks), logger_(logger), event_tracker_(event_tracker),
       dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()), terminated_(false) {
-  // Ensure static factory registration occurs on time.
+  // Ensure static factory registration occurs one time.
   // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
   // https://github.com/envoyproxy/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
