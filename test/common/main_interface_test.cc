@@ -174,11 +174,11 @@ TEST(MainInterfaceTest, BasicStream) {
 
   envoy_stream_t stream = init_stream(0);
 
-  start_stream(stream, stream_cbs, false);
+  start_stream(0, stream, stream_cbs, false);
 
-  send_headers(stream, c_headers, false);
-  send_data(stream, c_data, false);
-  send_trailers(stream, c_trailers);
+  send_headers(0, stream, c_headers, false);
+  send_data(0, stream, c_data, false);
+  send_trailers(0, stream, c_trailers);
 
   ASSERT_TRUE(on_complete_notification.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
@@ -218,9 +218,9 @@ TEST(MainInterfaceTest, SendMetadata) {
 
   envoy_stream_t stream = init_stream(0);
 
-  start_stream(stream, stream_cbs, false);
+  start_stream(0, stream, stream_cbs, false);
 
-  EXPECT_EQ(ENVOY_FAILURE, send_metadata(stream, {}));
+  EXPECT_EQ(ENVOY_FAILURE, send_metadata(0, stream, {}));
 
   terminate_engine(0);
 
@@ -266,9 +266,9 @@ TEST(MainInterfaceTest, ResetStream) {
 
   envoy_stream_t stream = init_stream(0);
 
-  start_stream(stream, stream_cbs, false);
+  start_stream(0, stream, stream_cbs, false);
 
-  reset_stream(stream);
+  reset_stream(0, stream);
 
   ASSERT_TRUE(on_cancel_notification.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
