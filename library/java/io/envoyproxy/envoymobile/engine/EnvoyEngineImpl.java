@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+// NOLINT(namespace-envoy)
+
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
@@ -27,6 +29,11 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     this.engineHandle = JniLibrary.initEngine(runningCallback, logger, eventTracker);
   }
 
+  @Override
+  public long getHandle() {
+    return engineHandle;
+  }
+
   /**
    * Creates a new stream with the provided callbacks.
    *
@@ -37,7 +44,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   @Override
   public EnvoyHTTPStream startStream(EnvoyHTTPCallbacks callbacks, boolean explicitFlowControl) {
     long streamHandle = JniLibrary.initStream(engineHandle);
-    EnvoyHTTPStream stream = new EnvoyHTTPStream(streamHandle, callbacks, explicitFlowControl);
+    EnvoyHTTPStream stream =
+        new EnvoyHTTPStream(engineHandle, streamHandle, callbacks, explicitFlowControl);
     stream.start();
     return stream;
   }

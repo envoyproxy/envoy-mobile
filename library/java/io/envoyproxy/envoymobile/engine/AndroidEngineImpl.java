@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+// NOLINT(namespace-envoy)
+
 import android.content.Context;
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
@@ -21,6 +23,11 @@ public class AndroidEngineImpl implements EnvoyEngine {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger, eventTracker);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
+  }
+
+  @Override
+  public long getHandle() {
+    return envoyEngine.getHandle();
   }
 
   @Override

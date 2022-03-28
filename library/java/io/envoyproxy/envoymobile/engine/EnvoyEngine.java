@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+// NOLINT(namespace-envoy)
+
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
@@ -20,6 +22,11 @@ public interface EnvoyEngine {
    * Terminates the running engine.
    */
   void terminate();
+
+  /**
+   * Gets the engine's handle.
+   */
+  long getHandle();
 
   /**
    * Run the Envoy engine with the provided yaml string and log level.

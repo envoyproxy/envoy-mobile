@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+// NOLINT(namespace-envoy)
+
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 import java.nio.charset.StandardCharsets;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EnvoyHTTPStream {
+  private final long engineHandle;
   private final long streamHandle;
   private final boolean explicitFlowControl;
   private final JvmCallbackContext callbacksContext;
@@ -16,7 +19,9 @@ public class EnvoyHTTPStream {
   /**
    * Start the stream via the JNI library.
    */
-  void start() { JniLibrary.startStream(streamHandle, callbacksContext, explicitFlowControl); }
+  void start() {
+    JniLibrary.startStream(engineHandle, streamHandle, callbacksContext, explicitFlowControl);
+  }
 
   /**
    * Initialize a new stream.
@@ -24,8 +29,9 @@ public class EnvoyHTTPStream {
    * @param callbacks The callbacks for the stream.
    * @param explicitFlowControl Whether explicit flow control will be enabled for this stream.
    */
-  public EnvoyHTTPStream(long streamHandle, EnvoyHTTPCallbacks callbacks,
+  public EnvoyHTTPStream(long engineHandle, long streamHandle, EnvoyHTTPCallbacks callbacks,
                          boolean explicitFlowControl) {
+    this.engineHandle = engineHandle;
     this.streamHandle = streamHandle;
     this.explicitFlowControl = explicitFlowControl;
     callbacksContext = new JvmCallbackContext(callbacks);
@@ -39,7 +45,8 @@ public class EnvoyHTTPStream {
    * @param endStream, supplies whether this is headers only.
    */
   public void sendHeaders(Map<String, List<String>> headers, boolean endStream) {
-    JniLibrary.sendHeaders(streamHandle, JniBridgeUtility.toJniHeaders(headers), endStream);
+    JniLibrary.sendHeaders(engineHandle, streamHandle, JniBridgeUtility.toJniHeaders(headers),
+                           endStream);
   }
 
   /**
@@ -72,9 +79,9 @@ public class EnvoyHTTPStream {
       throw new IllegalArgumentException("Length out of bound");
     }
     if (data.isDirect()) {
-      JniLibrary.sendData(streamHandle, data, length, endStream);
+      JniLibrary.sendData(engineHandle, streamHandle, data, length, endStream);
     } else if (data.hasArray()) {
-      JniLibrary.sendData(streamHandle, data.array(), length, endStream);
+      JniLibrary.sendData(engineHandle, streamHandle, data.array(), length, endStream);
     } else {
       throw new UnsupportedOperationException("Unsupported ByteBuffer implementation.");
     }
@@ -90,7 +97,7 @@ public class EnvoyHTTPStream {
     if (!explicitFlowControl) {
       throw new UnsupportedOperationException("Called readData without explicit flow control.");
     }
-    JniLibrary.readData(streamHandle, byteCount);
+    JniLibrary.readData(engineHandle, streamHandle, byteCount);
   }
 
   /**
@@ -101,7 +108,7 @@ public class EnvoyHTTPStream {
    * @param trailers, the trailers to send.
    */
   public void sendTrailers(Map<String, List<String>> trailers) {
-    JniLibrary.sendTrailers(streamHandle, JniBridgeUtility.toJniHeaders(trailers));
+    JniLibrary.sendTrailers(engineHandle, streamHandle, JniBridgeUtility.toJniHeaders(trailers));
   }
 
   /**
@@ -110,5 +117,5 @@ public class EnvoyHTTPStream {
    *
    * @return int, success unless the stream has already been canceled.
    */
-  public int cancel() { return JniLibrary.resetStream(streamHandle); }
+  public int cancel() { return JniLibrary.resetStream(engineHandle, streamHandle); }
 }

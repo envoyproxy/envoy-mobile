@@ -10,6 +10,8 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
  * Mock implementation of `EnvoyEngine`. Used internally for testing the bridging layer & mocking.
  */
 internal class MockEnvoyEngine : EnvoyEngine {
+  override fun getHandle(): Long = 0
+
   override fun runWithConfig(envoyConfiguration: EnvoyConfiguration?, logLevel: String?): Int = 0
 
   override fun runWithTemplate(
