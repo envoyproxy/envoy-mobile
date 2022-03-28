@@ -76,8 +76,6 @@ envoy_status_t set_preferred_network(envoy_engine_t engine, envoy_network_t netw
 
 envoy_status_t record_counter_inc(envoy_engine_t e, const char* elements, envoy_stats_tags tags,
                                   uint64_t count) {
-  // TODO: use specific engine once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
   return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, count](auto& engine) -> void {
         engine.recordCounterInc(name, tags, count);
@@ -86,8 +84,6 @@ envoy_status_t record_counter_inc(envoy_engine_t e, const char* elements, envoy_
 
 envoy_status_t record_gauge_set(envoy_engine_t e, const char* elements, envoy_stats_tags tags,
                                 uint64_t value) {
-  // TODO: use specific engine once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
   return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, value](auto& engine) -> void {
         engine.recordGaugeSet(name, tags, value);
@@ -96,8 +92,6 @@ envoy_status_t record_gauge_set(envoy_engine_t e, const char* elements, envoy_st
 
 envoy_status_t record_gauge_add(envoy_engine_t e, const char* elements, envoy_stats_tags tags,
                                 uint64_t amount) {
-  // TODO: use specific engine once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
   return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, amount](auto& engine) -> void {
         engine.recordGaugeAdd(name, tags, amount);
@@ -106,8 +100,6 @@ envoy_status_t record_gauge_add(envoy_engine_t e, const char* elements, envoy_st
 
 envoy_status_t record_gauge_sub(envoy_engine_t e, const char* elements, envoy_stats_tags tags,
                                 uint64_t amount) {
-  // TODO: use specific engine once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
   return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, amount](auto& engine) -> void {
         engine.recordGaugeSub(name, tags, amount);
@@ -116,8 +108,6 @@ envoy_status_t record_gauge_sub(envoy_engine_t e, const char* elements, envoy_st
 
 envoy_status_t record_histogram_value(envoy_engine_t e, const char* elements, envoy_stats_tags tags,
                                       uint64_t value, envoy_histogram_stat_unit_t unit_measure) {
-  // TODO: use specific engine once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
   return Envoy::EngineHandle::runOnEngineDispatcher(
       e, [name = std::string(elements), tags, value, unit_measure](auto& engine) -> void {
         engine.recordHistogramValue(name, tags, value, unit_measure);
