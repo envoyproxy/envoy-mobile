@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore;
 
 /* Typed configuration that may be used for starting Envoy. */
 public class EnvoyConfiguration {
@@ -51,6 +52,7 @@ public class EnvoyConfiguration {
   public final String virtualClusters;
   public final List<EnvoyNativeFilterConfig> nativeFilterChain;
   public final Map<String, EnvoyStringAccessor> stringAccessors;
+  public final Map<String, EnvoyKeyValueStore> keyValueStores;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -86,6 +88,7 @@ public class EnvoyConfiguration {
    * @param nativeFilterChain            the configuration for native filters.
    * @param httpPlatformFilterFactories  the configuration for platform filters.
    * @param stringAccessors              platform string accessors to register.
+   * @param keyValueStores               platform key-value store implementations.
    */
   public EnvoyConfiguration(
       Boolean adminInterfaceEnabled, String grpcStatsDomain, @Nullable Integer statsdPort,
@@ -99,7 +102,8 @@ public class EnvoyConfiguration {
       String appVersion, String appId, TrustChainVerification trustChainVerification,
       String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
-      Map<String, EnvoyStringAccessor> stringAccessors) {
+      Map<String, EnvoyStringAccessor> stringAccessors,
+      Map<String, EnvoyKeyValueStore> keyValueStores) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
     this.grpcStatsDomain = grpcStatsDomain;
     this.statsdPort = statsdPort;
@@ -129,6 +133,7 @@ public class EnvoyConfiguration {
     this.nativeFilterChain = nativeFilterChain;
     this.httpPlatformFilterFactories = httpPlatformFilterFactories;
     this.stringAccessors = stringAccessors;
+    this.keyValueStores = keyValueStores;
   }
 
   /**

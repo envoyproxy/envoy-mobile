@@ -11,6 +11,7 @@ java_library(
         "EnvoyHTTPFilter.java",
         "EnvoyHTTPFilterCallbacks.java",
         "EnvoyHTTPFilterFactory.java",
+        "EnvoyKeyValueStore.java",
         "EnvoyLogger.java",
         "EnvoyOnEngineRunning.java",
         "EnvoyStatus.java",

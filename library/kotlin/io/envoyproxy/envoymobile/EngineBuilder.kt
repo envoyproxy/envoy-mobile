@@ -7,6 +7,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore
 import java.util.UUID
 
 sealed class BaseConfiguration
@@ -55,6 +56,7 @@ open class EngineBuilder(
   private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
+  private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
 
   /**
    * Add a log level to use with Envoy.
@@ -382,6 +384,7 @@ open class EngineBuilder(
     this.eventTracker = eventTracker
     return this
   }
+
   /**
    * Add a string accessor to this Envoy Client.
    *
@@ -392,6 +395,19 @@ open class EngineBuilder(
    */
   fun addStringAccessor(name: String, accessor: () -> String): EngineBuilder {
     this.stringAccessors.put(name, EnvoyStringAccessorAdapter(StringAccessor(accessor)))
+    return this
+  }
+
+  /**
+   * Register a key-value store implementation for internal use.
+   *
+   * @param name the name of the KV store.
+   * @param keyValueStore the KV store implementation.
+   *
+   * @return this builder.
+   */
+  fun addKeyValueStore(name: String, keyValueStore: KeyValueStore): EngineBuilder {
+    this.keyValueStores.put(name, EnvoyKeyValueStoreAdapter(keyValueStore))
     return this
   }
 
@@ -490,7 +506,8 @@ open class EngineBuilder(
       virtualClusters,
       nativeFilterChain,
       platformFilterChain,
-      stringAccessors
+      stringAccessors,
+      keyValueStores
     )
 
     return when (configuration) {
