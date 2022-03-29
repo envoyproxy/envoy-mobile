@@ -42,6 +42,7 @@ import org.junit.runner.RunWith;
  * See {@link CronetTestRule#runBase()} ()} for details.
  */
 @RunWith(AndroidJUnit4.class)
+@Ignore("TODO(jpsim): Fix this test")
 public class CronetFixedModeOutputStreamTest {
   @Rule public final CronetTestRule mTestRule = new CronetTestRule();
 
