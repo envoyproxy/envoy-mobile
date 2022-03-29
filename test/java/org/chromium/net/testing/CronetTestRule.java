@@ -1,5 +1,7 @@
 package org.chromium.net.testing;
 
+// NOLINT(namespace-envoy)
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -150,6 +152,7 @@ public final class CronetTestRule implements TestRule {
           // Run with the default HttpURLConnection implementation first.
           setTestingSystemHttpURLConnection(true);
           base.evaluate();
+          tearDown();
           // Use Cronet's implementation, and run the same test.
           setTestingSystemHttpURLConnection(false);
           base.evaluate();
