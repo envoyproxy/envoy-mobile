@@ -45,7 +45,7 @@ envoy_mobile_swift_test(
     srcs = [
         "FlatBufferTest.swift",
     ] + [
-        "//test/fbs:test_swift_fbs_srcs",
+        "//test/fbs:test_fb_swift_srcs",
     ],
     deps = [
         "@swift_flatbuffers//:FlatBuffers",

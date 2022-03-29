@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile
 
-import Test.SomeType
+import Test.Nested.SomeType
 import com.google.flatbuffers.FlatBufferBuilder
 import org.junit.Test
 
