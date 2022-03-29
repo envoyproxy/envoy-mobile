@@ -200,7 +200,7 @@ envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char*
  * terminated engine is illegal.
  * @param engine, handle to the engine to terminate.
  */
-void terminate_engine(envoy_engine_t engine);
+void terminate_engine(envoy_engine_t engine, bool release);
 
 /**
  * Drain all upstream connections associated with an engine

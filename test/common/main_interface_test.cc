@@ -182,7 +182,7 @@ TEST(MainInterfaceTest, BasicStream) {
 
   ASSERT_TRUE(on_complete_notification.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
 
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
@@ -222,7 +222,7 @@ TEST(MainInterfaceTest, SendMetadata) {
 
   EXPECT_EQ(ENVOY_FAILURE, send_metadata(engine_handle, stream, {}));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
 
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
@@ -272,7 +272,7 @@ TEST(MainInterfaceTest, ResetStream) {
 
   ASSERT_TRUE(on_cancel_notification.WaitForNotificationWithTimeout(absl::Seconds(10)));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
 
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
@@ -322,7 +322,7 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
   uint64_t fake_api;
   EXPECT_EQ(ENVOY_SUCCESS, register_platform_api("api", &fake_api));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
 
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
@@ -349,7 +349,7 @@ TEST(EngineTest, RecordCounter) {
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   EXPECT_EQ(ENVOY_SUCCESS, record_counter_inc(engine_handle, "counter", envoy_stats_notags, 1));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -373,7 +373,7 @@ TEST(EngineTest, SetGauge) {
 
   EXPECT_EQ(ENVOY_SUCCESS, record_gauge_set(engine_handle, "gauge", envoy_stats_notags, 1));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -397,7 +397,7 @@ TEST(EngineTest, AddToGauge) {
 
   EXPECT_EQ(ENVOY_SUCCESS, record_gauge_add(engine_handle, "gauge", envoy_stats_notags, 30));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -423,7 +423,7 @@ TEST(EngineTest, SubFromGauge) {
 
   EXPECT_EQ(ENVOY_SUCCESS, record_gauge_sub(engine_handle, "gauge", envoy_stats_notags, 30));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -451,7 +451,7 @@ TEST(EngineTest, RecordHistogramValue) {
   EXPECT_EQ(ENVOY_SUCCESS, record_histogram_value(engine_handle, "histogram", envoy_stats_notags,
                                                   99, MILLISECONDS));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -490,7 +490,7 @@ TEST(EngineTest, Logger) {
 
   ASSERT_TRUE(test_context.on_log.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_logger_release.WaitForNotificationWithTimeout(absl::Seconds(3)));
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
@@ -526,7 +526,7 @@ TEST(EngineTest, EventTrackerRegistersDefaultAPI) {
   // tracker is passed at engine's initialization time.
   Assert::invokeDebugAssertionFailureRecordActionForAssertMacroUseOnly("foo_location");
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -567,7 +567,7 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
                       registered_event_tracker->context);
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -607,7 +607,7 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
   Assert::invokeDebugAssertionFailureRecordActionForAssertMacroUseOnly("foo_location");
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -647,7 +647,7 @@ TEST(EngineTest, EventTrackerRegistersEnvoyBugRecordAction) {
   Assert::invokeEnvoyBugFailureRecordActionForEnvoyBugMacroUseOnly("foo_location");
 
   ASSERT_TRUE(test_context.on_event.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
@@ -669,7 +669,7 @@ TEST(MainInterfaceTest, DrainConnections) {
 
   ASSERT_EQ(ENVOY_SUCCESS, drain_connections(engine_handle));
 
-  terminate_engine(engine_handle);
+  terminate_engine(engine_handle, /* release */ true);
   ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 

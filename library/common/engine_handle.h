@@ -26,14 +26,13 @@ private:
   static envoy_engine_t initEngine(envoy_engine_callbacks callbacks, envoy_logger logger,
                                    envoy_event_tracker event_tracker);
   static envoy_status_t runEngine(envoy_engine_t, const char* config, const char* log_level);
-  static void terminateEngine(envoy_engine_t);
-  static void release(envoy_engine_t);
+  static void terminateEngine(envoy_engine_t handle, bool release);
 
   // Allow a specific list of functions to access the internal setup/teardown functionality.
   friend envoy_engine_t(::init_engine)(envoy_engine_callbacks callbacks, envoy_logger logger,
                                        envoy_event_tracker event_tracker);
   friend envoy_status_t(::run_engine)(envoy_engine_t, const char* config, const char* log_level);
-  friend void ::terminate_engine(envoy_engine_t engine);
+  friend void ::terminate_engine(envoy_engine_t engine, bool release);
 };
 
 } // namespace Envoy
