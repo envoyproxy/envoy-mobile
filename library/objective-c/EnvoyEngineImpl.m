@@ -589,7 +589,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 }
 
 - (void)terminate {
-  terminate_engine(_engineHandle);
+  terminate_engine(_engineHandle, /* release */ false);
 }
 
 - (void)drainConnections {
@@ -612,7 +612,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 
 - (void)terminateNotification:(NSNotification *)notification {
   NSLog(@"[Envoy %ld] terminating engine (%@)", _engineHandle, notification.name);
-  terminate_engine(_engineHandle);
+  terminate_engine(_engineHandle, /* release */ false);
 }
 
 @end
