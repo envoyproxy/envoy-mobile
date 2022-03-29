@@ -983,7 +983,6 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_sendTrailers(
     JNIEnv* env, jclass, jlong engine_handle, jlong stream_handle, jobjectArray trailers) {
   jni_log("[Envoy]", "jvm_send_trailers");
-  // TODO(jpsim): Real engine handle
   return send_trailers(static_cast<envoy_engine_t>(engine_handle),
                        static_cast<envoy_stream_t>(stream_handle),
                        to_native_headers(env, trailers));
