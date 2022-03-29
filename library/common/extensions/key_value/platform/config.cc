@@ -9,10 +9,10 @@ namespace Extensions {
 namespace KeyValue {
 
 PlatformKeyValueStore::PlatformKeyValueStore(Event::Dispatcher& dispatcher,
-                                             std::chrono::milliseconds flush_interval,
+                                             std::chrono::milliseconds save_interval,
                                              PlatformInterface& platform_interface,
                                              const std::string& key)
-    : KeyValueStoreBase(dispatcher, flush_interval), platform_interface_(platform_interface),
+    : KeyValueStoreBase(dispatcher, save_interval), platform_interface_(platform_interface),
       key_(key) {
   const std::string contents = platform_interface.read(key);
   if (!parseContents(contents, store_)) {
@@ -26,7 +26,7 @@ void PlatformKeyValueStore::flush() {
     absl::StrAppend(&output, it.first.length(), "\n", it.first, it.second.length(), "\n",
                     it.second);
   }
-  platform_interface_.flush(key_, output);
+  platform_interface_.save(key_, output);
 }
 
 KeyValueStorePtr
@@ -40,7 +40,7 @@ PlatformKeyValueStoreFactory::createStore(const Protobuf::Message& config,
       envoymobile::extensions::key_value::platform::PlatformKeyValueStoreConfig>(
       typed_config.config().typed_config(), validation_visitor);
   auto milliseconds =
-      std::chrono::milliseconds(DurationUtil::durationToMilliseconds(file_config.flush_interval()));
+      std::chrono::milliseconds(DurationUtil::durationToMilliseconds(file_config.save_interval()));
   return std::make_unique<PlatformKeyValueStore>(
       dispatcher, milliseconds, platform_interface_.value().get(), file_config.key());
 }

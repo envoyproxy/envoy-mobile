@@ -7,9 +7,9 @@ import "google/protobuf/duration.proto";
 import "validate/validate.proto";
 
 message PlatformKeyValueStoreConfig {
-  // The key to store the contents to.
+  // The key to save the contents to.
   string key = 1 [(validate.rules).string = {min_len: 1}];
 
-  // The interval at which the key value store should be flushed.
-  google.protobuf.Duration flush_interval = 2;
+  // The interval at which the key value store should be saved.
+  google.protobuf.Duration save_interval = 2;
 }

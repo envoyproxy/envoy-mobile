@@ -16,7 +16,7 @@ namespace KeyValue {
 namespace {
 
 class TestPlatformInterface : public PlatformInterface {
-  virtual void flush(const std::string& key, const std::string& contents) {
+  virtual void save(const std::string& key, const std::string& contents) {
     store_.erase(key);
     store_.emplace(key, contents);
   }
@@ -38,12 +38,12 @@ protected:
   void createStore() {
     flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
     store_ =
-        std::make_unique<PlatformKeyValueStore>(dispatcher_, flush_interval_, mock_platform_, key_);
+        std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_, mock_platform_, key_);
   }
   NiceMock<Event::MockDispatcher> dispatcher_;
   std::string key_{"key"};
   std::unique_ptr<PlatformKeyValueStore> store_{};
-  std::chrono::seconds flush_interval_{5};
+  std::chrono::seconds save_interval_{5};
   Event::MockTimer* flush_timer_ = nullptr;
   TestPlatformInterface mock_platform_;
 };
@@ -67,7 +67,7 @@ TEST_F(PlatformStoreTest, Persist) {
   // Not flushed as 5ms didn't pass.
   store_->addOrUpdate("baz", "eep");
 
-  flush_interval_ = std::chrono::seconds(0);
+  save_interval_ = std::chrono::seconds(0);
   createStore();
   KeyValueStore::ConstIterateCb validate = [](const std::string& key, const std::string&) {
     EXPECT_TRUE(key == "foo" || key == "by\nz");
