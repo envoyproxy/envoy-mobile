@@ -134,5 +134,7 @@ jobs:
             --config=remote-ci-local-java8 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/...
+      - name: Fix tmate apt keys
+        run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6AF7F09730B3F0A4
       - name: Debugging with tmate
         uses: mxschmitt/action-tmate@v3.11
