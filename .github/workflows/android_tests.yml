@@ -138,3 +138,5 @@ jobs:
         run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6AF7F09730B3F0A4
       - name: Debugging with tmate
         uses: mxschmitt/action-tmate@v3.11
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
