@@ -23,11 +23,10 @@ def envoy_mobile_flatbuffers_library(name, srcs, namespace, types):
         deps = ["@maven//:com_google_flatbuffers_flatbuffers_java"],
     )
 
+    swift_outputs = ["{}_generated.swift".format(f.replace(".fbs", "")) for f in srcs]
     flatbuffer_library_public(
         name = "{}_fb_swift_srcs".format(name),
-        srcs = ["test.fbs"],
-        outs = [
-            "test_generated.swift",
-        ],
+        srcs = srcs,
+        outs = swift_outputs,
         language_flag = "--swift",
     )
