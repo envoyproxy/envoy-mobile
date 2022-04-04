@@ -6,8 +6,8 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
-import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore
+import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
 
 sealed class BaseConfiguration

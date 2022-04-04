@@ -23,11 +23,11 @@ internal class EnvoyKeyValueStoreAdapter(
     return callbacks.read(key)
   }
 
-  override fun remove(key: String): Unit {
+  override fun remove(key: String) {
     callbacks.remove(key)
   }
 
-  override fun save(key: String, value: String): Unit {
+  override fun save(key: String, value: String) {
     callbacks.save(key, value)
   }
 }
