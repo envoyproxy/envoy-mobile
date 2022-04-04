@@ -16,6 +16,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -113,6 +114,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     List<EnvoyHTTPFilterFactory> platformFilterChain = Collections.emptyList();
     List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
     Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
+    Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
     if (brotliEnabled()) {
       nativeFilterChain.add(
           new EnvoyNativeFilterConfig("envoy.filters.http.decompressor", BROTLI_CONFIG));
@@ -126,6 +128,6 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mH2ConnectionKeepaliveTimeoutSeconds, mH2RawDomains, mMaxConnectionsPerHost,
         mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
         mAppId, mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
-        stringAccessors);
+        stringAccessors, keyValueStores);
   }
 }

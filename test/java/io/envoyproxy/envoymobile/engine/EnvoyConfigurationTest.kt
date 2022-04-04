@@ -32,7 +32,7 @@ class EnvoyConfigurationTest {
       false, "stats.foo.com", null, 123, 234, 345, 456, 321, 12, "[hostname]", listOf("8.8.8.8"),
       true, true, true, 222, 333, listOf("h2-raw.domain"), 543, 567, 678, 910, "v1.2.3",
       "com.mydomain.myapp", TrustChainVerification.ACCEPT_UNTRUSTED, "[test]",
-      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
+      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap(), emptyMap()
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -96,7 +96,7 @@ class EnvoyConfigurationTest {
       false, "stats.foo.com", null, 123, 234, 345, 456, 321, 12, "[hostname]", emptyList(), false,
       false, false, 222, 333, emptyList(), 543, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
       TrustChainVerification.ACCEPT_UNTRUSTED, "[test]",
-      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
+      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap(), emptyMap()
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -117,7 +117,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = EnvoyConfiguration(
       false, "stats.foo.com", null, 123, 234, 345, 456, 321, 12, "[hostname]", emptyList(), false,
       false, false, 123, 123, emptyList(), 543, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
-      TrustChainVerification.ACCEPT_UNTRUSTED, "[test]", emptyList(), emptyList(), emptyMap()
+      TrustChainVerification.ACCEPT_UNTRUSTED, "[test]", emptyList(), emptyList(), emptyMap(), emptyMap()
     )
 
     try {
@@ -133,7 +133,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = EnvoyConfiguration(
       false, "stats.foo.com", 5050, 123, 234, 345, 456, 321, 12, "[hostname]", emptyList(), false,
       false, false, 123, 123, emptyList(), 543, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
-      TrustChainVerification.ACCEPT_UNTRUSTED, "[test]", emptyList(), emptyList(), emptyMap()
+      TrustChainVerification.ACCEPT_UNTRUSTED, "[test]", emptyList(), emptyList(), emptyMap(), emptyMap()
     )
 
     try {
@@ -150,7 +150,7 @@ class EnvoyConfigurationTest {
       false, "stats.foo.com", null, 123, 234, 345, 456, 321, 12, "[hostname]", listOf("8.8.8.8"), true,
       true, true, 222, 333, listOf("h2-raw.domain", "h2-raw.domain2"), 543, 567, 678, 910, "v1.2.3",
       "com.mydomain.myapp", TrustChainVerification.ACCEPT_UNTRUSTED, "[test]",
-      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
+      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap(), emptyMap()
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -167,7 +167,7 @@ class EnvoyConfigurationTest {
       listOf("8.8.8.8", "1.1.1.1"), true, true, true, 222, 333,
       listOf("h2-raw.domain", "h2-raw.domain2"), 543, 567, 678, 910, "v1.2.3", "com.mydomain.myapp",
       TrustChainVerification.ACCEPT_UNTRUSTED, "[test]",
-      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap()
+      listOf(EnvoyNativeFilterConfig("filter_name", "test_config")), emptyList(), emptyMap(), emptyMap()
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
