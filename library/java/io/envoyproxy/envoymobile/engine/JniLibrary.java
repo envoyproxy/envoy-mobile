@@ -65,7 +65,7 @@ public class JniLibrary {
    * @return envoy_stream, with a stream handle and a success status, or a failure
    * status.
    */
-  protected static native int startStream(long stream, JvmCallbackContext context,
+  protected static native int startStream(long engine, long stream, JvmCallbackContext context,
                                           boolean explicitFlowControl);
 
   /**
@@ -77,7 +77,8 @@ public class JniLibrary {
    * @param endStream, supplies whether this is headers only.
    * @return int, the resulting status of the operation.
    */
-  protected static native int sendHeaders(long stream, byte[][] headers, boolean endStream);
+  protected static native int sendHeaders(long engine, long stream, byte[][] headers,
+                                          boolean endStream);
 
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple
@@ -89,7 +90,8 @@ public class JniLibrary {
    * @param endStream, supplies whether this is the last data in the stream.
    * @return int,      the resulting status of the operation.
    */
-  protected static native int sendData(long stream, byte[] data, int length, boolean endStream);
+  protected static native int sendDataByteArray(long engine, long stream, byte[] data, int length,
+                                                boolean endStream);
 
   /**
    * Send data over an open HTTP stream. This method can be invoked multiple
@@ -101,7 +103,8 @@ public class JniLibrary {
    * @param endStream, supplies whether this is the last data in the stream.
    * @return int,      the resulting status of the operation.
    */
-  protected static native int sendData(long stream, ByteBuffer data, int length, boolean endStream);
+  protected static native int sendData(long engine, long stream, ByteBuffer data, int length,
+                                       boolean endStream);
 
   /**
    * Read data from the response stream. Returns immediately.
@@ -111,7 +114,7 @@ public class JniLibrary {
    * @param byteCount, Maximum number of bytes that may be be passed by the next data callback.
    * @return int, the resulting status of the operation.
    */
-  protected static native int readData(long stream, long byteCount);
+  protected static native int readData(long engine, long stream, long byteCount);
 
   /**
    * Send trailers over an open HTTP stream. This method can only be invoked once
@@ -121,7 +124,7 @@ public class JniLibrary {
    * @param trailers, the trailers to send.
    * @return int, the resulting status of the operation.
    */
-  protected static native int sendTrailers(long stream, byte[][] trailers);
+  protected static native int sendTrailers(long engine, long stream, byte[][] trailers);
 
   /**
    * Detach all callbacks from a stream and send an interrupt upstream if
@@ -130,7 +133,7 @@ public class JniLibrary {
    * @param stream, the stream to evict.
    * @return int, the resulting status of the operation.
    */
-  protected static native int resetStream(long stream);
+  protected static native int resetStream(long engine, long stream);
 
   /**
    * Register a factory for creating platform filter instances for each HTTP stream.

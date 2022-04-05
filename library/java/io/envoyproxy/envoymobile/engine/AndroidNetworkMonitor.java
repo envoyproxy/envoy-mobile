@@ -34,6 +34,7 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
   private static volatile AndroidNetworkMonitor instance = null;
 
   private int previousNetworkType = ConnectivityManager.TYPE_DUMMY;
+  private long engineHandle;
   private ConnectivityManager connectivityManager;
   private NetworkCallback networkCallback;
   private NetworkRequest networkRequest;
@@ -62,6 +63,8 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       }
       return;
     }
+
+    engineHandle = envoyEngine.getHandle();
 
     connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -114,13 +117,13 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
 
     switch (networkType) {
     case ConnectivityManager.TYPE_MOBILE:
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WWAN);
+      AndroidJniLibrary.setPreferredNetwork(engineHandle, ENVOY_NET_WWAN);
       return;
     case ConnectivityManager.TYPE_WIFI:
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WLAN);
+      AndroidJniLibrary.setPreferredNetwork(engineHandle, ENVOY_NET_WLAN);
       return;
     default:
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
+      AndroidJniLibrary.setPreferredNetwork(engineHandle, ENVOY_NET_GENERIC);
     }
   }
 }

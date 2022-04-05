@@ -25,7 +25,9 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_setPreferredNetwork(JNIEnv* env,
                                                                             jclass, // class
+                                                                            jlong engine,
                                                                             jint network) {
   jni_log("[Envoy]", "setting preferred network");
-  return set_preferred_network(static_cast<envoy_network_t>(network));
+  return set_preferred_network(static_cast<envoy_engine_t>(engine),
+                               static_cast<envoy_network_t>(network));
 }

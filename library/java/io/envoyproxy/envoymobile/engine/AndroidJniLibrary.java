@@ -52,5 +52,5 @@ public class AndroidJniLibrary {
    * @param network, the network to be preferred for new streams.
    * @return The resulting status of the operation.
    */
-  protected static native int setPreferredNetwork(int network);
+  protected static native int setPreferredNetwork(long engine, int network);
 }
