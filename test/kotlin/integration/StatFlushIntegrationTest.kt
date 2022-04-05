@@ -72,6 +72,6 @@ class StatFlushIntegrationTest {
 
     engine!!.flushStats()
 
-    statsdServer.awaitStatMatching("envoy.pulse.foo.bar:1|c");
+    statsdServer.awaitStatMatching { s -> s == "envoy.pulse.foo.bar:1|c" }
   }
 }
