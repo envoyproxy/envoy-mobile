@@ -48,11 +48,11 @@ public:
     return Type::Ip;
   }
 
-  absl::string_view addressType() const override {
-    return "";
-  }
+  absl::string_view addressType() const override { return ""; }
 
-  const SocketInterface& socketInterface() const override { return SocketInterfaceSingleton::get(); }
+  const SocketInterface& socketInterface() const override {
+    return SocketInterfaceSingleton::get();
+  }
 
 private:
   const std::string address_{"synthetic"};
