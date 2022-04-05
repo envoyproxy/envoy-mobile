@@ -445,9 +445,9 @@ static void ios_track_event(envoy_map map, const void *context) {
   _networkMonitor = [[EnvoyNetworkMonitor alloc] initWithEngine:_engineHandle];
 
   if (enableNetworkPathMonitor) {
-    [_networkMonitor startPathMonitorIfNeeded];
+    [_networkMonitor startPathMonitor];
   } else {
-    [_networkMonitor startReachabilityIfNeeded];
+    [_networkMonitor startReachability];
   }
 
   return self;

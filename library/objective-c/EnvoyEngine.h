@@ -579,12 +579,12 @@ extern const int kEnvoyFailure;
 // Start monitoring reachability using `SCNetworkReachability`, updating the
 // preferred Envoy network cluster on changes.
 // This is typically called by `EnvoyEngine` automatically on startup.
-- (void)startReachabilityIfNeeded;
+- (void)startReachability;
 
 // Start monitoring reachability using `NWPathMonitor`, updating the
 // preferred Envoy network cluster on changes.
 // This is typically called by `EnvoyEngine` automatically on startup.
-- (void)startPathMonitorIfNeeded;
+- (void)startPathMonitor;
 
 @end
 

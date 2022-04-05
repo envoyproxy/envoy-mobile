@@ -30,22 +30,6 @@
   }
 }
 
-- (void)startReachabilityIfNeeded {
-  static dispatch_once_t reachabilityStarted;
-  dispatch_once(&reachabilityStarted, ^{
-    [self startReachability];
-  });
-}
-
-- (void)startPathMonitorIfNeeded {
-  static dispatch_once_t monitorStarted;
-  dispatch_once(&monitorStarted, ^{
-    [self startPathMonitor];
-  });
-}
-
-#pragma mark - Private (Network Path Monitor)
-
 - (void)startPathMonitor {
   _path_monitor = nw_path_monitor_create();
 
@@ -110,25 +94,6 @@
   nw_path_monitor_start(_path_monitor);
 }
 
-#pragma mark - Private (Reachability)
-
-static void _reachability_callback(SCNetworkReachabilityRef target,
-                                   SCNetworkReachabilityFlags flags, void *info) {
-  if (flags == 0) {
-    return;
-  }
-
-#if TARGET_OS_IPHONE
-  BOOL isUsingWWAN = flags & kSCNetworkReachabilityFlagsIsWWAN;
-#else
-  BOOL isUsingWWAN = NO; // Macs don't have WWAN interfaces
-#endif
-
-  NSLog(@"[Envoy] setting preferred network to %@", isUsingWWAN ? @"WWAN" : @"WLAN");
-  EnvoyNetworkMonitor *monitor = (__bridge EnvoyNetworkMonitor *)info;
-  set_preferred_network(monitor->_engineHandle, isUsingWWAN ? ENVOY_NET_WWAN : ENVOY_NET_WLAN);
-}
-
 - (void)startReachability {
   NSString *name = @"io.envoyproxy.envoymobile.EnvoyNetworkMonitor";
   SCNetworkReachabilityRef reachability =
@@ -148,6 +113,25 @@ static void _reachability_callback(SCNetworkReachabilityRef target,
   if (!SCNetworkReachabilitySetDispatchQueue(_reachability_ref, queue)) {
     SCNetworkReachabilitySetCallback(_reachability_ref, NULL, NULL);
   }
+}
+
+#pragma mark - Private
+
+static void _reachability_callback(SCNetworkReachabilityRef target,
+                                   SCNetworkReachabilityFlags flags, void *info) {
+  if (flags == 0) {
+    return;
+  }
+
+#if TARGET_OS_IPHONE
+  BOOL isUsingWWAN = flags & kSCNetworkReachabilityFlagsIsWWAN;
+#else
+  BOOL isUsingWWAN = NO; // Macs don't have WWAN interfaces
+#endif
+
+  NSLog(@"[Envoy] setting preferred network to %@", isUsingWWAN ? @"WWAN" : @"WLAN");
+  EnvoyNetworkMonitor *monitor = (__bridge EnvoyNetworkMonitor *)info;
+  set_preferred_network(monitor->_engineHandle, isUsingWWAN ? ENVOY_NET_WWAN : ENVOY_NET_WLAN);
 }
 
 @end
