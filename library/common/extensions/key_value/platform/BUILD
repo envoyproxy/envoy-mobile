@@ -17,7 +17,10 @@ envoy_proto_library(
 envoy_cc_extension(
     name = "config",
     srcs = ["config.cc"],
-    hdrs = ["config.h"],
+    hdrs = [
+        "c_types.h",
+        "config.h",
+    ],
     repository = "@envoy",
     deps = [
         ":platform_cc_proto",
