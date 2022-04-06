@@ -820,6 +820,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onData(ByteBuffer data, boolean endStream, EnvoyStreamIntel streamIntel) {
+      System.err.println("CronetUrlRequest.onData");
       if (isAbandoned()) {
         return;
       }
@@ -879,6 +880,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onError(int errorCode, String message, int attemptCount,
                         EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+      System.err.println("CronetUrlRequest.onError");
       if (isAbandoned()) {
         return;
       }
@@ -902,6 +904,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     @Override
     public void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+      System.err.println("CronetUrlRequest.onCancel");
       if (isAbandoned()) {
         return;
       }

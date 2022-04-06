@@ -347,6 +347,7 @@ Client::DirectStream::~DirectStream() { ENVOY_LOG(debug, "[S{}] destroy stream",
 // resetting the stream when handling a pending local response. By default, the LocalReplyFilter
 // has this responsibility.
 void Client::DirectStream::resetStream(StreamResetReason reason) {
+  ENVOY_LOG(debug, "[S{}] resetStream", stream_handle_);
   // This seems in line with other codec implementations, and so the assumption is that this is in
   // line with upstream expectations.
   // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.

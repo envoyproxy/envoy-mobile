@@ -110,5 +110,8 @@ public class EnvoyHTTPStream {
    *
    * @return int, success unless the stream has already been canceled.
    */
-  public int cancel() { return JniLibrary.resetStream(streamHandle); }
+  public int cancel() {
+    System.err.println("\nEnvoyHTTPStream.resetStream\n");
+    return JniLibrary.resetStream(streamHandle);
+  }
 }

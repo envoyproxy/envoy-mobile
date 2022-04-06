@@ -8,14 +8,14 @@ envoy_package()
 envoy_mobile_android_test(
     name = "net_tests",
     srcs = [
-        "BrotliTest.java",
-        "CronetEngineBuilderTest.java",
-        "CronetStressTest.java",
-        "DiskStorageTest.java",
-        "GetStatusTest.java",
+        #        "BrotliTest.java",
+        #        "CronetEngineBuilderTest.java",
+        #        "CronetStressTest.java",
+        #        "DiskStorageTest.java",
+        #        "GetStatusTest.java",
         "RequestFinishedInfoTest.java",
-        "UploadDataProvidersTest.java",
-        "UrlResponseInfoTest.java",
+        #        "UploadDataProvidersTest.java",
+        #        "UrlResponseInfoTest.java",
     ],
     exec_properties = {
         # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.

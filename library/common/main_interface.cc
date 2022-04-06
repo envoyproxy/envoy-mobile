@@ -57,6 +57,7 @@ envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers) {
 }
 
 envoy_status_t reset_stream(envoy_stream_t stream) {
+  std::cout << "reset_stream(envoy_stream_t stream)" << std::endl;
   return Envoy::EngineHandle::runOnEngineDispatcher(
       1 /* engine */, [stream](auto& engine) -> void { engine.httpClient().cancelStream(stream); });
 }
