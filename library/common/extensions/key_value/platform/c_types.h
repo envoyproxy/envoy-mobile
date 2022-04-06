@@ -11,17 +11,17 @@ extern "C" { // function pointers
 /**
  * Function signature for reading value from implementation.
  */
-typedef envoy_data (*envoy_kv_store_read_f)(envoy_data k);
+typedef envoy_data (*envoy_kv_store_read_f)(envoy_data key, const void* context);
 
 /**
  * Function signature for saving value to implementation.
  */
-typedef void (*envoy_kv_store_save_f)(envoy_data k, envoy_data v);
+typedef void (*envoy_kv_store_save_f)(envoy_data key, envoy_data value, const void* context);
 
 /**
  * Function signature for removing value from implementation.
  */
-typedef void (*envoy_kv_store_remove_f)(envoy_data k);
+typedef void (*envoy_kv_store_remove_f)(envoy_data key, const void* context);
 
 #ifdef __cplusplus
 } // function pointers
