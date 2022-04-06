@@ -4,9 +4,34 @@
 #include "envoy/config/common/key_value/v3/config.pb.validate.h"
 #include "envoy/registry/registry.h"
 
+#include "library/common/extensions/key_value/platform/c_types.h"
+
 namespace Envoy {
 namespace Extensions {
 namespace KeyValue {
+
+class PlatformInterfaceImpl : PlatformInterface {
+public:
+  PlatformInterface(const std::string& name) :
+    bridged_store_(*static_cast<envoy_kv_store*>(Api::External::retrieveApi(name))) {}
+
+  ~PlatformInterface() override {}
+
+  std::string read(const std::string& key) const override {
+    envoy_data bridged_key{};
+    envoy_data bridged_value = bridged_store.read(bridged_key, bridged_store.context);
+    return std::string{};
+  }
+
+  void save(const std::string& key, const std::string& contents) override {
+    envoy_data bridged_key{};
+    envoy_data bridged_value{};
+    bridged_store.save(bridged_key, bridged_value, bridged_store.context);
+  }
+
+private:
+  envoy_kv_store bridged_store_;
+};
 
 PlatformKeyValueStore::PlatformKeyValueStore(Event::Dispatcher& dispatcher,
                                              std::chrono::milliseconds save_interval,
