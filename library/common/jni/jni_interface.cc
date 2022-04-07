@@ -787,6 +787,62 @@ static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void*
   return result;
 }
 
+// JvmKeyValueStoreContext
+static envoy_data jvm_kv_store_read(envoy_data key, const void* context) {
+  jni_log("[Envoy]", "jvm_kv_store_read");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
+  jmethodID jmid_read =
+      env->GetMethodID(jcls_JvmKeyValueStoreContext, "read", "([B)[B");
+  jbyteArray j_key = native_data_to_array(env, key);
+  jbyteArray j_value = (jbyteArray)env->CallObjectMethod(j_context, j_key, jmid_read);
+  envoy_data native_data = array_to_native_data(env, j_value);
+
+  env->DeleteLocalRef(j_value);
+  env->DeleteLocalRef(j_key);
+  env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
+
+  return native_data;
+}
+
+
+static void jvm_kv_store_remove(envoy_data key, const void* context) {
+  jni_log("[Envoy]", "jvm_store_remove");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
+  jmethodID jmid_remove =
+      env->GetMethodID(jcls_JvmKeyValueStoreContext, "remove", "([B)V");
+  jbyteArray j_key = native_data_to_array(env, key);
+  env->CallVoidMethod(j_context, j_key, jmid_remove);
+
+  env->DeleteLocalRef(j_key);
+  env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
+}
+
+static void jvm_kv_store_save(envoy_data key, envoy_data value, const void* context) {
+  jni_log("[Envoy]", "jvm_kv_store_save");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
+  jmethodID jmid_save =
+      env->GetMethodID(jcls_JvmKeyValueStoreContext, "save", "([B[B)V");
+  jbyteArray j_key = native_data_to_array(env, key);
+  jbyteArray j_value = native_data_to_array(env, value);
+  env->CallVoidMethod(j_context, j_key, j_value, jmid_save);
+
+  env->DeleteLocalRef(j_value);
+  env->DeleteLocalRef(j_key);
+  env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
+}
+
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
