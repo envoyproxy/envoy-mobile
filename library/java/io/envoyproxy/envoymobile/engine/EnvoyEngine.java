@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
+import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 import java.util.Map;
@@ -20,11 +21,6 @@ public interface EnvoyEngine {
    * Terminates the running engine.
    */
   void terminate();
-
-  /**
-   * Gets the engine's handle.
-   */
-  long getHandle();
 
   /**
    * Run the Envoy engine with the provided yaml string and log level.
@@ -123,4 +119,12 @@ public interface EnvoyEngine {
    * Drain all connections owned by this Engine.
    */
   void drainConnections();
+
+  /**
+   * Update the network interface to the preferred network for opening new
+   * streams.
+   *
+   * @param network The network to be preferred for new streams.
+   */
+  void setPreferredNetwork(EnvoyNetworkType network);
 }

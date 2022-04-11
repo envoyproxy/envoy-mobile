@@ -24,11 +24,6 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public long getHandle() {
-    return envoyEngine.getHandle();
-  }
-
-  @Override
   public EnvoyHTTPStream startStream(EnvoyHTTPCallbacks callbacks, boolean explicitFlowControl) {
     return envoyEngine.startStream(callbacks, explicitFlowControl);
   }
@@ -96,5 +91,10 @@ public class AndroidEngineImpl implements EnvoyEngine {
   @Override
   public void drainConnections() {
     envoyEngine.drainConnections();
+  }
+
+  @Override
+  public void setPreferredNetwork(EnvoyNetworkType network) {
+    envoyEngine.setPreferredNetwork(network);
   }
 }
