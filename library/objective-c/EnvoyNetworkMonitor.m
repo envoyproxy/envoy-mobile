@@ -6,8 +6,6 @@
 #import <Network/Network.h>
 #import <SystemConfiguration/SystemConfiguration.h>
 
-// NOLINT(namespace-envoy)
-
 @implementation EnvoyNetworkMonitor {
   envoy_engine_t _engineHandle;
   nw_path_monitor_t _path_monitor;

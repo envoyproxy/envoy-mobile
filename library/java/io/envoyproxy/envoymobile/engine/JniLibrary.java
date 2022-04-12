@@ -59,6 +59,7 @@ public class JniLibrary {
    * Open an underlying HTTP stream. Note: Streams must be started before other
    * other interaction can can occur.
    *
+   * @param engine,  handle to the stream's associated engine.
    * @param stream,  handle to the stream to be started.
    * @param context, context that contains dispatch logic to fire callbacks
    *                 callbacks.
@@ -74,6 +75,7 @@ public class JniLibrary {
    * Send headers over an open HTTP stream. This method can be invoked once and
    * needs to be called before send_data.
    *
+   * @param engine,    the stream's associated engine.
    * @param stream,    the stream to send headers over.
    * @param headers,   the headers to send.
    * @param endStream, supplies whether this is headers only.
@@ -86,6 +88,7 @@ public class JniLibrary {
    * Send data over an open HTTP stream. This method can be invoked multiple
    * times.
    *
+   * @param engine,    the stream's associated engine.
    * @param stream,    the stream to send data over.
    * @param data,      the data to send.
    * @param length,    the size in bytes of the data to send. 0 <= length <= data.length
@@ -99,6 +102,7 @@ public class JniLibrary {
    * Send data over an open HTTP stream. This method can be invoked multiple
    * times.
    *
+   * @param engine,    the stream's associated engine.
    * @param stream,    the stream to send data over.
    * @param data,      the data to send; must be a <b>direct</b> ByteBuffer.
    * @param length,    the size in bytes of the data to send. 0 <= length <= data.capacity()
@@ -112,6 +116,7 @@ public class JniLibrary {
    * Read data from the response stream. Returns immediately.
    * Has no effect if explicit flow control is not enabled.
    *
+   * @param engine,    the stream's associated engine.
    * @param stream,    the stream.
    * @param byteCount, Maximum number of bytes that may be be passed by the next data callback.
    * @return int, the resulting status of the operation.
@@ -122,6 +127,7 @@ public class JniLibrary {
    * Send trailers over an open HTTP stream. This method can only be invoked once
    * per stream. Note that this method implicitly ends the stream.
    *
+   * @param engine,   the stream's associated engine.
    * @param stream,   the stream to send trailers over.
    * @param trailers, the trailers to send.
    * @return int, the resulting status of the operation.
@@ -132,6 +138,7 @@ public class JniLibrary {
    * Detach all callbacks from a stream and send an interrupt upstream if
    * supported by transport.
    *
+   * @param engine, the stream's associated engine.
    * @param stream, the stream to evict.
    * @return int, the resulting status of the operation.
    */
@@ -239,6 +246,7 @@ public class JniLibrary {
   /**
    * Add another recorded duration in ms to the timer histogram with the given string of elements.
    *
+   * @param engine   Handle to the engine that owns the histogram.
    * @param elements Elements of the histogram stat.
    * @param tags Tags of the histogram.
    * @param durationMs Duration value to record in the histogram timer distribution.
@@ -251,6 +259,8 @@ public class JniLibrary {
    * Flush the stats sinks outside of a flushing interval.
    * Note: stat flushing is done asynchronously, this function will never block.
    * This is a noop if called before the underlying EnvoyEngine has started.
+   *
+   * @param engine engine whose stats should be flushed.
    */
   protected static native int flushStats(long engine);
 
@@ -263,6 +273,7 @@ public class JniLibrary {
   /**
    * Add another recorded value to the generic histogram with the given string of elements.
    *
+   * @param engine   Handle to the engine that owns the histogram.
    * @param elements Elements of the histogram stat.
    * @param tags Tags of the histogram.
    * @param value Amount to record as a new value for the histogram distribution.
@@ -301,6 +312,18 @@ public class JniLibrary {
 
   /**
    * Drain all connections owned by this Engine.
+   *
+   * @param engine Handle to the engine for which to drain connections.
    */
   protected static native int drainConnections(long engine);
+
+  /**
+   * Update the network interface to the preferred network for opening new
+   * streams. Note that this state is shared by all engines.
+   *
+   * @param engine  Handle to the engine whose preferred network will be set.
+   * @param network the network to be preferred for new streams.
+   * @return The resulting status of the operation.
+   */
+  protected static native int setPreferredNetwork(long engine, int network);
 }

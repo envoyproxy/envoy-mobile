@@ -47,15 +47,15 @@ layered_runtime:
 // between the main thread and the engine thread both writing to the
 // Envoy::Logger::current_log_context global.
 struct TestEngineHandle {
-  envoy_engine_t handle;
+  envoy_engine_t handle_;
   TestEngineHandle(envoy_engine_callbacks callbacks, const std::string& level) {
-    handle = init_engine(callbacks, {}, {});
-    run_engine(handle, MINIMAL_TEST_CONFIG.c_str(), level.c_str());
+    handle_ = init_engine(callbacks, {}, {});
+    run_engine(handle_, MINIMAL_TEST_CONFIG.c_str(), level.c_str());
   }
 
-  void terminate() { terminate_engine(handle, /* release */ false); }
+  void terminate() { terminate_engine(handle_, /* release */ false); }
 
-  ~TestEngineHandle() { terminate_engine(handle, /* release */ true); }
+  ~TestEngineHandle() { terminate_engine(handle_, /* release */ true); }
 };
 
 class EngineTest : public testing::Test {
@@ -84,7 +84,7 @@ TEST_F(EngineTest, EarlyExit) {
                                    &test_context /*context*/};
 
   engine_ = std::make_unique<TestEngineHandle>(callbacks, level);
-  envoy_engine_t handle = engine_->handle;
+  envoy_engine_t handle = engine_->handle_;
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   engine_->terminate();
@@ -107,7 +107,7 @@ TEST_F(EngineTest, AccessEngineAfterInitialization) {
                                    [](void*) -> void {} /*on_exit*/, &test_context /*context*/};
 
   engine_ = std::make_unique<TestEngineHandle>(callbacks, level);
-  envoy_engine_t handle = engine_->handle;
+  envoy_engine_t handle = engine_->handle_;
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   absl::Notification getClusterManagerInvoked;

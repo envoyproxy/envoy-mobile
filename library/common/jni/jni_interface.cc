@@ -1022,3 +1022,12 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_drainConnections(JNIEnv* env,
   jni_log("[Envoy]", "drainConnections");
   drain_connections(engine);
 }
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_setPreferredNetwork(JNIEnv* env,
+                                                                     jclass, // class
+                                                                     jlong engine, jint network) {
+  jni_log("[Envoy]", "setting preferred network");
+  return set_preferred_network(static_cast<envoy_engine_t>(engine),
+                               static_cast<envoy_network_t>(network));
+}

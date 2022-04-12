@@ -25,6 +25,7 @@ public class EnvoyHTTPStream {
 
   /**
    * Initialize a new stream.
+   * @param engineHandle Underlying handle of the Envoy engine.
    * @param streamHandle Underlying handle of the HTTP stream owned by an Envoy engine.
    * @param callbacks The callbacks for the stream.
    * @param explicitFlowControl Whether explicit flow control will be enabled for this stream.
