@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
+
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -117,13 +119,13 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
 
     switch (networkType) {
     case ConnectivityManager.TYPE_MOBILE:
-      envoyEngine.setPreferredNetwork(ENVOY_NETWORK_TYPE_WWAN);
+      envoyEngine.setPreferredNetwork(EnvoyNetworkType.ENVOY_NETWORK_TYPE_WWAN);
       return;
     case ConnectivityManager.TYPE_WIFI:
-      envoyEngine.setPreferredNetwork(ENVOY_NETWORK_TYPE_WLAN);
+      envoyEngine.setPreferredNetwork(EnvoyNetworkType.ENVOY_NETWORK_TYPE_WLAN);
       return;
     default:
-      envoyEngine.setPreferredNetwork(ENVOY_NETWORK_TYPE_GENERIC);
+      envoyEngine.setPreferredNetwork(EnvoyNetworkType.ENVOY_NETWORK_TYPE_GENERIC);
     }
   }
 }
