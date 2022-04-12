@@ -17,12 +17,10 @@ class JvmKeyValueStoreContext {
 
   public byte[] read(byte[] key) {
     return keyValueStore.read(new String(key, StandardCharsets.UTF_8))
-      .getBytes(StandardCharsets.UTF_8);
+        .getBytes(StandardCharsets.UTF_8);
   }
 
-  public void remove(byte[] key) {
-    keyValueStore.remove(new String(key, StandardCharsets.UTF_8));
-  }
+  public void remove(byte[] key) { keyValueStore.remove(new String(key, StandardCharsets.UTF_8)); }
 
   public void save(byte[] key, byte[] value) {
     keyValueStore.save(new String(key, StandardCharsets.UTF_8),

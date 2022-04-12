@@ -291,8 +291,7 @@ public class JniLibrary {
    * @param context, context containing logic necessary to invoke the key-value store.
    * @return int,    the resulting status of the operation.
    */
-  protected static native int registerKeyValueStore(String name,
-                                                    JvmKeyValueStoreContext context);
+  protected static native int registerKeyValueStore(String name, JvmKeyValueStoreContext context);
 
   /**
    * Register a string accessor to get strings from the platform.

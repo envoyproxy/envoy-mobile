@@ -796,8 +796,7 @@ static envoy_data jvm_kv_store_read(envoy_data key, const void* context) {
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
 
   jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
-  jmethodID jmid_read =
-      env->GetMethodID(jcls_JvmKeyValueStoreContext, "read", "([B)[B");
+  jmethodID jmid_read = env->GetMethodID(jcls_JvmKeyValueStoreContext, "read", "([B)[B");
   jbyteArray j_key = native_data_to_array(env, key);
   jbyteArray j_value = (jbyteArray)env->CallObjectMethod(j_context, jmid_read, j_key);
   envoy_data native_data = array_to_native_data(env, j_value);
@@ -809,7 +808,6 @@ static envoy_data jvm_kv_store_read(envoy_data key, const void* context) {
   return native_data;
 }
 
-
 static void jvm_kv_store_remove(envoy_data key, const void* context) {
   jni_log("[Envoy]", "jvm_store_remove");
   JNIEnv* env = get_env();
@@ -817,8 +815,7 @@ static void jvm_kv_store_remove(envoy_data key, const void* context) {
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
 
   jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
-  jmethodID jmid_remove =
-      env->GetMethodID(jcls_JvmKeyValueStoreContext, "remove", "([B)V");
+  jmethodID jmid_remove = env->GetMethodID(jcls_JvmKeyValueStoreContext, "remove", "([B)V");
   jbyteArray j_key = native_data_to_array(env, key);
   env->CallVoidMethod(j_context, jmid_remove, j_key);
 
@@ -833,8 +830,7 @@ static void jvm_kv_store_save(envoy_data key, envoy_data value, const void* cont
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
 
   jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
-  jmethodID jmid_save =
-      env->GetMethodID(jcls_JvmKeyValueStoreContext, "save", "([B[B)V");
+  jmethodID jmid_save = env->GetMethodID(jcls_JvmKeyValueStoreContext, "save", "([B[B)V");
   jbyteArray j_key = native_data_to_array(env, key);
   jbyteArray j_value = native_data_to_array(env, value);
   env->CallVoidMethod(j_context, jmid_save, j_key, j_value);
