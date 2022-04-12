@@ -6,8 +6,14 @@ Pending Release
 
 Bugfixes:
 
+- Android: Fix `NoClassDefFoundError` errors when using `addDNSFallbackNameservers`
+  or `addH2RawDomains` with Android versions older than API level 24.
+- iOS: Fix reachability which has been broken since February 11.
+
 Features:
+
 - API: added Envoy's response flags to final stream intel (:issue:`#2009 <2009>`)
+- size: The size of the dynamic library was reduced by ~46% (:issue:`#2053 <2053>`)
 
 0.4.5 (January 13, 2022)
 ========================

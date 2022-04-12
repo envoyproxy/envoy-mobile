@@ -33,7 +33,6 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertFalse(builder.enableNetworkPathMonitor)
   }
 
-  @available(iOS 12, *)
   func testEnableNetworkPathMonitorSetsToValue() {
     let builder = EngineBuilder()
       .enableNetworkPathMonitor(true)
@@ -124,6 +123,20 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testEnforcingTrustChainVerificationAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with enabled interface binding")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.enforceTrustChainVerification)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enforceTrustChainVerification(true)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testAddinggrpcStatsDomainAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -162,6 +175,20 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addDNSRefreshSeconds(23)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingDNSMinRefreshSecondsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(23, config.dnsMinRefreshSeconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addDNSMinRefreshSeconds(23)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -219,6 +246,34 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addH2ConnectionKeepaliveTimeoutSeconds(234)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingH2RawDomainsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(1, config.h2RawDomains.count)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addH2RawDomains(["h2-raw.domain"])
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testSettingMaxConnectionsPerHostAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(23, config.maxConnectionsPerHost)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .setMaxConnectionsPerHost(23)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -358,11 +413,15 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
+      dnsMinRefreshSeconds: 100,
       dnsPreresolveHostnames: "[test]",
       enableHappyEyeballs: true,
       enableInterfaceBinding: true,
+      enforceTrustChainVerification: false,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2RawDomains: ["h2-raw.domain"],
+      maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 777,
@@ -385,12 +444,19 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_base_interval 400s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_max_interval 500s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_min_refresh_rate 100s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
     XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family ALL"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses true"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding true"))
+    XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification ACCEPT_UNTRUSTED"))
 
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
+
+    XCTAssertTrue(resolvedYAML.contains("&h2_raw_domains [\"h2-raw.domain\"]"))
+
+    XCTAssertTrue(resolvedYAML.contains("&max_connections_per_host 100"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
     XCTAssertTrue(resolvedYAML.contains("&per_try_idle_timeout 777s"))
@@ -423,11 +489,15 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
+      dnsMinRefreshSeconds: 100,
       dnsPreresolveHostnames: "[test]",
       enableHappyEyeballs: false,
       enableInterfaceBinding: false,
+      enforceTrustChainVerification: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2RawDomains: [],
+      maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 777,
@@ -446,7 +516,9 @@ final class EngineBuilderTests: XCTestCase {
     )
     let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
     XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family V4_PREFERRED"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses false"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
+    XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification VERIFY_TRUST_CHAIN"))
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
@@ -458,11 +530,15 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
+      dnsMinRefreshSeconds: 100,
       dnsPreresolveHostnames: "[test]",
       enableHappyEyeballs: false,
       enableInterfaceBinding: false,
+      enforceTrustChainVerification: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2RawDomains: [],
+      maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 700,

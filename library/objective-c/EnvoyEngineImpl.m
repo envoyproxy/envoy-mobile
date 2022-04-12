@@ -7,7 +7,7 @@
 #import "library/common/main_interface.h"
 #import "library/common/types/c_types.h"
 
-#ifndef TARGET_OS_MAC
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
 
@@ -440,19 +440,11 @@ static void ios_track_event(envoy_map map, const void *context) {
 
   _engineHandle = init_engine(native_callbacks, native_logger, native_event_tracker);
 
-#ifndef TARGET_OS_MAC
   if (enableNetworkPathMonitor) {
-    if (@available(iOS 12, *)) {
-      [EnvoyNetworkMonitor startPathMonitorIfNeeded];
-    } else {
-      NSLog(
-          @"[Envoy] Cannot use NWPathMonitor on iOS < 12. Falling back to `SCNetworkReachability`");
-      [EnvoyNetworkMonitor startReachabilityIfNeeded];
-    }
+    [EnvoyNetworkMonitor startPathMonitorIfNeeded];
   } else {
     [EnvoyNetworkMonitor startReachabilityIfNeeded];
   }
-#endif
 
   return self;
 }
@@ -602,7 +594,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 #pragma mark - Private
 
 - (void)startObservingLifecycleNotifications {
-#ifndef TARGET_OS_MAC
+#if TARGET_OS_IPHONE
   // re-enable lifecycle-based stat flushing when
   // https://github.com/envoyproxy/envoy-mobile/issues/748 gets fixed.
   NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];

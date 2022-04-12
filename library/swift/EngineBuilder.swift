@@ -16,15 +16,19 @@ open class EngineBuilder: NSObject {
   private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String?
   private var connectTimeoutSeconds: UInt32 = 30
-  private var dnsRefreshSeconds: UInt32 = 60
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
   private var dnsQueryTimeoutSeconds: UInt32 = 25
+  private var dnsMinRefreshSeconds: UInt32 = 60
   private var dnsPreresolveHostnames: String = "[]"
+  private var dnsRefreshSeconds: UInt32 = 60
   private var enableHappyEyeballs: Bool = false
   private var enableInterfaceBinding: Bool = false
+  private var enforceTrustChainVerification: Bool = true
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
+  private var h2RawDomains: [String] = []
+  private var maxConnectionsPerHost: UInt32 = 7
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var perTryIdleTimeoutSeconds: UInt32 = 15
@@ -90,17 +94,6 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Add a rate at which to refresh DNS.
-  ///
-  /// - parameter dnsRefreshSeconds: Rate in seconds to refresh DNS.
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func addDNSRefreshSeconds(_ dnsRefreshSeconds: UInt32) -> Self {
-    self.dnsRefreshSeconds = dnsRefreshSeconds
-    return self
-  }
-
   /// Add a rate at which to refresh DNS in case of DNS failure.
   ///
   /// - parameter base: Base rate in seconds.
@@ -125,6 +118,18 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Add the minimum rate at which to refresh DNS. Once DNS has been resolved for a host, DNS TTL
+  /// will be respected, subject to this minimum. Defaults to 60 seconds.
+  ///
+  /// - parameter dnsMinRefreshSeconds: Minimum rate in seconds at which to refresh DNS.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addDNSMinRefreshSeconds(_ dnsMinRefreshSeconds: UInt32) -> Self {
+    self.dnsMinRefreshSeconds = dnsMinRefreshSeconds
+    return self
+  }
+
   /// Add a list of hostnames to preresolve on Engine startup.
   ///
   /// - parameter dnsPreresolveHostnames: the hostnames to resolve.
@@ -133,6 +138,17 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func addDNSPreresolveHostnames(dnsPreresolveHostnames: String) -> Self {
     self.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return self
+  }
+
+  /// Add a default rate at which to refresh DNS.
+  ///
+  /// - parameter dnsRefreshSeconds: Default rate in seconds at which to refresh DNS.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addDNSRefreshSeconds(_ dnsRefreshSeconds: UInt32) -> Self {
+    self.dnsRefreshSeconds = dnsRefreshSeconds
     return self
   }
 
@@ -159,6 +175,17 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Specify whether to enforce TLS trust chain verification for secure sockets.
+  ///
+  /// - parameter enforceTrustChainVerification: whether to enforce trust chain verification.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enforceTrustChainVerification(_ enforceTrustChainVerification: Bool) -> Self {
+    self.enforceTrustChainVerification = enforceTrustChainVerification
+    return self
+  }
+
   /// Add a rate at which to ping h2 connections on new stream creation if the connection has
   /// sat idle.
   ///
@@ -182,6 +209,30 @@ open class EngineBuilder: NSObject {
   public func addH2ConnectionKeepaliveTimeoutSeconds(
     _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+    return self
+  }
+
+  /// Add a list of domains to which h2 connections will be established without protocol
+  /// negotiation.
+  ///
+  /// - parameter h2RawDomains: list of domains to which connections should be raw h2.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addH2RawDomains(
+    _ h2RawDomains: [String]) -> Self {
+    self.h2RawDomains = h2RawDomains
+    return self
+  }
+
+  /// Set the maximum number of connections to open to a single host. Default is 7.
+  ///
+  /// - parameter maxConnectionsPerHost: the maximum number of connections per host.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func setMaxConnectionsPerHost(_ maxConnectionsPerHost: UInt32) -> Self {
+    self.maxConnectionsPerHost = maxConnectionsPerHost
     return self
   }
 
@@ -311,7 +362,6 @@ open class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  @available(iOS 12, *)
   public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
     self.enableNetworkPathMonitor = enableNetworkPathMonitor
     return self
@@ -375,12 +425,16 @@ open class EngineBuilder: NSObject {
       dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
       dnsQueryTimeoutSeconds: self.dnsQueryTimeoutSeconds,
+      dnsMinRefreshSeconds: self.dnsMinRefreshSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
       enableHappyEyeballs: self.enableHappyEyeballs,
       enableInterfaceBinding: self.enableInterfaceBinding,
+      enforceTrustChainVerification: self.enforceTrustChainVerification,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
+      h2RawDomains: self.h2RawDomains,
+      maxConnectionsPerHost: self.maxConnectionsPerHost,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,

@@ -49,6 +49,7 @@ swift_library(
     module_name = "Envoy",
     private_deps = [
         "//library/objective-c:envoy_engine_objc_lib",
+        "@swift_flatbuffers//:FlatBuffers",
         "@envoy_mobile_extra_swift_sources//:extra_private_dep",
     ],
     visibility = ["//visibility:public"],
@@ -63,7 +64,7 @@ ios_static_framework(
     name = "ios_framework",
     hdrs = ["ios_lib_headers"],
     bundle_name = "Envoy",
-    minimum_os_version = "11.0",
+    minimum_os_version = "12.0",
     # Currently the framework is over 2GB, and is not worth caching
     tags = [
         "no-cache",

@@ -1,3 +1,5 @@
+load("@bazel_gazelle//:deps.bzl", "go_repository")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 
 def envoy_mobile_repositories():
@@ -6,6 +8,14 @@ def envoy_mobile_repositories():
         sha256 = "d8c9586b24ce4a5513d972668f94b62eb7d705b92405d4bc102131f294751f1d",
         strip_prefix = "bazel-common-413b433b91f26dbe39cdbc20f742ad6555dd1e27",
         urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
+    )
+
+    http_archive(
+        name = "swift_flatbuffers",
+        sha256 = "ffd68aebdfb300c9e82582ea38bf4aa9ce65c77344c94d5047f3be754cc756ea",
+        build_file = "@envoy_mobile//bazel:flatbuffers.BUILD",
+        strip_prefix = "flatbuffers-2.0.0",
+        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.0.zip"],
     )
 
     upstream_envoy_overrides()

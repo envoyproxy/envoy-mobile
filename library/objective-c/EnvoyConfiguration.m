@@ -11,12 +11,16 @@
                      dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
                       dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
                            dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+                             dnsMinRefreshSeconds:(UInt32)dnsMinRefreshSeconds
                            dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
                               enableHappyEyeballs:(BOOL)enableHappyEyeballs
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
+                    enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
+                                     h2RawDomains:(NSArray<NSString *> *)h2RawDomains
+                            maxConnectionsPerHost:(UInt32)maxConnectionsPerHost
                                 statsFlushSeconds:(UInt32)statsFlushSeconds
                          streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
                          perTryIdleTimeoutSeconds:(UInt32)perTryIdleTimeoutSeconds
@@ -44,12 +48,16 @@
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
   self.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
+  self.dnsMinRefreshSeconds = dnsMinRefreshSeconds;
   self.dnsPreresolveHostnames = dnsPreresolveHostnames;
   self.enableHappyEyeballs = enableHappyEyeballs;
   self.enableInterfaceBinding = enableInterfaceBinding;
+  self.enforceTrustChainVerification = enforceTrustChainVerification;
   self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+  self.h2RawDomains = h2RawDomains;
+  self.maxConnectionsPerHost = maxConnectionsPerHost;
   self.statsFlushSeconds = statsFlushSeconds;
   self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
   self.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds;
@@ -100,6 +108,14 @@
         appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
   }
 
+  NSMutableString *h2RawDomainsString = [[NSMutableString alloc] initWithString:@"["];
+  if (self.h2RawDomains.count > 0) {
+    [h2RawDomainsString appendString:@"\""];
+    [h2RawDomainsString appendString:[self.h2RawDomains componentsJoinedByString:@"\",\""]];
+    [h2RawDomainsString appendString:@"\""];
+  }
+  [h2RawDomainsString appendString:@"]"];
+
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_clusters}"
                                                          withString:customClusters];
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_listeners}"
@@ -114,16 +130,20 @@
 
   [definitions
       appendFormat:@"- &connect_timeout %lus\n", (unsigned long)self.connectTimeoutSeconds];
-  [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
   [definitions appendFormat:@"- &dns_fail_base_interval %lus\n",
                             (unsigned long)self.dnsFailureRefreshSecondsBase];
   [definitions appendFormat:@"- &dns_fail_max_interval %lus\n",
                             (unsigned long)self.dnsFailureRefreshSecondsMax];
   [definitions
       appendFormat:@"- &dns_query_timeout %lus\n", (unsigned long)self.dnsQueryTimeoutSeconds];
+  [definitions
+      appendFormat:@"- &dns_min_refresh_rate %lus\n", (unsigned long)self.dnsMinRefreshSeconds];
   [definitions appendFormat:@"- &dns_preresolve_hostnames %@\n", self.dnsPreresolveHostnames];
   [definitions appendFormat:@"- &dns_lookup_family %@\n",
                             self.enableHappyEyeballs ? @"ALL" : @"V4_PREFERRED"];
+  [definitions appendFormat:@"- &dns_multiple_addresses %@\n",
+                            self.enableHappyEyeballs ? @"true" : @"false"];
+  [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
   [definitions appendFormat:@"- &dns_resolver_name envoy.network.dns_resolver.apple\n"];
   // No additional values are currently needed for Apple-based DNS resolver.
   [definitions
@@ -132,10 +152,16 @@
                    @"envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\"}\n"];
   [definitions appendFormat:@"- &enable_interface_binding %@\n",
                             self.enableInterfaceBinding ? @"true" : @"false"];
+  [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
+                                                                     ? @"VERIFY_TRUST_CHAIN"
+                                                                     : @"ACCEPT_UNTRUSTED"];
   [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %.*fs\n", 3,
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
+  [definitions appendFormat:@"- &h2_raw_domains %@\n", h2RawDomainsString];
+  [definitions
+      appendFormat:@"- &max_connections_per_host %lu\n", (unsigned long)self.maxConnectionsPerHost];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
   [definitions

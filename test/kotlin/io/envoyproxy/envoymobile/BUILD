@@ -7,8 +7,22 @@ envoy_mobile_kt_test(
     srcs = [
         "EngineBuilderTest.kt",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the JVM paths are allow-listed in the sandbox.
+        "sandboxAllowed": "False",
+    },
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+    ],
+)
+
+envoy_mobile_kt_test(
+    name = "flatbuffers_test",
+    srcs = [
+        "FlatBuffersTest.kt",
+    ],
+    deps = [
+        "//test/fbs:test_fb_kt_lib",
     ],
 )
 
@@ -47,6 +61,10 @@ envoy_mobile_kt_test(
     srcs = [
         "PulseClientImplTest.kt",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the JVM paths are allow-listed in the sandbox.
+        "sandboxAllowed": "False",
+    },
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
     ],
