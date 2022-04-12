@@ -27,11 +27,6 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public long getHandle() {
-    return envoyEngine.getHandle();
-  }
-
-  @Override
   public EnvoyHTTPStream startStream(EnvoyHTTPCallbacks callbacks, boolean explicitFlowControl) {
     return envoyEngine.startStream(callbacks, explicitFlowControl);
   }

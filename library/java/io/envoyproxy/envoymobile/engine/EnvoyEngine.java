@@ -25,11 +25,6 @@ public interface EnvoyEngine {
   void terminate();
 
   /**
-   * Gets the engine's handle.
-   */
-  long getHandle();
-
-  /**
    * Run the Envoy engine with the provided yaml string and log level.
    *
    * The envoyConfiguration is used to resolve the configurationYAML.

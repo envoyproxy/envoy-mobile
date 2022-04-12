@@ -34,11 +34,6 @@ public class EnvoyEngineImpl implements EnvoyEngine {
     this.engineHandle = JniLibrary.initEngine(runningCallback, logger, eventTracker);
   }
 
-  @Override
-  public long getHandle() {
-    return engineHandle;
-  }
-
   /**
    * Creates a new stream with the provided callbacks.
    *
