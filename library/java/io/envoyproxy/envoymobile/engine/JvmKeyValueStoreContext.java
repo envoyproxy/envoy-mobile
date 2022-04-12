@@ -4,7 +4,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore;
 import java.nio.charset.StandardCharsets;
 
 /**
- * JNI compatibility class to translate calls to EnvoyKeyValueStore implementaitons.
+ * JNI compatibility class to translate calls to EnvoyKeyValueStore implementations.
  *
  * Dealing with Java Strings directly in the JNI is awkward due to how Java encodes them.
  */
