@@ -178,8 +178,6 @@ envoy_status_t Engine::terminate() {
   return ENVOY_SUCCESS;
 }
 
-bool Engine::isTerminated() { return terminated_; }
-
 Engine::~Engine() { terminate(); }
 
 envoy_status_t Engine::recordCounterInc(const std::string& elements, envoy_stats_tags tags,

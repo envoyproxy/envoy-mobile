@@ -43,11 +43,6 @@ public:
   envoy_status_t terminate();
 
   /**
-   * Whether this engine has been terminated.
-   */
-  bool isTerminated();
-
-  /**
    * Accessor for the provisional event dispatcher.
    * @return Event::ProvisionalDispatcher&, the engine dispatcher.
    */
