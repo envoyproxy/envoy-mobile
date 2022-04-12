@@ -3,7 +3,6 @@ package io.envoyproxy.envoymobile
 import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore
 
 /**
- *
  * `KeyValueStore` is bridged through to `EnvoyKeyValueStore` to communicate with the engine.
  */
 class KeyValueStore constructor (

@@ -37,6 +37,7 @@ java_library(
         "JniLibrary.java",
         "JvmBridgeUtility.java",
         "JvmCallbackContext.java",
+        "JvmKeyValueStoreContext.java",
         "JvmFilterContext.java",
         "JvmFilterFactoryContext.java",
         "JvmStringAccessorContext.java",

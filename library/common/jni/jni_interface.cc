@@ -4,6 +4,7 @@
 
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/extensions/key_value/platform/c_types.h"
 #include "library/common/jni/import/jni_import.h"
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
@@ -798,7 +799,7 @@ static envoy_data jvm_kv_store_read(envoy_data key, const void* context) {
   jmethodID jmid_read =
       env->GetMethodID(jcls_JvmKeyValueStoreContext, "read", "([B)[B");
   jbyteArray j_key = native_data_to_array(env, key);
-  jbyteArray j_value = (jbyteArray)env->CallObjectMethod(j_context, j_key, jmid_read);
+  jbyteArray j_value = (jbyteArray)env->CallObjectMethod(j_context, jmid_read, j_key);
   envoy_data native_data = array_to_native_data(env, j_value);
 
   env->DeleteLocalRef(j_value);
@@ -819,7 +820,7 @@ static void jvm_kv_store_remove(envoy_data key, const void* context) {
   jmethodID jmid_remove =
       env->GetMethodID(jcls_JvmKeyValueStoreContext, "remove", "([B)V");
   jbyteArray j_key = native_data_to_array(env, key);
-  env->CallVoidMethod(j_context, j_key, jmid_remove);
+  env->CallVoidMethod(j_context, jmid_remove, j_key);
 
   env->DeleteLocalRef(j_key);
   env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
@@ -836,7 +837,7 @@ static void jvm_kv_store_save(envoy_data key, envoy_data value, const void* cont
       env->GetMethodID(jcls_JvmKeyValueStoreContext, "save", "([B[B)V");
   jbyteArray j_key = native_data_to_array(env, key);
   jbyteArray j_value = native_data_to_array(env, value);
-  env->CallVoidMethod(j_context, j_key, j_value, jmid_save);
+  env->CallVoidMethod(j_context, jmid_save, j_key, j_value);
 
   env->DeleteLocalRef(j_value);
   env->DeleteLocalRef(j_key);
