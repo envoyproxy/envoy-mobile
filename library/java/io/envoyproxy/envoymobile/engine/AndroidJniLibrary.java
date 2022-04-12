@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine;
 
-// NOLINT(namespace-envoy)
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 

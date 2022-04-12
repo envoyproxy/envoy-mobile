@@ -1,7 +1,5 @@
 package org.chromium.net.testing;
 
-// NOLINT(namespace-envoy)
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

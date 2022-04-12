@@ -6,8 +6,6 @@
 
 #import <stdatomic.h>
 
-// NOLINT(namespace-envoy)
-
 #pragma mark - Utility types
 
 typedef struct {

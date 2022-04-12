@@ -11,8 +11,6 @@
 #import <UIKit/UIKit.h>
 #endif
 
-// NOLINT(namespace-envoy)
-
 static void ios_on_engine_running(void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.

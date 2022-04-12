@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine;
 
-// NOLINT(namespace-envoy)
-
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;

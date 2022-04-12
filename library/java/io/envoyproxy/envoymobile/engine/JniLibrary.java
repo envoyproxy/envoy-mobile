@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine;
 
-// NOLINT(namespace-envoy)
-
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;

@@ -4,8 +4,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// NOLINT(namespace-envoy)
-
 #pragma mark - Aliases
 
 /// A set of headers that may be passed to/from an Envoy stream.

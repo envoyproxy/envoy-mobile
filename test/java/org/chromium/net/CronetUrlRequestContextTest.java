@@ -1,7 +1,5 @@
 package org.chromium.net;
 
-// NOLINT(namespace-envoy)
-
 import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_IN_MEMORY;
 import static org.chromium.net.testing.CronetTestRule.assertContains;
 import static org.chromium.net.testing.CronetTestRule.getContext;

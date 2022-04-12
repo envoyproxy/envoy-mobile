@@ -1,7 +1,5 @@
 package io.envoyproxy.envoymobile.engine;
 
-// NOLINT(namespace-envoy)
-
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 
 import java.nio.charset.StandardCharsets;

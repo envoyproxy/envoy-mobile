@@ -1,7 +1,5 @@
 package org.chromium.net.urlconnection;
 
-// NOLINT(namespace-envoy)
-
 import static org.chromium.net.testing.CronetTestRule.getContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
