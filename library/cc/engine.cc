@@ -26,7 +26,5 @@ void Engine::terminate() {
   terminated_ = true;
 }
 
-bool Engine::isTerminated() { return terminated_; }
-
 } // namespace Platform
 } // namespace Envoy

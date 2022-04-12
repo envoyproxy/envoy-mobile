@@ -4,11 +4,10 @@ namespace Envoy {
 
 envoy_status_t EngineHandle::runOnEngineDispatcher(envoy_engine_t handle,
                                                    std::function<void(Envoy::Engine&)> func) {
-  auto engine = reinterpret_cast<Envoy::Engine*>(handle);
-  if (!engine || engine->isTerminated()) {
-    return ENVOY_FAILURE;
+  if (auto engine = reinterpret_cast<Envoy::Engine*>(handle)) {
+    return engine->dispatcher().post([engine, func]() { func(*engine); });
   }
-  return engine->dispatcher().post([engine, func]() { func(*engine); });
+  return ENVOY_FAILURE;
 }
 
 envoy_engine_t EngineHandle::initEngine(envoy_engine_callbacks callbacks, envoy_logger logger,
@@ -19,12 +18,11 @@ envoy_engine_t EngineHandle::initEngine(envoy_engine_callbacks callbacks, envoy_
 
 envoy_status_t EngineHandle::runEngine(envoy_engine_t handle, const char* config,
                                        const char* log_level) {
-  auto engine = reinterpret_cast<Envoy::Engine*>(handle);
-  if (!engine || engine->isTerminated()) {
-    return ENVOY_FAILURE;
+  if (auto engine = reinterpret_cast<Envoy::Engine*>(handle)) {
+    engine->run(config, log_level);
+    return ENVOY_SUCCESS;
   }
-  engine->run(config, log_level);
-  return ENVOY_SUCCESS;
+  return ENVOY_FAILURE;
 }
 
 void EngineHandle::terminateEngine(envoy_engine_t handle, bool release) {
