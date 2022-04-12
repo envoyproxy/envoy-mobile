@@ -19,7 +19,6 @@ public:
   PulseClientSharedPtr pulseClient();
 
   void terminate();
-  bool isTerminated();
 
 private:
   Engine(envoy_engine_t engine);
