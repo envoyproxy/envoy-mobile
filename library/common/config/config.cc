@@ -133,6 +133,9 @@ const char* config_template = R"(
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
     auto_config:
+      alternate_protocols_cache_options:
+        name: default_alternate_protocols_cache
+      http3_protocol_options: {}
       http2_protocol_options: *h2_config
       http_protocol_options: *h1_config
     upstream_http_protocol_options:
@@ -163,6 +166,11 @@ const char* config_template = R"(
                 - x-forwarded-proto
                 - x-envoy-mobile-cluster
           http_filters:
+          - name: alternate_protocols_cache
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig
+              alternate_protocols_cache_options:
+                name: default_alternate_protocols_cache
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -328,7 +336,17 @@ R"(
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: *base_tls_socket
+    transport_socket:
+      name: envoy.transport_sockets.quic
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+        upstream_tls_context:
+          common_tls_context:
+            tls_params:
+              tls_maximum_protocol_version: TLSv1_3
+            validation_context:
+              trusted_ca:
+                 inline_string: *tls_root_certs
     upstream_connection_options: &upstream_opts
       set_local_interface_name_on_upstream_connections: true
       tcp_keepalive:
