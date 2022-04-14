@@ -45,15 +45,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app
@@ -79,15 +70,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/baseline:app
@@ -113,15 +95,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/experimental:app
@@ -147,15 +120,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/async_await:app

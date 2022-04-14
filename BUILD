@@ -1,4 +1,5 @@
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
+load("@com_github_buildbuddy_io_rules_xcodeproj//xcodeproj:xcodeproj.bzl", "xcodeproj")
 
 licenses(["notice"])  # Apache 2
 
@@ -13,7 +14,7 @@ genrule(
     srcs = [":ios_framework"],
     outs = ["ios_out"],
     cmd = """
-unzip -o $< -d dist/
+cp -R $< dist/
 touch $@
 """,
     stamp = True,
@@ -116,4 +117,18 @@ genrule(
         --editorconfig=$(location //:editor_config)
     """,
     tools = ["@kotlin_formatter//file"],
+)
+
+xcodeproj(
+    name = "xcodeproj",
+    build_mode = "bazel",
+    project_name = "Envoy",
+    tags = ["manual"],
+    targets = [
+        "//examples/objective-c/hello_world:app",
+        "//examples/swift/async_await:app",
+        "//examples/swift/hello_world:app",
+        "//test/swift/apps/baseline:app",
+        "//test/swift/apps/experimental:app",
+    ],
 )
