@@ -171,11 +171,11 @@ envoy_status_t Engine::terminate() {
     }
   } // lock(_mutex)
 
+  dispatcher_->terminate();
+
   if (std::this_thread::get_id() != main_thread_.get_id()) {
     main_thread_.join();
   }
-
-  dispatcher_->terminate();
 
   return ENVOY_SUCCESS;
 }
