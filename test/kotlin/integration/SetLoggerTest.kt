@@ -43,6 +43,8 @@ static_resources:
                       status: 200
           http_filters:
             - name: test_logger
+              typed_config:
+                "@type": envoymobile.extensions.filters.http.test_logger.TestLogger
             - name: envoy.filters.http.assertion
               typed_config:
                 "@type": $assertionFilterType
