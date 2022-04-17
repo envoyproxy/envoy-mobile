@@ -44,7 +44,7 @@ static_resources:
           http_filters:
             - name: test_logger
               typed_config:
-                "@type": envoymobile.extensions.filters.http.test_logger.TestLogger
+                "@type": type.googleapis.com/envoymobile.extensions.filters.http.test_logger.TestLogger
             - name: envoy.filters.http.assertion
               typed_config:
                 "@type": $assertionFilterType
