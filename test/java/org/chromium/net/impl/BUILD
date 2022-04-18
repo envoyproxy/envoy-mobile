@@ -8,7 +8,6 @@ envoy_package()
 envoy_mobile_android_test(
     name = "cronvoy_test",
     srcs = [
-        ""
         "CronetBidirectionalStateTest.java"
         "CronvoyEngineTest.java",
         "UrlRequestCallbackTester.java",
