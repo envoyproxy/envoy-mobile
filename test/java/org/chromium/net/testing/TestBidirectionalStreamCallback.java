@@ -351,9 +351,7 @@ public class TestBidirectionalStreamCallback extends BidirectionalStream.Callbac
    */
   public int numPendingWrites() { return mWriteBuffers.size(); }
 
-  protected void openDone() {
-    mDone.open();
-  }
+  protected void openDone() { mDone.open(); }
 
   /**
    * Returns {@code false} if the callback should continue to advance the
