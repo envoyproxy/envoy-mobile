@@ -11,7 +11,11 @@ android_library(
     srcs = [
         "Annotations.java",
         "BidirectionalStreamBuilderImpl.java",
+        "BidirectionalStreamNetworkException.java",
         "CallbackExceptionImpl.java",
+        "CancelProofEnvoyStream.java",
+        "CronetBidirectionalState.java",
+        "CronetBidirectionalStream.java",
         "CronetEngineBase.java",
         "CronetEngineBuilderImpl.java",
         "CronetExceptionImpl.java",

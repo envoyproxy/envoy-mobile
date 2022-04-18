@@ -120,14 +120,17 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
   @Override
   public UrlRequestBase
   createRequest(String url, UrlRequest.Callback callback, Executor executor, int priority,
-                Collection<Object> connectionAnnotations, boolean disableCache,
+                Collection<Object> requestAnnotations, boolean disableCache,
                 boolean disableConnectionMigration, boolean allowDirectExecutor,
                 boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
                 int trafficStatsUid, RequestFinishedInfo.Listener requestFinishedListener,
                 int idempotency) {
-    return new CronetUrlRequest(this, callback, executor, url, mUserAgent, allowDirectExecutor,
-                                connectionAnnotations, trafficStatsTagSet, trafficStatsTag,
-                                trafficStatsUidSet, trafficStatsUid, requestFinishedListener);
+    synchronized (mLock) {
+      checkHaveAdapter();
+      return new CronetUrlRequest(this, url, callback, executor, mUserAgent, allowDirectExecutor,
+                                  requestAnnotations, trafficStatsTagSet, trafficStatsTag,
+                                  trafficStatsUidSet, trafficStatsUid, requestFinishedListener);
+    }
   }
 
   @Override
@@ -136,16 +139,22 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
                             String httpMethod, List<Map.Entry<String, String>> requestHeaders,
                             @StreamPriority int priority,
                             boolean delayRequestHeadersUntilFirstFlush,
-                            Collection<Object> connectionAnnotations, boolean trafficStatsTagSet,
+                            Collection<Object> requestAnnotations, boolean trafficStatsTagSet,
                             int trafficStatsTag, boolean trafficStatsUidSet, int trafficStatsUid) {
-    throw new UnsupportedOperationException("Can't create a bidi stream yet.");
+    synchronized (mLock) {
+      checkHaveAdapter();
+      return new CronetBidirectionalStream(
+          this, url, priority, callback, executor, mUserAgent, httpMethod, requestHeaders,
+          delayRequestHeadersUntilFirstFlush, requestAnnotations, trafficStatsTagSet,
+          trafficStatsTag, trafficStatsUidSet, trafficStatsUid);
+    }
   }
 
   @Override
   public ExperimentalBidirectionalStream.Builder
   newBidirectionalStreamBuilder(String url, BidirectionalStream.Callback callback,
                                 Executor executor) {
-    throw new UnsupportedOperationException("Can't create a bidi stream yet.");
+    return new BidirectionalStreamBuilderImpl(url, callback, executor, this);
   }
 
   @Override
@@ -158,6 +167,7 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
     synchronized (mLock) {
       checkHaveAdapter();
       if (mActiveRequestCount.get() != 0) {
+        new RuntimeException("BAD").printStackTrace();
         throw new IllegalStateException("Cannot shutdown with active requests.");
       }
       // Destroying adapter stops the network thread, so it cannot be
