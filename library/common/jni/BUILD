@@ -120,7 +120,7 @@ envoy_mobile_so_to_jni_lib(
 )
 
 cc_library(
-    name = "java_jni_lib",
+    name = "java_jni_base_lib",
     srcs = [
         "jni_interface.cc",
     ],
@@ -139,7 +139,7 @@ cc_binary(
     ],
     linkshared = True,
     deps = [
-        ":java_jni_lib",
+        ":java_jni_base_lib",
         "@envoy_mobile_extra_jni_deps//:extra_jni_dep",
     ],
 )
