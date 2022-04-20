@@ -145,8 +145,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplate(JNIEnv* en
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary altProtocolCacheFilterInsert(JNIEnv* env, jclass) {
-  jstring result = env->NewStringUTF(alternate_protocols_filter_cache_insert);
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_altProtocolCacheFilterInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(alternate_protocols_cache_filter_insert);
   return result;
 }
 

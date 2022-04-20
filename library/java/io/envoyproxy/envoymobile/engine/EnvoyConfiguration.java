@@ -147,7 +147,8 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(final String configTemplate, final String platformFilterTemplate,
-                         final String nativeFilterTemplate) {
+                         final String nativeFilterTemplate,
+                         final String altProtocolCacheFilterInsert) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {

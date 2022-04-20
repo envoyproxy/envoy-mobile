@@ -63,7 +63,7 @@ extern const char* fake_remote_route_insert;
  * Insert that enables the alternate protocols cache filter in teh filter chain.
  * This is only needed for (currently experimental) QUIC/H3 support.
  */
-const char* alternate_protocols_cache_filter_insert = R"(
+extern const char* alternate_protocols_cache_filter_insert;
 
 /**
  * Insert that enables the route cache reset filter in the filter chain.
