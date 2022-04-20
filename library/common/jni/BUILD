@@ -126,7 +126,7 @@ cc_library(
     ],
     deps = [
         "base_java_jni_lib",
-    ]
+    ],
     alwayslink = True,
 )
 
