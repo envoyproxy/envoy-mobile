@@ -617,10 +617,10 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
     // NOTE: This cluster *forces* H2-Raw and does not use ALPN.
     if (value == "http2") {
       cluster = H2Cluster;
-    // NOTE: This cluster will attempt to negotiate H3, but defaults to ALPN over TCP.
+      // NOTE: This cluster will attempt to negotiate H3, but defaults to ALPN over TCP.
     } else if (value == "http3") {
       cluster = H3Cluster;
-    // FIXME(goaway): No cluster actually forces H1 today except cleartext!
+      // FIXME(goaway): No cluster actually forces H1 today except cleartext!
     } else if (value == "alpn" || value == "http1") {
       cluster = BaseCluster;
     } else {
