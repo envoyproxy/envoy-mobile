@@ -299,8 +299,8 @@ public class JniLibrary {
   public static native String nativeFilterTemplate();
 
   /**
-   * Provides a configruation insert that may be used to include an instance
-   * of ther AlternateProtocolsCacheFilter in the filter chain. Needed only
+   * Provides a configuration insert that may be used to include an instance
+   * of the AlternateProtocolsCacheFilter in the filter chain. Needed only
    * when (experimental) QUIC/H3 support is enabled.
    */
   public static native String altProtocolCacheFilterInsert();
