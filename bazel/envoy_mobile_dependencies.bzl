@@ -42,14 +42,14 @@ _default_extra_jni_deps = repository_rule(
     implementation = _default_extra_jni_deps_impl,
 )
 
-def envoy_mobile_dependencies():
+def envoy_mobile_dependencies(extra_maven_dependencies = []):
     if not native.existing_rule("envoy_mobile_extra_swift_sources"):
         _default_extra_swift_sources(name = "envoy_mobile_extra_swift_sources")
     if not native.existing_rule("envoy_mobile_extra_jni_deps"):
         _default_extra_jni_deps(name = "envoy_mobile_extra_jni_deps")
 
     swift_dependencies()
-    kotlin_dependencies()
+    kotlin_dependencies(extra_maven_dependencies)
     python_dependencies()
 
 def swift_dependencies():
@@ -57,12 +57,15 @@ def swift_dependencies():
     apple_rules_dependencies(ignore_version_differences = True)
     swift_rules_dependencies()
 
-def kotlin_dependencies():
+def kotlin_dependencies(extra_maven_dependencies = []):
     maven_install(
         artifacts = [
             "com.google.code.findbugs:jsr305:3.0.2",
+            "com.google.flatbuffers:flatbuffers-java:2.0.3",
             # Kotlin
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
+            "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.11",
+            "org.jetbrains.kotlin:kotlin-stdlib:1.3.11",
             "androidx.recyclerview:recyclerview:1.1.0",
             "androidx.core:core:1.3.2",
             # Dokka
@@ -86,7 +89,8 @@ def kotlin_dependencies():
             "org.robolectric:robolectric:4.4",
             "org.hamcrest:hamcrest:2.2",
             "com.google.truth:truth:1.1",
-        ],
+        ] + extra_maven_dependencies,
+        version_conflict_policy = "pinned",
         repositories = [
             "https://repo1.maven.org/maven2",
             "https://jcenter.bintray.com/",

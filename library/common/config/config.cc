@@ -351,7 +351,10 @@ R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
+    transport_socket:
+      name: envoy.transport_sockets.raw_buffer
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h1_protocol_options
@@ -389,6 +392,12 @@ stats_config:
             regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
         - safe_regex:
             google_re2: {}
+            regex: '^cluster\.[\w]+?\.update_(attempt|success|failure)'
+        - safe_regex:
+            google_re2: {}
+            regex: '^cluster\.[\w]+?\.http2.keepalive_timeout'
+        - safe_regex:
+            google_re2: {}
             regex: '^dns.apple.*'
         - safe_regex:
             google_re2: {}
@@ -398,7 +407,7 @@ stats_config:
             regex: '^http.hcm.decompressor.*'
         - safe_regex:
             google_re2: {}
-            regex: '^http.hcm.downstream_rq_(?:[12345]xx|total|completed)'
+            regex: '^http.hcm.downstream_rq_[\w]+'
         - safe_regex:
             google_re2: {}
             regex: '^pulse.*'
