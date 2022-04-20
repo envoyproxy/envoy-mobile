@@ -25,7 +25,7 @@ open class EngineBuilder: NSObject {
   private var enableHappyEyeballs: Bool = false
   private var enableInterfaceBinding: Bool = false
   private var enforceTrustChainVerification: Bool = true
-  private var enableDNSFilterUnroutableFamilies: Bool = true
+  private var includeUnroutableDNSResults: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   private var h2RawDomains: [String] = []
@@ -190,13 +190,13 @@ open class EngineBuilder: NSObject {
   /// Specify whether DNS addresses that the system considers to be unroutable should still
   /// be attempted.
   ///
-  /// - parameter enableDNSFilterUnroutableFamilies: whether to include unroutable families of DNS
-  ///                                        addresses.
+  /// - parameter includeUnroutableDNSResults: whether to include unroutable families of DNS
+  ///                                          addresses.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func enableDNSFilterUnroutableFamilies(_ enableDNSFilterUnroutableFamilies: Bool) -> Self {
-    self.enableDNSFilterUnroutableFamilies = enableDNSFilterUnroutableFamilies
+  public func includeUnroutableDNSResults(_ includeUnroutableDNSResults: Bool) -> Self {
+    self.includeUnroutableDNSResults = includeUnroutableDNSResults
     return self
   }
 
@@ -444,7 +444,7 @@ open class EngineBuilder: NSObject {
       enableHappyEyeballs: self.enableHappyEyeballs,
       enableInterfaceBinding: self.enableInterfaceBinding,
       enforceTrustChainVerification: self.enforceTrustChainVerification,
-      enableDNSFilterUnroutableFamilies: self.enableDNSFilterUnroutableFamilies,
+      includeUnroutableDNSResults: self.includeUnroutableDNSResults,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,

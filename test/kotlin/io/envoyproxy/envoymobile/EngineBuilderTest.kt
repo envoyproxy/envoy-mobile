@@ -121,13 +121,13 @@ class EngineBuilderTest {
   }
 
   @Test
-  fun `specifying dns filter unroutable families overrides default`() {
+  fun `specifying dns include unroutable families overrides default`() {
     engineBuilder = EngineBuilder(Standard())
     engineBuilder.addEngineType { envoyEngine }
-    engineBuilder.enableDNSFilterUnroutableFamilies(true)
+    engineBuilder.includeUnroutableDNSResults(true)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.dnsFilterUnroutableFamilies).isTrue()
+    assertThat(engine.envoyConfiguration!!.includeUnroutableDNSResults).isTrue()
   }
 
   @Test

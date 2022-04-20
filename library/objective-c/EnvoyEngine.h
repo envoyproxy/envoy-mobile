@@ -343,7 +343,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, assign) BOOL enableHappyEyeballs;
 @property (nonatomic, assign) BOOL enableInterfaceBinding;
 @property (nonatomic, assign) BOOL enforceTrustChainVerification;
-@property (nonatomic, assign) BOOL enableDNSFilterUnroutableFamilies;
+@property (nonatomic, assign) BOOL includeUnroutableDNSResults;
 @property (nonatomic, assign) UInt32 h2ConnectionKeepaliveIdleIntervalMilliseconds;
 @property (nonatomic, assign) UInt32 h2ConnectionKeepaliveTimeoutSeconds;
 @property (nonatomic, strong) NSArray<NSString *> *h2RawDomains;
@@ -375,7 +375,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                               enableHappyEyeballs:(BOOL)enableHappyEyeballs
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
                     enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
-                enableDNSFilterUnroutableFamilies:(BOOL)enableDNSFilterUnroutableFamilies
+                      includeUnroutableDNSResults:(BOOL)includeUnroutableDNSResults
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds

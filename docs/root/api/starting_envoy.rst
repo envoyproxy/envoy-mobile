@@ -132,19 +132,17 @@ for further information.
   builder.addDNSFallbackNameservers(listOf<String>("8.8.8.8"))
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-``enableDNSFilterUnroutableFamilies``
+``includeUnroutableDNSResults``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attention::
-
-  This API is only available for Kotlin.
-
-Specify whether to filter unroutable IP families during DNS resolution or not.
-See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/network/dns_resolver/cares/v3/cares_dns_resolver.proto#extensions-network-dns-resolver-cares-v3-caresdnsresolverconfig>`__
+Specify whether to include unroutable IP families during DNS resolution or not.
+See the Envoy docs for
+`c-ares <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/network/dns_resolver/cares/v3/cares_dns_resolver.proto#extensions-network-dns-resolver-cares-v3-caresdnsresolverconfig>`__ &
+`Apple <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/network/dns_resolver/apple/v3/apple_dns_resolver.proto#extensions-network-dns-resolver-apple-v3-applednsresolverconfig>`__
 for further information.
 
-  // Kotlin
-  builder.enableDNSFilterUnroutableFamilies(true)
+  // Kotlin & Swift
+  builder.includeUnroutableDNSResults(true)
 
 ~~~~~~~~~~~~~~~
 ``addLogLevel``
