@@ -10,7 +10,7 @@ jobs:
   cocoapods_lib_lint:
     name: cocoapods_lib_lint
     runs-on: macos-11
-    timeout-minutes: 120
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v1
       - uses: ruby/setup-ruby@v1
