@@ -24,6 +24,7 @@ jobs:
       - name: 'Build envoy.aar distributable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           current_release_version=$(git describe --tag --abbrev=0)
           ./bazelw build \
@@ -113,6 +114,7 @@ jobs:
       - name: 'Build Envoy.framework distributable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
             --config=release-ios \

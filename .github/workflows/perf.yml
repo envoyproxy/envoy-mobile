@@ -23,6 +23,7 @@ jobs:
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
             --config=sizeopt \
@@ -49,6 +50,7 @@ jobs:
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout main && git pull origin main && git submodule update
           ./bazelw build \

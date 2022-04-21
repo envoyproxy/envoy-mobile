@@ -62,6 +62,7 @@ jobs:
       - name: 'Run Kotlin Lint (Detekt)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
             --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
