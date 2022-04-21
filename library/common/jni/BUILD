@@ -51,6 +51,14 @@ cc_library(
     alwayslink = True,
 )
 
+config_setting(
+    name = "android_armeabi",
+    constraint_values = [
+        "@platforms//cpu:arm",
+        "@platforms//os:android",
+    ],
+)
+
 # Main dynamic library for the Envoy Mobile aar
 cc_binary(
     name = "libenvoy_jni.so",
@@ -60,6 +68,10 @@ cc_binary(
         "-llog",
     ] + select({
         "@envoy//bazel:dbg_build": ["-Wl,--build-id=sha1"],
+        "//conditions:default": [],
+    }) + select({
+        # TODO(keith): https://github.com/rust-lang/compiler-builtins/issues/353
+        ":android_armeabi": ["-Wl,--allow-multiple-definition"],
         "//conditions:default": [],
     }),
     linkshared = True,
@@ -107,17 +119,27 @@ envoy_mobile_so_to_jni_lib(
     native_dep = "libjava_jni_lib.so",
 )
 
+cc_library(
+    name = "java_jni_base_lib",
+    srcs = [
+        "jni_interface.cc",
+    ],
+    deps = [
+        "base_java_jni_lib",
+    ],
+    alwayslink = True,
+)
+
 # Base binary (.so) for JVM testing
 cc_binary(
     name = "libjava_jni_lib.so",
-    srcs = ["jni_interface.cc"],
     copts = ["-std=c++17"],
     linkopts = [
         "-lm",
     ],
     linkshared = True,
     deps = [
-        "base_java_jni_lib",
+        ":java_jni_base_lib",
         "@envoy_mobile_extra_jni_deps//:extra_jni_dep",
     ],
 )
