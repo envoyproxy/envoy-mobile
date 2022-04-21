@@ -103,7 +103,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    */
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
-    return runWithTemplate(JniLibrary.templateString(), envoyConfiguration, logLevel);
+    return runWithTemplate(JniLibrary.configTemplate(), envoyConfiguration, logLevel);
   }
 
   private int runWithResolvedYAML(String configurationYAML, String logLevel) {

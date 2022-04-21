@@ -191,7 +191,7 @@ public class JniLibrary {
    * @return A template that may be used as a starting point for constructing
    * configurations.
    */
-  public static native String templateString();
+  public static native String configTemplate();
 
   /**
    * Increment a counter with the given count.
