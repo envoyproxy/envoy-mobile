@@ -24,7 +24,7 @@ private const val NATIVE_FILTER_CONFIG =
     typed_config: {{ native_filter_typed_config }}
 """
 
-private const val APLF_INSERT =
+private const val APCF_INSERT =
 """
   - name: AlternateProtocolsCacheFilter
 """
@@ -97,7 +97,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration()
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APLF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
     )
     assertThat(resolvedTemplate).contains("&connect_timeout 123s")
 
@@ -124,6 +124,9 @@ class EnvoyConfigurationTest {
 
     // H2 Hostnames
     assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\"]")
+
+    // H3
+    assertThat(resolvedTemplate).doesNotContain(APCF_INSERT);
 
     // Per Host Limits
     assertThat(resolvedTemplate).contains("&max_connections_per_host 543")
@@ -157,17 +160,21 @@ class EnvoyConfigurationTest {
       dnsFallbackNameservers = listOf("8.8.8.8"),
       enableDnsFilterUnroutableFamilies = true,
       enableHappyEyeballs = true,
+      enableHttp3 = true,
       enableInterfaceBinding = true
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APLF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
     )
 
     // DNS
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": true}")
     assertThat(resolvedTemplate).contains("&dns_lookup_family ALL")
     assertThat(resolvedTemplate).contains("&dns_multiple_addresses true")
+
+    // H3
+    assertThat(resolvedTemplate).contains(APCF_INSERT);
 
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding true")
@@ -207,7 +214,7 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APLF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
     )
 
     assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\",\"h2-raw.example.com2\"]")
@@ -220,7 +227,7 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APLF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
     )
 
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}},{\"socket_address\":{\"address\":\"1.1.1.1\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": false}")
