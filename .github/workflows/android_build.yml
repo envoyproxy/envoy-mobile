@@ -19,7 +19,7 @@ jobs:
         id: check-cache
         with:
           key: aar-${{ github.sha }}
-          path: dist/envoy.aar
+          path: bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar
         name: 'Check cache'
       - run: echo "Found envoy.aar from previous run!"
         if: steps.check-cache.outputs.cache-hit == 'true'
@@ -63,7 +63,7 @@ jobs:
         id: check-cache
         with:
           key: aar-${{ github.sha }}
-          path: dist/envoy.aar
+          path: bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar
         name: 'Download aar'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -106,7 +106,7 @@ jobs:
         id: check-cache
         with:
           key: aar-${{ github.sha }}
-          path: dist/envoy.aar
+          path: bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar
       - name: 'Short-circuit'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: exit 1
@@ -149,7 +149,7 @@ jobs:
         id: check-cache
         with:
           key: aar-${{ github.sha }}
-          path: dist/envoy.aar
+          path: bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar
       - name: 'Short-circuit'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: exit 1
@@ -192,7 +192,7 @@ jobs:
         id: check-cache
         with:
           key: aar-${{ github.sha }}
-          path: dist/envoy.aar
+          path: bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar
       - name: 'Short-circuit'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: exit 1

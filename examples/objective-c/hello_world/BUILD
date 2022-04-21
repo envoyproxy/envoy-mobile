@@ -10,7 +10,7 @@ objc_library(
         "*.h",
         "*.m",
     ]),
-    deps = ["//dist:envoy_mobile_ios"],
+    deps = ["//library/swift:ios_lib"],
 )
 
 ios_application(

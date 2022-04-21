@@ -19,7 +19,7 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
+          path: bazel-bin/library/swift/ios_framework.zip
         name: 'Check cache'
       - run: echo "Found Envoy.framework from previous run!"
         if: steps.check-cache.outputs.cache-hit == 'true'
@@ -31,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw shutdown
-          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_dist
+          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //library/swift:ios_framework
         if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Build Envoy.framework distributable'
   swifthelloworld:
@@ -49,7 +49,7 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
+          path: bazel-bin/library/swift/ios_framework.zip
         name: 'Download framework'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -83,7 +83,7 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
+          path: bazel-bin/library/swift/ios_framework.zip
         name: 'Download framework'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -117,7 +117,7 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
+          path: bazel-bin/library/swift/ios_framework.zip
         name: 'Download framework'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -151,7 +151,7 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
+          path: bazel-bin/library/swift/ios_framework.zip
         name: 'Download framework'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -185,7 +185,7 @@ jobs:
         id: check-cache
         with:
           key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
+          path: bazel-bin/library/swift/ios_framework.zip
         name: 'Download framework'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
