@@ -72,6 +72,9 @@ genrule(
     touch $@
     """,
     stamp = True,
+    # This action writes to a non-hermetic output location, so running it
+    # remotely isn't currently possible.
+    tags = ["local"],
 )
 
 define_kt_toolchain(
