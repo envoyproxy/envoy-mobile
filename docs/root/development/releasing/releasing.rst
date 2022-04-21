@@ -53,7 +53,7 @@ GPG Key
 On 2024-04-20 the GPG key used to sign releases will expire. To extend the key's expiration date,
 follow these steps:
 
-Import the key locally:
+Import the key locally::
 
     $ echo $GPG_KEY | base64 --decode > signing-key
     $ gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
@@ -67,7 +67,7 @@ Re-distribute the new public key:
 
     $ gpg --keyserver keyserver.ubuntu.com --send-keys $KEY_ID
 
-Export the public/private keys, store them in a safe place:
+Export the public/private keys, store them in a safe place::
 
     $ gpg -a --export $KEY_ID > envoy.mobile.gpg.public
     $ gpg -a --export-secret-keys $KEY_ID > envoy.mobile.gpg.private
