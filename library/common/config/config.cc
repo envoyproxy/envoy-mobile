@@ -403,14 +403,6 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h2_protocol_options
-  - name: base_h3
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_h3_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h3_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
