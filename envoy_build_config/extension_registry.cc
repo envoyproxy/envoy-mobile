@@ -36,7 +36,7 @@ void ExtensionRegistry::registerFactories() {
       forceRegisterBrotliDecompressorLibraryFactory();
   Envoy::Extensions::Compression::Gzip::Decompressor::forceRegisterGzipDecompressorLibraryFactory();
   Envoy::Extensions::Http::OriginalIPDetection::Xff::forceRegisterXffIPDetectionFactory();
-  Envoy::Extensions::HttpFilters::AlternateProtocolsCache::forceRegisterAlternateProtocolsCacheFactory();
+  Envoy::Extensions::HttpFilters::AlternateProtocolsCache::forceRegisterAlternateProtocolsCacheFilterFactory();
   Envoy::Extensions::HttpFilters::Assertion::forceRegisterAssertionFilterFactory();
   Envoy::Extensions::HttpFilters::Decompressor::forceRegisterDecompressorFilterFactory();
   Envoy::Extensions::HttpFilters::BufferFilter::forceRegisterBufferFilterFactory();
