@@ -65,7 +65,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
   @IntDef({CancelState.READY, CancelState.BUSY, CancelState.CANCELLED})
   @Retention(RetentionPolicy.SOURCE)
-  @interface CancelState {
+  private @interface CancelState {
     int READY = 0;
     int BUSY = 1;
     int CANCELLED = 2;
@@ -74,11 +74,21 @@ public final class CronetUrlRequest extends UrlRequestBase {
   @IntDef({SucceededState.UNDETERMINED, SucceededState.FINAL_READ_DONE,
            SucceededState.ON_COMPLETE_RECEIVED, SucceededState.SUCCESS_READY})
   @Retention(RetentionPolicy.SOURCE)
-  @interface SucceededState {
+  private @interface SucceededState {
     int UNDETERMINED = 0;
     int FINAL_READ_DONE = 1;
     int ON_COMPLETE_RECEIVED = 2;
     int SUCCESS_READY = 3;
+  }
+
+  @IntDef({ReportState.UNDETERMINED, ReportState.USER_FINAL_CALLBACK_DONE,
+           ReportState.NETWORK_FINAL_CALLBACK_RECEIVED, ReportState.REPORT_READY})
+  @Retention(RetentionPolicy.SOURCE)
+  private @interface ReportState {
+    int UNDETERMINED = 0;
+    int USER_FINAL_CALLBACK_DONE = 1;
+    int NETWORK_FINAL_CALLBACK_RECEIVED = 2;
+    int REPORT_READY = 3;
   }
 
   private static final String X_ENVOY = "x-envoy";
@@ -107,6 +117,14 @@ public final class CronetUrlRequest extends UrlRequestBase {
    * exception), or cancellation.
    */
   private final AtomicInteger mState = new AtomicInteger(State.NOT_STARTED);
+  /**
+   * At the end of a request, mRequestFinishedListener is used to post the CronetMetrics. Before
+   * doing so, two events must have occurred first: the "final user callback" and the "final
+   * Network callback". The Thread involved with the last of these two events is in charge of the
+   * posting - this is intinsically racy. So this AtomicInteger ensures that the CronetMetrics will
+   * be posted no more than once.
+   */
+  private final AtomicInteger mReportState = new AtomicInteger(ReportState.UNDETERMINED);
 
   private final AtomicBoolean mUploadProviderClosed = new AtomicBoolean(false);
 
@@ -139,7 +157,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
   /* These change with redirects. */
   private final AtomicReference<EnvoyHTTPStream> mStream = new AtomicReference<>();
   private final List<String> mUrlChain = new ArrayList<>();
-  private EnvoyFinalStreamIntel mEnvoyFinalStreamIntel;
+  private volatile EnvoyFinalStreamIntel mEnvoyFinalStreamIntel;
   private long mBytesReceivedFromRedirects = 0;
   private long mBytesReceivedFromLastRedirect = 0;
   private CronvoyHttpCallbacks mCronvoyCallbacks;
@@ -593,7 +611,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onCanceled(CronetUrlRequest.this, mUrlResponseInfo);
-          maybeReportMetrics();
+          mayBeReportMetricsAfterUserFinalCallback();
         } catch (Exception exception) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", exception);
         }
@@ -608,7 +626,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onSucceeded(CronetUrlRequest.this, mUrlResponseInfo);
-          maybeReportMetrics();
+          mayBeReportMetricsAfterUserFinalCallback();
         } catch (Exception exception) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onSucceeded method", exception);
         }
@@ -623,7 +641,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onFailed(CronetUrlRequest.this, mUrlResponseInfo, mException);
-          maybeReportMetrics();
+          mayBeReportMetricsAfterUserFinalCallback();
         } catch (Exception exception) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", exception);
         }
@@ -660,40 +678,59 @@ public final class CronetUrlRequest extends UrlRequestBase {
     return cronvoyCallbacks != null && cronvoyCallbacks.mEndStream;
   }
 
+  private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
+    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getConsumedBytesFromResponse() +
+                                          mBytesReceivedFromRedirects);
+  }
+
+  private boolean reportMetricReady(@ReportState int activityDone) {
+    while (true) {
+      @ReportState int originalState = mReportState.get();
+      @ReportState int updatedState = originalState | activityDone;
+      if (mReportState.compareAndSet(originalState, updatedState)) {
+        // Only one Thread will win this race.
+        return originalState != ReportState.REPORT_READY &&
+            updatedState == ReportState.REPORT_READY;
+      }
+    }
+  }
+
   private void recordEnvoyFinalStreamIntel(EnvoyFinalStreamIntel envoyFinalStreamIntel) {
     mEnvoyFinalStreamIntel = envoyFinalStreamIntel;
     if (mUrlResponseInfo != null) { // Null if cancelled before receiving a Response.
       mUrlResponseInfo.setReceivedByteCount(envoyFinalStreamIntel.getReceivedByteCount() +
                                             mBytesReceivedFromRedirects);
     }
+    if (reportMetricReady(ReportState.NETWORK_FINAL_CALLBACK_RECEIVED)) {
+      reportMetrics();
+    }
   }
 
-  private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
-    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getConsumedBytesFromResponse() +
-                                          mBytesReceivedFromRedirects);
+  // This is executed on a User's Thread.
+  private void mayBeReportMetricsAfterUserFinalCallback() {
+    if (reportMetricReady(ReportState.USER_FINAL_CALLBACK_DONE)) {
+      reportMetrics();
+    }
   }
 
-  // Maybe report metrics. This method should only be called on Callback's executor thread and
-  // after Callback's onSucceeded, onFailed and onCanceled.
-  private void maybeReportMetrics() {
-    if (mEnvoyFinalStreamIntel != null) {
-      Metrics metrics = getMetrics(mEnvoyFinalStreamIntel, mBytesReceivedFromRedirects);
-      final RequestFinishedInfo requestInfo =
-          new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, metrics,
-                                      getFinishedReason(), mUrlResponseInfo, mException);
-      mRequestContext.reportRequestFinished(requestInfo);
-      if (mRequestFinishedListener != null) {
-        try {
-          mRequestFinishedListener.getExecutor().execute(new Runnable() {
-            @Override
-            public void run() {
-              mRequestFinishedListener.onRequestFinished(requestInfo);
-            }
-          });
-        } catch (RejectedExecutionException failException) {
-          Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
-                failException);
-        }
+  // Can the called from any Thread, but it is guaranteed that the network final calback has been
+  // invoked. mEnvoyFinalStreamIntel is set, otherwise there is a bug.
+  private void reportMetrics() {
+    Metrics metrics = getMetrics(mEnvoyFinalStreamIntel, mBytesReceivedFromRedirects);
+    final RequestFinishedInfo requestInfo =
+        new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, metrics, getFinishedReason(),
+                                    mUrlResponseInfo, mException);
+    mRequestContext.reportRequestFinished(requestInfo);
+    if (mRequestFinishedListener != null) {
+      try {
+        mRequestFinishedListener.getExecutor().execute(new Runnable() {
+          @Override
+          public void run() {
+            mRequestFinishedListener.onRequestFinished(requestInfo);
+          }
+        });
+      } catch (RejectedExecutionException failException) {
+        Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor", failException);
       }
     }
   }
@@ -796,7 +833,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
           checkCallingThread();
           try {
             if (locationField != null) {
-              mCronvoyCallbacks = null; // Makes CronvoyHttpCallbacks abandoned.
+              // This CronvoyHttpCallbacks instance is already in an abandonned state at this point:
+              // mState == State.AWAITING_FOLLOW_REDIRECT. But mState will change soon, so this line
+              // puts the final nail in the coffin. isAbandoned() can only keep returning true.
+              mCronvoyCallbacks = null;
               mStream.set(null);
               mPendingRedirectUrl = URI.create(mCurrentUrl).resolve(locationField).toString();
               mWaitingOnRedirect.set(true);
