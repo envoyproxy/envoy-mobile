@@ -121,7 +121,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
    * At the end of a request, mRequestFinishedListener is used to post the CronetMetrics. Before
    * doing so, two events must have occurred first: the "final user callback" and the "final
    * Network callback". The Thread involved with the last of these two events is in charge of the
-   * posting - this is intinsically racy. So this AtomicInteger ensures that the CronetMetrics will
+   * posting - this is intrinsically racy. So this AtomicInteger ensures that the CronetMetrics will
    * be posted no more than once.
    */
   private final AtomicInteger mReportState = new AtomicInteger(ReportState.UNDETERMINED);
@@ -713,7 +713,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
   }
 
-  // Can the called from any Thread, but it is guaranteed that the network final calback has been
+  // Can be called from any Thread, but it is guaranteed that the network final callback has been
   // invoked. mEnvoyFinalStreamIntel is set, otherwise there is a bug.
   private void reportMetrics() {
     Metrics metrics = getMetrics(mEnvoyFinalStreamIntel, mBytesReceivedFromRedirects);
@@ -833,7 +833,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
           checkCallingThread();
           try {
             if (locationField != null) {
-              // This CronvoyHttpCallbacks instance is already in an abandonned state at this point:
+              // This CronvoyHttpCallbacks instance is already in an abandoned state at this point:
               // mState == State.AWAITING_FOLLOW_REDIRECT. But mState will change soon, so this line
               // puts the final nail in the coffin. isAbandoned() can only keep returning true.
               mCronvoyCallbacks = null;
