@@ -124,7 +124,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
    * events, and that it will be done only once.
    *
    * <p>At the end of a successful request, "mCallback.onSucceeded" is invoked. Before doing so,
-   * doing so, two events must have occurred first: the "final user read" and the "onComplete
+   * two events must have occurred first: the "completion of the final read" and the "onComplete
    * Network callback". The Thread involved with the last of these two events is in charge of the
    * registering the task to execute "mCallback.onSucceeded" - this is intrinsically racy.
    */
