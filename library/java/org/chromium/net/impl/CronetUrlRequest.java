@@ -71,24 +71,26 @@ public final class CronetUrlRequest extends UrlRequestBase {
     int CANCELLED = 2;
   }
 
-  @IntDef({SucceededState.UNDETERMINED, SucceededState.FINAL_READ_DONE,
-           SucceededState.ON_COMPLETE_RECEIVED, SucceededState.SUCCESS_READY})
+  @IntDef(flag = true, // This is a bitmap.
+          value = {SucceededState.UNDETERMINED, SucceededState.FINAL_READ_DONE,
+                   SucceededState.ON_COMPLETE_RECEIVED, SucceededState.SUCCESS_READY})
   @Retention(RetentionPolicy.SOURCE)
   private @interface SucceededState {
-    int UNDETERMINED = 0;
-    int FINAL_READ_DONE = 1;
-    int ON_COMPLETE_RECEIVED = 2;
-    int SUCCESS_READY = 3;
+    int UNDETERMINED = 0b00;
+    int FINAL_READ_DONE = 0b01;
+    int ON_COMPLETE_RECEIVED = 0b10;
+    int SUCCESS_READY = FINAL_READ_DONE | ON_COMPLETE_RECEIVED;
   }
 
-  @IntDef({ReportState.UNDETERMINED, ReportState.USER_FINAL_CALLBACK_DONE,
-           ReportState.NETWORK_FINAL_CALLBACK_RECEIVED, ReportState.REPORT_READY})
+  @IntDef(flag = true, // This is a bitmap.
+          value = {ReportState.INITIAL_STATE, ReportState.USER_FINAL_CALLBACK_DONE,
+                   ReportState.NETWORK_FINAL_CALLBACK_RECEIVED, ReportState.REPORT_READY})
   @Retention(RetentionPolicy.SOURCE)
   private @interface ReportState {
-    int UNDETERMINED = 0;
-    int USER_FINAL_CALLBACK_DONE = 1;
-    int NETWORK_FINAL_CALLBACK_RECEIVED = 2;
-    int REPORT_READY = 3;
+    int INITIAL_STATE = 0b00;
+    int USER_FINAL_CALLBACK_DONE = 0b01;
+    int NETWORK_FINAL_CALLBACK_RECEIVED = 0b10;
+    int REPORT_READY = USER_FINAL_CALLBACK_DONE | NETWORK_FINAL_CALLBACK_RECEIVED;
   }
 
   private static final String X_ENVOY = "x-envoy";
@@ -118,13 +120,27 @@ public final class CronetUrlRequest extends UrlRequestBase {
    */
   private final AtomicInteger mState = new AtomicInteger(State.NOT_STARTED);
   /**
-   * At the end of a request, mRequestFinishedListener is used to post the CronetMetrics. Before
-   * doing so, two events must have occurred first: the "final user callback" and the "final
+   * Ensures that the "mCallback.onSucceeded" callback will be invoked after observing the required
+   * events, and that it will be done only once.
+   *
+   * <p>At the end of a successful request, "mCallback.onSucceeded" is invoked. Before doing so,
+   * doing so, two events must have occurred first: the "final user read" and the "onComplete
    * Network callback". The Thread involved with the last of these two events is in charge of the
-   * posting - this is intrinsically racy. So this AtomicInteger ensures that the CronetMetrics will
-   * be posted no more than once.
+   * registering the task to execute "mCallback.onSucceeded" - this is intrinsically racy.
    */
-  private final AtomicInteger mReportState = new AtomicInteger(ReportState.UNDETERMINED);
+  private final AtomicCombinatoryState mSucceededState =
+      new AtomicCombinatoryState(SucceededState.SUCCESS_READY);
+  /**
+   * Ensures that the CronetMetrics will be posted after observing the required events, and that it
+   * will be done only once.
+   *
+   * <p>At the end of a request, mRequestFinishedListener is used to post the CronetMetrics. Before
+   * doing so, two events must have occurred first: the "final user callback" and the "final Network
+   * callback". The Thread involved with the last of these two events is in charge of the posting -
+   * this is intrinsically racy.
+   */
+  private final AtomicCombinatoryState mReportState =
+      new AtomicCombinatoryState(ReportState.REPORT_READY);
 
   private final AtomicBoolean mUploadProviderClosed = new AtomicBoolean(false);
 
@@ -291,7 +307,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
     if (mState.compareAndSet(State.AWAITING_READ, streamEnded() ? State.COMPLETE : State.READING)) {
       if (streamEnded()) {
-        if (mCronvoyCallbacks.successReady(SucceededState.FINAL_READ_DONE)) {
+        if (mSucceededState.hasReachedFinalState(SucceededState.FINAL_READ_DONE)) {
           onSucceeded();
         }
         return;
@@ -611,7 +627,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onCanceled(CronetUrlRequest.this, mUrlResponseInfo);
-          mayBeReportMetricsAfterUserFinalCallback();
+          maybeReportMetrics(ReportState.USER_FINAL_CALLBACK_DONE);
         } catch (Exception exception) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", exception);
         }
@@ -626,7 +642,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onSucceeded(CronetUrlRequest.this, mUrlResponseInfo);
-          mayBeReportMetricsAfterUserFinalCallback();
+          maybeReportMetrics(ReportState.USER_FINAL_CALLBACK_DONE);
         } catch (Exception exception) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onSucceeded method", exception);
         }
@@ -641,7 +657,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onFailed(CronetUrlRequest.this, mUrlResponseInfo, mException);
-          mayBeReportMetricsAfterUserFinalCallback();
+          maybeReportMetrics(ReportState.USER_FINAL_CALLBACK_DONE);
         } catch (Exception exception) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", exception);
         }
@@ -678,44 +694,24 @@ public final class CronetUrlRequest extends UrlRequestBase {
     return cronvoyCallbacks != null && cronvoyCallbacks.mEndStream;
   }
 
-  private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
-    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getConsumedBytesFromResponse() +
-                                          mBytesReceivedFromRedirects);
-  }
-
-  private boolean reportMetricReady(@ReportState int activityDone) {
-    while (true) {
-      @ReportState int originalState = mReportState.get();
-      @ReportState int updatedState = originalState | activityDone;
-      if (mReportState.compareAndSet(originalState, updatedState)) {
-        // Only one Thread will win this race.
-        return originalState != ReportState.REPORT_READY &&
-            updatedState == ReportState.REPORT_READY;
-      }
-    }
-  }
-
   private void recordEnvoyFinalStreamIntel(EnvoyFinalStreamIntel envoyFinalStreamIntel) {
     mEnvoyFinalStreamIntel = envoyFinalStreamIntel;
     if (mUrlResponseInfo != null) { // Null if cancelled before receiving a Response.
       mUrlResponseInfo.setReceivedByteCount(envoyFinalStreamIntel.getReceivedByteCount() +
                                             mBytesReceivedFromRedirects);
     }
-    if (reportMetricReady(ReportState.NETWORK_FINAL_CALLBACK_RECEIVED)) {
-      reportMetrics();
-    }
+    maybeReportMetrics(ReportState.NETWORK_FINAL_CALLBACK_RECEIVED);
   }
 
-  // This is executed on a User's Thread.
-  private void mayBeReportMetricsAfterUserFinalCallback() {
-    if (reportMetricReady(ReportState.USER_FINAL_CALLBACK_DONE)) {
-      reportMetrics();
-    }
+  private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
+    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getConsumedBytesFromResponse() +
+                                          mBytesReceivedFromRedirects);
   }
 
-  // Can be called from any Thread, but it is guaranteed that the network final callback has been
-  // invoked. mEnvoyFinalStreamIntel is set, otherwise there is a bug.
-  private void reportMetrics() {
+  private void maybeReportMetrics(@ReportState int reportStateEvent) {
+    if (!mReportState.hasReachedFinalState(reportStateEvent)) {
+      return;
+    }
     Metrics metrics = getMetrics(mEnvoyFinalStreamIntel, mBytesReceivedFromRedirects);
     final RequestFinishedInfo requestInfo =
         new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, metrics, getFinishedReason(),
@@ -757,15 +753,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
   }
 
-  private static class HeadersList extends ArrayList<Map.Entry<String, String>> {}
-
-  private static class DirectExecutor implements Executor {
-    @Override
-    public void execute(Runnable runnable) {
-      runnable.run();
-    }
-  }
-
   private static int determineNextState(boolean endStream, @State int original,
                                         @State int desired) {
     switch (original) {
@@ -778,10 +765,18 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
   }
 
+  private static class HeadersList extends ArrayList<Map.Entry<String, String>> {}
+
+  private static class DirectExecutor implements Executor {
+    @Override
+    public void execute(Runnable runnable) {
+      runnable.run();
+    }
+  }
+
   private class CronvoyHttpCallbacks implements EnvoyHTTPCallbacks {
 
     private final AtomicInteger mCancelState = new AtomicInteger(CancelState.READY);
-    private final AtomicInteger mSucceededState = new AtomicInteger(SucceededState.UNDETERMINED);
     private volatile boolean mEndStream = false; // Accessed by different Threads
 
     @Override
@@ -911,9 +906,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (completeAbandonIfAny(originalState, updatedState)) {
         return;
       }
-      if (mState.compareAndSet(State.READING, State.COMPLETE)) {
-        mCronvoyCallbacks.successReady(SucceededState.FINAL_READ_DONE);
-      }
     }
 
     @Override
@@ -988,7 +980,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         return;
       }
       recordEnvoyFinalStreamIntel(finalStreamIntel);
-      if (successReady(SucceededState.ON_COMPLETE_RECEIVED)) {
+      if (mSucceededState.hasReachedFinalState(SucceededState.ON_COMPLETE_RECEIVED)) {
         onSucceeded();
       }
     }
@@ -1075,17 +1067,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
       mUrlResponseInfo.setResponseValues(
           new ArrayList<>(mUrlChain), responseCode, HttpReason.getReason(responseCode),
           Collections.unmodifiableList(headerList), false, selectedTransport, ":0");
-    }
-
-    private boolean successReady(@SucceededState int activityDone) {
-      @SucceededState int originalState;
-      @SucceededState int updatedState;
-      do {
-        originalState = mSucceededState.get();
-        updatedState = originalState | activityDone;
-      } while (!mSucceededState.compareAndSet(originalState, updatedState));
-      return originalState != SucceededState.SUCCESS_READY &&
-          updatedState == SucceededState.SUCCESS_READY;
     }
 
     private boolean completeAbandonIfAny(@State int originalState, @State int updatedState) {
