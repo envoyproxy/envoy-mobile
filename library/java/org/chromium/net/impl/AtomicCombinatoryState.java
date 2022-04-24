@@ -3,7 +3,7 @@ package org.chromium.net.impl;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * CAS logic based class providing a mean to ensure that the last awaited "stateEvent" will be
+ * "CAS" logic based class providing a mean to ensure that the last awaited "stateEvent" will be
  * identified as so. Typically a "stateEvent" is a single bit flip.
  *
  * <p>This class is Thread Safe.

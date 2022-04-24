@@ -906,6 +906,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (completeAbandonIfAny(originalState, updatedState)) {
         return;
       }
+      if (mState.compareAndSet(State.READING, State.COMPLETE)) {
+        // onComplete still needs to be called - this always returns false.
+        mSucceededState.hasReachedFinalState(SucceededState.FINAL_READ_DONE);
+      }
     }
 
     @Override
