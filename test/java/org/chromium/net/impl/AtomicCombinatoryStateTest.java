@@ -45,21 +45,20 @@ public class AtomicCombinatoryStateTest {
   public void finalState_multiThread() throws Exception {
     ConditionVariable startBlock = new ConditionVariable();
     ConditionVariable allThreadsReady = new ConditionVariable();
-    AtomicInteger threadReadyCount = new AtomicInteger(0);
+    AtomicInteger sequence = new AtomicInteger(0);
     AtomicCombinatoryState atomicCombinatoryState = new AtomicCombinatoryState(3);
     AtomicInteger trueCount = new AtomicInteger(0);
-    AtomicInteger eventStatePurveyor = new AtomicInteger(0);
     Thread[] threads = new Thread[10];
     for (int i = 0; i < threads.length; i++) {
       threads[i] = new Thread() {
         @Override
         public void run() {
-          int eventState = (eventStatePurveyor.incrementAndGet() & 1) + 1; // 1 and 2 only
-          if (threadReadyCount.incrementAndGet() == threads.length) {
+          int sequenceId = sequence.incrementAndGet();
+          if (sequenceId == threads.length) {
             allThreadsReady.open();
           }
           startBlock.block();
-          if (atomicCombinatoryState.hasReachedFinalState(eventState)) {
+          if (atomicCombinatoryState.hasReachedFinalState((sequenceId & 1) + 1)) { // 1 and 2 only.
             trueCount.incrementAndGet(); // Should be executed only once.
           }
         }
@@ -67,7 +66,7 @@ public class AtomicCombinatoryStateTest {
       threads[i].start();
     }
     allThreadsReady.block(); // This unblocks when all 10 Thread are blocking on "startBlock"
-    startBlock.open(); // Most threads will unblock simultaneously on a "multi-threading" CPU.
+    startBlock.open();       // Most threads will unblock simultaneously on a "multi-threading" CPU.
     for (Thread thread : threads) {
       thread.join(); // Wait for each Thread to die.
     }
