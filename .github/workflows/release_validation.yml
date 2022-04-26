@@ -18,4 +18,4 @@ jobs:
           ruby-version: 2.7
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
       - name: 'Lint CocoaPods podspec'
-        run: bundle exec pod spec lint
+        run: bundle exec pod lib lint
