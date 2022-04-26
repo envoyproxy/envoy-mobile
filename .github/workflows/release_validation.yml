@@ -11,7 +11,6 @@ jobs:
     name: cocoapods_spec_lint
     runs-on: macos-11
     timeout-minutes: 20
-    if: ${{ false }} # TODO(jpsim): Fix this validation when bumping versions
     steps:
       - uses: actions/checkout@v1
       - uses: ruby/setup-ruby@v1
