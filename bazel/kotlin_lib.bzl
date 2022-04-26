@@ -57,14 +57,6 @@ def envoy_mobile_so_to_jni_lib(name, native_dep, testonly = False):
         outs = [output],
         srcs = [native_dep],
         cmd = """
-        so_file="{}.so"
-        if [ ! -f $$so_file ]; then
-            dir=$$(dirname $@)
-            cp $< $$dir/{}.so 2>/dev/null || :
-            chmod 755 $$dir/{}.so
-        fi
-
         cp $< $@
-        chmod 755 $@
         """.replace("{}", lib_name),
     )
