@@ -7,7 +7,7 @@ swift_library(
     name = "appmain",
     srcs = glob(["*.swift"]),
     linkopts = ["-lNetwork"],
-    deps = ["//library/swift:ios_lib"],
+    deps = ["//:envoy_mobile_ios"],
 )
 
 ios_application(

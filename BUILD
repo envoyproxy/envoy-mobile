@@ -1,10 +1,32 @@
+load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_framework_import")
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
+load("//bazel:framework_imports_extractor.bzl", "framework_imports_extractor")
 
 licenses(["notice"])  # Apache 2
 
 alias(
     name = "ios_dist",
     actual = "//library/swift:ios_framework",
+)
+
+framework_imports_extractor(
+    name = "framework_imports",
+    framework = "//library/swift:ios_framework",
+)
+
+apple_static_framework_import(
+    name = "envoy_mobile_ios",
+    framework_imports = [":framework_imports"],
+    sdk_dylibs = [
+        "resolv.9",
+        "c++",
+    ],
+    sdk_frameworks = [
+        "Network",
+        "SystemConfiguration",
+        "UIKit",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 alias(
