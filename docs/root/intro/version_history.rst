@@ -6,6 +6,22 @@ Pending Release
 
 Breaking changes:
 
+- None
+
+Bugfixes:
+
+- iOS: change release artifacts to use xcframeworks (:issue:`#2216 <2216>`)
+- iOS: fix CocoaPods releases (:issue:`#2215 <2215>`)
+
+Features:
+
+- None
+
+0.4.6 (April 26, 2022)
+========================
+
+Breaking changes:
+
 - iOS: the minimum supported iOS version is now 12.0 (:issue:`#2084 <2084>`)
 
 Bugfixes:

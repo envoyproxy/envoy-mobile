@@ -8,6 +8,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "ios_xcframework",
+    actual = "//library/swift:Envoy",
+    visibility = ["//visibility:public"],
+)
+
 genrule(
     name = "ios_dist",
     srcs = [":ios_framework"],
