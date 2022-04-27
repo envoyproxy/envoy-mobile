@@ -1,5 +1,5 @@
 load("//bazel:config.bzl", "MINIMUM_IOS_VERSION")
-load("@build_bazel_rules_apple//apple:apple.bzl", "apple_xcframework")
+load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_xcframework")
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_static_framework")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//bazel:swift_header_collector.bzl", "swift_header_collector")
@@ -76,12 +76,8 @@ ios_static_framework(
     deps = ["ios_lib"],
 )
 
-apple_xcframework(
+apple_static_xcframework(
     name = "Envoy",
-    bundle_id = "io.envoyproxy.envoymobile",
-    infoplists = [
-        "resources/Info.plist",
-    ],
     ios = {
         "simulator": [
             "arm64",

@@ -70,10 +70,12 @@ def upstream_envoy_overrides():
     )
 
 def swift_repos():
+    # https://github.com/bazelbuild/rules_apple/pull/1443
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "4161b2283f80f33b93579627c3bd846169b2d58848b0ffb29b5d4db35263156a",
-        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.34.0/rules_apple.0.34.0.tar.gz",
+        sha256 = "01ace22f26dcc1e074834c138e0e24c4a81fd9ddd6accf2ac84fa40826864611",
+        strip_prefix = "rules_apple-5034fa27dae535f7d2b1a17eb607590c56f5248f",
+        url = "https://github.com/bazelbuild/rules_apple/archive/5034fa27dae535f7d2b1a17eb607590c56f5248f.tar.gz",
     )
 
     http_archive(
