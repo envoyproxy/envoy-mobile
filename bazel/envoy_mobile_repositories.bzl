@@ -73,9 +73,9 @@ def swift_repos():
     # https://github.com/bazelbuild/rules_apple/pull/1443
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "01ace22f26dcc1e074834c138e0e24c4a81fd9ddd6accf2ac84fa40826864611",
-        strip_prefix = "rules_apple-5034fa27dae535f7d2b1a17eb607590c56f5248f",
-        url = "https://github.com/bazelbuild/rules_apple/archive/5034fa27dae535f7d2b1a17eb607590c56f5248f.tar.gz",
+        sha256 = "be40bb0a34387085a4ffa65e25787dcf53927e5b20a48f431d72d6482fc64178",
+        strip_prefix = "rules_apple-7bbd037463eea1179c9740676cdf27df9a13659b",
+        url = "https://github.com/bazelbuild/rules_apple/archive/7bbd037463eea1179c9740676cdf27df9a13659b.tar.gz",
     )
 
     http_archive(
