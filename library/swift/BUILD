@@ -80,7 +80,7 @@ apple_xcframework(
     name = "Envoy",
     bundle_id = "io.envoyproxy.envoymobile",
     infoplists = [
-        "//library/swift/resources:Info.plist",
+        "resources/Info.plist",
     ],
     ios = {
         "simulator": [
