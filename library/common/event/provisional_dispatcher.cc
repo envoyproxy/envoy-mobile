@@ -44,11 +44,12 @@ envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
   return ENVOY_SUCCESS;
 }
 
-Event::SchedulableCallbackPtr ProvisionalDispatcher::createSchedulableCallback(std::function<void()> cb) {
+Event::SchedulableCallbackPtr
+ProvisionalDispatcher::createSchedulableCallback(std::function<void()> cb) {
   RELEASE_ASSERT(
       isThreadSafe(),
       "ProvisionalDispatcher::createSchedulableCallback must be called from a threadsafe context");
- return event_dispatcher_->createSchedulableCallback(cb);
+  return event_dispatcher_->createSchedulableCallback(cb);
 }
 
 bool ProvisionalDispatcher::isThreadSafe() const {
