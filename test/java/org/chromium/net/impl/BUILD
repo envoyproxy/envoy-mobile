@@ -8,6 +8,7 @@ envoy_package()
 envoy_mobile_android_test(
     name = "cronvoy_test",
     srcs = [
+        "AtomicCombinatoryStateTest.java",
         "CronetBidirectionalStateTest.java",
         "CronvoyEngineTest.java",
         "UrlRequestCallbackTester.java",
@@ -27,5 +28,6 @@ envoy_mobile_android_test(
         "//library/java/org/chromium/net/impl:cronvoy",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
+        "//test/java/org/chromium/net/testing",
     ],
 )

@@ -69,29 +69,17 @@ def upstream_envoy_overrides():
         urls = ["https://github.com/google/boringssl/archive/648cbaf033401b7fe7acdce02f275b06a88aab5c.tar.gz"],
     )
 
-    # Envoy uses rules_python v0.1.0, which does not include tooling for packaging Python.  The
-    # Python platform implementation needs to be packaged and uploaded to pypi, so we need a more
-    # recent version.
-    http_archive(
-        name = "rules_python",
-        sha256 = "ecd139e703b41ae2ea115f4f4229b4ea2d70bab908fb75a3b49640f976213009",
-        strip_prefix = "rules_python-6f37aa9966f53e063c41b7509a386d53a9f156c3",
-        urls = ["https://github.com/bazelbuild/rules_python/archive/6f37aa9966f53e063c41b7509a386d53a9f156c3.tar.gz"],
-    )
-
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "b3f41da1a26e03250575b554c55a56b0b1f5b394192e2ca202f74d7c4c6670e5",
-        strip_prefix = "rules_apple-d1d40821dc932ee488eb22c0b9712e26f39c04fa",
-        url = "https://github.com/bazelbuild/rules_apple/archive/d1d40821dc932ee488eb22c0b9712e26f39c04fa.tar.gz",
+        sha256 = "4161b2283f80f33b93579627c3bd846169b2d58848b0ffb29b5d4db35263156a",
+        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.34.0/rules_apple.0.34.0.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "a85f0cb6a0d6a8c1165073418de28b202bc98f58c4c080bc57faeb63a2d7eee8",
-        strip_prefix = "rules_swift-a81f40700f1ba45034465a82673f46bd2631be62",
-        url = "https://github.com/bazelbuild/rules_swift/archive/a81f40700f1ba45034465a82673f46bd2631be62.tar.gz",
+        sha256 = "a2fd565e527f83fb3f9eb07eb9737240e668c9242d3bc318712efa54a7deda97",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.27.0/rules_swift.0.27.0.tar.gz",
     )
 
 def kotlin_repos():
