@@ -110,6 +110,9 @@ jobs:
           submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
+      - name: 'Bump Bazel version'
+        # TODO(jpsim): Get static xcframeworks working without needing to override the bazel version
+        run: echo "6.0.0-pre.20220414.2" > .bazelversion
       - name: 'Build Envoy.xcframework'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
