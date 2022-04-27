@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  *  Holder the the current state associated to a bidirectional stream. The main goal is to provide
  *  a mean to determine what should be the next action for a given event by considering the
- *  current state. This class uses CAS logic (https://en.wikipedia.org/wiki/Compare-and-swap): the
+ *  current state. This class uses "CAS" logic (https://en.wikipedia.org/wiki/Compare-and-swap): the
  *  next state is saved with {@code AtomicInteger.compareAndSet()}.
  *
  *  <p>All methods in this class are Thread Safe.
