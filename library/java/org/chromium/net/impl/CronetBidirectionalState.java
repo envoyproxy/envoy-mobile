@@ -30,7 +30,7 @@ final class CronetBidirectionalState {
            Event.USER_START_WITH_HEADERS_READ_ONLY,
            Event.USER_WRITE,
            Event.USER_LAST_WRITE,
-           Event.USER_FLUSH_DATA,
+           Event.USER_FLUSH,
            Event.USER_READ,
            Event.USER_CANCEL,
            Event.ERROR,
@@ -57,7 +57,7 @@ final class CronetBidirectionalState {
     int USER_START_WITH_HEADERS_READ_ONLY = 3; // Ready to send request headers. No request body.
     int USER_WRITE = 4;      // User adding a ByteBuffer in the pending queue - not the last one.
     int USER_LAST_WRITE = 5; // User adding a ByteBuffer in the pending queue - that's the last one.
-    int USER_FLUSH_DATA = 6; // User requesting to push the pending buffers through the wire.
+    int USER_FLUSH = 6;      // User requesting to push the pending buffers/headers on the wire.
     int USER_READ = 7;       // User requesting to read the next chunk from the wire.
     int USER_CANCEL = 8;     // User requesting to cancel the stream.
     int ERROR = 9;           // A fatal error occurred. Can be an internal, or user related.
@@ -81,8 +81,8 @@ final class CronetBidirectionalState {
   /**
    * Enum of the Next Actions to be taken.
    */
-  @IntDef({NextAction.CARRY_ON, NextAction.WRITE, NextAction.FLUSH_HEADERS,
-           NextAction.SEND_DATA_IF_ANY, NextAction.READ, NextAction.INVOKE_ON_READ_COMPLETED,
+  @IntDef({NextAction.CARRY_ON, NextAction.WRITE, NextAction.FLUSH_HEADERS, NextAction.SEND_DATA,
+           NextAction.READ, NextAction.INVOKE_ON_READ_COMPLETED,
            NextAction.INVOKE_ON_ERROR_RECEIVED, NextAction.CANCEL,
            NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK,
            NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK, NextAction.FINISH_UP,
@@ -92,7 +92,7 @@ final class CronetBidirectionalState {
     int CARRY_ON = 0;                 // Do nothing special at the moment - keep calm and carry on.
     int WRITE = 1;                    // Add one more ByteBuffer to the pending queue.
     int FLUSH_HEADERS = 2;            // Start sending request headers.
-    int SEND_DATA_IF_ANY = 3;         // Send one ByteBuffer on the wire, if any.
+    int SEND_DATA = 3;                // Send one ByteBuffer on the wire, if any.
     int READ = 4;                     // Start reading the next chunk of the response body.
     int INVOKE_ON_READ_COMPLETED = 5; // Initiate the completion of a read operation.
     int INVOKE_ON_ERROR_RECEIVED = 6; // Initiate the completion of a network Error.
@@ -177,17 +177,15 @@ final class CronetBidirectionalState {
   /**
    * Establishes what is the next action by taking in account the current global state, and the
    * provided {@link Event}. This method has one important side effect: the resulting global state
-   * is saved through an Atomic operation.
-   *
-   * <p>Cronet throws IllegalStateException or IllegalArgumentException when the state is
-   * incompatible with the provided event. The Cronet logic has been respected to the letter here:
-   * same exception type, and same message.
+   * is saved through an Atomic operation. For few cases, this method will throw when the state is
+   * not compatible with the event.
    */
   @NextAction int nextAction(@Event final int event) { // "final" just to avoid dumb mistakes.
     while (true) {
-      @NextAction final int nextAction; // "final" guarantees that it is assigned exactly once.
       @State final int originalState = mState.get(); // "final" just to avoid dumb mistakes.
-      @State int nextState = originalState;
+
+      // Some events must fail immediately when the original state does not permit.
+      // This mimics Cronet's behaviour: identical Exception types and error messages.
       switch (event) {
       case Event.USER_START:
       case Event.USER_START_WITH_HEADERS:
@@ -196,7 +194,41 @@ final class CronetBidirectionalState {
         if ((originalState & (State.STARTED | State.TERMINATING_STATES)) != 0) {
           throw new IllegalStateException("Stream is already started.");
         }
-        nextState = State.WAITING_FOR_READ | State.STARTED;
+        break;
+
+      case Event.USER_LAST_WRITE:
+      case Event.USER_WRITE:
+        if ((originalState & State.END_STREAM_WRITTEN) != 0) {
+          throw new IllegalArgumentException("Write after writing end of stream.");
+        }
+        break;
+
+      case Event.USER_READ:
+        if ((originalState & State.WAITING_FOR_READ) == 0) {
+          throw new IllegalStateException("Unexpected read attempt.");
+        }
+        break;
+
+      default:
+        // For all other events, a potentially incompatible state does not trigger an Exception.
+      }
+
+      // Those 3 events are the final events from the EnvoyMobile C++ layer.
+      if (event == Event.ON_CANCEL || event == Event.ON_ERROR || event == Event.ON_COMPLETE) {
+        // If this assert triggers it means that the C++ EnvoyMobile contract has been breached.
+        assert (originalState & State.DONE) == 0; // Or there is a blatant bug.
+      } else if ((originalState & State.TERMINATING_STATES) != 0) {
+        return NextAction.TAKE_NO_MORE_ACTIONS; // No need to loop - this is irreversible.
+      }
+
+      @NextAction final int nextAction; // "final" guarantees that it is assigned exactly once.
+      @State int nextState = originalState;
+      switch (event) {
+      case Event.USER_START:
+      case Event.USER_START_WITH_HEADERS:
+      case Event.USER_START_READ_ONLY:
+      case Event.USER_START_WITH_HEADERS_READ_ONLY:
+        nextState |= State.WAITING_FOR_READ | State.STARTED;
         if (event == Event.USER_START_READ_ONLY ||
             event == Event.USER_START_WITH_HEADERS_READ_ONLY) {
           nextState |= State.END_STREAM_WRITTEN | State.WRITE_DONE;
@@ -217,14 +249,11 @@ final class CronetBidirectionalState {
         nextState |= State.END_STREAM_WRITTEN;
         // FOLLOW THROUGH
       case Event.USER_WRITE:
-        if ((originalState & State.END_STREAM_WRITTEN) != 0) {
-          throw new IllegalArgumentException("Write after writing end of stream.");
-        }
         // Note: it is fine to write even before "start" - Cronet behaves the same.
         nextAction = NextAction.WRITE;
         break;
 
-      case Event.USER_FLUSH_DATA:
+      case Event.USER_FLUSH:
         if ((originalState & State.WAITING_FOR_FLUSH) != 0 &&
             (originalState & State.HEADERS_SENT) == 0) {
           if ((originalState & State.WRITE_DONE) != 0) {
@@ -238,9 +267,6 @@ final class CronetBidirectionalState {
         break;
 
       case Event.USER_READ:
-        if ((originalState & State.WAITING_FOR_READ) == 0) {
-          throw new IllegalStateException("Unexpected read attempt.");
-        }
         nextState &= ~State.WAITING_FOR_READ;
         nextState |= State.READING;
         if ((originalState & State.ON_HEADER_RECEIVED) == 0) {
@@ -256,10 +282,10 @@ final class CronetBidirectionalState {
         if ((originalState & State.STARTED) == 0) {
           nextAction = NextAction.CARRY_ON; // Cancel came too soon - no effect.
         } else if ((originalState & State.ON_COMPLETE_RECEIVED) != 0) {
-          nextState = State.USER_CANCELLED | State.DONE;
+          nextState |= State.USER_CANCELLED | State.DONE;
           nextAction = NextAction.PROCESS_CANCEL;
         } else {
-          nextState = State.USER_CANCELLED | State.CANCELLING;
+          nextState |= State.USER_CANCELLED | State.CANCELLING;
           nextAction = NextAction.CANCEL;
         }
         break;
@@ -267,10 +293,10 @@ final class CronetBidirectionalState {
       case Event.ERROR:
         if ((originalState & State.ON_COMPLETE_RECEIVED) != 0 ||
             (originalState & State.STARTED) == 0) {
-          nextState = State.FAILED | State.DONE;
+          nextState |= State.FAILED | State.DONE;
           nextAction = NextAction.PROCESS_ERROR;
         } else {
-          nextState = State.FAILED | State.CANCELLING;
+          nextState |= State.FAILED | State.CANCELLING;
           nextAction = NextAction.CANCEL;
         }
         break;
@@ -306,7 +332,7 @@ final class CronetBidirectionalState {
                                                            : NextAction.PROCESS_CANCEL;
         } else if (((originalState & State.WRITE_DONE) != 0 &&
                     (originalState & State.READ_DONE) != 0)) {
-          nextState = State.DONE;
+          nextState |= State.DONE;
           nextAction = NextAction.FINISH_UP;
         } else {
           nextAction = NextAction.CARRY_ON;
@@ -320,7 +346,7 @@ final class CronetBidirectionalState {
         break;
 
       case Event.ON_ERROR:
-        nextState = State.DONE | State.FAILED;
+        nextState |= State.DONE | State.FAILED;
         nextAction = ((originalState & State.FAILED) != 0) ? NextAction.PROCESS_ERROR
                                                            : NextAction.INVOKE_ON_ERROR_RECEIVED;
         break;
@@ -339,7 +365,7 @@ final class CronetBidirectionalState {
         } else {
           nextState &= ~State.WAITING_FOR_FLUSH;
           nextState |= State.WRITING;
-          nextAction = NextAction.SEND_DATA_IF_ANY;
+          nextAction = NextAction.SEND_DATA;
         }
         break;
 
@@ -370,7 +396,7 @@ final class CronetBidirectionalState {
       case Event.READY_TO_FINISH:
         if ((originalState & State.ON_COMPLETE_RECEIVED) != 0 &&
             (originalState & State.READ_DONE) != 0 && (originalState & State.WRITE_DONE) != 0) {
-          nextState = State.DONE;
+          nextState |= State.DONE;
           nextAction = NextAction.FINISH_UP;
         } else {
           nextAction = NextAction.CARRY_ON;
@@ -379,20 +405,6 @@ final class CronetBidirectionalState {
 
       default:
         throw new AssertionError("switch is exhaustive");
-      }
-
-      System.err.println(
-          String.format("OOOO nextAction - event: %d  original state: 0x%08X next state: 0x%08X",
-                        event, originalState, nextState));
-
-      // Those 3 events are the final events from the EnvoyMobile C++ layer.
-      if (event == Event.ON_CANCEL || event == Event.ON_ERROR || event == Event.ON_COMPLETE) {
-        // If this assert triggers it means that the C++ EnvoyMobile contract has been breached.
-        assert (originalState & State.DONE) == 0; // Or there is a blatant bug.
-      } else if ((originalState & State.TERMINATING_STATES) != 0) {
-        // Unfortunately, this check can not occur at the beginning of the loop: any encountered
-        // IllegalStateException/IllegalArgumentException have precedence.
-        return NextAction.TAKE_NO_MORE_ACTIONS; // No need to loop - this is irreversible.
       }
 
       if (mState.compareAndSet(originalState, nextState)) {

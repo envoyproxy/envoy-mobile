@@ -70,7 +70,7 @@ public class BidirectionalStreamTest {
   @Before
   public void setUp() throws Exception {
     ExperimentalCronetEngine.Builder builder = new ExperimentalCronetEngine.Builder(getContext());
-    ((CronetEngineBuilderImpl)builder.getBuilderDelegate()).setLogLevel("warning");
+    ((CronetEngineBuilderImpl)builder.getBuilderDelegate()).setLogLevel("trace");
     CronetTestUtil.setMockCertVerifierForTesting(builder);
 
     mCronetEngine = builder.build();
@@ -455,12 +455,13 @@ public class BidirectionalStreamTest {
   @SmallTest
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/2213")
   // Regression test for crbug.com/692168.
   public void testCancelWhileWriteDataPending() throws Exception {
     String url = Http2TestServer.getEchoStreamUrl();
     // Use a direct executor to avoid race.
     TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback(
-        /*useDirectExecutor*/ true) {
+        /*useDirectExecutor*/ false) {
       @Override
       public void onStreamReady(BidirectionalStream stream) {
         // Start the first write.
@@ -1011,6 +1012,7 @@ public class BidirectionalStreamTest {
   @SmallTest
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
+  @Ignore("Disabled due to timeout. See crbug.com/591112")
   public void testReadAndWrite() throws Exception {
     String url = Http2TestServer.getEchoStreamUrl();
     TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {

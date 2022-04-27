@@ -12,7 +12,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
 
 /**
  * Consistency layer above the {@link EnvoyHTTPStream} preventing unwarranted Stream operations
- * after a "cancel" operation. There are no "synchronized" - this is CAS based logic.
+ * after a "cancel" operation. There are no "synchronized" - this is Compare And Swap based logic.
  *
  * <p>This contraption ensures that once a "cancel" operation is invoked, there will be no further
  * operations allowed with the EnvoyHTTPStream - subsequent operations will be ignored silently.
