@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * This class implements net utilities required by the net component.
  */
-class AndroidNetworkLibrary {
+public final class AndroidNetworkLibrary {
   private static final String TAG = "AndroidNetworkLibrary";
 
   /**

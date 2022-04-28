@@ -20,7 +20,7 @@ import androidx.annotation.VisibleForTesting;
 /**
  * This class provides Android application context related utility methods.
  */
-public class ContextUtils {
+public final class ContextUtils {
   private static final String TAG = "ContextUtils";
   private static Context sApplicationContext;
 

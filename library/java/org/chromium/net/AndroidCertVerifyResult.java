@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * The result of a certification verification.
  */
-public class AndroidCertVerifyResult {
+public final class AndroidCertVerifyResult {
 
   /**
    * The verification status. One of the values in CertVerifyStatusAndroid.
