@@ -72,9 +72,9 @@ public class AndroidEnvoyExplicitH2FlowTest {
     final AtomicReference<Stream> stream = new AtomicReference<>();
     final AtomicInteger bufferSent = new AtomicInteger(0);
 
-    // Loop 10,000 times which should be long enough to wait for the server's
+    // Loop 100,000 times which should be long enough to wait for the server's
     // response headers to arrive.
-    final int numWrites = 10000;
+    final int numWrites = 100000;
     stream.set(
         engine.streamClient()
             .newStreamPrototype()
