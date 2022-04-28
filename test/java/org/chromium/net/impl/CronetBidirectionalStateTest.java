@@ -34,7 +34,7 @@ public class CronetBidirectionalStateTest {
   @Test
   public void userStartWithHeaders() {
     assertThat(mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS))
-        .isEqualTo(NextAction.FLUSH_HEADERS);
+        .isEqualTo(NextAction.CARRY_ON);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class CronetBidirectionalStateTest {
   @Test
   public void userStartWithHeadersReadOnly() {
     assertThat(mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY))
-        .isEqualTo(NextAction.FLUSH_HEADERS);
+        .isEqualTo(NextAction.CARRY_ON);
   }
 
   @Test
