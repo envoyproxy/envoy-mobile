@@ -2,8 +2,11 @@ name: release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - v*
+  pull_request:
 
 jobs:
   android_release_artifacts:
@@ -42,6 +45,7 @@ jobs:
 
   android_release_deploy:
     name: android_release_deploy
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: android_release_artifacts
     runs-on: ubuntu-18.04
     timeout-minutes: 240
@@ -143,6 +147,7 @@ jobs:
 
   create_github_release:
     name: create_github_release
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: [android_release_artifacts, ios_release_artifacts]
@@ -166,6 +171,7 @@ jobs:
 
   publish_to_cocoapods:
     name: publish_to_cocoapods
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: macos-12
     timeout-minutes: 45
     needs: create_github_release
