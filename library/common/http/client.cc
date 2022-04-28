@@ -471,7 +471,8 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     if (direct_stream->explicit_flow_control_ && !end_stream) {
       if (direct_stream->read_disable_count_ == 0) {
         // If there is still buffer space after the write, notify the sender
-        // that send window is available, on the next dispatcher iteration.
+        // that send window is available, on the next dispatcher iteration so
+        // that repeated writes do not starve reads.
         direct_stream->wants_write_notification_ = false;
         if (scheduled_callback_ == nullptr) {
           scheduled_callback_ = dispatcher_.createSchedulableCallback(
