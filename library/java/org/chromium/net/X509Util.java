@@ -39,7 +39,7 @@ import javax.security.auth.x500.X500Principal;
 /**
  * Utility functions for verifying X.509 certificates.
  */
-public class X509Util {
+public final class X509Util {
   private static final String TAG = "X509Util";
 
   private static final class TrustStorageListener extends BroadcastReceiver {
