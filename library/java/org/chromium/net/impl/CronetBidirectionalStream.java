@@ -6,9 +6,17 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
-import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
-import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
+import org.chromium.net.BidirectionalStream;
+import org.chromium.net.CallbackException;
+import org.chromium.net.CronetException;
+import org.chromium.net.ExperimentalBidirectionalStream;
+import org.chromium.net.NetworkException;
+import org.chromium.net.RequestFinishedInfo;
+import org.chromium.net.UrlResponseInfo;
+import org.chromium.net.impl.Annotations.RequestPriority;
+import org.chromium.net.impl.CronetBidirectionalState.Event;
+import org.chromium.net.impl.CronetBidirectionalState.NextAction;
+import org.chromium.net.impl.UrlResponseInfoImpl.HeaderBlockImpl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,17 +35,9 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.chromium.net.BidirectionalStream;
-import org.chromium.net.CallbackException;
-import org.chromium.net.CronetException;
-import org.chromium.net.ExperimentalBidirectionalStream;
-import org.chromium.net.NetworkException;
-import org.chromium.net.RequestFinishedInfo;
-import org.chromium.net.UrlResponseInfo;
-import org.chromium.net.impl.Annotations.RequestPriority;
-import org.chromium.net.impl.CronetBidirectionalState.Event;
-import org.chromium.net.impl.CronetBidirectionalState.NextAction;
-import org.chromium.net.impl.UrlResponseInfoImpl.HeaderBlockImpl;
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
+import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
+import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
 
 /**
  * {@link BidirectionalStream} implementation using Envoy-Mobile stack.
@@ -119,7 +119,8 @@ public final class CronetBidirectionalStream
           mCallback.onReadCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
                                     mEndOfStream);
         }
-        if (mEndOfStream && mState.nextAction(Event.READY_TO_FINISH) == NextAction.FINISH_UP) {
+        if (mEndOfStream &&
+            mState.nextAction(Event.READY_TO_FINISH) == NextAction.INVOKE_ON_SUCCEEDED) {
           onSucceededOnExecutor();
         }
       } catch (Exception e) {
@@ -153,7 +154,8 @@ public final class CronetBidirectionalStream
           mCallback.onWriteCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
                                      mEndOfStream);
         }
-        if (mEndOfStream && mState.nextAction(Event.READY_TO_FINISH) == NextAction.FINISH_UP) {
+        if (mEndOfStream &&
+            mState.nextAction(Event.READY_TO_FINISH) == NextAction.INVOKE_ON_SUCCEEDED) {
           onSucceededOnExecutor();
         }
       } catch (Exception e) {
@@ -206,7 +208,7 @@ public final class CronetBidirectionalStream
             : (mReadOnly ? Event.USER_START_WITH_HEADERS_READ_ONLY : Event.USER_START_WITH_HEADERS);
     @NextAction int nextAction = mState.nextAction(startingEvent);
     mRequestContext.onRequestStarted();
-    if (nextAction == NextAction.PROCESS_ERROR) {
+    if (nextAction == NextAction.INVOKE_ON_FAILED) {
       mException.set(startUpException);
       failWithException();
       return;
@@ -290,6 +292,9 @@ public final class CronetBidirectionalStream
 
   @Override
   public void flush() {
+    if (mState.nextAction(Event.USER_FLUSH) == NextAction.FLUSH_HEADERS) {
+      mStream.sendHeaders(mEnvoyRequestHeaders, /* endStream= */ mReadOnly);
+    }
     if (mUserflushConcurrentInvocationCount.getAndIncrement() > 0) {
       // Another Thread is already copying pending buffers - can't be done concurrently.
       // However, the thread which started with a zero count will loop until this count goes back
@@ -298,11 +303,17 @@ public final class CronetBidirectionalStream
     }
     do {
       WriteBuffer pendingBuffer;
+      // A write operation can occur while this "flush" method is being executed. This might look
+      // like a breach of contract with the Cronet implementation given that this is not possible
+      // with Cronet - equivalent code is under a synchronized block. However, for all intents and
+      // purposes, this does not affect the general contract: the race condition remains
+      // conceptually identical. With Cronet, a distinct Thread invoking a "write" can be lucky or
+      // unlucky, depending if that "write" occurred just before the "flush" or not. With Cronvoy,
+      // the same "luck" factor is present: it depends if the "write" sent by the other Thread
+      // happens before the end of this loop, or not. In short, there is not any strong ordering
+      // guarantees between the flush and write when executed by different Threads.
       while ((pendingBuffer = mPendingData.poll()) != null) {
         mFlushData.add(pendingBuffer);
-      }
-      if (mState.nextAction(Event.USER_FLUSH) == NextAction.FLUSH_HEADERS) {
-        mStream.sendHeaders(mEnvoyRequestHeaders, /* endStream= */ mReadOnly);
       }
       sendFlushedDataIfAny();
     } while (mUserflushConcurrentInvocationCount.decrementAndGet() > 0);
@@ -359,7 +370,7 @@ public final class CronetBidirectionalStream
     case NextAction.CANCEL:
       mStream.cancel();
       break;
-    case NextAction.PROCESS_CANCEL:
+    case NextAction.INVOKE_ON_CANCELED:
       onCanceledReceived();
       break;
     case NextAction.CARRY_ON:
@@ -660,7 +671,7 @@ public final class CronetBidirectionalStream
     case NextAction.CANCEL:
       mStream.cancel();
       break;
-    case NextAction.PROCESS_ERROR:
+    case NextAction.INVOKE_ON_FAILED:
       failWithException();
       break;
     default:
@@ -747,7 +758,7 @@ public final class CronetBidirectionalStream
     } catch (MalformedURLException e) {
       throw new IllegalArgumentException("Invalid URL", e);
     }
-    // TODO(carlodeltuerto) with an empty string does not always work. Why?
+    // TODO: with an empty string it does not always work. Why?
     String path = url.getFile().isEmpty() ? "/" : url.getFile();
     headers.computeIfAbsent(":authority", unused -> new ArrayList<>()).add(url.getAuthority());
     headers.computeIfAbsent(":method", unused -> new ArrayList<>()).add(initialMethod);
@@ -765,7 +776,7 @@ public final class CronetBidirectionalStream
     if (!hasUserAgent) {
       headers.computeIfAbsent(USER_AGENT, unused -> new ArrayList<>()).add(userAgent);
     }
-    // TODO(carloseltuerto): support H3
+    // TODO: support H3
     headers.computeIfAbsent("x-envoy-mobile-upstream-protocol", unused -> new ArrayList<>())
         .add("http2");
     return headers;
@@ -817,7 +828,7 @@ public final class CronetBidirectionalStream
         NextAction.INVOKE_ON_READ_COMPLETED) {
       ByteBuffer userBuffer = mLatestBufferRead;
       mLatestBufferRead = null;
-      // TODO(carloseltuerto): copy buffer on network Thread - fix.
+      // TODO: copy buffer on network Thread - consider doing on the user Thread.
       userBuffer.mark();
       userBuffer.put(data); // NPE ==> BUG, BufferOverflowException ==> User not behaving.
       userBuffer.reset();
@@ -834,7 +845,7 @@ public final class CronetBidirectionalStream
       if (headerEntry.getValue().get(0) == null) {
         continue;
       }
-      // TODO(carloseltuerto) make sure which headers should be posted.
+      // TODO: make sure which headers should be posted.
       if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
           !headerKey.startsWith(":")) {
         for (String value : headerEntry.getValue()) {
@@ -851,11 +862,11 @@ public final class CronetBidirectionalStream
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_ERROR)) {
     case NextAction.INVOKE_ON_ERROR_RECEIVED:
-      // TODO(carloseltuerto): fix error scheme.
+      // TODO: fix error scheme.
       onErrorReceived(errorCode, /* nativeError= */ -1,
                       /* nativeQuicError */ 0, message, finalStreamIntel.getReceivedByteCount());
       break;
-    case NextAction.PROCESS_ERROR:
+    case NextAction.INVOKE_ON_FAILED:
       failWithException();
       break;
     default:
@@ -867,10 +878,10 @@ public final class CronetBidirectionalStream
   public void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_CANCEL)) {
-    case NextAction.PROCESS_CANCEL:
+    case NextAction.INVOKE_ON_CANCELED:
       onCanceledReceived();
       break;
-    case NextAction.PROCESS_ERROR:
+    case NextAction.INVOKE_ON_FAILED:
       failWithException();
       break;
     default:
@@ -882,13 +893,13 @@ public final class CronetBidirectionalStream
   public void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_COMPLETE)) {
-    case NextAction.PROCESS_ERROR:
+    case NextAction.INVOKE_ON_FAILED:
       failWithException();
       break;
-    case NextAction.PROCESS_CANCEL:
+    case NextAction.INVOKE_ON_CANCELED:
       onCanceledReceived();
       break;
-    case NextAction.FINISH_UP:
+    case NextAction.INVOKE_ON_SUCCEEDED:
       onSucceeded();
       break;
     case NextAction.CARRY_ON:

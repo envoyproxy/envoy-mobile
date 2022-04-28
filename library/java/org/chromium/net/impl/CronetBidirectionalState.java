@@ -81,12 +81,12 @@ final class CronetBidirectionalState {
   /**
    * Enum of the Next Actions to be taken.
    */
-  @IntDef({NextAction.CARRY_ON, NextAction.WRITE, NextAction.FLUSH_HEADERS, NextAction.SEND_DATA,
-           NextAction.READ, NextAction.INVOKE_ON_READ_COMPLETED,
-           NextAction.INVOKE_ON_ERROR_RECEIVED, NextAction.CANCEL,
-           NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK,
-           NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK, NextAction.FINISH_UP,
-           NextAction.PROCESS_ERROR, NextAction.PROCESS_CANCEL, NextAction.TAKE_NO_MORE_ACTIONS})
+  @IntDef(
+      {NextAction.CARRY_ON, NextAction.WRITE, NextAction.FLUSH_HEADERS, NextAction.SEND_DATA,
+       NextAction.READ, NextAction.INVOKE_ON_READ_COMPLETED, NextAction.INVOKE_ON_ERROR_RECEIVED,
+       NextAction.CANCEL, NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK,
+       NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK, NextAction.INVOKE_ON_SUCCEEDED,
+       NextAction.INVOKE_ON_FAILED, NextAction.INVOKE_ON_CANCELED, NextAction.TAKE_NO_MORE_ACTIONS})
   @Retention(RetentionPolicy.SOURCE)
   @interface NextAction {
     int CARRY_ON = 0;                 // Do nothing special at the moment - keep calm and carry on.
@@ -99,9 +99,9 @@ final class CronetBidirectionalState {
     int CANCEL = 7;                   // Tell EM to cancel. Can be an user induced, or due to error.
     int INVOKE_ON_WRITE_COMPLETED_CALLBACK = 8; // Tell the User that a write operation completed.
     int INVOKE_ON_READ_COMPLETED_CALLBACK = 9;  // Tell the User that a read operation completed.
-    int FINISH_UP = 10;     // Tell the User that the stream is done and was completed successfully.
-    int PROCESS_ERROR = 11; // Tell the User the stream completed in error.
-    int PROCESS_CANCEL = 12;       // Tell the User the stream completed in a cancelled state.
+    int INVOKE_ON_SUCCEEDED = 10;  // Tell the User the stream was completed successfully.
+    int INVOKE_ON_FAILED = 11;     // Tell the User the stream completed in an error state.
+    int INVOKE_ON_CANCELED = 12;   // Tell the User the stream completed in a cancelled state.
     int TAKE_NO_MORE_ACTIONS = 13; // The stream is already in error state - don't do anything else.
   }
 
@@ -283,8 +283,9 @@ final class CronetBidirectionalState {
           nextAction = NextAction.CARRY_ON; // Cancel came too soon - no effect.
         } else if ((originalState & State.ON_COMPLETE_RECEIVED) != 0) {
           nextState |= State.USER_CANCELLED | State.DONE;
-          nextAction = NextAction.PROCESS_CANCEL;
+          nextAction = NextAction.INVOKE_ON_CANCELED;
         } else {
+          // Due to race condition, the final EM callback can either be onCancel or onComplete.
           nextState |= State.USER_CANCELLED | State.CANCELLING;
           nextAction = NextAction.CANCEL;
         }
@@ -294,8 +295,9 @@ final class CronetBidirectionalState {
         if ((originalState & State.ON_COMPLETE_RECEIVED) != 0 ||
             (originalState & State.STARTED) == 0) {
           nextState |= State.FAILED | State.DONE;
-          nextAction = NextAction.PROCESS_ERROR;
+          nextAction = NextAction.INVOKE_ON_FAILED;
         } else {
+          // Due to race condition, the final EM callback can either be onCancel or onComplete.
           nextState |= State.FAILED | State.CANCELLING;
           nextAction = NextAction.CANCEL;
         }
@@ -328,12 +330,12 @@ final class CronetBidirectionalState {
         nextState |= State.ON_COMPLETE_RECEIVED;
         if ((originalState & State.CANCELLING) != 0) {
           nextState |= State.DONE;
-          nextAction = (originalState & State.FAILED) != 0 ? NextAction.PROCESS_ERROR
-                                                           : NextAction.PROCESS_CANCEL;
+          nextAction = (originalState & State.FAILED) != 0 ? NextAction.INVOKE_ON_FAILED
+                                                           : NextAction.INVOKE_ON_CANCELED;
         } else if (((originalState & State.WRITE_DONE) != 0 &&
                     (originalState & State.READ_DONE) != 0)) {
           nextState |= State.DONE;
-          nextAction = NextAction.FINISH_UP;
+          nextAction = NextAction.INVOKE_ON_SUCCEEDED;
         } else {
           nextAction = NextAction.CARRY_ON;
         }
@@ -341,13 +343,13 @@ final class CronetBidirectionalState {
 
       case Event.ON_CANCEL:
         nextState |= State.DONE;
-        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.PROCESS_ERROR
-                                                           : NextAction.PROCESS_CANCEL;
+        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.INVOKE_ON_FAILED
+                                                           : NextAction.INVOKE_ON_CANCELED;
         break;
 
       case Event.ON_ERROR:
         nextState |= State.DONE | State.FAILED;
-        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.PROCESS_ERROR
+        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.INVOKE_ON_FAILED
                                                            : NextAction.INVOKE_ON_ERROR_RECEIVED;
         break;
 
@@ -397,7 +399,7 @@ final class CronetBidirectionalState {
         if ((originalState & State.ON_COMPLETE_RECEIVED) != 0 &&
             (originalState & State.READ_DONE) != 0 && (originalState & State.WRITE_DONE) != 0) {
           nextState |= State.DONE;
-          nextAction = NextAction.FINISH_UP;
+          nextAction = NextAction.INVOKE_ON_SUCCEEDED;
         } else {
           nextAction = NextAction.CARRY_ON;
         }

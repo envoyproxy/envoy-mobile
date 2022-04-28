@@ -340,7 +340,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.ON_COMPLETE);
     // The cancel occurred after the stream completed - Obviously, EM won't do the callback here.
     assertThat(mCronetBidirectionalState.nextAction(Event.USER_CANCEL))
-        .isEqualTo(NextAction.PROCESS_CANCEL);
+        .isEqualTo(NextAction.INVOKE_ON_CANCELED);
   }
 
   @Test
@@ -369,7 +369,7 @@ public class CronetBidirectionalStateTest {
   public void error_beforeUserStart() {
     // The error occurred before the stream creation - Obviously, EM won't do the callback here.
     assertThat(mCronetBidirectionalState.nextAction(Event.ERROR))
-        .isEqualTo(NextAction.PROCESS_ERROR);
+        .isEqualTo(NextAction.INVOKE_ON_FAILED);
   }
 
   @Test
@@ -377,7 +377,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.USER_LAST_WRITE);
     // The error occurred before the stream creation - Obviously, EM won't do the callback here.
     assertThat(mCronetBidirectionalState.nextAction(Event.ERROR))
-        .isEqualTo(NextAction.PROCESS_ERROR);
+        .isEqualTo(NextAction.INVOKE_ON_FAILED);
   }
 
   @Test
@@ -394,7 +394,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.ON_COMPLETE);
     // The error occurred after the stream completed - Obviously, EM won't do the callback here.
     assertThat(mCronetBidirectionalState.nextAction(Event.ERROR))
-        .isEqualTo(NextAction.PROCESS_ERROR);
+        .isEqualTo(NextAction.INVOKE_ON_FAILED);
   }
 
   @Test
@@ -565,7 +565,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.USER_READ);
     mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED); // READ_DONE = true
     assertThat(mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH))
-        .isEqualTo(NextAction.FINISH_UP);
+        .isEqualTo(NextAction.INVOKE_ON_SUCCEEDED);
   }
 
   @Test
@@ -598,7 +598,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.ON_COMPLETE);          // ON_COMPLETE_RECEIVED = true
     mCronetBidirectionalState.nextAction(Event.LAST_WRITE_COMPLETED); // WRITE_DONE = true
     assertThat(mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH))
-        .isEqualTo(NextAction.FINISH_UP);
+        .isEqualTo(NextAction.INVOKE_ON_SUCCEEDED);
   }
 
   @Test
@@ -719,7 +719,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED); // READ_DONE = true
     mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH);     // Not ready yet - no-op
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_COMPLETE))
-        .isEqualTo(NextAction.FINISH_UP);
+        .isEqualTo(NextAction.INVOKE_ON_SUCCEEDED);
   }
 
   @Test
@@ -729,7 +729,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     mCronetBidirectionalState.nextAction(Event.USER_CANCEL);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_COMPLETE))
-        .isEqualTo(NextAction.PROCESS_CANCEL);
+        .isEqualTo(NextAction.INVOKE_ON_CANCELED);
   }
 
   @Test
@@ -739,7 +739,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     mCronetBidirectionalState.nextAction(Event.ERROR);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_COMPLETE))
-        .isEqualTo(NextAction.PROCESS_ERROR);
+        .isEqualTo(NextAction.INVOKE_ON_FAILED);
   }
 
   // ================= ON_ERROR =================
@@ -757,7 +757,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.ERROR);
     // There was already a recorded error - that one has precedence.
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_ERROR))
-        .isEqualTo(NextAction.PROCESS_ERROR);
+        .isEqualTo(NextAction.INVOKE_ON_FAILED);
   }
 
   // ================= ON_CANCEL =================
@@ -767,7 +767,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.USER_START_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_CANCEL);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_CANCEL))
-        .isEqualTo(NextAction.PROCESS_CANCEL);
+        .isEqualTo(NextAction.INVOKE_ON_CANCELED);
   }
 
   @Test
@@ -775,6 +775,6 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.USER_START_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.ERROR);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_CANCEL))
-        .isEqualTo(NextAction.PROCESS_ERROR);
+        .isEqualTo(NextAction.INVOKE_ON_FAILED);
   }
 }
