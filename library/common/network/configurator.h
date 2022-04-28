@@ -5,6 +5,7 @@
 
 #include "envoy/network/socket.h"
 #include "envoy/singleton/manager.h"
+#include "envoy/upstream/cluster_manager.h"
 
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_impl.h"
 
@@ -63,8 +64,8 @@ using InterfacePair = std::pair<const std::string, Address::InstanceConstSharedP
  */
 class Configurator : public Logger::Loggable<Logger::Id::upstream>, public Singleton::Instance {
 public:
-  Configurator(DnsCacheManagerSharedPtr dns_cache_manager)
-      : enable_interface_binding_{false}, dns_cache_manager_(dns_cache_manager) {}
+  Configurator(Upstream::ClusterManager& cluster_manager, _DnsCacheManagerSharedPtr dns_cache_manager)
+      : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
 
   /**
    * @returns a list of local network interfaces supporting IPv4.
@@ -115,6 +116,13 @@ public:
   static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
   /**
+   * Sets whether future calls to drainConnections should wait to drain connections until after
+   * subsequent DNS resolution.
+   * @param enabled, whether to enable connection drain after DNS refresh.
+   */
+  void setDrainPostDnsRefreshEnabled(bool enabled);
+
+  /**
    * Sets whether subsequent calls for upstream socket options may leverage options that bind
    * to specific network interfaces.
    * @param enabled, whether to enable interface binding.
@@ -124,8 +132,14 @@ public:
   /**
    * Refresh DNS in response to preferred network update. May be no-op.
    * @param configuration_key, key provided by this class representing the current configuration.
+   * @param drain_connections, request that connections be drained after next DNS resolution.
    */
-  void refreshDns(envoy_netconf_t configuration_key);
+  void refreshDns(envoy_netconf_t configuration_key, bool drain_connections);
+
+  /**
+   * Drain all upstream connections associated with this Engine.
+   */
+  void drainConnections();
 
   /**
    * @returns the current socket options that should be used for connections.
@@ -152,7 +166,11 @@ private:
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
   InterfacePair getActiveAlternateInterface(envoy_network_t network, unsigned short family);
 
-  bool enable_interface_binding_;
+  bool dns_callbacks_registered_{false};
+  bool enable_drain_post_dns_refresh_{false};
+  bool enable_interface_binding_{false};
+  bool pending_drain_{false};
+  Upstream::ClusterManager& cluster_manager_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
   static NetworkState network_state_;
 };

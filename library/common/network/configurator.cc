@@ -82,6 +82,11 @@ Configurator::NetworkState Configurator::network_state_{1, ENVOY_NET_GENERIC, Ma
 
 envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
+  if (network_state_.network_ == network)
+    // Provide a non-current key preventing further scheduled effects (e.g. DNS refresh).
+    return network_state_.configuration_key_ - 1;
+  }
+
   ENVOY_LOG_EVENT(debug, "netconf_network_change", std::to_string(network));
 
   network_state_.configuration_key_++;
@@ -167,13 +172,20 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
 
   // If configuration state changed, refresh dns.
   if (configuration_updated) {
-    refreshDns(configuration_key);
+    refreshDns(configuration_key, false);
+  }
+}
+
+void Configurator::setDrainPostDnsRefreshEnabled(bool enabled) {
+  enable_drain_post_dns_refresh = enabled;
+  if (enabled && !dns_callbacks_registered) {
+     // TODO(goaway): register DNS callbacks
   }
 }
 
 void Configurator::setInterfaceBindingEnabled(bool enabled) { enable_interface_binding_ = enabled; }
 
-void Configurator::refreshDns(envoy_netconf_t configuration_key) {
+void Configurator::refreshDns(envoy_netconf_t configuration_key, bool drain_connections) {
   {
     Thread::LockGuard lock{network_state_.mutex_};
 
@@ -190,10 +202,23 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key) {
 
   if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {
     ENVOY_LOG_EVENT(debug, "netconf_refresh_dns", std::to_string(configuration_key));
+    pending_drain_ = drain_connections && enable_drain_post_dns_refresh_;
     dns_cache->forceRefreshHosts();
   } else {
     ENVOY_LOG_EVENT(warn, "netconf_dns_cache_missing", BaseDnsCache);
   }
+}
+
+void Configurator::drainConnections() {
+  envoy_netconf_t configuration_key;
+  {
+    Thread::LockGuard lock{network_state_.mutex_};
+    network_state_.remaining_faults_ = 1;
+    network_state_.socket_mode_ = DefaultPreferredNetworkMode;
+    configuration_key = ++network_state_.configuration_key_;
+  }
+
+  refreshDns(configuration_key, true);
 }
 
 std::vector<InterfacePair> Configurator::enumerateV4Interfaces() {
