@@ -239,10 +239,8 @@ final class CronetBidirectionalState {
         if (event == Event.USER_START_WITH_HEADERS ||
             event == Event.USER_START_WITH_HEADERS_READ_ONLY) {
           nextState |= State.HEADERS_SENT;
-          nextAction = NextAction.FLUSH_HEADERS;
-        } else {
-          nextAction = NextAction.CARRY_ON;
         }
+        nextAction = NextAction.CARRY_ON;
         break;
 
       case Event.USER_LAST_WRITE:

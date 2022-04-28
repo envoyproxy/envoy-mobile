@@ -1,6 +1,5 @@
 package org.chromium.net.impl;
 
-import android.os.ConditionVariable;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -68,9 +67,7 @@ public final class CronetBidirectionalStream
   private final CancelProofEnvoyStream mStream = new CancelProofEnvoyStream();
   private final CronetBidirectionalState mState = new CronetBidirectionalState();
   private final AtomicInteger mUserflushConcurrentInvocationCount = new AtomicInteger();
-  private final AtomicInteger mflushBufferConcurrentInvocationCount = new AtomicInteger();
   private final AtomicReference<CronetException> mException = new AtomicReference<>();
-  private final ConditionVariable mStartBlock = new ConditionVariable();
 
   // Set by start() upon success.
   private Map<String, List<String>> mEnvoyRequestHeaders;
@@ -112,16 +109,33 @@ public final class CronetBidirectionalStream
         // Null out mByteBuffer, to pass buffer ownership to callback or release if done.
         ByteBuffer buffer = mByteBuffer;
         mByteBuffer = null;
-        @NextAction
-        int nextAction =
-            mState.nextAction(mEndOfStream ? Event.LAST_READ_COMPLETED : Event.READ_COMPLETED);
-        if (nextAction == NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK) {
+        switch (
+            mState.nextAction(mEndOfStream ? Event.LAST_READ_COMPLETED : Event.READ_COMPLETED)) {
+        case NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK:
           mCallback.onReadCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
                                     mEndOfStream);
+          break;
+        case NextAction.TAKE_NO_MORE_ACTIONS:
+          // An EM onError callback occurred, or there was a USER_CANCEL event since this task was
+          // scheduled.
+          return;
+        default:
+          assert false;
         }
-        if (mEndOfStream &&
-            mState.nextAction(Event.READY_TO_FINISH) == NextAction.INVOKE_ON_SUCCEEDED) {
-          onSucceededOnExecutor();
+        if (mEndOfStream) {
+          switch (mState.nextAction(Event.READY_TO_FINISH)) {
+          case NextAction.INVOKE_ON_SUCCEEDED:
+            onSucceededOnExecutor();
+            break;
+          case NextAction.CARRY_ON:
+            break; // Not yet ready to conclude the Stream.
+          case NextAction.TAKE_NO_MORE_ACTIONS:
+            // Very unlikely: just before this switch statement and after the previous one, an EM
+            // onError callback occurred, or there was a USER_CANCEL event.
+            return;
+          default:
+            assert false;
+          }
         }
       } catch (Exception e) {
         onCallbackException(e);
@@ -147,16 +161,31 @@ public final class CronetBidirectionalStream
         ByteBuffer buffer = mByteBuffer;
         mByteBuffer = null;
 
-        @NextAction
-        int nextAction =
-            mState.nextAction(mEndOfStream ? Event.LAST_WRITE_COMPLETED : Event.WRITE_COMPLETED);
-        if (nextAction == NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK) {
+        switch (
+            mState.nextAction(mEndOfStream ? Event.LAST_WRITE_COMPLETED : Event.WRITE_COMPLETED)) {
+        case NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK:
           mCallback.onWriteCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
                                      mEndOfStream);
+          break;
+        case NextAction.TAKE_NO_MORE_ACTIONS:
+          // An EM onError callback occurred, or there was a USER_CANCEL event since this task was
+          // scheduled.
+          return;
+        default:
+          assert false;
         }
-        if (mEndOfStream &&
-            mState.nextAction(Event.READY_TO_FINISH) == NextAction.INVOKE_ON_SUCCEEDED) {
-          onSucceededOnExecutor();
+        if (mEndOfStream) {
+          switch (mState.nextAction(Event.READY_TO_FINISH)) {
+          case NextAction.INVOKE_ON_SUCCEEDED:
+            onSucceededOnExecutor();
+            break;
+          case NextAction.CARRY_ON:
+            break; // Not yet ready to conclude the Stream.
+          case NextAction.TAKE_NO_MORE_ACTIONS:
+            // Very unlikely: just before this switch statement and after the previous one, an EM
+            // onError callback occurred, or there was a USER_CANCEL event.
+            return;
+          }
         }
       } catch (Exception e) {
         onCallbackException(e);
@@ -206,36 +235,49 @@ public final class CronetBidirectionalStream
         : mDelayRequestHeadersUntilFirstFlush
             ? (mReadOnly ? Event.USER_START_READ_ONLY : Event.USER_START)
             : (mReadOnly ? Event.USER_START_WITH_HEADERS_READ_ONLY : Event.USER_START_WITH_HEADERS);
-    @NextAction int nextAction = mState.nextAction(startingEvent);
     mRequestContext.onRequestStarted();
-    if (nextAction == NextAction.INVOKE_ON_FAILED) {
+
+    switch (mState.nextAction(startingEvent)) {
+    case NextAction.INVOKE_ON_FAILED:
       mException.set(startUpException);
       failWithException();
-      return;
-    }
-    try {
+      break;
+    case NextAction.CARRY_ON:
+      Runnable startTask = new Runnable() {
+        @Override
+        public void run() {
+          try {
+            mStream.setStream(mRequestContext.getEnvoyEngine().startStream(
+                CronetBidirectionalStream.this, /* explicitFlowCrontrol= */ true));
+            if (!mDelayRequestHeadersUntilFirstFlush) {
+              mStream.sendHeaders(mEnvoyRequestHeaders, mReadOnly);
+            }
+            onStreamReady();
+          } catch (RuntimeException e) {
+            // Will be reported when "onCancel" gets invoked.
+            reportException(new CronetExceptionImpl("Startup failure", e));
+          }
+        }
+      };
       mRequestContext.setTaskToExecuteWhenInitializationIsCompleted(new Runnable() {
         @Override
         public void run() {
-          mStartBlock.open();
+          // Starting a new stream can ony occur once the engine initialization has completed.
+          // The first time a Stream is created this will take more or less 100ms to reach this
+          // point. For the nextStream, there is no waiting at all: this code is executed by the
+          // Thread that invoked this start() method.
+          postTaskToExecutor(startTask);
         }
       });
-      mStartBlock.block();
-      mStream.setStream(
-          mRequestContext.getEnvoyEngine().startStream(this, /* explicitFlowCrontrol= */ true));
-      if (nextAction == NextAction.FLUSH_HEADERS) {
-        mStream.sendHeaders(mEnvoyRequestHeaders, mReadOnly);
-      }
-      onStreamReady();
-    } catch (RuntimeException e) {
-      // Will be reported when "onCancel" gets invoked.
-      reportException(new CronetExceptionImpl("Startup failure", e));
+      break;
+    default:
+      assert false;
     }
   }
 
   /**
-   * Returns, potentially, an exception to report through the "onError" callback, even though no
-   * stream has been created yet. This awkward error reporting solely exists to mimic Cronet.
+   * Returns, potentially, an exception to be reported through the "onError" callback, even though
+   * no stream has been created yet. This awkward error reporting solely exists to mimic Cronet.
    */
   @Nullable
   private static CronetException engineSimulatedError(Map<String, List<String>> requestHeaders) {
@@ -284,16 +326,29 @@ public final class CronetBidirectionalStream
     if (!buffer.hasRemaining() && !endOfStream) {
       throw new IllegalArgumentException("Empty buffer before end of stream.");
     }
-    if (mState.nextAction(endOfStream ? Event.USER_LAST_WRITE : Event.USER_WRITE) ==
-        NextAction.WRITE) {
+    switch (mState.nextAction(endOfStream ? Event.USER_LAST_WRITE : Event.USER_WRITE)) {
+    case NextAction.WRITE:
       mPendingData.add(new WriteBuffer(buffer, endOfStream));
+      break;
+    case NextAction.TAKE_NO_MORE_ACTIONS:
+      return;
+    default:
+      assert false;
     }
   }
 
   @Override
   public void flush() {
-    if (mState.nextAction(Event.USER_FLUSH) == NextAction.FLUSH_HEADERS) {
+    switch (mState.nextAction(Event.USER_FLUSH)) {
+    case NextAction.FLUSH_HEADERS:
       mStream.sendHeaders(mEnvoyRequestHeaders, /* endStream= */ mReadOnly);
+      break;
+    case NextAction.CARRY_ON:
+      break;
+    case NextAction.TAKE_NO_MORE_ACTIONS:
+      return;
+    default:
+      assert false;
     }
     if (mUserflushConcurrentInvocationCount.getAndIncrement() > 0) {
       // Another Thread is already copying pending buffers - can't be done concurrently.
@@ -320,15 +375,9 @@ public final class CronetBidirectionalStream
   }
 
   private void sendFlushedDataIfAny() {
-    if (mflushBufferConcurrentInvocationCount.getAndIncrement() > 0) {
-      // Another Thread is already attempting to flush data - can't be done concurrently.
-      // However, the thread which started with a zero count will loop until this count goes back
-      // to zero. For all intent and purposes, this has a similar outcome as using synchronized {}
-      return;
-    }
-    do {
-      if (!mFlushData.isEmpty() &&
-          mState.nextAction(Event.READY_TO_FLUSH) == NextAction.SEND_DATA) {
+    if (!mFlushData.isEmpty()) {
+      switch (mState.nextAction(Event.READY_TO_FLUSH)) {
+      case NextAction.SEND_DATA:
         WriteBuffer writeBuffer = mFlushData.poll();
         mLastWriteBufferSent = writeBuffer;
         mStream.sendData(writeBuffer.mByteBuffer, writeBuffer.mEndStream);
@@ -336,8 +385,15 @@ public final class CronetBidirectionalStream
           // There is no EM final callback - last write is therefore acknowledged immediately.
           onWriteCompleted(writeBuffer);
         }
+        break;
+      case NextAction.CARRY_ON:
+        break;
+      case NextAction.TAKE_NO_MORE_ACTIONS:
+        return;
+      default:
+        assert false;
       }
-    } while (mflushBufferConcurrentInvocationCount.decrementAndGet() > 0);
+    }
   }
 
   /**
@@ -470,8 +526,13 @@ public final class CronetBidirectionalStream
     boolean endOfStream = writeBuffer.mEndStream;
     // Flush if there is anything in the flush queue mFlushData.
     @Event int event = endOfStream ? Event.LAST_FLUSH_DATA_COMPLETED : Event.FLUSH_DATA_COMPLETED;
-    if (mState.nextAction(event) == NextAction.TAKE_NO_MORE_ACTIONS) {
+    switch (mState.nextAction(event)) {
+    case NextAction.CARRY_ON:
+      break;
+    case NextAction.TAKE_NO_MORE_ACTIONS:
       return;
+    default:
+      assert false;
     }
     ByteBuffer buffer = writeBuffer.mByteBuffer;
     if (buffer.position() != writeBuffer.mInitialPosition ||
@@ -674,9 +735,12 @@ public final class CronetBidirectionalStream
     case NextAction.INVOKE_ON_FAILED:
       failWithException();
       break;
-    default:
+    case NextAction.TAKE_NO_MORE_ACTIONS:
       Log.e(CronetUrlRequestContext.LOG_TAG,
             "An exception has already been previously recorded. This one is ignored.", exception);
+      return;
+    default:
+      assert false;
     }
   }
 
@@ -814,8 +878,9 @@ public final class CronetBidirectionalStream
                       mLatestBufferRead.limit());
       break;
     case NextAction.CARRY_ON:
-    case NextAction.TAKE_NO_MORE_ACTIONS:
       break;
+    case NextAction.TAKE_NO_MORE_ACTIONS:
+      return;
     default:
       assert false;
     }
@@ -824,8 +889,8 @@ public final class CronetBidirectionalStream
   @Override
   public void onData(ByteBuffer data, boolean endStream, EnvoyStreamIntel streamIntel) {
     mResponseInfo.setReceivedByteCount(streamIntel.getConsumedBytesFromResponse());
-    if (mState.nextAction(endStream ? Event.ON_DATA_END_STREAM : Event.ON_DATA) ==
-        NextAction.INVOKE_ON_READ_COMPLETED) {
+    switch (mState.nextAction(endStream ? Event.ON_DATA_END_STREAM : Event.ON_DATA)) {
+    case NextAction.INVOKE_ON_READ_COMPLETED:
       ByteBuffer userBuffer = mLatestBufferRead;
       mLatestBufferRead = null;
       // TODO: copy buffer on network Thread - consider doing on the user Thread.
@@ -834,6 +899,11 @@ public final class CronetBidirectionalStream
       userBuffer.reset();
       onReadCompleted(userBuffer, data.capacity(), mLatestBufferReadInitialPosition,
                       mLatestBufferReadInitialLimit);
+      break;
+    case NextAction.TAKE_NO_MORE_ACTIONS:
+      return;
+    default:
+      assert false;
     }
   }
 
