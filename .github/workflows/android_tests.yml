@@ -126,7 +126,5 @@ jobs:
           ./bazelw test \
             --test_output=all \
             --build_tests_only \
-            --config=remote-ci-linux-clang \
-            --config=remote-ci-local-java8 \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=clang \
             //test/kotlin/...
