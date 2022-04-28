@@ -122,18 +122,24 @@ jobs:
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //:ios_xcframework
-      - name: 'Create temporary directory for artifact to produce properly named zip'
-        run: mkdir ios_framework
-      - name: 'Unzip framework to archive directory'
-        run: unzip bazel-bin/library/swift/Envoy.xcframework.zip -d ios_framework
-      - name: 'Copy LICENSE to archive directory'
-        run: cp LICENSE ios_framework
-      - name: 'Zip archive directory'
-        run: zip -r ios_framework.zip ios_framework
+      - name: 'Move Envoy.xcframework.zip'
+        run: mv bazel-bin/library/swift/Envoy.xcframework.zip .
       - uses: actions/upload-artifact@v2
         with:
           name: ios_framework
-          path: ./ios_framework.zip
+          path: ./Envoy.xcframework.zip
+      - name: 'Create temporary directory for artifact to produce properly named zip'
+        run: mkdir ios_framework_cocoapods
+      - name: 'Unzip framework to archive directory'
+        run: unzip Envoy.xcframework.zip -d ios_framework_cocoapods
+      - name: 'Copy LICENSE to archive directory'
+        run: cp LICENSE ios_framework_cocoapods
+      - name: 'Zip archive directory'
+        run: zip -r ios_framework_cocoapods.zip ios_framework_cocoapods
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ios_framework_cocoapods
+          path: ./ios_framework_cocoapods.zip
 
   create_github_release:
     name: create_github_release
@@ -147,12 +153,16 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ios_framework
+      - uses: actions/download-artifact@v3
+        with:
+          name: ios_framework_cocoapods
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             envoy_android_aar_sources.tar.gz
-            ios_framework.zip
+            Envoy.xcframework.zip
+            ios_framework_cocoapods.zip
 
   publish_to_cocoapods:
     name: publish_to_cocoapods
