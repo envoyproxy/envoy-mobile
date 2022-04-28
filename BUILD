@@ -1,4 +1,4 @@
-load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
+load("@io_bazel_rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 
 licenses(["notice"])  # Apache 2
 

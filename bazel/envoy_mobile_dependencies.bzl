@@ -3,7 +3,7 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 load("@rules_proto_grpc//protobuf:repositories.bzl", "protobuf_repos")
 load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
