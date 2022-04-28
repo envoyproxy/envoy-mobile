@@ -262,7 +262,7 @@ public final class CronetBidirectionalStream
       mRequestContext.setTaskToExecuteWhenInitializationIsCompleted(new Runnable() {
         @Override
         public void run() {
-          // Starting a new stream can ony occur once the engine initialization has completed.
+          // Starting a new stream can only occur once the engine initialization has completed.
           // The first time a Stream is created this will take more or less 100ms to reach this
           // point. For the nextStream, there is no waiting at all: this code is executed by the
           // Thread that invoked this start() method.
