@@ -195,7 +195,7 @@ using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
  */
 class ConfiguratorFactory {
 public:
-  ConfiguratorFactory(Server::Configuration::ServerFactoryContext& context) : context_(context) {}
+  ConfiguratorFactory(Server::Configuration::CommonFactoryContext& context) : context_(context) {}
 
   /**
    * @returns singleton Configurator instance.
@@ -203,7 +203,7 @@ public:
   ConfiguratorSharedPtr get();
 
 private:
-  Server::Configuration::ServerFactoryContext& context_;
+  Server::Configuration::CommonFactoryContext& context_;
 };
 
 /**

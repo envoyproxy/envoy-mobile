@@ -44,6 +44,7 @@ class EnvoyConfigurationTest {
     dnsPreresolveHostnames: String = "[hostname]",
     dnsFallbackNameservers: List<String> = emptyList(),
     enableDnsFilterUnroutableFamilies: Boolean = false,
+    enableDrainPostDnsRefresh: Boolean = false,
     enableHttp3: Boolean = false,
     enableHappyEyeballs: Boolean = false,
     enableInterfaceBinding: Boolean = false,
@@ -72,6 +73,7 @@ class EnvoyConfigurationTest {
       dnsPreresolveHostnames,
       dnsFallbackNameservers,
       enableDnsFilterUnroutableFamilies,
+      enableDrainPostDnsRefresh,
       enableHttp3,
       enableHappyEyeballs,
       enableInterfaceBinding,
@@ -114,6 +116,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_preresolve_hostnames [hostname]")
     assertThat(resolvedTemplate).contains("&dns_resolver_name envoy.network.dns_resolver.cares")
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false, \"filter_unroutable_families\": false}")
+    assertThat(resolvedTemplate).contains("&enable_drain_post_dns_refresh false")
 
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding false")
@@ -159,6 +162,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration(
       dnsFallbackNameservers = listOf("8.8.8.8"),
       enableDnsFilterUnroutableFamilies = true,
+      enableDrainPostDnsRefresh = true,
       enableHappyEyeballs = true,
       enableHttp3 = true,
       enableInterfaceBinding = true
@@ -172,6 +176,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": true}")
     assertThat(resolvedTemplate).contains("&dns_lookup_family ALL")
     assertThat(resolvedTemplate).contains("&dns_multiple_addresses true")
+    assertThat(resolvedTemplate).contains("&enable_drain_post_dns_refresh true")
 
     // H3
     assertThat(resolvedTemplate).contains(APCF_INSERT);
