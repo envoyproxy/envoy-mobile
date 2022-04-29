@@ -251,7 +251,7 @@ final class EngineBuilderTests: XCTestCase {
   }
 
   func testAddingH2ExtendKeepaliveTimeoutAddsToConfigurationWhenRunningEnvoy() {
-    let expectation = self.expectation(description: "Run called with enabled happy eyeballs")
+    let expectation = self.expectation(description: "Run called with h2ExtendKeepaliveTimeout")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
       XCTAssertTrue(config.h2ExtendKeepaliveTimeout)
       expectation.fulfill()
