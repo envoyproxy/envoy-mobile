@@ -512,6 +512,7 @@ final class EngineBuilderTests: XCTestCase {
       enforceTrustChainVerification: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2ExtendKeepaliveTimeout: false,
       h2RawDomains: [],
       maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
@@ -535,6 +536,7 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses false"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
     XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification VERIFY_TRUST_CHAIN"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout false"))
   }
 
   func testReturnsNilWhenUnresolvedValueInTemplate() {
@@ -553,6 +555,7 @@ final class EngineBuilderTests: XCTestCase {
       enforceTrustChainVerification: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2ExtendKeepaliveTimeout: false,
       h2RawDomains: [],
       maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
