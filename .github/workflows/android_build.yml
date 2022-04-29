@@ -39,7 +39,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
-            --config=macos \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86 \
             //:android_dist_ci
   javahelloworld:
@@ -76,7 +77,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
-            --config=macos \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86 \
             //examples/java/hello_world:hello_envoy
           adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
@@ -118,7 +120,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
-            --config=macos \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86 \
             //examples/kotlin/hello_world:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
@@ -160,7 +163,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
-            --config=macos \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86 \
             //test/kotlin/apps/baseline:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/test/kotlin/apps/baseline/hello_envoy_kt.apk
@@ -202,7 +206,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
-            --config=macos \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86 \
             //test/kotlin/apps/experimental:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/test/kotlin/apps/experimental/hello_envoy_kt.apk
