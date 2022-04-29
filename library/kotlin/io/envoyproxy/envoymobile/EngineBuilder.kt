@@ -201,7 +201,7 @@ open class EngineBuilder(
 
   /**
    * Specify whether to drain connections after the resolution of a soft DNS refresh. A refresh may
-   * be triggered direcly via the Engine API, or as a result of a network status update provided by
+   * be triggered directly via the Engine API, or as a result of a network status update provided by
    * the OS. Draining connections does not interrupt existing connections or requests, but will
    * establish new connections for any further requests.
    *
