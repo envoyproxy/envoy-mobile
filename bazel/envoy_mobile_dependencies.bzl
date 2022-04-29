@@ -74,8 +74,8 @@ def kotlin_dependencies(extra_maven_dependencies = []):
             # Test artifacts
             "org.assertj:assertj-core:3.12.0",
             "junit:junit:4.12",
-            "org.mockito:mockito-inline:2.28.2",
-            "org.mockito:mockito-core:2.28.2",
+            "org.mockito:mockito-inline:4.5.1",
+            "org.mockito:mockito-core:4.5.1",
             "com.squareup.okhttp3:okhttp:4.9.1",
             "com.squareup.okhttp3:mockwebserver:4.9.1",
             "io.github.classgraph:classgraph:4.8.121",
