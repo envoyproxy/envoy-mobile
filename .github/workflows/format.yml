@@ -54,9 +54,9 @@ jobs:
           submodules: true
       - uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - name: 'Run Kotlin Lint (Detekt)'

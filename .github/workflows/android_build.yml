@@ -27,9 +27,9 @@ jobs:
       - uses: actions/setup-java@v1
         if: steps.check-cache.outputs.cache-hit != 'true'
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - name: 'Install dependencies'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./ci/mac_ci_setup.sh --android
@@ -53,9 +53,9 @@ jobs:
           submodules: true
       - uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - run: ./ci/mac_ci_setup.sh --android
         name: 'Install dependencies'
       - uses: actions/cache@v2
@@ -94,9 +94,9 @@ jobs:
           submodules: true
       - uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Download aar'
@@ -136,9 +136,9 @@ jobs:
           submodules: true
       - uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh --android
       - name: 'Download aar'
@@ -178,9 +178,9 @@ jobs:
           submodules: true
       - uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
       - name: 'Download aar'

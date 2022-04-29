@@ -33,9 +33,9 @@ jobs:
       - uses: actions/setup-java@v1
         if: steps.check-cache.outputs.cache-hit != 'true'
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
-          architecture: x64
+          distribution: 'zulu'
       - name: 'Run tests'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
