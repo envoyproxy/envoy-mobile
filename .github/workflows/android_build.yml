@@ -65,26 +65,28 @@ jobs:
         name: 'Download aar'
       - run: exit 1
         if: steps.check-cache.outputs.cache-hit != 'true'
-      - name: 'Start java app'
+      - name: 'Install android-emulator-runner'
         uses: reactivecircus/android-emulator-runner@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           api-level: 30
           ndk: 21.3.6528147
           arch: x86_64
           profile: Nexus 6
-          # Return to using:
-          # ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
-          # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
-          script: |
-            ./bazelw build \
-              --config=remote-ci-macos \
-              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-              --fat_apk_cpu=x86_64 \
-              //examples/java/hello_world:hello_envoy
-            adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
-            adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
+      - name: 'Start java app'
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Return to using:
+        # ./bazelw mobile-install --fat_apk_cpu=x86 --start_app //examples/java/hello_world:hello_envoy
+        # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
+        run: |
+          ./bazelw build \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --fat_apk_cpu=x86_64 \
+            //examples/java/hello_world:hello_envoy
+          adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
+          adb shell am start -n io.envoyproxy.envoymobile.helloenvoy/.MainActivity
       - name: 'Check connectivity'
         run: adb logcat -e "received headers with status 200" -m 1
   kotlinhelloworld:
