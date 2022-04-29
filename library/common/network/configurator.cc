@@ -82,7 +82,7 @@ Configurator::NetworkState Configurator::network_state_{1, ENVOY_NET_GENERIC, Ma
 
 envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
-  if (network_state_.network_ == network)
+  if (network_state_.network_ == network) {
     // Provide a non-current key preventing further scheduled effects (e.g. DNS refresh).
     return network_state_.configuration_key_ - 1;
   }
@@ -176,10 +176,25 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
   }
 }
 
+void Configurator::onDnsResolutionComplete(const std::string&,
+                               const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
+                               Network::DnsResolver::ResolutionStatus status) {
+  if (enable_drain_post_dns_refresh_ && pending_drain_) {
+    pending_drain_ = false;
+    if (status == Network::DnsResolver::ResolutionStatus::Success) {
+      cluster_manager_.drainConnections();
+    }
+  }
+}
+
 void Configurator::setDrainPostDnsRefreshEnabled(bool enabled) {
-  enable_drain_post_dns_refresh = enabled;
-  if (enabled && !dns_callbacks_registered) {
-     // TODO(goaway): register DNS callbacks
+  enable_drain_post_dns_refresh_ = enabled;
+  if (!enabled) {
+    pending_drain_ = false;
+  } else if (!dns_callbacks_handle_) {
+    if (auto dns_cache = dnsCache()) {
+      dns_callbacks_handle_ = dns_cache->addUpdateCallbacks(*this);
+    }
   }
 }
 
@@ -200,13 +215,19 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key, bool drain_conn
     }
   }
 
-  if (auto dns_cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache)) {
+  if (auto dns_cache = dnsCache()) {
     ENVOY_LOG_EVENT(debug, "netconf_refresh_dns", std::to_string(configuration_key));
     pending_drain_ = drain_connections && enable_drain_post_dns_refresh_;
     dns_cache->forceRefreshHosts();
-  } else {
+  }
+}
+
+Extensions::Common::DynamicForwardProxy::DnsCacheSharedPtr Configurator::dnsCache() {
+  auto cache = dns_cache_manager_->lookUpCacheByName(BaseDnsCache);
+  if (!cache) {
     ENVOY_LOG_EVENT(warn, "netconf_dns_cache_missing", BaseDnsCache);
   }
+  return cache;
 }
 
 void Configurator::drainConnections() {
@@ -372,7 +393,7 @@ ConfiguratorSharedPtr ConfiguratorFactory::get() {
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator), [&] {
         Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl cache_manager_factory{
             context_};
-        return std::make_shared<Configurator>(cache_manager_factory.get());
+        return std::make_shared<Configurator>(context_.clusterManager(), cache_manager_factory.get());
       });
 }
 

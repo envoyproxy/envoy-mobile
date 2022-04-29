@@ -7,6 +7,7 @@
 #include "envoy/singleton/manager.h"
 #include "envoy/upstream/cluster_manager.h"
 
+#include "source/extensions/common/dynamic_forward_proxy/dns_cache.h"
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_impl.h"
 
 #include "library/common/types/c_types.h"
@@ -62,10 +63,21 @@ using InterfacePair = std::pair<const std::string, Address::InstanceConstSharedP
  * and providing auxiliary configuration to network connections, in the form of upstream socket
  * options.
  */
-class Configurator : public Logger::Loggable<Logger::Id::upstream>, public Singleton::Instance {
+class Configurator : public Logger::Loggable<Logger::Id::upstream>,
+                     public Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks,
+                     public Singleton::Instance {
 public:
-  Configurator(Upstream::ClusterManager& cluster_manager, _DnsCacheManagerSharedPtr dns_cache_manager)
+  Configurator(Upstream::ClusterManager& cluster_manager, DnsCacheManagerSharedPtr dns_cache_manager)
       : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
+
+  // Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks
+  void onDnsHostAddOrUpdate(
+      const std::string& /*host*/,
+      const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&) override {}
+  void onDnsHostRemove(const std::string& /*host*/) override {}
+  void onDnsResolutionComplete(const std::string& /*host*/,
+                               const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
+                               Network::DnsResolver::ResolutionStatus) override;
 
   /**
    * @returns a list of local network interfaces supporting IPv4.
@@ -165,11 +177,12 @@ private:
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
   InterfacePair getActiveAlternateInterface(envoy_network_t network, unsigned short family);
+  Extensions::Common::DynamicForwardProxy::DnsCacheSharedPtr dnsCache();
 
-  bool dns_callbacks_registered_{false};
   bool enable_drain_post_dns_refresh_{false};
   bool enable_interface_binding_{false};
   bool pending_drain_{false};
+  Extensions::Common::DynamicForwardProxy::DnsCache::AddUpdateCallbacksHandlePtr dns_callbacks_handle_{nullptr};
   Upstream::ClusterManager& cluster_manager_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
   static NetworkState network_state_;
@@ -182,7 +195,7 @@ using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
  */
 class ConfiguratorFactory {
 public:
-  ConfiguratorFactory(Server::Configuration::FactoryContextBase& context) : context_(context) {}
+  ConfiguratorFactory(Server::Configuration::ServerFactoryContext& context) : context_(context) {}
 
   /**
    * @returns singleton Configurator instance.
@@ -190,7 +203,7 @@ public:
   ConfiguratorSharedPtr get();
 
 private:
-  Server::Configuration::FactoryContextBase& context_;
+  Server::Configuration::ServerFactoryContext& context_;
 };
 
 /**
