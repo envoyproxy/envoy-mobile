@@ -24,7 +24,7 @@ jobs:
       - run: echo "Found envoy.aar from previous run!"
         if: steps.check-cache.outputs.cache-hit == 'true'
         name: 'Build cache hit'
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         if: steps.check-cache.outputs.cache-hit != 'true'
         with:
           java-version: '11'
@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk
@@ -97,7 +97,7 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk
@@ -140,7 +140,7 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk
@@ -183,7 +183,7 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk

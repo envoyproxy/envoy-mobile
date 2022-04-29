@@ -29,7 +29,7 @@ jobs:
           fi
       - name: 'Java setup'
         if: steps.check_context.outputs.run_tests == 'true'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk
@@ -67,7 +67,7 @@ jobs:
           fi
       - name: 'Java setup'
         if: steps.check_context.outputs.run_tests == 'true'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk
@@ -113,7 +113,7 @@ jobs:
           fi
       - name: 'Java setup'
         if: steps.check_context.outputs.run_tests == 'true'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: '11'
           java-package: jdk
