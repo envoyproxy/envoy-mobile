@@ -176,9 +176,9 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
   }
 }
 
-void Configurator::onDnsResolutionComplete(const std::string&,
-                               const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
-                               Network::DnsResolver::ResolutionStatus status) {
+void Configurator::onDnsResolutionComplete(
+    const std::string&, const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
+    Network::DnsResolver::ResolutionStatus status) {
   if (enable_drain_post_dns_refresh_ && pending_drain_) {
     pending_drain_ = false;
     if (status == Network::DnsResolver::ResolutionStatus::Success) {
@@ -393,7 +393,8 @@ ConfiguratorSharedPtr ConfiguratorFactory::get() {
       SINGLETON_MANAGER_REGISTERED_NAME(network_configurator), [&] {
         Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl cache_manager_factory{
             context_};
-        return std::make_shared<Configurator>(context_.clusterManager(), cache_manager_factory.get());
+        return std::make_shared<Configurator>(context_.clusterManager(),
+                                              cache_manager_factory.get());
       });
 }
 

@@ -67,7 +67,8 @@ class Configurator : public Logger::Loggable<Logger::Id::upstream>,
                      public Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks,
                      public Singleton::Instance {
 public:
-  Configurator(Upstream::ClusterManager& cluster_manager, DnsCacheManagerSharedPtr dns_cache_manager)
+  Configurator(Upstream::ClusterManager& cluster_manager,
+               DnsCacheManagerSharedPtr dns_cache_manager)
       : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
 
   // Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks
@@ -182,7 +183,8 @@ private:
   bool enable_drain_post_dns_refresh_{false};
   bool enable_interface_binding_{false};
   bool pending_drain_{false};
-  Extensions::Common::DynamicForwardProxy::DnsCache::AddUpdateCallbacksHandlePtr dns_callbacks_handle_{nullptr};
+  Extensions::Common::DynamicForwardProxy::DnsCache::AddUpdateCallbacksHandlePtr
+      dns_callbacks_handle_{nullptr};
   Upstream::ClusterManager& cluster_manager_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
   static NetworkState network_state_;
