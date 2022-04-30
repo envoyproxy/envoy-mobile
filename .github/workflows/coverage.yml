@@ -15,7 +15,7 @@ jobs:
       run:
         shell: bash
     container:
-      image: envoyproxy/envoy-build-ubuntu:8ca107a75ee98b255aa59db2ab40fd0800a3ce99
+      image: envoyproxy/envoy-build-ubuntu:a37d5f539f04b44e284953b4a075826ead117279
     steps:
       - uses: actions/checkout@v1
         with:
