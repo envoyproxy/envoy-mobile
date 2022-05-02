@@ -82,10 +82,14 @@ Configurator::NetworkState Configurator::network_state_{1, ENVOY_NET_GENERIC, Ma
 
 envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
-  if (network_state_.network_ == network) {
-    // Provide a non-current key preventing further scheduled effects (e.g. DNS refresh).
-    return network_state_.configuration_key_ - 1;
-  }
+
+  // TODO(goaway): Re-enable this guard. There's some concern that this will miss network updates
+  // moving from offline to online states. We should address this then re-enable this guard to
+  // avoid unnecessary cache refresh and connection drain.
+  //if (network_state_.network_ == network) {
+  //  // Provide a non-current key preventing further scheduled effects (e.g. DNS refresh).
+  //  return network_state_.configuration_key_ - 1;
+  //}
 
   ENVOY_LOG_EVENT(debug, "netconf_network_change", std::to_string(network));
 
@@ -181,10 +185,12 @@ void Configurator::onDnsResolutionComplete(
     Network::DnsResolver::ResolutionStatus status) {
   if (enable_drain_post_dns_refresh_ && pending_drain_) {
     pending_drain_ = false;
-    if (status == Network::DnsResolver::ResolutionStatus::Success) {
-      ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", host);
-      cluster_manager_.drainConnections(nullptr);
-    }
+
+    // We ignore whether DNS resolution has succeeded here. If it failed, we may be offline and
+    // should probably drain connections. If it succeeds, we may have new DNS entries and so we
+    // drain connections. It may be possible to refine this logic in the future.
+    ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", host);
+    cluster_manager_.drainConnections(nullptr);
   }
 }
 
@@ -193,6 +199,9 @@ void Configurator::setDrainPostDnsRefreshEnabled(bool enabled) {
   if (!enabled) {
     pending_drain_ = false;
   } else if (!dns_callbacks_handle_) {
+    // Register callbacks once, on demand, using the handle as a sentinel. There may not be
+    // a DNS cache during initialization, but if one is available, it should always exist by the
+    // time this function is called from the NetworkConfigurationFilter.
     if (auto dns_cache = dnsCache()) {
       dns_callbacks_handle_ = dns_cache->addUpdateCallbacks(*this);
     }

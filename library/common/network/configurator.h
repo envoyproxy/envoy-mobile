@@ -62,6 +62,10 @@ using InterfacePair = std::pair<const std::string, Address::InstanceConstSharedP
  * Object responsible for tracking network state, especially with respect to multiple interfaces,
  * and providing auxiliary configuration to network connections, in the form of upstream socket
  * options.
+ *
+ * This object is a singleton per-engine. Note that several pieces of functionality assume a DNS
+ * cache adhering to the one set up in base configuration will be present, but will become no-ops
+ * if that cache is missing either due to alternate configurations, or lifecycle-related timing.
  */
 class Configurator : public Logger::Loggable<Logger::Id::upstream>,
                      public Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks,
@@ -179,6 +183,14 @@ private:
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
   InterfacePair getActiveAlternateInterface(envoy_network_t network, unsigned short family);
+
+  /**
+   * Returns the default DNS cache set up in base configuration. This cache may be missing either
+   * due to engine lifecycle-related timing or alternate configurations. If it is, operations
+   * that use it should revert to no-ops.
+   *
+   * @returns the default DNS cache set up in base configuration or nullptr.
+   */
   Extensions::Common::DynamicForwardProxy::DnsCacheSharedPtr dnsCache();
 
   bool enable_drain_post_dns_refresh_{false};
