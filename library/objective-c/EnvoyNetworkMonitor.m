@@ -5,6 +5,19 @@
 #import <Foundation/Foundation.h>
 #import <Network/Network.h>
 #import <SystemConfiguration/SystemConfiguration.h>
+#import <netinet/in.h>
+
+static NSString * network_type_description(envoy_network_t network_type) {
+  if (network_type == ENVOY_NET_GENERIC) {
+    return @"Generic";
+  } else if (network_type == ENVOY_NET_WLAN) {
+    return @"WLAN";
+  } else if (network_type == ENVOY_NET_WWAN) {
+    return @"WWAN";
+  } else {
+    return @"Unknown";
+  }
+}
 
 @implementation EnvoyNetworkMonitor {
   envoy_engine_t _engineHandle;
@@ -59,7 +72,7 @@
     }
 
     if (network != previousNetworkType) {
-      NSLog(@"[Envoy] setting preferred network to %d", network);
+      NSLog(@"[Envoy] setting preferred network to %@", network_type_description(network));
       set_preferred_network(_engineHandle, network);
       previousNetworkType = network;
     }
@@ -93,9 +106,12 @@
 }
 
 - (void)startReachability {
-  NSString *name = @"io.envoyproxy.envoymobile.EnvoyNetworkMonitor";
-  SCNetworkReachabilityRef reachability =
-      SCNetworkReachabilityCreateWithName(nil, [name UTF8String]);
+  struct sockaddr_in6 address;
+  bzero(&address, sizeof(address));
+  address.sin6_len = sizeof(address);
+  address.sin6_family = AF_INET6;
+
+  SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithAddress(nil, (const struct sockaddr *)&address);
   if (!reachability) {
     return;
   }
@@ -117,19 +133,23 @@
 
 static void _reachability_callback(SCNetworkReachabilityRef target,
                                    SCNetworkReachabilityFlags flags, void *info) {
-  if (flags == 0) {
-    return;
+  envoy_network_t network = ENVOY_NET_GENERIC;
+  bool isReachable = flags & kSCNetworkReachabilityFlagsReachable;
+  bool needsToConnect = flags & kSCNetworkReachabilityFlagsConnectionRequired;
+  bool isNetworkReachable = isReachable && !needsToConnect;
+  if (isNetworkReachable) {
+    network = ENVOY_NET_WLAN;
   }
 
 #if TARGET_OS_IPHONE
-  BOOL isUsingWWAN = flags & kSCNetworkReachabilityFlagsIsWWAN;
-#else
-  BOOL isUsingWWAN = NO; // Macs don't have WWAN interfaces
+  if (isNetworkReachable && (flags & kSCNetworkReachabilityFlagsIsWWAN)) {
+    network = ENVOY_NET_WWAN;
+  }
 #endif
 
-  NSLog(@"[Envoy] setting preferred network to %@", isUsingWWAN ? @"WWAN" : @"WLAN");
+  NSLog(@"[Envoy] setting preferred network to %@", network_type_description(network));
   EnvoyNetworkMonitor *monitor = (__bridge EnvoyNetworkMonitor *)info;
-  set_preferred_network(monitor->_engineHandle, isUsingWWAN ? ENVOY_NET_WWAN : ENVOY_NET_WLAN);
+  set_preferred_network(monitor->_engineHandle, network);
 }
 
 @end
