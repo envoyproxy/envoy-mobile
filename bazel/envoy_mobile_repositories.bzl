@@ -72,9 +72,8 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "633a7f4b886ddd54db82f36f9103dd86e51d4d9be1247574be536988ea8c70e3",
-        strip_prefix = "rules_apple-2e6a8c625e519b18803c30fbd5e960061cc4c4af",
-        url = "https://github.com/bazelbuild/rules_apple/archive/2e6a8c625e519b18803c30fbd5e960061cc4c4af.tar.gz",
+        sha256 = "12865e5944f09d16364aa78050366aca9dc35a32a018fa35f5950238b08bf744",
+        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.34.2/rules_apple.0.34.2.tar.gz",
     )
 
     http_archive(
