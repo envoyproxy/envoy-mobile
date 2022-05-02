@@ -75,6 +75,9 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/java/hello_world:hello_envoy
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Start java app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -118,6 +121,9 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -161,6 +167,9 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -204,6 +213,9 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
