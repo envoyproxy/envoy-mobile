@@ -231,7 +231,7 @@ Extensions::Common::DynamicForwardProxy::DnsCacheSharedPtr Configurator::dnsCach
   return cache;
 }
 
-void Configurator::drainConnections() {
+void Configurator::resetConnectivityState() {
   envoy_netconf_t configuration_key;
   {
     Thread::LockGuard lock{network_state_.mutex_};

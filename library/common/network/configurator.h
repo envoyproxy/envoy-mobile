@@ -129,8 +129,9 @@ public:
   static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
   /**
-   * Sets whether future calls to drainConnections should wait to drain connections until after
-   * subsequent DNS resolution.
+   * Configure whether connections should be drained after a triggered DNS refresh. Currently this
+   * may happen either due to an external call to refreshConnectivityState or an update to
+   * setPreferredNetwork.
    * @param enabled, whether to enable connection drain after DNS refresh.
    */
   void setDrainPostDnsRefreshEnabled(bool enabled);
@@ -152,7 +153,7 @@ public:
   /**
    * Drain all upstream connections associated with this Engine.
    */
-  void drainConnections();
+  void resetConnectivityState();
 
   /**
    * @returns the current socket options that should be used for connections.

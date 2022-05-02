@@ -188,7 +188,7 @@ envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char*
 
 void terminate_engine(envoy_engine_t engine) { Envoy::EngineHandle::terminateEngine(engine); }
 
-envoy_status_t drain_connections(envoy_engine_t e) {
+envoy_status_t reset_connectivity_state(envoy_engine_t e) {
   return Envoy::EngineHandle::runOnEngineDispatcher(
-      e, [](auto& engine) { engine.networkConfigurator().drainConnections(); });
+      e, [](auto& engine) { engine.networkConfigurator().resetConnectivityState(); });
 }
