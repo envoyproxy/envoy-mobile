@@ -182,7 +182,7 @@ void Configurator::onDnsResolutionComplete(
   if (enable_drain_post_dns_refresh_ && pending_drain_) {
     pending_drain_ = false;
     if (status == Network::DnsResolver::ResolutionStatus::Success) {
-      cluster_manager_.drainConnections();
+      cluster_manager_.drainConnections(nullptr);
     }
   }
 }
