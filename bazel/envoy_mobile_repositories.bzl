@@ -70,18 +70,23 @@ def upstream_envoy_overrides():
     )
 
 def swift_repos():
-    # https://github.com/bazelbuild/rules_apple/pull/1443
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "6969b74711ee0129d558f59790abc5e4ba0503878047a8813b5a7e532fc80e6b",
-        strip_prefix = "rules_apple-694d87902ca5e5134445566aebf34d5a6b9c828c",
-        url = "https://github.com/bazelbuild/rules_apple/archive/694d87902ca5e5134445566aebf34d5a6b9c828c.tar.gz",
+        sha256 = "12865e5944f09d16364aa78050366aca9dc35a32a018fa35f5950238b08bf744",
+        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.34.2/rules_apple.0.34.2.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
         sha256 = "a2fd565e527f83fb3f9eb07eb9737240e668c9242d3bc318712efa54a7deda97",
         url = "https://github.com/bazelbuild/rules_swift/releases/download/0.27.0/rules_swift.0.27.0.tar.gz",
+    )
+
+    http_archive(
+        name = "SwiftLint",
+        build_file_content = """exports_files(["swiftlint"])""",
+        sha256 = "61d335766a39ba8fa499017a560950bd9fa0b0e5bc318559a9c1c7f4da679256",
+        url = "https://github.com/realm/SwiftLint/releases/download/0.47.1/portable_swiftlint.zip",
     )
 
 def kotlin_repos():
