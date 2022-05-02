@@ -63,9 +63,16 @@ using InterfacePair = std::pair<const std::string, Address::InstanceConstSharedP
  * and providing auxiliary configuration to network connections, in the form of upstream socket
  * options.
  *
+ * Code is largely structured to be run exclusively on the engine's main thread. However,
+ * setPreferredNetwork is allowed to be called from any thread, and the internal NetworkState that
+ * it modifies owns a mutex used to synchronize all access to that state.
+ * (Note NetworkState was originally designed to fit into an atomic, and could still feasibly be
+ * switched to one.)
+ *
  * This object is a singleton per-engine. Note that several pieces of functionality assume a DNS
  * cache adhering to the one set up in base configuration will be present, but will become no-ops
  * if that cache is missing either due to alternate configurations, or lifecycle-related timing.
+ *
  */
 class Configurator : public Logger::Loggable<Logger::Id::upstream>,
                      public Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks,
@@ -126,7 +133,8 @@ public:
   void reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault);
 
   /**
-   * Sets the current OS default/preferred network class.
+   * Sets the current OS default/preferred network class. Note this function is allowed to be
+   * called from any thread.
    * @param network, the OS-preferred network.
    * @returns configuration key to associate with any related calls.
    */
