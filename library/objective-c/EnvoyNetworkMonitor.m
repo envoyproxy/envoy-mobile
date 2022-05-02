@@ -7,7 +7,7 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <netinet/in.h>
 
-static NSString * network_type_description(envoy_network_t network_type) {
+static NSString *network_type_description(envoy_network_t network_type) {
   if (network_type == ENVOY_NET_GENERIC) {
     return @"Generic";
   } else if (network_type == ENVOY_NET_WLAN) {
@@ -111,7 +111,8 @@ static NSString * network_type_description(envoy_network_t network_type) {
   address.sin6_len = sizeof(address);
   address.sin6_family = AF_INET6;
 
-  SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithAddress(nil, (const struct sockaddr *)&address);
+  SCNetworkReachabilityRef reachability =
+      SCNetworkReachabilityCreateWithAddress(nil, (const struct sockaddr *)&address);
   if (!reachability) {
     return;
   }
