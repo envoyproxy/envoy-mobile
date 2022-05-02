@@ -33,6 +33,9 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: ./ci/mac_ci_setup.sh --android
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Build envoy.aar distributable'
         if: steps.check-cache.outputs.cache-hit != 'true'
         env:

@@ -37,6 +37,9 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Run Kotlin library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -77,6 +80,9 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -122,6 +128,9 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: 'Pin Bazel to 5.1.1'
+        # TODO(jpsim): Support bazel 6.x
+        run: echo "5.1.1" > .bazelversion
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
