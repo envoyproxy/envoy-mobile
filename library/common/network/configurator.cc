@@ -177,11 +177,12 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
 }
 
 void Configurator::onDnsResolutionComplete(
-    const std::string&, const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
+    const std::string& host, const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
     Network::DnsResolver::ResolutionStatus status) {
   if (enable_drain_post_dns_refresh_ && pending_drain_) {
     pending_drain_ = false;
     if (status == Network::DnsResolver::ResolutionStatus::Success) {
+      ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", host);
       cluster_manager_.drainConnections(nullptr);
     }
   }
