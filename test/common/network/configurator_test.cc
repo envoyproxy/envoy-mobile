@@ -40,7 +40,8 @@ TEST_F(ConfiguratorTest, SetPreferredNetworkWithNewNetworkChangesConfigurationKe
   EXPECT_EQ(new_key, configurator_->getConfigurationKey());
 }
 
-TEST_F(ConfiguratorTest, DISABLED_SetPreferredNetworkWithUnchangedNetworkReturnsStaleConfigurationKey) {
+TEST_F(ConfiguratorTest,
+       DISABLED_SetPreferredNetworkWithUnchangedNetworkReturnsStaleConfigurationKey) {
   envoy_netconf_t original_key = configurator_->getConfigurationKey();
   envoy_netconf_t stale_key = Configurator::setPreferredNetwork(ENVOY_NET_WLAN);
   EXPECT_NE(original_key, stale_key);

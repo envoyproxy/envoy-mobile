@@ -86,7 +86,7 @@ envoy_netconf_t Configurator::setPreferredNetwork(envoy_network_t network) {
   // TODO(goaway): Re-enable this guard. There's some concern that this will miss network updates
   // moving from offline to online states. We should address this then re-enable this guard to
   // avoid unnecessary cache refresh and connection drain.
-  //if (network_state_.network_ == network) {
+  // if (network_state_.network_ == network) {
   //  // Provide a non-current key preventing further scheduled effects (e.g. DNS refresh).
   //  return network_state_.configuration_key_ - 1;
   //}
@@ -189,6 +189,8 @@ void Configurator::onDnsResolutionComplete(
     // We ignore whether DNS resolution has succeeded here. If it failed, we may be offline and
     // should probably drain connections. If it succeeds, we may have new DNS entries and so we
     // drain connections. It may be possible to refine this logic in the future.
+    // TODO(goaway): check the set of cached hosts from the last triggered DNS refresh for this
+    // host, and if present, remove it and trigger connection drain for this host specifically.
     ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", host);
     cluster_manager_.drainConnections(nullptr);
   }
@@ -228,6 +230,8 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key, bool drain_conn
   if (auto dns_cache = dnsCache()) {
     ENVOY_LOG_EVENT(debug, "netconf_refresh_dns", std::to_string(configuration_key));
     pending_drain_ = drain_connections && enable_drain_post_dns_refresh_;
+    // TODO(goaway): capture the list of currently cached hosts here in a set, to be checked
+    // for draining when DNS resolutions occur.
     dns_cache->forceRefreshHosts();
   }
 }
