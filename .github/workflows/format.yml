@@ -50,6 +50,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v1
+        with:
+          submodules: true
       - name: 'Run DrString'
         run: ./bazelw run @DrString//:drstring check
   kotlinlint:
