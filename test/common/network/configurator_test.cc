@@ -68,7 +68,9 @@ TEST_F(ConfiguratorTest, WhenDrainPostDnsRefreshEnabledDrainsPostDnsRefresh) {
   configurator_->refreshDns(configuration_key, true);
 
   EXPECT_CALL(cm_, drainConnections(_));
-  configurator_->onDnsResolutionComplete("example.com", std::make_shared<Extensions::Common::DynamicForwardProxy::MockDnsHostInfo>(), Network::DnsResolver::ResolutionStatus::Success);
+  configurator_->onDnsResolutionComplete(
+      "example.com", std::make_shared<Extensions::Common::DynamicForwardProxy::MockDnsHostInfo>(),
+      Network::DnsResolver::ResolutionStatus::Success);
 }
 
 TEST_F(ConfiguratorTest, WhenDrainPostDnsNotEnabledDoesntDrainPostDnsRefresh) {
@@ -79,7 +81,9 @@ TEST_F(ConfiguratorTest, WhenDrainPostDnsNotEnabledDoesntDrainPostDnsRefresh) {
   configurator_->refreshDns(configuration_key, true);
 
   EXPECT_CALL(cm_, drainConnections(_)).Times(0);
-  configurator_->onDnsResolutionComplete("example.com", std::make_shared<Extensions::Common::DynamicForwardProxy::MockDnsHostInfo>(), Network::DnsResolver::ResolutionStatus::Success);
+  configurator_->onDnsResolutionComplete(
+      "example.com", std::make_shared<Extensions::Common::DynamicForwardProxy::MockDnsHostInfo>(),
+      Network::DnsResolver::ResolutionStatus::Success);
 }
 
 TEST_F(ConfiguratorTest,

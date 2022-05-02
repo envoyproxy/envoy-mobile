@@ -102,11 +102,10 @@ public class EnvoyConfiguration {
       Boolean dnsFilterUnroutableFamilies, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
       boolean enableHappyEyeballs, boolean enableInterfaceBinding,
       int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
-      boolean h2ExtendKeepaliveTimeout,
-      List<String> h2RawDomains, int maxConnectionsPerHost, int statsFlushSeconds,
-      int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds, String appVersion, String appId,
-      TrustChainVerification trustChainVerification, String virtualClusters,
-      List<EnvoyNativeFilterConfig> nativeFilterChain,
+      boolean h2ExtendKeepaliveTimeout, List<String> h2RawDomains, int maxConnectionsPerHost,
+      int statsFlushSeconds, int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
+      String appVersion, String appId, TrustChainVerification trustChainVerification,
+      String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
       Map<String, EnvoyStringAccessor> stringAccessors) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
