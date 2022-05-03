@@ -31,7 +31,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '11'
+          java-version: '8'
           java-package: jdk
           architecture: x64
       - name: 'Install dependencies'
@@ -71,7 +71,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '11'
+          java-version: '8'
           java-package: jdk
           architecture: x64
       - name: 'Install dependencies'
@@ -119,7 +119,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '11'
+          java-version: '8'
           java-package: jdk
           architecture: x64
       - name: 'Run Kotlin library integration tests'
