@@ -375,6 +375,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                            dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
                               enableHappyEyeballs:(BOOL)enableHappyEyeballs
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
+                        enableDrainPostDnsRefresh:(BOOL)enableDrainPostDnsRefresh
                     enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
