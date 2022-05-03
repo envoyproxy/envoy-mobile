@@ -24,7 +24,6 @@ import com.android.org.chromium.net.NetError;
 
 import org.chromium.net.impl.BidirectionalStreamNetworkException;
 import org.chromium.net.impl.CronetBidirectionalStream;
-import org.chromium.net.impl.CronetEngineBuilderImpl;
 import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestUtil;
 import org.chromium.net.testing.Feature;
@@ -70,7 +69,7 @@ public class BidirectionalStreamTest {
   @Before
   public void setUp() throws Exception {
     ExperimentalCronetEngine.Builder builder = new ExperimentalCronetEngine.Builder(getContext());
-    ((CronetEngineBuilderImpl)builder.getBuilderDelegate()).setLogLevel("trace");
+    CronetTestUtil.getCronetEngineBuilderImpl(builder).setLogLevel("info");
     CronetTestUtil.setMockCertVerifierForTesting(builder);
 
     mCronetEngine = builder.build();
@@ -436,11 +435,7 @@ public class BidirectionalStreamTest {
     assertEquals(0, stream.getPendingDataForTesting().size());
     assertEquals(0, stream.getFlushDataForTesting().size());
 
-    // Write 1, 2, 3 and flush().
-    callback.startNextWrite(stream);
-    // Write 4, 5 and flush(). 4, 5 will be in flush queue.
-    callback.startNextWrite(stream);
-    // Write 6, but do not flush. 6 will be in pending queue.
+    // Write 1, 2, 3 and flush() - subsequent flush are performed by the onWriteCompleted callback.
     callback.startNextWrite(stream);
 
     callback.blockForDone();
@@ -1546,7 +1541,7 @@ public class BidirectionalStreamTest {
   @Feature({"Cronet"})
   @Test
   @OnlyRunNativeCronet
-  @Ignore()
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1550")
   public void testErrorCodes() throws Exception {
     // Non-BidirectionalStream specific error codes.
     checkSpecificErrorCode(NetError.ERR_NAME_NOT_RESOLVED,
@@ -1566,6 +1561,7 @@ public class BidirectionalStreamTest {
     checkSpecificErrorCode(NetError.ERR_TIMED_OUT, NetworkException.ERROR_TIMED_OUT, true);
     checkSpecificErrorCode(NetError.ERR_ADDRESS_UNREACHABLE,
                            NetworkException.ERROR_ADDRESS_UNREACHABLE, false);
+    // TODO("enable")
     // BidirectionalStream specific retryable error codes.
     // checkSpecificErrorCode(NetError.ERR_HTTP2_PING_FAILED, NetworkException.ERROR_OTHER, true);
     // checkSpecificErrorCode(
@@ -1597,7 +1593,7 @@ public class BidirectionalStreamTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
   @RequiresMinApi(10) // Tagging support added in API level 10: crrev.com/c/chromium/src/+/937583
-  @Ignore()
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1521")
   public void testTagging() throws Exception {
     if (!CronetTestUtil.nativeCanGetTaggedBytes()) {
       Log.i(TAG, "Skipping test - GetTaggedBytes unsupported.");

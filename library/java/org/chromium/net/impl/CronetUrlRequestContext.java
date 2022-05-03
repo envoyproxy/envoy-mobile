@@ -167,7 +167,6 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
     synchronized (mLock) {
       checkHaveAdapter();
       if (mActiveRequestCount.get() != 0) {
-        new RuntimeException("BAD").printStackTrace();
         throw new IllegalStateException("Cannot shutdown with active requests.");
       }
       // Destroying adapter stops the network thread, so it cannot be

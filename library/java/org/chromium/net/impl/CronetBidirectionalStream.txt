@@ -42,7 +42,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
  * {@link BidirectionalStream} implementation using Envoy-Mobile stack.
  */
 public final class CronetBidirectionalStream
-    extends ExperimentalBidirectionalStream implements EnvoyHTTPCallbacks {
+        extends ExperimentalBidirectionalStream implements EnvoyHTTPCallbacks {
 
   private static final String X_ENVOY = "x-envoy";
   private static final String X_ENVOY_SELECTED_TRANSPORT = "x-envoy-upstream-alpn";
@@ -109,35 +109,41 @@ public final class CronetBidirectionalStream
         ByteBuffer buffer = mByteBuffer;
         mByteBuffer = null;
         switch (
-            mState.nextAction(mEndOfStream ? Event.LAST_READ_COMPLETED : Event.READ_COMPLETED)) {
-        case NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK:
-          mCallback.onReadCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
-                                    mEndOfStream);
-          break;
-        case NextAction.TAKE_NO_MORE_ACTIONS:
-          // An EM onError callback occurred, or there was a USER_CANCEL event since this task was
-          // scheduled.
-          return;
-        default:
-          assert false;
-        }
-        if (mEndOfStream) {
-          switch (mState.nextAction(Event.READY_TO_FINISH)) {
-          case NextAction.INVOKE_ON_SUCCEEDED:
-            onSucceededOnExecutor();
+                mState.nextAction(mEndOfStream ? Event.LAST_READ_COMPLETED : Event.READ_COMPLETED)) {
+          case NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK:
+            mCallback.onReadCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
+                    mEndOfStream);
             break;
-          case NextAction.CARRY_ON:
-            break; // Not yet ready to conclude the Stream.
           case NextAction.TAKE_NO_MORE_ACTIONS:
-            // Very unlikely: just before this switch statement and after the previous one, an EM
-            // onError callback occurred, or there was a USER_CANCEL event.
+            // An EM onError callback occurred, or there was a USER_CANCEL event since this task was
+            // scheduled.
             return;
           default:
             assert false;
+        }
+        System.err.println("XXXX OnReadCompletedRunnable " + mEndOfStream);
+        if (mEndOfStream) {
+          switch (mState.nextAction(Event.READY_TO_FINISH)) {
+            case NextAction.INVOKE_ON_SUCCEEDED:
+              onSucceededOnExecutor();
+              break;
+            case NextAction.CARRY_ON:
+              break; // Not yet ready to conclude the Stream.
+            case NextAction.TAKE_NO_MORE_ACTIONS:
+              // Very unlikely: just before this switch statement and after the previous one, an EM
+              // onError callback occurred, or there was a USER_CANCEL event.
+              return;
+            default:
+              assert false;
           }
         }
       } catch (Exception e) {
+        System.err.println("CRASH: " + e);
+        e.printStackTrace();
         onCallbackException(e);
+      } catch (Throwable t) {
+        System.err.println("CRASH: " + t);
+        t.printStackTrace();
       }
     }
   }
@@ -161,33 +167,39 @@ public final class CronetBidirectionalStream
         mByteBuffer = null;
 
         switch (
-            mState.nextAction(mEndOfStream ? Event.LAST_WRITE_COMPLETED : Event.WRITE_COMPLETED)) {
-        case NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK:
-          mCallback.onWriteCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
-                                     mEndOfStream);
-          break;
-        case NextAction.TAKE_NO_MORE_ACTIONS:
-          // An EM onError callback occurred, or there was a USER_CANCEL event since this task was
-          // scheduled.
-          return;
-        default:
-          assert false;
+                mState.nextAction(mEndOfStream ? Event.LAST_WRITE_COMPLETED : Event.WRITE_COMPLETED)) {
+          case NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK:
+            mCallback.onWriteCompleted(CronetBidirectionalStream.this, mResponseInfo, buffer,
+                    mEndOfStream);
+            break;
+          case NextAction.TAKE_NO_MORE_ACTIONS:
+            // An EM onError callback occurred, or there was a USER_CANCEL event since this task was
+            // scheduled.
+            return;
+          default:
+            assert false;
         }
+        System.err.println("XXXX OnWriteCompletedRunnable " + mEndOfStream);
         if (mEndOfStream) {
           switch (mState.nextAction(Event.READY_TO_FINISH)) {
-          case NextAction.INVOKE_ON_SUCCEEDED:
-            onSucceededOnExecutor();
-            break;
-          case NextAction.CARRY_ON:
-            break; // Not yet ready to conclude the Stream.
-          case NextAction.TAKE_NO_MORE_ACTIONS:
-            // Very unlikely: just before this switch statement and after the previous one, an EM
-            // onError callback occurred, or there was a USER_CANCEL event.
-            return;
+            case NextAction.INVOKE_ON_SUCCEEDED:
+              onSucceededOnExecutor();
+              break;
+            case NextAction.CARRY_ON:
+              break; // Not yet ready to conclude the Stream.
+            case NextAction.TAKE_NO_MORE_ACTIONS:
+              // Very unlikely: just before this switch statement and after the previous one, an EM
+              // onError callback occurred, or there was a USER_CANCEL event.
+              return;
           }
         }
       } catch (Exception e) {
+        System.err.println("CRASH: " + e);
+        e.printStackTrace();
         onCallbackException(e);
+      } catch (Throwable t) {
+        System.err.println("CRASH: " + t);
+        t.printStackTrace();
       }
     }
   }
@@ -225,52 +237,52 @@ public final class CronetBidirectionalStream
       validateHeader(requestHeader.getKey(), requestHeader.getValue());
     }
     mEnvoyRequestHeaders =
-        buildEnvoyRequestHeaders(mMethod, mRequestHeaders, mUserAgent, mInitialUrl);
+            buildEnvoyRequestHeaders(mMethod, mRequestHeaders, mUserAgent, mInitialUrl);
     // Cronet C++ layer exposes reported errors here with an onError callback. EM does not.
     @Nullable CronetException startUpException = engineSimulatedError(mEnvoyRequestHeaders);
     @Event
     int startingEvent =
-        startUpException != null ? Event.ERROR
-        : mDelayRequestHeadersUntilFirstFlush
-            ? (mReadOnly ? Event.USER_START_READ_ONLY : Event.USER_START)
-            : (mReadOnly ? Event.USER_START_WITH_HEADERS_READ_ONLY : Event.USER_START_WITH_HEADERS);
+            startUpException != null ? Event.ERROR
+                    : mDelayRequestHeadersUntilFirstFlush
+                    ? (mReadOnly ? Event.USER_START_READ_ONLY : Event.USER_START)
+                    : (mReadOnly ? Event.USER_START_WITH_HEADERS_READ_ONLY : Event.USER_START_WITH_HEADERS);
     mRequestContext.onRequestStarted();
 
     switch (mState.nextAction(startingEvent)) {
-    case NextAction.INVOKE_ON_FAILED:
-      mException.set(startUpException);
-      failWithException();
-      break;
-    case NextAction.CARRY_ON:
-      Runnable startTask = new Runnable() {
-        @Override
-        public void run() {
-          try {
-            mStream.setStream(mRequestContext.getEnvoyEngine().startStream(
-                CronetBidirectionalStream.this, /* explicitFlowCrontrol= */ true));
-            if (!mDelayRequestHeadersUntilFirstFlush) {
-              mStream.sendHeaders(mEnvoyRequestHeaders, mReadOnly);
+      case NextAction.INVOKE_ON_FAILED:
+        mException.set(startUpException);
+        failWithException();
+        break;
+      case NextAction.CARRY_ON:
+        Runnable startTask = new Runnable() {
+          @Override
+          public void run() {
+            try {
+              mStream.setStream(mRequestContext.getEnvoyEngine().startStream(
+                      CronetBidirectionalStream.this, /* explicitFlowCrontrol= */ true));
+              if (!mDelayRequestHeadersUntilFirstFlush) {
+                mStream.sendHeaders(mEnvoyRequestHeaders, mReadOnly);
+              }
+              onStreamReady();
+            } catch (RuntimeException e) {
+              // Will be reported when "onCancel" gets invoked.
+              reportException(new CronetExceptionImpl("Startup failure", e));
             }
-            onStreamReady();
-          } catch (RuntimeException e) {
-            // Will be reported when "onCancel" gets invoked.
-            reportException(new CronetExceptionImpl("Startup failure", e));
           }
-        }
-      };
-      mRequestContext.setTaskToExecuteWhenInitializationIsCompleted(new Runnable() {
-        @Override
-        public void run() {
-          // Starting a new stream can only occur once the engine initialization has completed.
-          // The first time a Stream is created this will take more or less 100ms to reach this
-          // point. For the nextStream, there is no waiting at all: this code is executed by the
-          // Thread that invoked this start() method.
-          postTaskToExecutor(startTask);
-        }
-      });
-      break;
-    default:
-      assert false;
+        };
+        mRequestContext.setTaskToExecuteWhenInitializationIsCompleted(new Runnable() {
+          @Override
+          public void run() {
+            // Starting a new stream can only occur once the engine initialization has completed.
+            // The first time a Stream is created this will take more or less 100ms to reach this
+            // point. For the nextStream, there is no waiting at all: this code is executed by the
+            // Thread that invoked this start() method.
+            postTaskToExecutor(startTask);
+          }
+        });
+        break;
+      default:
+        assert false;
     }
   }
 
@@ -282,51 +294,63 @@ public final class CronetBidirectionalStream
   private static CronetException engineSimulatedError(Map<String, List<String>> requestHeaders) {
     if (requestHeaders.get(":scheme").get(0).equals("http")) {
       return new BidirectionalStreamNetworkException("Exception in BidirectionalStream: "
-                                                         + "net::ERR_DISALLOWED_URL_SCHEME",
-                                                     11, -301);
+              + "net::ERR_DISALLOWED_URL_SCHEME",
+              11, -301);
     }
     return null;
   }
 
   @Override
   public void read(ByteBuffer buffer) {
+    System.err.println("RRRR read " + buffer.remaining());
     Preconditions.checkHasRemaining(buffer);
+    System.err.println("RRRR read1");
     Preconditions.checkDirect(buffer);
+    System.err.println("RRRR read2");
     switch (mState.nextAction(Event.USER_READ)) {
     case NextAction.READ:
+    System.err.println("RRRR read3");
       mLatestBufferRead = new ReadBuffer(buffer);
       mStream.readData(buffer.remaining());
       break;
     case NextAction.INVOKE_ON_READ_COMPLETED:
+      System.err.println("RRRR read4");
       // The final read buffer has already been received, or there was no response body.
       onReadCompleted(new ReadBuffer(buffer), 0);
       break;
     case NextAction.RECORD_READ_BUFFER:
+      System.err.println("RRRR read5");
       mLatestBufferRead = new ReadBuffer(buffer);
       switch (mState.nextAction(Event.READY_TO_READ)) {
       case NextAction.READ:
+        System.err.println("RRRR read6");
         // The ResponseHeader has been received just after mState.nextAction(Event.USER_READ).
         // Envoy Mobile now accepts a "read".
         mStream.readData(buffer.remaining());
         break;
       case NextAction.INVOKE_ON_READ_COMPLETED:
+        System.err.println("RRRR read7");
         // The ResponseHeader has been received just after mState.nextAction(Event.USER_READ).
         // There was no response body.
         onReadCompleted(new ReadBuffer(buffer), 0);
         break;
       case NextAction.CARRY_ON:
+        System.err.println("RRRR read8");
         break; // The ResponseHeader still not received - must postpone the mStream.read()
       case NextAction.TAKE_NO_MORE_ACTIONS:
+        System.err.println("RRRR read9");
         return;
       default:
         assert false;
       }
       break;
     case NextAction.TAKE_NO_MORE_ACTIONS:
+      System.err.println("RRRR read10");
       return;
     default:
       assert false;
     }
+    System.err.println("RRRR read11");
   }
 
   @Override
@@ -336,28 +360,28 @@ public final class CronetBidirectionalStream
       throw new IllegalArgumentException("Empty buffer before end of stream.");
     }
     switch (mState.nextAction(endOfStream ? Event.USER_LAST_WRITE : Event.USER_WRITE)) {
-    case NextAction.WRITE:
-      mPendingData.add(new WriteBuffer(buffer, endOfStream));
-      break;
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      return;
-    default:
-      assert false;
+      case NextAction.WRITE:
+        mPendingData.add(new WriteBuffer(buffer, endOfStream));
+        break;
+      case NextAction.TAKE_NO_MORE_ACTIONS:
+        return;
+      default:
+        assert false;
     }
   }
 
   @Override
   public void flush() {
     switch (mState.nextAction(Event.USER_FLUSH)) {
-    case NextAction.FLUSH_HEADERS:
-      mStream.sendHeaders(mEnvoyRequestHeaders, /* endStream= */ mReadOnly);
-      break;
-    case NextAction.CARRY_ON:
-      break;
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      return;
-    default:
-      assert false;
+      case NextAction.FLUSH_HEADERS:
+        mStream.sendHeaders(mEnvoyRequestHeaders, /* endStream= */ mReadOnly);
+        break;
+      case NextAction.CARRY_ON:
+        break;
+      case NextAction.TAKE_NO_MORE_ACTIONS:
+        return;
+      default:
+        assert false;
     }
     if (mUserflushConcurrentInvocationCount.getAndIncrement() > 0) {
       // Another Thread is already copying pending buffers - can't be done concurrently.
@@ -384,32 +408,36 @@ public final class CronetBidirectionalStream
   }
 
   private void sendFlushedDataIfAny() {
+    System.err.println("9999 sendFlushedDataIfAny " + Thread.currentThread().getName());
     if (mFlushConcurrentInvocationCount.getAndIncrement() > 0) {
       // Another Thread is already flushing - can't be done concurrently. However, the thread which
       // started with a zero count will loop until this count goes back to zero. For all intent and
       // purposes, this has a similar outcome as using synchronized {}
       return;
     }
+    System.err.println("9999 sendFlushedDataIfAny1 " + Thread.currentThread().getName());
     do {
       if (!mFlushData.isEmpty()) {
         switch (mState.nextAction(Event.READY_TO_FLUSH)) {
-        case NextAction.SEND_DATA:
-          WriteBuffer writeBuffer = mFlushData.poll();
-          mLastWriteBufferSent = writeBuffer;
-          mStream.sendData(writeBuffer.mByteBuffer, writeBuffer.mEndStream);
-          if (writeBuffer.mEndStream) {
-            // There is no EM final callback - last write is therefore acknowledged immediately.
-            onWriteCompleted(writeBuffer);
-          }
-          break;
-        case NextAction.CARRY_ON:
-          break;
-        case NextAction.TAKE_NO_MORE_ACTIONS:
-          return;
-        default:
-          assert false;
+          case NextAction.SEND_DATA:
+            WriteBuffer writeBuffer = mFlushData.poll();
+            System.err.println("9999 sendFlushedDataIfAny - last: " + writeBuffer.mEndStream);
+            mLastWriteBufferSent = writeBuffer;
+            mStream.sendData(writeBuffer.mByteBuffer, writeBuffer.mEndStream);
+            if (writeBuffer.mEndStream) {
+              // There is no EM final callback - last write is therefore acknowledged immediately.
+              onWriteCompleted(writeBuffer);
+            }
+            break;
+          case NextAction.CARRY_ON:
+            break;
+          case NextAction.TAKE_NO_MORE_ACTIONS:
+            return;
+          default:
+            assert false;
         }
       }
+      System.err.println("9999 sendFlushedDataIfAny2");
     } while (mFlushConcurrentInvocationCount.decrementAndGet() > 0);
   }
 
@@ -442,19 +470,23 @@ public final class CronetBidirectionalStream
 
   @Override
   public void cancel() {
+    System.err.println("HHHH cancel");
     switch (mState.nextAction(Event.USER_CANCEL)) {
-    case NextAction.CANCEL:
-      mStream.cancel();
-      break;
-    case NextAction.INVOKE_ON_CANCELED:
-      onCanceledReceived();
-      break;
-    case NextAction.CARRY_ON:
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      // Has already been cancelled, an error condition already registered, or just too late.
-      break;
-    default:
-      assert false;
+      case NextAction.CANCEL:
+        System.err.println("HHHH cancel CANCEL");
+        mStream.cancel();
+        break;
+      case NextAction.INVOKE_ON_CANCELED:
+        System.err.println("HHHH cancel PROCESS_CANCEL");
+        onCanceledReceived();
+        break;
+      case NextAction.CARRY_ON:
+      case NextAction.TAKE_NO_MORE_ACTIONS:
+        System.err.println("HHHH cancel CARRY_ON/TAKE_NO_MORE_ACTIONS");
+        // Has already been cancelled, an error condition already registered, or just too late.
+        break;
+      default:
+        assert false;
     }
   }
 
@@ -478,10 +510,13 @@ public final class CronetBidirectionalStream
   private void onSucceededOnExecutor() {
     cleanup();
     try {
+      System.err.println("KKKK maybeOnSucceededOnExecutor2");
       mCallback.onSucceeded(CronetBidirectionalStream.this, mResponseInfo);
     } catch (Exception e) {
+      System.err.println("KKKK maybeOnSucceededOnExecutor3 " + e);
       Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onSucceeded method", e);
     }
+    System.err.println("KKKK maybeOnSucceededOnExecutor4");
   }
 
   private void onStreamReady() {
@@ -508,8 +543,9 @@ public final class CronetBidirectionalStream
                                          long receivedByteCount) {
     try {
       mResponseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode, negotiatedProtocol,
-                                                         headers, receivedByteCount);
+              headers, receivedByteCount);
     } catch (Exception e) {
+      System.err.println("YYYY BAD" + e);
       reportException(new CronetExceptionImpl("Cannot prepare ResponseInfo", null));
       return;
     }
@@ -517,12 +553,18 @@ public final class CronetBidirectionalStream
       @Override
       public void run() {
         try {
+          System.err.println("YYYY mCallback.onResponseHeadersReceived");
           if (mState.isTerminating()) {
             return;
           }
           mCallback.onResponseHeadersReceived(CronetBidirectionalStream.this, mResponseInfo);
         } catch (Exception e) {
+          System.err.println("CRASH: " + e);
+          e.printStackTrace();
           onCallbackException(e);
+        } catch (Throwable t) {
+          System.err.println("CRASH: " + t);
+          t.printStackTrace();
         }
       }
     });
@@ -532,39 +574,48 @@ public final class CronetBidirectionalStream
     ByteBuffer byteBuffer = readBuffer.mByteBuffer;
     int initialPosition = readBuffer.mInitialPosition;
     int initialLimit = readBuffer.mInitialLimit;
+    System.err.println("GGGG onReadCompleted byteRead=" + bytesRead);
     if (byteBuffer.position() != initialPosition || byteBuffer.limit() != initialLimit) {
+      System.err.println("GGGG onReadCompleted buffer integrity failed");
       reportException(new CronetExceptionImpl("ByteBuffer modified externally during read", null));
       return;
     }
     if (bytesRead < 0 || initialPosition + bytesRead > initialLimit) {
+      System.err.println("GGGG onReadCompleted byteRead2");
       reportException(new CronetExceptionImpl("Invalid number of bytes read", null));
       return;
     }
+    System.err.println("GGGG onReadCompleted byteRead3");
     byteBuffer.position(initialPosition + bytesRead);
     postTaskToExecutor(new OnReadCompletedRunnable(byteBuffer, bytesRead == 0));
+    System.err.println("GGGG onReadCompleted byteRead4");
   }
 
   private void onWriteCompleted(WriteBuffer writeBuffer) {
     boolean endOfStream = writeBuffer.mEndStream;
+    System.err.println("JJJJ onWriteCompleted write endOfStream: " + endOfStream);
     // Flush if there is anything in the flush queue mFlushData.
     @Event int event = endOfStream ? Event.LAST_FLUSH_DATA_COMPLETED : Event.FLUSH_DATA_COMPLETED;
     switch (mState.nextAction(event)) {
-    case NextAction.CARRY_ON:
-      break;
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      return;
-    default:
-      assert false;
+      case NextAction.CARRY_ON:
+        break;
+      case NextAction.TAKE_NO_MORE_ACTIONS:
+        return;
+      default:
+        assert false;
     }
+    System.err.println("JJJJ onWriteCompleted check buffer integrity");
     ByteBuffer buffer = writeBuffer.mByteBuffer;
     if (buffer.position() != writeBuffer.mInitialPosition ||
-        buffer.limit() != writeBuffer.mInitialLimit) {
+            buffer.limit() != writeBuffer.mInitialLimit) {
+      System.err.println("JJJJ onWriteCompleted failed buffer integrity");
       reportException(new CronetExceptionImpl("ByteBuffer modified externally during write", null));
       return;
     }
     // Current implementation always writes the complete buffer.
     buffer.position(buffer.limit());
     postTaskToExecutor(new OnWriteCompletedRunnable(buffer, endOfStream));
+    System.err.println("JJJJ onWriteCompleted normal exit");
   }
 
   private void onResponseTrailersReceived(List<Map.Entry<String, String>> trailers) {
@@ -577,7 +628,7 @@ public final class CronetBidirectionalStream
             return;
           }
           mCallback.onResponseTrailersReceived(CronetBidirectionalStream.this, mResponseInfo,
-                                               trailersBlock);
+                  trailersBlock);
         } catch (Exception e) {
           onCallbackException(e);
         }
@@ -587,19 +638,22 @@ public final class CronetBidirectionalStream
 
   private void onErrorReceived(int errorCode, int nativeError, int nativeQuicError,
                                String errorString, long receivedByteCount) {
+    System.err.println("@@@@ onErrorReceived ErrorCode: " + errorCode +
+            "  nativeErrorCode:" + nativeError);
     if (mResponseInfo != null) {
       mResponseInfo.setReceivedByteCount(receivedByteCount);
     }
     CronetException exception;
     if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
-        errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
+            errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
       exception = new QuicExceptionImpl("Exception in BidirectionalStream: " + errorString,
-                                        errorCode, nativeError, nativeQuicError);
+              errorCode, nativeError, nativeQuicError);
     } else {
       exception = new BidirectionalStreamNetworkException(
-          "Exception in BidirectionalStream: " + errorString, errorCode, nativeError);
+              "Exception in BidirectionalStream: " + errorString, errorCode, nativeError);
     }
     mException.set(exception);
+    System.err.println("@@@@ onErrorReceived 2");
     failWithException();
   }
 
@@ -631,12 +685,12 @@ public final class CronetBidirectionalStream
                                   long receivedByteCount) {
     // Metrics information. Obtained when request succeeds, fails or is canceled.
     RequestFinishedInfo.Metrics mMetrics = new CronetMetrics(
-        requestStartMs, dnsStartMs, dnsEndMs, connectStartMs, connectEndMs, sslStartMs, sslEndMs,
-        sendingStartMs, sendingEndMs, pushStartMs, pushEndMs, responseStartMs, requestEndMs,
-        socketReused, sentByteCount, receivedByteCount);
+            requestStartMs, dnsStartMs, dnsEndMs, connectStartMs, connectEndMs, sslStartMs, sslEndMs,
+            sendingStartMs, sendingEndMs, pushStartMs, pushEndMs, responseStartMs, requestEndMs,
+            socketReused, sentByteCount, receivedByteCount);
     final RequestFinishedInfo requestFinishedInfo =
-        new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, mMetrics,
-                                    mState.getFinishedReason(), mResponseInfo, mException.get());
+            new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, mMetrics,
+                    mState.getFinishedReason(), mResponseInfo, mException.get());
     mRequestContext.reportRequestFinished(requestFinishedInfo);
   }
 
@@ -651,18 +705,18 @@ public final class CronetBidirectionalStream
 
   private static int convertStreamPriority(@CronetEngineBase.StreamPriority int priority) {
     switch (priority) {
-    case Builder.STREAM_PRIORITY_IDLE:
-      return RequestPriority.IDLE;
-    case Builder.STREAM_PRIORITY_LOWEST:
-      return RequestPriority.LOWEST;
-    case Builder.STREAM_PRIORITY_LOW:
-      return RequestPriority.LOW;
-    case Builder.STREAM_PRIORITY_MEDIUM:
-      return RequestPriority.MEDIUM;
-    case Builder.STREAM_PRIORITY_HIGHEST:
-      return RequestPriority.HIGHEST;
-    default:
-      throw new IllegalArgumentException("Invalid stream priority.");
+      case Builder.STREAM_PRIORITY_IDLE:
+        return RequestPriority.IDLE;
+      case Builder.STREAM_PRIORITY_LOWEST:
+        return RequestPriority.LOWEST;
+      case Builder.STREAM_PRIORITY_LOW:
+        return RequestPriority.LOW;
+      case Builder.STREAM_PRIORITY_MEDIUM:
+        return RequestPriority.MEDIUM;
+      case Builder.STREAM_PRIORITY_HIGHEST:
+        return RequestPriority.HIGHEST;
+      default:
+        throw new IllegalArgumentException("Invalid stream priority.");
     }
   }
 
@@ -698,19 +752,23 @@ public final class CronetBidirectionalStream
     }
     // proxy and caching are not supported.
     UrlResponseInfoImpl responseInfo =
-        new UrlResponseInfoImpl(Arrays.asList(mInitialUrl), httpStatusCode, "", headers, false,
-                                negotiatedProtocol, null, receivedByteCount);
+            new UrlResponseInfoImpl(Arrays.asList(mInitialUrl), httpStatusCode, "", headers, false,
+                    negotiatedProtocol, null, receivedByteCount);
     return responseInfo;
   }
 
   private void cleanup() {
+    System.err.println("UUUU destroyNativeStreamLocked 1");
     if (mEnvoyFinalStreamIntel != null) {
       recordFinalIntel(mEnvoyFinalStreamIntel);
     }
+    System.err.println("UUUU destroyNativeStreamLocked 2");
     mRequestContext.onRequestDestroyed();
     if (mOnDestroyedCallbackForTesting != null) {
+      System.err.println("UUUU destroyNativeStreamLocked 3");
       mOnDestroyedCallbackForTesting.run();
     }
+    System.err.println("UUUU destroyNativeStreamLocked 4");
   }
 
   /**
@@ -718,15 +776,17 @@ public final class CronetBidirectionalStream
    */
   private void failWithException() {
     assert mException.get() != null;
+    System.err.println("@@@@ failWithException 1");
     cleanup();
     mExecutor.execute(new Runnable() {
       @Override
       public void run() {
         try {
+          System.err.println("@@@@ failWithException 2");
           mCallback.onFailed(CronetBidirectionalStream.this, mResponseInfo, mException.get());
         } catch (Exception failException) {
           Log.e(CronetUrlRequestContext.LOG_TAG, "Exception notifying of failed request",
-                failException);
+                  failException);
         }
       }
     });
@@ -739,7 +799,7 @@ public final class CronetBidirectionalStream
    */
   private void onCallbackException(Exception e) {
     CallbackException streamError =
-        new CallbackExceptionImpl("CalledByNative method has thrown an exception", e);
+            new CallbackExceptionImpl("CalledByNative method has thrown an exception", e);
     Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in CalledByNative method", e);
     reportException(streamError);
   }
@@ -751,29 +811,35 @@ public final class CronetBidirectionalStream
   private void reportException(CronetException exception) {
     mException.compareAndSet(null, exception);
     switch (mState.nextAction(Event.ERROR)) {
-    case NextAction.CANCEL:
-      mStream.cancel();
-      break;
-    case NextAction.INVOKE_ON_FAILED:
-      failWithException();
-      break;
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      Log.e(CronetUrlRequestContext.LOG_TAG,
-            "An exception has already been previously recorded. This one is ignored.", exception);
-      return;
-    default:
-      assert false;
+      case NextAction.CANCEL:
+        System.err.println("7777 reportException CANCEL");
+        mStream.cancel();
+        break;
+      case NextAction.INVOKE_ON_FAILED:
+        System.err.println("7777 reportException PROCESS_ERROR");
+        failWithException();
+        break;
+      case NextAction.TAKE_NO_MORE_ACTIONS:
+        System.err.println("7777 reportException default");
+        Log.e(CronetUrlRequestContext.LOG_TAG,
+                "An exception has already been previously recorded. This one is ignored.", exception);
+        return;
+      default:
+        assert false;
     }
   }
 
   private void recordFinalIntel(EnvoyFinalStreamIntel intel) {
+    System.err.println("FFFF recordFinalIntel");
     if (mRequestContext.hasRequestFinishedListener()) {
+      System.err.println("FFFF recordFinalIntel start: " + intel.getStreamStartMs() +
+              " end: " + intel.getSendingEndMs());
       onMetricsCollected(intel.getStreamStartMs(), intel.getDnsStartMs(), intel.getDnsEndMs(),
-                         intel.getConnectStartMs(), intel.getConnectEndMs(), intel.getSslStartMs(),
-                         intel.getSslEndMs(), intel.getSendingStartMs(), intel.getSendingEndMs(),
-                         /* pushStartMs= */ -1, /* pushEndMs= */ -1, intel.getResponseStartMs(),
-                         intel.getStreamEndMs(), intel.getSocketReused(), intel.getSentByteCount(),
-                         intel.getReceivedByteCount());
+              intel.getConnectStartMs(), intel.getConnectEndMs(), intel.getSslStartMs(),
+              intel.getSslEndMs(), intel.getSendingStartMs(), intel.getSendingEndMs(),
+              /* pushStartMs= */ -1, /* pushEndMs= */ -1, intel.getResponseStartMs(),
+              intel.getStreamEndMs(), intel.getSocketReused(), intel.getSentByteCount(),
+              intel.getReceivedByteCount());
     }
   }
 
@@ -782,9 +848,9 @@ public final class CronetBidirectionalStream
       throw new NullPointerException("Method is required.");
     }
     if ("OPTIONS".equalsIgnoreCase(method) || "GET".equalsIgnoreCase(method) ||
-        "HEAD".equalsIgnoreCase(method) || "POST".equalsIgnoreCase(method) ||
-        "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method) ||
-        "TRACE".equalsIgnoreCase(method) || "PATCH".equalsIgnoreCase(method)) {
+            "HEAD".equalsIgnoreCase(method) || "POST".equalsIgnoreCase(method) ||
+            "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method) ||
+            "TRACE".equalsIgnoreCase(method) || "PATCH".equalsIgnoreCase(method)) {
       return;
     }
     throw new IllegalArgumentException("Invalid http method " + method);
@@ -806,29 +872,29 @@ public final class CronetBidirectionalStream
     for (int i = 0; i < header.length(); i++) {
       char c = header.charAt(i);
       switch (c) {
-      case '(':
-      case ')':
-      case '<':
-      case '>':
-      case '@':
-      case ',':
-      case ';':
-      case ':':
-      case '\\':
-      case '\'':
-      case '/':
-      case '[':
-      case ']':
-      case '?':
-      case '=':
-      case '{':
-      case '}':
-        return false;
-      default: {
-        if (Character.isISOControl(c) || Character.isWhitespace(c)) {
+        case '(':
+        case ')':
+        case '<':
+        case '>':
+        case '@':
+        case ',':
+        case ';':
+        case ':':
+        case '\\':
+        case '\'':
+        case '/':
+        case '[':
+        case ']':
+        case '?':
+        case '=':
+        case '{':
+        case '}':
           return false;
+        default: {
+          if (Character.isISOControl(c) || Character.isWhitespace(c)) {
+            return false;
+          }
         }
-      }
       }
     }
     return true;
@@ -856,7 +922,7 @@ public final class CronetBidirectionalStream
         throw new IllegalArgumentException("Invalid header =");
       }
       hasUserAgent = hasUserAgent ||
-                     (header.getKey().equalsIgnoreCase(USER_AGENT) && !header.getValue().isEmpty());
+              (header.getKey().equalsIgnoreCase(USER_AGENT) && !header.getValue().isEmpty());
       headers.computeIfAbsent(header.getKey(), unused -> new ArrayList<>()).add(header.getValue());
     }
     if (!hasUserAgent) {
@@ -864,7 +930,7 @@ public final class CronetBidirectionalStream
     }
     // TODO: support H3
     headers.computeIfAbsent("x-envoy-mobile-upstream-protocol", unused -> new ArrayList<>())
-        .add("http2");
+            .add("http2");
     return headers;
   }
 
@@ -875,6 +941,8 @@ public final class CronetBidirectionalStream
 
   @Override
   public void onSendWindowAvailable(EnvoyStreamIntel streamIntel) {
+    System.err.println("ZZZZ onSendWindowAvailable edd write stream: " +
+            mLastWriteBufferSent.mEndStream);
     onWriteCompleted(mLastWriteBufferSent);
     sendFlushedDataIfAny();
   }
@@ -882,56 +950,61 @@ public final class CronetBidirectionalStream
   @Override
   public void onHeaders(Map<String, List<String>> headers, boolean endStream,
                         EnvoyStreamIntel streamIntel) {
-    List<String> statuses = headers.get(":status");
-    int httpStatusCode =
-        statuses != null && !statuses.isEmpty() ? Integer.parseInt(statuses.get(0)) : -1;
-    List<String> transportValues = headers.get(X_ENVOY_SELECTED_TRANSPORT);
-    String negotiatedProtocol =
-        transportValues != null && !transportValues.isEmpty() ? transportValues.get(0) : "unknown";
-    onResponseHeadersReceived(httpStatusCode, negotiatedProtocol, headers,
-                              streamIntel.getConsumedBytesFromResponse());
+      System.err.println("ZZZZ onHeaders endStream: " + endStream);
+      List<String> statuses = headers.get(":status");
+      int httpStatusCode =
+              statuses != null && !statuses.isEmpty() ? Integer.parseInt(statuses.get(0)) : -1;
+      List<String> transportValues = headers.get(X_ENVOY_SELECTED_TRANSPORT);
+      String negotiatedProtocol =
+              transportValues != null && !transportValues.isEmpty() ? transportValues.get(0) : "unknown";
+      onResponseHeadersReceived(httpStatusCode, negotiatedProtocol, headers,
+              streamIntel.getConsumedBytesFromResponse());
 
-    switch (mState.nextAction(endStream ? Event.ON_HEADERS_END_STREAM : Event.ON_HEADERS)) {
-    case NextAction.READ:
-      mStream.readData(mLatestBufferRead.mByteBuffer.remaining());
-      break;
-    case NextAction.INVOKE_ON_READ_COMPLETED:
-      ReadBuffer readBuffer = mLatestBufferRead;
-      mLatestBufferRead = null;
-      onReadCompleted(readBuffer, 0);
-      break;
-    case NextAction.CARRY_ON:
-      break;
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      return;
-    default:
-      assert false;
-    }
+      switch (mState.nextAction(endStream ? Event.ON_HEADERS_END_STREAM : Event.ON_HEADERS)) {
+        case NextAction.READ:
+          mStream.readData(mLatestBufferRead.mByteBuffer.remaining());
+          break;
+        case NextAction.INVOKE_ON_READ_COMPLETED:
+          ReadBuffer readBuffer = mLatestBufferRead;
+          System.err.println("2222 onHeader mLatestBufferRead = null");
+          mLatestBufferRead = null;
+          onReadCompleted(readBuffer, 0);
+          break;
+        case NextAction.CARRY_ON:
+          break;
+        case NextAction.TAKE_NO_MORE_ACTIONS:
+          return;
+        default:
+          assert false;
+      }
   }
 
   @Override
   public void onData(ByteBuffer data, boolean endStream, EnvoyStreamIntel streamIntel) {
-    mResponseInfo.setReceivedByteCount(streamIntel.getConsumedBytesFromResponse());
-    switch (mState.nextAction(endStream ? Event.ON_DATA_END_STREAM : Event.ON_DATA)) {
-    case NextAction.INVOKE_ON_READ_COMPLETED:
-      ReadBuffer readBuffer = mLatestBufferRead;
-      mLatestBufferRead = null;
-      ByteBuffer userBuffer = readBuffer.mByteBuffer;
-      // TODO: copy buffer on network Thread - consider doing on the user Thread.
-      userBuffer.mark();
-      userBuffer.put(data); // NPE ==> BUG, BufferOverflowException ==> User not behaving.
-      userBuffer.reset();
-      onReadCompleted(readBuffer, data.capacity());
-      break;
-    case NextAction.TAKE_NO_MORE_ACTIONS:
-      return;
-    default:
-      assert false;
-    }
+      System.err.println("ZZZZ onData endStream: " + endStream + "  capacity: " + data.capacity());
+      mResponseInfo.setReceivedByteCount(streamIntel.getConsumedBytesFromResponse());
+      switch (mState.nextAction(endStream ? Event.ON_DATA_END_STREAM : Event.ON_DATA)) {
+        case NextAction.INVOKE_ON_READ_COMPLETED:
+          ReadBuffer readBuffer = mLatestBufferRead;
+          System.err.println("2222 onData mLatestBufferRead = null");
+          mLatestBufferRead = null;
+          ByteBuffer userBuffer = readBuffer.mByteBuffer;
+          // TODO: copy buffer on network Thread - consider doing on the user Thread.
+          userBuffer.mark();
+          userBuffer.put(data); // NPE ==> BUG, BufferOverflowException ==> User not behaving.
+          userBuffer.reset();
+          onReadCompleted(readBuffer, data.capacity());
+          break;
+        case NextAction.TAKE_NO_MORE_ACTIONS:
+          return;
+        default:
+          assert false;
+      }
   }
 
   @Override
   public void onTrailers(Map<String, List<String>> trailers, EnvoyStreamIntel streamIntel) {
+    System.err.println("ZZZZ onTrailers");
     List<Map.Entry<String, String>> headers = new ArrayList<>();
     for (Map.Entry<String, List<String>> headerEntry : trailers.entrySet()) {
       String headerKey = headerEntry.getKey();
@@ -940,7 +1013,7 @@ public final class CronetBidirectionalStream
       }
       // TODO: make sure which headers should be posted.
       if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
-          !headerKey.startsWith(":")) {
+              !headerKey.startsWith(":")) {
         for (String value : headerEntry.getValue()) {
           headers.add(new AbstractMap.SimpleEntry<>(headerKey, value));
         }
@@ -952,53 +1025,65 @@ public final class CronetBidirectionalStream
   @Override
   public void onError(int errorCode, String message, int attemptCount, EnvoyStreamIntel streamIntel,
                       EnvoyFinalStreamIntel finalStreamIntel) {
+    System.err.println("ZZZZ onError  errorCode: " + errorCode + " message: " + message);
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_ERROR)) {
-    case NextAction.INVOKE_ON_ERROR_RECEIVED:
-      // TODO: fix error scheme.
-      onErrorReceived(errorCode, /* nativeError= */ -1,
-                      /* nativeQuicError */ 0, message, finalStreamIntel.getReceivedByteCount());
-      break;
-    case NextAction.INVOKE_ON_FAILED:
-      failWithException();
-      break;
-    default:
-      assert false;
+      case NextAction.INVOKE_ON_ERROR_RECEIVED:
+        // TODO: fix error scheme.
+        System.err.println("ZZZZ onError INVOKE_ON_ERROR_RECEIVED finalStreamIntel: " +
+                finalStreamIntel);
+        onErrorReceived(errorCode, /* nativeError= */ -1,
+                /* nativeQuicError */ 0, message, finalStreamIntel.getReceivedByteCount());
+        break;
+      case NextAction.INVOKE_ON_FAILED:
+        System.err.println("ZZZZ onError PROCESS_ERROR");
+        failWithException();
+        break;
+      default:
+        assert false;
     }
   }
 
   @Override
   public void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+    System.err.println("ZZZZ onCancel");
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_CANCEL)) {
-    case NextAction.INVOKE_ON_CANCELED:
-      onCanceledReceived();
-      break;
-    case NextAction.INVOKE_ON_FAILED:
-      failWithException();
-      break;
-    default:
-      assert false;
+      case NextAction.INVOKE_ON_CANCELED:
+        System.err.println("ZZZZ onCancel PROCESS_USER_CANCEL");
+        onCanceledReceived();
+        break;
+      case NextAction.INVOKE_ON_FAILED:
+        System.err.println("ZZZZ onCancel PROCESS_ERROR");
+        failWithException();
+        break;
+      default:
+        assert false;
     }
   }
 
   @Override
   public void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+    System.err.println("ZZZZ onComplete");
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_COMPLETE)) {
-    case NextAction.INVOKE_ON_FAILED:
-      failWithException();
-      break;
-    case NextAction.INVOKE_ON_CANCELED:
-      onCanceledReceived();
-      break;
-    case NextAction.INVOKE_ON_SUCCEEDED:
-      onSucceeded();
-      break;
-    case NextAction.CARRY_ON:
-      break;
-    default:
-      assert false;
+      case NextAction.INVOKE_ON_FAILED:
+        System.err.println("ZZZZ onComplete PROCESS_ERROR");
+        failWithException();
+        break;
+      case NextAction.INVOKE_ON_CANCELED:
+        System.err.println("ZZZZ onComplete PROCESS_CANCEL");
+        onCanceledReceived();
+        break;
+      case NextAction.INVOKE_ON_SUCCEEDED:
+        System.err.println("ZZZZ onComplete FINISH_UP");
+        onSucceeded();
+        break;
+      case NextAction.CARRY_ON:
+        System.err.println("ZZZZ onComplete CARRY_ON");
+        break;
+      default:
+        assert false;
     }
   }
 

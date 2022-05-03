@@ -231,7 +231,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     // Response headers not received yet - the read is postponed until then.
     assertThat(mCronetBidirectionalState.nextAction(Event.USER_READ))
-        .isEqualTo(NextAction.CARRY_ON);
+        .isEqualTo(NextAction.RECORD_READ_BUFFER);
   }
 
   @Test
@@ -465,6 +465,40 @@ public class CronetBidirectionalStateTest {
         .isEqualTo(NextAction.SEND_DATA);
   }
 
+  // ================= READY_TO_READ =================
+  //
+  // This event won't be triggered before the first USER_READ.
+  //
+
+  @Test
+  public void readyToRead_beforeOnHeaders() {
+    mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
+    mCronetBidirectionalState.nextAction(Event.USER_READ);
+    // Response headers not received yet - the read is postponed until then.
+    assertThat(mCronetBidirectionalState.nextAction(Event.READY_TO_READ))
+        .isEqualTo(NextAction.CARRY_ON);
+  }
+
+  @Test
+  public void readyToRead_afterOnHeaders() {
+    mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
+    mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.ON_HEADERS);
+    // Response headers not received yet - the read is postponed until then.
+    assertThat(mCronetBidirectionalState.nextAction(Event.READY_TO_READ))
+        .isEqualTo(NextAction.READ);
+  }
+
+  @Test
+  public void readyToRead_afterOnHeadersEndStream() {
+    mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
+    mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
+    // Response headers not received yet - the read is postponed until then.
+    assertThat(mCronetBidirectionalState.nextAction(Event.READY_TO_READ))
+        .isEqualTo(NextAction.INVOKE_ON_READ_COMPLETED);
+  }
+
   // ================= [LAST_]FLUSH_DATA_COMPLETED =================
   //
   // These events won't be triggered before the first READY_TO_FLUSH.
@@ -525,6 +559,7 @@ public class CronetBidirectionalStateTest {
   public void readCompleted() {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS);
     mCronetBidirectionalState.nextAction(Event.ON_DATA);
     assertThat(mCronetBidirectionalState.nextAction(Event.READ_COMPLETED))
@@ -535,6 +570,7 @@ public class CronetBidirectionalStateTest {
   public void lastReadCompleted_afterOnHeadersEndStream() {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     assertThat(mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED))
         .isEqualTo(NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK);
@@ -544,6 +580,7 @@ public class CronetBidirectionalStateTest {
   public void lastReadCompleted_afterOnDataEndStream() {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS);
     mCronetBidirectionalState.nextAction(Event.ON_DATA_END_STREAM);
     assertThat(mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED))
@@ -588,6 +625,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.FLUSH_DATA_COMPLETED);
     mCronetBidirectionalState.nextAction(Event.WRITE_COMPLETED);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED); // READ_DONE = true
     mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH);     // Not ready yet - no-op
@@ -610,6 +648,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.FLUSH_DATA_COMPLETED);
     mCronetBidirectionalState.nextAction(Event.WRITE_COMPLETED);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED); // READ_DONE = true
     mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH);     // Not ready yet - no-op
@@ -642,7 +681,8 @@ public class CronetBidirectionalStateTest {
   public void onHeader_afterRead() {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
-    assertThat(mCronetBidirectionalState.nextAction(Event.ON_HEADERS)).isEqualTo(NextAction.READ);
+    assertThat(mCronetBidirectionalState.nextAction(Event.ON_HEADERS))
+        .isEqualTo(NextAction.CARRY_ON);
   }
 
   @Test
@@ -650,7 +690,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM))
-        .isEqualTo(NextAction.INVOKE_ON_READ_COMPLETED);
+        .isEqualTo(NextAction.CARRY_ON);
   }
 
   // ================= ON_DATA[_END_STREAM] =================
@@ -659,6 +699,7 @@ public class CronetBidirectionalStateTest {
   public void onData() {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_DATA))
         .isEqualTo(NextAction.INVOKE_ON_READ_COMPLETED);
@@ -668,6 +709,7 @@ public class CronetBidirectionalStateTest {
   public void onDataEndStream() {
     mCronetBidirectionalState.nextAction(Event.USER_START_WITH_HEADERS_READ_ONLY);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS);
     assertThat(mCronetBidirectionalState.nextAction(Event.ON_DATA_END_STREAM))
         .isEqualTo(NextAction.INVOKE_ON_READ_COMPLETED);
@@ -684,6 +726,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.FLUSH_DATA_COMPLETED);
     mCronetBidirectionalState.nextAction(Event.WRITE_COMPLETED);
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED); // READ_DONE = true
     mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH);     // Not ready yet - no-op
@@ -715,6 +758,7 @@ public class CronetBidirectionalStateTest {
     mCronetBidirectionalState.nextAction(Event.LAST_WRITE_COMPLETED); // WRITE_DONE = true
     mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH);      // Not ready yet - no-op
     mCronetBidirectionalState.nextAction(Event.USER_READ);
+    mCronetBidirectionalState.nextAction(Event.READY_TO_READ);
     mCronetBidirectionalState.nextAction(Event.ON_HEADERS_END_STREAM);
     mCronetBidirectionalState.nextAction(Event.LAST_READ_COMPLETED); // READ_DONE = true
     mCronetBidirectionalState.nextAction(Event.READY_TO_FINISH);     // Not ready yet - no-op
