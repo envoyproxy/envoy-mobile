@@ -39,10 +39,13 @@ open class EngineBuilder(
   private var dnsQueryTimeoutSeconds = 25
   private var dnsMinRefreshSeconds = 60
   private var dnsPreresolveHostnames = "[]"
+  private var enableDrainPostDnsRefresh = false
+  private var enableHttp3 = false
   private var enableHappyEyeballs = false
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
+  private var h2ExtendKeepaliveTimeout = false
   private var h2RawDomains = listOf<String>()
   private var maxConnectionsPerHost = 7
   private var statsFlushSeconds = 60
@@ -198,6 +201,35 @@ open class EngineBuilder(
   }
 
   /**
+   * Specify whether to drain connections after the resolution of a soft DNS refresh. A refresh may
+   * be triggered directly via the Engine API, or as a result of a network status update provided by
+   * the OS. Draining connections does not interrupt existing connections or requests, but will
+   * establish new connections for any further requests.
+   *
+   * @param enableDrainPostDnsRefresh whether to drain connections after soft DNS refresh.
+   *
+   * @return This builder.
+   */
+  fun enableDrainPostDnsRefresh(enableDrainPostDnsRefresh: Boolean): EngineBuilder {
+    this.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh
+    return this
+  }
+
+  /**
+   * Specify whether to enable experimental HTTP/3 (QUIC) support. Note the actual protocol will
+   * be negotiated with the upstream endpoint and so upstream support is still required for HTTP/3
+   * to be utilized.
+   *
+   * @param enableHttp3 whether to enable HTTP/3.
+   *
+   * @return This builder.
+   */
+  fun enableHttp3(enableHttp3: Boolean): EngineBuilder {
+    this.enableHttp3 = enableHttp3
+    return this
+  }
+
+  /**
    * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
    *
    * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
@@ -244,6 +276,18 @@ open class EngineBuilder(
    */
   fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
     this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
+    return this
+  }
+
+  /**
+   * Extend the keepalive timeout when *any* frame is received on the owning HTTP/2 connection.
+   *
+   * @param h2ExtendKeepaliveTimeout whether to extend the keepalive timeout.
+   *
+   * @return This builder.
+   */
+  fun h2ExtendKeepaliveTimeout(h2ExtendKeepaliveTimeout: Boolean): EngineBuilder {
+    this.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout
     return this
   }
 
@@ -475,10 +519,13 @@ open class EngineBuilder(
       dnsPreresolveHostnames,
       dnsFallbackNameservers,
       dnsFilterUnroutableFamilies,
+      enableDrainPostDnsRefresh,
+      enableHttp3,
       enableHappyEyeballs,
       enableInterfaceBinding,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
+      h2ExtendKeepaliveTimeout,
       h2RawDomains,
       maxConnectionsPerHost,
       statsFlushSeconds,
