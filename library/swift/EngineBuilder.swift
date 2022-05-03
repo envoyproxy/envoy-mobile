@@ -185,7 +185,6 @@ open class EngineBuilder: NSObject {
   /// - parameter enableDrainPostDnsRefresh: whether to drain connections after soft DNS refresh.
   ///
   /// - returns: This builder.
-  ///
   @discardableResult
   public func enableDrainPostDnsRefresh(_ enableDrainPostDnsRefresh: Bool) -> Self {
     self.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh
