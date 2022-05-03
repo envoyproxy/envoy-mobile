@@ -556,6 +556,7 @@ final class EngineBuilderTests: XCTestCase {
       dnsPreresolveHostnames: "[test]",
       enableHappyEyeballs: false,
       enableInterfaceBinding: false,
+      enableDrainPostDnsRefresh: false,
       enforceTrustChainVerification: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
