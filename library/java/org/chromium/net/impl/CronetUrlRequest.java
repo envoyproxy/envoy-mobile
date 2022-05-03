@@ -94,7 +94,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
   }
 
   private static final String X_ENVOY = "x-envoy";
-  private static final String X_ENVOY_SELECTED_TRANSPORT = "x-envoy-upstream-alpn";
+  private static final String X_ENVOY_UPSTREAM_ALPN = "x-envoy-upstream-alpn";
   private static final String TAG = CronetUrlRequest.class.getSimpleName();
   private static final String USER_AGENT = "User-Agent";
   private static final String CONTENT_TYPE = "Content-Type";
@@ -1047,7 +1047,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         if (headerEntry.getValue().get(0) == null) {
           continue;
         }
-        if (X_ENVOY_SELECTED_TRANSPORT.equals(headerKey)) {
+        if (X_ENVOY_UPSTREAM_ALPN.equals(headerKey)) {
           selectedTransport = headerEntry.getValue().get(0);
         }
         if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&

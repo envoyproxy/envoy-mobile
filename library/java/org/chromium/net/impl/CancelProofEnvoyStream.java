@@ -7,8 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
 
 /**
- * Consistency layer above the {@link EnvoyHTTPStream} preventing unwarranted Stream operations
- * after a "cancel" operation. There are no "synchronized" - this is Compare And Swap based logic.
+ * CancelProofEnvoyStream is a consistency layer above the {@link EnvoyHTTPStream} preventing
+ * unwarranted Stream operations after a "cancel" operation. There are no "synchronized" - this is
+ * Compare And Swap based logic. This class is Thread Safe.
  *
  * <p>This contraption ensures that once a "cancel" operation is invoked, there will be no further
  * operations allowed with the EnvoyHTTPStream - subsequent operations will be ignored silently.
@@ -16,13 +17,22 @@ import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
  * executed, the "cancel" operation gets postponed: the last concurrent operation will invoke
  * "cancel" at the end.
  *
- * <p>Instance of this class start with a state of "Busy Starting". This ensure that if a cancel
+ * <p>Instances of this class start with a state of "Busy Starting". This ensure that if a cancel
  * is invoked while the stream is being created, that cancel will be executed only once the stream
  * is completely initialized. Doing otherwise leads to unpredictable outcomes.
  */
 final class CancelProofEnvoyStream {
 
   private static final int CANCEL_BIT = 0x8000;
+  /**
+   * mState mainly maintains a counter of how many Stream operations are currently in-flight.
+   * However, when 15 is flipped (0x8000), it indicates that cancel operation hase been requested.
+   * If the counter is greater than zero, then that "cancel" operation is postponed until the last
+   * in-flight operation finishes, once the counter back to "zero". Then that last operation also
+   * invokes "cancel". On the other hand, if the counter is already "zero" when invoking "cancel",
+   * then it means that there are no in-flight operations: the "cancel" operation is immediately
+   * executed. Once the state is "canceled", any new stream operation is silently ignored.
+   */
   private final AtomicInteger mState = new AtomicInteger(1); // Busy starting.
   private volatile EnvoyHTTPStream mStream;                  // Cancel can come from any Thread.
 
@@ -30,25 +40,25 @@ final class CancelProofEnvoyStream {
   void setStream(EnvoyHTTPStream stream) {
     assert mStream == null;
     mStream = stream;
-    if (cancelNeedsToBeInvoked()) {
+    if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
       mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
     }
   }
 
   /** Initiates the sending of the request headers if the state permits. */
   void sendHeaders(Map<String, List<String>> envoyRequestHeaders, boolean endStream) {
-    if (cancelHasAlreadyBeenInvoked()) {
+    if (returnTrueIfCanceledOrIncreaseConcurrentlyRunningStreamOperations()) {
       return; // Already Cancelled - to late to send something.
     }
     mStream.sendHeaders(envoyRequestHeaders, endStream);
-    if (cancelNeedsToBeInvoked()) {
+    if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
       mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
     }
   }
 
   /** Initiates the sending of one chunk of the request body if the state permits. */
   void sendData(ByteBuffer buffer, boolean finalChunk) {
-    if (cancelHasAlreadyBeenInvoked()) {
+    if (returnTrueIfCanceledOrIncreaseConcurrentlyRunningStreamOperations()) {
       return; // Already Cancelled - to late to send something.
     }
     // The Envoy Mobile library only cares about the capacity - must use the correct ByteBuffer
@@ -61,18 +71,18 @@ final class CancelProofEnvoyStream {
       buffer.reset();
       mStream.sendData(resizedBuffer, finalChunk);
     }
-    if (cancelNeedsToBeInvoked()) {
+    if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
       mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
     }
   }
 
   /** Initiates the reading of one chunk of the the request body if the state permits. */
   void readData(int size) {
-    if (cancelHasAlreadyBeenInvoked()) {
+    if (returnTrueIfCanceledOrIncreaseConcurrentlyRunningStreamOperations()) {
       return; // Already Cancelled - to late to read something.
     }
     mStream.readData(size);
-    if (cancelNeedsToBeInvoked()) {
+    if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
       mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
     }
   }
@@ -87,6 +97,13 @@ final class CancelProofEnvoyStream {
       if ((count & CANCEL_BIT) != 0) {
         return; // Cancel already invoked.
       }
+      // With CAS, the contract is the mutation succeeds only if the original value matches the
+      // expected one - this is atomic at the assembly language level: most CPUs have dedicated
+      // mnemonics for this operation - extremely efficient. And this might look like an infinite
+      // loop. It is infinite only if many Threads are eternally attempting to concurrently change
+      // the value. In fact, CAS is pretty bad under heavy contention - in that case it is probably
+      // better to go with "synchronized" blocks. In our case, there is none or very little
+      // contention. What matters is correctness.
       if (mState.compareAndSet(count, count | CANCEL_BIT)) {
         if (count == 0) {
           mStream.cancel(); // Was not busy with other EM operations - cancel right now.
@@ -96,7 +113,7 @@ final class CancelProofEnvoyStream {
     }
   }
 
-  private boolean cancelHasAlreadyBeenInvoked() {
+  private boolean returnTrueIfCanceledOrIncreaseConcurrentlyRunningStreamOperations() {
     while (true) {
       int count = mState.get();
       if ((count & CANCEL_BIT) != 0) {
@@ -108,7 +125,7 @@ final class CancelProofEnvoyStream {
     }
   }
 
-  private boolean cancelNeedsToBeInvoked() {
+  private boolean decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel() {
     return mState.decrementAndGet() == CANCEL_BIT; // True if the count is back to zero and canceled
   }
 }

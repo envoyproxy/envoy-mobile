@@ -1,6 +1,7 @@
 package org.chromium.net.impl;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.impl.RequestFinishedInfoImpl.FinishedReason;
@@ -24,32 +25,34 @@ final class CronetBidirectionalState {
    * (prefixed with USER_), EM Callbacks (prefixed with ON_), and internal events (the remaining
    * ones).
    */
-  @IntDef({Event.USER_START,
-           Event.USER_START_WITH_HEADERS,
-           Event.USER_START_READ_ONLY,
-           Event.USER_START_WITH_HEADERS_READ_ONLY,
-           Event.USER_WRITE,
-           Event.USER_LAST_WRITE,
-           Event.USER_FLUSH,
-           Event.USER_READ,
-           Event.USER_CANCEL,
-           Event.ERROR,
-           Event.READY_TO_FLUSH,
-           Event.FLUSH_DATA_COMPLETED,
-           Event.LAST_FLUSH_DATA_COMPLETED,
-           Event.WRITE_COMPLETED,
-           Event.READY_TO_READ,
-           Event.READ_COMPLETED,
-           Event.LAST_WRITE_COMPLETED,
-           Event.LAST_READ_COMPLETED,
-           Event.READY_TO_FINISH,
-           Event.ON_HEADERS,
-           Event.ON_HEADERS_END_STREAM,
-           Event.ON_DATA,
-           Event.ON_DATA_END_STREAM,
-           Event.ON_COMPLETE,
-           Event.ON_CANCEL,
-           Event.ON_ERROR})
+  @IntDef({
+      Event.USER_START,
+      Event.USER_START_WITH_HEADERS,
+      Event.USER_START_READ_ONLY,
+      Event.USER_START_WITH_HEADERS_READ_ONLY,
+      Event.USER_WRITE,
+      Event.USER_LAST_WRITE,
+      Event.USER_FLUSH,
+      Event.USER_READ,
+      Event.USER_CANCEL,
+      Event.ON_HEADERS,
+      Event.ON_HEADERS_END_STREAM,
+      Event.ON_DATA,
+      Event.ON_DATA_END_STREAM,
+      Event.ON_COMPLETE,
+      Event.ON_CANCEL,
+      Event.ON_ERROR,
+      Event.ERROR,
+      Event.READY_TO_FLUSH,
+      Event.FLUSH_DATA_COMPLETED,
+      Event.LAST_FLUSH_DATA_COMPLETED,
+      Event.WRITE_COMPLETED,
+      Event.READY_TO_READ,
+      Event.READ_COMPLETED,
+      Event.LAST_WRITE_COMPLETED,
+      Event.LAST_READ_COMPLETED,
+      Event.READY_TO_FINISH,
+  })
   @Retention(RetentionPolicy.SOURCE)
   @interface Event {
     int USER_START = 0; // Ready. Don't send request headers yet. There will be a request body.
@@ -61,23 +64,23 @@ final class CronetBidirectionalState {
     int USER_FLUSH = 6;      // User requesting to push the pending buffers/headers on the wire.
     int USER_READ = 7;       // User requesting to read the next chunk from the wire.
     int USER_CANCEL = 8;     // User requesting to cancel the stream.
-    int ERROR = 9;           // A fatal error occurred. Can be an internal, or user related.
-    int READY_TO_FLUSH = 10; // Internal Event indicating readiness to write the next ByteBuffer.
-    int FLUSH_DATA_COMPLETED = 11;      // Internal event indicating that a write completed.
-    int LAST_FLUSH_DATA_COMPLETED = 12; // Internal event indicating that the final write completed.
-    int WRITE_COMPLETED = 13; // Internal event indicating to tell the user about a completed write.
-    int READY_TO_READ = 14;   // Internal event indicating that the ReadBuffer is accessible.
-    int READ_COMPLETED = 15;  // Internal event indicating to tell the user about a completed read.
-    int LAST_WRITE_COMPLETED = 16;  // Internal event indicating to tell the user about final write.
-    int LAST_READ_COMPLETED = 17;   // Internal event indicating to tell the user about final read.
-    int READY_TO_FINISH = 18;       // Internal event indicating to tell the user about success.
-    int ON_HEADERS = 19;            // EM invoked the "onHeaders" callback - response body to come.
-    int ON_HEADERS_END_STREAM = 20; // EM invoked the "onHeaders" callback - no response body.
-    int ON_DATA = 21;            // EM invoked the "onData" callback - not last "onData" callback.
-    int ON_DATA_END_STREAM = 22; // EM invoked the "onData" callback - final "onData" callback.
-    int ON_COMPLETE = 23;        // EM invoked the "onComplete" callback.
-    int ON_CANCEL = 24;          // EM invoked the "onCancel" callback.
-    int ON_ERROR = 25;           // EM invoked the "onError" callback.
+    int ON_HEADERS = 9;      // EM invoked the "onHeaders" callback - response body to come.
+    int ON_HEADERS_END_STREAM = 10; // EM invoked the "onHeaders" callback - no response body.
+    int ON_DATA = 11;            // EM invoked the "onData" callback - not last "onData" callback.
+    int ON_DATA_END_STREAM = 12; // EM invoked the "onData" callback - final "onData" callback.
+    int ON_COMPLETE = 13;        // EM invoked the "onComplete" callback.
+    int ON_CANCEL = 14;          // EM invoked the "onCancel" callback.
+    int ON_ERROR = 15;           // EM invoked the "onError" callback.
+    int ERROR = 16;              // A fatal error occurred. Can be an internal, or user related.
+    int READY_TO_FLUSH = 17; // Internal Event indicating readiness to write the next ByteBuffer.
+    int FLUSH_DATA_COMPLETED = 18;      // Internal event indicating that a write completed.
+    int LAST_FLUSH_DATA_COMPLETED = 19; // Internal event indicating that the final write completed.
+    int WRITE_COMPLETED = 20; // Internal event indicating to tell the user about a completed write.
+    int READY_TO_READ = 21;   // Internal event indicating that the ReadBuffer is accessible.
+    int READ_COMPLETED = 22;  // Internal event indicating to tell the user about a completed read.
+    int LAST_WRITE_COMPLETED = 23; // Internal event indicating to tell the user about final write.
+    int LAST_READ_COMPLETED = 24;  // Internal event indicating to tell the user about final read.
+    int READY_TO_FINISH = 25;      // Internal event indicating to tell the user about success.
   }
 
   /**
@@ -113,7 +116,7 @@ final class CronetBidirectionalState {
    * Bitmap used to express the global state of the BIDI Stream. Each bit represent one element of
    * the global state.
    */
-  @IntDef(flag = true, // Not used as an Enum, and this is not used as the argument of a "switch".
+  @IntDef(flag = true, // This is not used as an Enum nor as the argument of a switch statement.
           value = {State.NOT_STARTED, State.STARTED, State.WAITING_FOR_FLUSH,
                    State.WAITING_FOR_READ, State.END_STREAM_WRITTEN, State.END_STREAM_READ,
                    State.WRITING, State.READING, State.HEADERS_SENT, State.CANCELLING,
@@ -184,44 +187,12 @@ final class CronetBidirectionalState {
    * is saved through an Atomic operation. For few cases, this method will throw when the state is
    * not compatible with the event.
    */
-  @NextAction int nextAction(@Event final int event) { // "final" just to avoid dumb mistakes.
+  @NextAction
+  int nextAction(@Event final int event) {
     while (true) {
-      @State final int originalState = mState.get(); // "final" just to avoid dumb mistakes.
+      @State final int originalState = mState.get();
 
-      // Some events must fail immediately when the original state does not permit.
-      // This mimics Cronet's behaviour: identical Exception types and error messages.
-      switch (event) {
-      case Event.USER_START:
-      case Event.USER_START_WITH_HEADERS:
-      case Event.USER_START_READ_ONLY:
-      case Event.USER_START_WITH_HEADERS_READ_ONLY:
-        if ((originalState & (State.STARTED | State.TERMINATING_STATES)) != 0) {
-          throw new IllegalStateException("Stream is already started.");
-        }
-        break;
-
-      case Event.USER_LAST_WRITE:
-      case Event.USER_WRITE:
-        if ((originalState & State.END_STREAM_WRITTEN) != 0) {
-          throw new IllegalArgumentException("Write after writing end of stream.");
-        }
-        break;
-
-      case Event.USER_READ:
-        if ((originalState & State.WAITING_FOR_READ) == 0) {
-          throw new IllegalStateException("Unexpected read attempt.");
-        }
-        break;
-
-      default:
-        // For all other events, a potentially incompatible state does not trigger an Exception.
-      }
-
-      // Those 3 events are the final events from the EnvoyMobile C++ layer.
-      if (event == Event.ON_CANCEL || event == Event.ON_ERROR || event == Event.ON_COMPLETE) {
-        // If this assert triggers it means that the C++ EnvoyMobile contract has been breached.
-        assert (originalState & State.DONE) == 0; // Or there is a blatant bug.
-      } else if ((originalState & State.TERMINATING_STATES) != 0) {
+      if (isAlreadyFinalState(event, originalState)) {
         return NextAction.TAKE_NO_MORE_ACTIONS; // No need to loop - this is irreversible.
       }
 
@@ -423,9 +394,61 @@ final class CronetBidirectionalState {
         throw new AssertionError("switch is exhaustive");
       }
 
+      // With CAS, the contract is the mutation succeeds only if the original value matches the
+      // expected one - this is atomic at the assembly language level: most CPUs have dedicated
+      // mnemonics for this operation - extremely efficient. And this might look like an infinite
+      // loop. It is infinite only if many Threads are eternally attempting to concurrently change
+      // the value. In fact, CAS is pretty bad under heavy contention - in that case it is probably
+      // better to go with "synchronized" blocks. In our case, there is none or very little
+      // contention. What matters is correctness.
       if (mState.compareAndSet(originalState, nextState)) {
         return nextAction;
       }
     }
+  }
+
+  /**
+   * Returns true is we are already in a final state.
+   *
+   * <p>For few cases, this method will throw when the state is not compatible with the event. This
+   * mimics Cronet's behaviour: identical Exception types and error messages.
+   */
+  private boolean isAlreadyFinalState(int event, int originalState) {
+    // Some events must fail immediately when the original state does not permit.
+    switch (event) {
+    case Event.USER_START:
+    case Event.USER_START_WITH_HEADERS:
+    case Event.USER_START_READ_ONLY:
+    case Event.USER_START_WITH_HEADERS_READ_ONLY:
+      if ((originalState & (State.STARTED | State.TERMINATING_STATES)) != 0) {
+        throw new IllegalStateException("Stream is already started.");
+      }
+      break;
+
+    case Event.USER_LAST_WRITE:
+    case Event.USER_WRITE:
+      if ((originalState & State.END_STREAM_WRITTEN) != 0) {
+        throw new IllegalArgumentException("Write after writing end of stream.");
+      }
+      break;
+
+    case Event.USER_READ:
+      if ((originalState & State.WAITING_FOR_READ) == 0) {
+        throw new IllegalStateException("Unexpected read attempt.");
+      }
+      break;
+
+    default:
+      // For all other events, a potentially incompatible state does not trigger an Exception.
+    }
+
+    // Those 3 events are the final events from the EnvoyMobile C++ layer.
+    if (event == Event.ON_CANCEL || event == Event.ON_ERROR || event == Event.ON_COMPLETE) {
+      // If this assert triggers it means that the C++ EnvoyMobile contract has been breached.
+      assert (originalState & State.DONE) == 0; // Or there is a blatant bug.
+    } else if ((originalState & State.TERMINATING_STATES) != 0) {
+      return true;
+    }
+    return false;
   }
 }
