@@ -6,7 +6,7 @@ Pending Release
 
 Breaking changes:
 
-- remove `drainConnections` method. (:issue:`#2225 <2225>`).
+- api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
 
 Bugfixes:
 
@@ -16,7 +16,6 @@ Features:
 
 - api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
-- api: add option to refresh network connectivity state. (:issue:`#2225 <2225>`)
 
 0.4.6 (April 26, 2022)
 ========================
