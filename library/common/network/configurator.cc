@@ -195,9 +195,8 @@ void Configurator::onDnsResolutionComplete(
     // TODO(goaway): check the set of cached hosts from the last triggered DNS refresh for this
     // host, and if present, remove it and trigger connection drain for this host specifically.
     ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", host);
-    cluster_manager_.drainConnections([host](const Upstream::Host& host) {
-      return host.hostname() == host;
-    });
+    cluster_manager_.drainConnections(
+        [host](const Upstream::Host& host) { return host.hostname() == host; });
   }
 }
 
@@ -236,8 +235,9 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key, bool drain_conn
     ENVOY_LOG_EVENT(debug, "netconf_refresh_dns", std::to_string(configuration_key));
 
     if (drain_connections && enable_drain_post_dns_refresh_) {
-      dns_cache_->iterateHostMap(
-        [&](absl::string_view host, const DnsHostInfoSharedPtr&) { hosts_to_drain_.emplace(host); });
+      dns_cache_->iterateHostMap([&](absl::string_view host, const DnsHostInfoSharedPtr&) {
+        hosts_to_drain_.emplace(host);
+      });
     }
 
     dns_cache->forceRefreshHosts();
