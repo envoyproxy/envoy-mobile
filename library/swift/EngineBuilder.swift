@@ -177,9 +177,9 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Specify whether to drain connections after the resolution of a soft DNS refresh. 
+  /// Specify whether to drain connections after the resolution of a soft DNS refresh.
   /// A refresh may be triggered directly via the Engine API, or as a result of a network
-  /// status update provided by the OS. Draining connections does not interrupt existing 
+  /// status update provided by the OS. Draining connections does not interrupt existing
   /// connections or requests, but will establish new connections for any further requests.
   ///
   /// - parameter enableDrainPostDnsRefresh: whether to drain connections after soft DNS refresh.
