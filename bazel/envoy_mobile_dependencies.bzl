@@ -3,7 +3,7 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 load("@rules_proto_grpc//protobuf:repositories.bzl", "protobuf_repos")
 load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
@@ -74,8 +74,8 @@ def kotlin_dependencies(extra_maven_dependencies = []):
             # Test artifacts
             "org.assertj:assertj-core:3.12.0",
             "junit:junit:4.12",
-            "org.mockito:mockito-inline:2.28.2",
-            "org.mockito:mockito-core:2.28.2",
+            "org.mockito:mockito-inline:4.5.1",
+            "org.mockito:mockito-core:4.5.1",
             "com.squareup.okhttp3:okhttp:4.9.1",
             "com.squareup.okhttp3:mockwebserver:4.9.1",
             "io.github.classgraph:classgraph:4.8.121",
