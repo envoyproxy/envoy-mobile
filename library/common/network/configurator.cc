@@ -181,11 +181,12 @@ void Configurator::reportNetworkUsage(envoy_netconf_t configuration_key, bool ne
 }
 
 void Configurator::onDnsResolutionComplete(
-    const std::string& host, const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
+    const std::string& resolved_host,
+    const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&,
     Network::DnsResolver::ResolutionStatus) {
   if (enable_drain_post_dns_refresh_) {
     // Check if the set of hosts pending drain contains the current resolved host.
-    if (hosts_to_drain_.erase(host) == 0) {
+    if (hosts_to_drain_.erase(resolved_host) == 0) {
       return;
     }
 
@@ -194,9 +195,11 @@ void Configurator::onDnsResolutionComplete(
     // drain connections. It may be possible to refine this logic in the future.
     // TODO(goaway): check the set of cached hosts from the last triggered DNS refresh for this
     // host, and if present, remove it and trigger connection drain for this host specifically.
-    ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", host);
+    ENVOY_LOG_EVENT(debug, "netconf_post_dns_drain_cx", resolved_host);
+
+    // Pass predicate to only drain connections to the resolved host (for any cluster).
     cluster_manager_.drainConnections(
-        [host](const Upstream::Host& host) { return host.hostname() == host; });
+        [resolved_host](const Upstream::Host& host) { return host.hostname() == resolved_host; });
   }
 }
 
@@ -235,9 +238,11 @@ void Configurator::refreshDns(envoy_netconf_t configuration_key, bool drain_conn
     ENVOY_LOG_EVENT(debug, "netconf_refresh_dns", std::to_string(configuration_key));
 
     if (drain_connections && enable_drain_post_dns_refresh_) {
-      dns_cache_->iterateHostMap([&](absl::string_view host, const DnsHostInfoSharedPtr&) {
-        hosts_to_drain_.emplace(host);
-      });
+      dns_cache->iterateHostMap(
+          [&](absl::string_view host,
+              const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr&) {
+            hosts_to_drain_.emplace(host);
+          });
     }
 
     dns_cache->forceRefreshHosts();
