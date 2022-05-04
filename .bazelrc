@@ -125,10 +125,10 @@ build:remote-ci-common --spawn_strategy=remote,sandboxed,local
 # sends a keepalive if we don't receive any messages (server updates every 60s).
 build:remote-ci-common --grpc_keepalive_time=61s
 #############################################################################
-# remote-ci-local-java8: Use a local Java 8 (JDK)
+# remote-ci-local-java8: Use a local Java 11 (JDK)
 #############################################################################
-build:remote-ci-local-java8 --java_runtime_version=local_jdk
-build:remote-ci-local-java8 --java_language_version=8
+build:remote-ci-local-java11 --java_runtime_version=local_jdk
+build:remote-ci-local-java11 --java_language_version=11
 #############################################################################
 # remote-ci-linux: These options are linux-only using GCC by default
 #############################################################################
