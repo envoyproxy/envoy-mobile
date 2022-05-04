@@ -91,8 +91,8 @@ jobs:
             --test_output=all \
             --java_language_version=8 \
             --tool_java_language_version=8 \
-            --java_runtime_version=lyft_jdk11 \
-            --tool_java_runtime_version=lyft_jdk11
+            --java_runtime_version=local_jdk \
+            --tool_java_runtime_version=local_jdk \
             --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-macos \
@@ -141,8 +141,8 @@ jobs:
             --test_output=all \
             --java_language_version=8 \
             --tool_java_language_version=8 \
-            --java_runtime_version=lyft_jdk11 \
-            --tool_java_runtime_version=lyft_jdk11
+            --java_runtime_version=local_jdk \
+            --tool_java_runtime_version=local_jdk \
             --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-linux-clang \
