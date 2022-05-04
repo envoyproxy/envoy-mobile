@@ -394,13 +394,13 @@ final class CronetBidirectionalState {
         throw new AssertionError("switch is exhaustive");
       }
 
-      // With CAS, the contract is the mutation succeeds only if the original value matches the
-      // expected one - this is atomic at the assembly language level: most CPUs have dedicated
-      // mnemonics for this operation - extremely efficient. And this might look like an infinite
-      // loop. It is infinite only if many Threads are eternally attempting to concurrently change
-      // the value. In fact, CAS is pretty bad under heavy contention - in that case it is probably
-      // better to go with "synchronized" blocks. In our case, there is none or very little
-      // contention. What matters is correctness.
+      // With "Compare And Swap", the contract is the mutation succeeds only if the original value
+      // matches the expected one - this is atomic at the assembly language level: most CPUs have
+      // dedicated mnemonics for this operation - extremely efficient. And this might look like an
+      // infinite loop. It is infinite only if many Threads are eternally attempting to concurrently
+      // change the value. In fact, "Compare And Swap" is pretty bad under heavy contention - in
+      // that case it is probably better to go with "synchronized" blocks. In our case, there is
+      // none or very little contention. What matters is correctness and efficiency.
       if (mState.compareAndSet(originalState, nextState)) {
         return nextAction;
       }
