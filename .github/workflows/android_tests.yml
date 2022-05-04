@@ -119,11 +119,10 @@ jobs:
           fi
       - name: 'Java setup'
         if: steps.check_context.outputs.run_tests == 'true'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
+          java-version: 11
+          distribution: 'zulu'
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -134,6 +133,6 @@ jobs:
             --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-linux-clang \
-            --config=remote-ci-local-java8 \
+            --config=remote-ci-local-java11 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/...
