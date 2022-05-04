@@ -31,7 +31,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
           architecture: x64
       - name: 'Install dependencies'
@@ -47,7 +47,7 @@ jobs:
             --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-macos \
-            --config=remote-ci-local-java8 \
+            --config=remote-ci-local-java11 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/io/...
   javatestsmac:
@@ -72,7 +72,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
           architecture: x64
       - name: 'Install dependencies'
@@ -88,7 +88,7 @@ jobs:
             --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-macos \
-            --config=remote-ci-local-java8 \
+            --config=remote-ci-local-java11 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --define=signal_trace=disabled \
             //test/java/...
@@ -121,7 +121,7 @@ jobs:
         if: steps.check_context.outputs.run_tests == 'true'
         uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: '11'
           java-package: jdk
           architecture: x64
       - name: 'Run Kotlin library integration tests'
@@ -134,6 +134,6 @@ jobs:
             --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-linux-clang \
-            --config=remote-ci-local-java8 \
+            --config=remote-ci-local-java11 \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/...

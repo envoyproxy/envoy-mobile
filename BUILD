@@ -2,6 +2,23 @@ load("@io_bazel_rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
 
 licenses(["notice"])  # Apache 2
 
+load(
+  "@bazel_tools//tools/jdk:default_java_toolchain.bzl",
+  "default_java_toolchain", "DEFAULT_TOOLCHAIN_CONFIGURATION", "JDK8_JVM_OPTS", "DEFAULT_JAVACOPTS"
+)
+
+default_java_toolchain(
+  name = "envoy_mobile_default_toolchain",
+  configuration = DEFAULT_TOOLCHAIN_CONFIGURATION,
+  java_runtime = "//tools/jdk:remote_jdk11",
+  jvm_opts = JDK8_JVM_OPTS,
+  javacopts = DEFAULT_JAVACOPTS,
+  source_version = "8",
+  target_version = "8",
+)
+
+register_toolchains(["//:envoy_mobile_default_toolchain_definition"])
+
 alias(
     name = "ios_framework",
     actual = "//library/swift:ios_framework",
