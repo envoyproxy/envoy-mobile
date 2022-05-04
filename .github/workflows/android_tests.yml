@@ -44,6 +44,7 @@ jobs:
         run: |
           ./bazelw test \
             --test_output=all \
+            --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-macos \
             --config=remote-ci-local-java8 \
@@ -84,6 +85,7 @@ jobs:
         run: |
           ./bazelw test \
             --test_output=all \
+            --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-macos \
             --config=remote-ci-local-java8 \
@@ -129,6 +131,7 @@ jobs:
         run: |
           ./bazelw test \
             --test_output=all \
+            --test_output=streamed \
             --build_tests_only \
             --config=remote-ci-linux-clang \
             --config=remote-ci-local-java8 \
