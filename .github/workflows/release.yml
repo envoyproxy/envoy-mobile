@@ -16,7 +16,7 @@ jobs:
           submodules: true
       - uses: actions/setup-java@v1
         with:
-          java-version: '11'
+          java-version: '8'
           java-package: jdk
           architecture: x64
       - run: ./ci/mac_ci_setup.sh --android
