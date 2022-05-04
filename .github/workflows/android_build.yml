@@ -43,7 +43,7 @@ jobs:
             --java_language_version=8 \
             --tool_java_language_version=8 \
             --java_runtime_version=local_jdk \
-            --tool_java_runtime_version=local_jdk
+            --tool_java_runtime_version=local_jdk \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86_64 \
             //:android_dist_ci
@@ -84,7 +84,7 @@ jobs:
             --java_language_version=8 \
             --tool_java_language_version=8 \
             --java_runtime_version=local_jdk \
-            --tool_java_runtime_version=local_jdk
+            --tool_java_runtime_version=local_jdk \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86_64 \
@@ -131,7 +131,7 @@ jobs:
             --java_language_version=8 \
             --tool_java_language_version=8 \
             --java_runtime_version=local_jdk \
-            --tool_java_runtime_version=local_jdk
+            --tool_java_runtime_version=local_jdk \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86_64 \
@@ -178,7 +178,7 @@ jobs:
             --java_language_version=8 \
             --tool_java_language_version=8 \
             --java_runtime_version=local_jdk \
-            --tool_java_runtime_version=local_jdk
+            --tool_java_runtime_version=local_jdk \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86_64 \
@@ -225,7 +225,7 @@ jobs:
             --java_language_version=8 \
             --tool_java_language_version=8 \
             --java_runtime_version=local_jdk \
-            --tool_java_runtime_version=local_jdk
+            --tool_java_runtime_version=local_jdk \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             --fat_apk_cpu=x86_64 \
