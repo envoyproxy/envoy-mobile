@@ -1015,12 +1015,12 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerStringAccessor(JNIEnv* 
   return result;
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_drainConnections(JNIEnv* env,
-                                                                  jclass, // class
-                                                                  jlong engine) {
-  jni_log("[Envoy]", "drainConnections");
-  drain_connections(engine);
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_resetConnectivityState(JNIEnv* env,
+                                                                        jclass, // class
+                                                                        jlong engine) {
+  jni_log("[Envoy]", "resetConnectivityState");
+  return reset_connectivity_state(engine);
 }
 
 extern "C" JNIEXPORT jint JNICALL
