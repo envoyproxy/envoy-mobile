@@ -25,19 +25,30 @@ final class CancelProofEnvoyStream {
 
   private static final int CANCEL_BIT = 0x8000;
   /**
-   * mState mainly maintains a counter of how many Stream operations are currently in-flight.
-   * However, when 15 is flipped (0x8000), it indicates that cancel operation hase been requested.
-   * If the counter is greater than zero, then that "cancel" operation is postponed until the last
-   * in-flight operation finishes, once the counter back to "zero". Then that last operation also
-   * invokes "cancel". On the other hand, if the counter is already "zero" when invoking "cancel",
-   * then it means that there are no in-flight operations: the "cancel" operation is immediately
-   * executed. Once the state is "canceled", any new stream operation is silently ignored.
+   * Mainly maintains a counter of how many Stream operations are currently in-flight. However when
+   * bit 15 (0x8000) is set, it indicates that the cancel operation has been requested. If the
+   * counter is greater than 0, then that "cancel" operation is postponed until the last in-flight
+   * operation finishes, i.e. then the counter is back to 0. Then that last operation also invokes
+   * "cancel". On the other hand, if the counter is already 0 when invoking "cancel", then it means
+   * that there are no in-flight operations: the "cancel" operation is immediately executed. Once
+   * the state is "canceled", any new stream operation is silently ignored.
    */
-  private final AtomicInteger mState = new AtomicInteger(1); // Busy starting.
-  private volatile EnvoyHTTPStream mStream;                  // Cancel can come from any Thread.
+  private final AtomicInteger mConcurrentInvocationCount = new AtomicInteger();
+  private volatile EnvoyHTTPStream mStream; // Cancel can come from any Thread.
+
+  /**
+   * The "mConcurrentInvocationCount" does not start with "zero" - this is on purpose. At this
+   * stage, the Stream is considered to be in its initialization/starting phase. That phase ends
+   * when mStream is set: {@link #setStream}. This way, if "cancel" gets called before the
+   * {@link #setStream} method, then the intent is recorded, and the effect will be delivered
+   * when {@link #setStream} will be invoked.
+   */
+  CancelProofEnvoyStream() { mConcurrentInvocationCount.set(1); }
 
   /** Sets the stream. Can only be invoked once. */
   void setStream(EnvoyHTTPStream stream) {
+    // "if (returnTrueIfCanceledOrIncreaseConcurrentlyRunningStreamOperations()) { ..."
+    // is not called here - see the Constructor's comment.
     assert mStream == null;
     mStream = stream;
     if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
@@ -52,7 +63,7 @@ final class CancelProofEnvoyStream {
     }
     mStream.sendHeaders(envoyRequestHeaders, endStream);
     if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
-      mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
+      mStream.cancel(); // Cancel was called previously, so now this is honored.
     }
   }
 
@@ -72,7 +83,7 @@ final class CancelProofEnvoyStream {
       mStream.sendData(resizedBuffer, finalChunk);
     }
     if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
-      mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
+      mStream.cancel(); // Cancel was called previously, so now this is honored.
     }
   }
 
@@ -83,7 +94,7 @@ final class CancelProofEnvoyStream {
     }
     mStream.readData(size);
     if (decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel()) {
-      mStream.cancel(); // Cancel was called meanwhile, so now this is honored.
+      mStream.cancel(); // Cancel was called previously, so now this is honored.
     }
   }
 
@@ -92,19 +103,19 @@ final class CancelProofEnvoyStream {
    * running. Idempotent and Thread Safe.
    */
   void cancel() {
+    // With "Compare And Swap", the contract is the mutation succeeds only if the original value
+    // matches the expected one - this is atomic at the assembly language level: most CPUs have
+    // dedicated mnemonics for this operation - extremely efficient. And this might look like an
+    // infinite loop. There is always one Thread that will succeed - the others may/will loop, and
+    // so forth. "Compare And Swap" maybe bad under heavy contention - in that case it is probably
+    // better to go with "synchronized" blocks. In our case, there is none or very little
+    // contention. What matters is correctness and efficiency.
     while (true) {
-      int count = mState.get();
+      int count = mConcurrentInvocationCount.get();
       if ((count & CANCEL_BIT) != 0) {
         return; // Cancel already invoked.
       }
-      // With "Compare And Swap", the contract is the mutation succeeds only if the original value
-      // matches the expected one - this is atomic at the assembly language level: most CPUs have
-      // dedicated mnemonics for this operation - extremely efficient. And this might look like an
-      // infinite loop. It is infinite only if many Threads are eternally attempting to concurrently
-      // change the value. In fact, "Compare And Swap" is pretty bad under heavy contention - in
-      // that case it is probably better to go with "synchronized" blocks. In our case, there is
-      // none or very little contention. What matters is correctness and efficiency.
-      if (mState.compareAndSet(count, count | CANCEL_BIT)) {
+      if (mConcurrentInvocationCount.compareAndSet(count, count | CANCEL_BIT)) {
         if (count == 0) {
           mStream.cancel(); // Was not busy with other EM operations - cancel right now.
         }
@@ -115,17 +126,18 @@ final class CancelProofEnvoyStream {
 
   private boolean returnTrueIfCanceledOrIncreaseConcurrentlyRunningStreamOperations() {
     while (true) {
-      int count = mState.get();
+      int count = mConcurrentInvocationCount.get();
       if ((count & CANCEL_BIT) != 0) {
         return true; // Already canceled
       }
-      if (mState.compareAndSet(count, count + 1)) {
+      if (mConcurrentInvocationCount.compareAndSet(count, count + 1)) {
         return false;
       }
     }
   }
 
   private boolean decreaseConcurrentlyRunningStreamOperationsAndReturnTrueIfAwaitingCancel() {
-    return mState.decrementAndGet() == CANCEL_BIT; // True if the count is back to zero and canceled
+    // Only true if the count is back to zero and the cancel bit is set.
+    return mConcurrentInvocationCount.decrementAndGet() == CANCEL_BIT;
   }
 }

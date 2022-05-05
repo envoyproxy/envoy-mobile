@@ -189,6 +189,13 @@ final class CronetBidirectionalState {
    */
   @NextAction
   int nextAction(@Event final int event) {
+    // With "Compare And Swap", the contract is the mutation succeeds only if the original value
+    // matches the expected one - this is atomic at the assembly language level: most CPUs have
+    // dedicated mnemonics for this operation - extremely efficient. And this might look like an
+    // infinite loop. It is infinite only if many Threads are eternally attempting to concurrently
+    // change the value. In fact, "Compare And Swap" is pretty bad under heavy contention - in
+    // that case it is probably better to go with "synchronized" blocks. In our case, there is
+    // none or very little contention. What matters is correctness and efficiency.
     while (true) {
       @State final int originalState = mState.get();
 
@@ -196,7 +203,7 @@ final class CronetBidirectionalState {
         return NextAction.TAKE_NO_MORE_ACTIONS; // No need to loop - this is irreversible.
       }
 
-      @NextAction final int nextAction; // "final" guarantees that it is assigned exactly once.
+      @NextAction final int nextAction;
       @State int nextState = originalState;
       switch (event) {
       case Event.USER_START:
@@ -394,13 +401,6 @@ final class CronetBidirectionalState {
         throw new AssertionError("switch is exhaustive");
       }
 
-      // With "Compare And Swap", the contract is the mutation succeeds only if the original value
-      // matches the expected one - this is atomic at the assembly language level: most CPUs have
-      // dedicated mnemonics for this operation - extremely efficient. And this might look like an
-      // infinite loop. It is infinite only if many Threads are eternally attempting to concurrently
-      // change the value. In fact, "Compare And Swap" is pretty bad under heavy contention - in
-      // that case it is probably better to go with "synchronized" blocks. In our case, there is
-      // none or very little contention. What matters is correctness and efficiency.
       if (mState.compareAndSet(originalState, nextState)) {
         return nextAction;
       }
