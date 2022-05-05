@@ -1,6 +1,7 @@
 #include <ares.h>
 
 #include <string>
+#include <vector>
 
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
@@ -1030,4 +1031,122 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_setPreferredNetwork(JNIEnv* env
   jni_log("[Envoy]", "setting preferred network");
   return set_preferred_network(static_cast<envoy_engine_t>(engine),
                                static_cast<envoy_network_t>(network));
+}
+
+bool Java_AndroidCertVerifyResult_isIssuedByKnownRoot(JNIEnv* env, jobject result) {
+  jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
+  jmethodID jmid_isIssuedByKnownRoot =
+      env->GetMethodID(jcls_AndroidCertVerifyResult, "isIssuedByKnownRoot", "()Z");
+  return env->CallBooleanMethod(jcls_AndroidCertVerifyResult, jmid_isIssuedByKnownRoot, result);
+}
+
+envoy_cert_verify_status_t Java_AndroidCertVerifyResult_getStatus(JNIEnv* env, jobject result) {
+  jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
+  jmethodID jmid_getStatus = env->GetMethodID(jcls_AndroidCertVerifyResult, "getStatus", "()I");
+
+  return static_cast<envoy_cert_verify_status_t>(
+      env->CallIntMethod(jcls_AndroidCertVerifyResult, jmid_getStatus, result));
+}
+
+jobjectArray Java_AndroidCertVerifyResult_getCertificateChainEncoded(JNIEnv* env, jobject result) {
+  jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
+  jmethodID jmid_getCertificateChainEncoded =
+      env->GetMethodID(jcls_AndroidCertVerifyResult, "getCertificateChainEncoded", "()[[B");
+
+  return static_cast<jobjectArray>(
+      env->CallObjectMethod(jcls_AndroidCertVerifyResult, jmid_getCertificateChainEncoded, result));
+}
+
+void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_verify_status_t* status,
+                             bool* is_issued_by_known_root,
+                             std::vector<std::string>* verified_chain) {
+  *status = Java_AndroidCertVerifyResult_getStatus(env, result);
+
+  *is_issued_by_known_root = Java_AndroidCertVerifyResult_isIssuedByKnownRoot(env, result);
+
+  jobjectArray chain_byte_array =
+      Java_AndroidCertVerifyResult_getCertificateChainEncoded(env, result);
+  JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
+}
+
+static jobject jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
+                                          std::string auth_type, std::string host) {
+  jni_log("[Envoy]", "jvm_verify_x509_cert_chain");
+  JNIEnv* env = get_env();
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_verifyServerCertificates = env->GetStaticMethodID(
+      jcls_AndroidNetworkLibrary, "verifyServerCertificates",
+      "([[BLjava/lang/String;Ljava/lang/String;)Lorg/chromium/net/AndroidCertVerifyResult;");
+
+  jobjectArray chain_byte_array = ToJavaArrayOfByteArray(env, cert_chain);
+  jstring auth_string = ConvertUTF8ToJavaString(env, auth_type);
+  jstring host_string = ConvertUTF8ToJavaString(env, host);
+
+  jobject result =
+      env->CallStaticObjectMethod(jcls_AndroidNetworkLibrary, jmid_verifyServerCertificates,
+                                  chain_byte_array, auth_string, host_string);
+
+  env->DeleteLocalRef(chain_byte_array);
+  env->DeleteLocalRef(auth_string);
+  env->DeleteLocalRef(host_string);
+  return result;
+}
+
+static void verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
+                                   std::string auth_type, std::string host,
+                                   envoy_cert_verify_status_t* status,
+                                   bool* is_issued_by_known_root,
+                                   std::vector<std::string>* verified_chain) {
+  jobject result = jvm_verify_x509_cert_chain(cert_chain, auth_type, host);
+  ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
+}
+
+static void jvm_add_test_root_certificate(const uint8_t* cert, size_t len) {
+  jni_log("[Envoy]", "jvm_add_test_root_certificate");
+  JNIEnv* env = get_env();
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_addTestRootCertificate =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "addTestRootCertificate", "([B)V");
+
+  jbyteArray cert_array = ToJavaByteArray(env, cert, len);
+  env->CallStaticVoidMethod(jcls_AndroidNetworkLibrary, jmid_addTestRootCertificate, cert_array);
+  env->DeleteLocalRef(cert_array);
+}
+
+static void jvm_clear_test_root_certificate() {
+  jni_log("[Envoy]", "jvm_clear_test_root_certificate");
+  JNIEnv* env = get_env();
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_clearTestRootCertificates =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "clearTestRootCertificates", "()V");
+
+  env->CallStaticVoidMethod(jcls_AndroidNetworkLibrary, jmid_clearTestRootCertificates);
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callCertificateVerificationFromNative(
+    JNIEnv* env, jclass, jobjectArray certChain, jstring authType, jstring jhost) {
+  std::vector<std::string> cert_chain;
+  std::string auth_type;
+  std::string host;
+
+  JavaArrayOfByteArrayToStringVector(env, certChain, &cert_chain);
+  ConvertJavaStringToUTF8(env, authType, &auth_type);
+  ConvertJavaStringToUTF8(env, jhost, &host);
+
+  return jvm_verify_x509_cert_chain(cert_chain, auth_type, host);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callAddTestRootCertificateFromNative(
+    JNIEnv* env, jclass, jbyteArray jcert) {
+  std::vector<uint8_t> cert;
+  JavaArrayOfByteToBytesVector(env, jcert, &cert);
+  jvm_add_test_root_certificate(cert.data(), cert.size());
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callClearTestRootCertificateFromNative(JNIEnv*,
+                                                                                        jclass) {
+  jvm_clear_test_root_certificate();
 }
