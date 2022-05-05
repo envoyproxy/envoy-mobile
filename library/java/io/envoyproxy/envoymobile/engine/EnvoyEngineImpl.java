@@ -210,8 +210,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public void drainConnections() {
-    JniLibrary.drainConnections(engineHandle);
+  public void resetConnectivityState() {
+    JniLibrary.resetConnectivityState(engineHandle);
   }
 
   @Override

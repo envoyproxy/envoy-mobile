@@ -25,8 +25,10 @@ open class EngineBuilder: NSObject {
   private var enableHappyEyeballs: Bool = false
   private var enableInterfaceBinding: Bool = false
   private var enforceTrustChainVerification: Bool = true
+  private var enableDrainPostDnsRefresh: Bool = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
+  private var h2ExtendKeepaliveTimeout: Bool = false
   private var h2RawDomains: [String] = []
   private var maxConnectionsPerHost: UInt32 = 7
   private var statsFlushSeconds: UInt32 = 60
@@ -175,6 +177,20 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Specify whether to drain connections after the resolution of a soft DNS refresh.
+  /// A refresh may be triggered directly via the Engine API, or as a result of a network
+  /// status update provided by the OS. Draining connections does not interrupt existing
+  /// connections or requests, but will establish new connections for any further requests.
+  ///
+  /// - parameter enableDrainPostDnsRefresh: whether to drain connections after soft DNS refresh.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableDrainPostDnsRefresh(_ enableDrainPostDnsRefresh: Bool) -> Self {
+    self.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh
+    return self
+  }
+
   /// Specify whether to enforce TLS trust chain verification for secure sockets.
   ///
   /// - parameter enforceTrustChainVerification: whether to enforce trust chain verification.
@@ -209,6 +225,17 @@ open class EngineBuilder: NSObject {
   public func addH2ConnectionKeepaliveTimeoutSeconds(
     _ h2ConnectionKeepaliveTimeoutSeconds: UInt32) -> Self {
     self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds
+    return self
+  }
+
+  /// Extend the keepalive timeout when *any* frame is received on the owning HTTP/2 connection.
+  ///
+  /// - parameter h2ExtendKeepaliveTimeout: whether to extend the keepalive timeout.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func h2ExtendKeepaliveTimeout(_ h2ExtendKeepaliveTimeout: Bool) -> Self {
+    self.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout
     return self
   }
 
@@ -429,10 +456,12 @@ open class EngineBuilder: NSObject {
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
       enableHappyEyeballs: self.enableHappyEyeballs,
       enableInterfaceBinding: self.enableInterfaceBinding,
+      enableDrainPostDnsRefresh: self.enableDrainPostDnsRefresh,
       enforceTrustChainVerification: self.enforceTrustChainVerification,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
+      h2ExtendKeepaliveTimeout: self.h2ExtendKeepaliveTimeout,
       h2RawDomains: self.h2RawDomains,
       maxConnectionsPerHost: self.maxConnectionsPerHost,
       statsFlushSeconds: self.statsFlushSeconds,
