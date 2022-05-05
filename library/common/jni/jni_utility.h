@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "library/common/jni/import/jni_import.h"
 #include "library/common/types/c_types.h"
 
@@ -63,3 +66,19 @@ envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers);
 envoy_stats_tags to_native_tags(JNIEnv* env, jobjectArray tags);
 
 envoy_map to_native_map(JNIEnv* env, jobjectArray entries);
+
+/**
+ * Utilities to translate C++ std library constructs to their Java counterpart.
+ */
+jstring ConvertUTF8ToJavaString(JNIEnv* env, const std::string& str);
+
+jobjectArray ToJavaArrayOfByteArray(JNIEnv* env, const std::vector<std::string>& v);
+
+jbyteArray ToJavaByteArray(JNIEnv* env, const uint8_t* bytes, size_t len);
+
+void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
+                                        std::vector<std::string>* out);
+
+void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uint8_t>* out);
+
+void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result);

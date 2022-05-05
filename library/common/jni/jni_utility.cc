@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <codecvt>
+
 #include "source/common/common/assert.h"
 
 #include "library/common/jni/jni_support.h"
@@ -254,4 +256,62 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries) {
 
   envoy_map native_map = {length / 2, entry_array};
   return native_map;
+}
+
+jstring ConvertUTF8ToJavaString(JNIEnv* env, const std::string& str) {
+  std::u16string utf16 =
+      std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(str);
+  const jchar* jutf16 = reinterpret_cast<const jchar*>(utf16.data());
+  return env->NewString(jutf16, utf16.length());
+}
+
+jobjectArray ToJavaArrayOfByteArray(JNIEnv* env, const std::vector<std::string>& v) {
+  jclass jcls_byte_array = env->FindClass("[B");
+  jobjectArray joa = env->NewObjectArray(v.size(), jcls_byte_array, nullptr);
+
+  for (size_t i = 0; i < v.size(); ++i) {
+    jbyteArray byte_array =
+        ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(v[i].data()), v[i].length());
+    env->SetObjectArrayElement(joa, i, byte_array);
+  }
+  return joa;
+}
+
+jbyteArray ToJavaByteArray(JNIEnv* env, const uint8_t* bytes, size_t len) {
+  jbyteArray byte_array = env->NewByteArray(len);
+
+  env->SetByteArrayRegion(byte_array, 0, len, reinterpret_cast<const jbyte*>(bytes));
+
+  return byte_array;
+}
+
+void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
+                                        std::vector<std::string>* out) {
+  size_t len = env->GetArrayLength(array);
+  out->resize(len);
+  for (size_t i = 0; i < len; ++i) {
+    jbyteArray bytes_array = static_cast<jbyteArray>(env->GetObjectArrayElement(array, i));
+    jsize bytes_len = env->GetArrayLength(bytes_array);
+    jbyte* bytes = env->GetByteArrayElements(bytes_array, nullptr);
+    (*out)[i].assign(reinterpret_cast<const char*>(bytes), bytes_len);
+    env->ReleaseByteArrayElements(bytes_array, bytes, JNI_ABORT);
+  }
+}
+
+void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uint8_t>* out) {
+  const size_t len = env->GetArrayLength(array);
+  out->resize(len);
+  jbyte* jbytes = env->GetByteArrayElements(array, nullptr);
+  uint8_t* bytes = reinterpret_cast<uint8_t*>(jbytes);
+  std::copy(bytes, bytes + len, out->begin());
+  env->ReleaseByteArrayElements(array, jbytes, JNI_ABORT);
+}
+
+void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result) {
+  const jsize length = env->GetStringLength(str);
+  const jchar* chars = env->GetStringChars(str, NULL);
+  std::string utf8 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(
+      reinterpret_cast<const char16_t*>(chars));
+  *result = utf8;
+  env->ReleaseStringChars(str, chars);
 }
