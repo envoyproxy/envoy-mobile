@@ -64,6 +64,15 @@ public class CancelProofEnvoyStreamTest {
   }
 
   @Test
+  public void setStream_afterCancel() {
+    cancelProofEnvoyStream.cancel();
+
+    cancelProofEnvoyStream.setStream(mMockedStream);
+
+    assertThat(mCancelInvocationCount.get()).isOne();
+  }
+
+  @Test
   public void setStream_twice() {
     cancelProofEnvoyStream.setStream(mMockedStream);
 
@@ -91,17 +100,6 @@ public class CancelProofEnvoyStreamTest {
   public void sendHeaders_afterCancel() {
     cancelProofEnvoyStream.setStream(mMockedStream);
     cancelProofEnvoyStream.cancel();
-
-    cancelProofEnvoyStream.sendHeaders(HEADERS, false);
-
-    assertThat(mSendHeadersInvocationCount.get()).isZero();
-    assertThat(mCancelInvocationCount.get()).isOne();
-  }
-
-  @Test
-  public void sendHeaders_canceledBeforeSettingStream() {
-    cancelProofEnvoyStream.cancel();
-    cancelProofEnvoyStream.setStream(mMockedStream);
 
     cancelProofEnvoyStream.sendHeaders(HEADERS, false);
 
@@ -153,17 +151,6 @@ public class CancelProofEnvoyStreamTest {
   }
 
   @Test
-  public void sendData_canceledBeforeSettingStream() {
-    cancelProofEnvoyStream.cancel();
-    cancelProofEnvoyStream.setStream(mMockedStream);
-
-    cancelProofEnvoyStream.sendData(BYTE_BUFFER, false);
-
-    assertThat(mSendDataInvocationCount.get()).isZero();
-    assertThat(mCancelInvocationCount.get()).isOne();
-  }
-
-  @Test
   public void sendData_postponedCancelGetsExecutedToo() throws Exception {
     cancelProofEnvoyStream.setStream(mMockedStream);
     mSendDataBlock.close(); // Following Thread will block on executing sendData
@@ -199,17 +186,6 @@ public class CancelProofEnvoyStreamTest {
   public void readData_afterCancel() {
     cancelProofEnvoyStream.setStream(mMockedStream);
     cancelProofEnvoyStream.cancel();
-
-    cancelProofEnvoyStream.readData(1);
-
-    assertThat(mReadDataInvocationCount.get()).isZero();
-    assertThat(mCancelInvocationCount.get()).isOne();
-  }
-
-  @Test
-  public void readData_canceledBeforeSettingStream() {
-    cancelProofEnvoyStream.cancel();
-    cancelProofEnvoyStream.setStream(mMockedStream);
 
     cancelProofEnvoyStream.readData(1);
 
@@ -328,15 +304,15 @@ public class CancelProofEnvoyStreamTest {
     for (int i = 0; i < threads.length; i++) {
       threads[i] = new Thread(() -> {
         switch (count.getAndIncrement() % 3) {
-          case 0:
-            cancelProofEnvoyStream.sendHeaders(HEADERS, false);
-            break;
-          case 1:
-            cancelProofEnvoyStream.sendData(BYTE_BUFFER, false);
-            break;
-          case 2:
-            cancelProofEnvoyStream.readData(1);
-            break;
+        case 0:
+          cancelProofEnvoyStream.sendHeaders(HEADERS, false);
+          break;
+        case 1:
+          cancelProofEnvoyStream.sendData(BYTE_BUFFER, false);
+          break;
+        case 2:
+          cancelProofEnvoyStream.readData(1);
+          break;
         }
       });
     }
