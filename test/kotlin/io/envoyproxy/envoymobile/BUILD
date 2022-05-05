@@ -2,13 +2,23 @@ load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_kt_test")
 
 licenses(["notice"])  # Apache 2
 
+java_library(
+    name = "fztest",
+    resources = glob(["resources/**"]),
+)
+
 envoy_mobile_kt_test(
     name = "engine_builder_test",
     srcs = [
         "EngineBuilderTest.kt",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the JVM paths are allow-listed in the sandbox.
+        "sandboxAllowed": "False",
+    },
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
+        ":fztest",
     ],
 )
 
