@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
 
@@ -27,15 +26,25 @@ public class CancelProofEnvoyStreamTest {
   private static final ByteBuffer BYTE_BUFFER = ByteBuffer.allocateDirect(1);
   private static final HashMap<String, List<String>> HEADERS = new HashMap<>();
 
+  // This mocked version of the EnvoyHTTPStream allows to block while executing of some of its
+  // methods. This is used to easily simulate concurrent invocations of those methods.
+  private final MockedStream mMockedStream = new MockedStream();
+
+  // When "closed", these the condition variables are blocking the execution of the corresponding
+  // method being overridden in MockedStream. A "multi-thread" test can then open the ones it wants.
   private final ConditionVariable mSendHeadersBlock = new ConditionVariable();
   private final ConditionVariable mSendDataBlock = new ConditionVariable();
   private final ConditionVariable mReadDataBlock = new ConditionVariable();
+
   private final AtomicInteger mSendHeadersInvocationCount = new AtomicInteger();
   private final AtomicInteger mSendDataInvocationCount = new AtomicInteger();
   private final AtomicInteger mReadDataInvocationCount = new AtomicInteger();
   private final AtomicInteger mCancelInvocationCount = new AtomicInteger();
-  private final AtomicReference<ByteBuffer> mByteBufferSent = new AtomicReference<>();
-  private final MockedStream mMockedStream = new MockedStream();
+
+  // This is used to guarantee that many Threads have reach a blocking point. Example, if 10
+  // Threads are to be blocked while executing some of the MockedStream methods, then this latch
+  // will unblock only when those 10 Threads have reached that blocking point. So to avoid race
+  // conditions, a "multi-thread" test must wait for this CountDownLatch to unlock.
   private CountDownLatch mStartLatch = new CountDownLatch(0); // By default no latch.
 
   private final CancelProofEnvoyStream cancelProofEnvoyStream = new CancelProofEnvoyStream();
@@ -252,6 +261,8 @@ public class CancelProofEnvoyStreamTest {
     // This is the desired outcome - the cancel is postponed. Once the stream is set, the next
     // Stream Operation will invoke "cancel".
     cancelProofEnvoyStream.cancel();
+    // Note: asserting that mCancelInvocationCount is zero is pointless here. It is the MockedStream
+    // that can increment the cancel invocation count, and this test does not invoke setStream.
   }
 
   @Test
@@ -357,7 +368,6 @@ public class CancelProofEnvoyStreamTest {
 
     @Override
     public void sendData(ByteBuffer data, int length, boolean endStream) {
-      mByteBufferSent.set(data);
       mSendDataInvocationCount.incrementAndGet();
       mStartLatch.countDown();
       mSendDataBlock.block();
