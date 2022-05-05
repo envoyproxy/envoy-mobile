@@ -1015,7 +1015,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerStringAccessor(JNIEnv* 
   return result;
 }
 
-extern "C" JNIEXPORT int JNICALL
+extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_resetConnectivityState(JNIEnv* env,
                                                                         jclass, // class
                                                                         jlong engine) {
