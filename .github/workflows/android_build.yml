@@ -24,11 +24,11 @@ jobs:
       - run: echo "Found envoy.aar from previous run!"
         if: steps.check-cache.outputs.cache-hit == 'true'
         name: 'Build cache hit'
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         if: steps.check-cache.outputs.cache-hit != 'true'
         with:
-          java-version: '8'
-          java-package: jdk
+          java-version: '11'
+          distribution: 'zulu'
           architecture: x64
       - name: 'Install dependencies'
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -52,10 +52,10 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
-          java-version: '8'
-          java-package: jdk
+          java-version: '11'
+          distribution: 'zulu'
           architecture: x64
       - run: ./ci/mac_ci_setup.sh --android
         name: 'Install dependencies'
@@ -94,10 +94,10 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
-          java-version: '8'
-          java-package: jdk
+          java-version: '11'
+          distribution: 'zulu'
           architecture: x64
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
@@ -137,10 +137,10 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
-          java-version: '8'
-          java-package: jdk
+          java-version: '11'
+          distribution: 'zulu'
           architecture: x64
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh --android
@@ -180,10 +180,10 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
-          java-version: '8'
-          java-package: jdk
+          java-version: '11'
+          distribution: 'zulu'
           architecture: x64
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
