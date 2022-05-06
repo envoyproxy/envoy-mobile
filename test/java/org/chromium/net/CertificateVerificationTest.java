@@ -24,6 +24,9 @@ public final class CertificateVerificationTest {
     JniLibrary.load();
   }
 
+  private static final String authType = "";
+  private static final String host = "";
+
   @Before
   public void setUp() throws Exception {
     AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(true);
@@ -39,8 +42,6 @@ public final class CertificateVerificationTest {
   public void testChainWithNonRootCertificate() throws Exception {
     final String[] fakeCertChain = new String[] {"fake cert"};
     final byte[][] certChain = new byte[][] {fakeCertChain[0].getBytes()};
-    final String authType = "";
-    final String host = "";
 
     AndroidCertVerifyResult result =
         (AndroidCertVerifyResult)JniLibrary.callCertificateVerificationFromNative(certChain,
@@ -52,8 +53,6 @@ public final class CertificateVerificationTest {
   public void testChainWithRootCertificate() throws Exception {
     final String[] fakeCertChain = new String[] {"fake cert"};
     final byte[][] certChain = new byte[][] {fakeCertChain[0].getBytes()};
-    final String authType = "";
-    final String host = "";
 
     JniLibrary.callAddTestRootCertificateFromNative(certChain[0]);
     AndroidCertVerifyResult result =
@@ -66,8 +65,6 @@ public final class CertificateVerificationTest {
   public void testClearTestRootCertificate() throws Exception {
     final String[] fakeCertChain = new String[] {"fake cert"};
     final byte[][] certChain = new byte[][] {fakeCertChain[0].getBytes()};
-    final String authType = "";
-    final String host = "";
 
     JniLibrary.callAddTestRootCertificateFromNative(certChain[0]);
     JniLibrary.callClearTestRootCertificateFromNative();
@@ -82,8 +79,6 @@ public final class CertificateVerificationTest {
     final String[] fakeCertChain = new String[] {"fake cert", "another fake cert"};
     final byte[][] certChain =
         new byte[][] {fakeCertChain[0].getBytes(), fakeCertChain[1].getBytes()};
-    final String authType = "";
-    final String host = "";
 
     AndroidCertVerifyResult result =
         (AndroidCertVerifyResult)JniLibrary.callCertificateVerificationFromNative(certChain,
@@ -96,8 +91,6 @@ public final class CertificateVerificationTest {
     final String[] fakeCertChain = new String[] {"fake cert", "another fake cert"};
     final byte[][] certChain =
         new byte[][] {fakeCertChain[0].getBytes(), fakeCertChain[1].getBytes()};
-    final String authType = "";
-    final String host = "";
 
     JniLibrary.callAddTestRootCertificateFromNative(certChain[0]);
     AndroidCertVerifyResult result =
@@ -111,8 +104,6 @@ public final class CertificateVerificationTest {
     final String[] fakeCertChain = new String[] {"fake cert", "another fake cert"};
     final byte[][] certChain =
         new byte[][] {fakeCertChain[0].getBytes(), fakeCertChain[1].getBytes()};
-    final String authType = "";
-    final String host = "";
 
     JniLibrary.callAddTestRootCertificateFromNative(certChain[0]);
     JniLibrary.callAddTestRootCertificateFromNative(certChain[1]);

@@ -24,7 +24,8 @@ public final class FakeX509Util {
 
   public static void clearTestRootCertificates() { validFakeCerts.clear(); }
 
-  /* Fake certificate chain verification. Returns CertVerifyStatusAndroid.OK only if all
+  /**
+   * Performs fake certificate chain verification. Returns CertVerifyStatusAndroid.OK only if all
    * certificates in the chain have been previously registered as root certificates,
    * CertVerifyStatusAndroid.NO_TRUSTED_ROOT otherwise.
    */
