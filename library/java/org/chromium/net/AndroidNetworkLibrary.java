@@ -13,10 +13,10 @@ public final class AndroidNetworkLibrary {
   private static boolean mUseFakeCertificateVerification;
 
   /**
-   * Wheter a fake should be used in place of X509Util. This allows to easily test the JNI
-   * calls interaction in robolectric tests.
+   * Whether a fake should be used in place of X509Util. This allows to easily test the JNI
+   * call interaction in robolectric tests.
    *
-   * @param useFakeCertificateVerification Wheter FakeX509Util should be used or not.
+   * @param useFakeCertificateVerification Whether FakeX509Util should be used or not.
    */
   public static void
   setFakeCertificateVerificationForTesting(boolean useFakeCertificateVerification) {
