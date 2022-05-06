@@ -474,10 +474,8 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
         // that send window is available, on the next dispatcher iteration so
         // that repeated writes do not starve reads.
         direct_stream->wants_write_notification_ = false;
-        if (scheduled_callback_ == nullptr) {
-          scheduled_callback_ = dispatcher_.createSchedulableCallback(
-              [direct_stream] { direct_stream->callbacks_->onSendWindowAvailable(); });
-        }
+        scheduled_callback_ = dispatcher_.createSchedulableCallback(
+            [direct_stream] { direct_stream->callbacks_->onSendWindowAvailable(); });
         scheduled_callback_->scheduleCallbackNextIteration();
       } else {
         // Otherwise, make sure the stack will send a notification when the
