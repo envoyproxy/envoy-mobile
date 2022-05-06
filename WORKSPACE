@@ -54,8 +54,8 @@ declare_python_abi(name = "python_abi", python_version = "3")
 load("//bazel:android_configure.bzl", "android_configure")
 android_configure(
     name = "local_config_android",
-    sdk_api_level = 30,
-    ndk_api_level = 21,
+    sdk_api_level = 31,
+    ndk_api_level = 31,
     build_tools_version = "30.0.2"
 )
 
