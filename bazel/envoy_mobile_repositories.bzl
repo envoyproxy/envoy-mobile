@@ -98,12 +98,6 @@ def swift_repos():
 
 def kotlin_repos():
     http_archive(
-        name = "rules_java",
-        sha256 = "8c376f1e4ab7d7d8b1880e4ef8fc170862be91b7c683af97ca2768df546bb073",
-        url = "https://github.com/bazelbuild/rules_java/releases/download/5.0.0/rules_java-5.0.0.1.tar.gz",
-    )
-
-    http_archive(
         name = "rules_jvm_external",
         sha256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca",
         strip_prefix = "rules_jvm_external-4.2",
@@ -112,15 +106,17 @@ def kotlin_repos():
 
     http_archive(
         name = "io_bazel_rules_kotlin",
-        sha256 = "12d22a3d9cbcf00f2e2d8f0683ba87d3823cb8c7f6837568dd7e48846e023307",
-        url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v1.5.0/rules_kotlin_release.tgz",
+        sha256 = "dc1c76f91228ddaf4f7ca4190b82d61939e95369f61dea715e8be28792072b1b",
+        strip_prefix = "rules_kotlin-legacy-1.3.0-rc2",
+        type = "zip",
+        urls = ["https://github.com/bazelbuild/rules_kotlin/archive/legacy-1.3.0-rc2.zip"],
     )
 
     http_archive(
         name = "rules_detekt",
-        sha256 = "44912c74dc2e164227b1102ef36227d0e78fdbd7c7359868ae13424eb4f0d5c2",
-        strip_prefix = "bazel_rules_detekt-0.6.0",
-        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.6.0.tar.gz",
+        sha256 = "b1b4c8a3228f880a169ab60a817619bc4cf254443196e7e108ece411cb9c580e",
+        strip_prefix = "bazel_rules_detekt-0.3.0",
+        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.3.0.tar.gz",
     )
 
     # gRPC java for @rules_proto_grpc

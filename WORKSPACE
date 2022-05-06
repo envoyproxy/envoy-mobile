@@ -61,5 +61,3 @@ android_configure(
 
 load("@local_config_android//:android_configure.bzl", "android_workspace")
 android_workspace()
-
-register_toolchains("//:java11_for8_toolchain_definition")

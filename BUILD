@@ -1,18 +1,6 @@
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
-load(
-    "@bazel_tools//tools/jdk:default_java_toolchain.bzl",
-    "default_java_toolchain",
-)
+load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
 
 licenses(["notice"])  # Apache 2
-
-default_java_toolchain(
-    name = "java11_for8_toolchain",
-    java_runtime = "//tools/jdk:remote_jdk11",
-    source_version = "8",
-    target_version = "8",
-    visibility = ["//visibility:public"],
-)
 
 alias(
     name = "ios_framework",
