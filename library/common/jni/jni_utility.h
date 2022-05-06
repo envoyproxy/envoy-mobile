@@ -69,6 +69,7 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries);
 
 /**
  * Utilities to translate C++ std library constructs to their Java counterpart.
+ * The underlying data is always copied to disentangle C++ and Java objects lifetime.
  */
 jstring ConvertUTF8ToJavaString(JNIEnv* env, const std::string& str);
 

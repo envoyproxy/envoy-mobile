@@ -279,9 +279,8 @@ jobjectArray ToJavaArrayOfByteArray(JNIEnv* env, const std::vector<std::string>&
 
 jbyteArray ToJavaByteArray(JNIEnv* env, const uint8_t* bytes, size_t len) {
   jbyteArray byte_array = env->NewByteArray(len);
-
-  env->SetByteArrayRegion(byte_array, 0, len, reinterpret_cast<const jbyte*>(bytes));
-
+  const jbyte* jbytes = reinterpret_cast<const jbyte*>(bytes);
+  env->SetByteArrayRegion(byte_array, /*start=*/0, len, jbytes);
   return byte_array;
 }
 
@@ -289,29 +288,40 @@ void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
                                         std::vector<std::string>* out) {
   size_t len = env->GetArrayLength(array);
   out->resize(len);
+
   for (size_t i = 0; i < len; ++i) {
     jbyteArray bytes_array = static_cast<jbyteArray>(env->GetObjectArrayElement(array, i));
     jsize bytes_len = env->GetArrayLength(bytes_array);
-    jbyte* bytes = env->GetByteArrayElements(bytes_array, nullptr);
+    // We don't care whether the returned array is a copy or not as we're simply
+    // copying it into C++ owned memory.
+    jbyte* bytes = env->GetByteArrayElements(bytes_array, /*isCopy=*/nullptr);
     (*out)[i].assign(reinterpret_cast<const char*>(bytes), bytes_len);
+    // There is nothing to write back, it is always safe to JNI_ABORT.
     env->ReleaseByteArrayElements(bytes_array, bytes, JNI_ABORT);
+    // Explicitly delete to keep the local ref count low.
+    env->DeleteLocalRef(bytes_array);
   }
 }
 
 void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uint8_t>* out) {
   const size_t len = env->GetArrayLength(array);
   out->resize(len);
-  jbyte* jbytes = env->GetByteArrayElements(array, nullptr);
+
+  // We don't care whether the returned array is a copy or not as we're simply
+  // copying it into C++ owned memory.
+  jbyte* jbytes = env->GetByteArrayElements(array, /*isCopy=*/nullptr);
   uint8_t* bytes = reinterpret_cast<uint8_t*>(jbytes);
   std::copy(bytes, bytes + len, out->begin());
+  // There is nothing to write back, it is always safe to JNI_ABORT.
   env->ReleaseByteArrayElements(array, jbytes, JNI_ABORT);
 }
 
 void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result) {
-  const jsize length = env->GetStringLength(str);
-  const jchar* chars = env->GetStringChars(str, NULL);
+  // We don't care whether the returned string is a copy or not as we're simply
+  // copying it into C++ owned memory.
+  const jchar* utf16 = env->GetStringChars(str, /*isCopy=*/nullptr);
   std::string utf8 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(
-      reinterpret_cast<const char16_t*>(chars));
+      reinterpret_cast<const char16_t*>(utf16));
   *result = utf8;
-  env->ReleaseStringChars(str, chars);
+  env->ReleaseStringChars(str, utf16);
 }

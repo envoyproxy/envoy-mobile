@@ -511,4 +511,4 @@ typedef enum {
   // Certificate is not trusted because it has an extendedKeyUsage field, but
   // its value is not correct for a web server.
   CERT_VERIFY_STATUS_ANDROID_INCORRECT_KEY_USAGE = -6,
-} envoy_cert_verify_status_t;
+} envoy_cert_verify_status_android_t;
