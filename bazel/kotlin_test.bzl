@@ -1,4 +1,4 @@
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
 load("//bazel:kotlin_lib.bzl", "native_lib_name")
 
 def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], repository = "", exec_properties = {}):
@@ -20,7 +20,6 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], reposito
             repository + "//bazel:envoy_mobile_test_suite",
             "@maven//:org_assertj_assertj_core",
             "@maven//:junit_junit",
-            "@maven//:org_mockito_mockito_inline",
             "@maven//:org_mockito_mockito_core",
         ] + deps,
         data = data,
@@ -93,7 +92,6 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = [], repositor
             "@robolectric//bazel:android-all",
             "@maven//:org_assertj_assertj_core",
             "@maven//:junit_junit",
-            "@maven//:org_mockito_mockito_inline",
             "@maven//:org_mockito_mockito_core",
             "@maven//:com_squareup_okhttp3_okhttp",
             "@maven//:com_squareup_okhttp3_mockwebserver",

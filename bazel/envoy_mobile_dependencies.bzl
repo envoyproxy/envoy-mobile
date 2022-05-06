@@ -3,7 +3,7 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories", "kotlinc_version")
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 load("@rules_proto_grpc//protobuf:repositories.bzl", "protobuf_repos")
 load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
@@ -63,9 +63,9 @@ def kotlin_dependencies(extra_maven_dependencies = []):
             "com.google.code.findbugs:jsr305:3.0.2",
             "com.google.flatbuffers:flatbuffers-java:2.0.3",
             # Kotlin
-            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
-            "org.jetbrains.kotlin:kotlin-stdlib-common:1.3.11",
-            "org.jetbrains.kotlin:kotlin-stdlib:1.3.11",
+            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",
+            "org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10",
+            "org.jetbrains.kotlin:kotlin-stdlib:1.6.10",
             "androidx.recyclerview:recyclerview:1.1.0",
             "androidx.core:core:1.3.2",
             # Dokka
@@ -73,14 +73,12 @@ def kotlin_dependencies(extra_maven_dependencies = []):
             "org.jetbrains.dokka:javadoc-plugin:1.5.31",
             # Test artifacts
             "org.assertj:assertj-core:3.12.0",
-            "junit:junit:4.12",
-            "net.bytebuddy:byte-buddy-agent:jar:1.10.17",
-            "net.bytebuddy:byte-buddy:jar:1.10.17",
-            "org.mockito:mockito-inline:3.3.3",
-            "org.mockito:mockito-core:3.3.3",
+            "junit:junit:jar:4.12",
+            "org.mockito:mockito-android:4.5.1",
+            "org.mockito:mockito-core:4.5.1",
             "com.squareup.okhttp3:okhttp:4.9.1",
             "com.squareup.okhttp3:mockwebserver:4.9.1",
-            "io.github.classgraph:classgraph:4.8.121",
+            "io.github.classgraph:classgraph:4.8.146",
             "io.netty:netty-all:4.1.74.Final",
             # Android test artifacts
             "androidx.test:core:1.3.0",
@@ -98,7 +96,12 @@ def kotlin_dependencies(extra_maven_dependencies = []):
             "https://maven.google.com",
         ],
     )
-    kotlin_repositories()
+    kotlin_repositories(
+        compiler_release = kotlinc_version(
+            release = "1.6.10",
+            sha256 = "432267996d0d6b4b17ca8de0f878e44d4a099b7e9f1587a98edc4d27e76c215a",
+        ),
+    )
     rules_detekt_dependencies()
     robolectric_repositories()
 
