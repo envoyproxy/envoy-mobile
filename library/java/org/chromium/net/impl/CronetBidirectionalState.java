@@ -1,7 +1,6 @@
 package org.chromium.net.impl;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.Nullable;
 
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.impl.RequestFinishedInfoImpl.FinishedReason;
@@ -11,12 +10,75 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *  Holder the the current state associated to a bidirectional stream. The main goal is to provide
- *  a mean to determine what should be the next action for a given event by considering the
- *  current state. This class uses Compare And Swap logic. The next state is saved with
- *  {@code AtomicInteger.compareAndSet()}.
+ * Holder the the current state associated to a bidirectional stream. The main goal is to provide
+ * a mean to determine what should be the next action for a given event by considering the
+ * current state. This class uses Compare And Swap logic. The next state is saved with
+ * {@code AtomicInteger.compareAndSet()}.
  *
- *  <p>All methods in this class are Thread Safe.
+ * <p>All methods in this class are Thread Safe.
+ *
+ * <p><b>WRITE state diagram</b>
+ * <li>There are 11 states represented by these 5 State bits: State.HEADERS_SENT,
+ * State.WAITING_FOR_FLUSH, State.WRITING, State.END_STREAM_WRITTEN, and State.WRITE_DONE.
+ * <li>The USER_WRITE event can occur on any state - it does not change the state. However, if
+ * attempted after a USER_LAST_WRITE event, the this will throw an Exception. It is absent from
+ * the diagram.
+ * <li>The WRITE_COMPLETED event does not change the state and is therefore absent for the diagram.
+ * <li>The USER_FLUSH event won't change the state if the mFlushData is empty, or the bit state
+ * WAITING_FOR_FLUSH is false;
+ *
+ * <p><pre>
+ * []:                                                    Starting
+ * [END_STREAM_WRITTEN]:                                  Ending
+ * [WAITING_FOR_FLUSH]:                                   ReadyWaitHeaders
+ * [WAITING_FOR_FLUSH, HEADERS_SENT]:                     Ready
+ * [WAITING_FOR_FLUSH, END_STREAM_WRITTEN]:          ReadyWaitHeadersAndEnding
+ * [WAITING_FOR_FLUSH, END_STREAM_WRITTEN, DONE]:         WaitHeaders
+ * [WAITING_FOR_FLUSH, END_STREAM_WRITTEN, HEADERS_SENT]: ReadyAndEnding
+ * [WRITING, HEADERS_SENT]:                               Busy
+ * [WRITING, HEADERS_SENT, END_STREAM_WRITTEN]:           BusyAndEnding
+ * [END_STREAM_WRITTEN, HEADERS_SENT]:                    WaitingDone
+ * [WRITE_DONE, END_STREAM_WRITTEN, HEADERS_SENT]:        WriteDone
+ *
+ *
+ * |-------------|     USER_START_    |-----------| <-- LAST_WRITE_COMPLETED --
+ * |  Starting   | -- WITH_HEADERS -> | WriteDone | <---------------          |
+ * |-------------|     _READ_ONLY     |-----------| <---------     |          |
+ *  |     |  |  |                                            |     |          |
+ *  |     |  |  -- USER_START_READ_ONLY --                   |     |          |
+ *  |     |  |                           V                   |     |          |
+ *  |     |  |                |-------------| -- USER_FLUSH --     |          |
+ *  |     |  |                | WaitHeaders |                      |          |
+ *  |     |  |                |-------------| <--------            |          |
+ *  |     |  |                                        |            |          |
+ *  |     |  -- USER_LAST_WRITE ---                   |            |          |
+ *  |     |                       V                   |            |          |
+ *  |     |                  |--------| -- USER_START_READ_ONLY    |          |
+ *  |     |                  | Ending | -- USER_START_WITH_HEADERS_READ_ONLY  |
+ *  |  USER_START            |--------| -- USER_START_WITH_HEADERS            |
+ *  |     V                       |                        V                  |
+ *  |  |------------------|       ----------------  |----------------|        |
+ *  |  | ReadyWaitHeaders | -- USER_LAST_WRITE   |  | ReadyAndEnding | --     |
+ *  |  |------------------| --        |          |  |----------------|  |     |
+ *  |                        |        |          |                      |     |
+ *  |                        |        |          -- USER_START-----     |     |
+ * USER_START_WITH_HEADERS   |        V                           |     |     |
+ *    |                      |  |---------------------------| <----     |     |
+ *    |  ------------------->|  | ReadyWaitHeadersAndEnding |           |     |
+ *    V  |                   |  |---------------------------| --------->|     |
+ * |-------| <--USER_FLUSH ---                                  |       |     |
+ * | Ready | ------------------------ USER_LAST_WRITE ----      |  USER_FLUSH |
+ * |-------| <--------                                   V      |       |     |
+ *    |              |                             |----------------|   |     |
+ *    |              |         READY_TO_FLUSH ---- | ReadyAndEnding | <--     |
+ * READY_TO_FLUSH    |             V           --> |----------------|         |
+ *    V              |     |---------------|   |              |               |
+ * |------|          |     | BusyAndEnding |   |      READY_TO_FLUSH_LAST     |
+ * | Busy |          |     |---------------|   |              V               |
+ * |______|          |             |           |       |-------------|        |
+ *    |              |      ON_SEND_WINDOW_AVAILABLE   | WaitingDone | --------
+ * ON_SEND_WINDOW_AVAILABLE                            |-------------|
+ * </pre>
  */
 final class CronetBidirectionalState {
 
@@ -35,19 +97,21 @@ final class CronetBidirectionalState {
       Event.USER_FLUSH,
       Event.USER_READ,
       Event.USER_CANCEL,
+      Event.ON_SEND_WINDOW_AVAILABLE,
       Event.ON_HEADERS,
       Event.ON_HEADERS_END_STREAM,
       Event.ON_DATA,
       Event.ON_DATA_END_STREAM,
+      Event.ON_TRAILERS,
       Event.ON_COMPLETE,
       Event.ON_CANCEL,
       Event.ON_ERROR,
       Event.ERROR,
+      Event.STREAM_READY_CALLBACK_DONE,
       Event.READY_TO_FLUSH,
-      Event.FLUSH_DATA_COMPLETED,
-      Event.LAST_FLUSH_DATA_COMPLETED,
+      Event.READY_TO_FLUSH_LAST,
       Event.WRITE_COMPLETED,
-      Event.READY_TO_READ,
+      Event.READY_TO_START_POSTPONED_READ_IF_ANY,
       Event.READ_COMPLETED,
       Event.LAST_WRITE_COMPLETED,
       Event.LAST_READ_COMPLETED,
@@ -64,84 +128,131 @@ final class CronetBidirectionalState {
     int USER_FLUSH = 6;      // User requesting to push the pending buffers/headers on the wire.
     int USER_READ = 7;       // User requesting to read the next chunk from the wire.
     int USER_CANCEL = 8;     // User requesting to cancel the stream.
-    int ON_HEADERS = 9;      // EM invoked the "onHeaders" callback - response body to come.
-    int ON_HEADERS_END_STREAM = 10; // EM invoked the "onHeaders" callback - no response body.
-    int ON_DATA = 11;            // EM invoked the "onData" callback - not last "onData" callback.
-    int ON_DATA_END_STREAM = 12; // EM invoked the "onData" callback - final "onData" callback.
-    int ON_COMPLETE = 13;        // EM invoked the "onComplete" callback.
-    int ON_CANCEL = 14;          // EM invoked the "onCancel" callback.
-    int ON_ERROR = 15;           // EM invoked the "onError" callback.
-    int ERROR = 16;              // A fatal error occurred. Can be an internal, or user related.
-    int READY_TO_FLUSH = 17; // Internal Event indicating readiness to write the next ByteBuffer.
-    int FLUSH_DATA_COMPLETED = 18;      // Internal event indicating that a write completed.
-    int LAST_FLUSH_DATA_COMPLETED = 19; // Internal event indicating that the final write completed.
-    int WRITE_COMPLETED = 20; // Internal event indicating to tell the user about a completed write.
-    int READY_TO_READ = 21;   // Internal event indicating that the ReadBuffer is accessible.
-    int READ_COMPLETED = 22;  // Internal event indicating to tell the user about a completed read.
-    int LAST_WRITE_COMPLETED = 23; // Internal event indicating to tell the user about final write.
-    int LAST_READ_COMPLETED = 24;  // Internal event indicating to tell the user about final read.
-    int READY_TO_FINISH = 25;      // Internal event indicating to tell the user about success.
+    int ON_SEND_WINDOW_AVAILABLE = 9; // EM invoked the "onSendWindowAvailable" callback.
+    int ON_HEADERS = 10;            // EM invoked the "onHeaders" callback - response body to come.
+    int ON_HEADERS_END_STREAM = 11; // EM invoked the "onHeaders" callback - no response body.
+    int ON_DATA = 12;            // EM invoked the "onData" callback - not last "onData" callback.
+    int ON_DATA_END_STREAM = 13; // EM invoked the "onData" callback - final "onData" callback.
+    int ON_TRAILERS = 14;        // EM invoked the "onTrailers" callback.
+    int ON_COMPLETE = 15;        // EM invoked the "onComplete" callback.
+    int ON_CANCEL = 16;          // EM invoked the "onCancel" callback.
+    int ON_ERROR = 17;           // EM invoked the "onError" callback.
+    int ERROR = 18;              // A fatal error occurred. Can be an internal, or user related.
+    int STREAM_READY_CALLBACK_DONE = 19; // Callback.streamReady() was executed.
+    int READY_TO_FLUSH = 20; // Internal Event indicating readiness to write the next ByteBuffer.
+    int READY_TO_FLUSH_LAST = 21; // Internal Event indicating readiness to write last ByteBuffer.
+    int WRITE_COMPLETED = 22; // Internal event indicating to tell the user about a completed write.
+    int READY_TO_START_POSTPONED_READ_IF_ANY = 23; // Internal event. The Enum name says it all...
+    int READ_COMPLETED = 24; // Internal event indicating to tell the user about a completed read.
+    int LAST_WRITE_COMPLETED = 25; // Internal event indicating to tell the user about final write.
+    int LAST_READ_COMPLETED = 26;  // Internal event indicating to tell the user about final read.
+    int READY_TO_FINISH = 27;      // Internal event indicating to tell the user about success.
   }
 
   /**
    * Enum of the Next Actions to be taken.
+   *
+   * <p>There are two types of "NextAction": the ones requesting to notify the user, and the
+   * internal ones. For the User notifications, "Schedule" means that the Network Thread is posting
+   * a task that will perform the notification, and "Execute" means that the logic is already
+   * running under a Thread specified by the User - the notification is executed directly.
    */
-  @IntDef({NextAction.CARRY_ON, NextAction.WRITE, NextAction.FLUSH_HEADERS, NextAction.SEND_DATA,
-           NextAction.READ, NextAction.RECORD_READ_BUFFER, NextAction.INVOKE_ON_READ_COMPLETED,
-           NextAction.INVOKE_ON_ERROR_RECEIVED, NextAction.CANCEL,
-           NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK,
-           NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK, NextAction.INVOKE_ON_SUCCEEDED,
-           NextAction.INVOKE_ON_FAILED, NextAction.INVOKE_ON_CANCELED,
-           NextAction.TAKE_NO_MORE_ACTIONS})
+  @IntDef({NextAction.NOTIFY_USER_STREAM_READY, NextAction.NOTIFY_USER_HEADERS_RECEIVED,
+           NextAction.NOTIFY_USER_WRITE_COMPLETED, NextAction.NOTIFY_USER_READ_COMPLETED,
+           NextAction.NOTIFY_USER_TRAILERS_RECEIVED, NextAction.NOTIFY_USER_SUCCEEDED,
+           NextAction.NOTIFY_USER_NETWORK_ERROR, NextAction.NOTIFY_USER_FAILED,
+           NextAction.NOTIFY_USER_CANCELED, NextAction.WRITE, NextAction.CHAIN_NEXT_WRITE,
+           NextAction.FLUSH_HEADERS, NextAction.SEND_DATA, NextAction.READ,
+           NextAction.POSTPONE_READ, NextAction.INVOKE_ON_READ_COMPLETED, NextAction.CANCEL,
+           NextAction.CARRY_ON, NextAction.TAKE_NO_MORE_ACTIONS})
   @Retention(RetentionPolicy.SOURCE)
   @interface NextAction {
-    int CARRY_ON = 0;                 // Do nothing special at the moment - keep calm and carry on.
-    int WRITE = 1;                    // Add one more ByteBuffer to the pending queue.
-    int FLUSH_HEADERS = 2;            // Start sending request headers.
-    int SEND_DATA = 3;                // Send one ByteBuffer on the wire, if any.
-    int READ = 4;                     // Start reading the next chunk of the response body.
-    int RECORD_READ_BUFFER = 5;       // Just save the ReadBuffer - read will occur just after.
-    int INVOKE_ON_READ_COMPLETED = 6; // Initiate the completion of a read operation.
-    int INVOKE_ON_ERROR_RECEIVED = 7; // Initiate the completion of a network Error.
-    int CANCEL = 8;                   // Tell EM to cancel. Can be an user induced, or due to error.
-    int INVOKE_ON_WRITE_COMPLETED_CALLBACK = 9; // Tell the User that a write operation completed.
-    int INVOKE_ON_READ_COMPLETED_CALLBACK = 10; // Tell the User that a read operation completed.
-    int INVOKE_ON_SUCCEEDED = 11;  // Tell the User the stream was completed successfully.
-    int INVOKE_ON_FAILED = 12;     // Tell the User the stream completed in an error state.
-    int INVOKE_ON_CANCELED = 13;   // Tell the User the stream completed in a cancelled state.
-    int TAKE_NO_MORE_ACTIONS = 14; // The stream is already in error state - don't do anything else.
+    int NOTIFY_USER_STREAM_READY = 0;      // Schedule Callback.streamReady()
+    int NOTIFY_USER_HEADERS_RECEIVED = 1;  // Schedule/Execute Callback.onResponseHeadersReceived()
+    int NOTIFY_USER_WRITE_COMPLETED = 2;   // Execute Callback.onWriteCompleted()
+    int NOTIFY_USER_READ_COMPLETED = 3;    // Execute Callback.onReadeCompleted()
+    int NOTIFY_USER_TRAILERS_RECEIVED = 4; // Schedule Callback.onResponseTrailersReceived(()
+    int NOTIFY_USER_SUCCEEDED = 5;         // Schedule/Execute Callback.onSucceeded()
+    int NOTIFY_USER_NETWORK_ERROR = 6;     // Schedule Callback.onFailed()
+    int NOTIFY_USER_FAILED = 7;            // Schedule Callback.onFailed()
+    int NOTIFY_USER_CANCELED = 8;          // Schedule Callback.onCanceled()
+    int WRITE = 9;                         // Add one more ByteBuffer to the pending queue.
+    int CHAIN_NEXT_WRITE = 10;             // Initiate write completion and start next write.
+    int FLUSH_HEADERS = 11;                // Start sending request headers.
+    int SEND_DATA = 12;                    // Send one ByteBuffer on the wire, if any.
+    int READ = 13;                         // Start reading the next chunk of the response body.
+    int POSTPONE_READ = 14;                // Don't read for the moment - that action is postpone.
+    int INVOKE_ON_READ_COMPLETED = 15;     // Initiate the completion of a read operation.
+    int CANCEL = 16;               // Tell EM to cancel. Can be an user induced, or due to error.
+    int CARRY_ON = 17;             // Do nothing special at the moment - keep calm and carry on.
+    int TAKE_NO_MORE_ACTIONS = 18; // The stream is already in final state - don't do anything else.
   }
 
   /**
    * Bitmap used to express the global state of the BIDI Stream. Each bit represent one element of
    * the global state.
+   *
+   * <p>For debugging, the bits were groups by HEX digits. This "println" is very helpful - to be
+   * put just before "return nextAction;"
+   *
+   * <pre>{@code
+     System.err.println(String.format(
+       "OOOO nextAction - event:%d nextAction:%d originalState:0x%08X nextState:0x%08X Thread: %s",
+       event, nextAction, originalState, nextState, Thread.currentThread().getName()));
+   * }</pre>
    */
   @IntDef(flag = true, // This is not used as an Enum nor as the argument of a switch statement.
-          value = {State.NOT_STARTED, State.STARTED, State.WAITING_FOR_FLUSH,
-                   State.WAITING_FOR_READ, State.END_STREAM_WRITTEN, State.END_STREAM_READ,
-                   State.WRITING, State.READING, State.HEADERS_SENT, State.CANCELLING,
-                   State.USER_CANCELLED, State.FAILED, State.ON_HEADER_RECEIVED,
-                   State.ON_COMPLETE_RECEIVED, State.READ_DONE, State.WRITE_DONE, State.DONE,
+          value = {State.NOT_STARTED,
+                   State.STARTED,
+                   State.WAITING_FOR_FLUSH,
+                   State.HEADERS_SENT,
+                   State.WRITING,
+                   State.END_STREAM_WRITTEN,
+                   State.WRITE_DONE,
+                   State.WAITING_FOR_READ,
+                   State.READ_POSTPONED,
+                   State.READING,
+                   State.END_STREAM_READ,
+                   State.READ_DONE,
+                   State.STREAM_READY_EXECUTED,
+                   State.ON_HEADER_RECEIVED,
+                   State.ON_COMPLETE_RECEIVED,
+                   State.USER_CANCELLED,
+                   State.CANCELLING,
+                   State.FAILED,
+                   State.DONE,
                    State.TERMINATING_STATES})
   @Retention(RetentionPolicy.SOURCE)
   private @interface State {
-    int NOT_STARTED = 0;                // Initial state.
-    int STARTED = 1;                    // Started.
-    int WAITING_FOR_FLUSH = 1 << 1;     // User is expected to invoke "flush" at one point.
-    int WAITING_FOR_READ = 1 << 2;      // User is expected to invoke "read" at one point.
-    int END_STREAM_WRITTEN = 1 << 3;    // User can't invoke "write" anymore. Maybe never could.
-    int END_STREAM_READ = 1 << 4;       // EM will not invoke the "onData" callback anymore.
-    int WRITING = 1 << 5;               // One RequestBody's Buffer is being sent on the wire.
-    int READING = 1 << 6;               // One ResponseBody's Buffer is being read from the wire.
-    int HEADERS_SENT = 1 << 7;          // EM's "sendHeaders" method has been invoked.
-    int CANCELLING = 1 << 8;            // EM's "cancel" method has been invoked.
-    int USER_CANCELLED = 1 << 9;        // The cancel operation was initiated by the User.
-    int FAILED = 1 << 10;               // An fatal failure has been encountered.
-    int ON_HEADER_RECEIVED = 1 << 11;   // EM's "onHeaders" callback has been invoked.
-    int ON_COMPLETE_RECEIVED = 1 << 12; // EM's "onComplete" callback has been invoked.
-    int READ_DONE = 1 << 13;            // User won't receive more read callbacks.
-    int WRITE_DONE = 1 << 14;           // User won't receive more write callbacks. Maybe never had.
-    int DONE = 1 << 15;                 // Terminal state. Can be successful or otherwise.
+    // Stared bit: Right most digit of the HEX representation: 0x00000001
+    int NOT_STARTED = 0; // Initial state.
+    int STARTED = 1;     // Started.
+
+    // WRITE state bits: Second and third right most digits of the HEX representation: 0x00001F0
+    int WAITING_FOR_FLUSH = 1 << 4;  // User is expected to invoke "flush" at one point.
+    int HEADERS_SENT = 1 << 5;       // EM's "sendHeaders" method has been invoked.
+    int WRITING = 1 << 6;            // One RequestBody's Buffer is being sent on the wire.
+    int END_STREAM_WRITTEN = 1 << 7; // User can't invoke "write" anymore. Maybe never could.
+    int WRITE_DONE = 1 << 8;         // User won't receive more write callbacks. Maybe never had.
+
+    // READ state bits: Fourth and fifth right most digits of the HEX representation: 0x001F000
+    int WAITING_FOR_READ = 1 << 12; // User is expected to invoke "read" at one point.
+    int READ_POSTPONED = 1 << 13;   // User read was requested before receiving the headers.
+    int READING = 1 << 14;          // One ResponseBody's Buffer is being read from the wire.
+    int END_STREAM_READ = 1 << 15;  // EM will not invoke the "onData" callback anymore.
+    int READ_DONE = 1 << 16;        // User won't receive more read callbacks.
+
+    // Internal state bits: Sixth right most digit of the HEX representation: 0x0700000
+    int STREAM_READY_EXECUTED = 1 << 20; // Callback.streamReady() was executed
+    int ON_HEADER_RECEIVED = 1 << 21;    // EM's "onHeaders" callback has been invoked.
+    int ON_COMPLETE_RECEIVED = 1 << 22;  // EM's "onComplete" callback has been invoked.
+
+    // Terminating state bits: Seventh right most digit of the HEX representation: 0xF000000
+    int USER_CANCELLED = 1 << 24; // The cancel operation was initiated by the User.
+    int CANCELLING = 1 << 25;     // EM's "cancel" method has been invoked.
+    int FAILED = 1 << 26;         // An fatal failure has been encountered.
+    int DONE = 1 << 27;           // Terminal state. Can be successful or otherwise.
+
     int TERMINATING_STATES = CANCELLING | FAILED | DONE; // Hold your breath and count to ten.
   }
 
@@ -222,7 +333,7 @@ final class CronetBidirectionalState {
             event == Event.USER_START_WITH_HEADERS_READ_ONLY) {
           nextState |= State.HEADERS_SENT;
         }
-        nextAction = NextAction.CARRY_ON;
+        nextAction = NextAction.NOTIFY_USER_STREAM_READY;
         break;
 
       case Event.USER_LAST_WRITE:
@@ -249,9 +360,9 @@ final class CronetBidirectionalState {
       case Event.USER_READ:
         nextState &= ~State.WAITING_FOR_READ;
         if ((originalState & State.ON_HEADER_RECEIVED) == 0) {
-          // To avoid race condition with the ON_HEADER Event, first record the ReadBuffer. The next
-          // action is READY_TO_READ.
-          nextAction = NextAction.RECORD_READ_BUFFER;
+          nextState |= State.READ_POSTPONED;
+          nextAction = NextAction.POSTPONE_READ;
+          // Event.READY_TO_START_POSTPONED_READ_IF_ANY will later on honor this user "read".
         } else {
           nextState |= State.READING;
           nextAction = (originalState & State.END_STREAM_READ) == 0
@@ -265,7 +376,7 @@ final class CronetBidirectionalState {
           nextAction = NextAction.CARRY_ON; // Cancel came too soon - no effect.
         } else if ((originalState & State.ON_COMPLETE_RECEIVED) != 0) {
           nextState |= State.USER_CANCELLED | State.DONE;
-          nextAction = NextAction.INVOKE_ON_CANCELED;
+          nextAction = NextAction.NOTIFY_USER_CANCELED;
         } else {
           // Due to race condition, the final EM callback can either be onCancel or onComplete.
           nextState |= State.USER_CANCELLED | State.CANCELLING;
@@ -277,25 +388,41 @@ final class CronetBidirectionalState {
         if ((originalState & State.ON_COMPLETE_RECEIVED) != 0 ||
             (originalState & State.STARTED) == 0) {
           nextState |= State.FAILED | State.DONE;
-          nextAction = NextAction.INVOKE_ON_FAILED;
+          nextAction = NextAction.NOTIFY_USER_FAILED;
         } else {
-          // Due to race condition, the final EM callback can either be onCancel or onComplete.
+          // FYI: due to race condition, the final EM callback can either be onCancel or onComplete.
           nextState |= State.FAILED | State.CANCELLING;
           nextAction = NextAction.CANCEL;
         }
         break;
 
-      case Event.ON_HEADERS_END_STREAM:
-        assert (originalState & State.END_STREAM_READ) == 0;
-        nextState |= State.ON_HEADER_RECEIVED | State.END_STREAM_READ;
-        nextAction = (originalState & State.READING) != 0 ? NextAction.INVOKE_ON_READ_COMPLETED
-                                                          : NextAction.CARRY_ON;
+      case Event.STREAM_READY_CALLBACK_DONE:
+        nextState |= State.STREAM_READY_EXECUTED;
+        nextAction = (originalState & State.ON_HEADER_RECEIVED) != 0
+                         ? NextAction.NOTIFY_USER_HEADERS_RECEIVED
+                         : NextAction.CARRY_ON;
         break;
 
+      case Event.ON_SEND_WINDOW_AVAILABLE:
+        assert (originalState & State.WRITING) != 0;
+        assert (originalState & State.WAITING_FOR_FLUSH) == 0;
+        nextState |= State.WAITING_FOR_FLUSH;
+        nextState &= ~State.WRITING;
+        // CHAIN_NEXT_WRITE means initiate the "onCompleteReceived" user callback and send the next
+        // ByteBuffer held in the mFlushData queue, if not empty.
+        nextAction = NextAction.CHAIN_NEXT_WRITE;
+        break;
+
+      case Event.ON_HEADERS_END_STREAM:
+        assert (originalState & State.END_STREAM_READ) == 0;
+        nextState |= State.END_STREAM_READ;
+        // FOLLOW THROUGH
       case Event.ON_HEADERS:
         assert (originalState & State.ON_HEADER_RECEIVED) == 0;
         nextState |= State.ON_HEADER_RECEIVED;
-        nextAction = (originalState & State.READING) != 0 ? NextAction.READ : NextAction.CARRY_ON;
+        nextAction = (originalState & State.STREAM_READY_EXECUTED) != 0
+                         ? NextAction.NOTIFY_USER_HEADERS_RECEIVED
+                         : NextAction.CARRY_ON;
         break;
 
       case Event.ON_DATA_END_STREAM:
@@ -307,17 +434,21 @@ final class CronetBidirectionalState {
         nextAction = NextAction.INVOKE_ON_READ_COMPLETED;
         break;
 
+      case Event.ON_TRAILERS:
+        nextAction = NextAction.NOTIFY_USER_TRAILERS_RECEIVED;
+        break;
+
       case Event.ON_COMPLETE:
         assert (originalState & State.ON_COMPLETE_RECEIVED) == 0;
         nextState |= State.ON_COMPLETE_RECEIVED;
         if ((originalState & State.CANCELLING) != 0) {
           nextState |= State.DONE;
-          nextAction = (originalState & State.FAILED) != 0 ? NextAction.INVOKE_ON_FAILED
-                                                           : NextAction.INVOKE_ON_CANCELED;
+          nextAction = (originalState & State.FAILED) != 0 ? NextAction.NOTIFY_USER_FAILED
+                                                           : NextAction.NOTIFY_USER_CANCELED;
         } else if (((originalState & State.WRITE_DONE) != 0 &&
                     (originalState & State.READ_DONE) != 0)) {
           nextState |= State.DONE;
-          nextAction = NextAction.INVOKE_ON_SUCCEEDED;
+          nextAction = NextAction.NOTIFY_USER_SUCCEEDED;
         } else {
           nextAction = NextAction.CARRY_ON;
         }
@@ -325,14 +456,14 @@ final class CronetBidirectionalState {
 
       case Event.ON_CANCEL:
         nextState |= State.DONE;
-        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.INVOKE_ON_FAILED
-                                                           : NextAction.INVOKE_ON_CANCELED;
+        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.NOTIFY_USER_FAILED
+                                                           : NextAction.NOTIFY_USER_CANCELED;
         break;
 
       case Event.ON_ERROR:
         nextState |= State.DONE | State.FAILED;
-        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.INVOKE_ON_FAILED
-                                                           : NextAction.INVOKE_ON_ERROR_RECEIVED;
+        nextAction = ((originalState & State.FAILED) != 0) ? NextAction.NOTIFY_USER_FAILED
+                                                           : NextAction.NOTIFY_USER_NETWORK_ERROR;
         break;
 
       case Event.LAST_WRITE_COMPLETED:
@@ -340,7 +471,7 @@ final class CronetBidirectionalState {
         nextState |= State.WRITE_DONE;
         // FOLLOW THROUGH
       case Event.WRITE_COMPLETED:
-        nextAction = NextAction.INVOKE_ON_WRITE_COMPLETED_CALLBACK;
+        nextAction = NextAction.NOTIFY_USER_WRITE_COMPLETED;
         break;
 
       case Event.READY_TO_FLUSH:
@@ -353,45 +484,47 @@ final class CronetBidirectionalState {
         }
         break;
 
-      case Event.FLUSH_DATA_COMPLETED:
-        nextState |= State.WAITING_FOR_FLUSH;
-        // FOLLOW THROUGH
-      case Event.LAST_FLUSH_DATA_COMPLETED:
-        assert (originalState & State.WRITING) != 0;
-        assert (originalState & State.WAITING_FOR_FLUSH) == 0;
-        nextState &= ~State.WRITING;
-        nextAction = NextAction.CARRY_ON;
+      case Event.READY_TO_FLUSH_LAST:
+        if ((originalState & State.WAITING_FOR_FLUSH) == 0) {
+          nextAction = NextAction.CARRY_ON;
+        } else {
+          nextState &= ~State.WAITING_FOR_FLUSH;
+          nextAction = NextAction.SEND_DATA;
+        }
         break;
 
-      case Event.READY_TO_READ:
-        assert (originalState & State.WAITING_FOR_READ) == 0;
-        assert (originalState & State.READING) == 0;
-        nextState |= State.READING;
-        nextAction = (originalState & State.ON_HEADER_RECEIVED) == 0 ? NextAction.CARRY_ON
-                     : (originalState & State.END_STREAM_READ) == 0
-                         ? NextAction.READ
-                         : NextAction.INVOKE_ON_READ_COMPLETED;
+      case Event.READY_TO_START_POSTPONED_READ_IF_ANY:
+        assert (originalState & State.ON_HEADER_RECEIVED) != 0;
+        if ((originalState & State.READ_POSTPONED) != 0) {
+          nextState &= ~State.READ_POSTPONED;
+          nextState |= State.READING;
+          nextAction = (originalState & State.END_STREAM_READ) == 0
+                           ? NextAction.READ
+                           : NextAction.INVOKE_ON_READ_COMPLETED;
+        } else {
+          nextAction = NextAction.CARRY_ON;
+        }
         break;
 
       case Event.READ_COMPLETED:
         assert (originalState & State.READING) != 0;
         nextState &= ~State.READING;
         nextState |= State.WAITING_FOR_READ;
-        nextAction = NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK;
+        nextAction = NextAction.NOTIFY_USER_READ_COMPLETED;
         break;
 
       case Event.LAST_READ_COMPLETED:
         assert (originalState & State.READ_DONE) == 0;
         nextState &= ~State.READING;
         nextState |= State.READ_DONE;
-        nextAction = NextAction.INVOKE_ON_READ_COMPLETED_CALLBACK;
+        nextAction = NextAction.NOTIFY_USER_READ_COMPLETED;
         break;
 
       case Event.READY_TO_FINISH:
         if ((originalState & State.ON_COMPLETE_RECEIVED) != 0 &&
             (originalState & State.READ_DONE) != 0 && (originalState & State.WRITE_DONE) != 0) {
           nextState |= State.DONE;
-          nextAction = NextAction.INVOKE_ON_SUCCEEDED;
+          nextAction = NextAction.NOTIFY_USER_SUCCEEDED;
         } else {
           nextAction = NextAction.CARRY_ON;
         }
