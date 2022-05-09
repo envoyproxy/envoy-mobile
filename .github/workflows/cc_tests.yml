@@ -12,15 +12,12 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 120
     container:
-      image: envoyproxy/envoy-build-ubuntu:6fff5a6c67db843ddabde4533e24cab6122c7011
+      image: envoyproxy/envoy-build-ubuntu:3f6b1b096f2c0652ed270c5564b292bdd9a520f6
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
       - env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         name: 'Run tests'
-        run: |
-          git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
-          ./bazelw test --action_env=LD_LIBRARY_PATH --test_output=all --config=remote-ci-linux --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/cc/...
+        run: ./bazelw test --action_env=LD_LIBRARY_PATH --test_output=all --config=remote-ci-linux --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/cc/...
