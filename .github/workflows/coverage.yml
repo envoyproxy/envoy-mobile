@@ -34,6 +34,7 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
+          git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
             PATH=/opt/llvm/bin:${PATH} \
