@@ -23,7 +23,7 @@ jobs:
             echo "::set-output name=run_tests::true"
           else
             echo "Skipping tests."
-            echo "::set-output name=run_tests::true"
+            echo "::set-output name=run_tests::false"
           fi
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
@@ -48,7 +48,7 @@ jobs:
             echo "::set-output name=run_tests::true"
           else
             echo "Skipping tests."
-            echo "::set-output name=run_tests::true"
+            echo "::set-output name=run_tests::false"
           fi
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh

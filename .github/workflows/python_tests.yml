@@ -25,7 +25,7 @@ jobs:
             echo "::set-output name=run_tests::true"
           else
             echo "Skipping tests."
-            echo "::set-output name=run_tests::true"
+            echo "::set-output name=run_tests::false"
           fi
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'

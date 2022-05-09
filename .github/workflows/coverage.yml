@@ -28,7 +28,7 @@ jobs:
             echo "::set-output name=run_coverage::true"
           else
             echo "Skipping coverage."
-            echo "::set-output name=run_coverage::true"
+            echo "::set-output name=run_coverage::false"
           fi
       - name: 'Run coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
