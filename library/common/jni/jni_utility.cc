@@ -3,12 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <codecvt>
-
 #include "source/common/common/assert.h"
 
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_version.h"
+#include "library/common/strings/string_conversions.h"
 
 // NOLINT(namespace-envoy)
 
@@ -259,8 +258,9 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries) {
 }
 
 jstring ConvertUTF8ToJavaString(JNIEnv* env, const std::string& str) {
-  std::u16string utf16 =
-      std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(str);
+  // JNI's NewStringUTF expects "modified" UTF8 so instead convert the string to UTF16 and pass it
+  // to NewString.
+  std::u16string utf16 = UTF8ToUTF16(str.data(), str.size());
   const jchar* jutf16 = reinterpret_cast<const jchar*>(utf16.data());
   return env->NewString(jutf16, utf16.length());
 }
@@ -317,11 +317,13 @@ void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uin
 }
 
 void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result) {
+  // JNI's GetStringUTFChars() returns strings in Java "modified" UTF8, so
+  // instead get the String in UTF16 and manually convert that to UTF8.
   // We don't care whether the returned string is a copy or not as we're simply
   // copying it into C++ owned memory.
   const jchar* utf16 = env->GetStringChars(str, /*isCopy=*/nullptr);
-  std::string utf8 = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(
-      reinterpret_cast<const char16_t*>(utf16));
+  size_t len = env->GetStringLength(str);
+  std::string utf8 = UTF16ToUTF8(reinterpret_cast<const char16_t*>(utf16), len);
   *result = utf8;
   env->ReleaseStringChars(str, utf16);
 }

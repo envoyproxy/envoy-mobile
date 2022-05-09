@@ -1057,6 +1057,12 @@ jobjectArray jvm_cert_get_certificate_chain_encoded(JNIEnv* env, jobject result)
       env->CallObjectMethod(jcls_AndroidCertVerifyResult, jmid_getCertificateChainEncoded, result));
 }
 
+// Once we have a better picture of how Android's certificate verification will
+// be plugged into EM, we should decide where this function should really live.
+// Context: as of now JNI functions declared in this file are not exported through any
+// header files, instead they are stored as callbacks into plain function
+// tables. For this reason, this function, which would ideally be defined in
+// jni_utility.cc, is currently defined here.
 void ExtractCertVerifyResult(JNIEnv* env, jobject result,
                              envoy_cert_verify_status_android_t* status,
                              bool* is_issued_by_known_root,

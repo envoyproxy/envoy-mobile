@@ -24,8 +24,8 @@ public final class CertificateVerificationTest {
     JniLibrary.load();
   }
 
-  private static final String authType = "";
-  private static final String host = "";
+  private static final String authType = FakeX509Util.expectedAuthType;
+  private static final String host = FakeX509Util.expectedHost;
 
   @Before
   public void setUp() throws Exception {
@@ -59,6 +59,32 @@ public final class CertificateVerificationTest {
         (AndroidCertVerifyResult)JniLibrary.callCertificateVerificationFromNative(certChain,
                                                                                   authType, host);
     assertEquals(result.getStatus(), CertVerifyStatusAndroid.OK);
+  }
+
+  @Test
+  public void testChainWithRootCertificateWrongHostname() throws Exception {
+    final String[] fakeCertChain = new String[] {"fake cert"};
+    final byte[][] certChain = new byte[][] {fakeCertChain[0].getBytes()};
+    final String host = "wrong host";
+
+    JniLibrary.callAddTestRootCertificateFromNative(certChain[0]);
+    AndroidCertVerifyResult result =
+        (AndroidCertVerifyResult)JniLibrary.callCertificateVerificationFromNative(certChain,
+                                                                                  authType, host);
+    assertEquals(result.getStatus(), CertVerifyStatusAndroid.FAILED);
+  }
+
+  @Test
+  public void testChainWithRootCertificateWrongAuthType() throws Exception {
+    final String[] fakeCertChain = new String[] {"fake cert"};
+    final byte[][] certChain = new byte[][] {fakeCertChain[0].getBytes()};
+    final String authType = "wrong auth type";
+
+    JniLibrary.callAddTestRootCertificateFromNative(certChain[0]);
+    AndroidCertVerifyResult result =
+        (AndroidCertVerifyResult)JniLibrary.callCertificateVerificationFromNative(certChain,
+                                                                                  authType, host);
+    assertEquals(result.getStatus(), CertVerifyStatusAndroid.FAILED);
   }
 
   @Test
