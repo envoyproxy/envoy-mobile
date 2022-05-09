@@ -18,27 +18,30 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>All methods in this class are Thread Safe.
  *
  * <p><b>WRITE state diagram</b>
- * <li>There are 11 states represented by these 5 State bits: State.HEADERS_SENT,
- * State.WAITING_FOR_FLUSH, State.WRITING, State.END_STREAM_WRITTEN, and State.WRITE_DONE.
+ * <li>There are 11 states represented by these 5 State bits.
  * <li>The USER_WRITE event can occur on any state - it does not change the state. However, if
  * attempted after a USER_LAST_WRITE event, the this will throw an Exception. It is absent from
  * the diagram.
- * <li>The WRITE_COMPLETED event does not change the state and is therefore absent for the diagram.
- * <li>The USER_FLUSH event won't change the state if the mFlushData is empty, or the bit state
- * WAITING_FOR_FLUSH is false;
+ * <li>The WRITE_COMPLETED event does not change the state and is therefore absent from the diagram.
+ * <li>The USER_FLUSH event won't change the state if the request headers have been sent.
+ * <li>The READY_TO_FLUSH event will not change the state if the bit state WAITING_FOR_FLUSH is
+ * false.
  *
  * <p><pre>
- * []:                                                    Starting
- * [END_STREAM_WRITTEN]:                                  Ending
- * [WAITING_FOR_FLUSH]:                                   ReadyWaitHeaders
- * [WAITING_FOR_FLUSH, HEADERS_SENT]:                     Ready
- * [WAITING_FOR_FLUSH, END_STREAM_WRITTEN]:          ReadyWaitHeadersAndEnding
- * [WAITING_FOR_FLUSH, END_STREAM_WRITTEN, DONE]:         WaitHeaders
- * [WAITING_FOR_FLUSH, END_STREAM_WRITTEN, HEADERS_SENT]: ReadyAndEnding
- * [WRITING, HEADERS_SENT]:                               Busy
- * [WRITING, HEADERS_SENT, END_STREAM_WRITTEN]:           BusyAndEnding
- * [END_STREAM_WRITTEN, HEADERS_SENT]:                    WaitingDone
- * [WRITE_DONE, END_STREAM_WRITTEN, HEADERS_SENT]:        WriteDone
+ * Write State                State bits use to represent the write state
+ * -----------                -------------------------------------------
+ * Starting:                  []
+ * Ending:                    [END_STREAM_WRITTEN]
+ * ReadyWaitHeaders:          [WAITING_FOR_FLUSH]
+ * Ready:                     [WAITING_FOR_FLUSH, HEADERS_SENT]
+ * ReadyWaitHeadersAndEnding: [WAITING_FOR_FLUSH, END_STREAM_WRITTEN]
+ * WaitHeaders:               [WAITING_FOR_FLUSH, END_STREAM_WRITTEN, DONE]
+ * ReadyAndEnding:            [WAITING_FOR_FLUSH, END_STREAM_WRITTEN,
+ *                             HEADERS_SENT]
+ * Busy:                      [WRITING, HEADERS_SENT]
+ * BusyAndEnding:             [WRITING, HEADERS_SENT, END_STREAM_WRITTEN]
+ * WaitingDone:               [END_STREAM_WRITTEN, HEADERS_SENT]
+ * WriteDone:                 [WRITE_DONE, END_STREAM_WRITTEN, HEADERS_SENT]
  *
  *
  * |-------------|     USER_START_    |-----------| <-- LAST_WRITE_COMPLETED --
@@ -56,28 +59,100 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  |     |                  |--------| -- USER_START_READ_ONLY    |          |
  *  |     |                  | Ending | -- USER_START_WITH_HEADERS_READ_ONLY  |
  *  |  USER_START            |--------| -- USER_START_WITH_HEADERS            |
- *  |     V                       |                        V                  |
- *  |  |------------------|       ----------------  |----------------|        |
+ *  |     |                       |                        |                  |
+ *  |     V                       -- USER_START --         V                  |
+ *  |  |------------------|                      |  |----------------|        |
  *  |  | ReadyWaitHeaders | -- USER_LAST_WRITE   |  | ReadyAndEnding | --     |
  *  |  |------------------| --        |          |  |----------------|  |     |
  *  |                        |        |          |                      |     |
- *  |                        |        |          -- USER_START-----     |     |
- * USER_START_WITH_HEADERS   |        V                           |     |     |
- *    |                      |  |---------------------------| <----     |     |
- *    |  ------------------->|  | ReadyWaitHeadersAndEnding |           |     |
- *    V  |                   |  |---------------------------| --------->|     |
+ * USER_START_WITH_HEADERS   |        V          V                      |     |
+ *    |                      |  |---------------------------|           |     |
+ *    |  ------------------->|  | ReadyWaitHeadersAndEnding | --------->|     |
+ *    V  |                   |  |---------------------------|   |       |     |
  * |-------| <--USER_FLUSH ---                                  |       |     |
  * | Ready | ------------------------ USER_LAST_WRITE ----      |  USER_FLUSH |
- * |-------| <--------                                   V      |       |     |
- *    |              |                             |----------------|   |     |
- *    |              |         READY_TO_FLUSH ---- | ReadyAndEnding | <--     |
- * READY_TO_FLUSH    |             V           --> |----------------|         |
+ * |-------| <--------                                   |      |       |     |
+ *    |              |                                   V      |       |     |
+ *    |              |         READY_TO_FLUSH ---- |----------------|   |     |
+ * READY_TO_FLUSH    |             |               | ReadyAndEnding | <--     |
+ *    |              |             V           --> |----------------|         |
  *    V              |     |---------------|   |              |               |
  * |------|          |     | BusyAndEnding |   |      READY_TO_FLUSH_LAST     |
  * | Busy |          |     |---------------|   |              V               |
  * |______|          |             |           |       |-------------|        |
  *    |              |      ON_SEND_WINDOW_AVAILABLE   | WaitingDone | --------
  * ON_SEND_WINDOW_AVAILABLE                            |-------------|
+ * </pre>
+ *
+ * <p><b>READ state diagram</b>
+ * <li>There are 16 states represented by 7 State bits.
+ * <li>Some "read" related events don't change the state, like "ON_DATA". This are absent here.
+ *
+ * <p><pre>
+ * Read State                      State bits use to represent the read state
+ * ----------                      ------------------------------------------
+ * Starting:                       []
+ * ReadyWaitingHeadersAndStreamOk: [WAITING_FOR_READ]
+ * ReadyWaitingHeaders:            [WAITING_FOR_READ, STREAM_READY_EXECUTED]
+ * Postponed:                      [READ_POSTPONED]
+ * ReadyWaitingStreamOk:           [WAITING_FOR_READ, HEADERS_RECEIVED]
+ * ReadyWaitingStreamOkLast:       [WAITING_FOR_READ, HEADERS_RECEIVED,
+ *                                  END_STREAM_READ]
+ * PostponedWaitingHeaders:        [READ_POSTPONED, STREAM_READY_EXECUTED]
+ * PostponedWaitingStreamOk:       [READ_POSTPONED, HEADERS_RECEIVED]
+ * PostponedWaitingStreamOkLast:   [READ_POSTPONED, HEADERS_RECEIVED,
+ *                                  END_STREAM_READ]
+ * PostponeReady:                  [READ_POSTPONED, STREAM_READY_EXECUTED,
+ *                                  HEADERS_RECEIVED]
+ * PostponeReadyLast:              [READ_POSTPONED, STREAM_READY_EXECUTED,
+ *                                  HEADERS_RECEIVED, END_STREAM_READ]
+ * Ready:                          [WAITING_FOR_READ, HEADERS_RECEIVED,
+ *                                  STREAM_READY_EXECUTED]
+ * ReadyLast:                      [WAITING_FOR_READ, HEADERS_RECEIVED,
+ *                                  STREAM_READY_EXECUTED, END_STREAM_READ]
+ * Reading:                        [READING, HEADERS_RECEIVED,
+ *                                  STREAM_READY_EXECUTED]
+ * ReadingLast:                    [READING, HEADERS_RECEIVED,
+ *                                  STREAM_READY_EXECUTED, END_STREAM_READ]
+ * ReadDone:                       [STREAM_READY_EXECUTED, END_STREAM_READ,
+ *                                  READ_DONE]
+ *
+ *
+ *    |-------------| -- USER_START* --> |--------------------------------|
+ *    |  Starting   |                    | ReadyWaitingHeadersAndStreamOk |
+ *    |-------------|    --------------- |--------------------------------|
+ *                       |                  |                    |
+ *    STREAM_READY_CALLBACK_DONE           READ              ON_HEADERS*
+ *                       V                  V                    V
+ *    |---------------------|      |-----------|   |--------------------------|
+ *    | ReadyWaitingHeaders |      | Postponed |   | ReadyWaitingStreamOk or  |
+ *    |---------------------|      |-----------|   | ReadyWaitingStreamOkLast |
+ *     |    |                       |         |    |--------------------------|
+ *     |    |                       |         |               |              |
+ *     |   READ  STREAM_READY_CALLBACK_DONE  ON_HEADERS*     READ            |
+ *     |    V                       V         V               V              |
+ *     |   |-------------------------|   |------------------------------|    |
+ *     |   | PostponedWaitingHeaders |   | PostponedWaitingStreamOk or  |    |
+ *     |   |-------------------------|   | PostponedWaitingStreamOkLast |    |
+ *     |                |                |------------------------------|    |
+ *     |                |                       |                            |
+ *  ON_HEADERS*     ON_HEADERS*       STREAM_READY_CALLBACK_DONE             |
+ *     |                |                       |                            |
+ *     V                V                       |                            |
+ * |-----------|   |-------------------|        |                            |
+ * | Ready or  |   | PostponeReady or  | <-------              |----------|  |
+ * | ReadyLast |   | PostponeReadyLast |                       | ReadDone |  |
+ * |-----------|   |-------------------|                       |----------|  |
+ *  ^   ^   |                    |                                      ^    |
+ *  |   |   |     READY_TO_START_POSTPONED_READ_IF_ANY                  |    |
+ *  |   |   |                    V                                      |    |
+ *  |   |   |                |-------------| -- LAST_READ_COMPLETED -----    |
+ *  |   |   ----- READ ----> | Reading or  | -- ON_DATA_END_STREAM ---       |
+ *  |   |                    | ReadingLast |  Reading -> ReadingLast |       |
+ *  |   -- READ_COMPLETED -- |-------------| <------------------------       |
+ *  |                                                                        |
+ *  -------------------------------------------- STREAM_READY_CALLBACK_DONE --
+ *
  * </pre>
  */
 final class CronetBidirectionalState {
@@ -204,54 +279,52 @@ final class CronetBidirectionalState {
   @IntDef(flag = true, // This is not used as an Enum nor as the argument of a switch statement.
           value = {State.NOT_STARTED,
                    State.STARTED,
+                   State.ON_COMPLETE_RECEIVED,
+                   State.USER_CANCELLED,
                    State.WAITING_FOR_FLUSH,
                    State.HEADERS_SENT,
                    State.WRITING,
                    State.END_STREAM_WRITTEN,
                    State.WRITE_DONE,
                    State.WAITING_FOR_READ,
+                   State.STREAM_READY_EXECUTED,
                    State.READ_POSTPONED,
+                   State.HEADERS_RECEIVED,
                    State.READING,
                    State.END_STREAM_READ,
                    State.READ_DONE,
-                   State.STREAM_READY_EXECUTED,
-                   State.ON_HEADER_RECEIVED,
-                   State.ON_COMPLETE_RECEIVED,
-                   State.USER_CANCELLED,
                    State.CANCELLING,
                    State.FAILED,
                    State.DONE,
                    State.TERMINATING_STATES})
   @Retention(RetentionPolicy.SOURCE)
   private @interface State {
-    // Stared bit: Right most digit of the HEX representation: 0x00000001
-    int NOT_STARTED = 0; // Initial state.
-    int STARTED = 1;     // Started.
+    // Internal state bits: Right most digit of the HEX representation: 0x0000007
+    int NOT_STARTED = 0;               // Initial state.
+    int STARTED = 1;                   // Started.
+    int ON_COMPLETE_RECEIVED = 1 << 1; // EM's "onComplete" callback has been invoked.
+    int USER_CANCELLED = 1 << 2;       // The cancel operation was initiated by the User.
 
-    // WRITE state bits: Second and third right most digits of the HEX representation: 0x00001F0
+    // WRITE state bits: Second and third right most digits of the HEX representation: 0x0001F0
     int WAITING_FOR_FLUSH = 1 << 4;  // User is expected to invoke "flush" at one point.
     int HEADERS_SENT = 1 << 5;       // EM's "sendHeaders" method has been invoked.
     int WRITING = 1 << 6;            // One RequestBody's Buffer is being sent on the wire.
     int END_STREAM_WRITTEN = 1 << 7; // User can't invoke "write" anymore. Maybe never could.
     int WRITE_DONE = 1 << 8;         // User won't receive more write callbacks. Maybe never had.
 
-    // READ state bits: Fourth and fifth right most digits of the HEX representation: 0x001F000
-    int WAITING_FOR_READ = 1 << 12; // User is expected to invoke "read" at one point.
-    int READ_POSTPONED = 1 << 13;   // User read was requested before receiving the headers.
-    int READING = 1 << 14;          // One ResponseBody's Buffer is being read from the wire.
-    int END_STREAM_READ = 1 << 15;  // EM will not invoke the "onData" callback anymore.
-    int READ_DONE = 1 << 16;        // User won't receive more read callbacks.
+    // READ state bits: Fourth and fifth right most digits of the HEX representation: 0x07F000
+    int WAITING_FOR_READ = 1 << 12;      // User is expected to invoke "read" at one point.
+    int STREAM_READY_EXECUTED = 1 << 13; // Callback.streamReady() was executed
+    int READ_POSTPONED = 1 << 14;        // User read was requested before receiving the headers.
+    int HEADERS_RECEIVED = 1 << 15;      // EM's "onHeaders" callback has been invoked.
+    int READING = 1 << 16;               // One ResponseBody's Buffer is being read from the wire.
+    int END_STREAM_READ = 1 << 17;       // EM will not invoke the "onData" callback anymore.
+    int READ_DONE = 1 << 18;             // User won't receive more read callbacks.
 
-    // Internal state bits: Sixth right most digit of the HEX representation: 0x0700000
-    int STREAM_READY_EXECUTED = 1 << 20; // Callback.streamReady() was executed
-    int ON_HEADER_RECEIVED = 1 << 21;    // EM's "onHeaders" callback has been invoked.
-    int ON_COMPLETE_RECEIVED = 1 << 22;  // EM's "onComplete" callback has been invoked.
-
-    // Terminating state bits: Seventh right most digit of the HEX representation: 0xF000000
-    int USER_CANCELLED = 1 << 24; // The cancel operation was initiated by the User.
-    int CANCELLING = 1 << 25;     // EM's "cancel" method has been invoked.
-    int FAILED = 1 << 26;         // An fatal failure has been encountered.
-    int DONE = 1 << 27;           // Terminal state. Can be successful or otherwise.
+    // Terminating state bits: Seventh right most digit of the HEX representation: 0x700000
+    int CANCELLING = 1 << 20; // EM's "cancel" method has been invoked.
+    int FAILED = 1 << 21;     // An fatal failure has been encountered.
+    int DONE = 1 << 22;       // Terminal state. Can be successful or otherwise.
 
     int TERMINATING_STATES = CANCELLING | FAILED | DONE; // Hold your breath and count to ten.
   }
@@ -359,7 +432,7 @@ final class CronetBidirectionalState {
 
       case Event.USER_READ:
         nextState &= ~State.WAITING_FOR_READ;
-        if ((originalState & State.ON_HEADER_RECEIVED) == 0) {
+        if ((originalState & State.HEADERS_RECEIVED) == 0) {
           nextState |= State.READ_POSTPONED;
           nextAction = NextAction.POSTPONE_READ;
           // Event.READY_TO_START_POSTPONED_READ_IF_ANY will later on honor this user "read".
@@ -398,7 +471,7 @@ final class CronetBidirectionalState {
 
       case Event.STREAM_READY_CALLBACK_DONE:
         nextState |= State.STREAM_READY_EXECUTED;
-        nextAction = (originalState & State.ON_HEADER_RECEIVED) != 0
+        nextAction = (originalState & State.HEADERS_RECEIVED) != 0
                          ? NextAction.NOTIFY_USER_HEADERS_RECEIVED
                          : NextAction.CARRY_ON;
         break;
@@ -418,8 +491,8 @@ final class CronetBidirectionalState {
         nextState |= State.END_STREAM_READ;
         // FOLLOW THROUGH
       case Event.ON_HEADERS:
-        assert (originalState & State.ON_HEADER_RECEIVED) == 0;
-        nextState |= State.ON_HEADER_RECEIVED;
+        assert (originalState & State.HEADERS_RECEIVED) == 0;
+        nextState |= State.HEADERS_RECEIVED;
         nextAction = (originalState & State.STREAM_READY_EXECUTED) != 0
                          ? NextAction.NOTIFY_USER_HEADERS_RECEIVED
                          : NextAction.CARRY_ON;
@@ -494,7 +567,7 @@ final class CronetBidirectionalState {
         break;
 
       case Event.READY_TO_START_POSTPONED_READ_IF_ANY:
-        assert (originalState & State.ON_HEADER_RECEIVED) != 0;
+        assert (originalState & State.HEADERS_RECEIVED) != 0;
         if ((originalState & State.READ_POSTPONED) != 0) {
           nextState &= ~State.READ_POSTPONED;
           nextState |= State.READING;

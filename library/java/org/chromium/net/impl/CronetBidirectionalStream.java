@@ -394,7 +394,7 @@ public final class CronetBidirectionalStream
           }
           break;
         case NextAction.CARRY_ON:
-          break;
+          break; // Was not waiting for a "flush" at the moment.
         case NextAction.TAKE_NO_MORE_ACTIONS:
           return;
         default:
