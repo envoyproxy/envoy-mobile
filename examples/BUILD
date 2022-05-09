@@ -1,0 +1,26 @@
+load("@build_bazel_rules_apple//apple:apple.bzl", "local_provisioning_profile")
+load(
+    "@com_github_buildbuddy_io_rules_xcodeproj//xcodeproj:experimental.bzl",
+    "xcode_provisioning_profile",
+)
+
+licenses(["notice"])  # Apache 2
+
+# Change to your Apple Developer Team ID as shown in
+# https://developer.apple.com/account/#!/membership
+TEAMID = "X4ST43AL9W"
+
+xcode_provisioning_profile(
+    name = "ios_provisioning_profile",
+    managed_by_xcode = True,
+    provisioning_profile = ":xcode_managed_profile",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+local_provisioning_profile(
+    name = "xcode_managed_profile",
+    profile_name = "iOS Team Provisioning Profile: *",
+    tags = ["manual"],
+    team_id = TEAMID,
+)
