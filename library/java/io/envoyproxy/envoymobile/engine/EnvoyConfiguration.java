@@ -35,11 +35,13 @@ public class EnvoyConfiguration {
   public final String dnsPreresolveHostnames;
   public final List<String> dnsFallbackNameservers;
   public final Boolean dnsFilterUnroutableFamilies;
+  public final Boolean enableDrainPostDnsRefresh;
   public final Boolean enableHttp3;
   public final Boolean enableHappyEyeballs;
   public final Boolean enableInterfaceBinding;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
+  public final Boolean h2ExtendKeepaliveTimeout;
   public final List<String> h2RawDomains;
   public final Integer maxConnectionsPerHost;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
@@ -70,12 +72,15 @@ public class EnvoyConfiguration {
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
    * @param dnsFallbackNameservers       addresses to use as DNS name server fallback.
    * @param dnsFilterUnroutableFamilies  whether to filter unroutable IP families or not.
+   * @param enableDrainPostDnsRefresh    whether to drain connections after soft DNS refresh.
    * @param enableHttp3                  whether to enable experimental support for HTTP/3 (QUIC).
    * @param enableHappyEyeballs          whether to enable RFC 6555 handling for IPv4/IPv6.
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   * @param h2ExtendKeepaliveTimeout     Extend the keepalive timeout when *any* frame is received
+   *                                     on the owning HTTP/2 connection.
    * @param h2RawDomains                 list of domains to which connections should be raw h2.
    * @param maxConnectionsPerHost        maximum number of connections to open to a single host.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
@@ -94,9 +99,10 @@ public class EnvoyConfiguration {
       int connectTimeoutSeconds, int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
       int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds, int dnsMinRefreshSeconds,
       String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
-      Boolean dnsFilterUnroutableFamilies, boolean enableHttp3, boolean enableHappyEyeballs,
-      boolean enableInterfaceBinding, int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-      int h2ConnectionKeepaliveTimeoutSeconds, List<String> h2RawDomains, int maxConnectionsPerHost,
+      Boolean dnsFilterUnroutableFamilies, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
+      boolean enableHappyEyeballs, boolean enableInterfaceBinding,
+      int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
+      boolean h2ExtendKeepaliveTimeout, List<String> h2RawDomains, int maxConnectionsPerHost,
       int statsFlushSeconds, int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
       String appVersion, String appId, TrustChainVerification trustChainVerification,
       String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
@@ -114,12 +120,14 @@ public class EnvoyConfiguration {
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
     this.dnsFallbackNameservers = dnsFallbackNameservers;
     this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies;
+    this.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
     this.enableHttp3 = enableHttp3;
     this.enableHappyEyeballs = enableHappyEyeballs;
     this.enableInterfaceBinding = enableInterfaceBinding;
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+    this.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout;
     this.h2RawDomains = h2RawDomains;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.statsFlushSeconds = statsFlushSeconds;
@@ -212,9 +220,13 @@ public class EnvoyConfiguration {
                               enableHappyEyeballs ? "ALL" : "V4_PREFERRED"))
         .append(
             String.format("- &dns_multiple_addresses %s\n", enableHappyEyeballs ? "true" : "false"))
+        .append(String.format("- &h2_delay_keepalive_timeout %s\n",
+                              h2ExtendKeepaliveTimeout ? "true" : "false"))
         .append("- &dns_resolver_name envoy.network.dns_resolver.cares\n")
         .append(String.format("- &dns_refresh_rate %ss\n", dnsRefreshSeconds))
         .append(String.format("- &dns_resolver_config %s\n", dnsResolverConfig))
+        .append(String.format("- &enable_drain_post_dns_refresh %s\n",
+                              enableDrainPostDnsRefresh ? "true" : "false"))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
