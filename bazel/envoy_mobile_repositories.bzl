@@ -83,6 +83,13 @@ def swift_repos():
     )
 
     http_archive(
+        name = "DrString",
+        build_file_content = """exports_files(["drstring"])""",
+        sha256 = "860788450cf9900613454a51276366ea324d5bfe71d1844106e9c1f1d7dfd82b",
+        url = "https://github.com/dduan/DrString/releases/download/0.5.2/drstring-x86_64-apple-darwin.tar.gz",
+    )
+
+    http_archive(
         name = "SwiftLint",
         build_file_content = """exports_files(["swiftlint"])""",
         sha256 = "61d335766a39ba8fa499017a560950bd9fa0b0e5bc318559a9c1c7f4da679256",
@@ -91,25 +98,30 @@ def swift_repos():
 
 def kotlin_repos():
     http_archive(
+        name = "rules_java",
+        sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
+        strip_prefix = "rules_java-5.0.0",
+        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
+    )
+
+    http_archive(
         name = "rules_jvm_external",
-        sha256 = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140",
-        strip_prefix = "rules_jvm_external-4.1",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip",
+        sha256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca",
+        strip_prefix = "rules_jvm_external-4.2",
+        url = "https://github.com/bazelbuild/rules_jvm_external/archive/4.2.zip",
     )
 
     http_archive(
         name = "io_bazel_rules_kotlin",
-        sha256 = "dc1c76f91228ddaf4f7ca4190b82d61939e95369f61dea715e8be28792072b1b",
-        strip_prefix = "rules_kotlin-legacy-1.3.0-rc2",
-        type = "zip",
-        urls = ["https://github.com/bazelbuild/rules_kotlin/archive/legacy-1.3.0-rc2.zip"],
+        sha256 = "f1a4053eae0ea381147f5056bb51e396c5c494c7f8d50d0dee4cc2f9d5c701b0",
+        urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/1.6.0-RC-1/rules_kotlin_release.tgz"],
     )
 
     http_archive(
         name = "rules_detekt",
-        sha256 = "b1b4c8a3228f880a169ab60a817619bc4cf254443196e7e108ece411cb9c580e",
-        strip_prefix = "bazel_rules_detekt-0.3.0",
-        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.3.0.tar.gz",
+        sha256 = "44912c74dc2e164227b1102ef36227d0e78fdbd7c7359868ae13424eb4f0d5c2",
+        strip_prefix = "bazel_rules_detekt-0.6.0",
+        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.6.0.tar.gz",
     )
 
     # gRPC java for @rules_proto_grpc
