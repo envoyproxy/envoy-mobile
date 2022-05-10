@@ -2,6 +2,7 @@ package test.kotlin.integration
 
 import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.KeyValueStore
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
@@ -35,28 +36,32 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-              - name: api
-                domains:
-                  - "*"
-                routes:
-                  - match:
-                      prefix: "/"
-                    direct_response:
-                      status: 200
-                      body:
-                        inline_string: $assertionResponseBody
+            - name: api
+              domains:
+                - "*"
+              routes:
+              - match:
+                  prefix: "/"
+                direct_response:
+                  status: 200
+                  body:
+                    inline_string: $assertionResponseBody
+                response_headers_to_add:
+                - header:
+                    key: alt-svc
+                    value: h3=":10000"; ma=86400, h3-29=":10000"; ma=86400
           http_filters:
-            - name: envoy.filters.http.assertion
-              typed_config:
-                "@type": $assertionFilterType
-                match_config:
-                  http_request_headers_match:
-                    headers:
-                      - name: ":authority"
-                        exact_match: example.com
-            - name: envoy.router
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+          - name: envoy.filters.http.assertion
+            typed_config:
+              "@type": $assertionFilterType
+              match_config:
+                http_request_headers_match:
+                  headers:
+                    - name: ":authority"
+                      exact_match: example.com
+          - name: envoy.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 """
 
 class ReceiveDataTest {
@@ -68,7 +73,17 @@ class ReceiveDataTest {
   @Test
   fun `response headers and response data call onResponseHeaders and onResponseData`() {
 
-    val engine = EngineBuilder(Custom(config)).build()
+    val readExpectation = CountDownLatch(1)
+    val saveExpectation = CountDownLatch(1)
+    val testKeyValueStore = KeyValueStore(
+      read = { _ -> readExpectation.countDown(); null },
+      remove = { _ -> {}},
+      save = { _, _ -> saveExpectation.countDown() }
+    )
+
+    val engine = EngineBuilder(Custom(config))
+        .addKeyValueStore("envoy.key_value.platform", testKeyValueStore)
+        .build()
     val client = engine.streamClient()
 
     val requestHeaders = RequestHeadersBuilder(
@@ -102,8 +117,8 @@ class ReceiveDataTest {
     dataExpectation.await(10, TimeUnit.SECONDS)
     engine.terminate()
 
-    assertThat(headersExpectation.count).isEqualTo(0)
-    assertThat(dataExpectation.count).isEqualTo(0)
+    assertThat(readExpectation.count).isEqualTo(0)
+    assertThat(saveExpectation.count).isEqualTo(0)
 
     assertThat(status).isEqualTo(200)
     assertThat(body!!.array().toString(Charsets.UTF_8)).isEqualTo(assertionResponseBody)
