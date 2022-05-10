@@ -18,14 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>All methods in this class are Thread Safe.
  *
  * <p><b>WRITE state diagram</b>
- * <li>There are 11 states represented by these 5 State bits.
+ * <li>There are 11 states represented by 5 State bits.
  * <li>The USER_WRITE event can occur on any state - it does not change the state. However, if
  * attempted after a USER_LAST_WRITE event, the this will throw an Exception. It is absent from
  * the diagram.
  * <li>The WRITE_COMPLETED event does not change the state and is therefore absent from the diagram.
  * <li>The USER_FLUSH event won't change the state if the request headers have been sent.
- * <li>The READY_TO_FLUSH event will not change the state if the bit state WAITING_FOR_FLUSH is
- * false.
+ * <li>The READY_TO_FLUSH event will not change the state if the current state is "Busy" or
+ * "BusyAndEnding" (in general, if the state bit WAITING_FOR_FLUSH is false.)
  *
  * <p><pre>
  * Write State                State bits use to represent the write state
@@ -86,7 +86,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <p><b>READ state diagram</b>
  * <li>There are 16 states represented by 7 State bits.
- * <li>Some "read" related events don't change the state, like "ON_DATA". This are absent here.
+ * <li>Some "read" related events don't change the state, like "ON_DATA". Those are omitted.
+ * <li>There is something very peculiar about the "last read". When EM indicates that there is no
+ * more data to receive, then the END_STREAM_READ state bit is set to one, as expected. However, if
+ * the last ByteBuffer received is not empty, or if the response is "body less", then the final
+ * "read" loop must be faked: the final read must return zero bytes by contract.
  *
  * <p><pre>
  * Read State                      State bits use to represent the read state
@@ -123,6 +127,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *    |-------------|    --------------- |--------------------------------|
  *                       |                  |                    |
  *    STREAM_READY_CALLBACK_DONE           READ              ON_HEADERS*
+ *                       |                  |                    |
  *                       V                  V                    V
  *    |---------------------|      |-----------|   |--------------------------|
  *    | ReadyWaitingHeaders |      | Postponed |   | ReadyWaitingStreamOk or  |
@@ -130,6 +135,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     |    |                       |         |    |--------------------------|
  *     |    |                       |         |               |              |
  *     |   READ  STREAM_READY_CALLBACK_DONE  ON_HEADERS*     READ            |
+ *     |    |                       |         |               |              |
  *     |    V                       V         V               V              |
  *     |   |-------------------------|   |------------------------------|    |
  *     |   | PostponedWaitingHeaders |   | PostponedWaitingStreamOk or  |    |
@@ -145,6 +151,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * |-----------|   |-------------------|                       |----------|  |
  *  ^   ^   |                    |                                      ^    |
  *  |   |   |     READY_TO_START_POSTPONED_READ_IF_ANY                  |    |
+ *  |   |   |                    |                                      |    |
  *  |   |   |                    V                                      |    |
  *  |   |   |                |-------------| -- LAST_READ_COMPLETED -----    |
  *  |   |   ----- READ ----> | Reading or  | -- ON_DATA_END_STREAM ---       |
@@ -152,7 +159,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  |   -- READ_COMPLETED -- |-------------| <------------------------       |
  *  |                                                                        |
  *  -------------------------------------------- STREAM_READY_CALLBACK_DONE --
- *
  * </pre>
  */
 final class CronetBidirectionalState {
@@ -246,7 +252,7 @@ final class CronetBidirectionalState {
     int NOTIFY_USER_HEADERS_RECEIVED = 1;  // Schedule/Execute Callback.onResponseHeadersReceived()
     int NOTIFY_USER_WRITE_COMPLETED = 2;   // Execute Callback.onWriteCompleted()
     int NOTIFY_USER_READ_COMPLETED = 3;    // Execute Callback.onReadeCompleted()
-    int NOTIFY_USER_TRAILERS_RECEIVED = 4; // Schedule Callback.onResponseTrailersReceived(()
+    int NOTIFY_USER_TRAILERS_RECEIVED = 4; // Schedule Callback.onResponseTrailersReceived()
     int NOTIFY_USER_SUCCEEDED = 5;         // Schedule/Execute Callback.onSucceeded()
     int NOTIFY_USER_NETWORK_ERROR = 6;     // Schedule Callback.onFailed()
     int NOTIFY_USER_FAILED = 7;            // Schedule Callback.onFailed()
@@ -321,7 +327,7 @@ final class CronetBidirectionalState {
     int END_STREAM_READ = 1 << 17;       // EM will not invoke the "onData" callback anymore.
     int READ_DONE = 1 << 18;             // User won't receive more read callbacks.
 
-    // Terminating state bits: Seventh right most digit of the HEX representation: 0x700000
+    // Terminating state bits: Sixth right most digit of the HEX representation: 0x700000
     int CANCELLING = 1 << 20; // EM's "cancel" method has been invoked.
     int FAILED = 1 << 21;     // An fatal failure has been encountered.
     int DONE = 1 << 22;       // Terminal state. Can be successful or otherwise.
@@ -614,32 +620,34 @@ final class CronetBidirectionalState {
   }
 
   /**
-   * Returns true is we are already in a final state.
+   * Returns true is we are already in a final state. However, if the provided "event" represents a
+   * Terminal Network Event, then this method returns "false" even if the provided "state"
+   * represents a terminating state: a Terminal Network Event needs to be processed to put the
+   * Stream to rest.
    *
    * <p>For few cases, this method will throw when the state is not compatible with the event. This
    * mimics Cronet's behaviour: identical Exception types and error messages.
    */
-  private boolean isAlreadyFinalState(int event, int originalState) {
-    // Some events must fail immediately when the original state does not permit.
+  private static boolean isAlreadyFinalState(@Event int event, @State int state) {
     switch (event) {
     case Event.USER_START:
     case Event.USER_START_WITH_HEADERS:
     case Event.USER_START_READ_ONLY:
     case Event.USER_START_WITH_HEADERS_READ_ONLY:
-      if ((originalState & (State.STARTED | State.TERMINATING_STATES)) != 0) {
+      if ((state & (State.STARTED | State.TERMINATING_STATES)) != 0) {
         throw new IllegalStateException("Stream is already started.");
       }
       break;
 
     case Event.USER_LAST_WRITE:
     case Event.USER_WRITE:
-      if ((originalState & State.END_STREAM_WRITTEN) != 0) {
+      if ((state & State.END_STREAM_WRITTEN) != 0) {
         throw new IllegalArgumentException("Write after writing end of stream.");
       }
       break;
 
     case Event.USER_READ:
-      if ((originalState & State.WAITING_FOR_READ) == 0) {
+      if ((state & State.WAITING_FOR_READ) == 0) {
         throw new IllegalStateException("Unexpected read attempt.");
       }
       break;
@@ -651,10 +659,11 @@ final class CronetBidirectionalState {
     // Those 3 events are the final events from the EnvoyMobile C++ layer.
     if (event == Event.ON_CANCEL || event == Event.ON_ERROR || event == Event.ON_COMPLETE) {
       // If this assert triggers it means that the C++ EnvoyMobile contract has been breached.
-      assert (originalState & State.DONE) == 0; // Or there is a blatant bug.
-    } else if ((originalState & State.TERMINATING_STATES) != 0) {
-      return true;
+      assert (state & State.DONE) == 0; // Or there is a blatant bug.
+      // The above 3 Network Events are the only ones that need to be processed when the Stream is
+      // in a terminating state. This is why here this returns "false" systematically.
+      return false;
     }
-    return false;
+    return (state & State.TERMINATING_STATES) != 0;
   }
 }

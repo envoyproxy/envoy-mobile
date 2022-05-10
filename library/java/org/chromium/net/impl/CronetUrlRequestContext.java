@@ -336,7 +336,7 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
     try {
       executor.execute(task);
     } catch (RejectedExecutionException failException) {
-      // TODO: use Envoy-Mobile logs - this is a hack.
+      // TODO(https://github.com/envoyproxy/envoy-mobile/issues/2262): go with Cronet ways for logs.
       android.util.Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor",
                          failException);
     }
