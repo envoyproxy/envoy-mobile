@@ -1,5 +1,5 @@
 """
-This rule declares outputs for files from an distributable framework.
+This rule declares outputs for files from a distributable framework.
 This allows us to reproduce what it's like to import our distribution artifact
 within the same build. Ideally we could just propagate the directory so we
 didn't have to enumerate the files in the framework zip, but that isn't
