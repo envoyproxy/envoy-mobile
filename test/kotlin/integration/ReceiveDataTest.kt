@@ -2,6 +2,7 @@ package test.kotlin.integration
 
 import io.envoyproxy.envoymobile.Custom
 import io.envoyproxy.envoymobile.EngineBuilder
+import io.envoyproxy.envoymobile.KeyValueStore
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
@@ -45,6 +46,10 @@ static_resources:
                       status: 200
                       body:
                         inline_string: $assertionResponseBody
+#                    response_headers_to_add:
+#                    - header:
+#                        key: alt-svc
+#                        value: h3=":10000"; ma=86400, h3-29=":10000"; ma=86400
           http_filters:
             - name: envoy.filters.http.assertion
               typed_config:
@@ -68,7 +73,17 @@ class ReceiveDataTest {
   @Test
   fun `response headers and response data call onResponseHeaders and onResponseData`() {
 
+    //val readExpectation = CountDownLatch(1)
+    //val saveExpectation = CountDownLatch(1)
+    //val testKeyValueStore = KeyValueStore(
+    //  read = { _ -> readExpectation.countDown(); null },
+    //  remove = { _ -> {}},
+    //  save = { _, _ -> saveExpectation.countDown() }
+    //)
+
     val engine = EngineBuilder(Custom(config)).build()
+        //.addKeyValueStore("envoy.key_value.platform", testKeyValueStore)
+        //.build()
     val client = engine.streamClient()
 
     val requestHeaders = RequestHeadersBuilder(
@@ -94,6 +109,7 @@ class ReceiveDataTest {
         body = data
         dataExpectation.countDown()
       }
+      .setOnComplete { _ -> {}}
       .setOnError { _, _ -> fail("Unexpected error") }
       .start()
       .sendHeaders(requestHeaders, true)

@@ -12,7 +12,7 @@ namespace Envoy {
 namespace Extensions {
 namespace KeyValue {
 
-class PlatformInterfaceImpl : PlatformInterface {
+class PlatformInterfaceImpl : PlatformInterface, public Logger::Loggable<Logger::Id::filter> {
 public:
   PlatformInterfaceImpl(const std::string& name)
       : bridged_store_(*static_cast<envoy_kv_store*>(Api::External::retrieveApi(name))) {}
@@ -20,12 +20,14 @@ public:
   ~PlatformInterfaceImpl() override {}
 
   std::string read(const std::string& key) const override {
+    ENVOY_LOG(warn, "*** READ FROM KV STORE {}", key);
     envoy_data bridged_key = Data::Utility::copyToBridgeData(key);
     envoy_data bridged_value = bridged_store_.read(bridged_key, bridged_store_.context);
     return Data::Utility::copyToString(bridged_value);
   }
 
   void save(const std::string& key, const std::string& contents) override {
+    ENVOY_LOG(warn, "*** WRITE TO KV STORE {}", key);
     envoy_data bridged_key = Data::Utility::copyToBridgeData(key);
     envoy_data bridged_value = Data::Utility::copyToBridgeData(contents);
     bridged_store_.save(bridged_key, bridged_value, bridged_store_.context);

@@ -922,7 +922,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerKeyValueStore(JNIEnv* e
                                                                        jstring name,
                                                                        jobject j_context) {
 
-  // TODO(goaway): Everything here leaks, but it's all be tied to the life of the engine.
+  // TODO(goaway): The java context here leaks, but it's tied to the life of the engine.
   // This will need to be updated for https://github.com/envoyproxy/envoy-mobile/issues/332
   jni_log("[Envoy]", "registerKeyValueStore");
   jni_log_fmt("[Envoy]", "j_context: %p", j_context);
