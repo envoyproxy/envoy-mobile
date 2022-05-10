@@ -105,7 +105,6 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
  * invoked immediately. And to avoid invoking further Stream methods once "cancel" has been invoked,
  * a dedicated class handles this business: {@link CancelProofEnvoyStream}.
  * </ul>
- *
  */
 public final class CronetBidirectionalStream
     extends ExperimentalBidirectionalStream implements EnvoyHTTPCallbacks {
