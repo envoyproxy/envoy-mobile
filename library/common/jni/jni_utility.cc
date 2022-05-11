@@ -260,7 +260,7 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries) {
 jstring ConvertUTF8ToJavaString(JNIEnv* env, const std::string& str) {
   // JNI's NewStringUTF expects "modified" UTF8 so instead convert the string to UTF16 and pass it
   // to NewString.
-  std::u16string utf16 = UTF8ToUTF16(str.data(), str.size());
+  std::u16string utf16 = Envoy::Strings::UTF8ToUTF16(str.data(), str.size());
   const jchar* jutf16 = reinterpret_cast<const jchar*>(utf16.data());
   return env->NewString(jutf16, utf16.length());
 }
@@ -323,7 +323,7 @@ void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result) {
   // copying it into C++ owned memory.
   const jchar* utf16 = env->GetStringChars(str, /*isCopy=*/nullptr);
   size_t len = env->GetStringLength(str);
-  std::string utf8 = UTF16ToUTF8(reinterpret_cast<const char16_t*>(utf16), len);
+  std::string utf8 = Envoy::Strings::UTF16ToUTF8(reinterpret_cast<const char16_t*>(utf16), len);
   *result = utf8;
   env->ReleaseStringChars(str, utf16);
 }
