@@ -40,6 +40,15 @@ final class HeadersBuilderTests: XCTestCase {
     XCTAssertEqual(["x-foo": ["abc"]], headers)
   }
 
+  func testRestrictedHeadersAreNotSettable() {
+    let builder = RequestHeadersBuilder(method: .get, authority: "example.com", path: "/")
+    builder.add("host", "example.com")
+    builder.set(":scheme", "http")
+    builder.set(":path", "nope")
+    let headers = builder.build()
+    XCTAssertEqual([":method": ["get"], ":authority": ["example.com"], ":path": ["/"])
+  }
+
   func testBuildersAreEqualIfUnderlyingHeadersAreEqual() {
     let builder1 = RequestHeadersBuilder(headers: ["x-foo": ["123"], "x-bar": ["abc"]])
     let builder2 = RequestHeadersBuilder(headers: ["x-foo": ["123"], "x-bar": ["abc"]])
