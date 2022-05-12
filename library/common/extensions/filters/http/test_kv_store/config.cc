@@ -20,7 +20,8 @@ Http::FilterFactoryCb TestKeyValueStoreFilterFactory::createFilterFactoryFromPro
 /**
  * Static registration for the TestKeyValueStore filter. @see NamedHttpFilterConfigFactory.
  */
-REGISTER_FACTORY(TestKeyValueStoreFilterFactory, Server::Configuration::NamedHttpFilterConfigFactory);
+REGISTER_FACTORY(TestKeyValueStoreFilterFactory,
+                 Server::Configuration::NamedHttpFilterConfigFactory);
 
 } // namespace TestKeyValueStore
 } // namespace HttpFilters

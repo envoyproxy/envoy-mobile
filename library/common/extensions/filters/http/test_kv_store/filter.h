@@ -6,8 +6,8 @@
 
 #include "library/common/api/c_types.h"
 #include "library/common/api/external.h"
-#include "library/common/extensions/key_value/platform/c_types.h"
 #include "library/common/extensions/filters/http/test_kv_store/filter.pb.h"
+#include "library/common/extensions/key_value/platform/c_types.h"
 
 namespace Envoy {
 namespace Extensions {

@@ -1,6 +1,4 @@
 load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_jni_kt_test")
-load("@envoy_mobile//bazel:envoy_mobile_test_extensions.bzl", "TEST_EXTENSIONS")
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
 
 envoy_mobile_jni_kt_test(
     name = "engine_start_test",
