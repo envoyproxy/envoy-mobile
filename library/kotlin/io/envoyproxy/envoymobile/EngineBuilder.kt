@@ -189,7 +189,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to filter unroutable IP families during DNS resolution or not. 
+   * Specify whether to filter unroutable IP families during DNS resolution or not.
    * Defaults to true.
    *
    * @param dnsFilterUnroutableFamilies whether to filter or not.
