@@ -22,7 +22,7 @@ open class EngineBuilder: NSObject {
   private var dnsMinRefreshSeconds: UInt32 = 60
   private var dnsPreresolveHostnames: String = "[]"
   private var dnsRefreshSeconds: UInt32 = 60
-  private var enableHappyEyeballs: Bool = false
+  private var enableHappyEyeballs: Bool = true
   private var enableInterfaceBinding: Bool = false
   private var enforceTrustChainVerification: Bool = true
   private var enableDrainPostDnsRefresh: Bool = false

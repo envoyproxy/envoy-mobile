@@ -41,7 +41,7 @@ open class EngineBuilder(
   private var dnsPreresolveHostnames = "[]"
   private var enableDrainPostDnsRefresh = false
   private var enableHttp3 = false
-  private var enableHappyEyeballs = false
+  private var enableHappyEyeballs = true
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
