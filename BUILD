@@ -106,11 +106,13 @@ genrule(
 
 xcodeproj(
     name = "xcodeproj",
+    archived_bundles_allowed = True,
     build_mode = "bazel",
     project_name = "Envoy",
     tags = ["manual"],
     targets = [
-        "//examples/objective-c/hello_world:app",
+        # TODO(jpsim): Fix Objective-C app support
+        # "//examples/objective-c/hello_world:app",
         "//examples/swift/async_await:app",
         "//examples/swift/hello_world:app",
         "//test/swift/apps/baseline:app",
