@@ -256,7 +256,7 @@ open class EngineBuilder(
 
   /**
    * Add a rate at which to ping h2 connections on new stream creation if the connection has
-   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionlity
+   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
    * and results in a connection ping on every new stream creation.
    *
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
