@@ -43,7 +43,7 @@ open class EngineBuilder(
   private var enableHttp3 = false
   private var enableHappyEyeballs = false
   private var enableInterfaceBinding = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var h2ExtendKeepaliveTimeout = false
   private var h2RawDomains = listOf<String>()
@@ -256,7 +256,8 @@ open class EngineBuilder(
 
   /**
    * Add a rate at which to ping h2 connections on new stream creation if the connection has
-   * sat idle.
+   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionlity
+   * and results in a connection ping on every new stream creation.
    *
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
    *
