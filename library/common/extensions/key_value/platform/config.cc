@@ -20,14 +20,12 @@ public:
   ~PlatformInterfaceImpl() override {}
 
   std::string read(const std::string& key) const override {
-    ENVOY_LOG(warn, "*** READ FROM KV STORE {}", key);
     envoy_data bridged_key = Data::Utility::copyToBridgeData(key);
     envoy_data bridged_value = bridged_store_.read(bridged_key, bridged_store_.context);
     return Data::Utility::copyToString(bridged_value);
   }
 
   void save(const std::string& key, const std::string& contents) override {
-    ENVOY_LOG(warn, "*** WRITE TO KV STORE {}", key);
     envoy_data bridged_key = Data::Utility::copyToBridgeData(key);
     envoy_data bridged_value = Data::Utility::copyToBridgeData(contents);
     bridged_store_.save(bridged_key, bridged_value, bridged_store_.context);
