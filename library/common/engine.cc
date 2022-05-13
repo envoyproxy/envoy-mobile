@@ -161,6 +161,7 @@ envoy_status_t Engine::terminate() {
     }
 
     ASSERT(event_dispatcher_);
+    ASSERT(dispatcher_);
 
     // Exit the event loop and finish up in Engine::run(...)
     if (std::this_thread::get_id() == main_thread_.get_id()) {
