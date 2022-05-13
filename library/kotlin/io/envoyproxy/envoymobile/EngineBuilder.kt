@@ -35,7 +35,7 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsFallbackNameservers = listOf<String>()
-  private var dnsFilterUnroutableFamilies = false
+  private var dnsFilterUnroutableFamilies = true
   private var dnsQueryTimeoutSeconds = 25
   private var dnsMinRefreshSeconds = 60
   private var dnsPreresolveHostnames = "[]"
@@ -43,7 +43,7 @@ open class EngineBuilder(
   private var enableHttp3 = false
   private var enableHappyEyeballs = true
   private var enableInterfaceBinding = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var h2ExtendKeepaliveTimeout = false
   private var h2RawDomains = listOf<String>()
@@ -190,6 +190,7 @@ open class EngineBuilder(
 
   /**
    * Specify whether to filter unroutable IP families during DNS resolution or not.
+   * Defaults to true.
    *
    * @param dnsFilterUnroutableFamilies whether to filter or not.
    *
@@ -257,7 +258,9 @@ open class EngineBuilder(
 
   /**
    * Add a rate at which to ping h2 connections on new stream creation if the connection has
-   * sat idle.
+   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
+   * and results in a connection ping on every new stream creation. Set it to
+   * 100000000 milliseconds to effectively disable the ping.
    *
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
    *
