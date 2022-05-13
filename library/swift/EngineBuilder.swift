@@ -154,7 +154,8 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+  /// Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+  /// true.
   ///
   /// - parameter enableHappyEyeballs: whether to enable RFC 6555 handling for IPv4/IPv6.
   ///

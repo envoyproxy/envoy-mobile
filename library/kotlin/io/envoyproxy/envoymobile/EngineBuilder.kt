@@ -230,7 +230,8 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+   * true.
    *
    * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
    *
