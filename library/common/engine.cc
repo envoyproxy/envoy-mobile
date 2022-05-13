@@ -168,10 +168,9 @@ envoy_status_t Engine::terminate() {
       PANIC("Terminating the engine from its own main thread is currently unsupported.");
     } else {
       event_dispatcher_->exit();
+      dispatcher_->terminate();
     }
   } // lock(_mutex)
-
-  dispatcher_->terminate();
 
   if (std::this_thread::get_id() != main_thread_.get_id()) {
     main_thread_.join();
