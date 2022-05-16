@@ -1,3 +1,4 @@
+#include "source/extensions/http/header_formatters/preserve_case/config.h"
 #include "source/extensions/http/header_formatters/preserve_case/preserve_case_formatter.h"
 
 #include "test/common/http/common.h"
@@ -324,6 +325,8 @@ TEST_P(ClientIntegrationTest, BasicReset) {
 
 // Test header key case sensitivity.
 TEST_P(ClientIntegrationTest, CaseSensitive) {
+  Envoy::Extensions::Http::HeaderFormatters::PreserveCase::
+      forceRegisterPreserveCaseFormatterFactoryConfig();
   config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
     ConfigHelper::HttpProtocolOptions protocol_options;
     auto typed_extension_config = protocol_options.mutable_explicit_http_config()
