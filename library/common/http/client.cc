@@ -611,7 +611,7 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   const char* cluster{};
   auto protocol_header = headers.get(ProtocolHeader);
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    if (!protocol_header.empty() && protocol_header[0]->value().getStringValue() == "h2c") {
+    if (!protocol_header.empty() && protocol_header[0]->value().getStringView() == "h2c") {
       cluster = ClearTextH2Cluster;
     } else {
       cluster = ClearTextCluster;
