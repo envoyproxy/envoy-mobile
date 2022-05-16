@@ -13,7 +13,6 @@ public interface EnvoyKeyValueStore {
    * Remove a value from the key value store implementation.
    *
    * @param key,     key identifying the value to be removed.
-   * @return String, value mapped to the key, or null if not present.
    */
   void remove(String key);
 
