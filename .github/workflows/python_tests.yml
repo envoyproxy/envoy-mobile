@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - name: Add safe directory
+        run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
       - id: check_context
         name: 'Check whether to run'
         run: |

@@ -20,6 +20,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - name: Add safe directory
+        run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,6 +48,8 @@ jobs:
       - uses: actions/checkout@v1
         with:
           submodules: true
+      - name: Add safe directory
+        run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
