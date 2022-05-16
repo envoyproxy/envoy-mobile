@@ -14,6 +14,13 @@ namespace Extensions {
 namespace HttpFilters {
 namespace TestKeyValueStore {
 
+/**
+ * This is a test-only filter used for validating PlatformKeyValueStore integrations. It retrieves
+ * a known key-value store implementation and issues a series of fixed calls to it, allowing for
+ * validation to be performed from platform code.
+ *
+ * TODO(goaway): Move to a location for test components outside of the main source tree.
+ */
 class TestKeyValueStoreFilterConfig {
 public:
   TestKeyValueStoreFilterConfig(
