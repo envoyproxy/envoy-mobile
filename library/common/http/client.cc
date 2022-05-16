@@ -599,6 +599,7 @@ const char* BaseCluster = "base";
 const char* H2Cluster = "base_h2";
 const char* H3Cluster = "base_h3";
 const char* ClearTextCluster = "base_clear";
+const char* ClearTextH2Cluster = "base_h2_clear";
 
 } // namespace
 
@@ -606,11 +607,17 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // Determine upstream cluster:
   // - Use TLS with ALPN by default.
   // - Use http/2 or ALPN if requested explicitly via x-envoy-mobile-upstream-protocol.
-  // - Force http/1.1 if request scheme is http (cleartext).
+  // - Force http/1.1 if request scheme is http (cleartext) unless the protocol is set to h2c.
   const char* cluster{};
   auto protocol_header = headers.get(ProtocolHeader);
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    cluster = ClearTextCluster;
+    if (!protocol_header.empty()) {
+      if (protocol_header[0]->value().getStringView() == "h2c") {
+        cluster = ClearTextH2Cluster;
+      } else {
+        cluster = ClearTextCluster;
+      }
+    }
   } else if (!protocol_header.empty()) {
     ASSERT(protocol_header.size() == 1);
     const auto value = protocol_header[0]->value().getStringView();
