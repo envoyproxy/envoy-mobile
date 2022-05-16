@@ -49,7 +49,7 @@ final class HeadersBuilderTests: XCTestCase {
     let expected = [
       ":authority": ["example.com"],
       ":path": ["/"],
-      ":method": ["get"],
+      ":method": ["GET"],
       ":scheme": ["https"]
     ]
     XCTAssertEqual(expected, headers)
