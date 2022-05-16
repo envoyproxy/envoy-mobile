@@ -44,7 +44,7 @@ final class HeadersBuilderTests: XCTestCase {
     let builder = RequestHeadersBuilder(method: .get, authority: "example.com", path: "/")
     builder.add(name: "host", value: "example.com")
     builder.set(name: ":scheme", value: ["http"])
-    builder.set(name: ":path", ["/nope"])
+    builder.set(name: ":path", value: ["/nope"])
     let headers = builder.build()
     XCTAssertEqual([":method": ["get"], ":authority": ["example.com"], ":path": ["/"], headers)
   }
