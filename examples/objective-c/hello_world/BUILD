@@ -10,7 +10,7 @@ objc_library(
         "*.h",
         "*.m",
     ]),
-    deps = ["//dist:envoy_mobile_ios"],
+    deps = ["//:envoy_mobile_ios"],
 )
 
 ios_application(
@@ -19,7 +19,6 @@ ios_application(
     families = ["iphone"],
     infoplists = ["Info.plist"],
     minimum_os_version = MINIMUM_IOS_VERSION,
-    deps = [
-        "appmain",
-    ],
+    visibility = ["//visibility:public"],
+    deps = ["appmain"],
 )
