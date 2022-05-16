@@ -611,12 +611,10 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   const char* cluster{};
   auto protocol_header = headers.get(ProtocolHeader);
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
-    if (!protocol_header.empty()) {
-      if (protocol_header[0]->value().getStringView() == "h2c") {
-        cluster = ClearTextH2Cluster;
-      } else {
-        cluster = ClearTextCluster;
-      }
+    if (!protocol_header.empty() && protocol_header[0]->value().getStringValue() == "h2c") {
+      cluster = ClearTextH2Cluster;
+    } else {
+      cluster = ClearTextCluster;
     }
   } else if (!protocol_header.empty()) {
     ASSERT(protocol_header.size() == 1);
