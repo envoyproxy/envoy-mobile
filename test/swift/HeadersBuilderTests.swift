@@ -46,7 +46,13 @@ final class HeadersBuilderTests: XCTestCase {
       .set(name: ":scheme", value: ["http"])
       .set(name: ":path", value: ["/nope"])
       .headers
-    XCTAssertEqual([":authority": ["example.com"], ":path": ["/"], ":method": ["get"], ":scheme": ["https"]], headers)
+    let expected = [
+      ":authority": ["example.com"],
+      ":path": ["/"],
+      ":method": ["get"],
+      ":scheme": ["https"]
+    ]
+    XCTAssertEqual(expected, headers)
   }
 
   func testBuildersAreEqualIfUnderlyingHeadersAreEqual() {
