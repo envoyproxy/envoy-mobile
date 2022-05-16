@@ -50,7 +50,7 @@ final class HeadersBuilderTests: XCTestCase {
       ":authority": ["example.com"],
       ":path": ["/"],
       ":method": ["GET"],
-      ":scheme": ["https"]
+      ":scheme": ["https"],
     ]
     XCTAssertEqual(expected, headers)
   }
