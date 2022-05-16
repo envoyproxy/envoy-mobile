@@ -49,7 +49,9 @@ jobs:
         with:
           submodules: true
       - name: Add safe directory
-        run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
+        run: |
+          git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile/envoy
+          git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
