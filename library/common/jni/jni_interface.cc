@@ -809,7 +809,7 @@ static envoy_data jvm_kv_store_read(envoy_data key, const void* context) {
 }
 
 static void jvm_kv_store_remove(envoy_data key, const void* context) {
-  jni_log("[Envoy]", "jvm_store_remove");
+  jni_log("[Envoy]", "jvm_kv_store_remove");
   JNIEnv* env = get_env();
 
   jobject j_context = static_cast<jobject>(const_cast<void*>(context));
