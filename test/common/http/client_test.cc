@@ -224,6 +224,25 @@ TEST_P(ClientTest, SetDestinationClusterUpstreamProtocol) {
   EXPECT_CALL(*request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers4), true));
   http_client_.sendHeaders(stream_, c_headers4, true);
 
+  // Setting http2 prior knowledge.
+  TestRequestHeaderMapImpl headers5{{"x-envoy-mobile-upstream-protocol", "h2c"}};
+  HttpTestUtility::addDefaultHeaders(headers5);
+  headers5.setScheme("http");
+  envoy_headers c_headers5 = Utility::toBridgeHeaders(headers5);
+
+  TestResponseHeaderMapImpl expected_headers5{
+      {":scheme", "http"},
+      {":method", "GET"},
+      {":authority", "host"},
+      {":path", "/"},
+      {"x-envoy-mobile-cluster", "base_h2_clear"},
+      {"x-forwarded-proto", "https"},
+  };
+  EXPECT_CALL(dispatcher_, pushTrackedObject(_));
+  EXPECT_CALL(dispatcher_, popTrackedObject(_));
+  EXPECT_CALL(*request_decoder_, decodeHeaders_(HeaderMapEqual(&expected_headers5), true));
+  http_client_.sendHeaders(stream_, c_headers5, true);
+
   // Encode response headers.
   EXPECT_CALL(dispatcher_, pushTrackedObject(_));
   EXPECT_CALL(dispatcher_, popTrackedObject(_));

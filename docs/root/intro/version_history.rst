@@ -22,6 +22,7 @@ Features:
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
 - configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
 - android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
+- http: added support for plaintext HTTP/2 prior knowledge via setting x-envoy-mobile-upstream-protocol to `h2c` (:issue:`#2281 (2281)`)
 
 0.4.6 (April 26, 2022)
 ========================
