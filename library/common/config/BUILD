@@ -17,5 +17,6 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "@envoy//source/extensions/http/header_formatters/preserve_case:config",
+        "@envoy//source/extensions/http/header_formatters/preserve_case:preserve_case_formatter",
     ],
 )
