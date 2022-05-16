@@ -30,6 +30,7 @@ envoy_cc_library(
         "@envoy//source/extensions/transport_sockets/tls:config",
         "@envoy//source/extensions/transport_sockets/tls/cert_validator:cert_validator_lib",
         "@envoy//source/extensions/upstreams/http/generic:config",
+        "@envoy//source/extensions/http/header_formatters/preserve_case:config",
         "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
         "@envoy_mobile//library/common/extensions/filters/http/local_error:config",
         "@envoy_mobile//library/common/extensions/filters/http/network_configuration:config",
