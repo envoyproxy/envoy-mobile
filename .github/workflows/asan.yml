@@ -3,7 +3,7 @@ name: asan
 on:
   push:
     branches:
-      - main
+      - jp-test-bb
   pull_request:
 
 jobs:
@@ -40,11 +40,11 @@ jobs:
           architecture: x64
       - name: 'Run tests'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         if: steps.check_context.outputs.run_tests == 'true'
         run: |
           ./bazelw test --test_output=all \
             --test_env=ENVOY_IP_TEST_VERSIONS=v4only \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --config=remote-ci-linux-asan \
             //test/common/...

@@ -6,7 +6,4 @@ platform(
         "@platforms//cpu:x86_64",
         "@platforms//os:macos",
     ],
-    exec_properties = {
-        "Pool": "macos",
-    },
 )

@@ -3,7 +3,7 @@ name: python_tests
 on:
   push:
     branches:
-      - main
+      - jp-test-bb
   pull_request:
 
 jobs:
@@ -32,11 +32,11 @@ jobs:
       - name: 'Run tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw test \
             --action_env=LD_LIBRARY_PATH \
             --test_output=all \
             --config=remote-ci-linux \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             //test/python/...

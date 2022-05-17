@@ -3,7 +3,7 @@ name: ios_build
 on:
   push:
     branches:
-      - main
+      - jp-test-bb
   pull_request:
 
 jobs:
@@ -18,10 +18,11 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
         run: |
           ./bazelw shutdown
-          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //library/swift:ios_framework
+          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //library/swift:ios_framework
         name: 'Build Envoy.framework distributable'
   swifthelloworld:
     name: swift_helloworld
@@ -35,13 +36,15 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //examples/swift/hello_world:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app &> /tmp/envoy.log &
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //examples/swift/hello_world:app &> /tmp/envoy.log &
         name: 'Run swift app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'
@@ -60,13 +63,15 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/baseline:app
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //test/swift/apps/baseline:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/baseline:app &> /tmp/envoy.log &
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //test/swift/apps/baseline:app &> /tmp/envoy.log &
         name: 'Run swift app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'
@@ -85,13 +90,15 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/experimental:app
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //test/swift/apps/experimental:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/experimental:app &> /tmp/envoy.log &
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //test/swift/apps/experimental:app &> /tmp/envoy.log &
         name: 'Run swift app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'
@@ -110,13 +117,15 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/async_await:app
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //examples/swift/async_await:app
         name: 'Build swift app'
       # Run the app in the background and redirect logs.
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/async_await:app &> /tmp/envoy.log &
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //examples/swift/async_await:app &> /tmp/envoy.log &
         name: 'Run swift app'
       - run: sed '/\[2\] Uploaded 7 MB of data/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check upload succeeded'
@@ -135,13 +144,15 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //examples/objective-c/hello_world:app
         name: 'Build objective-c app'
       # Run the app in the background and redirect logs.
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app &> /tmp/envoy.log &
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw run --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //examples/objective-c/hello_world:app &> /tmp/envoy.log &
         name: 'Run objective-c app'
       - run: sed '/received headers with status 200/q' <(touch /tmp/envoy.log && tail -F /tmp/envoy.log)
         name: 'Check connectivity'

@@ -44,7 +44,6 @@ platform(
     exec_properties = {
         "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:8c1f2988318b29df9d70b32ca5a78cf5c95b5732524e71fd97e6eff8a1d0a1bd",
         "OSFamily": "Linux",
-        "Pool": "linux",
     },
 )
 
@@ -59,7 +58,6 @@ platform(
     exec_properties = {
         "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:8c1f2988318b29df9d70b32ca5a78cf5c95b5732524e71fd97e6eff8a1d0a1bd",
         "OSFamily": "Linux",
-        "Pool": "linux",
         # Necessary to workaround https://github.com/google/sanitizers/issues/916, otherwise, dangling threads in the
         # docker container fail tests on teardown (example: https://github.com/envoyproxy/envoy-mobile/runs/3443649963)
         "dockerAddCapabilities": "SYS_PTRACE",
