@@ -3,7 +3,7 @@ name: cc_tests
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-4
   pull_request:
 
 jobs:
@@ -20,6 +20,6 @@ jobs:
       - name: Add safe directory
         run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
       - env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         name: 'Run tests'
-        run: ./bazelw test --action_env=LD_LIBRARY_PATH --test_output=all --config=remote-ci-linux --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/cc/...
+        run: ./bazelw test --action_env=LD_LIBRARY_PATH --test_output=all --config=remote-ci-linux --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //test/cc/...

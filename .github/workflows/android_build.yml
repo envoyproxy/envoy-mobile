@@ -3,7 +3,7 @@ name: android_build
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-4
   pull_request:
 
 jobs:
@@ -24,11 +24,11 @@ jobs:
         run: ./ci/mac_ci_setup.sh --android
       - name: 'Build envoy.aar distributable'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --fat_apk_cpu=x86_64 \
             //:android_dist
   javahelloworld:
@@ -54,11 +54,11 @@ jobs:
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
       - name: 'Start java app'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --fat_apk_cpu=x86_64 \
             //examples/java/hello_world:hello_envoy
           adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
@@ -88,11 +88,11 @@ jobs:
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
       - name: 'Start kotlin app'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --fat_apk_cpu=x86_64 \
             //examples/kotlin/hello_world:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
@@ -122,11 +122,11 @@ jobs:
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
       - name: 'Start kotlin app'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --fat_apk_cpu=x86_64 \
             //test/kotlin/apps/baseline:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/test/kotlin/apps/baseline/hello_envoy_kt.apk
@@ -156,11 +156,11 @@ jobs:
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
       - name: 'Start kotlin app'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --fat_apk_cpu=x86_64 \
             //test/kotlin/apps/experimental:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/test/kotlin/apps/experimental/hello_envoy_kt.apk

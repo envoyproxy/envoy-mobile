@@ -3,7 +3,7 @@ name: coverage
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-4
   pull_request:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
-          echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
+          echo "build --remote_header=\"x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
             PATH=/opt/llvm/bin:${PATH} \
             COVERAGE_THRESHOLD=95 \
