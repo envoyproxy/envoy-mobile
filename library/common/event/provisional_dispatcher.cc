@@ -89,7 +89,6 @@ TimeSource& ProvisionalDispatcher::timeSource() { return event_dispatcher_->time
 
 void ProvisionalDispatcher::terminate() {
   Thread::LockGuard lock(state_lock_);
-  event_dispatcher_->exit();
   terminated_ = true;
 }
 
