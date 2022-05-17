@@ -168,7 +168,6 @@ envoy_status_t Engine::terminate() {
       // TODO(goaway): figure out some way to support this.
       PANIC("Terminating the engine from its own main thread is currently unsupported.");
     } else {
-      event_dispatcher_->exit();
       dispatcher_->terminate();
     }
   } // lock(_mutex)
