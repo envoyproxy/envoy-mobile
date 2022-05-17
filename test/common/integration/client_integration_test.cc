@@ -138,7 +138,7 @@ public:
       return nullptr;
     };
     bridge_callbacks_.on_cancel = [](envoy_stream_intel, envoy_final_stream_intel final_intel,
-                                    void* context) -> void* {
+                                     void* context) -> void* {
       EXPECT_NE(-1, final_intel.stream_start_ms);
       callbacks_called* cc_ = static_cast<callbacks_called*>(context);
       cc_->on_cancel_calls++;
@@ -345,9 +345,7 @@ TEST_P(ClientIntegrationTest, BasicCancel) {
   ASSERT_EQ(cc_.on_complete_calls, 0);
 
   // Now cancel, and make sure the cancel is received.
-  dispatcher_->post([&]() -> void {
-    http_client_->cancelStream(stream_);
-  });
+  dispatcher_->post([&]() -> void { http_client_->cancelStream(stream_); });
   terminal_callback_.waitReady();
   ASSERT_EQ(cc_.on_headers_calls, 1);
   ASSERT_EQ(cc_.status, "200");
@@ -397,11 +395,9 @@ TEST_P(ClientIntegrationTest, CancelWithPartialStream) {
   ASSERT_EQ(cc_.on_data_calls, 0);
   ASSERT_EQ(cc_.on_complete_calls, 0);
   // Due to explicit flow control, the upstream stream is complete, but the
-  // callbacks will not be called for data and completion.  Cancel the stream
+  // callbacks will not be called for data and completion. Cancel the stream
   // and make sure the cancel is received.
-  dispatcher_->post([&]() -> void {
-    http_client_->cancelStream(stream_);
-  });
+  dispatcher_->post([&]() -> void { http_client_->cancelStream(stream_); });
   terminal_callback_.waitReady();
   ASSERT_EQ(cc_.on_headers_calls, 1);
   ASSERT_EQ(cc_.status, "200");
@@ -409,7 +405,6 @@ TEST_P(ClientIntegrationTest, CancelWithPartialStream) {
   ASSERT_EQ(cc_.on_complete_calls, 0);
   ASSERT_EQ(cc_.on_cancel_calls, 1);
 }
-
 
 // TODO(junr03): test with envoy local reply with local stream not closed, which causes a reset
 // fired from the Http:ConnectionManager rather than the Http::Client. This cannot be done in

@@ -82,7 +82,6 @@ uint32_t calculateBytesToSend(const Buffer::Instance& data, uint32_t max_bytes) 
 }
 
 void Client::DirectStreamCallbacks::encodeData(Buffer::Instance& data, bool end_stream) {
-  std::cerr << "got data " << end_stream << "\n";
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
   ENVOY_LOG(debug, "[S{}] response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, data.length(), end_stream);
@@ -305,11 +304,9 @@ void Client::DirectStream::saveLatestStreamIntel() {
 }
 
 void Client::DirectStream::saveFinalStreamIntel() {
-  std::cerr << "attempting to Saving\n";
   if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
-  std::cerr << "Saving\n";
   StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), parent_.dispatcher_.timeSource(),
                                   envoy_final_stream_intel_);
 }
