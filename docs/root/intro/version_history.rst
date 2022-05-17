@@ -4,16 +4,56 @@ Version history
 Pending Release
 ===============
 
+Breaking changes:
+
+- api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
+- api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
+- net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
+
 Bugfixes:
 
-- Android: Fix `NoClassDefFoundError` errors when using `addDNSFallbackNameservers`
-  or `addH2RawDomains` with Android versions older than API level 24.
-- iOS: Fix reachability which has been broken since February 11.
+- iOS: change release artifacts to use xcframeworks (:issue:`#2216 <2216>`)
+- iOS: fix CocoaPods releases (:issue:`#2215 <2215>`)
+- fix bug where writing prevented the read loop from running (:issue:`#2221 <2221>`)
+- Android: update Kotlin standard libraries to 1.6.21 (:issue:`#2256 <2256>`)
 
 Features:
 
-- API: added Envoy's response flags to final stream intel (:issue:`#2009 <2009>`)
-- size: The size of the dynamic library was reduced by ~46% (:issue:`#2053 <2053>`)
+- android: add support for registering a platform KV store (:issue: `#2134 <2134>`)
+- api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
+- api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
+- configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
+- android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
+
+0.4.6 (April 26, 2022)
+========================
+
+Breaking changes:
+
+- iOS: the minimum supported iOS version is now 12.0 (:issue:`#2084 <2084>`)
+
+Bugfixes:
+
+- happy eyeballs: fix missing runtime configuration  (:issue:`#2068 <2068>`)
+- iOS: fix CocoaPods releases (:issue:`#2175 <2175>`)
+- android: fix Maven releases (:issue:`#2183 <2183>`)
+- dns: prevent dns refresh if network is unchanged (:issue:`#2122 <2122>`)
+- happy eyeballs: fix crash on Android (:issue:`#2132 <2132>`)
+- ios: fix termination crash in ProvisionalDispatcher (:issue:`#2059 <2059>`)
+
+Features:
+
+- api: added Envoy's response flags to final stream intel (:issue:`#2009 <2009>`)
+- size: the size of the dynamic library was reduced by ~46% (:issue:`#2053 <2053>`)
+- tls: updated the bundled root certificates (:issue:`#2016 <2016>`)
+- api: expose "received byte count" in the Java API (:issue:`#2004 <2004>`)
+- bazel: allow configuring Android toolchain versions (:issue:`#2041 <2041>`)
+- ios: add explicit flow control onSendWindowAvailable to public interface (:issue:`#2046 <2046>`)
+- api: add option to add a list of H2-Raw domain names (:issue:`#2088 <2088>`)
+- ios: add support for toggling trust chain verification (:issue:`#2104 <2104>`)
+- api: add support for configuring minimum DNS refresh rate and per-host max connections (:issue:`#2123 <2123>`)
+- h3/quic: add experimental option to the Android/JVM EngineBuilder (:issue:`#2163 <2163>`)
+- android: include debug info in release binary (:issue:`#2188 <2188>`)
 
 0.4.5 (January 13, 2022)
 ========================

@@ -2,9 +2,12 @@
 try-import ./envoy/.bazelrc
 
 # Common flags for all builds
+build --platform_mappings=envoy/bazel/platform_mappings
 build --define=google_grpc=disabled
 build --define=hot_restart=disabled
 build --define=tcmalloc=disabled
+build --experimental_inmemory_dotd_files
+build --experimental_inmemory_jdeps_files
 build --features=debug_prefix_map_pwd_is_dot
 build --features=swift.cacheable_swiftmodules
 build --features=swift.debug_prefix_map
@@ -16,6 +19,7 @@ build --ios_simulator_version=15.2
 build --verbose_failures
 build --workspace_status_command=envoy/bazel/get_workspace_status
 build --xcode_version=13.2.1
+build --use_top_level_targets_for_symlinks
 # https://github.com/bazelbuild/rules_jvm_external/issues/445
 build --repo_env=JAVA_HOME=../bazel_tools/jdk
 build --define disable_known_issue_asserts=true
@@ -27,6 +31,10 @@ build --copt -Wno-deprecated-declarations
 # Abseil Flag literals are compiled out by default on mobile platforms. These flags are needed for
 # Envoy's runtime system. This option prevents them from being compiled out.
 build --copt -DABSL_FLAGS_STRIP_NAMES=0
+
+# The defaults are JDK 11 on newer versions of Bazel
+build --java_runtime_version=remotejdk_11
+build --java_language_version=8
 
 # Override PGV validation with NOP functions
 build --@com_envoyproxy_protoc_gen_validate//bazel:template-flavor=nop
@@ -122,18 +130,11 @@ build:remote-ci-common --spawn_strategy=remote,sandboxed,local
 # sends a keepalive if we don't receive any messages (server updates every 60s).
 build:remote-ci-common --grpc_keepalive_time=61s
 #############################################################################
-# remote-ci-local-java8: Use a local Java 8 (JDK)
-#############################################################################
-build:remote-ci-local-java8 --java_runtime_version=local_jdk
-build:remote-ci-local-java8 --java_language_version=8
-#############################################################################
 # remote-ci-linux: These options are linux-only using GCC by default
 #############################################################################
 # Common Engflow flags
 build:remote-ci-linux --define=EXECUTOR=remote
 build:remote-ci-linux --disk_cache=
-build:remote-ci-linux --experimental_inmemory_dotd_files
-build:remote-ci-linux --experimental_inmemory_jdeps_files
 build:remote-ci-linux --incompatible_strict_action_env=true
 build:remote-ci-linux --remote_timeout=600
 # GCC toolchain options

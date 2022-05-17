@@ -191,7 +191,7 @@ public class JniLibrary {
    * @return A template that may be used as a starting point for constructing
    * configurations.
    */
-  public static native String templateString();
+  public static native String configTemplate();
 
   /**
    * Increment a counter with the given count.
@@ -287,7 +287,7 @@ public class JniLibrary {
    * @return A template that may be used as a starting point for constructing
    * platform filter configuration.
    */
-  public static native String platformFilterTemplateString();
+  public static native String platformFilterTemplate();
 
   /**
    * Provides a configuration template that may be used for building native
@@ -296,7 +296,23 @@ public class JniLibrary {
    * @return A template that may be used as a starting point for constructing
    * native filter configuration.
    */
-  public static native String nativeFilterTemplateString();
+  public static native String nativeFilterTemplate();
+
+  /**
+   * Provides a configuration insert that may be used to include an instance
+   * of the AlternateProtocolsCacheFilter in the filter chain. Needed only
+   * when (experimental) QUIC/H3 support is enabled.
+   */
+  public static native String altProtocolCacheFilterInsert();
+
+  /**
+   * Register a platform-provided key-value store implementation.
+   *
+   * @param name,    unique name identifying this key-value store.
+   * @param context, context containing logic necessary to invoke the key-value store.
+   * @return int,    the resulting status of the operation.
+   */
+  protected static native int registerKeyValueStore(String name, JvmKeyValueStoreContext context);
 
   /**
    * Register a string accessor to get strings from the platform.
@@ -309,11 +325,11 @@ public class JniLibrary {
                                                      JvmStringAccessorContext context);
 
   /**
-   * Drain all connections owned by this Engine.
+   * Refresh DNS, and drain connections owned by this Engine.
    *
    * @param engine Handle to the engine for which to drain connections.
    */
-  protected static native int drainConnections(long engine);
+  protected static native int resetConnectivityState(long engine);
 
   /**
    * Update the network interface to the preferred network for opening new

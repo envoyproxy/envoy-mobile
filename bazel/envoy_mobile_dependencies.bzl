@@ -3,12 +3,13 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 load("@rules_proto_grpc//protobuf:repositories.bzl", "protobuf_repos")
 load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
 load("@rules_python//python:pip.bzl", "pip_install")
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies")
 
 def _default_extra_swift_sources_impl(ctx):
     ctx.file("WORKSPACE", "")
@@ -58,12 +59,15 @@ def swift_dependencies():
     swift_rules_dependencies()
 
 def kotlin_dependencies(extra_maven_dependencies = []):
+    rules_java_dependencies()
     maven_install(
         artifacts = [
             "com.google.code.findbugs:jsr305:3.0.2",
             "com.google.flatbuffers:flatbuffers-java:2.0.3",
             # Kotlin
-            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
+            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21",
+            "org.jetbrains.kotlin:kotlin-stdlib-common:1.6.21",
+            "org.jetbrains.kotlin:kotlin-stdlib:1.6.21",
             "androidx.recyclerview:recyclerview:1.1.0",
             "androidx.core:core:1.3.2",
             # Dokka
@@ -88,9 +92,9 @@ def kotlin_dependencies(extra_maven_dependencies = []):
             "org.hamcrest:hamcrest:2.2",
             "com.google.truth:truth:1.1",
         ] + extra_maven_dependencies,
+        version_conflict_policy = "pinned",
         repositories = [
             "https://repo1.maven.org/maven2",
-            "https://jcenter.bintray.com/",
             "https://maven.google.com",
         ],
     )

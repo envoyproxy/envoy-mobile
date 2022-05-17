@@ -392,7 +392,7 @@ on supported platforms (iOS 12+) to update the preferred Envoy network cluster (
 ``enableHappyEyeballs``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to true.
 
 **Example**::
 
@@ -415,6 +415,22 @@ Specify whether sockets may attempt to bind to a specific interface, based on ne
 
   // Swift
   builder.enableInterfaceBinding(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``h2ExtendKeepaliveTimeout``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Extend the keepalive timeout when *any* frame is received on the owning HTTP/2 connection.
+
+This can help negate the effect of head-of-line (HOL) blocking for slow connections.
+
+**Example**::
+
+  // Kotlin
+  builder.h2ExtendKeepaliveTimeout(true)
+
+  // Swift
+  builder.h2ExtendKeepaliveTimeout(true)
 
 ----------------------
 Advanced configuration

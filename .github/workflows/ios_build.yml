@@ -9,35 +9,23 @@ on:
 jobs:
   iosbuild:
     name: ios_build
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v1
         with:
           submodules: true
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Check cache'
-      - run: echo "Found Envoy.framework from previous run!"
-        if: steps.check-cache.outputs.cache-hit == 'true'
-        name: 'Build cache hit'
       - run: ./ci/mac_ci_setup.sh
-        if: steps.check-cache.outputs.cache-hit != 'true'
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw shutdown
-          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_dist
-        if: steps.check-cache.outputs.cache-hit != 'true'
+          ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //library/swift:ios_framework
         name: 'Build Envoy.framework distributable'
   swifthelloworld:
     name: swift_helloworld
-    needs: iosbuild
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -45,15 +33,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/hello_world:app
@@ -70,8 +49,7 @@ jobs:
         name: 'Log app run'
   swiftbaselineapp:
     name: swift_baseline_app
-    needs: iosbuild
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -79,15 +57,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/baseline:app
@@ -104,8 +73,7 @@ jobs:
         name: 'Log app run'
   swiftexperimentalapp:
     name: swift_experimental_app
-    needs: iosbuild
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -113,15 +81,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/apps/experimental:app
@@ -138,8 +97,7 @@ jobs:
         name: 'Log app run'
   swiftasyncawait:
     name: swift_async_await
-    needs: iosbuild
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -147,15 +105,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/swift/async_await:app
@@ -172,8 +121,7 @@ jobs:
         name: 'Log app run'
   objchelloworld:
     name: objc_helloworld
-    needs: iosbuild
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
@@ -181,15 +129,6 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - uses: actions/cache@v2
-        id: check-cache
-        with:
-          key: framework-${{ github.sha }}
-          path: dist/Envoy.framework
-        name: 'Download framework'
-      - run: exit 1
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        name: 'Short-circuit'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //examples/objective-c/hello_world:app

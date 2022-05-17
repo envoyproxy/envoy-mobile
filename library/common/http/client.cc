@@ -471,9 +471,14 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     if (direct_stream->explicit_flow_control_ && !end_stream) {
       if (direct_stream->read_disable_count_ == 0) {
         // If there is still buffer space after the write, notify the sender
-        // that send window is available.
+        // that send window is available, on the next dispatcher iteration so
+        // that repeated writes do not starve reads.
         direct_stream->wants_write_notification_ = false;
-        direct_stream->callbacks_->onSendWindowAvailable();
+        // A new callback must be scheduled each time to capture any changes to the
+        // DirectStream's callbacks from call to call.
+        scheduled_callback_ = dispatcher_.createSchedulableCallback(
+            [direct_stream] { direct_stream->callbacks_->onSendWindowAvailable(); });
+        scheduled_callback_->scheduleCallbackNextIteration();
       } else {
         // Otherwise, make sure the stack will send a notification when the
         // buffers are drained.
@@ -517,6 +522,7 @@ void Client::cancelStream(envoy_stream_t stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
 
+    ENVOY_LOG(debug, "[S{}] application cancelled stream", stream);
     direct_stream->callbacks_->onCancel();
 
     // Since https://github.com/envoyproxy/envoy/pull/13052, the connection manager expects that
@@ -587,16 +593,11 @@ void Client::removeStream(envoy_stream_t stream_handle) {
 namespace {
 
 const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
-const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
-
-// Alternate clusters included here are a stopgap to make it less likely for a given connection
-// class to suffer "catastrophic" failure of all outbound requests due to a network blip, by
-// distributing requests across a minimum of two potential connections per connection class.
-// Long-term we will be working to generally provide more responsive connection handling within
-// Envoy itself.
+const LowerCaseString ProtocolHeader{"x-envoy-mobile-upstream-protocol"};
 
 const char* BaseCluster = "base";
 const char* H2Cluster = "base_h2";
+const char* H3Cluster = "base_h3";
 const char* ClearTextCluster = "base_clear";
 
 } // namespace
@@ -607,14 +608,18 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // - Use http/2 or ALPN if requested explicitly via x-envoy-mobile-upstream-protocol.
   // - Force http/1.1 if request scheme is http (cleartext).
   const char* cluster{};
-  auto h2_header = headers.get(H2UpstreamHeader);
+  auto protocol_header = headers.get(ProtocolHeader);
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
     cluster = ClearTextCluster;
-  } else if (!h2_header.empty()) {
-    ASSERT(h2_header.size() == 1);
-    const auto value = h2_header[0]->value().getStringView();
+  } else if (!protocol_header.empty()) {
+    ASSERT(protocol_header.size() == 1);
+    const auto value = protocol_header[0]->value().getStringView();
+    // NOTE: This cluster *forces* H2-Raw and does not use ALPN.
     if (value == "http2") {
       cluster = H2Cluster;
+      // NOTE: This cluster will attempt to negotiate H3, but defaults to ALPN over TCP.
+    } else if (value == "http3") {
+      cluster = H3Cluster;
       // FIXME(goaway): No cluster actually forces H1 today except cleartext!
     } else if (value == "alpn" || value == "http1") {
       cluster = BaseCluster;
@@ -625,8 +630,8 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
     cluster = BaseCluster;
   }
 
-  if (!h2_header.empty()) {
-    headers.remove(H2UpstreamHeader);
+  if (!protocol_header.empty()) {
+    headers.remove(ProtocolHeader);
   }
 
   headers.addCopy(ClusterHeader, std::string{cluster});

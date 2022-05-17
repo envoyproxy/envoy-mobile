@@ -10,8 +10,13 @@ android_library(
     name = "cronvoy",
     srcs = [
         "Annotations.java",
+        "AtomicCombinatoryState.java",
         "BidirectionalStreamBuilderImpl.java",
+        "BidirectionalStreamNetworkException.java",
         "CallbackExceptionImpl.java",
+        "CancelProofEnvoyStream.java",
+        "CronetBidirectionalState.java",
+        "CronetBidirectionalStream.java",
         "CronetEngineBase.java",
         "CronetEngineBuilderImpl.java",
         "CronetExceptionImpl.java",

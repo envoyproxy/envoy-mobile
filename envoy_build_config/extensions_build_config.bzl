@@ -4,6 +4,7 @@ EXTENSION_PACKAGE_VISIBILITY = ["//visibility:public"]
 EXTENSIONS = {
     "envoy.clusters.dynamic_forward_proxy":                "//source/extensions/clusters/dynamic_forward_proxy:cluster",
     "envoy.filters.connection_pools.http.generic":         "//source/extensions/upstreams/http/generic:config",
+    "envoy.filters.http.alternate_protocols_cache":        "//source/extensions/filters/http/alternate_protocols_cache:config",
     "envoy.filters.http.assertion":                        "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
     "envoy.filters.http.buffer":                           "//source/extensions/filters/http/buffer:config",
     "envoy.filters.http.decompressor":                     "//source/extensions/filters/http/decompressor:config",
@@ -21,6 +22,6 @@ EXTENSIONS = {
     "envoy.stat_sinks.metrics_service":                    "//source/extensions/stat_sinks/metrics_service:config",
     "envoy.transport_sockets.raw_buffer":                  "//source/extensions/transport_sockets/raw_buffer:config",
     "envoy.transport_sockets.tls":                         "//source/extensions/transport_sockets/tls:config",
-    "envoy.http.stateful_header_formatters.preserve_case": "//source/extensions/http/header_formatters/preserve_case:preserve_case_formatter",
+    "envoy.http.stateful_header_formatters.preserve_case": "//source/extensions/http/header_formatters/preserve_case:config",
 }
 WINDOWS_EXTENSIONS = {}

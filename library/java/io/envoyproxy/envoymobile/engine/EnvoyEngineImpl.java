@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
@@ -87,10 +88,17 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                         new JvmStringAccessorContext(entry.getValue()));
     }
 
-    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
-                                   configurationYAML, JniLibrary.platformFilterTemplateString(),
-                                   JniLibrary.nativeFilterTemplateString()),
-                               logLevel);
+    for (Map.Entry<String, EnvoyKeyValueStore> entry :
+         envoyConfiguration.keyValueStores.entrySet()) {
+      JniLibrary.registerKeyValueStore(entry.getKey(),
+                                       new JvmKeyValueStoreContext(entry.getValue()));
+    }
+
+    return runWithResolvedYAML(
+        envoyConfiguration.resolveTemplate(configurationYAML, JniLibrary.platformFilterTemplate(),
+                                           JniLibrary.nativeFilterTemplate(),
+                                           JniLibrary.altProtocolCacheFilterInsert()),
+        logLevel);
   }
 
   /**
@@ -102,7 +110,7 @@ public class EnvoyEngineImpl implements EnvoyEngine {
    */
   @Override
   public int runWithConfig(EnvoyConfiguration envoyConfiguration, String logLevel) {
-    return runWithTemplate(JniLibrary.templateString(), envoyConfiguration, logLevel);
+    return runWithTemplate(JniLibrary.configTemplate(), envoyConfiguration, logLevel);
   }
 
   private int runWithResolvedYAML(String configurationYAML, String logLevel) {
@@ -202,8 +210,8 @@ public class EnvoyEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public void drainConnections() {
-    JniLibrary.drainConnections(engineHandle);
+  public void resetConnectivityState() {
+    JniLibrary.resetConnectivityState(engineHandle);
   }
 
   @Override

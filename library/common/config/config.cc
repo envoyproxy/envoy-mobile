@@ -30,6 +30,14 @@ const char* route_cache_reset_filter_insert = R"(
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
 )";
 
+const char* alternate_protocols_cache_filter_insert = R"(
+          - name: alternate_protocols_cache
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig
+              alternate_protocols_cache_options:
+                name: default_alternate_protocols_cache
+)";
+
 // clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
@@ -37,16 +45,18 @@ const std::string config_header = R"(
 - &dns_fail_base_interval 2s
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
-- &dns_lookup_family V4_PREFERRED
+- &dns_lookup_family ALL
 - &dns_min_refresh_rate 60s
-- &dns_multiple_addresses false
+- &dns_multiple_addresses true
 - &dns_preresolve_hostnames []
 - &dns_refresh_rate 60s
 - &dns_resolver_name envoy.network.dns_resolver.cares
 - &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
+- &enable_drain_post_dns_refresh false
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
+- &h2_delay_keepalive_timeout false
 - &h2_raw_domains []
 - &max_connections_per_host 7
 - &metadata {}
@@ -100,6 +110,17 @@ R"(
       validation_context:
         trusted_ca:
           inline_string: *tls_root_certs
+- &base_h3_socket
+  name: envoy.transport_sockets.quic
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+    upstream_tls_context:
+      common_tls_context:
+        tls_params:
+          tls_maximum_protocol_version: TLSv1_3
+        validation_context:
+          trusted_ca:
+             inline_string: *tls_root_certs
 )";
 
 const char* config_template = R"(
@@ -114,7 +135,9 @@ const char* config_template = R"(
             name: preserve_case
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-    upstream_http_protocol_options:
+              forward_reason_phrase: false
+              formatter_type_on_envoy_headers: DEFAULT
+    upstream_http_protocol_options: &upstream_http_protocol_options
       auto_sni: true
       auto_san_validation: true
 - &h2_protocol_options
@@ -126,18 +149,24 @@ const char* config_template = R"(
           connection_idle_interval: *h2_connection_keepalive_idle_interval
           timeout: *h2_connection_keepalive_timeout
         max_concurrent_streams: 100
-    upstream_http_protocol_options:
-      auto_sni: true
-      auto_san_validation: true
+    upstream_http_protocol_options: *upstream_http_protocol_options
 - &alpn_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
     auto_config:
       http2_protocol_options: *h2_config
       http_protocol_options: *h1_config
-    upstream_http_protocol_options:
-      auto_sni: true
-      auto_san_validation: true
+    upstream_http_protocol_options: *upstream_http_protocol_options
+- &h3_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    auto_config:
+      alternate_protocols_cache_options:
+        name: default_alternate_protocols_cache
+      http3_protocol_options: {}
+      http2_protocol_options: *h2_config
+      http_protocol_options: *h1_config
+    upstream_http_protocol_options: *upstream_http_protocol_options
 
 !ignore custom_listener_defs:
   fake_remote_listener: &fake_remote_listener
@@ -262,6 +291,7 @@ static_resources:
           - name: envoy.filters.http.network_configuration
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
+              enable_drain_post_dns_refresh: *enable_drain_post_dns_refresh
               enable_interface_binding: *enable_interface_binding
           - name: envoy.filters.http.local_error
             typed_config:
@@ -351,7 +381,10 @@ R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
+    transport_socket:
+      name: envoy.transport_sockets.raw_buffer
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h1_protocol_options
@@ -375,6 +408,14 @@ R"(
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h2_protocol_options
+  - name: base_h3
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket: *base_h3_socket
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *h3_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
@@ -428,6 +469,7 @@ layered_runtime:
           reloadable_features:
             allow_multiple_dns_addresses: *dns_multiple_addresses
             override_request_timeout_by_gateway_timeout: false
+            http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
 )"
 // Needed due to warning in
 // https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
