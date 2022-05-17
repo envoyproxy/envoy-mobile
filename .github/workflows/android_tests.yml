@@ -3,7 +3,7 @@ name: android_tests
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-3
   pull_request:
 
 jobs:
@@ -40,13 +40,13 @@ jobs:
       - name: 'Run Kotlin library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw test \
             --test_output=all \
             --build_tests_only \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             //test/kotlin/io/...
   javatestsmac:
     name: java_tests_mac
@@ -79,13 +79,13 @@ jobs:
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw test \
             --test_output=all \
             --build_tests_only \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             --define=signal_trace=disabled \
             //test/java/...
   kotlintestslinux:
@@ -125,11 +125,11 @@ jobs:
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw test \
             --test_output=all \
             --build_tests_only \
             --config=remote-ci-linux-clang \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             //test/kotlin/...

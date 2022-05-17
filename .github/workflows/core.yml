@@ -3,7 +3,7 @@ name: core
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-3
   pull_request:
 
 jobs:
@@ -19,5 +19,5 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - name: 'Run tests'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw test --test_output=all --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN"  //test/common/...
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: ./bazelw test --test_output=all --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //test/common/...

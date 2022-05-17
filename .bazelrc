@@ -107,20 +107,16 @@ build:release-android --compilation_mode=opt
 build:coverage --instrumentation_filter="//library/common[/:]"
 
 #############################################################################
-# Experimental EngFlow Remote Execution Configs
+# Experimental BuildBuddy Configs
 #############################################################################
 # remote-ci-common: These options are valid for any platform, use the configs below
 # to add platform-specific options. Avoid using this config directly and
 # instead use a platform-specific config
 #############################################################################
-# --config=remote sets --auth_enabled=true to enable GCP authentication,
-# however, the remote execution cluster doesn't use GCP auth (it uses
-# GITHUB_TOKEN auth) so we have to override it to 'false' here.
-build:remote-ci-common --config=remote
-build:remote-ci-common --auth_enabled=false
-build:remote-ci-common --remote_executor=grpcs://envoy.cluster.engflow.com
-build:remote-ci-common --bes_backend=grpcs://envoy.cluster.engflow.com/
-build:remote-ci-common --bes_results_url=https://envoy.cluster.engflow.com/invocation/
+build:remote-ci-common --remote_cache=grpcs://remote.buildbuddy.io
+build:remote-ci-common --remote_executor=grpcs://remote.buildbuddy.io
+build:remote-ci-common --bes_backend=grpcs://remote.buildbuddy.io
+build:remote-ci-common --bes_results_url=https://app.buildbuddy.io/invocation/
 build:remote-ci-common --bes_lifecycle_events
 build:remote-ci-common --jobs=40
 build:remote-ci-common --verbose_failures
@@ -131,7 +127,7 @@ build:remote-ci-common --grpc_keepalive_time=61s
 #############################################################################
 # remote-ci-linux: These options are linux-only using GCC by default
 #############################################################################
-# Common Engflow flags
+# Common flags
 build:remote-ci-linux --define=EXECUTOR=remote
 build:remote-ci-linux --disk_cache=
 build:remote-ci-linux --incompatible_strict_action_env=true
@@ -225,6 +221,9 @@ build:remote-ci-macos --host_platform=//ci/platform:macos
 build:remote-ci-macos --platforms=//ci/platform:macos
 build:remote-ci-macos --extra_execution_platforms=//ci/platform:macos
 build:remote-ci-macos --xcode_version_config=//ci:xcode_config
+build:remote-ci-macos --remote_default_exec_properties=OSFamily=darwin
+build:remote-ci-macos --remote_default_exec_properties=clean-workspace-inputs=*
+build:remote-ci-macos --remote_default_exec_properties=recycle-runner=true
 #############################################################################
 # remote-ci-debug: Various Bazel debugging flags
 #############################################################################

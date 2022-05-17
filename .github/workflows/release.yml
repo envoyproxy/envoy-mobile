@@ -3,7 +3,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-3
     tags:
       - v*
   pull_request:
@@ -26,7 +26,7 @@ jobs:
         name: 'Install dependencies'
       - name: 'Build envoy.aar distributable'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           current_release_version=$(git describe --tag --abbrev=0)
           ./bazelw build \
@@ -34,7 +34,7 @@ jobs:
               --fat_apk_cpu=x86,x86_64,armeabi-v7a,arm64-v8a \
               --define=pom_version="${current_release_version:1}" \
               --config=remote-ci-macos \
-              --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+              --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
               //:android_dist
       - name: 'Tar artifacts'
         run: tar -czvf envoy_android_aar_sources.tar.gz bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-pom.xml bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-sources.jar bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-javadoc.jar
@@ -119,12 +119,12 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - name: 'Build Envoy.xcframework'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --config=release-ios \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             //:ios_xcframework
       - name: 'Move Envoy.xcframework.zip'
         run: mv bazel-bin/library/swift/Envoy.xcframework.zip .
@@ -134,13 +134,13 @@ jobs:
           path: ./Envoy.xcframework.zip
       - name: 'Build Envoy.doccarchive.zip'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
         run: |
           ./bazelw build \
             --output_groups=+swift_symbol_graph \
             --config=release-ios \
             --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" \
             //library/swift:ios_lib
           ./tools/docc.sh bazel-bin/library/swift/ios_lib.symbolgraph
           zip -r Envoy.doccarchive.zip Envoy.doccarchive

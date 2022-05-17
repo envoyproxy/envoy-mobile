@@ -3,7 +3,7 @@ name: release_validation
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-3
   pull_request:
 
 jobs:
@@ -18,8 +18,8 @@ jobs:
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
       - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_xcframework
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" //:ios_xcframework
         name: 'Build xcframework'
       # Ignore errors: Bad CRC when unzipping large files: https://bbs.archlinux.org/viewtopic.php?id=153011
       - run: unzip bazel-bin/library/swift/Envoy.xcframework.zip -d examples/swift/swiftpm/Packages || true
