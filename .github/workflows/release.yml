@@ -3,7 +3,7 @@ name: release
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-2
     tags:
       - v*
   pull_request:

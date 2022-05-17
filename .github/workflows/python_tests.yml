@@ -3,7 +3,7 @@ name: python_tests
 on:
   push:
     branches:
-      - main
+      - jp-test-bb-2
   pull_request:
 
 jobs:
