@@ -7,6 +7,7 @@ Pending Release
 Breaking changes:
 
 - api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
+- api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
 - net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
 
 Bugfixes:
@@ -18,6 +19,7 @@ Bugfixes:
 
 Features:
 
+- android: add support for registering a platform KV store (:issue: `#2134 <2134>`)
 - api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
 - configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
