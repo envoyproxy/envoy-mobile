@@ -155,6 +155,9 @@ public:
   }
 
   void TearDown() override {
+    // Right now each test does one request - if this changes, make the 1
+    // configurable.
+    ASSERT_EQ(cc_.on_complete_calls + cc_.on_cancel_calls + cc_.on_error_calls, 1);
     test_server_.reset();
     fake_upstreams_.clear();
   }
