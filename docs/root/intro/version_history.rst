@@ -12,6 +12,7 @@ Bugfixes:
 
 - iOS: change release artifacts to use xcframeworks (:issue:`#2216 <2216>`)
 - iOS: fix CocoaPods releases (:issue:`#2215 <2215>`)
+- Cronvy: Cancel the scheduled onSendWindowAvailable callback when a stream is cancelled (:issue:`#2213 <2213>`)
 
 Features:
 
