@@ -516,6 +516,7 @@ void Client::cancelStream(envoy_stream_t stream) {
   // whether it was closed or not.
   Client::DirectStreamSharedPtr direct_stream =
       getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
+  scheduled_callback_ = nullptr;
   if (direct_stream) {
     bool stream_was_open =
         getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS) != nullptr;
