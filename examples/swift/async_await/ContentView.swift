@@ -27,7 +27,7 @@ struct ContentView: View {
         }
         .task {
             writeLog("Generating data")
-            let data = Data.ones(byteCount: 5 * 1_024 * 1_024)
+            let data = Data.ones(byteCount: 5 * 1_024)
 
             writeLog("Initializing Envoy Engine")
             let streamClient = EngineBuilder.demoEngine
