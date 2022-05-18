@@ -1080,10 +1080,10 @@ static void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_veri
 }
 
 // `auth_type` and `host` are expected to be UTF-8 encoded.
-static jobject call_jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
+static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
+                                               const std::vector<std::string>& cert_chain,
                                                std::string auth_type, std::string host) {
   jni_log("[Envoy]", "jvm_verify_x509_cert_chain");
-  JNIEnv* env = get_env();
   jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
   jmethodID jmid_verifyServerCertificates =
       env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "verifyServerCertificates",
@@ -1109,7 +1109,8 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
                                        envoy_cert_verify_status_t* status,
                                        bool* is_issued_by_known_root,
                                        std::vector<std::string>* verified_chain) {
-  jobject result = call_jvm_verify_x509_cert_chain(cert_chain, auth_type, host);
+  JNIEnv* env = get_env();
+  jobject result = call_jvm_verify_x509_cert_chain(env, cert_chain, auth_type, host);
   ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
   env->DeleteLocalRef(result);
 }

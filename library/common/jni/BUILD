@@ -21,7 +21,6 @@ cc_library(
     ],
     deps = [
         "//library/common/jni/import:jni_import_lib",
-        "//library/common/strings:string_conversions_lib",
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ],
