@@ -26,6 +26,7 @@
 #include "library/common/extensions/filters/http/network_configuration/config.h"
 #include "library/common/extensions/filters/http/platform_bridge/config.h"
 #include "library/common/extensions/filters/http/route_cache_reset/config.h"
+#include "library/common/extensions/filters/http/test_accessor/config.h"
 #include "library/common/extensions/retry/options/network_configuration/config.h"
 
 namespace Envoy {
@@ -51,6 +52,7 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::HttpFilters::RouterFilter::forceRegisterRouterFilterConfig();
   Envoy::Extensions::HttpFilters::NetworkConfiguration::
       forceRegisterNetworkConfigurationFilterFactory();
+  Envoy::Extensions::HttpFilters::TestAccessor::forceRegisterTestAccessorFilterFactory();
   Envoy::Extensions::NetworkFilters::HttpConnectionManager::
       forceRegisterHttpConnectionManagerFilterConfigFactory();
   Envoy::Extensions::Retry::Options::
