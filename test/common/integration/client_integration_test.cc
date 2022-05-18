@@ -171,9 +171,6 @@ public:
   // There are some config modifiers below which do result in deltas.
   static std::string defaultConfig() {
     Platform::EngineBuilder builder;
-
-    ProtobufMessage::StrictValidationVisitorImpl visitor;
-    envoy::config::bootstrap::v3::Bootstrap bootstrap;
     std::string config_str = absl::StrCat(config_header, builder.generateConfigStr());
     return config_str;
   }
