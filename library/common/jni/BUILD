@@ -161,7 +161,6 @@ cc_library(
     ],
     deps = [
         ":java_jni_support",
-        "//library/common/strings:string_conversions_lib",
         "//library/common/jni/import:jni_import_lib",
         "//library/common:envoy_main_interface_lib",
         "//library/common/types:c_types_lib",

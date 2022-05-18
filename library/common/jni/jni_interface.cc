@@ -1068,9 +1068,9 @@ jobjectArray jvm_cert_get_certificate_chain_encoded(JNIEnv* env, jobject result)
 // header files, instead they are stored as callbacks into plain function
 // tables. For this reason, this function, which would ideally be defined in
 // jni_utility.cc, is currently defined here.
-void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_verify_status_t* status,
-                             bool* is_issued_by_known_root,
-                             std::vector<std::string>* verified_chain) {
+static void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_verify_status_t* status,
+                                    bool* is_issued_by_known_root,
+                                    std::vector<std::string>* verified_chain) {
   *status = jvm_cert_get_status(env, result);
 
   *is_issued_by_known_root = jvm_cert_is_issued_by_known_root(env, result);
@@ -1079,18 +1079,19 @@ void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_verify_stat
   JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
 }
 
+// `auth_type` and `host` are expected to be UTF-8 encoded.
 static jobject call_jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
                                                std::string auth_type, std::string host) {
   jni_log("[Envoy]", "jvm_verify_x509_cert_chain");
   JNIEnv* env = get_env();
   jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
-  jmethodID jmid_verifyServerCertificates = env->GetStaticMethodID(
-      jcls_AndroidNetworkLibrary, "verifyServerCertificates",
-      "([[BLjava/lang/String;Ljava/lang/String;)Lorg/chromium/net/AndroidCertVerifyResult;");
+  jmethodID jmid_verifyServerCertificates =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "verifyServerCertificates",
+                             "([[B[B[B)Lorg/chromium/net/AndroidCertVerifyResult;");
 
   jobjectArray chain_byte_array = ToJavaArrayOfByteArray(env, cert_chain);
-  jstring auth_string = ConvertUTF8ToJavaString(env, auth_type);
-  jstring host_string = ConvertUTF8ToJavaString(env, host);
+  jbyteArray auth_string = ToJavaByteArray(env, auth_type);
+  jbyteArray host_string = ToJavaByteArray(env, host);
   jobject result =
       env->CallStaticObjectMethod(jcls_AndroidNetworkLibrary, jmid_verifyServerCertificates,
                                   chain_byte_array, auth_string, host_string);
@@ -1102,6 +1103,7 @@ static jobject call_jvm_verify_x509_cert_chain(const std::vector<std::string>& c
   return result;
 }
 
+// `auth_type` and `host` are expected to be UTF-8 encoded.
 static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
                                        std::string auth_type, std::string host,
                                        envoy_cert_verify_status_t* status,
@@ -1109,6 +1111,7 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
                                        std::vector<std::string>* verified_chain) {
   jobject result = call_jvm_verify_x509_cert_chain(cert_chain, auth_type, host);
   ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
+  env->DeleteLocalRef(result);
 }
 
 static void jvm_add_test_root_certificate(const uint8_t* cert, size_t len) {
@@ -1137,14 +1140,14 @@ static void jvm_clear_test_root_certificate() {
 
 extern "C" JNIEXPORT jobject JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_callCertificateVerificationFromNative(
-    JNIEnv* env, jclass, jobjectArray certChain, jstring authType, jstring jhost) {
+    JNIEnv* env, jclass, jobjectArray certChain, jbyteArray jauthType, jbyteArray jhost) {
   std::vector<std::string> cert_chain;
   std::string auth_type;
   std::string host;
 
   JavaArrayOfByteArrayToStringVector(env, certChain, &cert_chain);
-  ConvertJavaStringToUTF8(env, authType, &auth_type);
-  ConvertJavaStringToUTF8(env, jhost, &host);
+  JavaArrayOfByteToString(env, jauthType, &auth_type);
+  JavaArrayOfByteToString(env, jhost, &host);
 
   return call_jvm_verify_x509_cert_chain(cert_chain, auth_type, host);
 }

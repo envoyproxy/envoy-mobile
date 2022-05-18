@@ -7,7 +7,6 @@
 
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_version.h"
-#include "library/common/strings/string_conversions.h"
 
 // NOLINT(namespace-envoy)
 
@@ -257,14 +256,6 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries) {
   return native_map;
 }
 
-jstring ConvertUTF8ToJavaString(JNIEnv* env, const std::string& str) {
-  // JNI's NewStringUTF expects "modified" UTF8 so instead convert the string to UTF16 and pass it
-  // to NewString.
-  std::u16string utf16 = Envoy::Strings::UTF8ToUTF16(str.data(), str.size());
-  const jchar* jutf16 = reinterpret_cast<const jchar*>(utf16.data());
-  return env->NewString(jutf16, utf16.length());
-}
-
 jobjectArray ToJavaArrayOfByteArray(JNIEnv* env, const std::vector<std::string>& v) {
   jclass jcls_byte_array = env->FindClass("[B");
   jobjectArray joa = env->NewObjectArray(v.size(), jcls_byte_array, nullptr);
@@ -282,6 +273,11 @@ jbyteArray ToJavaByteArray(JNIEnv* env, const uint8_t* bytes, size_t len) {
   const jbyte* jbytes = reinterpret_cast<const jbyte*>(bytes);
   env->SetByteArrayRegion(byte_array, /*start=*/0, len, jbytes);
   return byte_array;
+}
+
+jbyteArray ToJavaByteArray(JNIEnv* env, const std::string& str) {
+  const uint8_t* str_bytes = reinterpret_cast<const uint8_t*>(str.data());
+  return ToJavaByteArray(env, str_bytes, str.size());
 }
 
 void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
@@ -303,6 +299,12 @@ void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
   }
 }
 
+void JavaArrayOfByteToString(JNIEnv* env, jbyteArray jbytes, std::string* out) {
+  std::vector<uint8_t> bytes;
+  JavaArrayOfByteToBytesVector(env, jbytes, &bytes);
+  *out = std::string(bytes.begin(), bytes.end());
+}
+
 void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uint8_t>* out) {
   const size_t len = env->GetArrayLength(array);
   out->resize(len);
@@ -314,16 +316,4 @@ void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uin
   std::copy(bytes, bytes + len, out->begin());
   // There is nothing to write back, it is always safe to JNI_ABORT.
   env->ReleaseByteArrayElements(array, jbytes, JNI_ABORT);
-}
-
-void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result) {
-  // JNI's GetStringUTFChars() returns strings in Java "modified" UTF8, so
-  // instead get the String in UTF16 and manually convert that to UTF8.
-  // We don't care whether the returned string is a copy or not as we're simply
-  // copying it into C++ owned memory.
-  const jchar* utf16 = env->GetStringChars(str, /*isCopy=*/nullptr);
-  size_t len = env->GetStringLength(str);
-  std::string utf8 = Envoy::Strings::UTF16ToUTF8(reinterpret_cast<const char16_t*>(utf16), len);
-  *result = utf8;
-  env->ReleaseStringChars(str, utf16);
 }

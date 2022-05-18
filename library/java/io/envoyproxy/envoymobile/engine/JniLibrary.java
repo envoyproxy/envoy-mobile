@@ -342,7 +342,7 @@ public class JniLibrary {
    * @return Android certificate verification result code.
    */
   public static native Object callCertificateVerificationFromNative(byte[][] certChain,
-                                                                    String authType, String host);
+                                                                    byte[] authType, byte[] host);
   /**
    * Mimic a call to AndroidNetworkLibrary#addTestRootCertificate from native code.
    * To be used for testing only.

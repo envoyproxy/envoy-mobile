@@ -4,6 +4,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * This class implements net utilities required by the net component.
  */
@@ -29,12 +31,15 @@ public final class AndroidNetworkLibrary {
    * This is called from native code.
    *
    * @param certChain The ASN.1 DER encoded bytes for certificates.
-   * @param authType The key exchange algorithm name (e.g. RSA).
-   * @param host The hostname of the server.
+   * @param authType Bytes representing the UTF-8 encoding of the key exchange algorithm name (e.g.
+   *     RSA).
+   * @param host Bytes representing the UTF-8 encoding of the hostname of the server.
    * @return Android certificate verification result code.
    */
-  public static AndroidCertVerifyResult verifyServerCertificates(byte[][] certChain,
-                                                                 String authType, String host) {
+  public static AndroidCertVerifyResult
+  verifyServerCertificates(byte[][] certChain, byte[] authTypeBytes, byte[] hostBytes) {
+    String authType = new String(authTypeBytes, StandardCharsets.UTF_8);
+    String host = new String(hostBytes, StandardCharsets.UTF_8);
     if (mUseFakeCertificateVerification) {
       return FakeX509Util.verifyServerCertificates(certChain, authType, host);
     }
