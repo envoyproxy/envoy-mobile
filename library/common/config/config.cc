@@ -45,9 +45,9 @@ const std::string config_header = R"(
 - &dns_fail_base_interval 2s
 - &dns_fail_max_interval 10s
 - &dns_query_timeout 25s
-- &dns_lookup_family V4_PREFERRED
+- &dns_lookup_family ALL
 - &dns_min_refresh_rate 60s
-- &dns_multiple_addresses false
+- &dns_multiple_addresses true
 - &dns_preresolve_hostnames []
 - &dns_refresh_rate 60s
 - &dns_resolver_name envoy.network.dns_resolver.cares
@@ -135,6 +135,8 @@ const char* config_template = R"(
             name: preserve_case
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
+              forward_reason_phrase: false
+              formatter_type_on_envoy_headers: DEFAULT
     upstream_http_protocol_options: &upstream_http_protocol_options
       auto_sni: true
       auto_san_validation: true

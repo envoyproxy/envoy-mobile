@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
 
@@ -35,15 +36,15 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsFallbackNameservers = listOf<String>()
-  private var dnsFilterUnroutableFamilies = false
+  private var dnsFilterUnroutableFamilies = true
   private var dnsQueryTimeoutSeconds = 25
   private var dnsMinRefreshSeconds = 60
   private var dnsPreresolveHostnames = "[]"
   private var enableDrainPostDnsRefresh = false
   private var enableHttp3 = false
-  private var enableHappyEyeballs = false
+  private var enableHappyEyeballs = true
   private var enableInterfaceBinding = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var h2ExtendKeepaliveTimeout = false
   private var h2RawDomains = listOf<String>()
@@ -58,6 +59,7 @@ open class EngineBuilder(
   private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
+  private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
 
   /**
    * Add a log level to use with Envoy.
@@ -190,6 +192,7 @@ open class EngineBuilder(
 
   /**
    * Specify whether to filter unroutable IP families during DNS resolution or not.
+   * Defaults to true.
    *
    * @param dnsFilterUnroutableFamilies whether to filter or not.
    *
@@ -230,7 +233,8 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+   * true.
    *
    * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
    *
@@ -256,7 +260,9 @@ open class EngineBuilder(
 
   /**
    * Add a rate at which to ping h2 connections on new stream creation if the connection has
-   * sat idle.
+   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
+   * and results in a connection ping on every new stream creation. Set it to
+   * 100000000 milliseconds to effectively disable the ping.
    *
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
    *
@@ -426,6 +432,7 @@ open class EngineBuilder(
     this.eventTracker = eventTracker
     return this
   }
+
   /**
    * Add a string accessor to this Envoy Client.
    *
@@ -436,6 +443,19 @@ open class EngineBuilder(
    */
   fun addStringAccessor(name: String, accessor: () -> String): EngineBuilder {
     this.stringAccessors.put(name, EnvoyStringAccessorAdapter(StringAccessor(accessor)))
+    return this
+  }
+
+  /**
+   * Register a key-value store implementation for internal use.
+   *
+   * @param name the name of the KV store.
+   * @param keyValueStore the KV store implementation.
+   *
+   * @return this builder.
+   */
+  fun addKeyValueStore(name: String, keyValueStore: KeyValueStore): EngineBuilder {
+    this.keyValueStores.put(name, EnvoyKeyValueStoreAdapter(keyValueStore))
     return this
   }
 
@@ -537,7 +557,8 @@ open class EngineBuilder(
       virtualClusters,
       nativeFilterChain,
       platformFilterChain,
-      stringAccessors
+      stringAccessors,
+      keyValueStores
     )
 
     return when (configuration) {

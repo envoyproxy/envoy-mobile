@@ -7,17 +7,25 @@ Pending Release
 Breaking changes:
 
 - api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
+- api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
+- net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
 
 Bugfixes:
 
 - iOS: change release artifacts to use xcframeworks (:issue:`#2216 <2216>`)
 - iOS: fix CocoaPods releases (:issue:`#2215 <2215>`)
 - Cronvy: Cancel the scheduled onSendWindowAvailable callback when a stream is cancelled (:issue:`#2213 <2213>`)
+- fix bug where writing prevented the read loop from running (:issue:`#2221 <2221>`)
+- Android: update Kotlin standard libraries to 1.6.21 (:issue:`#2256 <2256>`)
+- iOS: fix termination crash in ProvisionalDispatcher (:issue:`#2059 <2059>`)
 
 Features:
 
+- android: add support for registering a platform KV store (:issue: `#2134 <2134>`)
 - api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
+- configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
+- android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
 
 0.4.6 (April 26, 2022)
 ========================
