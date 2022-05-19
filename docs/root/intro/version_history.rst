@@ -17,6 +17,7 @@ Bugfixes:
 - fix bug where writing prevented the read loop from running (:issue:`#2221 <2221>`)
 - Android: update Kotlin standard libraries to 1.6.21 (:issue:`#2256 <2256>`)
 - fix bug where finalStreamIntel was not consistently set on cancel (:issue:`#2285 <2285>`)
+- iOS: fix termination crash in ProvisionalDispatcher (:issue:`#2059 <2059>`)
 
 Features:
 
