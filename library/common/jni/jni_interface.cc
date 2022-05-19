@@ -1150,7 +1150,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_callCertificateVerificationFrom
   JavaArrayOfByteToString(env, jauthType, &auth_type);
   JavaArrayOfByteToString(env, jhost, &host);
 
-  return call_jvm_verify_x509_cert_chain(cert_chain, auth_type, host);
+  return call_jvm_verify_x509_cert_chain(env, cert_chain, auth_type, host);
 }
 
 extern "C" JNIEXPORT void JNICALL
