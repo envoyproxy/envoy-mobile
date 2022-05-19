@@ -67,14 +67,17 @@ static void envoy_filter_reset_idle(const void* context) {
 }
 
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
+    Server::Configuration::FactoryContext& context,
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
-    : filter_name_(proto_config.platform_filter_name()),
+    : root_scope_(context.scope()),
+      stats_(generateStats("", root_scope_)),
+      filter_name_(proto_config.platform_filter_name()),
       platform_filter_(static_cast<envoy_http_filter*>(
           Api::External::retrieveApi(proto_config.platform_filter_name()))) {}
 
 PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr config,
                                            Event::Dispatcher& dispatcher)
-    : dispatcher_(dispatcher), filter_name_(config->filter_name()),
+    : config_(config), dispatcher_(dispatcher), filter_name_(config->filter_name()),
       platform_filter_(*config->platform_filter()) {
   // The initialization above sets platform_filter_ to a copy of the struct stored on the config.
   // In the typical case, this will represent a filter implementation that needs to be intantiated.
@@ -256,9 +259,20 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   }
 
   envoy_headers in_headers = Http::Utility::toBridgeHeaders(headers);
-  ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_*_headers", parent_.filter_name_);
+  ENVOY_LOG(trace, "PlatformBridgeFilter({})->on_{}_headers", parent_.filter_name_, direction_);
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      on_headers_callback_latency_, parent_.timeSource());
+
   envoy_filter_headers_status result =
       on_headers_(in_headers, end_stream, streamIntel(), parent_.platform_filter_.instance_context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > std::chrono::seconds(1)) {
+    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_headers_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   state_.on_headers_called_ = true;
 
   switch (result.status) {

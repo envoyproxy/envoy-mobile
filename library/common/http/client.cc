@@ -228,7 +228,17 @@ void Client::DirectStreamCallbacks::onComplete() {
     http_client_.stats().stream_failure_.inc();
   }
 
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_complete_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_complete(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > std::chrono::seconds(1)) {
+    ENVOY_LOG_EVENT(warn, "slow_on_complete_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -255,8 +265,17 @@ void Client::DirectStreamCallbacks::onError() {
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_error_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_error(error_.value(), streamIntel(), finalStreamIntel(),
                              bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > std::chrono::seconds(1)) {
+    ENVOY_LOG_EVENT(warn, "slow_on_error_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -272,7 +291,17 @@ void Client::DirectStreamCallbacks::onCancel() {
   // Attempt to latch the latest stream info. This will be a no-op if the stream
   // is already complete.
   direct_stream_.saveFinalStreamIntel();
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_cancel_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_cancel(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > std::chrono::seconds(1)) {
+    ENVOY_LOG_EVENT(warn, "slow_on_cancel_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onHasBufferedData() {
