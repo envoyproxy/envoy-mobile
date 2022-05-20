@@ -197,7 +197,6 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
 
-
   auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
       http_client_.stats().on_trailers_callback_latency_, http_client_.timeSource());
 

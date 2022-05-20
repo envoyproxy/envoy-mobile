@@ -72,8 +72,7 @@ static void envoy_filter_reset_idle(const void* context) {
 PlatformBridgeFilterConfig::PlatformBridgeFilterConfig(
     Server::Configuration::FactoryContext& context,
     const envoymobile::extensions::filters::http::platform_bridge::PlatformBridge& proto_config)
-    : root_scope_(context.scope()),
-      stats_(generateStats("", root_scope_)),
+    : root_scope_(context.scope()), stats_(generateStats("", root_scope_)),
       filter_name_(proto_config.platform_filter_name()),
       platform_filter_(static_cast<envoy_http_filter*>(
           Api::External::retrieveApi(proto_config.platform_filter_name()))) {}
@@ -102,7 +101,8 @@ PlatformBridgeFilter::PlatformBridgeFilter(PlatformBridgeFilterConfigSharedPtr c
     callback_time_ms->complete();
     auto elapsed = callback_time_ms->elapsed();
     if (elapsed > SlowCallbackWarningThreshold) {
-      ENVOY_LOG_EVENT(warn, "slow_init_cb", filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+      ENVOY_LOG_EVENT(warn, "slow_init_cb",
+                      filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
     }
 
     ASSERT(platform_filter_.instance_context,
@@ -185,7 +185,8 @@ void PlatformBridgeFilter::onDestroy() {
     callback_time_ms->complete();
     auto elapsed = callback_time_ms->elapsed();
     if (elapsed > SlowCallbackWarningThreshold) {
-      ENVOY_LOG_EVENT(warn, "slow_on_error_cb", filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+      ENVOY_LOG_EVENT(warn, "slow_on_error_cb",
+                      filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
     }
   } else if (!response_filter_base_->state_.stream_complete_ && platform_filter_.on_cancel) {
     // If the filter chain is destroyed before a response is received, treat as cancellation.
@@ -200,7 +201,8 @@ void PlatformBridgeFilter::onDestroy() {
     callback_time_ms->complete();
     auto elapsed = callback_time_ms->elapsed();
     if (elapsed > SlowCallbackWarningThreshold) {
-      ENVOY_LOG_EVENT(warn, "slow_on_cancel_cb", filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+      ENVOY_LOG_EVENT(warn, "slow_on_cancel_cb",
+                      filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
     }
   }
 
@@ -304,7 +306,8 @@ Http::FilterHeadersStatus PlatformBridgeFilter::FilterBase::onHeaders(Http::Head
   callback_time_ms->complete();
   auto elapsed = callback_time_ms->elapsed();
   if (elapsed > SlowCallbackWarningThreshold) {
-    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_headers_cb", parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_headers_cb",
+                    parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
   }
 
   state_.on_headers_called_ = true;
@@ -364,7 +367,8 @@ Http::FilterDataStatus PlatformBridgeFilter::FilterBase::onData(Buffer::Instance
   callback_time_ms->complete();
   auto elapsed = callback_time_ms->elapsed();
   if (elapsed > SlowCallbackWarningThreshold) {
-    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_data_cb", parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_data_cb",
+                    parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
   }
 
   state_.on_data_called_ = true;
@@ -458,7 +462,8 @@ Http::FilterTrailersStatus PlatformBridgeFilter::FilterBase::onTrailers(Http::He
   callback_time_ms->complete();
   auto elapsed = callback_time_ms->elapsed();
   if (elapsed > SlowCallbackWarningThreshold) {
-    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_trailers_cb", parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_trailers_cb",
+                    parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
   }
 
   state_.on_trailers_called_ = true;
@@ -696,7 +701,8 @@ void PlatformBridgeFilter::FilterBase::onResume() {
   callback_time_ms->complete();
   auto elapsed = callback_time_ms->elapsed();
   if (elapsed > SlowCallbackWarningThreshold) {
-    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_resume_cb", parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
+    ENVOY_LOG_EVENT(warn, "slow_on_" + direction_ + "_resume_cb",
+                    parent_.filter_name_ + "|" + std::to_string(elapsed.count()) + "ms");
   }
 
   state_.on_resume_called_ = true;

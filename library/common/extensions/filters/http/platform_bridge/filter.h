@@ -31,7 +31,7 @@ namespace PlatformBridge {
   HISTOGRAM(on_rs_trailers_callback_latency, Milliseconds)                                         \
   HISTOGRAM(on_rs_resume_callback_latency, Milliseconds)                                           \
   HISTOGRAM(on_cancel_callback_latency, Milliseconds)                                              \
-  HISTOGRAM(on_error_callback_latency, Milliseconds)                                               \
+  HISTOGRAM(on_error_callback_latency, Milliseconds)
 
 /**
  * Struct definition for all DNS Filter stats. @see stats_macros.h
@@ -54,7 +54,7 @@ public:
 
 private:
   static PlatformBridgeFilterStats generateStats(const std::string& stat_prefix,
-                                                       Stats::Scope& scope) {
+                                                 Stats::Scope& scope) {
     const auto final_prefix = absl::StrCat("pbf_filter.", stat_prefix);
     return {ALL_PLATFORM_BRIDGE_FILTER_STATS(POOL_COUNTER_PREFIX(scope, final_prefix),
                                              POOL_HISTOGRAM_PREFIX(scope, final_prefix))};
@@ -139,14 +139,15 @@ private:
    */
   struct FilterBase : public Logger::Loggable<Logger::Id::filter> {
     FilterBase(PlatformBridgeFilter& parent, std::string direction,
-               envoy_filter_on_headers_f on_headers,
-               envoy_filter_on_data_f on_data, envoy_filter_on_trailers_f on_trailers,
-               envoy_filter_on_resume_f on_resume, Stats::Histogram& on_headers_callback_latency,
+               envoy_filter_on_headers_f on_headers, envoy_filter_on_data_f on_data,
+               envoy_filter_on_trailers_f on_trailers, envoy_filter_on_resume_f on_resume,
+               Stats::Histogram& on_headers_callback_latency,
                Stats::Histogram& on_data_callback_latency,
                Stats::Histogram& on_trailers_callback_latency,
                Stats::Histogram& on_resume_callback_latency)
-        : parent_(parent), direction_(std::move(direction)), on_headers_(on_headers), on_data_(on_data), on_trailers_(on_trailers),
-          on_resume_(on_resume), on_headers_callback_latency_(on_headers_callback_latency),
+        : parent_(parent), direction_(std::move(direction)), on_headers_(on_headers),
+          on_data_(on_data), on_trailers_(on_trailers), on_resume_(on_resume),
+          on_headers_callback_latency_(on_headers_callback_latency),
           on_data_callback_latency_(on_data_callback_latency),
           on_trailers_callback_latency_(on_trailers_callback_latency),
           on_resume_callback_latency_(on_resume_callback_latency) {
@@ -209,8 +210,7 @@ private:
 
   struct RequestFilterBase : FilterBase {
     RequestFilterBase(PlatformBridgeFilter& parent)
-        : FilterBase(parent, "request",
-                     parent.platform_filter_.on_request_headers,
+        : FilterBase(parent, "request", parent.platform_filter_.on_request_headers,
                      parent.platform_filter_.on_request_data,
                      parent.platform_filter_.on_request_trailers,
                      parent.platform_filter_.on_resume_request,
@@ -230,8 +230,7 @@ private:
 
   struct ResponseFilterBase : FilterBase {
     ResponseFilterBase(PlatformBridgeFilter& parent)
-        : FilterBase(parent, "response",
-                     parent.platform_filter_.on_response_headers,
+        : FilterBase(parent, "response", parent.platform_filter_.on_response_headers,
                      parent.platform_filter_.on_response_data,
                      parent.platform_filter_.on_response_trailers,
                      parent.platform_filter_.on_resume_response,

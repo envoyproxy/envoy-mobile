@@ -36,7 +36,7 @@ namespace Http {
   HISTOGRAM(on_trailers_callback_latency, Milliseconds)                                            \
   HISTOGRAM(on_complete_callback_latency, Milliseconds)                                            \
   HISTOGRAM(on_cancel_callback_latency, Milliseconds)                                              \
-  HISTOGRAM(on_error_callback_latency, Milliseconds)                                               \
+  HISTOGRAM(on_error_callback_latency, Milliseconds)
 
 /**
  * Struct definition for client stats. @see stats_macros.h
@@ -53,8 +53,9 @@ public:
   Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
          Random::RandomGenerator& random)
       : api_listener_(api_listener), dispatcher_(dispatcher),
-        stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."),
-                                                     POOL_HISTOGRAM_PREFIX(scope, "http.client."))}),
+        stats_(
+            HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."),
+                                                  POOL_HISTOGRAM_PREFIX(scope, "http.client."))}),
         address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random) {}
 
   /**
