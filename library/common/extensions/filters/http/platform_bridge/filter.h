@@ -21,7 +21,6 @@ namespace PlatformBridge {
  * All PlatformBridge Filter stats. @see stats_macros.h
  */
 #define ALL_PLATFORM_BRIDGE_FILTER_STATS(COUNTER, HISTOGRAM)                                       \
-  COUNTER(init_failures)                                                                           \
   HISTOGRAM(init_callback_latency, Milliseconds)                                                   \
   HISTOGRAM(on_rq_headers_callback_latency, Milliseconds)                                          \
   HISTOGRAM(on_rq_data_callback_latency, Milliseconds)                                             \
