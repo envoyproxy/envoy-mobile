@@ -164,6 +164,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          prerelease: true
           files: |
             envoy_android_aar_sources.tar.gz
             Envoy.xcframework.zip
