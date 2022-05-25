@@ -1,5 +1,9 @@
 package org.chromium.net;
 
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
+import android.security.NetworkSecurityPolicy;
+import androidx.annotation.RequiresApi;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -82,5 +86,18 @@ public final class AndroidNetworkLibrary {
     } else {
       X509Util.clearTestRootCertificates();
     }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.M)
+  public boolean isCleartextTrafficPermitted(String host) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+      // This API was not implemeneted before Android N.
+      return true;
+    }
+    // M only supported global checks.
+    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+      return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+    }
+    return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
   }
 }

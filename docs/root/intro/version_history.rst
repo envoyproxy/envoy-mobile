@@ -8,6 +8,7 @@ Breaking changes:
 
 - api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
 - api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
+- android: respect Android's NetworkSecurityPolicy isCleartextTrafficPermitted APIs.
 - net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
 
 Bugfixes:

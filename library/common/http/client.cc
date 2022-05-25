@@ -13,6 +13,7 @@
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
+#include "library/common/jni/jni_utility.h"
 #include "library/common/network/configurator.h"
 #include "library/common/stream_info/extra_stream_info.h"
 
@@ -479,6 +480,17 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
+
+#if defined(__ANDROID_API__)
+    envoy_data hostname = Data::Utility::copyToBridgeData(internal_headers->getHostValue());
+    if (internal_headers->getSchemeValue() != "https" &&
+        !is_cleartext_permitted(get_env(), hostname)) {
+      direct_stream->request_decoder_->sendLocalReply(
+          Http::Code::BadRequest, "Cleartext is not permitted", nullptr, absl::nullopt, "");
+      return;
+    }
+#endif
+
     setDestinationCluster(*internal_headers);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the

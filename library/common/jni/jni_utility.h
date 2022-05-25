@@ -83,3 +83,7 @@ void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
 void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uint8_t>* out);
 
 void JavaArrayOfByteToString(JNIEnv* env, jbyteArray jbytes, std::string* out);
+
+#if defined(__ANDROID_API__)
+bool is_cleartext_permitted(JNIEnv* env, envoy_data host);
+#endif
