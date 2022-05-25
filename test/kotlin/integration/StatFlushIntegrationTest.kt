@@ -5,6 +5,7 @@ import io.envoyproxy.envoymobile.Engine
 import io.envoyproxy.envoymobile.EngineBuilder
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.engine.JniLibrary
+import java.time.LocalDateTime
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
@@ -50,10 +51,12 @@ class StatFlushIntegrationTest {
 
   @Test
   fun `flush flushes to stats sink`() {
+    val statsdServer = TestStatsdServer()
+    val port = statsdServer.runAsync(0)
     val countDownLatch = CountDownLatch(1)
     engine = EngineBuilder()
-      .addLogLevel(LogLevel.DEBUG)
-      .addStatsDPort(8125)
+      .addLogLevel(LogLevel.TRACE)
+      .addStatsDPort(port)
       // Really high flush interval so it won't trigger during test execution.
       .addStatsFlushSeconds(100)
       .setLogger { msg ->
@@ -66,9 +69,6 @@ class StatFlushIntegrationTest {
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
 
     engine!!.pulseClient().counter(Element("foo"), Element("bar")).increment(1)
-
-    val statsdServer = TestStatsdServer()
-    statsdServer.runAsync(8125)
 
     engine!!.flushStats()
 

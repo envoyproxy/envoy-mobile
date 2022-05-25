@@ -15,10 +15,9 @@ class TestStatsdServer {
   private var thread: Thread? = null
 
   @Throws(IOException::class)
-  fun runAsync(port: Int) {
+  fun runAsync(port: Int) : Int {
     val socket = DatagramSocket(port)
     socket.setSoTimeout(1000) // 1 second
-
     thread = Thread(
       fun() {
         val buffer = ByteArray(256)
@@ -46,6 +45,7 @@ class TestStatsdServer {
       }
     )
     thread!!.start()
+    return socket.getLocalPort()
   }
 
   fun awaitStatMatching(predicate: (String) -> Boolean) {
