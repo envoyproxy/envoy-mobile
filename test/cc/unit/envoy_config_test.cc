@@ -3,6 +3,7 @@
 
 #include "test/test_common/utility.h"
 
+#include "absl/strings/str_replace.h"
 #include "absl/synchronization/notification.h"
 #include "gtest/gtest.h"
 #include "library/cc/engine_builder.h"
@@ -11,6 +12,7 @@
 
 using testing::HasSubstr;
 using testing::Not;
+extern const char* alternate_protocols_cache_filter_insert;
 
 namespace Envoy {
 namespace {
@@ -74,6 +76,17 @@ TEST(TestConfig, SetDecompressor) {
   config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("envoy.filters.http.decompressor"));
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+}
+
+TEST(TestConfig, SetAltSvcCache) {
+  auto engine_builder = EngineBuilder();
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+
+  absl::StrReplaceAll({{"#{custom_filters}", alternate_protocols_cache_filter_insert}}, &config_str);
+
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
 TEST(TestConfig, RemainingTemplatesThrows) {

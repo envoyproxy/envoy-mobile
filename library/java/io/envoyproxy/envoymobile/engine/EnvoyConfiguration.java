@@ -182,6 +182,8 @@ public class EnvoyConfiguration {
 
     String processedTemplate =
         configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString());
+    System.out.println("HERE");
+    System.out.println(customFiltersBuilder.toString());
 
     String dnsFallbackNameserversAsString = "[]";
     if (!dnsFallbackNameservers.isEmpty()) {
