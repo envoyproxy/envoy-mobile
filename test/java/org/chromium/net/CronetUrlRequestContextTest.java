@@ -1117,10 +1117,7 @@ public class CronetUrlRequestContextTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore(
-      "Multiple Engines are not yet supported: https://github.com/envoyproxy/envoy-mobile/issues/332")
-  public void
-  testInitEngineStartTwoRequests() throws Exception {
+  public void testInitEngineStartTwoRequests() throws Exception {
     // Make two requests after initializing the context.
     CronetEngine cronetEngine = new CronetEngine.Builder(getContext()).build();
     int[] statusCodes = {0, 0};
@@ -1162,10 +1159,7 @@ public class CronetUrlRequestContextTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore(
-      "Multiple Engines are not yet supported: https://github.com/envoyproxy/envoy-mobile/issues/332")
-  public void
-  testInitTwoEnginesInSequence() throws Exception {
+  public void testInitTwoEnginesInSequence() throws Exception {
     ConditionVariable runBlocker = new ConditionVariable(true);
     RequestThread thread1 = new RequestThread(mUrl, runBlocker);
     RequestThread thread2 = new RequestThread(mUrl404, runBlocker);
