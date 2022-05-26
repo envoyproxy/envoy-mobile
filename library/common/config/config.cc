@@ -114,20 +114,6 @@ const std::string config_header = R"(
 !ignore router_defs: &router_config
   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
-!ignore http_filter_defs: &http_filters
-#{custom_filters}
-  - name: envoy.filters.http.network_configuration
-    typed_config: *network_configuration_config
-  - name: envoy.filters.http.local_error
-    typed_config: *local_error_config
-  - name: envoy.filters.http.dynamic_forward_proxy
-    typed_config: *dfp_config
-  - name: envoy.filters.http.decompressor
-    typed_config: *compressor_config
-  - name: envoy.router
-    typed_config: *router_config
-
-
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
     name: envoy.metrics_service
@@ -182,6 +168,19 @@ R"(
 )";
 
 const char* config_template = R"(
+!ignore http_filter_defs: &http_filters
+#{custom_filters}
+  - name: envoy.filters.http.network_configuration
+    typed_config: *network_configuration_config
+  - name: envoy.filters.http.local_error
+    typed_config: *local_error_config
+  - name: envoy.filters.http.dynamic_forward_proxy
+    typed_config: *dfp_config
+  - name: envoy.filters.http.decompressor
+    typed_config: *compressor_config
+  - name: envoy.router
+    typed_config: *router_config
+
 !ignore protocol_options_defs:
 - &h1_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
