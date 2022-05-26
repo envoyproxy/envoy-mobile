@@ -22,6 +22,14 @@ config_setting(
     values = {"define": "include_ifaddrs=true"},
 )
 
+# TODO(alyssa) remove this when https://github.com/envoyproxy/envoy/pull/21459 lands
+config_setting(
+    name = "android",
+    constraint_values = [
+        "@platforms//os:android",
+    ],
+)
+
 exports_files([
     "pom_template.xml",
     "test_manifest.xml",

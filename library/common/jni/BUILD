@@ -198,7 +198,7 @@ cc_library(
         "//library/common/types:c_types_lib",
         "@envoy//source/common/common:assert_lib",
     ] + select({
-        "@envoy//bazel:android_logger": [":ndk_jni_support"],
+        "//bazel:android": [":ndk_jni_support"],
         "//conditions:default": [":java_jni_support"],
     }),
 )
