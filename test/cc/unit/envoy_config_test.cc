@@ -83,7 +83,8 @@ TEST(TestConfig, SetAltSvcCache) {
 
   std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
 
-  absl::StrReplaceAll({{"#{custom_filters}", alternate_protocols_cache_filter_insert}}, &config_str);
+  absl::StrReplaceAll({{"#{custom_filters}", alternate_protocols_cache_filter_insert}},
+                      &config_str);
 
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(config_str, bootstrap);
