@@ -9,24 +9,6 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 cc_library(
-    name = "jni_utility_lib",
-    srcs = [
-        "jni_utility.cc",
-        "jni_version.cc",
-    ],
-    hdrs = [
-        "jni_support.h",
-        "jni_utility.h",
-        "jni_version.h",
-    ],
-    deps = [
-        "//library/common/jni/import:jni_import_lib",
-        "//library/common/types:c_types_lib",
-        "@envoy//source/common/common:assert_lib",
-    ],
-)
-
-cc_library(
     name = "envoy_jni_lib",
     srcs = [
         "android_jni_interface.cc",
@@ -198,4 +180,25 @@ cc_library(
     deps = [
         "//library/common/jni/import:jni_import_lib",
     ],
+)
+
+cc_library(
+    name = "jni_utility_lib",
+    srcs = [
+        "jni_utility.cc",
+        "jni_version.cc",
+    ],
+    hdrs = [
+        "jni_support.h",
+        "jni_utility.h",
+        "jni_version.h",
+    ],
+    deps = [
+        "//library/common/jni/import:jni_import_lib",
+        "//library/common/types:c_types_lib",
+        "@envoy//source/common/common:assert_lib",
+    ] + select({
+        "@envoy//bazel:android_logger": [":ndk_jni_support"],
+        "//conditions:default": [":java_jni_support"],
+    }),
 )

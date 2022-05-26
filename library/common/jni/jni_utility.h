@@ -84,6 +84,8 @@ void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uin
 
 void JavaArrayOfByteToString(JNIEnv* env, jbyteArray jbytes, std::string* out);
 
-#if defined(__ANDROID_API__)
+/* For android, calls up through JNI to see if cleartext is permitted for this
+ * host.
+ * For other platforms simply returns true.
+ */
 bool is_cleartext_permitted(JNIEnv* env, envoy_data host);
-#endif

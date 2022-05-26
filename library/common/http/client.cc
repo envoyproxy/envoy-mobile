@@ -481,7 +481,8 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
 
-#if defined(__ANDROID_API__)
+    // This is largely a check for the android platform: is_cleartext_permitted
+    // is a no-op for other platforms.
     envoy_data hostname = Data::Utility::copyToBridgeData(internal_headers->getHostValue());
     if (internal_headers->getSchemeValue() != "https" &&
         !is_cleartext_permitted(get_env(), hostname)) {
@@ -489,7 +490,6 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
           Http::Code::BadRequest, "Cleartext is not permitted", nullptr, absl::nullopt, "");
       return;
     }
-#endif
 
     setDestinationCluster(*internal_headers);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
