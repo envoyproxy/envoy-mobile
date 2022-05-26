@@ -92,6 +92,35 @@ EngineBuilder& EngineBuilder::setDeviceOs(const std::string& device_os) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::setDecompressor(bool decompressor_on) {
+  this->decompressor_filter_ = decompressor_on;
+  return *this;
+}
+
+std::string EngineBuilder::generateFiltersStr() {
+  return absl::StrCat(
+      R"(
+#{custom_filters}
+  - name: envoy.filters.http.network_configuration
+    typed_config: *network_configuration_config
+  - name: envoy.filters.http.local_error
+    typed_config: *local_error_config
+  - name: envoy.filters.http.dynamic_forward_proxy
+    typed_config: *dfp_config
+)",
+      decompressor_filter_ ?
+                           R"(
+  - name: envoy.filters.http.decompressor
+    typed_config: *compressor_config
+)"
+                           : "",
+
+      R"(
+  - name: envoy.router
+    typed_config: *router_config
+)");
+}
+
 std::string EngineBuilder::generateConfigStr() {
   std::vector<std::pair<std::string, std::string>> replacements{
       {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
@@ -118,6 +147,7 @@ std::string EngineBuilder::generateConfigStr() {
       {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},
       {"per_try_idle_timeout", fmt::format("{}s", this->per_try_idle_timeout_seconds_)},
       {"virtual_clusters", this->virtual_clusters_},
+      {"http_filters", this->generateFiltersStr()},
   };
 
   // NOTE: this does not include support for custom filters

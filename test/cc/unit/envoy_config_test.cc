@@ -1,10 +1,16 @@
 #include <string>
 #include <vector>
 
+#include "test/test_common/utility.h"
+
 #include "absl/synchronization/notification.h"
 #include "gtest/gtest.h"
 #include "library/cc/engine_builder.h"
 #include "library/cc/log_level.h"
+#include "library/common/config/internal.h"
+
+using testing::HasSubstr;
+using testing::Not;
 
 namespace Envoy {
 namespace {
@@ -46,6 +52,28 @@ TEST(TestConfig, ConfigIsApplied) {
   for (const auto& string : must_contain) {
     ASSERT_NE(config_str.find(string), std::string::npos) << "'" << string << "' not found";
   }
+}
+
+TEST(TestConfig, ConfigIsValid) {
+  auto engine_builder = EngineBuilder();
+  auto config_str = engine_builder.generateConfigStr();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+}
+
+TEST(TestConfig, SetDecompressor) {
+  auto engine_builder = EngineBuilder();
+
+  engine_builder.setDecompressor(false);
+  auto config_str = engine_builder.generateConfigStr();
+  ASSERT_THAT(config_str, Not(HasSubstr("envoy.filters.http.decompressor")));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+
+  engine_builder.setDecompressor(true);
+  config_str = engine_builder.generateConfigStr();
+  ASSERT_THAT(config_str, HasSubstr("envoy.filters.http.decompressor"));
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, RemainingTemplatesThrows) {
