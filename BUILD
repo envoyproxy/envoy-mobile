@@ -50,17 +50,8 @@ aar_import(
 )
 
 alias(
-    name = "android_dist_ci",
-    actual = "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_with_artifacts",
-)
-
-filegroup(
     name = "android_dist",
-    srcs = [
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar",
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_objdump_collector",
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_pom_xml",
-    ],
+    actual = "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_with_artifacts",
 )
 
 define_kt_toolchain(
@@ -107,15 +98,28 @@ genrule(
 xcodeproj(
     name = "xcodeproj",
     archived_bundles_allowed = True,
+    bazel_path = "./bazelw",
     build_mode = "bazel",
     project_name = "Envoy",
     tags = ["manual"],
     targets = [
+        # Libraries
+        "//library/swift:ios_lib",
+        "//library/objective-c:envoy_engine_objc_lib",
+        "//library/common:envoy_main_interface_lib",
+        # Apps
         # TODO(jpsim): Fix Objective-C app support
         # "//examples/objective-c/hello_world:app",
         "//examples/swift/async_await:app",
         "//examples/swift/hello_world:app",
         "//test/swift/apps/baseline:app",
         "//test/swift/apps/experimental:app",
+        # Tests
+        "//experimental/swift:quic_stream_test",
+        "//test/objective-c:envoy_bridge_utility_test",
+        "//test/swift/integration:flatbuffer_test",
+        "//test/swift/integration:test",
+        "//test/swift/stats:test",
+        "//test/swift:test",
     ],
 )
