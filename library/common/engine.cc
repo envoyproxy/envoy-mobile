@@ -71,6 +71,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
             });
       }
 
+      // We let the thread clean up this log delegate pointer
       if (logger_.log) {
         log_delegate_ptr_ =
             std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
@@ -136,7 +137,6 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
   network_configurator_.reset();
   client_scope_.reset();
   stat_name_set_.reset();
-  log_delegate_ptr_.reset(nullptr);
   main_common.reset(nullptr);
   bug_handler_registration_.reset(nullptr);
   assert_handler_registration_.reset(nullptr);
