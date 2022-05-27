@@ -35,7 +35,7 @@ jobs:
               --define=pom_version="${current_release_version:1}" \
               --config=remote-ci-macos \
               --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-              //:android_dist_ci
+              //:android_dist
       - name: 'Tar artifacts'
         run: tar -czvf envoy_android_aar_sources.tar.gz bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-pom.xml bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-sources.jar bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-javadoc.jar
       - uses: actions/upload-artifact@v2
@@ -132,18 +132,6 @@ jobs:
         with:
           name: ios_framework
           path: ./Envoy.xcframework.zip
-      - name: 'Create temporary directory for artifact to produce properly named zip'
-        run: mkdir ios_framework_cocoapods
-      - name: 'Unzip framework to archive directory'
-        run: unzip Envoy.xcframework.zip -d ios_framework_cocoapods
-      - name: 'Copy LICENSE to archive directory'
-        run: cp LICENSE ios_framework_cocoapods
-      - name: 'Zip archive directory'
-        run: zip -r ios_framework_cocoapods.zip ios_framework_cocoapods
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ios_framework_cocoapods
-          path: ./ios_framework_cocoapods.zip
 
   create_github_release:
     name: create_github_release
@@ -158,9 +146,6 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: ios_framework
-      - uses: actions/download-artifact@v3
-        with:
-          name: ios_framework_cocoapods
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -168,21 +153,3 @@ jobs:
           files: |
             envoy_android_aar_sources.tar.gz
             Envoy.xcframework.zip
-            ios_framework_cocoapods.zip
-
-  publish_to_cocoapods:
-    name: publish_to_cocoapods
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: macos-12
-    timeout-minutes: 45
-    needs: create_github_release
-    steps:
-      - uses: actions/checkout@v1
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
-          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-      - name: 'Push CocoaPods podspec'
-        run: bundle exec pod trunk push
-        env:
-          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
