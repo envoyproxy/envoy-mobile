@@ -274,6 +274,8 @@ TEST_P(RtdsIntegrationTest, RtdsReload) {
   EXPECT_EQ(cc_.status, "200");
   EXPECT_EQ(cc_.on_data_calls, 2);
   EXPECT_EQ(cc_.on_complete_calls, 1);
+  EXPECT_EQ(cc_.on_cancel_calls, 0);
+  EXPECT_EQ(cc_.on_error_calls, 0);
   EXPECT_EQ(cc_.on_header_consumed_bytes_from_response, 13);
   EXPECT_EQ(cc_.on_complete_received_byte_count, 41);
   // stream_success gets charged for 2xx status codes.

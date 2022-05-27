@@ -109,7 +109,6 @@ void BaseClientIntegrationTest::initialize() {
 }
 
 void BaseClientIntegrationTest::cleanup() {
-  ASSERT_EQ(cc_.on_complete_calls + cc_.on_cancel_calls + cc_.on_error_calls, 1);
   if (xds_connection_ != nullptr) {
     cleanUpXdsConnection();
   }

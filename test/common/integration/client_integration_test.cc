@@ -46,7 +46,10 @@ public:
     setUpstreamProtocol(Http::CodecType::HTTP1);
   }
 
-  void TearDown() override { cleanup(); }
+  void TearDown() override {
+    ASSERT_EQ(cc_.on_complete_calls + cc_.on_cancel_calls + cc_.on_error_calls, 1);
+    cleanup();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(IpVersions, ClientIntegrationTest,
