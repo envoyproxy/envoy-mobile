@@ -97,4 +97,6 @@ extension MockEnvoyEngine: EnvoyEngine {
   func terminate() {}
 
   func resetConnectivityState() {}
+
+  func handle() -> Int { 0 }
 }

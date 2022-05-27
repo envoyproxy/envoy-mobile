@@ -408,6 +408,10 @@ static void ios_track_event(envoy_map map, const void *context) {
   EnvoyNetworkMonitor *_networkMonitor;
 }
 
+- (NSInteger)handle {
+  return (NSInteger)_engineHandle;
+}
+
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
                            eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
