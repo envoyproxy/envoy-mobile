@@ -543,6 +543,8 @@ extern const int kEnvoyFailure;
 
 - (void)resetConnectivityState;
 
+- (NSInteger)handle;
+
 @end
 
 #pragma mark - EnvoyLogger

@@ -20,6 +20,8 @@ public:
 
   void terminate();
 
+  envoy_engine_t handle();
+
 private:
   Engine(envoy_engine_t engine);
 
