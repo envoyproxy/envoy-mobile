@@ -12,6 +12,9 @@ private struct ContentRow: Identifiable {
 private extension EngineBuilder {
     static let demoEngine = EngineBuilder()
         .addLogLevel(.debug)
+        .setOnEngineRunning(closure: { handle in
+            print("[JPDEBUG]", handle)
+        })
         .build()
 }
 

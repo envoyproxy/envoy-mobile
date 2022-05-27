@@ -39,7 +39,7 @@ open class EngineBuilder: NSObject {
   private var appVersion: String = "unspecified"
   private var appId: String = "unspecified"
   private var virtualClusters: String = "[]"
-  private var onEngineRunning: (() -> Void)?
+  private var onEngineRunning: ((Int) -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
   private(set) var monitoringMode: NetworkMonitoringMode = .pathMonitor
@@ -398,7 +398,7 @@ open class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func setOnEngineRunning(closure: @escaping () -> Void) -> Self {
+  public func setOnEngineRunning(closure: @escaping (Int) -> Void) -> Self {
     self.onEngineRunning = closure
     return self
   }
