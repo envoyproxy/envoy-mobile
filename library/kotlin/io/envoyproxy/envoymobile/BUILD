@@ -22,6 +22,7 @@ kt_android_library(
     name = "envoy_lib",
     srcs = [
         "AndroidEngineBuilder.kt",
+        "android/SharedPreferencesStore.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
@@ -68,7 +69,6 @@ envoy_mobile_kt_library(
         "StringAccessor.kt",
         "Trailers.kt",
         "UpstreamHttpProtocol.kt",
-        "extras/*.kt",
         "filters/*.kt",
         "grpc/*.kt",
         "mocks/*.kt",
