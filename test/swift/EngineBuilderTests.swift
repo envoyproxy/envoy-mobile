@@ -30,7 +30,7 @@ final class EngineBuilderTests: XCTestCase {
 
   func testEnableNetworkPathMonitorDefaultsToTrue() {
     let builder = EngineBuilder()
-    XCTAssertFalse(builder.enableNetworkPathMonitor)
+    XCTAssertTrue(builder.enableNetworkPathMonitor)
   }
 
   func testEnableNetworkPathMonitorSetsToValue() {
