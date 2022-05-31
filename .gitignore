@@ -12,6 +12,7 @@
 *.pyc
 *.tulsiconf-user
 *.xcodeproj
+*.xcframework
 clang.bazelrc
 user.bazelrc
 tags
