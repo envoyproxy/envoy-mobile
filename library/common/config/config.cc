@@ -459,7 +459,7 @@ stats_config:
             regex: '^http.hcm.downstream_rq_[\w]+'
         - safe_regex:
             google_re2: {}
-            regex: '.*pbf_filter.*'
+            regex: '^pbf_filter.*'
         - safe_regex:
             google_re2: {}
             regex: '^pulse.*'
