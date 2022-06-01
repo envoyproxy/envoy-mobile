@@ -4,9 +4,12 @@ import android.content.SharedPreferences
 
 import io.envoyproxy.envoymobile.KeyValueStore
 
+/**
+ * Simple implementation of a `KeyValueStore` leveraging `SharedPreferences` for persistence.
+ */
 class SharedPreferencesStore(sharedPreferences: SharedPreferences) : KeyValueStore {
-  val preferences = sharedPreferences
-  val editor = sharedPreferences.edit()
+  private val preferences = sharedPreferences
+  private val editor = sharedPreferences.edit()
 
   override fun read(key: String): String? {
     return preferences.getString(key, null)
