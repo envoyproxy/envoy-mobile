@@ -134,7 +134,7 @@ public:
     //
     // For now, we clear the default cluster configs and add just two clusters:
     //   - a cluster named "base_h2" because that's what the api_listener is configured to talk to
-    //   - a RTDS cluster, for sending and receiving RTDS config
+    //   - an RTDS cluster, for sending and receiving RTDS config
     //
     // The reason we must clear the default cluster configs is because ConfigHelper::setPorts
     // requires that the number of fake upstream ports equal the number of clusters in the config
