@@ -47,7 +47,8 @@ void validateStreamIntel(const envoy_final_stream_intel& final_intel) {
 }
 
 envoy::config::cluster::v3::Cluster
-createSingleEndpointClusterConfig(const std::string& cluster_name) {
+createSingleEndpointClusterConfig(const std::string& cluster_name,
+                                  const std::string& loopbackAddr) {
   envoy::config::cluster::v3::Cluster config;
   config.set_name(cluster_name);
 
@@ -55,7 +56,7 @@ createSingleEndpointClusterConfig(const std::string& cluster_name) {
   auto* load_assignment = config.mutable_load_assignment();
   load_assignment->set_cluster_name(cluster_name);
   auto* endpoint = load_assignment->add_endpoints()->add_lb_endpoints()->mutable_endpoint();
-  endpoint->mutable_address()->mutable_socket_address()->set_address("127.0.0.1");
+  endpoint->mutable_address()->mutable_socket_address()->set_address(loopbackAddr);
   endpoint->mutable_address()->mutable_socket_address()->set_port_value(0);
 
   // Set the protocol options.
@@ -96,7 +97,7 @@ envoy::config::bootstrap::v3::LayeredRuntime layeredRuntimeConfig(const std::str
   return config;
 }
 
-envoy::config::bootstrap::v3::Admin adminConfig() {
+envoy::config::bootstrap::v3::Admin adminConfig(const std::string& loopbackAddr) {
   const std::string yaml = fmt::format(R"EOF(
     access_log:
     - name: envoy.access_loggers.file
@@ -105,10 +106,10 @@ envoy::config::bootstrap::v3::Admin adminConfig() {
         path: "{}"
     address:
       socket_address:
-        address: 127.0.0.1
+        address: {}
         port_value: 0
   )EOF",
-                                       Platform::null_device_path);
+                                       Platform::null_device_path, loopbackAddr);
 
   envoy::config::bootstrap::v3::Admin config;
   TestUtility::loadFromYaml(yaml, config);
@@ -142,20 +143,22 @@ public:
     //
     // TODO(abeyad): fix the ConfigHelper::setPorts logic to enable a subset of clusters to have
     // dynamic port configuration.
-    config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+
+    config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+      const std::string loopback = loopbackAddr();
       bootstrap.mutable_static_resources()->clear_clusters();
       bootstrap.mutable_static_resources()->add_clusters()->MergeFrom(
-          createSingleEndpointClusterConfig("base_h2"));
+          createSingleEndpointClusterConfig("base_h2", loopback));
       bootstrap.mutable_static_resources()->add_clusters()->MergeFrom(
-          createSingleEndpointClusterConfig("rtds_cluster"));
+          createSingleEndpointClusterConfig("rtds_cluster", loopback));
     });
 
     // xDS upstream is created separately in the test infra, and there's only one non-xDS cluster.
     setUpstreamCount(1);
 
     // Add the Admin config.
-    config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-      bootstrap.mutable_admin()->MergeFrom(adminConfig());
+    config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+      bootstrap.mutable_admin()->MergeFrom(adminConfig(loopbackAddr()));
     });
   }
 
@@ -201,6 +204,13 @@ public:
   Grpc::ClientType clientType() const override { return std::get<1>(GetParam()); }
   Grpc::SotwOrDelta sotwOrDelta() const { return std::get<2>(GetParam()); }
 
+  std::string loopbackAddr() const {
+    if (ipVersion() == Network::Address::IpVersion::v6) {
+      return "::1";
+    }
+    return "127.0.0.1";
+  }
+
 protected:
   std::string getRuntimeKey(const std::string& key) {
     auto response = IntegrationUtil::makeSingleRequest(
@@ -223,12 +233,6 @@ INSTANTIATE_TEST_SUITE_P(IpVersionsClientTypeDelta, RtdsIntegrationTest,
                          DELTA_SOTW_GRPC_CLIENT_INTEGRATION_PARAMS);
 
 TEST_P(RtdsIntegrationTest, RtdsReload) {
-  if (ipVersion() == Network::Address::IpVersion::v6) {
-    // TODO(abeyad): Figure out why the test fails for IPv6 and then remove this early exit. The
-    // test causes a "delayed connect error: 111" error when using IPv6.
-    return;
-  }
-
   addRuntimeRtdsConfig();
   initialize();
 
