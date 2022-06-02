@@ -132,7 +132,7 @@ jobs:
         with:
           name: ios_framework
           path: ./Envoy.xcframework.zip
-      - name: 'Build Envoy.doccarchive'
+      - name: 'Build Envoy.doccarchive.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -143,10 +143,11 @@ jobs:
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //library/swift:ios_lib
           ./tools/docc.sh bazel-bin/library/swift/ios_lib.symbolgraph
+          zip -r Envoy.doccarchive.zip Envoy.doccarchive
       - uses: actions/upload-artifact@v2
         with:
           name: ios_docs
-          path: ./Envoy.doccarchive
+          path: ./Envoy.doccarchive.zip
 
   create_github_release:
     name: create_github_release
@@ -171,4 +172,4 @@ jobs:
           files: |
             envoy_android_aar_sources.tar.gz
             Envoy.xcframework.zip
-            Envoy.doccarchive
+            Envoy.doccarchive.zip
