@@ -44,6 +44,7 @@ open class EngineBuilder: NSObject {
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
+  private var keyValueStores: [String: EnvoyKeyValueStore] = [:]
   private var directResponses: [DirectResponse] = []
 
   // MARK: - Public
@@ -355,6 +356,18 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Register a key-value store implementation for internal use.
+  ///
+  /// - parameter name: the name of the KV store.
+  /// - parameter keyValueStore: the KV store implementation.
+  ///
+  /// - returns this builder.
+  @discardableResult
+  public func addKeyValueStore(name: String, keyValueStore: KeyValueStore) -> Self {
+    self.keyValueStores[name] = KeyValueStoreImpl(implementation: keyValueStore)
+    return self
+  }
+
   /// Set a closure to be called when the engine finishes its async startup and begins running.
   ///
   /// - parameter closure: The closure to be called.
@@ -482,7 +495,8 @@ open class EngineBuilder: NSObject {
         .joined(separator: "\n"),
       nativeFilterChain: self.nativeFilterChain,
       platformFilterChain: self.platformFilterChain,
-      stringAccessors: self.stringAccessors
+      stringAccessors: self.stringAccessors,
+      keyValueStores: self.keyValueStores
     )
 
     switch self.base {
