@@ -9,6 +9,7 @@
 /generated
 /test/coverage/BUILD
 /tmp
+*.doccarchive
 *.pyc
 *.tulsiconf-user
 *.xcodeproj
