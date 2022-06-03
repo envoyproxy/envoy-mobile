@@ -320,15 +320,15 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @protocol EnvoyKeyValueStore
 
 /// Read a value from the key value store iplementation.
-- (NSString *_Nullable)read:(NSString *)key;
+- (NSString *_Nullable)readValueForKey:(NSString *)key;
 
 
 /// Remove a value from the key value store implementation.
-- (void)save:(NSString *)key value:(NSString *)value;
+- (void)saveValue:(NSString *)value toKey:(NSString *)key;
 
 
 /// Save a value to the key value store implementation.
-- (void)remove:(NSString *)key;
+- (void)removeKey:(NSString *)key;
 
 @end
 
