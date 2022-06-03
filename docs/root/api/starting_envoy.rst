@@ -434,13 +434,13 @@ This can help negate the effect of head-of-line (HOL) blocking for slow connecti
 ~~~~~~~~~~~~~~~~~~~~
 
 Implementations of a public KeyValueStore interface may be added in their respective languages and
-made available to native code. General usage is supported, but typical future usage will be in
+made available to the library. General usage is supported, but typical future usage will be in
 support of HTTP and endpoint property caching.
 
 **Example**::
 
   // Kotlin
-  builder.addKeyValueStore(MyKeyValueStoreImpl())
+  builder.addKeyValueStore("io.envoyproxy.envoymobile.MyKeyValueStore", MyKeyValueStoreImpl())
 
   // Swift
   // Coming soon.
@@ -452,7 +452,7 @@ SharedPreferences.
 **Example**::
 
   // Android
-  val preferences = context.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE)
+  val preferences = context.getSharedPreferences("io.envoyproxy.envoymobile.MyPreferences", Context.MODE_PRIVATE)
   builder.addKeyValueStore(SharedPreferencesStore(preferences))
 
   // iOS
