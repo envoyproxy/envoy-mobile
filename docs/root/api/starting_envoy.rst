@@ -453,7 +453,7 @@ SharedPreferences.
 
   // Android
   val preferences = context.getSharedPreferences("io.envoyproxy.envoymobile.MyPreferences", Context.MODE_PRIVATE)
-  builder.addKeyValueStore(SharedPreferencesStore(preferences))
+  builder.addKeyValueStore("io.envoyproxy.envoymobile.MyKeyValueStore", SharedPreferencesStore(preferences))
 
   // iOS
   // Coming soon.
