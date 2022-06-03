@@ -29,6 +29,7 @@ Features:
 - android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
 - instrumentation: add timers and warnings to platform-provided callbacks (:issue: `#2300 <2300>`)
 - iOS: add support for integrating Envoy Mobile via the Swift Package Manager
+- android: create simple persistent SharedPreferencesStore (:issue: `#2319 <2319>`)
 
 0.4.6 (April 26, 2022)
 ========================
