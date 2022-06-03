@@ -38,9 +38,9 @@
                                   stringAccessors:
                                       (NSDictionary<NSString *, EnvoyStringAccessor *> *)
                                           stringAccessors
-                                  keyValueStores:
-                                      (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
-                                          keyValueStores {
+                                   keyValueStores:
+                                       (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
+                                           keyValueStores {
   self = [super init];
   if (!self) {
     return nil;

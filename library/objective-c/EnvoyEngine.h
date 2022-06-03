@@ -322,10 +322,8 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Read a value from the key value store iplementation.
 - (NSString *_Nullable)readValueForKey:(NSString *)key;
 
-
 /// Remove a value from the key value store implementation.
 - (void)saveValue:(NSString *)value toKey:(NSString *)key;
-
 
 /// Save a value to the key value store implementation.
 - (void)removeKey:(NSString *)key;
@@ -416,9 +414,9 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                                   stringAccessors:
                                       (NSDictionary<NSString *, EnvoyStringAccessor *> *)
                                           stringAccessors
-                                  keyValueStores:
-                                      (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
-                                          keyValueStores;
+                                   keyValueStores:
+                                       (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
+                                           keyValueStores;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
