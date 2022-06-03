@@ -426,7 +426,7 @@ final class EngineBuilderTests: XCTestCase {
     }
 
     let testStore: KeyValueStore = {
-      class TestStore : KeyValueStore {
+      class TestStore: KeyValueStore {
         private var dict: [String: String] = [:]
 
         func readValue(forKey key: String) -> String? {
