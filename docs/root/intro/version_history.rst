@@ -6,10 +6,11 @@ Pending Release
 
 Breaking changes:
 
-- api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
+- api: replace the ``drainConnections()`` method with a broader ``resetConnectivityState()``. (:issue:`#2225 <2225>`).
 - api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
 - net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
 - iOS: remove support for installing via CocoaPods, which had not worked since 2020 (:issue:`#2215 <2215>`)
+- iOS: enable usage of ``NWPathMonitor`` by default (:issue:`#2329 <2329>`)
 
 Bugfixes:
 
@@ -30,6 +31,7 @@ Features:
 - instrumentation: add timers and warnings to platform-provided callbacks (:issue: `#2300 <2300>`)
 - iOS: add support for integrating Envoy Mobile via the Swift Package Manager
 - android: create simple persistent SharedPreferencesStore (:issue: `#2319 <2319>`)
+- iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 
 0.4.6 (April 26, 2022)
 ========================
