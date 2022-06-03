@@ -47,7 +47,10 @@ swift_library(
         "mocks/*.swift",
         "stats/*.swift",
     ]) + ["@envoy_mobile_extra_swift_sources//:extra_swift_srcs"],
-    features = ["swift.enable_library_evolution"],
+    features = [
+        "swift.emit_symbol_graph",
+        "swift.enable_library_evolution",
+    ],
     generates_header = True,
     module_name = "Envoy",
     private_deps = [
