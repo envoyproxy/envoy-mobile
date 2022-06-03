@@ -22,12 +22,14 @@ let package = Package(
                 .linkedFramework("SystemConfiguration"),
             ]
         ),
-        // Local xcframework
+        // Local xcframework - Must be built locally and moved to the `Packages/` directory before this app
+        // can be built
         .binaryTarget(
             name: "Envoy",
             path: "Envoy.xcframework"
         ),
-        // GitHub Releases xcframework
+        // GitHub Releases xcframework - Comment the local binary target and uncomment this one to use an
+        // official release
         // .binaryTarget(
         //     name: "Envoy",
         //     url: "https://github.com/envoyproxy/envoy-mobile/releases/download/v0.4.6.20220530/Envoy.xcframework.zip",
