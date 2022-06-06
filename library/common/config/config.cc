@@ -89,34 +89,6 @@ const std::string config_header = R"(
 - &trust_chain_verification VERIFY_TRUST_CHAIN
 - &virtual_clusters []
 
-!ignore local_error_defs: &local_error_config
-  "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
-
-!ignore network_defs: &network_configuration_config
-  "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
-  enable_drain_post_dns_refresh: *enable_drain_post_dns_refresh
-  enable_interface_binding: *enable_interface_binding
-
-!ignore dfp_defs: &dfp_config
-  "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
-  dns_cache_config: &dns_cache_config
-    name: base_dns_cache
-    preresolve_hostnames: *dns_preresolve_hostnames
-    dns_lookup_family: *dns_lookup_family
-    host_ttl: 86400s
-    dns_min_refresh_rate: *dns_min_refresh_rate
-    dns_refresh_rate: *dns_refresh_rate
-    dns_failure_refresh_rate:
-      base_interval: *dns_fail_base_interval
-      max_interval: *dns_fail_max_interval
-    dns_query_timeout: *dns_query_timeout
-    typed_dns_resolver_config:
-      name: *dns_resolver_name
-      typed_config: *dns_resolver_config
-
-!ignore router_defs: &router_config
-  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
     name: envoy.metrics_service
@@ -171,6 +143,34 @@ R"(
 )";
 
 const char* config_template = R"(
+!ignore local_error_defs: &local_error_config
+  "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
+
+!ignore network_defs: &network_configuration_config
+  "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
+  enable_drain_post_dns_refresh: *enable_drain_post_dns_refresh
+  enable_interface_binding: *enable_interface_binding
+
+!ignore dfp_defs: &dfp_config
+  "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+  dns_cache_config: &dns_cache_config
+    name: base_dns_cache
+    preresolve_hostnames: *dns_preresolve_hostnames
+    dns_lookup_family: *dns_lookup_family
+    host_ttl: 86400s
+    dns_min_refresh_rate: *dns_min_refresh_rate
+    dns_refresh_rate: *dns_refresh_rate
+    dns_failure_refresh_rate:
+      base_interval: *dns_fail_base_interval
+      max_interval: *dns_fail_max_interval
+    dns_query_timeout: *dns_query_timeout
+    typed_dns_resolver_config:
+      name: *dns_resolver_name
+      typed_config: *dns_resolver_config
+
+!ignore router_defs: &router_config
+  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
 !ignore http_filter_defs: &http_filters
 #{custom_filters}
   - name: envoy.filters.http.network_configuration
