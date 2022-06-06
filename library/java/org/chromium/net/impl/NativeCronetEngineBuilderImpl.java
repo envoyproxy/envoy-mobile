@@ -127,7 +127,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
         mDnsQueryTimeoutSeconds, mDnsMinRefreshSeconds, mDnsPreresolveHostnames,
         mDnsFallbackNameservers, mEnableDnsFilterUnroutableFamilies, mEnableDrainPostDnsRefresh,
-        mEnableHttp3, mEnableHappyEyeballs, mEnableInterfaceBinding,
+        mEnableHttp3, true, mEnableHappyEyeballs, mEnableInterfaceBinding,
         mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
         mH2ExtendKeepaliveTimeout, mH2RawDomains, mMaxConnectionsPerHost, mStatsFlushSeconds,
         mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,

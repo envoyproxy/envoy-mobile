@@ -135,7 +135,7 @@ std::string EngineBuilder::generateConfigStr() {
   }
   if (this->decompressor_filter_) {
     absl::StrReplaceAll(
-        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", compressor_config_insert)}},
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", decompressor_config_insert)}},
         &config_template_);
   }
 

@@ -43,6 +43,7 @@ open class EngineBuilder(
   private var enableDrainPostDnsRefresh = false
   private var enableHttp3 = false
   private var enableHappyEyeballs = true
+  private var enableDecompressor = true
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
@@ -244,6 +245,20 @@ open class EngineBuilder(
     this.enableHappyEyeballs = enableHappyEyeballs
     return this
   }
+
+  /**
+   * Specify whether to do response decompression or not.  Defaults to true.
+   * true.
+   *
+   * @param enableDecompression whether or not to decompress responses.
+   *
+   * @return This builder.
+   */
+  fun enableDecompressor(enableDecompressor: Boolean): EngineBuilder {
+    this.enableDecompressor = enableDecompressor
+    return this
+  }
+
 
   /**
    * Specify whether sockets may attempt to bind to a specific interface, based on network
@@ -541,6 +556,7 @@ open class EngineBuilder(
       dnsFilterUnroutableFamilies,
       enableDrainPostDnsRefresh,
       enableHttp3,
+      enableDecompressor,
       enableHappyEyeballs,
       enableInterfaceBinding,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,

@@ -38,7 +38,7 @@ const char* alternate_protocols_cache_filter_insert = R"(
         name: default_alternate_protocols_cache
 )";
 
-const char* compressor_config_insert = R"(
+const char* decompressor_config_insert = R"(
   - name: envoy.filters.http.decompressor
     typed_config:
       "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
