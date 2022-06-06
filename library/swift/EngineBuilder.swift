@@ -349,7 +349,7 @@ open class EngineBuilder: NSObject {
   /// - parameter name: the name of the accessor.
   /// - parameter accessor: lambda to access a string from the platform layer.
   ///
-  /// - returns this builder.
+  /// - returns: This builder.
   @discardableResult
   public func addStringAccessor(name: String, accessor: @escaping () -> String) -> Self {
     self.stringAccessors[name] = EnvoyStringAccessor(block: accessor)
@@ -361,7 +361,7 @@ open class EngineBuilder: NSObject {
   /// - parameter name: the name of the KV store.
   /// - parameter keyValueStore: the KV store implementation.
   ///
-  /// - returns this builder.
+  /// - returns: This builder.
   @discardableResult
   public func addKeyValueStore(name: String, keyValueStore: KeyValueStore) -> Self {
     self.keyValueStores[name] = KeyValueStoreImpl(implementation: keyValueStore)
