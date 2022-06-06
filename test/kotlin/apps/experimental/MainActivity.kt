@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.helloenvoykotlin
 
 import android.app.Activity
+import android.app.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.envoyproxy.envoymobile.AndroidEngineBuilder
 import io.envoyproxy.envoymobile.Element
 import io.envoyproxy.envoymobile.Engine
+import io.envoyproxy.envoymobile.KeyValueStore
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
 import io.envoyproxy.envoymobile.RequestMethod
