@@ -6,15 +6,16 @@ Pending Release
 
 Breaking changes:
 
-- api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
+- api: replace the ``drainConnections()`` method with a broader ``resetConnectivityState()``. (:issue:`#2225 <2225>`).
 - api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
 - android: respect Android's NetworkSecurityPolicy isCleartextTrafficPermitted APIs.
 - net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
+- iOS: remove support for installing via CocoaPods, which had not worked since 2020 (:issue:`#2215 <2215>`)
+- iOS: enable usage of ``NWPathMonitor`` by default (:issue:`#2329 <2329>`)
 
 Bugfixes:
 
 - iOS: change release artifacts to use xcframeworks (:issue:`#2216 <2216>`)
-- iOS: fix CocoaPods releases (:issue:`#2215 <2215>`)
 - Cronvoy: Cancel the scheduled onSendWindowAvailable callback when a stream is cancelled (:issue:`#2213 <2213>`)
 - fix bug where writing prevented the read loop from running (:issue:`#2221 <2221>`)
 - Android: update Kotlin standard libraries to 1.6.21 (:issue:`#2256 <2256>`)
@@ -29,6 +30,8 @@ Features:
 - configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
 - android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
 - instrumentation: add timers and warnings to platform-provided callbacks (:issue: `#2300 <2300>`)
+- iOS: add support for integrating Envoy Mobile via the Swift Package Manager
+- iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 
 0.4.6 (April 26, 2022)
 ========================
