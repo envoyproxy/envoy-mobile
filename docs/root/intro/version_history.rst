@@ -23,7 +23,7 @@ Bugfixes:
 
 Features:
 
-- android: add support for registering a platform KV store (:issue: `#2134 <2134>`)
+- Android & iOS: add support for registering a platform KV store (:issue: `#2134 <2134>`) (:issue: `#2335 <2335>`)
 - api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
 - configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
@@ -31,7 +31,6 @@ Features:
 - instrumentation: add timers and warnings to platform-provided callbacks (:issue: `#2300 <2300>`)
 - iOS: add support for integrating Envoy Mobile via the Swift Package Manager
 - iOS: add support for registering a platform KV store (:issue: `#2334 <2334>`)
-- iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 
 0.4.6 (April 26, 2022)
 ========================

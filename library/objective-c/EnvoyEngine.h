@@ -322,10 +322,10 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 /// Read a value from the key value store iplementation.
 - (NSString *_Nullable)readValueForKey:(NSString *)key;
 
-/// Remove a value from the key value store implementation.
+/// Save a value to the key value store implementation.
 - (void)saveValue:(NSString *)value toKey:(NSString *)key;
 
-/// Save a value to the key value store implementation.
+/// Remove a value from the key value store implementation.
 - (void)removeKey:(NSString *)key;
 
 @end
