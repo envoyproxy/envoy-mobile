@@ -38,6 +38,25 @@ const char* alternate_protocols_cache_filter_insert = R"(
         name: default_alternate_protocols_cache
 )";
 
+const char* compressor_config_insert = R"(
+  - name: envoy.filters.http.decompressor
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+      decompressor_library:
+        name: gzip
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
+          window_bits: 15
+      request_direction_config:
+        common_config:
+          enabled:
+            default_value: false
+            runtime_key: request_decompressor_enabled
+      response_direction_config:
+        common_config:
+          ignore_no_transform_header: true
+)";
+
 // clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
@@ -94,22 +113,6 @@ const std::string config_header = R"(
     typed_dns_resolver_config:
       name: *dns_resolver_name
       typed_config: *dns_resolver_config
-
-!ignore compressor_defs: &compressor_config
-  "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
-  decompressor_library:
-    name: gzip
-    typed_config:
-      "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
-      window_bits: 15
-  request_direction_config:
-    common_config:
-      enabled:
-        default_value: false
-        runtime_key: request_decompressor_enabled
-  response_direction_config:
-    common_config:
-      ignore_no_transform_header: true
 
 !ignore router_defs: &router_config
   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -176,8 +179,6 @@ const char* config_template = R"(
     typed_config: *local_error_config
   - name: envoy.filters.http.dynamic_forward_proxy
     typed_config: *dfp_config
-  - name: envoy.filters.http.decompressor
-    typed_config: *compressor_config
   - name: envoy.router
     typed_config: *router_config
 

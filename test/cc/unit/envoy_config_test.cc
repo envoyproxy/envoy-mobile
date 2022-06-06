@@ -68,14 +68,14 @@ TEST(TestConfig, SetDecompressor) {
 
   engine_builder.setDecompressor(false);
   auto config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, Not(HasSubstr("envoy.filters.http.decompressor")));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.filters.http.decompressor")));
 
   engine_builder.setDecompressor(true);
   config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, HasSubstr("envoy.filters.http.decompressor"));
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("envoy.filters.http.decompressor"));
 }
 
 TEST(TestConfig, SetAltSvcCache) {

@@ -65,6 +65,8 @@ extern const char* fake_remote_route_insert;
  */
 extern const char* alternate_protocols_cache_filter_insert;
 
+extern const char* compressor_config_insert;
+
 /**
  * Insert that enables the route cache reset filter in the filter chain.
  * Should only be added when the route cache should be cleared on every request

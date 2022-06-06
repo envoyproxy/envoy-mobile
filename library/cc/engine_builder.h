@@ -47,7 +47,6 @@ public:
   // EnvoyStringAccessor): EngineBuilder {
 
 private:
-  std::string generateFiltersStr();
   LogLevel log_level_ = LogLevel::info;
   EngineCallbacksSharedPtr callbacks_;
 

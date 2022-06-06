@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include "absl/strings/str_replace.h"
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
 
@@ -97,30 +98,6 @@ EngineBuilder& EngineBuilder::setDecompressor(bool decompressor_on) {
   return *this;
 }
 
-std::string EngineBuilder::generateFiltersStr() {
-  return absl::StrCat(
-      R"(
-#{custom_filters}
-  - name: envoy.filters.http.network_configuration
-    typed_config: *network_configuration_config
-  - name: envoy.filters.http.local_error
-    typed_config: *local_error_config
-  - name: envoy.filters.http.dynamic_forward_proxy
-    typed_config: *dfp_config
-)",
-      decompressor_filter_ ?
-                           R"(
-  - name: envoy.filters.http.decompressor
-    typed_config: *compressor_config
-)"
-                           : "",
-
-      R"(
-  - name: envoy.router
-    typed_config: *router_config
-)");
-}
-
 std::string EngineBuilder::generateConfigStr() {
   std::vector<std::pair<std::string, std::string>> replacements{
       {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
@@ -147,7 +124,6 @@ std::string EngineBuilder::generateConfigStr() {
       {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},
       {"per_try_idle_timeout", fmt::format("{}s", this->per_try_idle_timeout_seconds_)},
       {"virtual_clusters", this->virtual_clusters_},
-      {"http_filters", this->generateFiltersStr()},
   };
 
   // NOTE: this does not include support for custom filters
@@ -157,6 +133,12 @@ std::string EngineBuilder::generateConfigStr() {
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
+  if (this->decompressor_filter_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", compressor_config_insert)}},
+        &config_template_);
+  }
+
   config_builder << config_template_;
 
   auto config_str = config_builder.str();
