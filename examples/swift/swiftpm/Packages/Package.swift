@@ -32,8 +32,8 @@ let package = Package(
         // official release
         // .binaryTarget(
         //     name: "Envoy",
-        //     url: "https://github.com/envoyproxy/envoy-mobile/releases/download/v0.4.6.20220530/Envoy.xcframework.zip",
-        //     checksum: "b73ce19128f314a43bce735f057d7ae57eef92e646d1df93723e8c71a86e5479"
+        //     url: "https://github.com/envoyproxy/envoy-mobile/releases/download/v0.4.6.20220606/Envoy.xcframework.zip",
+        //     checksum: "275a5ba8cbac5b206d3f2b9d9555403c74f80e9bba0f0f027c84536ac952c2bf"
         // ),
     ]
 )
