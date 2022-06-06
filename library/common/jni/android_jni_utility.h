@@ -2,8 +2,6 @@
 
 #include "library/common/types/c_types.h"
 
-class JNIEnv;
-
 // NOLINT(namespace-envoy)
 
 /* For android, calls up through JNI to see if cleartext is permitted for this
