@@ -17,7 +17,7 @@
 
 bool is_cleartext_permitted(absl::string_view hostname) {
 #if defined(__ANDROID_API__)
-  envoy_data host = Data::Utility::copyToBridgeData(hostname);
+  envoy_data host = Envoy::Data::Utility::copyToBridgeData(hostname);
   JNIEnv* env = get_env();
   jstring java_host = native_data_to_string(env, host);
   jclass jcls_Boolean = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
