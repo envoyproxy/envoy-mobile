@@ -215,6 +215,7 @@ cc_library(
         "@envoy//bazel:android": [
             ":ndk_jni_support",
             ":jni_utility_lib",
+            "//library/common/data:utility_lib",
             "//library/common/jni/import:jni_import_lib",
         ],
         "//conditions:default": [],

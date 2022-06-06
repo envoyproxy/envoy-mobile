@@ -1,6 +1,6 @@
 #pragma once
 
-#include "library/common/types/c_types.h"
+#include "absl/strings/string_view.h"
 
 // NOLINT(namespace-envoy)
 
@@ -8,4 +8,4 @@
  * host.
  * For other platforms simply returns true.
  */
-bool is_cleartext_permitted(envoy_data host);
+bool is_cleartext_permitted(absl::string_view hostname);
