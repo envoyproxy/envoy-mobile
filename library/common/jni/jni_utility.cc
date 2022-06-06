@@ -22,13 +22,10 @@ JNIEnv* get_env() {
     return local_env;
   }
 
-  if (!static_jvm) {
-    return nullptr;
-  }
   jint result = static_jvm->GetEnv(reinterpret_cast<void**>(&local_env), JNI_VERSION);
   if (result == JNI_EDETACHED) {
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
-    JavaVMAttachArgs args = {JNI_VERSION, const_cast<char*>("EnvoyMain"), NULL};
+    JavaVMAttachArgs args = {JNI_VERSION, "EnvoyMain", NULL};
     result = attach_jvm(static_jvm, &local_env, &args);
   }
   RELEASE_ASSERT(result == JNI_OK, "Unable to get a JVM env for the current thread");
@@ -318,20 +315,4 @@ void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uin
   std::copy(bytes, bytes + len, out->begin());
   // There is nothing to write back, it is always safe to JNI_ABORT.
   env->ReleaseByteArrayElements(array, jbytes, JNI_ABORT);
-}
-
-bool is_cleartext_permitted(JNIEnv* env, envoy_data host) {
-#if defined(__ANDROID_API__)
-  jstring java_host = native_data_to_string(env, host);
-  jclass jcls_Boolean = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
-  jmethodID jmid_isCleartextTrafficPermitted =
-      env->GetMethodID(jcls_Boolean, "isCleartextTrafficPermitted", "(Ljava/lang/String;)Z");
-  jboolean result = env->CallBooleanMethod(java_host, jmid_isCleartextTrafficPermitted);
-  env->DeleteLocalRef(java_host);
-  return result == JNI_TRUE;
-#else
-  UNREFERENCED_PARAMETER(env);
-  UNREFERENCED_PARAMETER(host);
-  return true;
-#endif
 }
