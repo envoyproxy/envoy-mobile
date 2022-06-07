@@ -4,7 +4,7 @@ import Foundation
 /// `KeyValueStore` is an interface that may be implemented to provide access to an arbitrary
 /// key-value store implementation that may be made accessible to native Envoy Mobile code.
 public protocol KeyValueStore {
-  /// Read a value from the key value store iplementation.
+  /// Read a value from the key value store implementation.
   func readValue(forKey key: String) -> String?
 
   /// Save a value to the key value store implementation.
