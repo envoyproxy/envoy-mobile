@@ -93,7 +93,7 @@ EngineBuilder& EngineBuilder::setDeviceOs(const std::string& device_os) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setDecompressor(bool decompressor_on) {
+EngineBuilder& EngineBuilder::enableDecompressor(bool decompressor_on) {
   this->decompressor_filter_ = decompressor_on;
   return *this;
 }

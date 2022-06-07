@@ -33,7 +33,7 @@ public:
   EngineBuilder& setAppVersion(const std::string& app_version);
   EngineBuilder& setAppId(const std::string& app_id);
   EngineBuilder& setDeviceOs(const std::string& app_id);
-  EngineBuilder& setDecompressor(bool decompressor_on);
+  EngineBuilder& enableDecompressor(bool decompressor_on);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
