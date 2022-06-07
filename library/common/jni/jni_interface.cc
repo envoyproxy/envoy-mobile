@@ -153,8 +153,8 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_altProtocolCacheFilterInsert(JN
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_decompressorConfigInsert(JNIEnv* env, jclass) {
-  jstring result = env->NewStringUTF(decompressor_config_insert);
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_gzipConfigInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(gzip_config_insert);
   return result;
 }
 

@@ -93,8 +93,8 @@ EngineBuilder& EngineBuilder::setDeviceOs(const std::string& device_os) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::enableDecompressor(bool decompressor_on) {
-  this->decompressor_filter_ = decompressor_on;
+EngineBuilder& EngineBuilder::enableGzip(bool gzip_on) {
+  this->gzip_filter_ = gzip_on;
   return *this;
 }
 
@@ -133,9 +133,9 @@ std::string EngineBuilder::generateConfigStr() {
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
-  if (this->decompressor_filter_) {
+  if (this->gzip_filter_) {
     absl::StrReplaceAll(
-        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", decompressor_config_insert)}},
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
         &config_template_);
   }
 

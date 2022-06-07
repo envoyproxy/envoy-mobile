@@ -33,7 +33,7 @@ public:
   EngineBuilder& setAppVersion(const std::string& app_version);
   EngineBuilder& setAppId(const std::string& app_id);
   EngineBuilder& setDeviceOs(const std::string& app_id);
-  EngineBuilder& enableDecompressor(bool decompressor_on);
+  EngineBuilder& enableGzip(bool gzip_on);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
@@ -52,7 +52,7 @@ private:
 
   std::string config_template_;
   std::string stats_domain_ = "0.0.0.0";
-  std::string decompressor_config_ = "";
+  std::string gzip_config_ = "";
   int connect_timeout_seconds_ = 30;
   int dns_refresh_seconds_ = 60;
   int dns_failure_refresh_seconds_base_ = 2;
@@ -68,7 +68,7 @@ private:
   std::string virtual_clusters_ = "[]";
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;
-  bool decompressor_filter_ = true;
+  bool gzip_filter_ = true;
 
   // TODO(crockeo): add after filter integration
   // private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()

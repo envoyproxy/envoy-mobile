@@ -43,7 +43,7 @@ open class EngineBuilder(
   private var enableDrainPostDnsRefresh = false
   private var enableHttp3 = false
   private var enableHappyEyeballs = true
-  private var enableDecompressor = true
+  private var enableGzip = true
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
@@ -247,15 +247,14 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to do response decompression or not.  Defaults to true.
-   * true.
+   * Specify whether to do gzip response decompression or not.  Defaults to true.
    *
-   * @param enableDecompression whether or not to decompress responses.
+   * @param enableGzip whether or not to gunzip responses.
    *
    * @return This builder.
    */
-  fun enableDecompressor(enableDecompressor: Boolean): EngineBuilder {
-    this.enableDecompressor = enableDecompressor
+  fun enableGzip(enableGzip: Boolean): EngineBuilder {
+    this.enableGzip = enableGzip
     return this
   }
 
@@ -556,7 +555,7 @@ open class EngineBuilder(
       dnsFilterUnroutableFamilies,
       enableDrainPostDnsRefresh,
       enableHttp3,
-      enableDecompressor,
+      enableGzip,
       enableHappyEyeballs,
       enableInterfaceBinding,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,

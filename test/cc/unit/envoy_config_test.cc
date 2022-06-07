@@ -63,16 +63,16 @@ TEST(TestConfig, ConfigIsValid) {
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
-TEST(TestConfig, SetDecompressor) {
+TEST(TestConfig, SetGzip) {
   auto engine_builder = EngineBuilder();
 
-  engine_builder.enableDecompressor(false);
+  engine_builder.enableGzip(false);
   auto config_str = engine_builder.generateConfigStr();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.filters.http.decompressor")));
 
-  engine_builder.enableDecompressor(true);
+  engine_builder.enableGzip(true);
   config_str = engine_builder.generateConfigStr();
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(), HasSubstr("envoy.filters.http.decompressor"));

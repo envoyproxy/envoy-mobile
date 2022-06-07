@@ -308,7 +308,7 @@ public class JniLibrary {
   /**
    * Provides a configuration insert that may be used to enable decompression.
    */
-  public static native String decompressorConfigInsert();
+  public static native String gzipConfigInsert();
 
   /**
    * Register a platform-provided key-value store implementation.
