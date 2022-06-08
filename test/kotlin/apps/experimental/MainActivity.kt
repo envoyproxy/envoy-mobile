@@ -1,7 +1,7 @@
 package io.envoyproxy.envoymobile.helloenvoykotlin
 
 import android.app.Activity
-import android.app.Context
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
