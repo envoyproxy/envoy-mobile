@@ -92,6 +92,11 @@ EngineBuilder& EngineBuilder::setDeviceOs(const std::string& device_os) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::setStreamIdleTimeoutSeconds(int stream_idle_timeout_seconds) {
+  this->stream_idle_timeout_seconds_ = stream_idle_timeout_seconds;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
   std::vector<std::pair<std::string, std::string>> replacements{
       {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
@@ -144,7 +149,12 @@ EngineSharedPtr EngineBuilder::build() {
 
   envoy_event_tracker null_tracker{};
 
-  auto config_str = this->generateConfigStr();
+  std::string config_str;
+  if (config_override_for_tests_.empty()) {
+    config_str = this->generateConfigStr();
+  } else {
+    config_str = config_override_for_tests_;
+  }
   auto envoy_engine =
       init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
   run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());

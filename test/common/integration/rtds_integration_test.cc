@@ -23,29 +23,6 @@
 namespace Envoy {
 namespace {
 
-void validateStreamIntel(const envoy_final_stream_intel& final_intel) {
-  EXPECT_EQ(-1, final_intel.dns_start_ms);
-  EXPECT_EQ(-1, final_intel.dns_end_ms);
-
-  // This test doesn't do TLS.
-  EXPECT_EQ(-1, final_intel.ssl_start_ms);
-  EXPECT_EQ(-1, final_intel.ssl_end_ms);
-
-  ASSERT_NE(-1, final_intel.stream_start_ms);
-  ASSERT_NE(-1, final_intel.connect_start_ms);
-  ASSERT_NE(-1, final_intel.connect_end_ms);
-  ASSERT_NE(-1, final_intel.sending_start_ms);
-  ASSERT_NE(-1, final_intel.sending_end_ms);
-  ASSERT_NE(-1, final_intel.response_start_ms);
-  ASSERT_NE(-1, final_intel.stream_end_ms);
-
-  ASSERT_LE(final_intel.stream_start_ms, final_intel.connect_start_ms);
-  ASSERT_LE(final_intel.connect_start_ms, final_intel.connect_end_ms);
-  ASSERT_LE(final_intel.connect_end_ms, final_intel.sending_start_ms);
-  ASSERT_LE(final_intel.sending_start_ms, final_intel.sending_end_ms);
-  ASSERT_LE(final_intel.response_start_ms, final_intel.stream_end_ms);
-}
-
 envoy::config::cluster::v3::Cluster
 createSingleEndpointClusterConfig(const std::string& cluster_name,
                                   const std::string& loopbackAddr) {
@@ -109,7 +86,7 @@ envoy::config::bootstrap::v3::Admin adminConfig(const std::string& loopbackAddr)
         address: {}
         port_value: 0
   )EOF",
-                                       Platform::null_device_path, loopbackAddr);
+                                       ::Platform::null_device_path, loopbackAddr);
 
   envoy::config::bootstrap::v3::Admin config;
   TestUtility::loadFromYaml(yaml, config);
@@ -122,9 +99,9 @@ public:
   RtdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
     create_xds_upstream_ = true;
     sotw_or_delta_ = sotwOrDelta();
-    default_request_headers_.setScheme("https");
-    default_request_headers_.addCopy("x-envoy-mobile-upstream-protocol", "http2");
+    // FIXME    default_request_headers_.setScheme("https");
 
+    custom_headers_.emplace("x-envoy-mobile-upstream-protocol", "http2");
     if (sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw ||
         sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedDelta) {
       config_helper_.addRuntimeOverride("envoy.reloadable_features.unified_mux", "true");
@@ -167,7 +144,10 @@ public:
     setUpstreamProtocol(Http::CodecType::HTTP2);
   }
 
-  void TearDown() override { cleanup(); }
+  void TearDown() override {
+    cleanup();
+    BaseClientIntegrationTest::TearDown();
+  }
 
   void initialize() override {
     BaseClientIntegrationTest::initialize();
@@ -249,31 +229,10 @@ TEST_P(RtdsIntegrationTest, RtdsReload) {
     return nullptr;
   };
 
-  // Build a set of request headers.
-  Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  default_request_headers_.addCopy(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
-                                   std::to_string(request_data.length()));
-
-  envoy_headers c_headers = Http::Utility::toBridgeHeaders(default_request_headers_);
-
-  // Build body data
-  envoy_data c_data = Data::Utility::toBridgeData(request_data);
-
-  // Build a set of request trailers.
-  // TODO: update the autonomous upstream to assert on trailers, or to send trailers back.
-  Http::TestRequestTrailerMapImpl trailers;
-  envoy_headers c_trailers = Http::Utility::toBridgeHeaders(trailers);
-
-  // Create a stream.
-  dispatcher_->post([&]() -> void {
-    http_client_->startStream(stream_, bridge_callbacks_, false);
-    http_client_->sendHeaders(stream_, c_headers, false);
-    http_client_->sendData(stream_, c_data, false);
-    http_client_->sendTrailers(stream_, c_trailers);
-  });
+  // Send a request on the data plane.
+  stream_->sendHeaders(default_request_headers_, true);
   terminal_callback_.waitReady();
 
-  validateStreamIntel(cc_.final_intel);
   EXPECT_EQ(cc_.on_headers_calls, 1);
   EXPECT_EQ(cc_.status, "200");
   EXPECT_EQ(cc_.on_data_calls, 2);

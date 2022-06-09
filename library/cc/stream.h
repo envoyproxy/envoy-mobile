@@ -18,7 +18,7 @@ public:
   Stream(envoy_engine_t engine_handle, envoy_stream_t handle);
 
   Stream& sendHeaders(RequestHeadersSharedPtr headers, bool end_stream);
-  Stream& sendData(envoy_data data);
+  Stream& sendData(envoy_data data, bool end_stream);
   void close(RequestTrailersSharedPtr trailers);
   void close(envoy_data data);
   void cancel();

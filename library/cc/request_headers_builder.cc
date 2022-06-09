@@ -28,6 +28,11 @@ RequestHeadersBuilder::addUpstreamHttpProtocol(UpstreamHttpProtocol upstream_htt
   return *this;
 }
 
+RequestHeadersBuilder& RequestHeadersBuilder::addKeyValue(std::string key, std::string value) {
+  this->internalSet(key, std::vector<std::string>{value});
+  return *this;
+}
+
 RequestHeaders RequestHeadersBuilder::build() const { return RequestHeaders(this->allHeaders()); }
 
 } // namespace Platform

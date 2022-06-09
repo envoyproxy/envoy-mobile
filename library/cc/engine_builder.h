@@ -33,6 +33,7 @@ public:
   EngineBuilder& setAppVersion(const std::string& app_version);
   EngineBuilder& setAppId(const std::string& app_id);
   EngineBuilder& setDeviceOs(const std::string& app_id);
+  EngineBuilder& setStreamIdleTimeoutSeconds(int stream_idle_timeout_seconds);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
@@ -44,6 +45,8 @@ public:
   // Filter): EngineBuilder& addNativeFilter(name: String = UUID.randomUUID().toString(),
   // typedConfig: String): EngineBuilder& addStringAccessor(name: String, accessor:
   // EnvoyStringAccessor): EngineBuilder {
+protected:
+  void setOverrideConfigForTests(std::string config) { config_override_for_tests_ = config; }
 
 private:
   LogLevel log_level_ = LogLevel::info;
@@ -64,6 +67,7 @@ private:
   std::string app_id_ = "unspecified";
   std::string device_os_ = "unspecified";
   std::string virtual_clusters_ = "[]";
+  std::string config_override_for_tests_ = "";
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;
 
