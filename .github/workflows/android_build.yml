@@ -25,10 +25,10 @@ jobs:
       - name: 'Build envoy.aar distributable'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # TODO(jpsim): Re-enable remote exec - https://github.com/envoyproxy/envoy-mobile/issues/2343
         run: |
           ./bazelw build \
-            --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=android \
             --fat_apk_cpu=x86_64 \
             //:android_dist
   javahelloworld:
@@ -54,10 +54,10 @@ jobs:
       - name: 'Start java app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # TODO(jpsim): Re-enable remote exec - https://github.com/envoyproxy/envoy-mobile/issues/2343
         run: |
           ./bazelw build \
-            --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=android \
             --fat_apk_cpu=x86_64 \
             //examples/java/hello_world:hello_envoy
           adb install -r --no-incremental bazel-bin/examples/java/hello_world/hello_envoy.apk
@@ -87,10 +87,10 @@ jobs:
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # TODO(jpsim): Re-enable remote exec - https://github.com/envoyproxy/envoy-mobile/issues/2343
         run: |
           ./bazelw build \
-            --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=android \
             --fat_apk_cpu=x86_64 \
             //examples/kotlin/hello_world:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/examples/kotlin/hello_world/hello_envoy_kt.apk
@@ -120,10 +120,10 @@ jobs:
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # TODO(jpsim): Re-enable remote exec - https://github.com/envoyproxy/envoy-mobile/issues/2343
         run: |
           ./bazelw build \
-            --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=android \
             --fat_apk_cpu=x86_64 \
             //test/kotlin/apps/baseline:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/test/kotlin/apps/baseline/hello_envoy_kt.apk
@@ -153,10 +153,10 @@ jobs:
       - name: 'Start kotlin app'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # TODO(jpsim): Re-enable remote exec - https://github.com/envoyproxy/envoy-mobile/issues/2343
         run: |
           ./bazelw build \
-            --config=remote-ci-macos \
-            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=android \
             --fat_apk_cpu=x86_64 \
             //test/kotlin/apps/experimental:hello_envoy_kt
           adb install -r --no-incremental bazel-bin/test/kotlin/apps/experimental/hello_envoy_kt.apk
