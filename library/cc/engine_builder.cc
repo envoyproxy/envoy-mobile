@@ -179,7 +179,8 @@ EngineSharedPtr EngineBuilder::build() {
   }
   auto envoy_engine =
       init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
-  run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
+  run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str(),
+             this->admin_address_path_for_tests_.c_str());
 
   // we can't construct via std::make_shared
   // because Engine is only constructible as a friend

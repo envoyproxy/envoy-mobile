@@ -13,10 +13,11 @@
 namespace Envoy {
 namespace {
 
-void validateStreamIntel(const envoy_final_stream_intel& final_intel) {
-  EXPECT_NE(-1, final_intel.dns_start_ms);
-  EXPECT_NE(-1, final_intel.dns_end_ms);
-
+void validateStreamIntel(const envoy_final_stream_intel& final_intel, bool expect_dns) {
+  if (expect_dns) {
+    EXPECT_NE(-1, final_intel.dns_start_ms);
+    EXPECT_NE(-1, final_intel.dns_end_ms);
+  }
   // This test doesn't do TLS.
   EXPECT_EQ(-1, final_intel.ssl_start_ms);
   EXPECT_EQ(-1, final_intel.ssl_end_ms);
@@ -64,11 +65,6 @@ BaseClientIntegrationTest::BaseClientIntegrationTest(Network::Address::IpVersion
   use_lds_ = false;
   autonomous_upstream_ = true;
   defer_listener_finalization_ = true;
-
-  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-    // The default stats config has overenthusiastic filters.
-    bootstrap.clear_stats_config();
-  });
 }
 
 void BaseClientIntegrationTest::initialize() {
@@ -87,7 +83,7 @@ void BaseClientIntegrationTest::initialize() {
   });
   stream_prototype_->setOnComplete(
       [this](envoy_stream_intel, envoy_final_stream_intel final_intel) {
-        validateStreamIntel(final_intel);
+        validateStreamIntel(final_intel, expect_dns_);
         cc_.on_complete_received_byte_count = final_intel.received_byte_count;
         cc_.on_complete_calls++;
         cc_.terminal_callback->setReady();
@@ -105,7 +101,7 @@ void BaseClientIntegrationTest::initialize() {
 
   stream_ = (*stream_prototype_).start(explicit_flow_control_);
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
-  Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, "http", host, "/");
+  Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
   for (auto& entry : custom_headers_) {
     builder.addKeyValue(entry.first, entry.second);
   }

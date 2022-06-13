@@ -193,7 +193,8 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
  * @param log_level, the logging level to run envoy with.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level);
+envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level,
+                          const char* admin_path);
 
 /**
  * Terminate an engine. Further interactions with a terminated engine, or streams created by a

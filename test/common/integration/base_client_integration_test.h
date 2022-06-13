@@ -57,7 +57,9 @@ protected:
   Platform::StreamSharedPtr stream_;
   Platform::EngineSharedPtr engine_;
   Thread::ThreadPtr envoy_thread_;
+  std::string scheme_ = "http";
   bool explicit_flow_control_ = false;
+  bool expect_dns_ = true;
 };
 
 } // namespace Envoy
