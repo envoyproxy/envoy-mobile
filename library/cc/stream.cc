@@ -16,8 +16,8 @@ Stream& Stream::sendHeaders(RequestHeadersSharedPtr headers, bool end_stream) {
   return *this;
 }
 
-Stream& Stream::sendData(envoy_data data, bool end_stream) {
-  ::send_data(this->engine_handle_, this->handle_, data, end_stream);
+Stream& Stream::sendData(envoy_data data) {
+  ::send_data(this->engine_handle_, this->handle_, data, false);
   return *this;
 }
 

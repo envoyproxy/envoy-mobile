@@ -57,7 +57,7 @@ TEST_P(ClientIntegrationTest, Basic) {
   stream_->sendHeaders(default_request_headers_, false);
 
   envoy_data c_data = Data::Utility::toBridgeData(request_data);
-  stream_->sendData(c_data, false);
+  stream_->sendData(c_data);
 
   Platform::RequestTrailersBuilder builder;
   std::shared_ptr<Platform::RequestTrailers> trailers =
@@ -235,15 +235,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
 }
 
 TEST_P(ClientIntegrationTest, TimeoutOnRequestPath) {
-  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-    auto* listener = bootstrap.mutable_static_resources()->mutable_listeners(0);
-    auto* em_hcm = listener->mutable_api_listener()->mutable_api_listener();
-    auto hcm =
-        MessageUtil::anyConvert<envoy::extensions::filters::network::http_connection_manager::v3::
-                                    EnvoyMobileHttpConnectionManager>(*em_hcm);
-    hcm.mutable_config()->mutable_stream_idle_timeout()->set_seconds(1);
-    em_hcm->PackFrom(hcm);
-  });
+  setStreamIdleTimeoutSeconds(1);
 
   autonomous_upstream_ = false;
   initialize();
@@ -265,16 +257,7 @@ TEST_P(ClientIntegrationTest, TimeoutOnRequestPath) {
 }
 
 TEST_P(ClientIntegrationTest, TimeoutOnResponsePath) {
-  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-    auto* listener = bootstrap.mutable_static_resources()->mutable_listeners(0);
-    auto* em_hcm = listener->mutable_api_listener()->mutable_api_listener();
-    auto hcm =
-        MessageUtil::anyConvert<envoy::extensions::filters::network::http_connection_manager::v3::
-                                    EnvoyMobileHttpConnectionManager>(*em_hcm);
-    hcm.mutable_config()->mutable_stream_idle_timeout()->set_seconds(1);
-    em_hcm->PackFrom(hcm);
-  });
-
+  setStreamIdleTimeoutSeconds(1);
   autonomous_upstream_ = false;
   initialize();
 

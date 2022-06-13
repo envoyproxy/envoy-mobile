@@ -60,6 +60,7 @@ protected:
   std::string scheme_ = "http";
   bool explicit_flow_control_ = false;
   bool expect_dns_ = true;
+  bool override_builder_config_ = false;
 };
 
 } // namespace Envoy

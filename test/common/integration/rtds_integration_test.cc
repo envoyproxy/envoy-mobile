@@ -97,7 +97,8 @@ class RtdsIntegrationTest : public BaseClientIntegrationTest,
                             public Grpc::DeltaSotwIntegrationParamTest {
 public:
   RtdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
-    expect_dns_ = false; // TODO(alyssawilk) debug.
+    override_builder_config_ = true; // The builder does not yet have RTDS support.
+    expect_dns_ = false;             // TODO(alyssawilk) debug.
     create_xds_upstream_ = true;
     sotw_or_delta_ = sotwOrDelta();
     scheme_ = "https";

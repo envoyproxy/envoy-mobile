@@ -133,7 +133,11 @@ void BaseClientIntegrationTest::createEnvoy() {
 
   finalizeConfigWithPorts(config_helper_, ports, use_lds_);
 
-  setOverrideConfigForTests(MessageUtil::getYamlStringFromMessage(config_helper_.bootstrap()));
+  if (override_builder_config_) {
+    setOverrideConfigForTests(MessageUtil::getYamlStringFromMessage(config_helper_.bootstrap()));
+  } else {
+    ENVOY_LOG_MISC(warn, "Using builder config and ignoring config modifiers");
+  }
 
   absl::Notification engine_running;
   envoy_thread_ = api_->threadFactory().createThread(
