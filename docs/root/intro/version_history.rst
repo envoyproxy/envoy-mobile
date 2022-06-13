@@ -8,9 +8,12 @@ Breaking changes:
 
 - api: replace the ``drainConnections()`` method with a broader ``resetConnectivityState()``. (:issue:`#2225 <2225>`).
 - api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
+- android: respect Android's NetworkSecurityPolicy isCleartextTrafficPermitted APIs.
 - net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
 - iOS: remove support for installing via CocoaPods, which had not worked since 2020 (:issue:`#2215 <2215>`)
 - iOS: enable usage of ``NWPathMonitor`` by default (:issue:`#2329 <2329>`)
+- iOS: replace ``enableNetworkPathMonitor`` with a new ``setNetworkMonitoringMode`` API to allow disabling monitoring (:issue:`#2345 <2345>`)
+- iOS: release artifacts no longer embed bitcode
 
 Bugfixes:
 
@@ -23,13 +26,16 @@ Bugfixes:
 
 Features:
 
-- android: add support for registering a platform KV store (:issue: `#2134 <2134>`)
+- Android & iOS: add support for registering a platform KV store (:issue: `#2134 <2134>`) (:issue: `#2335 <2335>`)
 - api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
+- api: add option to disable the gzip decompressor. (:issue: `#2321 <2321>`) (:issue: `#2349 <2349>`)
+- api: add option to enable the brotli decompressor. (:issue `#2342 <2342>`) (:issue: `#2349 <2349>`)
 - configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
 - android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
 - instrumentation: add timers and warnings to platform-provided callbacks (:issue: `#2300 <2300>`)
 - iOS: add support for integrating Envoy Mobile via the Swift Package Manager
+- android: create simple persistent SharedPreferencesStore (:issue: `#2319 <2319>`)
 - iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 
 0.4.6 (April 26, 2022)

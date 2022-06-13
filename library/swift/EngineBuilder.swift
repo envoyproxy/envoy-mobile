@@ -23,6 +23,8 @@ open class EngineBuilder: NSObject {
   private var dnsPreresolveHostnames: String = "[]"
   private var dnsRefreshSeconds: UInt32 = 60
   private var enableHappyEyeballs: Bool = true
+  private var enableGzip: Bool = true
+  private var enableBrotli: Bool = false
   private var enableInterfaceBinding: Bool = false
   private var enforceTrustChainVerification: Bool = true
   private var enableDrainPostDnsRefresh: Bool = false
@@ -40,10 +42,11 @@ open class EngineBuilder: NSObject {
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
-  private(set) var enableNetworkPathMonitor = true
+  private(set) var monitoringMode: NetworkMonitoringMode = .pathMonitor
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
+  private var keyValueStores: [String: EnvoyKeyValueStore] = [:]
   private var directResponses: [DirectResponse] = []
 
   // MARK: - Public
@@ -163,6 +166,28 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func enableHappyEyeballs(_ enableHappyEyeballs: Bool) -> Self {
     self.enableHappyEyeballs = enableHappyEyeballs
+    return self
+  }
+
+  /// Specify whether to do gzip response decompression or not.  Defaults to true.
+  ///
+  /// - parameter enableGzip: whether or not to gunzip responses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableGzip(_ enableGzip: Bool) -> Self {
+    self.enableGzip = enableGzip
+    return self
+  }
+
+  /// Specify whether to do brotli response decompression or not.  Defaults to false.
+  ///
+  /// - parameter enableBrotli: whether or not to brotli decompress responses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableBrotli(_ enableBrotli: Bool) -> Self {
+    self.enableBrotli = enableBrotli
     return self
   }
 
@@ -348,10 +373,22 @@ open class EngineBuilder: NSObject {
   /// - parameter name: the name of the accessor.
   /// - parameter accessor: lambda to access a string from the platform layer.
   ///
-  /// - returns this builder.
+  /// - returns: This builder.
   @discardableResult
   public func addStringAccessor(name: String, accessor: @escaping () -> String) -> Self {
     self.stringAccessors[name] = EnvoyStringAccessor(block: accessor)
+    return self
+  }
+
+  /// Register a key-value store implementation for internal use.
+  ///
+  /// - parameter name: the name of the KV store.
+  /// - parameter keyValueStore: the KV store implementation.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addKeyValueStore(name: String, keyValueStore: KeyValueStore) -> Self {
+    self.keyValueStores[name] = KeyValueStoreImpl(implementation: keyValueStore)
     return self
   }
 
@@ -388,13 +425,13 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Configure the engine to use `NWPathMonitor` to observe network reachability.
-  /// Defaults to `true`. Set to `false` to use `SCNetworkReachability`.
+  /// Configure how the engine observes network reachability state changes.
+  /// Defaults to `.pathMonitor`.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
-    self.enableNetworkPathMonitor = enableNetworkPathMonitor
+  public func setNetworkMonitoringMode(_ mode: NetworkMonitoringMode) -> Self {
+    self.monitoringMode = mode
     return self
   }
 
@@ -447,7 +484,7 @@ open class EngineBuilder: NSObject {
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
                                       eventTracker: self.eventTracker,
-                                      enableNetworkPathMonitor: self.enableNetworkPathMonitor)
+                                      networkMonitoringMode: Int32(self.monitoringMode.rawValue))
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
@@ -459,6 +496,8 @@ open class EngineBuilder: NSObject {
       dnsMinRefreshSeconds: self.dnsMinRefreshSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
       enableHappyEyeballs: self.enableHappyEyeballs,
+      enableGzip: self.enableGzip,
+      enableBrotli: self.enableBrotli,
       enableInterfaceBinding: self.enableInterfaceBinding,
       enableDrainPostDnsRefresh: self.enableDrainPostDnsRefresh,
       enforceTrustChainVerification: self.enforceTrustChainVerification,
@@ -482,7 +521,8 @@ open class EngineBuilder: NSObject {
         .joined(separator: "\n"),
       nativeFilterChain: self.nativeFilterChain,
       platformFilterChain: self.platformFilterChain,
-      stringAccessors: self.stringAccessors
+      stringAccessors: self.stringAccessors,
+      keyValueStores: self.keyValueStores
     )
 
     switch self.base {
