@@ -21,7 +21,6 @@ public:
 
   RequestHeadersBuilder& addRetryPolicy(const RetryPolicy& retry_policy);
   RequestHeadersBuilder& addUpstreamHttpProtocol(UpstreamHttpProtocol upstream_http_protocol);
-  RequestHeadersBuilder& addKeyValue(std::string key, std::string value);
 
   RequestHeaders build() const;
 };

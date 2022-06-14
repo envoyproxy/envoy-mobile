@@ -103,7 +103,6 @@ public:
     sotw_or_delta_ = sotwOrDelta();
     scheme_ = "https";
 
-    custom_headers_.emplace("x-envoy-mobile-upstream-protocol", "http2");
     if (sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw ||
         sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedDelta) {
       config_helper_.addRuntimeOverride("envoy.reloadable_features.unified_mux", "true");

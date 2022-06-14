@@ -92,7 +92,11 @@ void BaseClientIntegrationTest::initialize() {
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
   Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
   for (auto& entry : custom_headers_) {
-    builder.addKeyValue(entry.first, entry.second);
+    auto values = {entry.second};
+    builder.set(entry.first, values);
+  }
+  if (upstreamProtocol() == Http::CodecType::HTTP2) {
+    builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
   }
   default_request_headers_ = std::make_shared<Platform::RequestHeaders>(builder.build());
 }
