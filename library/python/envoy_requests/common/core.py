@@ -31,40 +31,39 @@ def make_stream(
     response: Response,
     set_stream_complete: Callable[[], None],
 ):
-    def _on_headers(headers: envoy_engine.ResponseHeaders, _: bool):
+    def _on_headers(headers: envoy_engine.ResponseHeaders, _: bool, intel: envoy_engine.StreamIntel):
         response.status_code = headers.http_status()
         for key in headers:
             value = headers[key]
             response.headers[key] = value[0] if len(value) == 1 else value
 
-    def _on_trailers(trailers: envoy_engine.ResponseTrailers):
+    def _on_trailers(trailers: envoy_engine.ResponseTrailers, intel: envoy_engine.StreamIntel):
         for key in trailers:
             value = trailers[key]
             response.trailers[key] = value[0] if len(value) == 1 else value
 
-    def _on_data(data: bytes, _: bool):
+    def _on_data(data: bytes, _: bool, intel: envoy_engine.StreamIntel):
         response.body_raw.extend(data)
 
-    def _on_complete():
+    def _on_complete(intel: envoy_engine.StreamIntel, _: envoy_engine.FinalStreamIntel):
         set_stream_complete()
 
-    def _on_error(error: envoy_engine.EnvoyError):
+    def _on_error(error: envoy_engine.EnvoyError, intel: envoy_engine.StreamIntel, _: envoy_engine.FinalStreamIntel):
         response.envoy_error = error
         set_stream_complete()
 
-    def _on_cancel():
+    def _on_cancel(intel: envoy_engine.StreamIntel, _: envoy_engine.FinalStreamIntel):
         set_stream_complete()
 
     return (
         engine.stream_client()
         .new_stream_prototype()
         .set_on_headers(executor.wrap(_on_headers))
-        .set_on_data(executor.wrap(_on_data))
         .set_on_trailers(executor.wrap(_on_trailers))
         .set_on_complete(executor.wrap(_on_complete))
         .set_on_error(executor.wrap(_on_error))
         .set_on_cancel(executor.wrap(_on_cancel))
-        .start()
+        .start(False)
     )
 
 
