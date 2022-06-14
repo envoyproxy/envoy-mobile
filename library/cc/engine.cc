@@ -16,13 +16,17 @@ StreamClientSharedPtr Engine::streamClient() {
   return std::make_shared<StreamClient>(shared_from_this());
 }
 
+envoy_engine_t Engine::handle() {
+  return engine_;
+}
+
 PulseClientSharedPtr Engine::pulseClient() { return std::make_shared<PulseClient>(); }
 
 void Engine::terminate() {
   if (terminated_) {
     throw std::runtime_error("attempting to double terminate Engine");
   }
-  terminate_engine(engine_);
+  terminate_engine(engine_, /* release */ false);
   terminated_ = true;
 }
 

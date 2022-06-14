@@ -186,7 +186,9 @@ envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char*
   return Envoy::EngineHandle::runEngine(engine, config, log_level);
 }
 
-void terminate_engine(envoy_engine_t engine) { Envoy::EngineHandle::terminateEngine(engine); }
+void terminate_engine(envoy_engine_t engine, bool release) {
+  Envoy::EngineHandle::terminateEngine(engine, release);
+}
 
 envoy_status_t reset_connectivity_state(envoy_engine_t e) {
   return Envoy::EngineHandle::runOnEngineDispatcher(
