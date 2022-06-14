@@ -19,8 +19,7 @@ using StreamSharedPtr = std::shared_ptr<Stream>;
 
 using OnHeadersCallback = std::function<void(ResponseHeadersSharedPtr headers, bool end_stream,
                                              envoy_stream_intel intel)>;
-using OnDataCallback =
-    std::function<void(envoy_data data, bool end_stream, envoy_stream_intel intel)>;
+using OnDataCallback = std::function<void(envoy_data data, bool end_stream)>;
 using OnTrailersCallback =
     std::function<void(ResponseTrailersSharedPtr trailers, envoy_stream_intel intel)>;
 using OnErrorCallback = std::function<void(EnvoyErrorSharedPtr error, envoy_stream_intel intel,

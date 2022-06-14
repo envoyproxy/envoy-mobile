@@ -42,7 +42,7 @@ def make_stream(
             value = trailers[key]
             response.trailers[key] = value[0] if len(value) == 1 else value
 
-    def _on_data(data: bytes, _: bool, intel: envoy_engine.StreamIntel):
+    def _on_data(data: bytes, _: bool):
         response.body_raw.extend(data)
 
     def _on_complete(intel: envoy_engine.StreamIntel, _: envoy_engine.FinalStreamIntel):
@@ -59,6 +59,7 @@ def make_stream(
         engine.stream_client()
         .new_stream_prototype()
         .set_on_headers(executor.wrap(_on_headers))
+        .set_on_data(executor.wrap(_on_data))
         .set_on_trailers(executor.wrap(_on_trailers))
         .set_on_complete(executor.wrap(_on_complete))
         .set_on_error(executor.wrap(_on_error))

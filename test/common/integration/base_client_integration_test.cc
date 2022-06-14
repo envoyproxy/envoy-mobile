@@ -66,7 +66,7 @@ void BaseClientIntegrationTest::initialize() {
         cc_.status = absl::StrCat(headers->httpStatus());
         cc_.on_header_consumed_bytes_from_response = intel.consumed_bytes_from_response;
       });
-  stream_prototype_->setOnData([this](envoy_data c_data, bool, envoy_stream_intel) {
+  stream_prototype_->setOnData([this](envoy_data c_data, bool) {
     cc_.on_data_calls++;
     release_envoy_data(c_data);
   });

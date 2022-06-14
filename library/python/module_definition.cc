@@ -149,19 +149,14 @@ PYBIND11_MODULE(envoy_engine, m) {
       .def("build", &RequestTrailersBuilder::build);
 
   py::class_<envoy_stream_intel>(m, "StreamIntel")
-      .def("stream_start_ms", [](envoy_stream_intel intel) {
-        return intel.stream_id;})
-      .def("connection_id", [](envoy_stream_intel intel) {
-                return intel.connection_id;})
-      .def("attempt_count", [](envoy_stream_intel intel) {
-                return intel.attempt_count;})
-      .def("consumed_bytes_from_response", [](envoy_stream_intel intel) {
-                return intel.consumed_bytes_from_response;});
+      .def("stream_start_ms", [](envoy_stream_intel intel) { return intel.stream_id; })
+      .def("connection_id", [](envoy_stream_intel intel) { return intel.connection_id; })
+      .def("attempt_count", [](envoy_stream_intel intel) { return intel.attempt_count; })
+      .def("consumed_bytes_from_response",
+           [](envoy_stream_intel intel) { return intel.consumed_bytes_from_response; });
 
   py::class_<envoy_final_stream_intel>(m, "FinalStreamIntel")
-      .def("response_flags", [](envoy_final_stream_intel intel) {
-                return intel.response_flags;});
-
+      .def("response_flags", [](envoy_final_stream_intel intel) { return intel.response_flags; });
 
   py::class_<ResponseHeaders, ResponseHeadersSharedPtr>(m, "ResponseHeaders")
       .def("__getitem__", &ResponseHeaders::operator[])

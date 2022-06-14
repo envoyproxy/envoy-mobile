@@ -44,7 +44,7 @@ TEST_P(ClientIntegrationTest, Basic) {
                           std::to_string(request_data.length()));
   initialize();
 
-  stream_prototype_->setOnData([this](envoy_data c_data, bool end_stream, envoy_stream_intel) {
+  stream_prototype_->setOnData([this](envoy_data c_data, bool end_stream) {
     if (end_stream) {
       EXPECT_EQ(Data::Utility::copyToString(c_data), "");
     } else {

@@ -30,11 +30,11 @@ void* c_on_headers(envoy_headers headers, bool end_stream, envoy_stream_intel in
   return context;
 }
 
-void* c_on_data(envoy_data data, bool end_stream, envoy_stream_intel intel, void* context) {
+void* c_on_data(envoy_data data, bool end_stream, envoy_stream_intel, void* context) {
   auto stream_callbacks = *static_cast<StreamCallbacksSharedPtr*>(context);
   if (stream_callbacks->on_data.has_value()) {
     auto on_data = stream_callbacks->on_data.value();
-    on_data(data, end_stream, intel);
+    on_data(data, end_stream);
   } else {
     release_envoy_data(data);
   }
