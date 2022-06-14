@@ -9,7 +9,7 @@ final class StatFlushIntegrationTest: XCTestCase {
     let engine = EngineBuilder()
       .addLogLevel(.debug)
       .addStatsFlushSeconds(1)
-      .setOnEngineRunning {
+      .setOnEngineRunning { _ in
         engineExpectation.fulfill()
       }
       .build()

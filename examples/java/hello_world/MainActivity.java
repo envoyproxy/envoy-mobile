@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
 
     engine = new AndroidEngineBuilder(getApplication())
                  .addLogLevel(LogLevel.DEBUG)
-                 .setOnEngineRunning(() -> {
+                 .setOnEngineRunning((ignored) -> {
                    Log.d("MainActivity", "Envoy async internal setup completed");
                    return null;
                  })

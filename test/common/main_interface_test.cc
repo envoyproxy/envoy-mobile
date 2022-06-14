@@ -126,7 +126,7 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
 TEST(MainInterfaceTest, BasicStream) {
   const std::string level = "debug";
   engine_test_context engine_cbs_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -189,7 +189,7 @@ TEST(MainInterfaceTest, BasicStream) {
 
 TEST(MainInterfaceTest, SendMetadata) {
   engine_test_context engine_cbs_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -229,7 +229,7 @@ TEST(MainInterfaceTest, SendMetadata) {
 
 TEST(MainInterfaceTest, ResetStream) {
   engine_test_context engine_cbs_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -301,7 +301,7 @@ TEST(MainInterfaceTest, UsingMainInterfaceWithoutARunningEngine) {
 
 TEST(MainInterfaceTest, RegisterPlatformApi) {
   engine_test_context engine_cbs_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -333,7 +333,7 @@ TEST(MainInterfaceTest, PreferredNetwork) {
 
 TEST(EngineTest, RecordCounter) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -355,7 +355,7 @@ TEST(EngineTest, RecordCounter) {
 
 TEST(EngineTest, SetGauge) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -379,7 +379,7 @@ TEST(EngineTest, SetGauge) {
 
 TEST(EngineTest, AddToGauge) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -403,7 +403,7 @@ TEST(EngineTest, AddToGauge) {
 
 TEST(EngineTest, SubFromGauge) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -429,7 +429,7 @@ TEST(EngineTest, SubFromGauge) {
 
 TEST(EngineTest, RecordHistogramValue) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();
@@ -457,7 +457,7 @@ TEST(EngineTest, RecordHistogramValue) {
 
 TEST(EngineTest, Logger) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* test_context =
                                           static_cast<engine_test_context*>(context);
                                       test_context->on_engine_running.Notify();
@@ -497,7 +497,7 @@ TEST(EngineTest, Logger) {
 
 TEST(EngineTest, EventTrackerRegistersDefaultAPI) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* test_context =
                                           static_cast<engine_test_context*>(context);
                                       test_context->on_engine_running.Notify();
@@ -532,7 +532,7 @@ TEST(EngineTest, EventTrackerRegistersDefaultAPI) {
 
 TEST(EngineTest, EventTrackerRegistersAPI) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* test_context =
                                           static_cast<engine_test_context*>(context);
                                       test_context->on_engine_running.Notify();
@@ -573,7 +573,7 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
 
 TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* test_context =
                                           static_cast<engine_test_context*>(context);
                                       test_context->on_engine_running.Notify();
@@ -613,7 +613,7 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
 
 TEST(EngineTest, EventTrackerRegistersEnvoyBugRecordAction) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* test_context =
                                           static_cast<engine_test_context*>(context);
                                       test_context->on_engine_running.Notify();
@@ -653,7 +653,7 @@ TEST(EngineTest, EventTrackerRegistersEnvoyBugRecordAction) {
 
 TEST(MainInterfaceTest, ResetConnectivityState) {
   engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+  envoy_engine_callbacks engine_cbs{[](envoy_engine_t, void* context) -> void {
                                       auto* engine_running =
                                           static_cast<engine_test_context*>(context);
                                       engine_running->on_engine_running.Notify();

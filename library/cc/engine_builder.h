@@ -16,7 +16,7 @@ public:
   EngineBuilder();
 
   EngineBuilder& addLogLevel(LogLevel log_level);
-  EngineBuilder& setOnEngineRunning(std::function<void()> closure);
+  EngineBuilder& setOnEngineRunning(std::function<void(envoy_engine_t)> closure);
 
   EngineBuilder& addGrpcStatsDomain(const std::string& stats_domain);
   EngineBuilder& addConnectTimeoutSeconds(int connect_timeout_seconds);

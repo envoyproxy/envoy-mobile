@@ -88,7 +88,7 @@ void sendRequestEndToEnd() {
   absl::Notification engine_running;
   auto engine_builder = Platform::EngineBuilder(CONFIG_TEMPLATE);
   engine = engine_builder.addLogLevel(Platform::LogLevel::debug)
-               .setOnEngineRunning([&]() { engine_running.Notify(); })
+               .setOnEngineRunning([&](envoy_engine_t) { engine_running.Notify(); })
                .build();
   engine_running.WaitForNotification();
 

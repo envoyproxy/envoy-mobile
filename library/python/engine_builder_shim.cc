@@ -8,7 +8,8 @@ namespace EngineBuilder {
 
 Platform::EngineBuilder& setOnEngineRunningShim(Platform::EngineBuilder& self,
                                                 std::function<void()> closure) {
-  return self.setOnEngineRunning([closure]() {
+  // TODO(jpsim): Expose engine handle in the Python API
+  return self.setOnEngineRunning([closure](envoy_engine_t) {
     py::gil_scoped_acquire acquire;
     closure();
   });

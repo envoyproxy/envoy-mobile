@@ -14,6 +14,7 @@ Breaking changes:
 - iOS: enable usage of ``NWPathMonitor`` by default (:issue:`#2329 <2329>`)
 - iOS: replace ``enableNetworkPathMonitor`` with a new ``setNetworkMonitoringMode`` API to allow disabling monitoring (:issue:`#2345 <2345>`)
 - iOS: release artifacts no longer embed bitcode
+- api: the ``setOnEngineRunning`` closure now passes the engine's opaque ID so it can be passed to Envoy's C++ APis
 
 Bugfixes:
 

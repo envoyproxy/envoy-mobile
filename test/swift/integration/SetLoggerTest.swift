@@ -69,7 +69,7 @@ static_resources:
           loggingExpectation.fulfill()
         }
       }
-      .setOnEngineRunning {
+      .setOnEngineRunning { _ in
         engineExpectation.fulfill()
       }
       .setEventTracker { event in

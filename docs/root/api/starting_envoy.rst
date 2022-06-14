@@ -313,13 +313,16 @@ completes. This interface provides the ability to observe when Envoy has complet
 ready to start dispatching requests. Any requests sent through Envoy before this setup completes
 will be queued automatically, and this function is typically used purely for observability.
 
+The closure passes an opaque handle to the engine so that it can be passed to Envoy's C++ APIs if
+desired.
+
 **Example**::
 
   // Kotlin
-  builder.setOnEngineRunning { /*do something*/ }
+  builder.setOnEngineRunning { engineHandle -> /* do something */ }
 
   // Swift
-  builder.setOnEngineRunning { /*do something*/ }
+  builder.setOnEngineRunning { engineHandle in /* do something */ }
 
 ~~~~~~~~~~~~~
 ``setLogger``

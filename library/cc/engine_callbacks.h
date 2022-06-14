@@ -10,7 +10,7 @@ namespace Envoy {
 namespace Platform {
 
 struct EngineCallbacks : public std::enable_shared_from_this<EngineCallbacks> {
-  std::function<void()> on_engine_running;
+  std::function<void(envoy_engine_t)> on_engine_running;
   // unused:
   // std::function<void()> on_exit;
 
