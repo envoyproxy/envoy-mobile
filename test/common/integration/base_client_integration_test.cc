@@ -61,6 +61,7 @@ Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
 
 BaseClientIntegrationTest::BaseClientIntegrationTest(Network::Address::IpVersion ip_version)
     : BaseIntegrationTest(ip_version, defaultConfig()) {
+  skip_tag_extraction_rule_check_ = true;
   full_dispatcher_ = api_->allocateDispatcher("fake_envoy_mobile");
   use_lds_ = false;
   autonomous_upstream_ = true;

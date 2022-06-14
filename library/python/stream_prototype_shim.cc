@@ -22,7 +22,7 @@ Platform::StreamPrototype& setOnHeadersShim(Platform::StreamPrototype& self,
 // also constructs a bytes view onto the envoy_data provided.
 Platform::StreamPrototype& setOnDataShim(Platform::StreamPrototype& self,
                                          OnPyBytesDataCallback closure) {
-  return self.setOnData([closure](envoy_data data, bool end_stream) {
+  return self.setOnData([closure](envoy_data data, bool end_stream, envoy_stream_intel intel) {
     py::gil_scoped_acquire acquire;
     py::bytes bytes = envoyDataAsPyBytes(data);
     closure(bytes, end_stream);
