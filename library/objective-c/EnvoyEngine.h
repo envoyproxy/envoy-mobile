@@ -565,8 +565,6 @@ extern const int kEnvoyFailure;
 
 - (void)resetConnectivityState;
 
-- (NSInteger)handle;
-
 @end
 
 #pragma mark - EnvoyLogger
@@ -588,7 +586,8 @@ extern const int kEnvoyFailure;
 // Concrete implementation of the `EnvoyEngine` interface.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
-@property (nonatomic, copy, nullable) void (^onEngineRunning)();
+@property (nonatomic, copy, nullable) void (^onEngineRunning)(NSInteger);
+- (NSInteger)handle;
 
 @end
 
