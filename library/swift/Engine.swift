@@ -22,6 +22,4 @@ public protocol Engine: AnyObject {
 
   /// Refresh DNS, and drain connections owned by this Engine.
   func resetConnectivityState()
-
-  func handle() -> Int
 }

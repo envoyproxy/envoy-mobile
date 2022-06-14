@@ -73,8 +73,4 @@ extension EngineImpl: Engine {
   func resetConnectivityState() {
     self.engine.resetConnectivityState()
   }
-
-  func handle() -> Int {
-    self.engine.handle()
-  }
 }
