@@ -18,7 +18,7 @@ static void ios_on_engine_running(void *context) {
   @autoreleasepool {
     EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
     if (engineImpl.onEngineRunning) {
-      engineImpl.onEngineRunning();
+      engineImpl.onEngineRunning(engineImpl.handle);
     }
   }
 }
@@ -435,7 +435,11 @@ static void ios_track_event(envoy_map map, const void *context) {
   EnvoyNetworkMonitor *_networkMonitor;
 }
 
-- (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
+- (NSInteger)handle {
+  return (NSInteger)_engineHandle;
+}
+
+- (instancetype)initWithRunningCallback:(nullable void (^)(NSInteger))onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
                            eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
                   networkMonitoringMode:(int)networkMonitoringMode {
