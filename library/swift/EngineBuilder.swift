@@ -394,7 +394,8 @@ open class EngineBuilder: NSObject {
 
   /// Set a closure to be called when the engine finishes its async startup and begins running.
   ///
-  /// - parameter closure: The closure to be called.
+  /// - parameter closure: The closure to be called. Passes an engine handle that can be used
+  ///                      to interoperate with Envoy's C++ APIs.
   ///
   /// - returns: This builder.
   @discardableResult
