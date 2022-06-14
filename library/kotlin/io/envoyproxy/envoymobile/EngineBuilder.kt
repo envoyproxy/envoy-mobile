@@ -43,6 +43,8 @@ open class EngineBuilder(
   private var enableDrainPostDnsRefresh = false
   private var enableHttp3 = false
   private var enableHappyEyeballs = true
+  private var enableGzip = true
+  private var enableBrotli = false
   private var enableInterfaceBinding = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
@@ -242,6 +244,30 @@ open class EngineBuilder(
    */
   fun enableHappyEyeballs(enableHappyEyeballs: Boolean): EngineBuilder {
     this.enableHappyEyeballs = enableHappyEyeballs
+    return this
+  }
+
+  /**
+   * Specify whether to do gzip response decompression or not.  Defaults to true.
+   *
+   * @param enableGzip whether or not to gunzip responses.
+   *
+   * @return This builder.
+   */
+  fun enableGzip(enableGzip: Boolean): EngineBuilder {
+    this.enableGzip = enableGzip
+    return this
+  }
+
+  /**
+   * Specify whether to do brotli response decompression or not.  Defaults to false.
+   *
+   * @param enableBrotli whether or not to brotli decompress responses.
+   *
+   * @return This builder.
+   */
+  fun enableBrotli(enableBrotli: Boolean): EngineBuilder {
+    this.enableBrotli = enableBrotli
     return this
   }
 
@@ -455,7 +481,7 @@ open class EngineBuilder(
    * @return this builder.
    */
   fun addKeyValueStore(name: String, keyValueStore: KeyValueStore): EngineBuilder {
-    this.keyValueStores.put(name, EnvoyKeyValueStoreAdapter(keyValueStore))
+    this.keyValueStores.put(name, keyValueStore)
     return this
   }
 
@@ -541,6 +567,8 @@ open class EngineBuilder(
       dnsFilterUnroutableFamilies,
       enableDrainPostDnsRefresh,
       enableHttp3,
+      enableGzip,
+      enableBrotli,
       enableHappyEyeballs,
       enableInterfaceBinding,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,

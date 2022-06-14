@@ -38,6 +38,8 @@ public class EnvoyConfiguration {
   public final Boolean dnsFilterUnroutableFamilies;
   public final Boolean enableDrainPostDnsRefresh;
   public final Boolean enableHttp3;
+  public final Boolean enableGzip;
+  public final Boolean enableBrotli;
   public final Boolean enableHappyEyeballs;
   public final Boolean enableInterfaceBinding;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
@@ -76,6 +78,8 @@ public class EnvoyConfiguration {
    * @param dnsFilterUnroutableFamilies  whether to filter unroutable IP families or not.
    * @param enableDrainPostDnsRefresh    whether to drain connections after soft DNS refresh.
    * @param enableHttp3                  whether to enable experimental support for HTTP/3 (QUIC).
+   * @param enableGzip                   whether to enable response gzip decompression.
+   * @param enableBrotli                 whether to enable response brotli decompression.
    * @param enableHappyEyeballs          whether to enable RFC 6555 handling for IPv4/IPv6.
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
@@ -103,12 +107,13 @@ public class EnvoyConfiguration {
       int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds, int dnsMinRefreshSeconds,
       String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
       Boolean dnsFilterUnroutableFamilies, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
-      boolean enableHappyEyeballs, boolean enableInterfaceBinding,
-      int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
-      boolean h2ExtendKeepaliveTimeout, List<String> h2RawDomains, int maxConnectionsPerHost,
-      int statsFlushSeconds, int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
-      String appVersion, String appId, TrustChainVerification trustChainVerification,
-      String virtualClusters, List<EnvoyNativeFilterConfig> nativeFilterChain,
+      boolean enableGzip, boolean enableBrotli, boolean enableHappyEyeballs,
+      boolean enableInterfaceBinding, int h2ConnectionKeepaliveIdleIntervalMilliseconds,
+      int h2ConnectionKeepaliveTimeoutSeconds, boolean h2ExtendKeepaliveTimeout,
+      List<String> h2RawDomains, int maxConnectionsPerHost, int statsFlushSeconds,
+      int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds, String appVersion, String appId,
+      TrustChainVerification trustChainVerification, String virtualClusters,
+      List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
       Map<String, EnvoyStringAccessor> stringAccessors,
       Map<String, EnvoyKeyValueStore> keyValueStores) {
@@ -126,6 +131,8 @@ public class EnvoyConfiguration {
     this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies;
     this.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
     this.enableHttp3 = enableHttp3;
+    this.enableGzip = enableGzip;
+    this.enableBrotli = enableBrotli;
     this.enableHappyEyeballs = enableHappyEyeballs;
     this.enableInterfaceBinding = enableInterfaceBinding;
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
@@ -161,7 +168,8 @@ public class EnvoyConfiguration {
    */
   String resolveTemplate(final String configTemplate, final String platformFilterTemplate,
                          final String nativeFilterTemplate,
-                         final String altProtocolCacheFilterInsert) {
+                         final String altProtocolCacheFilterInsert, final String gzipFilterInsert,
+                         final String brotliFilterInsert) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -178,6 +186,14 @@ public class EnvoyConfiguration {
 
     if (enableHttp3) {
       customFiltersBuilder.append(altProtocolCacheFilterInsert);
+    }
+
+    if (enableGzip) {
+      customFiltersBuilder.append(gzipFilterInsert);
+    }
+
+    if (enableBrotli) {
+      customFiltersBuilder.append(brotliFilterInsert);
     }
 
     String processedTemplate =

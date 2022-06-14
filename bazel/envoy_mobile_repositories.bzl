@@ -70,20 +70,20 @@ def upstream_envoy_overrides():
     )
 
 def swift_repos():
-    # https://github.com/bazelbuild/rules_apple/pull/1478
+    # https://github.com/bazelbuild/rules_apple/pull/1488
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "4ffc44ccf28a694e5b494e0de5ff5b38e7cbbdf4b03795c22079265e545fc850",
-        strip_prefix = "rules_apple-012fc127012ed2c81f6b765afc571de9b4755169",
-        url = "https://github.com/bazelbuild/rules_apple/archive/012fc127012ed2c81f6b765afc571de9b4755169.tar.gz",
+        sha256 = "0f2275197c950d82fc5defc81cfe53a71e4c9cae2d79852df1b2e9d0f0fb9fcf",
+        strip_prefix = "rules_apple-ac43c1e467564d9df6b3355ff93fcaf224f2c0f9",
+        url = "https://github.com/bazelbuild/rules_apple/archive/ac43c1e467564d9df6b3355ff93fcaf224f2c0f9.tar.gz",
     )
 
-    # TODO(jpsim): Update to the next release which includes https://github.com/bazelbuild/rules_swift/pull/818
+    # https://github.com/bazelbuild/rules_swift/pull/838
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "b5966b422113866398035cd970feffb4ab6c081fa1c96c02d942b17e5b8429c4",
-        strip_prefix = "rules_swift-8d4b096b90e47095755e47c27e749ae9b9f83e81",
-        url = "https://github.com/bazelbuild/rules_swift/archive/8d4b096b90e47095755e47c27e749ae9b9f83e81.tar.gz",
+        sha256 = "a3fac55d12f33a2d030b816e189eaa84218fd0fc501fc93ded0b1dcba01e47fb",
+        strip_prefix = "rules_swift-3bc7bc164020a842ae08e0cf071ed35f0939dd39",
+        url = "https://github.com/bazelbuild/rules_swift/archive/3bc7bc164020a842ae08e0cf071ed35f0939dd39.tar.gz",
     )
 
     http_archive(
