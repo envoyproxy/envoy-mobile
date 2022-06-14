@@ -47,18 +47,6 @@ std::string defaultConfig() {
 
 } // namespace
 
-Http::ResponseHeaderMapPtr toResponseHeaders(envoy_headers headers) {
-  std::unique_ptr<Http::ResponseHeaderMapImpl> transformed_headers =
-      Http::ResponseHeaderMapImpl::create();
-  transformed_headers->setFormatter(
-      std::make_unique<
-          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(
-          false, envoy::extensions::http::header_formatters::preserve_case::v3::
-                     PreserveCaseFormatterConfig::DEFAULT));
-  Http::Utility::toEnvoyHeaders(*transformed_headers, headers);
-  return transformed_headers;
-}
-
 BaseClientIntegrationTest::BaseClientIntegrationTest(Network::Address::IpVersion ip_version)
     : BaseIntegrationTest(ip_version, defaultConfig()) {
   skip_tag_extraction_rule_check_ = true;
