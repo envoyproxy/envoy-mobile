@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include "absl/strings/str_replace.h"
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
 
@@ -92,6 +93,16 @@ EngineBuilder& EngineBuilder::setDeviceOs(const std::string& device_os) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::enableGzip(bool gzip_on) {
+  this->gzip_filter_ = gzip_on;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::enableBrotli(bool brotli_on) {
+  this->brotli_filter_ = brotli_on;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
   std::vector<std::pair<std::string, std::string>> replacements{
       {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
@@ -127,6 +138,17 @@ std::string EngineBuilder::generateConfigStr() {
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
+  if (this->gzip_filter_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
+        &config_template_);
+  }
+  if (this->brotli_filter_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", brotli_config_insert)}},
+        &config_template_);
+  }
+
   config_builder << config_template_;
 
   auto config_str = config_builder.str();
