@@ -137,7 +137,7 @@ TEST(MainInterfaceTest, BasicStream) {
                                     } /*on_exit*/,
                                     &engine_cbs_context /*context*/};
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, BUFFERED_TEST_CONFIG.c_str(), level.c_str());
+  run_engine(engine_handle, BUFFERED_TEST_CONFIG.c_str(), level.c_str(), "");
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -203,7 +203,7 @@ TEST(MainInterfaceTest, SendMetadata) {
   // There is nothing functional about the config used to run the engine, as the created stream is
   // only used for send_metadata.
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -243,7 +243,7 @@ TEST(MainInterfaceTest, ResetStream) {
   // There is nothing functional about the config used to run the engine, as the created stream is
   // immediately reset.
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -314,7 +314,7 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
 
   // Using the minimal envoy mobile config that allows for running the engine.
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(
       engine_cbs_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(10)));
@@ -325,6 +325,27 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
   terminate_engine(engine_handle, /* release */ true);
 
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
+}
+
+TEST(MainInterfaceTest, InitEngineReturns1) {
+  // TODO(goaway): return new handle once multiple engine support is in place.
+  // https://github.com/envoyproxy/envoy-mobile/issues/332
+  engine_test_context test_context{};
+  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
+                                      auto* engine_running =
+                                          static_cast<engine_test_context*>(context);
+                                      engine_running->on_engine_running.Notify();
+                                    } /*on_engine_running*/,
+                                    [](void* context) -> void {
+                                      auto* exit = static_cast<engine_test_context*>(context);
+                                      exit->on_exit.Notify();
+                                    } /*on_exit*/,
+                                    &test_context /*context*/};
+  ASSERT_EQ(1, init_engine(engine_cbs, {}, {}));
+  run_engine(1, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
+  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
+  terminate_engine(1);
+  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
 }
 
 TEST(MainInterfaceTest, PreferredNetwork) {
@@ -345,7 +366,7 @@ TEST(EngineTest, RecordCounter) {
                                     &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_counter_inc(0, "counter", envoy_stats_notags, 1));
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   EXPECT_EQ(ENVOY_SUCCESS, record_counter_inc(engine_handle, "counter", envoy_stats_notags, 1));
 
@@ -367,7 +388,7 @@ TEST(EngineTest, SetGauge) {
                                     &test_context /*context*/};
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_set(0, "gauge", envoy_stats_notags, 1));
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
@@ -392,7 +413,7 @@ TEST(EngineTest, AddToGauge) {
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_add(0, "gauge", envoy_stats_notags, 30));
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   EXPECT_EQ(ENVOY_SUCCESS, record_gauge_add(engine_handle, "gauge", envoy_stats_notags, 30));
@@ -416,7 +437,7 @@ TEST(EngineTest, SubFromGauge) {
   EXPECT_EQ(ENVOY_FAILURE, record_gauge_sub(0, "gauge", envoy_stats_notags, 30));
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   record_gauge_add(engine_handle, "gauge", envoy_stats_notags, 30);
@@ -443,7 +464,7 @@ TEST(EngineTest, RecordHistogramValue) {
             record_histogram_value(0, "histogram", envoy_stats_notags, 99, MILLISECONDS));
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   record_histogram_value(engine_handle, "histogram", envoy_stats_notags, 99, MILLISECONDS);
@@ -485,7 +506,7 @@ TEST(EngineTest, Logger) {
                       &test_context};
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, logger, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   ASSERT_TRUE(test_context.on_log.WaitForNotificationWithTimeout(absl::Seconds(3)));
@@ -510,7 +531,7 @@ TEST(EngineTest, EventTrackerRegistersDefaultAPI) {
                                     &test_context /*context*/};
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   // A default event tracker is registered in external API registry.
   const auto registered_event_tracker =
@@ -554,7 +575,7 @@ TEST(EngineTest, EventTrackerRegistersAPI) {
                                     &test_context /*context*/};
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, event_tracker);
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   const auto registered_event_tracker =
@@ -597,7 +618,7 @@ TEST(EngineTest, EventTrackerRegistersAssertionFailureRecordAction) {
       &test_context /*context*/};
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, event_tracker);
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   // Simulate a failed assertion by invoking a debug assertion failure
@@ -637,7 +658,7 @@ TEST(EngineTest, EventTrackerRegistersEnvoyBugRecordAction) {
                                     &test_context /*context*/};
 
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, event_tracker);
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
 
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
   // Simulate an envoy bug by invoking an Envoy bug failure
@@ -664,7 +685,7 @@ TEST(MainInterfaceTest, ResetConnectivityState) {
                                     } /*on_exit*/,
                                     &test_context /*context*/};
   envoy_engine_t engine_handle = init_engine(engine_cbs, {}, {});
-  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str());
+  run_engine(engine_handle, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
   ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
 
   ASSERT_EQ(ENVOY_SUCCESS, reset_connectivity_state(engine_handle));
