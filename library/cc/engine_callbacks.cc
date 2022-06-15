@@ -5,9 +5,9 @@ namespace Platform {
 
 namespace {
 
-void c_on_engine_running(void* context) {
+void c_on_engine_running(envoy_engine_t engine, void* context) {
   auto engine_callbacks = *static_cast<EngineCallbacksSharedPtr*>(context);
-  engine_callbacks->on_engine_running();
+  engine_callbacks->on_engine_running(engine);
 }
 
 void c_on_exit(void* context) {

@@ -88,7 +88,7 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
         android.os.Process.setThreadPriority(threadPriority);
         mInitCompleted.open();
         Runnable taskToExecuteWhenInitializationIsCompleted =
-            mInitializationCompleter.getAndSet(() -> {});
+            mInitializationCompleter.getAndSet((Integer) -> {});
         if (taskToExecuteWhenInitializationIsCompleted != null) {
           taskToExecuteWhenInitializationIsCompleted.run();
         }
