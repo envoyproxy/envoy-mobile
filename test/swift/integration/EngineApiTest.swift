@@ -9,7 +9,9 @@ final class EngineApiTest: XCTestCase {
     let engine = EngineBuilder()
       .addLogLevel(.debug)
       .addStatsFlushSeconds(1)
-      .setOnEngineRunning {
+      .setOnEngineRunning { engineHandle in
+        // TODO(jpsim): Update this check when the engine singleton is removed
+        XCTAssertEqual(engineHandle, 1)
         engineExpectation.fulfill()
       }
       .build()
