@@ -587,7 +587,6 @@ extern const int kEnvoyFailure;
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
 @property (nonatomic, copy, nullable) void (^onEngineRunning)(NSInteger);
-- (NSInteger)handle;
 
 @end
 

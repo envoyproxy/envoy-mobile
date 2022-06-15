@@ -12,13 +12,13 @@
 #import <UIKit/UIKit.h>
 #endif
 
-static void ios_on_engine_running(void *context) {
+static void ios_on_engine_running(envoy_engine_t engine, void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
   @autoreleasepool {
     EnvoyEngineImpl *engineImpl = (__bridge EnvoyEngineImpl *)context;
     if (engineImpl.onEngineRunning) {
-      engineImpl.onEngineRunning(engineImpl.handle);
+      engineImpl.onEngineRunning(engine);
     }
   }
 }
@@ -433,10 +433,6 @@ static void ios_track_event(envoy_map map, const void *context) {
 @implementation EnvoyEngineImpl {
   envoy_engine_t _engineHandle;
   EnvoyNetworkMonitor *_networkMonitor;
-}
-
-- (NSInteger)handle {
-  return (NSInteger)_engineHandle;
 }
 
 - (instancetype)initWithRunningCallback:(nullable void (^)(NSInteger))onEngineRunning

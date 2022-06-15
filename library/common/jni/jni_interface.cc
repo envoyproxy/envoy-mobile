@@ -26,7 +26,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 // JniLibrary
 
-static void jvm_on_engine_running(void* context) {
+static void jvm_on_engine_running(jlong engine_handle, void* context) {
   if (context == nullptr) {
     return;
   }
@@ -37,7 +37,7 @@ static void jvm_on_engine_running(void* context) {
   jclass jcls_JvmonEngineRunningContext = env->GetObjectClass(j_context);
   jmethodID jmid_onEngineRunning = env->GetMethodID(
       jcls_JvmonEngineRunningContext, "invokeOnEngineRunning", "()Ljava/lang/Object;");
-  env->CallObjectMethod(j_context, jmid_onEngineRunning);
+  env->CallObjectMethod(j_context, jmid_onEngineRunning, engine_handle);
 
   env->DeleteLocalRef(jcls_JvmonEngineRunningContext);
   // TODO(goaway): This isn't re-used by other engine callbacks, so it's safe to delete here.

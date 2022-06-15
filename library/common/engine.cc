@@ -122,7 +122,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                                         server_->api().randomGenerator());
           dispatcher_->drain(server_->dispatcher());
           if (callbacks_.on_engine_running != nullptr) {
-            callbacks_.on_engine_running(callbacks_.context);
+            // TODO(jpsim): Update when singleton is removed
+            // reinterpret_cast<envoy_engine_t>(this)
+            callbacks_.on_engine_running(1, callbacks_.context);
           }
         });
   } // mutex_
