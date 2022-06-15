@@ -43,7 +43,7 @@ class GeventEngineBuilder(EngineBuilder):
         super().__init__()
         self.executor = GeventExecutor()
 
-    def set_on_engine_running(self, closure: Callable[[], None]) -> EngineBuilder:
+    def set_on_engine_running(self, closure: Callable[[int], None]) -> EngineBuilder:
         super().set_on_engine_running(self.executor(closure))
         return self
 
