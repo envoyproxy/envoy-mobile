@@ -10,7 +10,7 @@ namespace Python {
 namespace EngineBuilder {
 
 Platform::EngineBuilder& setOnEngineRunningShim(Platform::EngineBuilder& self,
-                                                std::function<void(envoy_engine_t)> closure);
+                                                std::function<void()> closure);
 
 } // namespace EngineBuilder
 } // namespace Python

@@ -15,7 +15,7 @@ class Engine:
     _handle: Optional[EnvoyEngine] = None
 
     @classmethod
-    def build(cls, executor: Executor, set_engine_running: Callable[[int], None]):
+    def build(cls, executor: Executor, set_engine_running: Callable[[], None]):
         if cls.config_template_override is None:
             engine_builder = EngineBuilder()
         else:
@@ -29,7 +29,7 @@ class Engine:
         atexit.register(lambda: cls._handle.terminate())
 
     @classmethod
-    def handle(cls, executor: Executor, set_engine_running: Callable[[int], None]) -> EnvoyEngine:
+    def handle(cls, executor: Executor, set_engine_running: Callable[[], None]) -> EnvoyEngine:
         if cls._handle is None:
             cls.build(executor, set_engine_running)
         else:
