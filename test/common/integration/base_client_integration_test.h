@@ -1,12 +1,12 @@
 #pragma once
 
-#include "test/integration/integration.h"
-
 #include "library/cc/engine_builder.h"
 #include "library/cc/stream.h"
 #include "library/cc/stream_prototype.h"
 #include "library/common/http/client.h"
 #include "library/common/types/c_types.h"
+
+#include "test/integration/integration.h"
 
 namespace Envoy {
 
@@ -60,6 +60,7 @@ protected:
   bool explicit_flow_control_ = false;
   bool expect_dns_ = true;
   bool override_builder_config_ = false;
+  bool tls_upstream_ = false;
 };
 
 } // namespace Envoy
