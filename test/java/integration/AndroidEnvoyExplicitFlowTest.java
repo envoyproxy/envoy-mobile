@@ -62,7 +62,7 @@ public class AndroidEnvoyExplicitFlowTest {
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
                  .addLogLevel(LogLevel.OFF)
-                 .setOnEngineRunning(() -> {
+                 .setOnEngineRunning((ignored) -> {
                    latch.countDown();
                    return null;
                  })
