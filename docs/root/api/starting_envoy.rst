@@ -319,10 +319,10 @@ desired.
 **Example**::
 
   // Kotlin
-  builder.setOnEngineRunning { /*do something*/ }
+  builder.setOnEngineRunning { engineHandle -> /* do something */ }
 
   // Swift
-  builder.setOnEngineRunning { engineHandle in /*do something*/ }
+  builder.setOnEngineRunning { engineHandle in /* do something */ }
 
 ~~~~~~~~~~~~~
 ``setLogger``
