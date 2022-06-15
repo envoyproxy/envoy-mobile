@@ -8,7 +8,11 @@ licenses(["notice"])  # Apache 2
 
 # Change to your Apple Developer Team ID as shown in
 # https://developer.apple.com/account/#!/membership
-TEAMID = "X4ST43AL9W"
+TEAM_ID = "X4ST43AL9W"
+
+# If needed, change to the name shown by clicking the (i) next to
+# "Xcode Managed Profile" in the "Signing and Capabilities" tab
+PROFILE_NAME = "iOS Team Provisioning Profile: *"
 
 xcode_provisioning_profile(
     name = "ios_provisioning_profile",
@@ -20,7 +24,7 @@ xcode_provisioning_profile(
 
 local_provisioning_profile(
     name = "xcode_managed_profile",
-    profile_name = "iOS Team Provisioning Profile: *",
+    profile_name = PROFILE_NAME,
     tags = ["manual"],
-    team_id = TEAMID,
+    team_id = TEAM_ID,
 )

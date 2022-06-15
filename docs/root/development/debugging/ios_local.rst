@@ -58,9 +58,12 @@ Running on a real iPhone
 You can build and run the example iOS apps on a physical iPhone by
 following these steps:
 
-1. Set the ``TEAMID`` value in ``examples/BUILD`` to your Apple
+1. Set the ``TEAM_ID`` value in ``examples/BUILD`` to your Apple
    Developer Team ID found in the
    `Apple Developer Portal <https://developer.apple.com/account/#!/membership>`_.
-2. Follow the same steps as defined in the
+2. If needed, change the ``PROFILE_NAME`` value to the name shown by
+   clicking the (i) next to "Xcode Managed Profile" in Xcode's
+   "Signing and Capabilities" tab.
+3. Follow the same steps as defined in the
    :ref:`Using the Xcode GUI <using_xcode>` section above, but
    targeting your device instead of a simulator.
