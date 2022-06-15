@@ -327,27 +327,6 @@ TEST(MainInterfaceTest, RegisterPlatformApi) {
   ASSERT_TRUE(engine_cbs_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(10)));
 }
 
-TEST(MainInterfaceTest, InitEngineReturns1) {
-  // TODO(goaway): return new handle once multiple engine support is in place.
-  // https://github.com/envoyproxy/envoy-mobile/issues/332
-  engine_test_context test_context{};
-  envoy_engine_callbacks engine_cbs{[](void* context) -> void {
-                                      auto* engine_running =
-                                          static_cast<engine_test_context*>(context);
-                                      engine_running->on_engine_running.Notify();
-                                    } /*on_engine_running*/,
-                                    [](void* context) -> void {
-                                      auto* exit = static_cast<engine_test_context*>(context);
-                                      exit->on_exit.Notify();
-                                    } /*on_exit*/,
-                                    &test_context /*context*/};
-  ASSERT_EQ(1, init_engine(engine_cbs, {}, {}));
-  run_engine(1, MINIMAL_TEST_CONFIG.c_str(), LEVEL_DEBUG.c_str(), "");
-  ASSERT_TRUE(test_context.on_engine_running.WaitForNotificationWithTimeout(absl::Seconds(3)));
-  terminate_engine(1);
-  ASSERT_TRUE(test_context.on_exit.WaitForNotificationWithTimeout(absl::Seconds(3)));
-}
-
 TEST(MainInterfaceTest, PreferredNetwork) {
   EXPECT_EQ(ENVOY_SUCCESS, set_preferred_network(0, ENVOY_NET_WLAN));
 }
