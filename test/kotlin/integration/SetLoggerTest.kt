@@ -106,7 +106,7 @@ class SetLoggerTest {
         }
       }
       .addLogLevel(LogLevel.DEBUG)
-      .setOnEngineRunning { _ in
+      .setOnEngineRunning {
         countDownLatch.countDown()
       }
       .build()

@@ -21,7 +21,7 @@ class Custom(val yaml: String) : BaseConfiguration()
 open class EngineBuilder(
   private val configuration: BaseConfiguration = Standard()
 ) {
-  protected var onEngineRunning: (() -> Unit) = {}
+  protected var onEngineRunning: ((Int) -> Unit) = {}
   protected var logger: ((String) -> Unit)? = null
   protected var eventTracker: ((Map<String, String>) -> Unit)? = null
   private var engineType: () -> EnvoyEngine = {
@@ -435,7 +435,7 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun setOnEngineRunning(closure: () -> Unit): EngineBuilder {
+  fun setOnEngineRunning(closure: (Int) -> Unit): EngineBuilder {
     this.onEngineRunning = closure
     return this
   }
