@@ -58,7 +58,7 @@ public class AndroidEnvoyFlowTest {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .setOnEngineRunning((ignored) -> {
+                 .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
                  })

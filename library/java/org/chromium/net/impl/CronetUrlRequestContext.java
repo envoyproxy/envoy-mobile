@@ -83,7 +83,7 @@ public final class CronetUrlRequestContext extends CronetEngineBase {
         builder.threadPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
     mUserAgent = builder.getUserAgent();
     synchronized (mLock) {
-      mEngine = builder.createEngine((ignored) -> {
+      mEngine = builder.createEngine(() -> {
         mNetworkThread = Thread.currentThread();
         android.os.Process.setThreadPriority(threadPriority);
         mInitCompleted.open();

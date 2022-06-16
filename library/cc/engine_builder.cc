@@ -18,7 +18,7 @@ EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setOnEngineRunning(std::function<void(envoy_engine_t)> closure) {
+EngineBuilder& EngineBuilder::setOnEngineRunning(std::function<void()> closure) {
   this->callbacks_->on_engine_running = closure;
   return *this;
 }

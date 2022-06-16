@@ -102,7 +102,7 @@ void BaseClientIntegrationTest::initialize() {
 }
 
 void BaseClientIntegrationTest::threadRoutine(absl::Notification& engine_running) {
-  setOnEngineRunning([&](envoy_engine_t) { engine_running.Notify(); });
+  setOnEngineRunning([&]() { engine_running.Notify(); });
   engine_ = build();
   full_dispatcher_->run(Event::Dispatcher::RunType::Block);
 }

@@ -9,8 +9,7 @@ final class EngineApiTest: XCTestCase {
     let engine = EngineBuilder()
       .addLogLevel(.debug)
       .addStatsFlushSeconds(1)
-      .setOnEngineRunning { engineHandle in
-        XCTAssertNotEqual(engineHandle, 1)
+      .setOnEngineRunning {
         engineExpectation.fulfill()
       }
       .build()

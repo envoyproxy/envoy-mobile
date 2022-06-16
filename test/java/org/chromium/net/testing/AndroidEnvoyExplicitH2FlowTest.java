@@ -45,7 +45,7 @@ public class AndroidEnvoyExplicitH2FlowTest {
     engine = new AndroidEngineBuilder(appContext)
                  .setTrustChainVerification(ACCEPT_UNTRUSTED)
                  .addLogLevel(LogLevel.DEBUG)
-                 .setOnEngineRunning((ignored) -> {
+                 .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
                  })

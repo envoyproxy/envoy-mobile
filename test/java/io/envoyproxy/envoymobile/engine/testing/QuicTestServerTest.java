@@ -110,7 +110,7 @@ public class QuicTestServerTest {
     engine = new AndroidEngineBuilder(
                  appContext, new Custom(String.format(CONFIG, QuicTestServer.getServerPort())))
                  .addLogLevel(LogLevel.WARN)
-                 .setOnEngineRunning((ignored) -> {
+                 .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
                  })

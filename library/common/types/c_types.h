@@ -406,7 +406,7 @@ typedef void (*envoy_on_exit_f)(void* context);
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  */
-typedef void (*envoy_on_engine_running_f)(envoy_engine_t engine, void* context);
+typedef void (*envoy_on_engine_running_f)(void* context);
 
 /**
  * Called when envoy's logger logs data.

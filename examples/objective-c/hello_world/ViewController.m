@@ -39,7 +39,7 @@ NSString *_REQUEST_SCHEME = @"https";
   NSLog(@"starting Envoy...");
   EngineBuilder *builder = [[EngineBuilder alloc] init];
   [builder addLogLevel:LogLevelDebug];
-  [builder setOnEngineRunningWithClosure:^(NSInteger) {
+  [builder setOnEngineRunningWithClosure:^{
     NSLog(@"Envoy async internal setup completed");
   }];
 

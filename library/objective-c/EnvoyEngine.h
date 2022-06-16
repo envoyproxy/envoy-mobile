@@ -462,7 +462,7 @@ extern const int kEnvoyFailure;
  @param eventTracker Event tracking interface.
  @param networkMonitoringMode Configure how the engines observe network reachability.
  */
-- (instancetype)initWithRunningCallback:(nullable void (^)(NSInteger))onEngineRunning
+- (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
                            eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
                   networkMonitoringMode:(int)networkMonitoringMode;
@@ -586,7 +586,7 @@ extern const int kEnvoyFailure;
 // Concrete implementation of the `EnvoyEngine` interface.
 @interface EnvoyEngineImpl : NSObject <EnvoyEngine>
 
-@property (nonatomic, copy, nullable) void (^onEngineRunning)(NSInteger);
+@property (nonatomic, copy, nullable) void (^onEngineRunning)();
 
 @end
 

@@ -49,7 +49,7 @@ public class Http2TestServerTest {
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
                  .setTrustChainVerification(ACCEPT_UNTRUSTED)
-                 .setOnEngineRunning((ignored) -> {
+                 .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
                  })
