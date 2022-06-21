@@ -287,7 +287,7 @@ open class EngineBuilder(
 
   /**
    * Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
-   * to use IPv6. Note this is an experimental configuration and should be enabled with caution.
+   * to use IPv6. Note this is an experimental option and should be enabled with caution.
    *
    * @param forceIPv6 whether to force connections to use IPv6.
    *
