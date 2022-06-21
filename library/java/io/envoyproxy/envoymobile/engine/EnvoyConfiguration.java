@@ -42,6 +42,7 @@ public class EnvoyConfiguration {
   public final Boolean enableBrotli;
   public final Boolean enableHappyEyeballs;
   public final Boolean enableInterfaceBinding;
+  public final Boolean forceIPv6;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final Boolean h2ExtendKeepaliveTimeout;
@@ -76,6 +77,7 @@ public class EnvoyConfiguration {
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
    * @param dnsFallbackNameservers       addresses to use as DNS name server fallback.
    * @param dnsFilterUnroutableFamilies  whether to filter unroutable IP families or not.
+   * @param forceIPv6                    whether to force connections to use IPv6.
    * @param enableDrainPostDnsRefresh    whether to drain connections after soft DNS refresh.
    * @param enableHttp3                  whether to enable experimental support for HTTP/3 (QUIC).
    * @param enableGzip                   whether to enable response gzip decompression.
@@ -105,7 +107,7 @@ public class EnvoyConfiguration {
       Boolean adminInterfaceEnabled, String grpcStatsDomain, @Nullable Integer statsdPort,
       int connectTimeoutSeconds, int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
       int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds, int dnsMinRefreshSeconds,
-      String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
+      String dnsPreresolveHostnames, List<String> dnsFallbackNameservers, boolean forceIPv6,
       Boolean dnsFilterUnroutableFamilies, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
       boolean enableGzip, boolean enableBrotli, boolean enableHappyEyeballs,
       boolean enableInterfaceBinding, int h2ConnectionKeepaliveIdleIntervalMilliseconds,
@@ -129,6 +131,7 @@ public class EnvoyConfiguration {
     this.dnsPreresolveHostnames = dnsPreresolveHostnames;
     this.dnsFallbackNameservers = dnsFallbackNameservers;
     this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies;
+    this.forceIPv6 = forceIPv6;
     this.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
     this.enableHttp3 = enableHttp3;
     this.enableGzip = enableGzip;
@@ -250,6 +253,7 @@ public class EnvoyConfiguration {
                               enableDrainPostDnsRefresh ? "true" : "false"))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
+        .append(String.format("- &android_force_ipv6 %s\n", forceIPv6 ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
                               h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
