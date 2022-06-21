@@ -110,7 +110,7 @@ public class EnvoyConfiguration {
       String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
       Boolean dnsFilterUnroutableFamilies, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
       boolean enableGzip, boolean enableBrotli, boolean enableHappyEyeballs,
-      boolean enableInterfaceBinding,  boolean forceIPv6,
+      boolean enableInterfaceBinding, boolean forceIPv6,
       int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
       boolean h2ExtendKeepaliveTimeout, List<String> h2RawDomains, int maxConnectionsPerHost,
       int statsFlushSeconds, int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
