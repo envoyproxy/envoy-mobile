@@ -56,14 +56,14 @@ final class HeadersBuilderTests: XCTestCase {
     let headers = HeadersBuilder(headers: [:])
     headers.set(name: "foo", value: ["123"])
     headers.set(name: "fOo", value: ["abc"])
-    XCTAssertEqual(["fOo": ["abc"]], headers.headers()) 
+    XCTAssertEqual(["fOo": ["abc"]], headers.headers())
   }
 
   func testRemovingHeaderIsCaseInsensitive() {
     let headers = HeadersBuilder(headers: [:])
     headers.set(name: "foo", value: ["123"])
     headers.remove(name: "fOo")
-    XCTAssertEqual([:], headers.headers()) 
+    XCTAssertEqual([:], headers.headers())
   }
 
   func testRestrictedHeadersAreNotSettable() {
