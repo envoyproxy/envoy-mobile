@@ -78,4 +78,16 @@ final class HeadersBuilderTests: XCTestCase {
     let headers2 = RequestHeadersBuilder(headers: ["x-foo": ["123"], "x-bar": ["abc"]]).build()
     XCTAssert(headers1 !== headers2)
   }
+
+  // func testInitializationIsCaseSensitiveButDoesIgnoresKeysCasingWhenLookingForDuplicates() {
+  //   let headers = HeadersBuilder(headers: ["fOo": ["abc"], "foo": ["123"]])
+  //   XCTAssertEqual(["fOo": ["abc", "123"]], headers.headers)
+  // }
+  
+  func testInitializationIsCaseInsensitiveOperation() {
+    let headers = HeadersBuilder(headers: ["foo": ["123"], "fOo": ["abc"]])
+    headers.set(name: "fOo", value: ["abd"])
+    headers.set(name: "foo", value: ["123"])
+    XCTAssertEqual(["foo": ["abc", "123"]], headers.headers)
+  }
 }
