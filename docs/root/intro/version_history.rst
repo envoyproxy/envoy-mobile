@@ -25,6 +25,7 @@ Bugfixes:
 - fix bug where finalStreamIntel was not consistently set on cancel (:issue:`#2285 <2285>`)
 - iOS: fix termination crash in ProvisionalDispatcher (:issue:`#2059 <2059>`)
 - iOS: make headers lookup in HeadersBuilder case insensitive (:issue:`#2383 <2383>`)
+- iOS: use correct DNS resolver when using C++ config builder (:issue: `#2378 <2378 >`)
 
 Features:
 
