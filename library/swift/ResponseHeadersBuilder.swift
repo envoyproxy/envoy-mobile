@@ -23,6 +23,6 @@ public final class ResponseHeadersBuilder: HeadersBuilder {
   ///
   /// - returns: New instance of response headers.
   public func build() -> ResponseHeaders {
-    return ResponseHeaders(headers: self.headers)
+    return ResponseHeaders(headers: self.headers())
   }
 }

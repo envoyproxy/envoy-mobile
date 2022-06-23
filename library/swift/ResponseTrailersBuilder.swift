@@ -12,6 +12,6 @@ public final class ResponseTrailersBuilder: HeadersBuilder {
   ///
   /// - returns: New instance of response trailers.
   public func build() -> ResponseTrailers {
-    return ResponseTrailers(headers: self.headers)
+    return ResponseTrailers(headers: self.headers())
   }
 }

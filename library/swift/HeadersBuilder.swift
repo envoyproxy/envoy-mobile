@@ -36,10 +36,10 @@ public class HeadersBuilder: NSObject {
 
   private var _headers: [String: KeyValuesPair]
 
-  var headers: [String: [String]] {
-    return Dictionary(uniqueKeysWithValues: _headers.map { _, value in
-      return (value.key, value.values) 
-     })
+  func headers() -> [String: [String]] {
+    return Dictionary(uniqueKeysWithValues: self._headers.map { _, value in
+        return (value.key, value.values) 
+    })
   }
 
   /// Append a value to the header name.
@@ -117,6 +117,7 @@ public class HeadersBuilder: NSObject {
   ///
   /// - parameter headers: The headers with which to start.
   required init(headers: [String: [String]]) {
+
     var processedHeaders = [String: KeyValuesPair]()
     for (name, values) in headers {
       let lowercasedName = name.lowercased()
@@ -145,6 +146,6 @@ public class HeadersBuilder: NSObject {
 
 extension HeadersBuilder {
   public override func isEqual(_ object: Any?) -> Bool {
-    return (object as? Self)?.headers == self.headers
+    return (object as? Self)?.headers() == self.headers()
   }
 }

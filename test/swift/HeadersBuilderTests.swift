@@ -10,7 +10,7 @@ final class HeadersBuilderTests: XCTestCase {
     let headers = HeadersBuilder(headers: [:])
       .add(name: "x-foo", value: "1")
       .add(name: "x-foo", value: "2")
-      .headers
+      .headers()
     XCTAssertEqual(["1", "2"], headers["x-foo"])
   }
 
@@ -19,7 +19,7 @@ final class HeadersBuilderTests: XCTestCase {
       .add(name: "x-foo", value: "1")
       .add(name: "x-foo", value: "2")
       .remove(name: "x-foo")
-      .headers
+      .headers()
     XCTAssertNil(headers["x-foo"])
   }
 
@@ -28,7 +28,7 @@ final class HeadersBuilderTests: XCTestCase {
       .add(name: "x-foo", value: "123")
       .add(name: "x-bar", value: "abc")
       .remove(name: "x-foo")
-      .headers
+      .headers()
     XCTAssertEqual(["x-bar": ["abc"]], headers)
   }
 
@@ -36,34 +36,34 @@ final class HeadersBuilderTests: XCTestCase {
     let headers = HeadersBuilder(headers: [:])
       .add(name: "x-foo", value: "123")
       .set(name: "x-foo", value: ["abc"])
-      .headers
+      .headers()
     XCTAssertEqual(["x-foo": ["abc"]], headers)
   }
 
   func testInitializationIsCaseInsensitivePreservesCasingAndProcessesConflictingHeadersInAlphabeticalOrder() {
     let headers = HeadersBuilder(headers: ["a": ["456"], "A": ["123"]])
-    XCTAssertEqual(["A": ["123", "456"]], headers.headers)
+    XCTAssertEqual(["A": ["123", "456"]], headers.headers())
   }
 
   func testAddingHeaderIsCaseInsensitiveAndHeaderCasingIsPreserved() {
     let headers = HeadersBuilder(headers: [:])
     headers.add(name: "fOo", value: "abc")
     headers.add(name: "foo", value: "123")
-    XCTAssertEqual(["fOo": ["abc", "123"]], headers.headers)
+    XCTAssertEqual(["fOo": ["abc", "123"]], headers.headers())
   }
 
   func testSettingHeaderIsCaseInsensitiveAndHeaderCasingIsPreserved() {
     let headers = HeadersBuilder(headers: [:])
     headers.set(name: "foo", value: ["123"])
     headers.set(name: "fOo", value: ["abc"])
-    XCTAssertEqual(["fOo": ["abc"]], headers.headers) 
+    XCTAssertEqual(["fOo": ["abc"]], headers.headers()) 
   }
 
   func testRemovingHeaderIsCaseInsensitive() {
     let headers = HeadersBuilder(headers: [:])
     headers.set(name: "foo", value: ["123"])
     headers.remove(name: "fOo")
-    XCTAssertEqual([:], headers.headers) 
+    XCTAssertEqual([:], headers.headers()) 
   }
 
   func testRestrictedHeadersAreNotSettable() {
@@ -71,7 +71,7 @@ final class HeadersBuilderTests: XCTestCase {
       .add(name: "host", value: "example.com")
       .set(name: ":scheme", value: ["http"])
       .set(name: ":path", value: ["/nope"])
-      .headers
+      .headers()
     let expected = [
       ":authority": ["example.com"],
       ":path": ["/"],
