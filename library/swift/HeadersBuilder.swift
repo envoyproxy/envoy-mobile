@@ -117,7 +117,6 @@ public class HeadersBuilder: NSObject {
   ///
   /// - parameter headers: The headers with which to start.
   required init(headers: [String: [String]]) {
-
     var processedHeaders = [String: KeyValuesPair]()
     for (name, values) in headers {
       let lowercasedName = name.lowercased()
@@ -131,7 +130,8 @@ public class HeadersBuilder: NSObject {
       /// if the currently processed header name is before the existing header name as
       /// determined by an alphabetical order.
       if let existing = processedHeaders[lowercasedName], existing.key > name {
-        processedHeaders[lowercasedName] = KeyValuesPair(key: name, values: values + existing.values)
+        processedHeaders[lowercasedName] =
+          KeyValuesPair(key: name, values: values + existing.values)
       } else {
         processedHeaders[lowercasedName, default: KeyValuesPair(key: name)].appendValues(values)
       }

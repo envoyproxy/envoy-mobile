@@ -40,7 +40,7 @@ final class HeadersBuilderTests: XCTestCase {
     XCTAssertEqual(["x-foo": ["abc"]], headers)
   }
 
-  func testInitializationIsCaseInsensitivePreservesCasingAndProcessesConflictingHeadersInAlphabeticalOrder() {
+  func testInitializationIsCaseInsensitivePreservesCasingAndProcessesInAlphabeticalOrder() {
     let headers = HeadersBuilder(headers: ["a": ["456"], "A": ["123"]])
     XCTAssertEqual(["A": ["123", "456"]], headers.headers())
   }
