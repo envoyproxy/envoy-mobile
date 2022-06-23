@@ -36,6 +36,7 @@ public class HeadersBuilder: NSObject {
 
   private var _headers: [String: KeyValuesPair]
 
+  /// Creates headers map.
   func headers() -> [String: [String]] {
     return Dictionary(uniqueKeysWithValues: self._headers.map { _, value in
         return (value.key, value.values)
