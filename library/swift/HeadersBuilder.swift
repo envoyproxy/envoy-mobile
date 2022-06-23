@@ -3,35 +3,42 @@ import Foundation
 private let kRestrictedPrefixes = [":", "x-envoy-mobile"]
 
 private func isRestrictedHeader(name: String) -> Bool {
-  return name.lowercased() == "host" || kRestrictedPrefixes.contains { name.lowercased().hasPrefix($0) }
+  return name == "host" || kRestrictedPrefixes.contains { name.lowercased().hasPrefix($0) }
 }
 
 /// Base builder class used to construct `Headers` instances.
+/// It preserves the original casing of headers and enforces a case
+/// insensitive look up and setting of headers.
 /// See `{Request|Response}HeadersBuilder` for usage.
 @objcMembers
 public class HeadersBuilder: NSObject {
+  struct KeyValuesPair {
+    private(set) var key: String
+    private(set) var values: [String]
 
-  struct CaseInsensitiveKey: Hashable {
-    let name: String
-    lazy var lowercasedName: String = { self.name.lowercased() }()
-
-    static func == (lhs: CaseInsensitiveKey, rhs: CaseInsensitiveKey) -> Bool {
-      var lhs = lhs, rhs = rhs
-      return lhs.lowercasedName == rhs.lowercasedName
+    init(key: String, values: [String] = []) {
+      self.key = key
+      self.values = values
     }
 
-    func hash(into hasher: inout Hasher) -> Int {
-      hasher.combine(self.name.hashValue)
-      return hasher.finalize()
+    mutating func appendValue(_ value: String) {
+      self.values.append(value)
+    }
+
+    mutating func appendValues(_ values: [String]) {
+      self.values.append(contentsOf: values)
+    }
+
+    mutating func setValue(_ value: String) {
+      self.values = [value]
     }
   }
 
-  private(set) var _headers: [CaseInsensitiveKey: [String]]
+  private var _headers: [String: KeyValuesPair]
 
   var headers: [String: [String]] {
-    return Dictionary(uniqueKeysWithValues: _headers.map { key, value in
-    var k = key
-     return (k.lowercasedName, value) 
+    return Dictionary(uniqueKeysWithValues: _headers.map { _, value in
+      return (value.key, value.values) 
      })
   }
 
@@ -43,11 +50,12 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func add(name: String, value: String) -> Self {
-    if isRestrictedHeader(name: name) {
+    let lowercasedName = name.lowercased()
+    if isRestrictedHeader(name: lowercasedName) {
       return self
     }
 
-    self._headers[CaseInsensitiveKey(name: name), default: []].append(value)
+    self._headers[lowercasedName, default: KeyValuesPair(key: name)].appendValue(value)
     return self
   }
 
@@ -59,11 +67,12 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func set(name: String, value: [String]) -> Self {
-    if isRestrictedHeader(name: name) {
+    let lowercasedName = name.lowercased()
+    if isRestrictedHeader(name: lowercasedName) {
       return self
     }
 
-    self._headers[CaseInsensitiveKey(name: name)] = value
+    self._headers[lowercasedName] = KeyValuesPair(key: name, values: value)
     return self
   }
 
@@ -74,11 +83,12 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   public func remove(name: String) -> Self {
-    if isRestrictedHeader(name: name) {
+    let lowercasedName = name.lowercased()
+    if isRestrictedHeader(name: lowercasedName) {
       return self
     }
 
-    self._headers[CaseInsensitiveKey(name: name)] = nil
+    self._headers[lowercasedName] = nil
     return self
   }
 
@@ -92,7 +102,7 @@ public class HeadersBuilder: NSObject {
   /// - returns: This builder.
   @discardableResult
   func internalSet(name: String, value: [String]) -> Self {
-    self._headers[CaseInsensitiveKey(name: name)] = value
+    self._headers[name.lowercased()] = KeyValuesPair(key: name, values: value)
     return self
   }
 
@@ -107,7 +117,26 @@ public class HeadersBuilder: NSObject {
   ///
   /// - parameter headers: The headers with which to start.
   required init(headers: [String: [String]]) {
-    self._headers = Dictionary(uniqueKeysWithValues: headers.map { key, value in (CaseInsensitiveKey(name: key), value) })
+    var processedHeaders = [String: KeyValuesPair]()
+    for (name, values) in headers {
+      let lowercasedName = name.lowercased()
+      /// Dictionaries in Swift are unordered collections. We process headers with keys
+      /// that are the same when lowercased in an alphabetical order to avoid a situation 
+      /// in which the result of the initialization is underministic i.e., we want
+      /// "[A: ["1"]", "a: ["2"]]" headers to be always converted to ["A": ["1", "2"]] and
+      /// never to "a": ["2", "1"].
+      ///
+      /// If a given header name already exists in the processed headers map, check
+      /// if the currently processed header name is before the existing header name as
+      /// determined by an alphabetical order.
+      if let existing = processedHeaders[lowercasedName], existing.key > name {
+        processedHeaders[lowercasedName] = KeyValuesPair(key: name, values: values + existing.values)
+      } else {
+        processedHeaders[lowercasedName, default: KeyValuesPair(key: name)].appendValues(values)
+      }
+    }
+
+    self._headers = processedHeaders
     super.init()
   }
 }

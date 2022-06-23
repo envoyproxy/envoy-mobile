@@ -40,6 +40,32 @@ final class HeadersBuilderTests: XCTestCase {
     XCTAssertEqual(["x-foo": ["abc"]], headers)
   }
 
+  func testInitializationIsCaseInsensitivePreservesCasingAndProcessesConflictingHeadersInAlphabeticalOrder() {
+    let headers = HeadersBuilder(headers: ["a": ["456"], "A": ["123"]])
+    XCTAssertEqual(["A": ["123", "456"]], headers.headers)
+  }
+
+  func testAddingHeaderIsCaseInsensitiveAndHeaderCasingIsPreserved() {
+    let headers = HeadersBuilder(headers: [:])
+    headers.add(name: "fOo", value: "abc")
+    headers.add(name: "foo", value: "123")
+    XCTAssertEqual(["fOo": ["abc", "123"]], headers.headers)
+  }
+
+  func testSettingHeaderIsCaseInsensitiveAndHeaderCasingIsPreserved() {
+    let headers = HeadersBuilder(headers: [:])
+    headers.set(name: "foo", value: ["123"])
+    headers.set(name: "fOo", value: ["abc"])
+    XCTAssertEqual(["fOo": ["abc"]], headers.headers) 
+  }
+
+  func testRemovingHeaderIsCaseInsensitive() {
+    let headers = HeadersBuilder(headers: [:])
+    headers.set(name: "foo", value: ["123"])
+    headers.remove(name: "fOo")
+    XCTAssertEqual([:], headers.headers) 
+  }
+
   func testRestrictedHeadersAreNotSettable() {
     let headers = RequestHeadersBuilder(method: .get, authority: "example.com", path: "/")
       .add(name: "host", value: "example.com")
@@ -77,17 +103,5 @@ final class HeadersBuilderTests: XCTestCase {
     let headers1 = RequestHeadersBuilder(headers: ["x-foo": ["123"], "x-bar": ["abc"]]).build()
     let headers2 = RequestHeadersBuilder(headers: ["x-foo": ["123"], "x-bar": ["abc"]]).build()
     XCTAssert(headers1 !== headers2)
-  }
-
-  // func testInitializationIsCaseSensitiveButDoesIgnoresKeysCasingWhenLookingForDuplicates() {
-  //   let headers = HeadersBuilder(headers: ["fOo": ["abc"], "foo": ["123"]])
-  //   XCTAssertEqual(["fOo": ["abc", "123"]], headers.headers)
-  // }
-  
-  func testInitializationIsCaseInsensitiveOperation() {
-    let headers = HeadersBuilder(headers: ["foo": ["123"], "fOo": ["abc"]])
-    headers.set(name: "fOo", value: ["abd"])
-    headers.set(name: "foo", value: ["123"])
-    XCTAssertEqual(["foo": ["abc", "123"]], headers.headers)
   }
 }
