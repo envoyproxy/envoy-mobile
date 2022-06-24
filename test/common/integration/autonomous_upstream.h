@@ -44,8 +44,9 @@ public:
                      const FakeUpstreamConfig& config)
       : FakeUpstream(std::move(transport_socket_factory), address, config) {}
 
-  AutonomousUpstream(Network::DownstreamTransportSocketFactoryPtr&& transport_socket_factory, uint32_t port,
-                     Network::Address::IpVersion version, const FakeUpstreamConfig& config)
+  AutonomousUpstream(Network::DownstreamTransportSocketFactoryPtr&& transport_socket_factory,
+                     uint32_t port, Network::Address::IpVersion version,
+                     const FakeUpstreamConfig& config)
       : FakeUpstream(std::move(transport_socket_factory), port, version, config) {}
 
   ~AutonomousUpstream() override;
