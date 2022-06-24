@@ -39,12 +39,12 @@ using AutonomousHttpConnectionPtr = std::unique_ptr<AutonomousHttpConnection>;
 // An upstream which creates AutonomousHttpConnection for new incoming connections.
 class AutonomousUpstream : public FakeUpstream {
 public:
-  AutonomousUpstream(Network::TransportSocketFactoryPtr&& transport_socket_factory,
+  AutonomousUpstream(Network::DownstreamTransportSocketFactoryPtr&& transport_socket_factory,
                      const Network::Address::InstanceConstSharedPtr& address,
                      const FakeUpstreamConfig& config)
       : FakeUpstream(std::move(transport_socket_factory), address, config) {}
 
-  AutonomousUpstream(Network::TransportSocketFactoryPtr&& transport_socket_factory, uint32_t port,
+  AutonomousUpstream(Network::DownstreamTransportSocketFactoryPtr&& transport_socket_factory, uint32_t port,
                      Network::Address::IpVersion version, const FakeUpstreamConfig& config)
       : FakeUpstream(std::move(transport_socket_factory), port, version, config) {}
 
