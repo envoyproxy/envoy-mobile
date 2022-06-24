@@ -10,7 +10,7 @@ public class Headers: NSObject {
   ///
   /// - parameter name: The case-insensitive header name for which to
   ///                   get the current value.
-  ///                   
+  ///
   ///
   /// - returns: The current headers specified for the provided name.
   public func value(forName name: String) -> [String]? {
