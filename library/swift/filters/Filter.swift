@@ -27,7 +27,7 @@ extension EnvoyHTTPFilter {
                                                     streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
-          return [kEnvoyFilterHeadersStatusContinue, headers.headers]
+          return [kEnvoyFilterHeadersStatusContinue, headers.allHeaders()]
         case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, NSNull()]
         }
@@ -44,7 +44,7 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, NSNull()]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.headers as Any]
+          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.allHeaders() as Any]
         }
       }
 
@@ -53,14 +53,14 @@ extension EnvoyHTTPFilter {
                                                      streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
+          return [kEnvoyFilterTrailersStatusContinue, trailers.allHeaders()]
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, NSNull()]
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterTrailersStatusResumeIteration,
-            trailers.headers,
-            headers?.headers as Any,
+            trailers.allHeaders(),
+            headers?.allHeaders() as Any,
             data as Any,
           ]
         }
@@ -74,7 +74,7 @@ extension EnvoyHTTPFilter {
                                                       streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
-          return [kEnvoyFilterHeadersStatusContinue, headers.headers]
+          return [kEnvoyFilterHeadersStatusContinue, headers.allHeaders()]
         case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, NSNull()]
         }
@@ -91,7 +91,7 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, NSNull()]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.headers as Any]
+          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.allHeaders() as Any]
         }
       }
 
@@ -100,14 +100,14 @@ extension EnvoyHTTPFilter {
                                                        streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
+          return [kEnvoyFilterTrailersStatusContinue, trailers.allHeaders()]
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, NSNull()]
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterTrailersStatusResumeIteration,
-            trailers.headers,
-            headers?.headers as Any,
+            trailers.allHeaders(),
+            headers?.allHeaders() as Any,
             data as Any,
           ]
         }
@@ -146,9 +146,9 @@ extension EnvoyHTTPFilter {
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterResumeStatusResumeIteration,
-            headers?.headers as Any,
+            headers?.allHeaders() as Any,
             data as Any,
-            trailers?.headers as Any,
+            trailers?.allHeaders() as Any,
           ]
         }
       }
@@ -172,9 +172,9 @@ extension EnvoyHTTPFilter {
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterResumeStatusResumeIteration,
-            headers?.headers as Any,
+            headers?.allHeaders() as Any,
             data as Any,
-            trailers?.headers as Any,
+            trailers?.allHeaders() as Any,
           ]
         }
       }
