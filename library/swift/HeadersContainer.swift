@@ -98,8 +98,8 @@ struct HeadersContainer: Equatable {
 
   /// The list of all headers stored by the receiver.
   func allHeaders() -> [String: [String]] {
-      Dictionary(uniqueKeysWithValues: self.headers.map { _, value in
-        return (value.name, value.value)
+    return Dictionary(uniqueKeysWithValues: self.headers.map { _, value in
+      return (value.name, value.value)
     })
   }
 }
