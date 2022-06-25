@@ -12,7 +12,7 @@ final class HeadersContainerTests: XCTestCase {
     XCTAssertEqual(["A": ["123", "456"]], container.allHeaders())
   }
 
-  func testAddingHeaderValueAddsToListOfHeader() {
+  func testAddingHeaderValueAddsToListOfHeaders() {
     var container = HeadersContainer()
     container.add(name: "x-foo", value: "1")
     container.add(name: "x-foo", value: "2")
@@ -29,21 +29,20 @@ final class HeadersContainerTests: XCTestCase {
     XCTAssertEqual(["x-FOO": ["1", "2"]], container.allHeaders())
   }
 
-  func testAddingHeadersValuesAddsToListOfHeaders() {
+  func testSettingHeaderAddsToListOfHeaders() {
     var container = HeadersContainer()
-    container.add(name: "x-foo", value: ["1", "2"])
-    container.add(name: "x-foo", value: ["3", "4"])
+    container.set(name: "x-foo", value: ["abc"])
 
-    XCTAssertEqual(["1", "2", "3", "4"], container.value(forName: "x-foo"))
+    XCTAssertEqual(["abc"], container.value(forName: "x-foo"))
   }
 
-  func testAddingHeaderValuesIsCaseInsensitiveAndPreservesHeaderNameCasing() {
+  func testSettingHeaderOverridesPreviousHeaderValues() {
     var container = HeadersContainer()
-    container.add(name: "x-FOO", value: ["1", "2"])
-    container.add(name: "x-foo", value: ["3", "4"])
+    container.add(name: "x-FOO", value: "1")
+    container.add(name: "x-foo", value: "2")
+    container.set(name: "x-foo", value: ["3"])
 
-    XCTAssertEqual(["1", "2", "3", "4"], container.value(forName: "x-foo"))
-    XCTAssertEqual(["x-FOO": ["1", "2", "3", "4"]], container.allHeaders())
+    XCTAssertEqual(["3"], container.value(forName: "x-foo"))
   }
 
   func testSettingHeaderToNilRemovesAllOfItsValues() {
