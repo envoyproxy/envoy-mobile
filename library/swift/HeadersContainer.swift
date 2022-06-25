@@ -70,7 +70,7 @@ struct HeadersContainer: Equatable {
   /// Add values to a header with a given name.
   ///
   /// - parameter name:   The name of the header.
-  /// - parameter values: The values to add.
+  /// - parameter value: The values to add.
   mutating func add(name: String, value: [String]) {
     self.headers[name.lowercased(), default: Header(name: name)].addValue(value)
   }
