@@ -1,5 +1,5 @@
 include = [
-    "library/swift/**/*.swift",
+    "library/swift/**.swift",
 ]
 column-limit = 110
 ignore-throws = true
