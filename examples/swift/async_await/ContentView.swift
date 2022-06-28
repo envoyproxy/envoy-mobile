@@ -72,8 +72,6 @@ private extension StreamClient {
         let stream = self
             .newStreamPrototype()
             .setOnResponseHeaders { headers, _, _ in
-                let allHeaders = headers.allHeaders()
-
                 if headers.value(forName: ":status")?.first == "200",
                    let contentLengthValue = headers.value(forName: "content-length"),
                    let firstContentLength = contentLengthValue.first,
