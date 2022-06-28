@@ -115,10 +115,8 @@ std::string XdsIntegrationTest::getRuntimeKey(const std::string& key) {
 }
 
 uint64_t XdsIntegrationTest::getCounterValue(const std::string& counter) {
-  auto response =
-      IntegrationUtil::makeSingleRequest(lookupPort("admin"), "GET",
-                                         //  "/stats?format=json&usedonly", "",
-                                         "/stats?usedonly", "", Http::CodecType::HTTP2, version_);
+  auto response = IntegrationUtil::makeSingleRequest(lookupPort("admin"), "GET", "/stats?usedonly",
+                                                     "", Http::CodecType::HTTP2, version_);
   EXPECT_TRUE(response->complete());
   EXPECT_EQ("200", response->headers().getStatusValue());
   std::stringstream ss(response->body());
