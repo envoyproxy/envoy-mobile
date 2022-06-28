@@ -78,7 +78,7 @@ final class HeadersBuilderTests: XCTestCase {
       ":path": ["/"],
       ":method": ["GET"],
       ":scheme": ["https"],
-      "hostWithSuffix": ["foo.bar"]
+      "hostWithSuffix": ["foo.bar"],
     ]
     XCTAssertEqual(expected, headers)
   }
