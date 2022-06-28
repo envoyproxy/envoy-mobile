@@ -6,9 +6,12 @@
 #include "test/common/grpc/grpc_client_integration.h"
 #include "test/common/integration/base_client_integration_test.h"
 
+#include "absl/strings/string_view.h"
 #include "gtest/gtest.h"
 
 namespace Envoy {
+
+static constexpr absl::string_view XDS_CLUSTER = "xds_cluster.lyft.com";
 
 // A base class for xDS integration tests. It provides common functionality for integration tests
 // derived from BaseClientIntegrationTest that needs to communicate with upstream xDS servers.

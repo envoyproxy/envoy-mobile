@@ -26,12 +26,12 @@ envoy::config::bootstrap::v3::LayeredRuntime layeredRuntimeConfig(const std::str
             transport_api_version: V3
             grpc_services:
               envoy_grpc:
-                cluster_name: sds_cluster.lyft.com
+                cluster_name: {} 
             set_node_on_first_message_only: true
     - name: some_admin_layer
       admin_layer: {{}}
   )EOF",
-                                       api_type);
+                                       api_type, XDS_CLUSTER);
 
   envoy::config::bootstrap::v3::LayeredRuntime config;
   TestUtility::loadFromYaml(yaml, config);

@@ -9,6 +9,7 @@
 #include "test/integration/ssl_utility.h"
 
 #include "gtest/gtest.h"
+#include "xds_integration_test.h"
 
 namespace Envoy {
 namespace {
@@ -62,7 +63,7 @@ protected:
     api_config_source->set_api_type(envoy::config::core::v3::ApiConfigSource::GRPC);
     api_config_source->set_transport_api_version(envoy::config::core::v3::V3);
     auto* grpc_service = api_config_source->add_grpc_services();
-    setGrpcService(*grpc_service, "sds_cluster.lyft.com", fake_upstreams_.back()->localAddress());
+    setGrpcService(*grpc_service, std::string(XDS_CLUSTER), fake_upstreams_.back()->localAddress());
   }
 
   envoy::extensions::transport_sockets::tls::v3::Secret getClientSecret() {
@@ -91,8 +92,9 @@ TEST_P(SdsIntegrationTest, SdsForUpstreamCluster) {
   // Wait until the Envoy instance has obtained an updated Secret from the SDS cluster. This
   // verifies that the SDS API is working from the Envoy client and allows us to know we can start
   // sending HTTP requests to the upstream cluster using the Secret.
-  waitForCounterGe(
-      "cluster.sds_cluster.lyft.com.client_ssl_socket_factory.ssl_context_update_by_sds", 1);
+  waitForCounterGe("cluster." + std::string(XDS_CLUSTER) +
+                       ".client_ssl_socket_factory.ssl_context_update_by_sds",
+                   1);
   waitForCounterGe("sds.client_cert.update_success", 1);
   EXPECT_EQ(getCounterValue("sds.client_cert.update_rejected"), 0);
 

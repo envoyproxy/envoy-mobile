@@ -1,4 +1,5 @@
 #include "test/common/integration/xds_integration_test.h"
+#include "xds_integration_test.h"
 
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
 #include "envoy/config/cluster/v3/cluster.pb.h"
@@ -35,16 +36,12 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
 
     // Add two clusters by default:
     //  - base_h2: An HTTP2 cluster with one fake upstream endpoint, for accepting requests from EM.
-    //  - sds_cluster.lyft.com: An xDS management server cluster, with one fake upstream endpoint.
-    //        The cluster is named sds_cluster.lyft.com, though it is meant to be a general purpose
-    //        xDS cluster, because we are re-using the certificates from
-    //        @envoy/test/config/integration/certs for SDS requests which is set up for sds_cluster.
-    //
+    //  - xds_cluster.lyft.com: An xDS management server cluster, with one fake upstream endpoint.
     bootstrap.mutable_static_resources()->clear_clusters();
     bootstrap.mutable_static_resources()->add_clusters()->MergeFrom(
         createSingleEndpointClusterConfig("base_h2"));
     bootstrap.mutable_static_resources()->add_clusters()->MergeFrom(
-        createSingleEndpointClusterConfig("sds_cluster.lyft.com"));
+        createSingleEndpointClusterConfig(std::string(XDS_CLUSTER)));
   });
 
   // xDS upstream is created separately in the test infra, and there's only one non-xDS cluster.
@@ -114,6 +111,8 @@ std::string XdsIntegrationTest::getRuntimeKey(const std::string& key) {
   return "";
 }
 
+// TODO(abeyad): Change this implementation to use the PulseClient once implemented. See
+// https://github.com/envoyproxy/envoy-mobile/issues/2356 for details.
 uint64_t XdsIntegrationTest::getCounterValue(const std::string& counter) {
   auto response = IntegrationUtil::makeSingleRequest(lookupPort("admin"), "GET", "/stats?usedonly",
                                                      "", Http::CodecType::HTTP2, version_);

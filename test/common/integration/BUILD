@@ -29,6 +29,9 @@ envoy_cc_test(
         # TODO(willengflow): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
     },
+    external_deps = [
+        "abseil_strings",
+    ],
     repository = "@envoy",
     deps = [
         ":xds_integration_test_lib",
