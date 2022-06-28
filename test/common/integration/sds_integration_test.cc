@@ -9,7 +9,6 @@
 #include "test/integration/ssl_utility.h"
 
 #include "gtest/gtest.h"
-#include "xds_integration_test.h"
 
 namespace Envoy {
 namespace {

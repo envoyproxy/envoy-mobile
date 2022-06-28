@@ -26,7 +26,7 @@ envoy::config::bootstrap::v3::LayeredRuntime layeredRuntimeConfig(const std::str
             transport_api_version: V3
             grpc_services:
               envoy_grpc:
-                cluster_name: {} 
+                cluster_name: {}
             set_node_on_first_message_only: true
     - name: some_admin_layer
       admin_layer: {{}}
