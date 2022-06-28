@@ -1,14 +1,14 @@
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
-#include "envoy/config/core/v3/config_source.pb.h"
 #include "envoy/config/cluster/v3/cluster.pb.h"
+#include "envoy/config/core/v3/config_source.pb.h"
 #include "envoy/extensions/transport_sockets/tls/v3/cert.pb.h"
 #include "envoy/service/secret/v3/sds.pb.h"
-
-#include "gtest/gtest.h"
 
 #include "test/common/integration/xds_integration_test.h"
 #include "test/config/integration/certs/clientcert_hash.h"
 #include "test/integration/ssl_utility.h"
+
+#include "gtest/gtest.h"
 
 namespace Envoy {
 namespace {
@@ -88,7 +88,7 @@ TEST_P(SdsIntegrationTest, SdsForUpstreamCluster) {
   };
   initialize();
 
-  // Wait until the Envoy instance has obtained an updated Secret from the SDS cluster.  This
+  // Wait until the Envoy instance has obtained an updated Secret from the SDS cluster. This
   // verifies that the SDS API is working from the Envoy client and allows us to know we can start
   // sending HTTP requests to the upstream cluster using the Secret.
   waitForCounterGe(

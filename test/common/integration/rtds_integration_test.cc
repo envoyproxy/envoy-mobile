@@ -1,10 +1,10 @@
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
 #include "envoy/service/runtime/v3/rtds.pb.h"
 
-#include "gtest/gtest.h"
-
 #include "test/common/integration/xds_integration_test.h"
 #include "test/test_common/utility.h"
+
+#include "gtest/gtest.h"
 
 namespace Envoy {
 namespace {

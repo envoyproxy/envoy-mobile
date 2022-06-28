@@ -3,14 +3,14 @@
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
 #include "envoy/config/cluster/v3/cluster.pb.h"
 
-#include "gtest/gtest.h"
-
 #include "test/common/grpc/grpc_client_integration.h"
 #include "test/common/integration/base_client_integration_test.h"
 
+#include "gtest/gtest.h"
+
 namespace Envoy {
 
-// A base class for xDS integration tests.  It provides common functionality for integration tests
+// A base class for xDS integration tests. It provides common functionality for integration tests
 // derived from BaseClientIntegrationTest that needs to communicate with upstream xDS servers.
 class XdsIntegrationTest : public BaseClientIntegrationTest,
                            public Grpc::DeltaSotwIntegrationParamTest {
@@ -34,11 +34,11 @@ protected:
   Grpc::ClientType clientType() const override;
   // Returns whether the test is using the state-of-the-world or Delta xDS protocol.
   Grpc::SotwOrDelta sotwOrDelta() const;
-  // The loopback address for the test to use to construct endpoint IP addresses.  The loopback
+  // The loopback address for the test to use to construct endpoint IP addresses. The loopback
   // address depends on whether the test is configured with IPv4 or IPv6.
   std::string loopbackAddr() const;
 
-  // Get the runtime configuration value for the given key.  The runtime value is either statically
+  // Get the runtime configuration value for the given key. The runtime value is either statically
   // provided in the bootstrap config or provided (or overridden) by the RTDS config.
   std::string getRuntimeKey(const std::string& key);
 

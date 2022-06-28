@@ -41,15 +41,15 @@ envoy_cc_test(
 envoy_cc_test(
     name = "sds_integration_test",
     srcs = [
-        "sds_integration_test.cc"
+        "sds_integration_test.cc",
+    ],
+    data = [
+        "@envoy//test/config/integration/certs",
     ],
     exec_properties = {
         # TODO(willengflow): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
     },
-    data = [
-        "@envoy//test/config/integration/certs",
-    ],
     repository = "@envoy",
     deps = [
         ":xds_integration_test_lib",
@@ -58,6 +58,8 @@ envoy_cc_test(
         "@envoy//source/extensions/transport_sockets/tls:context_config_lib",
         "@envoy//source/extensions/transport_sockets/tls:context_lib",
         "@envoy_api//envoy/config/bootstrap/v3:pkg_cc_proto",
+        "@envoy_api//envoy/config/cluster/v3:pkg_cc_proto",
+        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
         "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
         "@envoy_api//envoy/service/secret/v3:pkg_cc_proto",
     ],
@@ -96,7 +98,6 @@ envoy_cc_test_library(
         "@envoy//source/common/config:api_version_lib",
         "@envoy//test/common/grpc:grpc_client_integration_lib",
         "@envoy_api//envoy/config/bootstrap/v3:pkg_cc_proto",
-        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
         "@envoy_api//envoy/config/cluster/v3:pkg_cc_proto",
     ],
 )

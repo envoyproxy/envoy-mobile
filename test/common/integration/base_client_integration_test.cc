@@ -1,7 +1,6 @@
 #include "test/common/integration/base_client_integration_test.h"
 
 #include "gtest/gtest.h"
-
 #include "library/common/config/internal.h"
 
 namespace Envoy {
