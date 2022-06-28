@@ -72,14 +72,9 @@ final class ViewController: UITableViewController {
         let statusCode = headers.httpStatus.map(String.init) ?? "nil"
         let message = "received headers with status \(statusCode)"
 
-        let headerMessage = kFilteredHeaders
-          .compactMap { name in
-              guard let value = headers.value(forName: $0) else {
-                return nil
-              }
-
-              return "\($0.key): \($0.value.joined(separator: ", "))"
-           }
+        let headerMessage = headers.caseSensitiveHeaders()
+          .filter { kFilteredHeaders.contains($0.key) }
+          .map { "\($0.key): \($0.value.joined(separator: ", "))" }
           .joined(separator: "\n")
 
         NSLog(message)
