@@ -545,7 +545,8 @@ open class EngineBuilder: NSObject {
   /// Used for testing, as initializing with `EnvoyEngine.Type` results in a
   /// segfault: https://github.com/envoyproxy/envoy-mobile/issues/334
   ///
-  /// - parameter engineType: The specific implementation of `EnvoyEngine` to use for starting Envoy.
+  /// - parameter engineType: The specific implementation of `EnvoyEngine` to use for starting
+  ///                         Envoy.
   ///
   /// - returns: This builder.
   @discardableResult
