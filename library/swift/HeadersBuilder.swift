@@ -3,7 +3,7 @@ import Foundation
 private let kRestrictedPrefixes = [":", "x-envoy-mobile"]
 
 private func isRestrictedHeader(name: String) -> Bool {
-  let isHostHeader = name.range(of: "host", options: [.caseInsensitive]) != nil
+  let isHostHeader = name.caseInsensitiveCompare("host") == .orderedSame
   let hasRestrictedPrefix = kRestrictedPrefixes
     .contains { name.range(of: $0, options: [.caseInsensitive, .anchored]) != nil }
   return isHostHeader || hasRestrictedPrefix

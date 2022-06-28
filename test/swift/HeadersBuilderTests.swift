@@ -69,6 +69,7 @@ final class HeadersBuilderTests: XCTestCase {
   func testRestrictedHeadersAreNotSettable() {
     let headers = RequestHeadersBuilder(method: .get, authority: "example.com", path: "/")
       .add(name: "host", value: "example.com")
+      .add(name: "hostWithSuffix", value: "foo.bar")
       .set(name: ":scheme", value: ["http"])
       .set(name: ":path", value: ["/nope"])
       .allHeaders()
@@ -77,6 +78,7 @@ final class HeadersBuilderTests: XCTestCase {
       ":path": ["/"],
       ":method": ["GET"],
       ":scheme": ["https"],
+      "hostWithSuffix": ["foo.bar"]
     ]
     XCTAssertEqual(expected, headers)
   }
