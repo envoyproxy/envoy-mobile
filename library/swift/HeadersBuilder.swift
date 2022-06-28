@@ -89,7 +89,7 @@ public class HeadersBuilder: NSObject {
 
   // Initialize a new builder using the provided headers container.
   ///
-  /// - parameter: The headers container to initialize the receiver with.
+  /// - parameter container: The headers container to initialize the receiver with.
   init(container: HeadersContainer) {
     self.container = container
     super.init()

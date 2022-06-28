@@ -83,16 +83,19 @@ struct HeadersContainer: Equatable {
     self.headers[name.lowercased()] = Header(name: name, value: value)
   }
 
-  /// Returns the value of a given header.
+  /// Get the value for the provided header name.
   ///
-  /// - parameter name: The name of the header to return the value for.
+  /// - parameter name: The case-insensitive header name for which to
+  ///                   get the current value.
   ///
   /// - returns: The value associated with a given header.
   func value(forName name: String) -> [String]? {
     return self.headers[name.lowercased()]?.value
   }
 
-  /// The list of all headers stored by the receiver.
+  /// Return all underlying headers.
+  ///
+  /// - returns: The underlying headers.
   func allHeaders() -> [String: [String]] {
     return Dictionary(uniqueKeysWithValues: self.headers.map { _, value in
       return (value.name, value.value)
