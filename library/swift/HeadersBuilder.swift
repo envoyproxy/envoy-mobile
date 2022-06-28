@@ -11,7 +11,7 @@ private func isRestrictedHeader(name: String) -> Bool {
 
 /// Base builder class used to construct `Headers` instances.
 /// It preserves the original casing of headers and enforces
-/// a case-insensitive look up and setting of headers.
+/// a case-insensitive lookup and setting of headers.
 /// See `{Request|Response}HeadersBuilder` for usage.
 @objcMembers
 public class HeadersBuilder: NSObject {
