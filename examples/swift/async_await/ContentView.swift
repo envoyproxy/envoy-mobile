@@ -83,7 +83,7 @@ private extension StreamClient {
                     return
                 }
 
-                let headerMessage = headers.caseSensitiveHeaders
+                let headerMessage = headers.caseSensitiveHeaders()
                     .map { "\($0.key): \($0.value.joined(separator: ", "))" }
                     .joined(separator: "\n")
 
