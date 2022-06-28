@@ -1,7 +1,7 @@
 /// The container which manages the underlying headers map.
 /// It maintains the original casing of passed header names.
 /// It treats headers names as case-insensitive for the purpose
-/// of headers lookup and header name conflict resolutions.
+/// of header lookups and header name conflict resolutions.
 struct HeadersContainer: Equatable {
   private var headers: [String: Header]
 

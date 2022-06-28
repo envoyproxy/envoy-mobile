@@ -56,6 +56,6 @@ extension Headers {
 
 extension Headers {
   public override var description: String {
-    return "\(type(of: self)) \(self.container.description)"
+    return "\(type(of: self)) \(self.allHeaders())"
   }
 }
