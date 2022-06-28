@@ -34,7 +34,7 @@ struct HeadersContainer: Equatable {
       let lowercasedName = name.lowercased()
       /// Dictionaries in Swift are unordered collections. Process headers with names
       /// that are the same when lowercased in an alphabetical order to avoid a situation
-      /// in which the result of the initialization is underministic i.e., we want
+      /// in which the result of the initialization is non-derministic i.e., we want
       /// "[A: ["1"]", "a: ["2"]]" headers to be always converted to ["A": ["1", "2"]] and
       /// never to "a": ["2", "1"].
       ///
