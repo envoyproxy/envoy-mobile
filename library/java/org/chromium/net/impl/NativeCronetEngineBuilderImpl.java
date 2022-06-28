@@ -29,24 +29,6 @@ import org.chromium.net.ICronetEngineBuilder;
  */
 public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
 
-  private static final String BROTLI_CONFIG =
-      "\n"
-      +
-      "              \"@type\": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor\n"
-      + "              decompressor_library:\n"
-      + "                name: text_optimized\n"
-      + "                typed_config:\n"
-      +
-      "                  \"@type\": type.googleapis.com/envoy.extensions.compression.brotli.decompressor.v3.Brotli\n"
-      + "              request_direction_config:\n"
-      + "                common_config:\n"
-      + "                  enabled:\n"
-      + "                    default_value: false\n"
-      + "                    runtime_key: request_decompressor_enabled\n"
-      + "              response_direction_config:\n"
-      + "                common_config:\n"
-      + "                  ignore_no_transform_header: true\n";
-
   private final EnvoyLogger mEnvoyLogger = null;
   private final EnvoyEventTracker mEnvoyEventTracker = null;
   private boolean mAdminInterfaceEnabled = false;
@@ -66,6 +48,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private boolean mEnableGzip = true;
   private boolean mEnableHappyEyeballs = false;
   private boolean mEnableInterfaceBinding = false;
+  private boolean mForceIPv6 = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
   private int mH2ConnectionKeepaliveTimeoutSeconds = 10;
   private boolean mH2ExtendKeepaliveTimeout = false;
@@ -119,20 +102,17 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
     Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
     Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
-    if (brotliEnabled()) {
-      nativeFilterChain.add(
-          new EnvoyNativeFilterConfig("envoy.filters.http.decompressor", BROTLI_CONFIG));
-    }
+
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
         mDnsQueryTimeoutSeconds, mDnsMinRefreshSeconds, mDnsPreresolveHostnames,
         mDnsFallbackNameservers, mEnableDnsFilterUnroutableFamilies, mEnableDrainPostDnsRefresh,
-        mEnableHttp3, mEnableGzip, mEnableHappyEyeballs, mEnableInterfaceBinding,
-        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mH2ExtendKeepaliveTimeout, mH2RawDomains, mMaxConnectionsPerHost, mStatsFlushSeconds,
-        mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,
-        mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
-        stringAccessors, keyValueStores);
+        mEnableHttp3, mEnableGzip, brotliEnabled(), mEnableHappyEyeballs, mEnableInterfaceBinding,
+        mForceIPv6, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
+        mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mH2RawDomains,
+        mMaxConnectionsPerHost, mStatsFlushSeconds, mStreamIdleTimeoutSeconds,
+        mPerTryIdleTimeoutSeconds, mAppVersion, mAppId, mTrustChainVerification, mVirtualClusters,
+        nativeFilterChain, platformFilterChain, stringAccessors, keyValueStores);
   }
 }

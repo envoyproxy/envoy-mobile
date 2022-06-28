@@ -120,7 +120,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
   return run_engine(engine, env->GetStringUTFChars(config, nullptr),
-                    env->GetStringUTFChars(log_level, nullptr));
+                    env->GetStringUTFChars(log_level, nullptr), "");
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_terminateEngine(
@@ -155,6 +155,12 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_altProtocolCacheFilterInsert(JN
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_gzipConfigInsert(JNIEnv* env, jclass) {
   jstring result = env->NewStringUTF(gzip_config_insert);
+  return result;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_brotliConfigInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(brotli_config_insert);
   return result;
 }
 
@@ -450,7 +456,7 @@ static void* jvm_on_metadata(envoy_headers metadata, envoy_stream_intel stream_i
                              void* context) {
   jni_log("[Envoy]", "jvm_on_metadata");
   jni_log("[Envoy]", std::to_string(metadata.length).c_str());
-  return NULL;
+  return nullptr;
 }
 
 static void* jvm_on_trailers(const char* method, envoy_headers trailers,
@@ -609,7 +615,7 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
     headers_length = (jlong)headers->length;
     pass_headers("passHeader", *headers, j_context);
   }
-  jbyteArray j_in_data = NULL;
+  jbyteArray j_in_data = nullptr;
   if (data) {
     j_in_data = native_data_to_array(env, *data);
   }
@@ -631,7 +637,7 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
   env->DeleteLocalRef(j_stream_intel);
-  if (j_in_data != NULL) {
+  if (j_in_data != nullptr) {
     env->DeleteLocalRef(j_in_data);
   }
 
@@ -974,7 +980,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* e
   api->on_error = jvm_http_filter_on_error;
   api->release_filter = jni_delete_const_global_ref;
   api->static_context = retained_context;
-  api->instance_context = NULL;
+  api->instance_context = nullptr;
 
   envoy_status_t result = register_platform_api(env->GetStringUTFChars(filter_name, nullptr), api);
   return result;

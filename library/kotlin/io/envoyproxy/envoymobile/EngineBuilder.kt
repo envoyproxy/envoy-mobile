@@ -44,7 +44,9 @@ open class EngineBuilder(
   private var enableHttp3 = false
   private var enableHappyEyeballs = true
   private var enableGzip = true
+  private var enableBrotli = false
   private var enableInterfaceBinding = false
+  private var forceIPv6 = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var h2ExtendKeepaliveTimeout = false
@@ -258,6 +260,17 @@ open class EngineBuilder(
     return this
   }
 
+  /**
+   * Specify whether to do brotli response decompression or not.  Defaults to false.
+   *
+   * @param enableBrotli whether or not to brotli decompress responses.
+   *
+   * @return This builder.
+   */
+  fun enableBrotli(enableBrotli: Boolean): EngineBuilder {
+    this.enableBrotli = enableBrotli
+    return this
+  }
 
   /**
    * Specify whether sockets may attempt to bind to a specific interface, based on network
@@ -269,6 +282,19 @@ open class EngineBuilder(
    */
   fun enableInterfaceBinding(enableInterfaceBinding: Boolean): EngineBuilder {
     this.enableInterfaceBinding = enableInterfaceBinding
+    return this
+  }
+
+  /**
+   * Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
+   * to use IPv6. Note this is an experimental option and should be enabled with caution.
+   *
+   * @param forceIPv6 whether to force connections to use IPv6.
+   *
+   * @return This builder.
+   */
+  fun forceIPv6(forceIPv6: Boolean): EngineBuilder {
+    this.forceIPv6 = forceIPv6
     return this
   }
 
@@ -469,7 +495,7 @@ open class EngineBuilder(
    * @return this builder.
    */
   fun addKeyValueStore(name: String, keyValueStore: KeyValueStore): EngineBuilder {
-    this.keyValueStores.put(name, EnvoyKeyValueStoreAdapter(keyValueStore))
+    this.keyValueStores.put(name, keyValueStore)
     return this
   }
 
@@ -556,8 +582,10 @@ open class EngineBuilder(
       enableDrainPostDnsRefresh,
       enableHttp3,
       enableGzip,
+      enableBrotli,
       enableHappyEyeballs,
       enableInterfaceBinding,
+      forceIPv6,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,

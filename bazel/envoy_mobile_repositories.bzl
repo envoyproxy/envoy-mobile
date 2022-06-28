@@ -70,20 +70,16 @@ def upstream_envoy_overrides():
     )
 
 def swift_repos():
-    # https://github.com/bazelbuild/rules_apple/pull/1484
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "d8f91d033f8fe5a8026f56941172fb3a11d11748138b47abd04c81091e203109",
-        strip_prefix = "rules_apple-29f5b63d702f1d071f95343be29d4c23045e0e84",
-        url = "https://github.com/bazelbuild/rules_apple/archive/29f5b63d702f1d071f95343be29d4c23045e0e84.tar.gz",
+        sha256 = "36072d4f3614d309d6a703da0dfe48684ec4c65a89611aeb9590b45af7a3e592",
+        url = "https://github.com/bazelbuild/rules_apple/releases/download/1.0.1/rules_apple.1.0.1.tar.gz",
     )
 
-    # https://github.com/bazelbuild/rules_swift/pull/838
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "a3fac55d12f33a2d030b816e189eaa84218fd0fc501fc93ded0b1dcba01e47fb",
-        strip_prefix = "rules_swift-3bc7bc164020a842ae08e0cf071ed35f0939dd39",
-        url = "https://github.com/bazelbuild/rules_swift/archive/3bc7bc164020a842ae08e0cf071ed35f0939dd39.tar.gz",
+        sha256 = "12057b7aa904467284eee640de5e33853e51d8e31aae50b3fb25d2823d51c6b8",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.0.0/rules_swift.1.0.0.tar.gz",
     )
 
     http_archive(
@@ -100,10 +96,12 @@ def swift_repos():
         url = "https://github.com/realm/SwiftLint/releases/download/0.47.1/portable_swiftlint.zip",
     )
 
+    # https://github.com/buildbuddy-io/rules_xcodeproj/pull/552
     http_archive(
         name = "com_github_buildbuddy_io_rules_xcodeproj",
-        sha256 = "5a902801e2337fc14faeb2613d70202f2dd4755bba3d94ba068c1f622edba89e",
-        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.3.0/release.tar.gz",
+        sha256 = "23c0b0a4a76725350deaaa70e0dedd27f3a2f449ef05ab7959577bc9eafe27ad",
+        strip_prefix = "rules_xcodeproj-0f6e85cf892f6739ee489b931699595559f5d805",
+        url = "https://github.com/buildbuddy-io/rules_xcodeproj/archive/0f6e85cf892f6739ee489b931699595559f5d805.tar.gz",
     )
 
 def kotlin_repos():

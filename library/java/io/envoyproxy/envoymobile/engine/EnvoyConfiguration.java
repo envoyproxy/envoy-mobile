@@ -39,8 +39,10 @@ public class EnvoyConfiguration {
   public final Boolean enableDrainPostDnsRefresh;
   public final Boolean enableHttp3;
   public final Boolean enableGzip;
+  public final Boolean enableBrotli;
   public final Boolean enableHappyEyeballs;
   public final Boolean enableInterfaceBinding;
+  public final Boolean forceIPv6;
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final Boolean h2ExtendKeepaliveTimeout;
@@ -78,8 +80,10 @@ public class EnvoyConfiguration {
    * @param enableDrainPostDnsRefresh    whether to drain connections after soft DNS refresh.
    * @param enableHttp3                  whether to enable experimental support for HTTP/3 (QUIC).
    * @param enableGzip                   whether to enable response gzip decompression.
+   * @param enableBrotli                 whether to enable response brotli decompression.
    * @param enableHappyEyeballs          whether to enable RFC 6555 handling for IPv4/IPv6.
    * @param enableInterfaceBinding       whether to allow interface binding.
+   * @param forceIPv6                    whether to force connections to use IPv6.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
@@ -105,7 +109,8 @@ public class EnvoyConfiguration {
       int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds, int dnsMinRefreshSeconds,
       String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
       Boolean dnsFilterUnroutableFamilies, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
-      boolean enableGzip, boolean enableHappyEyeballs, boolean enableInterfaceBinding,
+      boolean enableGzip, boolean enableBrotli, boolean enableHappyEyeballs,
+      boolean enableInterfaceBinding, boolean forceIPv6,
       int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
       boolean h2ExtendKeepaliveTimeout, List<String> h2RawDomains, int maxConnectionsPerHost,
       int statsFlushSeconds, int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds,
@@ -129,8 +134,10 @@ public class EnvoyConfiguration {
     this.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
     this.enableHttp3 = enableHttp3;
     this.enableGzip = enableGzip;
+    this.enableBrotli = enableBrotli;
     this.enableHappyEyeballs = enableHappyEyeballs;
     this.enableInterfaceBinding = enableInterfaceBinding;
+    this.forceIPv6 = forceIPv6;
     this.h2ConnectionKeepaliveIdleIntervalMilliseconds =
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
@@ -164,7 +171,8 @@ public class EnvoyConfiguration {
    */
   String resolveTemplate(final String configTemplate, final String platformFilterTemplate,
                          final String nativeFilterTemplate,
-                         final String altProtocolCacheFilterInsert, final String gzipFilterInsert) {
+                         final String altProtocolCacheFilterInsert, final String gzipFilterInsert,
+                         final String brotliFilterInsert) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -185,6 +193,10 @@ public class EnvoyConfiguration {
 
     if (enableGzip) {
       customFiltersBuilder.append(gzipFilterInsert);
+    }
+
+    if (enableBrotli) {
+      customFiltersBuilder.append(brotliFilterInsert);
     }
 
     String processedTemplate =
@@ -241,6 +253,7 @@ public class EnvoyConfiguration {
                               enableDrainPostDnsRefresh ? "true" : "false"))
         .append(String.format("- &enable_interface_binding %s\n",
                               enableInterfaceBinding ? "true" : "false"))
+        .append(String.format("- &android_force_ipv6 %s\n", forceIPv6 ? "true" : "false"))
         .append(String.format("- &h2_connection_keepalive_idle_interval %ss\n",
                               h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",

@@ -11,7 +11,17 @@ namespace Platform {
 
 EngineBuilder::EngineBuilder(std::string config_template)
     : callbacks_(std::make_shared<EngineCallbacks>()), config_template_(config_template) {}
-EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {}
+EngineBuilder::EngineBuilder() : EngineBuilder(std::string(config_template)) {
+#if defined(__APPLE__)
+  dns_resolver_name_ = "envoy.network.dns_resolver.apple";
+  dns_resolver_config_ = "{\"@type\":\"type.googleapis.com/"
+                         "envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\"}";
+#else
+  dns_resolver_name_ = "envoy.network.dns_resolver.cares";
+  dns_resolver_config_ = "{\"@type\":\"type.googleapis.com/"
+                         "envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\"}";
+#endif
+}
 
 EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
   this->log_level_ = log_level;
@@ -93,8 +103,18 @@ EngineBuilder& EngineBuilder::setDeviceOs(const std::string& device_os) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::setStreamIdleTimeoutSeconds(int stream_idle_timeout_seconds) {
+  this->stream_idle_timeout_seconds_ = stream_idle_timeout_seconds;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::enableGzip(bool gzip_on) {
   this->gzip_filter_ = gzip_on;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::enableBrotli(bool brotli_on) {
+  this->brotli_filter_ = brotli_on;
   return *this;
 }
 
@@ -106,10 +126,8 @@ std::string EngineBuilder::generateConfigStr() {
       {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
       {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
       {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},
-      {"dns_resolver_name", "envoy.network.dns_resolver.cares"},
-      {"dns_resolver_config",
-       "{\"@type\":\"type.googleapis.com/"
-       "envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\"}"},
+      {"dns_resolver_name", dns_resolver_name_},
+      {"dns_resolver_config", dns_resolver_config_},
       {"h2_connection_keepalive_idle_interval",
        fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_ / 1000.0)},
       {"h2_connection_keepalive_timeout",
@@ -138,6 +156,11 @@ std::string EngineBuilder::generateConfigStr() {
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
         &config_template_);
   }
+  if (this->brotli_filter_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", brotli_config_insert)}},
+        &config_template_);
+  }
 
   config_builder << config_template_;
 
@@ -156,10 +179,16 @@ EngineSharedPtr EngineBuilder::build() {
 
   envoy_event_tracker null_tracker{};
 
-  auto config_str = this->generateConfigStr();
+  std::string config_str;
+  if (config_override_for_tests_.empty()) {
+    config_str = this->generateConfigStr();
+  } else {
+    config_str = config_override_for_tests_;
+  }
   auto envoy_engine =
       init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
-  run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str());
+  run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str(),
+             this->admin_address_path_for_tests_.c_str());
 
   // we can't construct via std::make_shared
   // because Engine is only constructible as a friend

@@ -33,7 +33,9 @@ public:
   EngineBuilder& setAppVersion(const std::string& app_version);
   EngineBuilder& setAppId(const std::string& app_id);
   EngineBuilder& setDeviceOs(const std::string& app_id);
+  EngineBuilder& setStreamIdleTimeoutSeconds(int stream_idle_timeout_seconds);
   EngineBuilder& enableGzip(bool gzip_on);
+  EngineBuilder& enableBrotli(bool brotli_on);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
@@ -45,6 +47,9 @@ public:
   // Filter): EngineBuilder& addNativeFilter(name: String = UUID.randomUUID().toString(),
   // typedConfig: String): EngineBuilder& addStringAccessor(name: String, accessor:
   // EnvoyStringAccessor): EngineBuilder {
+protected:
+  void setOverrideConfigForTests(std::string config) { config_override_for_tests_ = config; }
+  void setAdminAddressPathForTests(std::string admin) { admin_address_path_for_tests_ = admin; }
 
 private:
   LogLevel log_level_ = LogLevel::info;
@@ -52,7 +57,6 @@ private:
 
   std::string config_template_;
   std::string stats_domain_ = "0.0.0.0";
-  std::string gzip_config_ = "";
   int connect_timeout_seconds_ = 30;
   int dns_refresh_seconds_ = 60;
   int dns_failure_refresh_seconds_base_ = 2;
@@ -66,9 +70,14 @@ private:
   std::string app_id_ = "unspecified";
   std::string device_os_ = "unspecified";
   std::string virtual_clusters_ = "[]";
+  std::string config_override_for_tests_ = "";
+  std::string admin_address_path_for_tests_ = "";
+  std::string dns_resolver_name_ = "";
+  std::string dns_resolver_config_ = "";
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;
   bool gzip_filter_ = true;
+  bool brotli_filter_ = false;
 
   // TODO(crockeo): add after filter integration
   // private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()

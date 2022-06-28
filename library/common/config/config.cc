@@ -57,9 +57,28 @@ const char* gzip_config_insert = R"(
           ignore_no_transform_header: true
 )";
 
+const char* brotli_config_insert = R"(
+  - name: envoy.filters.http.decompressor
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+      decompressor_library:
+        name: text_optimized
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.compression.brotli.decompressor.v3.Brotli
+      request_direction_config:
+        common_config:
+          enabled:
+            default_value: false
+            runtime_key: request_decompressor_enabled
+      response_direction_config:
+        common_config:
+          ignore_no_transform_header: true
+)";
+
 // clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
+- &android_force_ipv6 false
 - &connect_timeout 30s
 - &dns_fail_base_interval 2s
 - &dns_fail_max_interval 10s
@@ -69,9 +88,17 @@ const std::string config_header = R"(
 - &dns_multiple_addresses true
 - &dns_preresolve_hostnames []
 - &dns_refresh_rate 60s
-- &dns_resolver_name envoy.network.dns_resolver.cares
+)"
+#if defined(__APPLE__)
+R"(- &dns_resolver_name envoy.network.dns_resolver.apple
+- &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig"}
+)"
+#else
+R"(- &dns_resolver_name envoy.network.dns_resolver.cares
 - &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
-- &enable_drain_post_dns_refresh false
+)"
+#endif
+R"(- &enable_drain_post_dns_refresh false
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
@@ -482,8 +509,12 @@ layered_runtime:
     - name: static_layer_0
       static_layer:
         envoy:
+          # This disables envoy bug stats, which are filtered out of our stats inclusion list anyway
+          # Global stats do not play well with engines with limited lifetimes
+          disallow_global_stats: true
           reloadable_features:
             allow_multiple_dns_addresses: *dns_multiple_addresses
+            android_always_use_v6: *android_force_ipv6
             http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
 )"
 // Needed due to warning in
