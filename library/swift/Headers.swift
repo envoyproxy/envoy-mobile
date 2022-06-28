@@ -8,19 +8,25 @@ public class Headers: NSObject {
 
   /// Get the value for the provided header name.
   ///
-  /// - parameter name: The case-insensitive header name for which to
-  ///                   get the current value.
+  /// - note: The lookup for a header name is a case-insensitive operation.
   ///
+  /// - parameter name: Header name for which to get the current value.
   ///
   /// - returns: The current headers specified for the provided name.
   public func value(forName name: String) -> [String]? {
     return self.container.value(forName: name)
   }
 
-  /// Accessor for all underlying headers as a map.
+  /// Accessor for all underlying case-sensitive headers. When possible,
+  /// use case-insensitive accessors instead.
   ///
-  /// - returns: The underlying headers.
-  public func allHeaders() -> [String: [String]] {
+  /// - warning: It's discouraged to use this dictionary for equality
+  ///            key-based lookups as this may lead to issues with headers
+  ///            that do not follow expected casing i.e., "Content-Length"
+  ///            instead of "content-length".
+  ///
+  /// - returns: The underlying case-sensitive headers.
+  public func caseSensitiveHeaders() -> [String: [String]] {
     return self.container.allHeaders()
   }
 
@@ -56,6 +62,6 @@ extension Headers {
 
 extension Headers {
   public override var description: String {
-    return "\(type(of: self)) \(self.allHeaders())"
+    return "\(type(of: self)) \(self.caseSensitiveHeaders())"
   }
 }

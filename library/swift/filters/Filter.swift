@@ -27,7 +27,7 @@ extension EnvoyHTTPFilter {
                                                     streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
-          return [kEnvoyFilterHeadersStatusContinue, headers.allHeaders()]
+          return [kEnvoyFilterHeadersStatusContinue, headers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, NSNull()]
         }
@@ -44,7 +44,10 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, NSNull()]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.allHeaders() as Any]
+          return [
+                    kEnvoyFilterDataStatusResumeIteration, data,
+                    headers?.caseSensitiveHeaders() as Any,
+          ]
         }
       }
 
@@ -53,14 +56,14 @@ extension EnvoyHTTPFilter {
                                                      streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, trailers.allHeaders()]
+          return [kEnvoyFilterTrailersStatusContinue, trailers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, NSNull()]
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterTrailersStatusResumeIteration,
-            trailers.allHeaders(),
-            headers?.allHeaders() as Any,
+            trailers.caseSensitiveHeaders(),
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
           ]
         }
@@ -74,7 +77,7 @@ extension EnvoyHTTPFilter {
                                                       streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
-          return [kEnvoyFilterHeadersStatusContinue, headers.allHeaders()]
+          return [kEnvoyFilterHeadersStatusContinue, headers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, NSNull()]
         }
@@ -91,7 +94,10 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, NSNull()]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.allHeaders() as Any]
+          return [
+                    kEnvoyFilterDataStatusResumeIteration, data,
+                    headers?.caseSensitiveHeaders() as Any,
+          ]
         }
       }
 
@@ -100,14 +106,14 @@ extension EnvoyHTTPFilter {
                                                        streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, trailers.allHeaders()]
+          return [kEnvoyFilterTrailersStatusContinue, trailers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, NSNull()]
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterTrailersStatusResumeIteration,
-            trailers.allHeaders(),
-            headers?.allHeaders() as Any,
+            trailers.caseSensitiveHeaders(),
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
           ]
         }
@@ -146,9 +152,9 @@ extension EnvoyHTTPFilter {
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterResumeStatusResumeIteration,
-            headers?.allHeaders() as Any,
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
-            trailers?.allHeaders() as Any,
+            trailers?.caseSensitiveHeaders() as Any,
           ]
         }
       }
@@ -172,9 +178,9 @@ extension EnvoyHTTPFilter {
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterResumeStatusResumeIteration,
-            headers?.allHeaders() as Any,
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
-            trailers?.allHeaders() as Any,
+            trailers?.caseSensitiveHeaders() as Any,
           ]
         }
       }
