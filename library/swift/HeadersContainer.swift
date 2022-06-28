@@ -5,8 +5,8 @@
 struct HeadersContainer: Equatable {
   private var headers: [String: Header]
 
-  // Represents a headers name together with all of its values.
-  // It preserves the original casing of the header name.
+  /// Represents a headers name together with all of its values.
+  /// It preserves the original casing of the header name.
   struct Header: Equatable {
     private(set) var name: String
     private(set) var value: [String]
