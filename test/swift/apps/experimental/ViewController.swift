@@ -73,7 +73,7 @@ final class ViewController: UITableViewController {
         let message = "received headers with status \(statusCode)"
 
         let headerMessage = kFilteredHeaders
-          .compactMap { name in 
+          .compactMap { name in
               guard let value = headers.value(forName: $0) else {
                 return nil
               }
