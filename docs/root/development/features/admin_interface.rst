@@ -1,7 +1,7 @@
 .. _admin_interface:
 
 Admin Interface
-============
+====================
 
 You can read more about this Envoy's feature and how to use it [here|https://www.envoyproxy.io/docs/envoy/latest/operations/admin].
 By default, Envoy Mobiles does not come with an admin endpoint enabled. You can enable it in the following way.
