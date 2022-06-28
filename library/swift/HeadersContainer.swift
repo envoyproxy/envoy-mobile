@@ -41,12 +41,16 @@ struct HeadersContainer: Equatable {
       /// If a given header name already exists in the processed headers map, check
       /// if the currently processed header name is before the existing header name as
       /// determined by an alphabetical order.
-      if let existing = underlyingHeaders[lowercasedName], existing.name > name {
+      guard let existingHeader = underlyingHeaders[lowercasedName] else {
+        underlyingHeaders[lowercasedName] = Header(name: name, value: value)
+        continue
+      }
+
+      if existingHeader.name > name {
         underlyingHeaders[lowercasedName] =
-          Header(name: name, value: value + existing.value)
+          Header(name: name, value: value + existingHeader.value)
       } else {
-        let `default` = Header(name: underlyingHeaders[lowercasedName]?.name ?? name)
-        underlyingHeaders[lowercasedName, default: `default`].addValue(value)
+        underlyingHeaders[lowercasedName]?.addValue(value)
       }
     }
     self.headers = underlyingHeaders
