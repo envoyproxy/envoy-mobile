@@ -37,8 +37,6 @@ protected:
   Grpc::ClientType clientType() const override;
   // Returns whether the test is using the state-of-the-world or Delta xDS protocol.
   Grpc::SotwOrDelta sotwOrDelta() const;
-  // Returns the loopback address, depending on the IP version the test is configured with.
-  std::string loopbackAddr() const;
 
   // Get the runtime configuration value for the given key. The runtime value is either statically
   // provided in the bootstrap config or provided (or overridden) by the RTDS config.

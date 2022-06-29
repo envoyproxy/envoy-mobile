@@ -40,7 +40,7 @@ envoy::config::bootstrap::v3::LayeredRuntime layeredRuntimeConfig(const std::str
 
 class RtdsIntegrationTest : public XdsIntegrationTest {
 public:
-  RtdsIntegrationTest() : XdsIntegrationTest() {
+  RtdsIntegrationTest() {
     config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
       // Add the layered runtime config, which includes the RTDS layer.
       const std::string api_type = sotw_or_delta_ == Grpc::SotwOrDelta::Sotw ||

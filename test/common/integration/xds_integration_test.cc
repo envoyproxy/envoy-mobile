@@ -4,8 +4,6 @@
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
 #include "envoy/config/cluster/v3/cluster.pb.h"
 
-#include "source/common/network/utility.h"
-
 #include "test/common/grpc/grpc_client_integration.h"
 #include "test/common/integration/base_client_integration_test.h"
 #include "test/test_common/environment.h"
@@ -64,13 +62,6 @@ Network::Address::IpVersion XdsIntegrationTest::ipVersion() const {
 Grpc::ClientType XdsIntegrationTest::clientType() const { return std::get<1>(GetParam()); }
 
 Grpc::SotwOrDelta XdsIntegrationTest::sotwOrDelta() const { return std::get<2>(GetParam()); }
-
-std::string XdsIntegrationTest::loopbackAddr() const {
-  if (ipVersion() == Network::Address::IpVersion::v6) {
-    return Network::Utility::getIpv6LoopbackAddress()->ip()->addressAsString();
-  }
-  return Network::Utility::getCanonicalIpv4LoopbackAddress()->ip()->addressAsString();
-}
 
 void XdsIntegrationTest::SetUp() {
   // TODO(abeyad): Add paramaterized tests for HTTP1, HTTP2, and HTTP3.
@@ -155,7 +146,8 @@ XdsIntegrationTest::createSingleEndpointClusterConfig(const std::string& cluster
   auto* load_assignment = config.mutable_load_assignment();
   load_assignment->set_cluster_name(cluster_name);
   auto* endpoint = load_assignment->add_endpoints()->add_lb_endpoints()->mutable_endpoint();
-  endpoint->mutable_address()->mutable_socket_address()->set_address(loopbackAddr());
+  endpoint->mutable_address()->mutable_socket_address()->set_address(
+      Network::Test::getLoopbackAddressString(ipVersion()));
   endpoint->mutable_address()->mutable_socket_address()->set_port_value(0);
 
   // Set the protocol options.
@@ -174,7 +166,7 @@ envoy::config::bootstrap::v3::Admin XdsIntegrationTest::adminConfig() {
         address: {}
         port_value: 0
   )EOF",
-                                       loopbackAddr());
+                                       Network::Test::getLoopbackAddressString(ipVersion()));
 
   envoy::config::bootstrap::v3::Admin config;
   TestUtility::loadFromYaml(yaml, config);
