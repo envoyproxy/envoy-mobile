@@ -7,13 +7,13 @@ namespace Envoy {
 namespace {
 
 void validateStreamIntel(const envoy_final_stream_intel& final_intel, bool expect_dns,
-                         bool tls_upstream) {
+                         bool upstream_tls) {
   if (expect_dns) {
     EXPECT_NE(-1, final_intel.dns_start_ms);
     EXPECT_NE(-1, final_intel.dns_end_ms);
   }
 
-  if (tls_upstream) {
+  if (upstream_tls) {
     EXPECT_GT(final_intel.ssl_start_ms, 0);
     EXPECT_GT(final_intel.ssl_end_ms, 0);
   } else {
@@ -71,7 +71,7 @@ void BaseClientIntegrationTest::initialize() {
   });
   stream_prototype_->setOnComplete(
       [this](envoy_stream_intel, envoy_final_stream_intel final_intel) {
-        validateStreamIntel(final_intel, expect_dns_, tls_upstream_);
+        validateStreamIntel(final_intel, expect_dns_, upstream_tls_);
         cc_.on_complete_received_byte_count = final_intel.received_byte_count;
         cc_.on_complete_calls++;
         cc_.terminal_callback->setReady();

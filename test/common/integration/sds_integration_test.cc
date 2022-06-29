@@ -20,7 +20,7 @@ class SdsIntegrationTest : public XdsIntegrationTest {
 public:
   SdsIntegrationTest() : XdsIntegrationTest() {
     skip_tag_extraction_rule_check_ = true;
-    tls_upstream_ = true;
+    upstream_tls_ = true;
 
     config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
       // Change the base_h2 cluster to use SSL and SDS.
@@ -88,14 +88,12 @@ TEST_P(SdsIntegrationTest, SdsForUpstreamCluster) {
   };
   initialize();
 
-  // Wait until the Envoy instance has obtained an updated Secret from the SDS cluster. This
+  // Wait until the Envoy instance has obtained an updated secret from the SDS cluster. This
   // verifies that the SDS API is working from the Envoy client and allows us to know we can start
-  // sending HTTP requests to the upstream cluster using the Secret.
-  waitForCounterGe("cluster." + std::string(XDS_CLUSTER) +
-                       ".client_ssl_socket_factory.ssl_context_update_by_sds",
-                   1);
-  waitForCounterGe("sds.client_cert.update_success", 1);
-  EXPECT_EQ(getCounterValue("sds.client_cert.update_rejected"), 0);
+  // sending HTTP requests to the upstream cluster using the secret.
+  ASSERT_TRUE(waitForCounterGe("sds.client_cert.update_success", 1));
+  ASSERT_TRUE(
+      waitForCounterGe("cluster.base_h2.client_ssl_socket_factory.ssl_context_update_by_sds", 1));
 
   stream_->sendHeaders(default_request_headers_, true);
   terminal_callback_.waitReady();

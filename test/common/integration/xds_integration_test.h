@@ -37,8 +37,7 @@ protected:
   Grpc::ClientType clientType() const override;
   // Returns whether the test is using the state-of-the-world or Delta xDS protocol.
   Grpc::SotwOrDelta sotwOrDelta() const;
-  // The loopback address for the test to use to construct endpoint IP addresses. The loopback
-  // address depends on whether the test is configured with IPv4 or IPv6.
+  // Returns the loopback address, depending on the IP version the test is configured with.
   std::string loopbackAddr() const;
 
   // Get the runtime configuration value for the given key. The runtime value is either statically
@@ -55,7 +54,8 @@ protected:
   // Get the value of a Counter in the Envoy instance.
   uint64_t getCounterValue(const std::string& counter);
   // Wait until the Counter specified by `name` is >= `value`.
-  testing::AssertionResult waitForCounterGe(const std::string& name, uint64_t value);
+  ABSL_MUST_USE_RESULT testing::AssertionResult waitForCounterGe(const std::string& name,
+                                                                 uint64_t value);
 
 private:
   std::string admin_filename_;

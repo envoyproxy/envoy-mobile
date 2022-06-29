@@ -60,7 +60,6 @@ protected:
   bool explicit_flow_control_ = false;
   bool expect_dns_ = true;
   bool override_builder_config_ = false;
-  bool tls_upstream_ = false;
 };
 
 } // namespace Envoy

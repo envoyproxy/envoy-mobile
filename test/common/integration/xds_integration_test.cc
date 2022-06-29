@@ -4,6 +4,8 @@
 #include "envoy/config/bootstrap/v3/bootstrap.pb.h"
 #include "envoy/config/cluster/v3/cluster.pb.h"
 
+#include "source/common/network/utility.h"
+
 #include "test/common/grpc/grpc_client_integration.h"
 #include "test/common/integration/base_client_integration_test.h"
 #include "test/test_common/environment.h"
@@ -65,9 +67,9 @@ Grpc::SotwOrDelta XdsIntegrationTest::sotwOrDelta() const { return std::get<2>(G
 
 std::string XdsIntegrationTest::loopbackAddr() const {
   if (ipVersion() == Network::Address::IpVersion::v6) {
-    return "::1";
+    return Network::Utility::getIpv6LoopbackAddress()->ip()->addressAsString();
   }
-  return "127.0.0.1";
+  return Network::Utility::getCanonicalIpv4LoopbackAddress()->ip()->addressAsString();
 }
 
 void XdsIntegrationTest::SetUp() {
@@ -167,17 +169,12 @@ XdsIntegrationTest::createSingleEndpointClusterConfig(const std::string& cluster
 
 envoy::config::bootstrap::v3::Admin XdsIntegrationTest::adminConfig() {
   const std::string yaml = fmt::format(R"EOF(
-    access_log:
-    - name: envoy.access_loggers.file
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-        path: "{}"
     address:
       socket_address:
         address: {}
         port_value: 0
   )EOF",
-                                       ::Platform::null_device_path, loopbackAddr());
+                                       loopbackAddr());
 
   envoy::config::bootstrap::v3::Admin config;
   TestUtility::loadFromYaml(yaml, config);
