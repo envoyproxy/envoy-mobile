@@ -7,6 +7,6 @@ platform(
         "@platforms//os:macos",
     ],
     exec_properties = {
-        "Pool": "macos",
+        "Pool": "macos12_x64",
     },
 )
