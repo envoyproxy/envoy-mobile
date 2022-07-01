@@ -21,7 +21,7 @@ class HeadersBuilderTest {
       .remove("x-foo")
       .build()
 
-    assertThat(headers.allHeaders()).doesNotContainKey("x-foo")
+    assertThat(headers.caseSensitiveHeaders()).doesNotContainKey("x-foo")
   }
 
   @Test

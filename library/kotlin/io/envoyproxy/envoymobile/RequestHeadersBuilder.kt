@@ -18,13 +18,14 @@ class RequestHeadersBuilder : HeadersBuilder {
     authority: String,
     path: String
   ) :
-    super(
-      mutableMapOf(
+    super(HeadersContainer(
+      mapOf(
         ":authority" to mutableListOf(authority),
         ":method" to mutableListOf(method.stringValue),
         ":path" to mutableListOf(path),
         ":scheme" to mutableListOf(scheme)
       )
+    )
     )
 
   /**
@@ -33,7 +34,9 @@ class RequestHeadersBuilder : HeadersBuilder {
    *
    * @param headers: The headers to start with.
    */
-  internal constructor(headers: MutableMap<String, MutableList<String>>) : super(headers)
+  internal constructor(headers: Map<String, MutableList<String>>) : super(HeadersContainer(headers))
+
+  internal constructor(container: HeadersContainer) : super(container)
 
   override fun add(name: String, value: String): RequestHeadersBuilder {
     super.add(name, value)
@@ -92,6 +95,6 @@ class RequestHeadersBuilder : HeadersBuilder {
    * @return RequestHeaders, New instance of request headers.
    */
   fun build(): RequestHeaders {
-    return RequestHeaders(headers)
+    return RequestHeaders(container)
   }
 }

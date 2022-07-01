@@ -12,14 +12,12 @@ class RequestTrailers : Trailers {
    */
   internal constructor(trailers: Map<String, List<String>>) : super(trailers)
 
+  internal constructor(container: HeadersContainer) : super(container)
+
   /**
    * Convert the trailers back to a builder for mutation.
    *
    * @return RequestTrailersBuilder, The new builder.
    */
-  fun toRequestTrailersBuilder() = RequestTrailersBuilder(
-    headers.mapValues {
-      it.value.toMutableList()
-    }.toMutableMap()
-  )
+  fun toRequestTrailersBuilder() = RequestTrailersBuilder(container)
 }

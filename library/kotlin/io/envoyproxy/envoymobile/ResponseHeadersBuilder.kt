@@ -8,7 +8,7 @@ class ResponseHeadersBuilder : HeadersBuilder {
   /**
    * Initialize a new instance of the builder.
    */
-  constructor() : super(mutableMapOf())
+  constructor() : super(HeadersContainer(mapOf()))
 
   /**
    * Instantiate a new builder. Used only by ResponseHeaders to convert back to
@@ -16,7 +16,9 @@ class ResponseHeadersBuilder : HeadersBuilder {
    *
    * @param headers: The headers to start with.
    */
-  internal constructor(headers: MutableMap<String, MutableList<String>>) : super(headers)
+  internal constructor(headers: MutableMap<String, MutableList<String>>) : super(HeadersContainer(headers))
+
+  internal constructor(container: HeadersContainer) : super(container)
 
   override fun add(name: String, value: String): ResponseHeadersBuilder {
     super.add(name, value)
@@ -59,6 +61,6 @@ class ResponseHeadersBuilder : HeadersBuilder {
    * @return ResponseHeaders, New instance of response headers.
    */
   fun build(): ResponseHeaders {
-    return ResponseHeaders(headers)
+    return ResponseHeaders(container)
   }
 }

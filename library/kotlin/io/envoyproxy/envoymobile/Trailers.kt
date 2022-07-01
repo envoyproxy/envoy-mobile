@@ -10,5 +10,7 @@ open class Trailers : Headers {
    *
    * @param trailers: Trailers to set.
    */
-  protected constructor(trailers: Map<String, List<String>>) : super(trailers)
+  protected constructor(trailers: Map<String, List<String>>) : super(HeadersContainer.create(trailers))
+
+  protected constructor(container: HeadersContainer) : super(container)
 }

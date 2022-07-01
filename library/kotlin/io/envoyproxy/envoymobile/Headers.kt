@@ -6,15 +6,15 @@ package io.envoyproxy.envoymobile
  */
 open class Headers {
   @Suppress("MemberNameEqualsClassName")
-  val headers: Map<String, List<String>>
+  val container: HeadersContainer
 
   /**
    * Internal constructor used by builders.
    *
    * @param headers: Headers to set.
    */
-  protected constructor(headers: Map<String, List<String>>) {
-    this.headers = headers
+  internal constructor(container: HeadersContainer) {
+    this.container = container
   }
 
   /**
@@ -25,7 +25,7 @@ open class Headers {
    * @return List<String>?, The current headers specified for the provided name.
    */
   fun value(name: String): List<String>? {
-    return headers[name]
+    return container.value(name)
   }
 
   /**
@@ -33,7 +33,7 @@ open class Headers {
    *
    * @return Map<String, List<String>>, The underlying headers.
    */
-  fun allHeaders(): Map<String, List<String>> {
-    return headers
+  fun caseSensitiveHeaders(): Map<String, List<String>> {
+    return container.allHeaders()
   }
 }

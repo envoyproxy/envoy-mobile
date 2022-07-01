@@ -9,7 +9,9 @@ class GRPCRequestHeadersBuilder : HeadersBuilder {
    *
    * @param headers: Headers to set.
    */
-  internal constructor(headers: MutableMap<String, MutableList<String>>) : super(headers)
+  internal constructor(headers: Map<String, MutableList<String>>) : super(HeadersContainer(headers))
+
+  internal constructor(container: HeadersContainer) : super(container)
 
   override fun add(name: String, value: String): GRPCRequestHeadersBuilder {
     super.add(name, value)
@@ -38,8 +40,8 @@ class GRPCRequestHeadersBuilder : HeadersBuilder {
    * @param authority The URL authority for the request (i.e., "api.foo.com").
    * @param path Path for the RPC (i.e., `/pb.api.v1.Foo/GetBar`).
    */
-  constructor(scheme: String, authority: String, path: String) : super(
-    mutableMapOf<String, MutableList<String>>(
+  constructor(scheme: String, authority: String, path: String) : super(HeadersContainer(
+    mapOf<String, MutableList<String>>(
       ":authority" to mutableListOf<String>(authority),
       ":method" to mutableListOf<String>("POST"),
       ":path" to mutableListOf<String>(path),
@@ -47,6 +49,7 @@ class GRPCRequestHeadersBuilder : HeadersBuilder {
       "content-type" to mutableListOf<String>("application/grpc"),
       "x-envoy-mobile-upstream-protocol" to mutableListOf<String>(UpstreamHttpProtocol.HTTP2.stringValue)
     )
+  )
   )
 
   /**
@@ -71,6 +74,6 @@ class GRPCRequestHeadersBuilder : HeadersBuilder {
    * @return New instance of request headers.
    */
   fun build(): GRPCRequestHeaders {
-    return GRPCRequestHeaders(headers)
+    return GRPCRequestHeaders(container)
   }
 }
