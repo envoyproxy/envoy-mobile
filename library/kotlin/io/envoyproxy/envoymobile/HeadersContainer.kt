@@ -61,7 +61,7 @@ open class HeadersContainer {
     var caseSensitiveHeaders = mutableMapOf<String, List<String>>()
     headers.forEach {
       caseSensitiveHeaders.put(it.value.name, it.value.value)
-    } 
+    }
 
     return caseSensitiveHeaders
   }
