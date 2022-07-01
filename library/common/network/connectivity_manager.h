@@ -21,13 +21,13 @@
  * 1. When network type changes, a refreshDNS call will be scheduled on the event dispatcher, along
  * with a configuration key of this type. If network type changes again before that refresh
  * executes, the refresh is now stale, another refresh task will have been queued, and it should no
- * longer execute. The configuration key allows the configurator to determine if the refreshDNS call
+ * longer execute. The configuration key allows the connectivity_manager to determine if the refreshDNS call
  * is representative of current configuration.
  * 2. When a request is configured with a certain set of socket options and begins, it is given a
  * configuration key. The heuristic in reportNetworkUsage relies on characteristics of the
  * request/response to make future decisions about socket options, but needs to be able to correctly
  * associate these metrics with their original configuration. If network state changes while the
- * request/response are in-flight, the configurator can determine the relevance of associated
+ * request/response are in-flight, the connectivity_manager can determine the relevance of associated
  * metrics through the configuration key.
  *
  * Additionally, in the future, more advanced heuristics may maintain multiple parallel
@@ -38,14 +38,14 @@
 typedef uint16_t envoy_netconf_t;
 
 /**
- * These values specify the behavior of the network configurator with respect to the upstream
+ * These values specify the behavior of the network connectivity_manager with respect to the upstream
  * socket options it supplies.
  */
 typedef enum {
-  // In this mode, the configurator will provide socket options that result in the creation of a
+  // In this mode, the connectivity_manager will provide socket options that result in the creation of a
   // distinct connection pool for a given value of preferred network.
   DefaultPreferredNetworkMode = 0,
-  // In this mode, the configurator will provide socket options that intentionally attempt to
+  // In this mode, the connectivity_manager will provide socket options that intentionally attempt to
   // override the current preferred network type with an alternative, via interface-binding socket
   // options. Note this mode is experimental, and it will not be enabled at all unless
   // enable_interface_binding_ is set to true.

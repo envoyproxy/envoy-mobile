@@ -6,7 +6,7 @@
 
 #include "library/common/extensions/retry/options/network_configuration/predicate.pb.h"
 #include "library/common/extensions/retry/options/network_configuration/predicate.pb.validate.h"
-#include "library/common/network/configurator.h"
+#include "library/common/network/connectivity_manager.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -25,7 +25,7 @@ public:
   updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const override;
 
 private:
-  Network::ConnectivityManagerSharedPtr network_configurator_;
+  Network::ConnectivityManagerSharedPtr network_connectivity_manager_;
 };
 
 } // namespace Options
