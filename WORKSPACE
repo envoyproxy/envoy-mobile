@@ -11,6 +11,13 @@ http_archive(
     ],
 )
 
+http_archive(
+    name = "rules_foreign_cc",
+    sha256 = "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5",
+    strip_prefix = "rules_foreign_cc-a473d42bada74afac4e32b767964c1785232e07b",
+    url = "https://github.com/Yannic/rules_foreign_cc/archive/a473d42bada74afac4e32b767964c1785232e07b.tar.gz",
+)
+
 load("@envoy_mobile//bazel:envoy_mobile_repositories.bzl", "envoy_mobile_repositories")
 envoy_mobile_repositories()
 
