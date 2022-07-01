@@ -22,8 +22,7 @@ void NetworkConfigurationFilter::setDecoderFilterCallbacks(
   auto options = std::make_shared<Network::Socket::Options>();
   connectivity_manager_->setInterfaceBindingEnabled(enable_interface_binding_);
   connectivity_manager_->setDrainPostDnsRefreshEnabled(enable_drain_post_dns_refresh_);
-  extra_stream_info_->configuration_key_ =
-      connectivity_manager_->addUpstreamSocketOptions(options);
+  extra_stream_info_->configuration_key_ = connectivity_manager_->addUpstreamSocketOptions(options);
   decoder_callbacks_->addUpstreamSocketOptions(options);
 }
 
@@ -34,7 +33,7 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::Respon
   // adapted to current network conditions. Receiving headers from upstream always means some level
   // of network transmission was successful, so we unconditionally set network_fault to false.
   connectivity_manager_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
-                                                    false /* network_fault */);
+                                            false /* network_fault */);
 
   return Http::FilterHeadersStatus::Continue;
 }
@@ -56,7 +55,7 @@ Http::LocalErrorStatus NetworkConfigurationFilter::onLocalReply(const LocalReply
   // Report request status to network connectivity_manager, so that socket configuration may be
   // adapted to current network conditions.
   connectivity_manager_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
-                                                    network_fault);
+                                            network_fault);
 
   return Http::LocalErrorStatus::ContinueAndResetStream;
 }
