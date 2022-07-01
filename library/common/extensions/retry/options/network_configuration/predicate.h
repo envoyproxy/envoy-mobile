@@ -25,7 +25,7 @@ public:
   updateOptions(const Upstream::RetryOptionsPredicate::UpdateOptionsParameters&) const override;
 
 private:
-  Network::ConfiguratorSharedPtr network_configurator_;
+  Network::ConnectivityManagerSharedPtr network_configurator_;
 };
 
 } // namespace Options

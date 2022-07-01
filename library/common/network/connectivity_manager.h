@@ -74,11 +74,11 @@ using InterfacePair = std::pair<const std::string, Address::InstanceConstSharedP
  * if that cache is missing either due to alternate configurations, or lifecycle-related timing.
  *
  */
-class Configurator : public Logger::Loggable<Logger::Id::upstream>,
+class ConnectivityManager : public Logger::Loggable<Logger::Id::upstream>,
                      public Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks,
                      public Singleton::Instance {
 public:
-  Configurator(Upstream::ClusterManager& cluster_manager,
+  ConnectivityManager(Upstream::ClusterManager& cluster_manager,
                DnsCacheManagerSharedPtr dns_cache_manager)
       : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
 
@@ -211,36 +211,36 @@ private:
   static NetworkState network_state_;
 };
 
-using ConfiguratorSharedPtr = std::shared_ptr<Configurator>;
+using ConnectivityManagerSharedPtr = std::shared_ptr<ConnectivityManager>;
 
 /**
- * Provides access to the singleton Configurator.
+ * Provides access to the singleton ConnectivityManager.
  */
-class ConfiguratorFactory {
+class ConnectivityManagerFactory {
 public:
-  ConfiguratorFactory(Server::Configuration::CommonFactoryContext& context) : context_(context) {}
+  ConnectivityManagerFactory(Server::Configuration::CommonFactoryContext& context) : context_(context) {}
 
   /**
-   * @returns singleton Configurator instance.
+   * @returns singleton ConnectivityManager instance.
    */
-  ConfiguratorSharedPtr get();
+  ConnectivityManagerSharedPtr get();
 
 private:
   Server::Configuration::CommonFactoryContext& context_;
 };
 
 /**
- * Provides nullable access to the singleton Configurator.
+ * Provides nullable access to the singleton ConnectivityManager.
  */
-class ConfiguratorHandle {
+class ConnectivityManagerHandle {
 public:
-  ConfiguratorHandle(Singleton::Manager& singleton_manager)
+  ConnectivityManagerHandle(Singleton::Manager& singleton_manager)
       : singleton_manager_(singleton_manager) {}
 
   /**
-   * @returns singleton Configurator instance. Can be nullptr if it hasn't been created.
+   * @returns singleton ConnectivityManager instance. Can be nullptr if it hasn't been created.
    */
-  ConfiguratorSharedPtr get();
+  ConnectivityManagerSharedPtr get();
 
 private:
   Singleton::Manager& singleton_manager_;
