@@ -20,10 +20,10 @@ void NetworkConfigurationFilter::setDecoderFilterCallbacks(
       StreamInfo::FilterState::StateType::Mutable, StreamInfo::FilterState::LifeSpan::Request);
 
   auto options = std::make_shared<Network::Socket::Options>();
-  network_connectivity_manager_->setInterfaceBindingEnabled(enable_interface_binding_);
-  network_connectivity_manager_->setDrainPostDnsRefreshEnabled(enable_drain_post_dns_refresh_);
+  connectivity_manager_->setInterfaceBindingEnabled(enable_interface_binding_);
+  connectivity_manager_->setDrainPostDnsRefreshEnabled(enable_drain_post_dns_refresh_);
   extra_stream_info_->configuration_key_ =
-      network_connectivity_manager_->addUpstreamSocketOptions(options);
+      connectivity_manager_->addUpstreamSocketOptions(options);
   decoder_callbacks_->addUpstreamSocketOptions(options);
 }
 
@@ -33,7 +33,7 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::Respon
   // Report request status to network connectivity_manager, so that socket configuration may be
   // adapted to current network conditions. Receiving headers from upstream always means some level
   // of network transmission was successful, so we unconditionally set network_fault to false.
-  network_connectivity_manager_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
+  connectivity_manager_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
                                                     false /* network_fault */);
 
   return Http::FilterHeadersStatus::Continue;
@@ -55,7 +55,7 @@ Http::LocalErrorStatus NetworkConfigurationFilter::onLocalReply(const LocalReply
                                                 .first_upstream_rx_byte_received_.has_value());
   // Report request status to network connectivity_manager, so that socket configuration may be
   // adapted to current network conditions.
-  network_connectivity_manager_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
+  connectivity_manager_->reportNetworkUsage(extra_stream_info_->configuration_key_.value(),
                                                     network_fault);
 
   return Http::LocalErrorStatus::ContinueAndResetStream;

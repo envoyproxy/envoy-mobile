@@ -145,7 +145,7 @@ private:
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   Http::ClientPtr http_client_;
-  Network::ConnectivityManagerSharedPtr network_connectivity_manager_;
+  Network::ConnectivityManagerSharedPtr connectivity_manager_;
   Event::ProvisionalDispatcherPtr dispatcher_;
   // Used by the cerr logger to ensure logs don't overwrite each other.
   absl::Mutex log_mutex_;

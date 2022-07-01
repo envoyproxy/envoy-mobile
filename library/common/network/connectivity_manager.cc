@@ -66,7 +66,7 @@ constexpr absl::string_view WwanPrefix = "";
 namespace Envoy {
 namespace Network {
 
-SINGLETON_MANAGER_REGISTRATION(network_connectivity_manager);
+SINGLETON_MANAGER_REGISTRATION(connectivity_manager);
 
 constexpr absl::string_view BaseDnsCache = "base_dns_cache";
 
@@ -422,7 +422,7 @@ ConnectivityManager::enumerateInterfaces([[maybe_unused]] unsigned short family,
 
 ConnectivityManagerSharedPtr ConnectivityManagerFactory::get() {
   return context_.singletonManager().getTyped<ConnectivityManager>(
-      SINGLETON_MANAGER_REGISTERED_NAME(network_connectivity_manager), [&] {
+      SINGLETON_MANAGER_REGISTERED_NAME(connectivity_manager), [&] {
         Extensions::Common::DynamicForwardProxy::DnsCacheManagerFactoryImpl cache_manager_factory{
             context_};
         return std::make_shared<ConnectivityManager>(context_.clusterManager(),
@@ -432,7 +432,7 @@ ConnectivityManagerSharedPtr ConnectivityManagerFactory::get() {
 
 ConnectivityManagerSharedPtr ConnectivityManagerHandle::get() {
   return singleton_manager_.getTyped<ConnectivityManager>(
-      SINGLETON_MANAGER_REGISTERED_NAME(network_connectivity_manager));
+      SINGLETON_MANAGER_REGISTERED_NAME(connectivity_manager));
 }
 
 } // namespace Network

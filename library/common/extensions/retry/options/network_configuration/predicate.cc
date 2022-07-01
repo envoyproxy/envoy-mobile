@@ -11,9 +11,9 @@ NetworkConfigurationRetryOptionsPredicate::NetworkConfigurationRetryOptionsPredi
     const envoymobile::extensions::retry::options::network_configuration::
         NetworkConfigurationOptionsPredicate&,
     Upstream::RetryExtensionFactoryContext& context) {
-  network_connectivity_manager_ =
+  connectivity_manager_ =
       Network::ConnectivityManagerHandle{context.singletonManager()}.get();
-  RELEASE_ASSERT(network_connectivity_manager_ != nullptr,
+  RELEASE_ASSERT(connectivity_manager_ != nullptr,
                  "unexpected nullptr network connectivity_manager");
 }
 
@@ -63,12 +63,12 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
 
   // Report request status to network connectivity_manager, so that socket configuration may be
   // adapted to current network conditions.
-  network_connectivity_manager_->reportNetworkUsage(extra_stream_info->configuration_key_.value(),
+  connectivity_manager_->reportNetworkUsage(extra_stream_info->configuration_key_.value(),
                                                     network_fault);
 
   // Update socket configuration for next retry attempt.
   extra_stream_info->configuration_key_ =
-      network_connectivity_manager_->addUpstreamSocketOptions(options);
+      connectivity_manager_->addUpstreamSocketOptions(options);
 
   // The options returned here replace any existing socket options used for a prior attempt. At
   // present, all socket options set in Envoy Mobile are provided by the NetworkConnectivityManager,

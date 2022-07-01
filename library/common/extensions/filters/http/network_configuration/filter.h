@@ -21,9 +21,9 @@ namespace NetworkConfiguration {
 class NetworkConfigurationFilter final : public Http::PassThroughFilter,
                                          public Logger::Loggable<Logger::Id::filter> {
 public:
-  NetworkConfigurationFilter(Network::ConnectivityManagerSharedPtr network_connectivity_manager,
+  NetworkConfigurationFilter(Network::ConnectivityManagerSharedPtr connectivity_manager,
                              bool enable_drain_post_dns_refresh, bool enable_interface_binding)
-      : network_connectivity_manager_(network_connectivity_manager),
+      : connectivity_manager_(connectivity_manager),
         extra_stream_info_(nullptr), // always set in setDecoderFilterCallbacks
         enable_drain_post_dns_refresh_(enable_drain_post_dns_refresh),
         enable_interface_binding_(enable_interface_binding) {}
@@ -36,7 +36,7 @@ public:
   Http::LocalErrorStatus onLocalReply(const LocalReplyData&) override;
 
 private:
-  Network::ConnectivityManagerSharedPtr network_connectivity_manager_;
+  Network::ConnectivityManagerSharedPtr connectivity_manager_;
   StreamInfo::ExtraStreamInfo* extra_stream_info_;
   bool enable_drain_post_dns_refresh_;
   bool enable_interface_binding_;
