@@ -119,7 +119,8 @@ TEST_F(ConnectivityManagerTest,
   EXPECT_EQ(DefaultPreferredNetworkMode, connectivity_manager_->getSocketMode());
 }
 
-TEST_F(ConnectivityManagerTest, ReportNetworkUsageTriggersOverrideAfterFirstFaultAfterNetworkUpdate) {
+TEST_F(ConnectivityManagerTest,
+       ReportNetworkUsageTriggersOverrideAfterFirstFaultAfterNetworkUpdate) {
   envoy_netconf_t configuration_key = connectivity_manager_->getConfigurationKey();
   connectivity_manager_->setInterfaceBindingEnabled(true);
   EXPECT_EQ(DefaultPreferredNetworkMode, connectivity_manager_->getSocketMode());
