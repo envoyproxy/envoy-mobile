@@ -25,7 +25,7 @@ TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTest) {
   Upstream::RetryExtensionFactoryContextImpl retry_extension_factory_context{
       *mock_factory_context.singleton_manager_};
 
-  auto connectivity_manager = Network::ConfiguratorFactory(mock_factory_context).get();
+  auto connectivity_manager = Network::ConnectivityManagerFactory(mock_factory_context).get();
   ASSERT_NE(nullptr, connectivity_manager);
 
   auto factory = Registry::FactoryRegistry<Upstream::RetryOptionsPredicateFactory>::getFactory(
@@ -39,7 +39,7 @@ TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTest) {
             predicate->updateOptions({mock_stream_info, nullptr}).new_upstream_socket_options_);
 }
 
-TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTestWithoutConfigurator) {
+TEST(NetworkConfigurationRetryOptionsPredicateTest, PredicateTestWithoutConnectivityManager) {
   NiceMock<Server::Configuration::MockFactoryContext> mock_factory_context;
   Upstream::RetryExtensionFactoryContextImpl retry_extension_factory_context{
       *mock_factory_context.singleton_manager_};
