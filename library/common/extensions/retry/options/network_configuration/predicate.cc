@@ -11,8 +11,10 @@ NetworkConfigurationRetryOptionsPredicate::NetworkConfigurationRetryOptionsPredi
     const envoymobile::extensions::retry::options::network_configuration::
         NetworkConfigurationOptionsPredicate&,
     Upstream::RetryExtensionFactoryContext& context) {
-  network_connectivity_manager_ = Network::ConnectivityManagerHandle{context.singletonManager()}.get();
-  RELEASE_ASSERT(network_connectivity_manager_ != nullptr, "unexpected nullptr network connectivity_manager");
+  network_connectivity_manager_ =
+      Network::ConnectivityManagerHandle{context.singletonManager()}.get();
+  RELEASE_ASSERT(network_connectivity_manager_ != nullptr,
+                 "unexpected nullptr network connectivity_manager");
 }
 
 Upstream::RetryOptionsPredicate::UpdateOptionsReturn
@@ -53,25 +55,27 @@ NetworkConfigurationRetryOptionsPredicate::updateOptions(
 
   // As a proxy for the many different types of network errors, this code interprets any failure
   // where a stream received no bytes from the upstream as a network fault. This status is passed to
-  // the connectivity_manager below when we report network usage, where it may be factored into future
-  // socket configuration.
+  // the connectivity_manager below when we report network usage, where it may be factored into
+  // future socket configuration.
   bool network_fault =
       !stream_info.upstreamInfo() ||
       !stream_info.upstreamInfo()->upstreamTiming().first_upstream_rx_byte_received_.has_value();
 
-  // Report request status to network connectivity_manager, so that socket configuration may be adapted
-  // to current network conditions.
+  // Report request status to network connectivity_manager, so that socket configuration may be
+  // adapted to current network conditions.
   network_connectivity_manager_->reportNetworkUsage(extra_stream_info->configuration_key_.value(),
-                                            network_fault);
+                                                    network_fault);
 
   // Update socket configuration for next retry attempt.
-  extra_stream_info->configuration_key_ = network_connectivity_manager_->addUpstreamSocketOptions(options);
+  extra_stream_info->configuration_key_ =
+      network_connectivity_manager_->addUpstreamSocketOptions(options);
 
   // The options returned here replace any existing socket options used for a prior attempt. At
-  // present, all socket options set in Envoy Mobile are provided by the NetworkConnectivityManager, so
-  // it's safe to simply replace them.
+  // present, all socket options set in Envoy Mobile are provided by the NetworkConnectivityManager,
+  // so it's safe to simply replace them.
   // TODO(goaway): If additional socket options are ever provided by a source other than the
-  // NetworkConnectivityManager, we need to account for the potential presence of those options here.
+  // NetworkConnectivityManager, we need to account for the potential presence of those options
+  // here.
   return Upstream::RetryOptionsPredicate::UpdateOptionsReturn{options};
 }
 
