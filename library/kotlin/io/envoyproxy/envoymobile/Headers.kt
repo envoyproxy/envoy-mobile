@@ -19,8 +19,8 @@ open class Headers {
   /**
    * Get the value for the provided header name. It's discouraged
    * to use this dictionary for equality key-based lookups as this
-   * may lead to issues with headers that do not follow expected 
-   * casing i.e., "Content-Length" instead of "content-length". 
+   * may lead to issues with headers that do not follow expected
+   * casing i.e., "Content-Length" instead of "content-length".
    *
    * @param name: Header name for which to get the current value.
    *
