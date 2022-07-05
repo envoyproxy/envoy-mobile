@@ -8,6 +8,20 @@ complexity:
   TooManyFunctions:
     active: false
 
+comments:
+  active: true
+  OutdatedDocumentation:
+    active: true
+    matchTypeParameters: false
+    matchDeclarationsOrder: false
+    allowParamOnConstructorProperties: true
+  UndocumentedPublicClass:
+    active: true
+  UndocumentedPublicFunction:
+    active: true
+  UndocumentedPublicProperty: 
+    active: true
+
 console-reports:
   active: true
 
