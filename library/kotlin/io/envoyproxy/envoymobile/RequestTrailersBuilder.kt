@@ -11,7 +11,7 @@ class RequestTrailersBuilder : HeadersBuilder {
 
   /*
    * Instantiate a new instance of the builder.
-   * 
+   *
    * @param container: The headers container to start with.
    */
   internal constructor(container: HeadersContainer) : super(container)

@@ -18,7 +18,7 @@ class ResponseHeadersBuilder : HeadersBuilder {
    */
   internal constructor(headers: MutableMap<String, MutableList<String>>) : super(HeadersContainer(headers))
 
-  /* 
+  /*
    * Instantiate a new builder.
    *
    * @param container: The headers container to start with.
