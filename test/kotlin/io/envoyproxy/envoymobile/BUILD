@@ -107,5 +107,5 @@ envoy_mobile_kt_test(
     ],
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
-    ]
+    ],
 )
