@@ -22,7 +22,8 @@ class RequestTrailersBuilder : HeadersBuilder {
    *
    * @param trailers: The trailers to start with.
    */
-  internal constructor(trailers: MutableMap<String, MutableList<String>>) : super(HeadersContainer(trailers))
+  internal constructor(trailers: MutableMap<String, MutableList<String>>)
+    : super(HeadersContainer(trailers))
 
   override fun add(name: String, value: String): RequestTrailersBuilder {
     super.add(name, value)

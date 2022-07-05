@@ -14,7 +14,7 @@ open class HeadersContainer {
    * It preserves the original casing of the header name.
    */
   data class Header(val name: String, var value: MutableList<String>) {
-    constructor(name: String) : this(name, mutableListOf()) {}
+    constructor(name: String) : this(name, mutableListOf())
 
     fun add(value: List<String>) {
       this.value.addAll(value)

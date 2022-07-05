@@ -15,7 +15,8 @@ class ResponseTrailersBuilder : HeadersBuilder {
    *
    * @param trailers: The trailers to start with.
    */
-  internal constructor(trailers: MutableMap<String, MutableList<String>>) : super(HeadersContainer(trailers))
+  internal constructor(trailers: MutableMap<String, MutableList<String>>)
+    : super(HeadersContainer(trailers))
 
   internal constructor(container: HeadersContainer) : super(container)
 
