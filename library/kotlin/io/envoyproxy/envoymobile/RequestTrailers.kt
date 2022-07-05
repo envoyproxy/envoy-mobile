@@ -12,6 +12,11 @@ class RequestTrailers : Trailers {
    */
   internal constructor(trailers: Map<String, List<String>>) : super(trailers)
 
+  /**
+   * Instantiate a new builder.
+   *
+   * @param container: The headers container to start with.
+   */
   internal constructor(container: HeadersContainer) : super(container)
 
   /**
