@@ -6,6 +6,8 @@ package io.envoyproxy.envoymobile
 class RequestTrailersBuilder : HeadersBuilder {
   /**
    * Initialize a new instance of the builder.
+   * 
+   * @paramt container: The headers container to start with.
    */
   internal constructor(container: HeadersContainer) : super(container)
 
