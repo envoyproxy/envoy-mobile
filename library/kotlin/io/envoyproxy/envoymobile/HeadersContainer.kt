@@ -104,7 +104,7 @@ open class HeadersContainer {
    * @param name The name of the header to remove.
    */
   fun remove(name: String) {
-    headers.remove(name)
+    headers.remove(name.lowercase())
   }
 
   /*
