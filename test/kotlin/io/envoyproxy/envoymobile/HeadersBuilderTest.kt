@@ -42,6 +42,7 @@ class HeadersBuilderTest {
     assertThat(headers.value("x-bar")).containsExactly("abc")
   }
 
+  @Test
   fun `removing specific header key performs a case-insentive header name lookup`() {
     val headers = RequestHeadersBuilder(mutableMapOf())
       .set("foo", mutableListOf("123"))
