@@ -32,7 +32,7 @@ open class HeadersContainer {
    */
   internal constructor(headers: Map<String, MutableList<String>>) {
     var underlyingHeaders = mutableMapOf<String, Header>()
-    /* 
+    /*
      * Dictionaries are unordered collections. Process headers with names
      * that are the same when lowercased in an alphabetical order to avoid a situation
      * in which the result of the initialization is non-derministic i.e., we want
@@ -63,7 +63,7 @@ open class HeadersContainer {
     /*
      * Create a new instance of the receiver using a provider headers map.
      * Not implemented as a contructor due to conflicting JVM signatures with
-     * other constructors. 
+     * other constructors.
      *
      * @param headers: The headers to create the container with.
      */
@@ -72,7 +72,7 @@ open class HeadersContainer {
     }
   }
 
-  /* 
+  /*
    * Add a value to a header with a given name.
    *
    * @param name  The name of the header. For the purpose of headers lookup
@@ -88,7 +88,7 @@ open class HeadersContainer {
   }
 
 
-  /* 
+  /*
    * Set the value of a given header.
    *
    * @param name  The name of the header.
