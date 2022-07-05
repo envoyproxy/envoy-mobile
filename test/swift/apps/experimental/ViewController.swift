@@ -24,11 +24,19 @@ final class ViewController: UITableViewController {
       .addPlatformFilter(AsyncDemoFilter.init)
       .h2ExtendKeepaliveTimeout(true)
       .enableInterfaceBinding(true)
-      // swiftlint:disable:next line_length
-      .addNativeFilter(name: "envoy.filters.http.buffer", typedConfig: "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
+      .addNativeFilter(
+        name: "envoy.filters.http.buffer",
+        typedConfig: """
+            {\
+            "@type":"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer",\
+            "max_request_bytes":5242880\
+            }
+            """
+      )
       .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
       .addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
       .setEventTracker { NSLog("Envoy event emitted: \($0)") }
+      .forceIPv6(true)
       .build()
     self.streamClient = engine.streamClient()
     self.pulseClient = engine.pulseClient()
@@ -72,7 +80,7 @@ final class ViewController: UITableViewController {
         let statusCode = headers.httpStatus.map(String.init) ?? "nil"
         let message = "received headers with status \(statusCode)"
 
-        let headerMessage = headers.allHeaders()
+        let headerMessage = headers.caseSensitiveHeaders()
           .filter { kFilteredHeaders.contains($0.key) }
           .map { "\($0.key): \($0.value.joined(separator: ", "))" }
           .joined(separator: "\n")
