@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile
 
-/*
+/**
  * The container that manages the underlying headers map.
  * It maintains the original casing of passed header names.
  * It treats headers names as case-insensitive for the purpose
@@ -9,7 +9,7 @@ package io.envoyproxy.envoymobile
 open class HeadersContainer {
   protected val headers: MutableMap<String, Header>
 
-  /*
+  /**
    * Represents a header name together with all of its values.
    * It preserves the original casing of the header name.
    */
@@ -25,14 +25,14 @@ open class HeadersContainer {
     }
   }
 
-  /*
+  /**
    * Instantiate a new instance of the receiver using the provided headers map
    *
    * @param headers: The headers to start with.
    */
   internal constructor(headers: Map<String, MutableList<String>>) {
     var underlyingHeaders = mutableMapOf<String, Header>()
-    /*
+    /**
      * Dictionaries are unordered collections. Process headers with names
      * that are the same when lowercased in an alphabetical order to avoid a situation
      * in which the result of the initialization is non-derministic i.e., we want
@@ -60,7 +60,7 @@ open class HeadersContainer {
   }
 
   companion object {
-    /*
+    /**
      * Create a new instance of the receiver using a provider headers map.
      * Not implemented as a constructor due to conflicting JVM signatures with
      * other constructors.
@@ -72,7 +72,7 @@ open class HeadersContainer {
     }
   }
 
-  /*
+  /**
    * Add a value to a header with a given name.
    *
    * @param name  The name of the header. For the purpose of headers lookup
@@ -88,7 +88,7 @@ open class HeadersContainer {
   }
 
 
-  /*
+  /**
    * Set the value of a given header.
    *
    * @param name  The name of the header.
@@ -98,7 +98,7 @@ open class HeadersContainer {
     headers[name.lowercase()] = Header(name, value.toMutableList())
   }
 
-  /*
+  /**
    * Remove a given header.
    *
    * @param name The name of the header to remove.
@@ -107,7 +107,7 @@ open class HeadersContainer {
     headers.remove(name.lowercase())
   }
 
-  /*
+  /**
    * Get the value for the provided header name.
    *
    * @param name The case-insensitive header name for which to
@@ -118,7 +118,7 @@ open class HeadersContainer {
     return headers[name.lowercase()]?.value
   }
 
-  /*
+  /**
    * Accessor for all underlying case-sensitive headers. When possible,
    * use case-insensitive accessors instead.
    *
