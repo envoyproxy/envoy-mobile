@@ -14,7 +14,7 @@ repos:
       exclude: 'experimental/swift/QUICStreamTest.swift'
     - id: mixed-line-ending
 - repo: https://github.com/codespell-project/codespell
-  rev: v1.16.0
+  rev: v1.17.1
   hooks:
     - id: codespell
       args: [-L=uint, -L=keyserver]
