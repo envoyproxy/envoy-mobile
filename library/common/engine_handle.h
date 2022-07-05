@@ -22,12 +22,6 @@ public:
   static envoy_status_t runOnEngineDispatcher(envoy_engine_t engine,
                                               std::function<void(Envoy::Engine&)> func);
 
-  /**
-   * Returns the default engine handle, or zero if no engine has been initialized yet.
-   * @return envoy_engine_t, the default engine handle.
-   */
-  static envoy_engine_t defaultHandle();
-
 private:
   static envoy_engine_t initEngine(envoy_engine_callbacks callbacks, envoy_logger logger,
                                    envoy_event_tracker event_tracker);
