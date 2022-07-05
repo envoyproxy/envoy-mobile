@@ -11,6 +11,11 @@ class GRPCRequestHeadersBuilder : HeadersBuilder {
    */
   internal constructor(headers: Map<String, MutableList<String>>) : super(HeadersContainer(headers))
 
+  /**
+   * Instantiate a new builder.
+   *
+   * @param container: The headers container to start with.
+   */
   internal constructor(container: HeadersContainer) : super(container)
 
   override fun add(name: String, value: String): GRPCRequestHeadersBuilder {

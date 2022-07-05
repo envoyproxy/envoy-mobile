@@ -5,12 +5,12 @@ package io.envoyproxy.envoymobile
  */
 class ResponseHeadersBuilder : HeadersBuilder {
 
-  /**
-   * Initialize a new instance of the builder.
+  /*
+   * Instantiate a new builder.
    */
-  constructor() : super(HeadersContainer(mapOf()))
+  internal constructor() : super(HeadersContainer(mapOf()))
 
-  /**
+  /*
    * Instantiate a new builder. Used only by ResponseHeaders to convert back to
    * ResponseHeadersBuilder.
    *
@@ -18,6 +18,11 @@ class ResponseHeadersBuilder : HeadersBuilder {
    */
   internal constructor(headers: MutableMap<String, MutableList<String>>) : super(HeadersContainer(headers))
 
+  /* 
+   * Instantiate a new builder.
+   *
+   * @param container: The headers container to start with.
+   */
   internal constructor(container: HeadersContainer) : super(container)
 
   override fun add(name: String, value: String): ResponseHeadersBuilder {

@@ -88,7 +88,7 @@ class SendTrailersTest {
       .build()
 
     val body = ByteBuffer.wrap("match_me".toByteArray(Charsets.UTF_8))
-    val requestTrailers = RequestTrailersBuilder(HeadersContainer())
+    val requestTrailers = RequestTrailersBuilder()
       .add(matcherTrailerName, matcherTrailerValue)
       .build()
 

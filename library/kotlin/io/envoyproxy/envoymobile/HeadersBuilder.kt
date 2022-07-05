@@ -10,7 +10,7 @@ open class HeadersBuilder {
   /**
    * Instantiate a new builder, only used by child classes.
    *
-   * @param headers: The headers to start with.
+   * @param container: The headers container to start with.
    */
   internal constructor(container: HeadersContainer) {
     this.container = container

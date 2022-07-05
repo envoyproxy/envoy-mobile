@@ -4,14 +4,19 @@ package io.envoyproxy.envoymobile
  * Builder used for constructing instances of `RequestTrailers`.
  */
 class RequestTrailersBuilder : HeadersBuilder {
-  /**
-   * Initialize a new instance of the builder.
+  /*
+   * Instantiate a new builder.
+   */
+  internal constructor() : super(HeadersContainer(mapOf()))
+
+  /*
+   * Instantiate a new instance of the builder.
    * 
-   * @paramt container: The headers container to start with.
+   * @param container: The headers container to start with.
    */
   internal constructor(container: HeadersContainer) : super(container)
 
-  /**
+  /*
    * Instantiate a new builder. Used only by RequestTrailers to convert back to
    * RequestTrailersBuilder.
    *
