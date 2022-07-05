@@ -41,7 +41,7 @@ Features:
 - android: create simple persistent SharedPreferencesStore (:issue: `#2319 <2319>`)
 - iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 - api: improved C++ APIs compatibility with Java / Kotlin / Swift (:issue `#2362 <2362>`)
-- ci: update codespell to v2.1.0 (:issue `#2406 <2406>`)
+- ci: bump codespell version to v2.1.0 (:issue `#2406 <2406>`)
 
 0.4.6 (April 26, 2022)
 ========================
