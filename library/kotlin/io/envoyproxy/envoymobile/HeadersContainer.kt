@@ -62,7 +62,7 @@ open class HeadersContainer {
   companion object {
     /*
      * Create a new instance of the receiver using a provider headers map.
-     * Not implemented as a contructor due to conflicting JVM signatures with
+     * Not implemented as a constructor due to conflicting JVM signatures with
      * other constructors.
      *
      * @param headers: The headers to create the container with.
