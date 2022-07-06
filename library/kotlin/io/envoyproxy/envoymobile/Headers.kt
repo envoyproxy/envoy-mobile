@@ -5,7 +5,7 @@ package io.envoyproxy.envoymobile
  * To instantiate new instances, see `{Request|Response}HeadersBuilder`.
  */
 open class Headers {
-  val container: HeadersContainer
+  internal val container: HeadersContainer
 
   /**
    * Internal constructor used by builders.
