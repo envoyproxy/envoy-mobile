@@ -8,6 +8,6 @@ platform(
     ],
     exec_properties = {
         "Pool": "macos",
-        "cache-silo-key": "test1",
+        "cache-silo-key": "test2",
     },
 )
