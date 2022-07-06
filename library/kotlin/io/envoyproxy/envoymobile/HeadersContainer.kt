@@ -22,10 +22,10 @@ open class HeadersContainer {
     /**
      * Add values.
      * 
-     * @param value The list of values to add.
+     * @param values The list of values to add.
      */
-    fun add(value: List<String>) {
-      this.value.addAll(value)
+    fun add(values: List<String>) {
+      this.value.addAll(values)
     }
 
     /**
