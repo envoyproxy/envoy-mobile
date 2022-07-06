@@ -22,7 +22,7 @@ class Standard : BaseConfiguration()
 
 /**
  * The configuration based off a custom yaml.
- * 
+ *
  * @param yaml the custom config.
  */
 class Custom(val yaml: String) : BaseConfiguration()

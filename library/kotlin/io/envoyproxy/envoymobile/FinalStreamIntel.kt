@@ -9,7 +9,7 @@ import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
  * Note: a timestamp field (ends with "Ms") with a value of -1 indicates that it is absent.
  * @param streamId The stream identifier.
  * @param connectionId The connection identifier.
- * @param attemptCount The number of attempts used to perform a given request. 
+ * @param attemptCount The number of attempts used to perform a given request.
  * @param streamStartMs The time the stream started (a.k.a. request started), in ms since the epoch.
  * @param dnsStartMs The time the DNS resolution for this request started, in ms since the epoch.
  * @param dnsEndMs The time the DNS resolution for this request completed, in ms since the epoch.
