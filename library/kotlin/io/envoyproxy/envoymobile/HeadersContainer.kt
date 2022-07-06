@@ -12,7 +12,7 @@ open class HeadersContainer {
   /**
    * Represents a header name together with all of its values.
    * It preserves the original casing of the header name.
-   * 
+   *
    * @param name  The name of the header. Its casing is preserved.
    * @param value The value associated with a given header.
    */
@@ -21,7 +21,7 @@ open class HeadersContainer {
 
     /**
      * Add values.
-     * 
+     *
      * @param values The list of values to add.
      */
     fun add(values: List<String>) {
@@ -30,7 +30,7 @@ open class HeadersContainer {
 
     /**
      * Add a value.
-     * 
+     *
      * @param value The value to add.
      */
     fun add(value: String) {
