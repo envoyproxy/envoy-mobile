@@ -316,7 +316,7 @@ open class EngineBuilder(
    * and results in a connection ping on every new stream creation. Set it to
    * 100000000 milliseconds to effectively disable the ping.
    *
-   * @param idleIntervalMs: rate in milliseconds.
+   * @param idleIntervalMs rate in milliseconds.
    *
    * @return this builder.
    */
