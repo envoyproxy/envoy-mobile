@@ -15,6 +15,9 @@ Breaking changes:
 - iOS: enable usage of ``NWPathMonitor`` by default (:issue:`#2329 <2329>`)
 - iOS: replace ``enableNetworkPathMonitor`` with a new ``setNetworkMonitoringMode`` API to allow disabling monitoring (:issue:`#2345 <2345>`)
 - iOS: release artifacts no longer embed bitcode
+- api: engines are no longer a singleton, you may need to update your code to only create engines once and hold on to them.
+  You also cannot assume that an `envoy_engine_t` value of `1` will return the default engine.
+  Support for using multiple engines concurrently is coming later. (:issue:`#2129 <2129>`)
 
 Bugfixes:
 
@@ -24,7 +27,7 @@ Bugfixes:
 - Android: update Kotlin standard libraries to 1.6.21 (:issue:`#2256 <2256>`)
 - fix bug where finalStreamIntel was not consistently set on cancel (:issue:`#2285 <2285>`)
 - iOS: fix termination crash in ProvisionalDispatcher (:issue:`#2059 <2059>`)
-- iOS: make headers lookup in ``HeadersBuilder`` and ``Headers`` case-insensitive. Rename ``allHeaders`` method to ``caseSensitiveHeaders``. (:issue:`#2383 <2383>`)
+- api: make headers lookup in ``HeadersBuilder`` and ``Headers`` case-insensitive. Rename ``allHeaders`` method to ``caseSensitiveHeaders``. (:issue:`#2383 <2383>`, :issue:`#2400 <2400>``)
 - iOS: use correct DNS resolver when using C++ config builder (:issue: `#2378 <2378 >`)
 
 Features:
