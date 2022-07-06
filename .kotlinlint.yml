@@ -9,7 +9,6 @@ complexity:
     active: false
 
 comments:
-  active: true
   OutdatedDocumentation:
     active: true
     matchTypeParameters: false
