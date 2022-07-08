@@ -9,6 +9,7 @@ on:
 jobs:
   iosbuild:
     name: ios_build
+    continue-on-error: true
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -27,6 +28,7 @@ jobs:
     name: swift_helloworld
     needs: iosbuild
     runs-on: macos-12
+    continue-on-error: true
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v1
