@@ -29,6 +29,7 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - name: 'Run swift library tests'
         if: steps.check_context.outputs.run_tests == 'true'
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw test --config=remote-ci-debug --experimental_ui_max_stdouterr_bytes=10485760 --test_output=all --config=ios --build_tests_only --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/...
@@ -56,6 +57,7 @@ jobs:
         run: ./ci/mac_ci_setup.sh
       - name: 'Run Objective-C library tests'
         if: steps.check_context.outputs.run_tests == 'true'
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./bazelw test --config=remote-ci-debug --test_output=all --config=ios --build_tests_only --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/objective-c/...  //test/cc/unit:envoy_config_test
