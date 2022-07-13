@@ -143,6 +143,8 @@ public:
    */
   static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
+  static envoy_netconf_t setProxySettings(const char *hostname, const char *address);
+
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this
    * may happen either due to an external call to refreshConnectivityState or an update to
@@ -183,6 +185,15 @@ public:
   envoy_netconf_t addUpstreamSocketOptions(Socket::OptionsSharedPtr options);
 
 private:
+  struct ProxySettings {
+    std::string hostname_;
+    std::string address_;
+
+    bool isEmpty() {
+      return hostname_.empty() && address_.empty();
+    }
+  };
+
   struct NetworkState {
     // The configuration key is passed through calls dispatched on the run loop to determine if
     // they're still valid/relevant at time of execution.
@@ -190,6 +201,7 @@ private:
     envoy_network_t network_ ABSL_GUARDED_BY(mutex_);
     uint8_t remaining_faults_ ABSL_GUARDED_BY(mutex_);
     envoy_socket_mode_t socket_mode_ ABSL_GUARDED_BY(mutex_);
+    ProxySettings proxy_settings_ ABSL_GUARDED_BY(mutex_);
     Thread::MutexBasicLockable mutex_;
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);

@@ -98,6 +98,8 @@ envoy_status_t reset_stream(envoy_engine_t engine, envoy_stream_t stream);
  */
 envoy_status_t set_preferred_network(envoy_engine_t engine, envoy_network_t network);
 
+envoy_status_t set_proxy_settings(envoy_engine_t engine, const char* hostname, const char* address);
+
 /**
  * Increment a counter with the given elements and by the given count.
  * @param engine, the engine that owns the counter.

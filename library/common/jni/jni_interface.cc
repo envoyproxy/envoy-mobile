@@ -1121,6 +1121,23 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_setPreferredNetwork(JNIEnv* env
                                static_cast<envoy_network_t>(network));
 }
 
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_setProxySettings(JNIEnv* env, 
+                                                                  jclass, // class
+                                                                  jlong engine, 
+                                                                  jstring hostname,
+                                                                  jstring address) {
+  jni_log("[Envoy]", "setProxySettings");
+
+  envoy_status_t result =
+      set_proxy_settings(
+        static_cast<envoy_engine_t>(engine),
+        env->GetStringUTFChars(hostname, nullptr), 
+        env->GetStringUTFChars(address, nullptr)
+      );
+  return result;
+}
+
 bool jvm_cert_is_issued_by_known_root(JNIEnv* env, jobject result) {
   jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
   jmethodID jmid_isIssuedByKnownRoot =

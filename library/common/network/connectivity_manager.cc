@@ -77,7 +77,7 @@ constexpr unsigned int InitialFaultThreshold = 1;
 constexpr unsigned int MaxFaultThreshold = 3;
 
 ConnectivityManager::NetworkState ConnectivityManager::network_state_{
-    1, ENVOY_NET_GENERIC, MaxFaultThreshold, DefaultPreferredNetworkMode,
+    1, ENVOY_NET_GENERIC, MaxFaultThreshold, DefaultPreferredNetworkMode, ProxySettings{},
     Thread::MutexBasicLockable{}};
 
 envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network) {
@@ -97,6 +97,17 @@ envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network
   network_state_.network_ = network;
   network_state_.remaining_faults_ = 1;
   network_state_.socket_mode_ = DefaultPreferredNetworkMode;
+
+  return network_state_.configuration_key_;
+}
+
+envoy_netconf_t ConnectivityManager::setProxySettings(const char *hostname, const char *address) {
+  Thread::LockGuard lock{network_state_.mutex_};
+
+  ENVOY_LOG_EVENT(debug, "netconf_proxy_settings_changed", hostname, address);
+
+  network_state_.configuration_key_++;
+  network_state_.proxy_settings_ = ProxySettings{hostname, address};
 
   return network_state_.configuration_key_;
 }

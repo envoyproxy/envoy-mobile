@@ -351,6 +351,8 @@ public class JniLibrary {
    */
   protected static native int setPreferredNetwork(long engine, int network);
 
+  protected static native int setProxySettings(long engine, String hostname, String address);
+
   /**
    * Mimic a call to AndroidNetworkLibrary#verifyServerCertificates from native code.
    * To be used for testing only.

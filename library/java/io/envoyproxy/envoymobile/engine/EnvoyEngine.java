@@ -127,4 +127,9 @@ public interface EnvoyEngine {
    * @param network The network to be preferred for new streams.
    */
   void setPreferredNetwork(EnvoyNetworkType network);
+
+  /**
+   * 
+   */
+  void setProxySettings(String hostname, String address);
 }
