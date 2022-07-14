@@ -20,15 +20,29 @@ bool is_cleartext_permitted(absl::string_view hostname) {
   envoy_data host = Envoy::Data::Utility::copyToBridgeData(hostname);
   JNIEnv* env = get_env();
   jstring java_host = native_data_to_string(env, host);
-  jclass jcls_Boolean = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
   jmethodID jmid_isCleartextTrafficPermitted =
-      env->GetMethodID(jcls_Boolean, "isCleartextTrafficPermitted", "(Ljava/lang/String;)Z");
-  jboolean result = env->CallBooleanMethod(java_host, jmid_isCleartextTrafficPermitted);
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "isCleartextTrafficPermitted", "(Ljava/lang/String;)Z");
+  jboolean result = env->CallStaticBooleanMethod(jcls_AndroidNetworkLibrary, jmid_isCleartextTrafficPermitted, java_host);
   env->DeleteLocalRef(java_host);
   release_envoy_data(host);
   return result == JNI_TRUE;
 #else
   UNREFERENCED_PARAMETER(hostname);
   return true;
+#endif
+}
+
+void tag_socket(int ifd, int uid, int tag) {
+#if defined(__ANDROID_API__)
+  JNIEnv* env = get_env();
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_tagSocket =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "tagSocket", "(III)V");
+  env->CallStaticVoidMethod(jcls_AndroidNetworkLibrary, jmid_tagSocket, ifd, uid, tag);
+#else
+  UNREFERENCED_PARAMETER(ifd);
+  UNREFERENCED_PARAMETER(uid);
+  UNREFERENCED_PARAMETER(tag);
 #endif
 }
