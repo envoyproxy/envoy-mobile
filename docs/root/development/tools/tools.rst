@@ -6,7 +6,7 @@ Development Tools
 .. toctree::
   :maxdepth: 2
 
-  tulsi
+  ios_local
   intellij
 
 This documentation outlines additional tools that may prove useful when
