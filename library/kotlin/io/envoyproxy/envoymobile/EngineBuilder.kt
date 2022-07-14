@@ -220,7 +220,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to use the getaddr-based system DNS resolver or the c-ares resolver.
+   * Specify whether to use the getaddrinfo-based system DNS resolver or the c-ares resolver.
    * Defaults to false.
    *
    * @param dnsUseSystemResolver whether to use the system DNS resolver.
