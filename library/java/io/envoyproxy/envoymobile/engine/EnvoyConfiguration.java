@@ -78,7 +78,7 @@ public class EnvoyConfiguration {
    * @param dnsPreresolveHostnames       hostnames to preresolve on Envoy Client construction.
    * @param dnsFallbackNameservers       addresses to use as DNS name server fallback.
    * @param dnsFilterUnroutableFamilies  whether to filter unroutable IP families or not.
-   * @param dnsUseSystemResolver         whether to use the getaddr-based system resolver or c-ares.
+   * @param dnsUseSystemResolver         whether to use the getaddrinfo-based system resolver or c-ares.
    * @param enableDrainPostDnsRefresh    whether to drain connections after soft DNS refresh.
    * @param enableHttp3                  whether to enable experimental support for HTTP/3 (QUIC).
    * @param enableGzip                   whether to enable response gzip decompression.
