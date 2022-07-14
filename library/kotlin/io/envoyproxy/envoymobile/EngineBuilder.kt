@@ -49,6 +49,7 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsFallbackNameservers = listOf<String>()
   private var dnsFilterUnroutableFamilies = true
+  private var dnsUseSystemResolver = false
   private var dnsQueryTimeoutSeconds = 25
   private var dnsMinRefreshSeconds = 60
   private var dnsPreresolveHostnames = "[]"
@@ -215,6 +216,19 @@ open class EngineBuilder(
    */
   fun enableDNSFilterUnroutableFamilies(dnsFilterUnroutableFamilies: Boolean): EngineBuilder {
     this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies
+    return this
+  }
+
+  /**
+   * Specify whether to use the getaddr-based system DNS resolver or the c-ares resolver.
+   * Defaults to false.
+   *
+   * @param dnsUseSystemResolver whether to use the system DNS resolver.
+   *
+   * @return this builder.
+   */
+  fun enableDNSUseSystemResolver(dnsUseSystemResolver: Boolean): EngineBuilder {
+    this.dnsUseSystemResolver = dnsUseSystemResolver
     return this
   }
 
@@ -591,6 +605,7 @@ open class EngineBuilder(
       dnsPreresolveHostnames,
       dnsFallbackNameservers,
       dnsFilterUnroutableFamilies,
+      dnsUseSystemResolver,
       enableDrainPostDnsRefresh,
       enableHttp3,
       enableGzip,
