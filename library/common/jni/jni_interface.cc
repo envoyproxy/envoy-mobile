@@ -1129,12 +1129,18 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_setProxySettings(JNIEnv* env,
                                                                   jstring address) {
   jni_log("[Envoy]", "setProxySettings");
 
+  const char* native_hostname = env->GetStringUTFChars(hostname, nullptr);
+  const char* native_address = env->GetStringUTFChars(address, nullptr);
+
   envoy_status_t result =
       set_proxy_settings(
         static_cast<envoy_engine_t>(engine),
-        env->GetStringUTFChars(hostname, nullptr), 
-        env->GetStringUTFChars(address, nullptr)
+        native_hostname, 
+        native_address
       );
+
+  env->ReleaseStringUTFChars(hostname, native_hostname);
+  env->ReleaseStringUTFChars(address, native_address);
   return result;
 }
 
