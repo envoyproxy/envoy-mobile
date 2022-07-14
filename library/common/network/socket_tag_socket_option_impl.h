@@ -7,13 +7,9 @@
 namespace Envoy {
 namespace Network {
 
-class SocketTag {};
-
 /**
- * This is a "synthetic" socket option implementation, which sets the source IP/port of a socket
- * using a provided IP address (and maybe port) during bind.
- *
- * Based on the OriginalSrcSocketOption extension.
+ * This is a "synthetic" socket option implementation, which sets the android socket tag
+ * during bind.
  */
 class SocketTagSocketOptionImpl : public Network::Socket::Option {
 public:
