@@ -243,7 +243,7 @@ class EnvoyConfigurationTest {
     )
 
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig\"}")
-    assertThat(resolvedTemplate).contains("&dns_resolver_name envoy.network.dns_resolver.cares")
+    assertThat(resolvedTemplate).contains("&dns_resolver_name envoy.network.dns_resolver.getaddrinfo")
   }
 
   @Test
