@@ -1121,23 +1121,17 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_setPreferredNetwork(JNIEnv* env
                                static_cast<envoy_network_t>(network));
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_setProxySettings(JNIEnv* env, 
-                                                                  jclass, // class
-                                                                  jlong engine, 
-                                                                  jstring hostname,
-                                                                  jstring address) {
+extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_setProxySettings(
+    JNIEnv* env,
+    jclass, // class
+    jlong engine, jstring hostname, jstring address) {
   jni_log("[Envoy]", "setProxySettings");
 
   const char* native_hostname = env->GetStringUTFChars(hostname, nullptr);
   const char* native_address = env->GetStringUTFChars(address, nullptr);
 
   envoy_status_t result =
-      set_proxy_settings(
-        static_cast<envoy_engine_t>(engine),
-        native_hostname, 
-        native_address
-      );
+      set_proxy_settings(static_cast<envoy_engine_t>(engine), native_hostname, native_address);
 
   env->ReleaseStringUTFChars(hostname, native_hostname);
   env->ReleaseStringUTFChars(address, native_address);

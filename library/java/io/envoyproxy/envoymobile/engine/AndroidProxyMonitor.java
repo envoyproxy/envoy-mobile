@@ -12,42 +12,39 @@ import android.os.Build;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidProxyMonitor extends BroadcastReceiver {
-    private static volatile AndroidProxyMonitor instance = null;
-    private ConnectivityManager connectivityManager;
+  private static volatile AndroidProxyMonitor instance = null;
+  private ConnectivityManager connectivityManager;
 
-    public static void load(Context context, EnvoyEngine envoyEngine) {
-        if (instance != null) {
-          return;
-        }
-    
-        synchronized (AndroidNetworkMonitor.class) {
-          if (instance != null) {
-            return;
-          }
-          instance = new AndroidProxyMonitor(context, envoyEngine);
-        }
+  public static void load(Context context, EnvoyEngine envoyEngine) {
+    if (instance != null) {
+      return;
+    }
+
+    synchronized (AndroidNetworkMonitor.class) {
+      if (instance != null) {
+        return;
       }
-
-    private AndroidProxyMonitor(Context context, EnvoyEngine envoyEngine) {
-        connectivityManager = 
-            (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);   
-        registerReceiver(context);
+      instance = new AndroidProxyMonitor(context, envoyEngine);
     }
+  }
 
-    private void registerReceiver(Context context) {
-        context.registerReceiver(this, new IntentFilter() {
-            { addAction(Proxy.PROXY_CHANGE_ACTION); }
-          });
-    }
+  private AndroidProxyMonitor(Context context, EnvoyEngine envoyEngine) {
+    connectivityManager =
+        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    registerReceiver(context);
+  }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
+  private void registerReceiver(Context context) {
+    context.registerReceiver(this, new IntentFilter() {
+      { addAction(Proxy.PROXY_CHANGE_ACTION); }
+    });
+  }
+
+  @Override
+  public void onReceive(Context context, Intent intent) {
     //   handleNetworkChange();
-        handleProxyChange();
-    }
+    handleProxyChange();
+  }
 
-    private void handleProxyChange() {
-        ProxyInfo info = connectivityManager.getDefaultProxy();
-
-    }
+  private void handleProxyChange() { ProxyInfo info = connectivityManager.getDefaultProxy(); }
 }

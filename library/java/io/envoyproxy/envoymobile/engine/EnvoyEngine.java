@@ -129,7 +129,7 @@ public interface EnvoyEngine {
   void setPreferredNetwork(EnvoyNetworkType network);
 
   /**
-   * 
+   *
    */
   void setProxySettings(String hostname, String address);
 }

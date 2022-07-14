@@ -106,9 +106,7 @@ void ConnectivityManager::setProxySettings(std::string hostname, std::string add
   proxy_settings_ = ProxySettings{hostname, address};
 }
 
-ProxySettings ConnectivityManager::getProxySettings() {
-  return proxy_settings_;
-}
+ProxySettings ConnectivityManager::getProxySettings() { return proxy_settings_; }
 
 envoy_network_t ConnectivityManager::getPreferredNetwork() {
   Thread::LockGuard lock{network_state_.mutex_};
