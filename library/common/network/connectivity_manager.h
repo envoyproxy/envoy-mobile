@@ -10,6 +10,7 @@
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache.h"
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_impl.h"
 
+#include "library/common/network/proxy_settings.h"
 #include "library/common/types/c_types.h"
 
 /**
@@ -83,7 +84,7 @@ class ConnectivityManager
 public:
   ConnectivityManager(Upstream::ClusterManager& cluster_manager,
                       DnsCacheManagerSharedPtr dns_cache_manager)
-      : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
+      : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager), proxy_settings_(ProxySettings::empty()) {}
 
   // Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks
   void onDnsHostAddOrUpdate(
@@ -128,6 +129,8 @@ public:
    */
   envoy_netconf_t getConfigurationKey();
 
+  ProxySettings getProxySettings();
+
   /**
    * Call to report on the current viability of the passed network configuration after an attempt
    * at transmission (e.g., an HTTP request).
@@ -143,7 +146,8 @@ public:
    */
   static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
-  static envoy_netconf_t setProxySettings(const char *hostname, const char *address);
+
+  void setProxySettings(std::string hostname, std::string address);
 
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this
@@ -183,17 +187,7 @@ public:
    * @returns configuration key to associate with any related calls.
    */
   envoy_netconf_t addUpstreamSocketOptions(Socket::OptionsSharedPtr options);
-
 private:
-  struct ProxySettings {
-    std::string hostname_;
-    std::string address_;
-
-    bool isEmpty() {
-      return hostname_.empty() && address_.empty();
-    }
-  };
-
   struct NetworkState {
     // The configuration key is passed through calls dispatched on the run loop to determine if
     // they're still valid/relevant at time of execution.
@@ -201,7 +195,6 @@ private:
     envoy_network_t network_ ABSL_GUARDED_BY(mutex_);
     uint8_t remaining_faults_ ABSL_GUARDED_BY(mutex_);
     envoy_socket_mode_t socket_mode_ ABSL_GUARDED_BY(mutex_);
-    ProxySettings proxy_settings_ ABSL_GUARDED_BY(mutex_);
     Thread::MutexBasicLockable mutex_;
   };
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
@@ -223,6 +216,7 @@ private:
       dns_callbacks_handle_{nullptr};
   Upstream::ClusterManager& cluster_manager_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
+  ProxySettings proxy_settings_;
   static NetworkState network_state_;
 };
 
