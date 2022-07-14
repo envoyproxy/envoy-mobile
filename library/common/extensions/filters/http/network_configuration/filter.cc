@@ -26,6 +26,18 @@ void NetworkConfigurationFilter::setDecoderFilterCallbacks(
   decoder_callbacks_->addUpstreamSocketOptions(options);
 }
 
+Http::FilterHeadersStatus NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
+  const auto proxy_settings = connectivity_manager_->getProxySettings();
+
+  auto address = Network::Utility::parseInternetAddressAndPort(address_string);
+  decoder_callbacks_->streamInfo().filterState()->setData(
+    Network::Http11ProxyInfoFilterState::key(),
+    std::make_unique<Network::Http11ProxyInfoFilterState>(hostname, address),
+    StreamInfo::FilterState::StateType::ReadOnly,
+    StreamInfo::FilterState::LifeSpan::FilterChain);
+  return Http::FilterHeadersStatus::Continue;
+}
+
 Http::FilterHeadersStatus NetworkConfigurationFilter::encodeHeaders(Http::ResponseHeaderMap&,
                                                                     bool) {
   ENVOY_LOG(debug, "NetworkConfigurationFilter::encodeHeaders");
