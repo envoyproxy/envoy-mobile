@@ -84,8 +84,7 @@ class ConnectivityManager
 public:
   ConnectivityManager(Upstream::ClusterManager& cluster_manager,
                       DnsCacheManagerSharedPtr dns_cache_manager)
-      : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager),
-        proxy_settings_(ProxySettings::empty()) {}
+      : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
 
   // Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks
   void onDnsHostAddOrUpdate(
@@ -130,7 +129,7 @@ public:
    */
   envoy_netconf_t getConfigurationKey();
 
-  ProxySettings getProxySettings();
+  ProxySettingsConstSharedPtr getProxySettings();
 
   /**
    * Call to report on the current viability of the passed network configuration after an attempt
@@ -217,7 +216,7 @@ private:
       dns_callbacks_handle_{nullptr};
   Upstream::ClusterManager& cluster_manager_;
   DnsCacheManagerSharedPtr dns_cache_manager_;
-  ProxySettings proxy_settings_;
+  ProxySettingsConstSharedPtr proxy_settings_;
   static NetworkState network_state_;
 };
 

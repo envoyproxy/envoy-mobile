@@ -1,7 +1,16 @@
+#include "source/common/network/utility.h"
+
+struct ProxySettings;
+
+using ProxySettingsConstSharedPtr = std::shared_ptr<const ProxySettings>;
+
 struct ProxySettings {
-  static ProxySettings empty() { return ProxySettings{"", ""}; }
-  bool isEmpty() { return hostname_.empty() && address_.empty(); }
+  ProxySettings(const std::string& hostname, const std::string& address)
+      : hostname_(hostname),
+        address_(Envoy::Network::Utility::parseInternetAddressNoThrow(address)) {}
+
+  bool isValid() const { return address_ != NULL; }
 
   std::string hostname_;
-  std::string address_;
+  Envoy::Network::Address::InstanceConstSharedPtr address_;
 };

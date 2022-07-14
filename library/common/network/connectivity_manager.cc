@@ -103,10 +103,10 @@ envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network
 
 void ConnectivityManager::setProxySettings(std::string hostname, std::string address) {
   ENVOY_LOG_EVENT(debug, "netconf_proxy_settings_changed", hostname, address);
-  proxy_settings_ = ProxySettings{hostname, address};
+  proxy_settings_ = std::make_shared<ProxySettings>(hostname, address);
 }
 
-ProxySettings ConnectivityManager::getProxySettings() { return proxy_settings_; }
+ProxySettingsConstSharedPtr ConnectivityManager::getProxySettings() { return proxy_settings_; }
 
 envoy_network_t ConnectivityManager::getPreferredNetwork() {
   Thread::LockGuard lock{network_state_.mutex_};
