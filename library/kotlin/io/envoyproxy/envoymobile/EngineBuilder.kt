@@ -222,7 +222,7 @@ open class EngineBuilder(
   /**
    * Specify whether to use the getaddrinfo-based system DNS resolver or the c-ares resolver.
    * Defaults to false.
-   * 
+   *
    * Note that if this is set, the values of `dnsFallbackNameservers` and
    * `dnsFilterUnroutableFamilies` will be ignored.
    *
