@@ -1,15 +1,17 @@
 #include "library/common/network/socket_tag_socket_option_impl.h"
 
 #include "envoy/config/core/v3/base.pb.h"
-#include "library/common/jni/android_jni_utility.h"
+
 #include "source/common/common/assert.h"
 #include "source/common/common/scalar_to_byte_vector.h"
+
+#include "library/common/jni/android_jni_utility.h"
 
 namespace Envoy {
 namespace Network {
 
 SocketTagSocketOptionImpl::SocketTagSocketOptionImpl(uid_t uid, uint32_t traffic_stats_tag)
-      : optname_(0, 0, "socket_tag"), uid_(uid), traffic_stats_tag_(traffic_stats_tag) {}
+    : optname_(0, 0, "socket_tag"), uid_(uid), traffic_stats_tag_(traffic_stats_tag) {}
 
 bool SocketTagSocketOptionImpl::setOption(
     Socket& socket, envoy::config::core::v3::SocketOption::SocketState state) const {
@@ -18,7 +20,7 @@ bool SocketTagSocketOptionImpl::setOption(
   }
 
   if (!isSupported()) {
-    //ENVOY_LOG(warn, "Failed to set unsupported option on socket");
+    // ENVOY_LOG(warn, "Failed to set unsupported option on socket");
     return false;
   }
 

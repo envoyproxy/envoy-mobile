@@ -1,6 +1,7 @@
 #include "library/common/extensions/filters/http/socket_tag/filter.h"
 
 #include "envoy/server/filter_config.h"
+
 #include "library/common/network/socket_tag_socket_option_impl.h"
 
 namespace Envoy {
@@ -8,10 +9,11 @@ namespace Extensions {
 namespace HttpFilters {
 namespace SocketTag {
 
-Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap& request_headers, bool) {
+Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap& request_headers,
+                                                         bool) {
   auto socket_tag_header = Http::LowerCaseString("socket-tag");
   if (request_headers.get(socket_tag_header).empty()) {
-      return Http::FilterHeadersStatus::Continue;
+    return Http::FilterHeadersStatus::Continue;
   }
 
   std::string tag_string(request_headers.get(socket_tag)[0]->value().getStringView());

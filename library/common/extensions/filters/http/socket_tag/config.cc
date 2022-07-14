@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "envoy/network/listen_socket.h"
+
 #include "library/common/extensions/filters/http/socket_tag/filter.h"
 
 namespace Envoy {
@@ -24,8 +25,7 @@ Http::FilterFactoryCb SocketTagFilterFactory::createFilterFactoryFromProtoTyped(
 /**
  * Static registration for the SocketTag filter. @see NamedHttpFilterConfigFactory.
  */
-REGISTER_FACTORY(SocketTagFilterFactory,
-                 Server::Configuration::NamedHttpFilterConfigFactory);
+REGISTER_FACTORY(SocketTagFilterFactory, Server::Configuration::NamedHttpFilterConfigFactory);
 
 } // namespace SocketTag
 } // namespace HttpFilters

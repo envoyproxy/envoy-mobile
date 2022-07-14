@@ -7,8 +7,7 @@
 namespace Envoy {
 namespace Network {
 
-class SocketTag {
-};
+class SocketTag {};
 
 /**
  * This is a "synthetic" socket option implementation, which sets the source IP/port of a socket
