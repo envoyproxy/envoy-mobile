@@ -198,6 +198,9 @@ const char* config_template = R"(
 !ignore router_defs: &router_config
   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
+!ignore socket_tag_defs: &socket_tag_config
+  "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_tag.SocketTag
+
 !ignore http_filter_defs: &http_filters
 #{custom_filters}
   - name: envoy.filters.http.network_configuration
@@ -206,6 +209,8 @@ const char* config_template = R"(
     typed_config: *local_error_config
   - name: envoy.filters.http.dynamic_forward_proxy
     typed_config: *dfp_config
+  - name: envoy.filters.http.socket_tag
+    typed_config: *socket_tag_config
   - name: envoy.router
     typed_config: *router_config
 
