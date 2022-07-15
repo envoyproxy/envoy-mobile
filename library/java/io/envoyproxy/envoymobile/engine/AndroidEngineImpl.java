@@ -22,6 +22,7 @@ public class AndroidEngineImpl implements EnvoyEngine {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger, eventTracker);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
+    AndroidProxyMonitor.load(context, envoyEngine);
   }
 
   @Override

@@ -14,13 +14,14 @@ import android.os.Build;
 public class AndroidProxyMonitor extends BroadcastReceiver {
   private static volatile AndroidProxyMonitor instance = null;
   private ConnectivityManager connectivityManager;
+  private EnvoyEngine envoyEngine;
 
   public static void load(Context context, EnvoyEngine envoyEngine) {
     if (instance != null) {
       return;
     }
 
-    synchronized (AndroidNetworkMonitor.class) {
+    synchronized (AndroidProxyMonitor.class) {
       if (instance != null) {
         return;
       }
@@ -29,22 +30,28 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
   }
 
   private AndroidProxyMonitor(Context context, EnvoyEngine envoyEngine) {
-    connectivityManager =
+    this.envoyEngine = envoyEngine;
+    this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     registerReceiver(context);
+    envoyEngine.setProxySettings("info.getHost()", "info.getHost()2");
   }
 
   private void registerReceiver(Context context) {
-    context.registerReceiver(this, new IntentFilter() {
+    context.getApplicationContext().registerReceiver(this, new IntentFilter() {
       { addAction(Proxy.PROXY_CHANGE_ACTION); }
     });
   }
 
   @Override
   public void onReceive(Context context, Intent intent) {
-    //   handleNetworkChange();
     handleProxyChange();
   }
 
-  private void handleProxyChange() { ProxyInfo info = connectivityManager.getDefaultProxy(); }
+  private void handleProxyChange() { 
+    // print("")
+    // ENVOY_LOG_EVENT(debug, "RAF: identifier", "Proxy change");
+    ProxyInfo info = connectivityManager.getDefaultProxy();
+    envoyEngine.setProxySettings(info.getHost(), info.getHost());
+ }
 }
