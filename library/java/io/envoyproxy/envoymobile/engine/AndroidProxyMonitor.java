@@ -34,7 +34,6 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
     this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     registerReceiver(context);
-    envoyEngine.setProxySettings("info.getHost()", "info.getHost()2");
   }
 
   private void registerReceiver(Context context) {
@@ -52,6 +51,10 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
     // print("")
     // ENVOY_LOG_EVENT(debug, "RAF: identifier", "Proxy change");
     ProxyInfo info = connectivityManager.getDefaultProxy();
-    envoyEngine.setProxySettings(info.getHost(), info.getHost());
+    if (info == null) {
+        envoyEngine.setProxySettings("lol", "");
+    } else {
+        envoyEngine.setProxySettings("api.lyft.com", info.getHost());
+    }
  }
 }
