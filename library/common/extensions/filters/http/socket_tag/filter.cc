@@ -16,7 +16,7 @@ Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap&
     return Http::FilterHeadersStatus::Continue;
   }
 
-  std::string tag_string(request_headers.get(socket_tag)[0]->value().getStringView());
+  std::string tag_string(request_headers.get(socket_tag_header)[0]->value().getStringView());
   std::pair<std::string, std::string> data = absl::StrSplit(tag_string, ',');
   uid_t uid;
   uint32_t traffic_stats_tag;
@@ -27,7 +27,7 @@ Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap&
   auto options = std::make_shared<Network::Socket::Options>();
   options->push_back(std::make_shared<Network::SocketTagSocketOptionImpl>(uid, traffic_stats_tag));
   callbacks_->addUpstreamSocketOptions(options);
-  request_headers.remove(socket_tag);
+  request_headers.remove(socket_tag_header);
   return Http::FilterHeadersStatus::Continue;
 }
 
