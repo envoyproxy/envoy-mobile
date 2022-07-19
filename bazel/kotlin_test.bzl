@@ -18,6 +18,7 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], reposito
         name = name,
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
         srcs = srcs + dep_srcs,
+        manifest = repository + "//bazel:test_manifest.xml",
         deps = [
             repository + "//bazel:envoy_mobile_test_suite",
             "@maven//:org_assertj_assertj_core",
