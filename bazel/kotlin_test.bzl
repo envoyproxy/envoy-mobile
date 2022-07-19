@@ -23,6 +23,8 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], reposito
             "@maven//:junit_junit",
             "@maven//:org_mockito_mockito_inline",
             "@maven//:org_mockito_mockito_core",
+            "@maven//:org_robolectric_robolectric",
+            "@robolectric//bazel:android-all",
         ] + deps,
         data = data,
         jvm_flags = jvm_flags,
