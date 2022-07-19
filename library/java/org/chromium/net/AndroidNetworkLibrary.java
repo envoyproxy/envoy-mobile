@@ -154,16 +154,10 @@ public final class AndroidNetworkLibrary {
        * descriptor. Does not take ownership of the file descriptor, so calling {@link #close}
        * will not actually close the file descriptor.
        */
-      SocketImplFd(FileDescriptor fd) {
-        this.fd = fd;
-      }
+      SocketImplFd(FileDescriptor fd) { this.fd = fd; }
 
-      protected void accept(SocketImpl s) {
-        throw new RuntimeException("accept not implemented");
-      }
-      protected int available() {
-        throw new RuntimeException("accept not implemented");
-      }
+      protected void accept(SocketImpl s) { throw new RuntimeException("accept not implemented"); }
+      protected int available() { throw new RuntimeException("accept not implemented"); }
       protected void bind(InetAddress host, int port) {
         throw new RuntimeException("accept not implemented");
       }
@@ -184,9 +178,7 @@ public final class AndroidNetworkLibrary {
       protected OutputStream getOutputStream() {
         throw new RuntimeException("getOutputStream not implemented");
       }
-      protected void listen(int backlog) {
-        throw new RuntimeException("listen not implemented");
-      }
+      protected void listen(int backlog) { throw new RuntimeException("listen not implemented"); }
       protected void sendUrgentData(int data) {
         throw new RuntimeException("sendUrgentData not implemented");
       }
@@ -203,9 +195,7 @@ public final class AndroidNetworkLibrary {
      * descriptor. Does not take ownership of the file descriptor, so calling {@link #close}
      * will not actually close the file descriptor.
      */
-    SocketFd(FileDescriptor fd) throws IOException {
-      super(new SocketImplFd(fd));
-    }
+    SocketFd(FileDescriptor fd) throws IOException { super(new SocketImplFd(fd)); }
   }
 
   /**
@@ -220,7 +210,7 @@ public final class AndroidNetworkLibrary {
     if (tag != oldTag) {
       TrafficStats.setThreadStatsTag(tag);
     }
-    //if (uid != TrafficStatsUid.UNSET) {
+    // if (uid != TrafficStatsUid.UNSET) {
     if (uid != -1) {
       ThreadStatsUid.set(uid);
     }
