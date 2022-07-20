@@ -146,9 +146,9 @@ def kotlin_repos():
 
     http_archive(
         name = "rules_proto_grpc",
-        sha256 = "1e08cd6c61f893417b14930ca342950f5f22f71f929a38a8c4bbfeae2a80d03e",
-        strip_prefix = "rules_proto_grpc-0.2.0",
-        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
+        sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
+        strip_prefix = "rules_proto_grpc-4.1.1",
+        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.1.1.tar.gz"],
     )
 
     http_file(
