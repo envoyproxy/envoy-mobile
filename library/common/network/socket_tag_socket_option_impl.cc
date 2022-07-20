@@ -19,11 +19,6 @@ bool SocketTagSocketOptionImpl::setOption(
     return true;
   }
 
-  if (!isSupported()) {
-    // ENVOY_LOG(warn, "Failed to set unsupported option on socket");
-    return false;
-  }
-
   int fd = socket.ioHandle().fdDoNotUse();
   tag_socket(fd, 0, 0);
   tag_socket(fd, uid_, traffic_stats_tag_);

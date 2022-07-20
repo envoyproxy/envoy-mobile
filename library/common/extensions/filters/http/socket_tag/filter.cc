@@ -16,6 +16,9 @@ Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap&
     return Http::FilterHeadersStatus::Continue;
   }
 
+  // The socket-tag header must contain a pair of number separated by a comma, e.g.:
+  // socket-tag: 123,456
+  // The first number contains the UID and the second contains the traffic stats tag.
   std::string tag_string(request_headers.get(socket_tag_header)[0]->value().getStringView());
   std::pair<std::string, std::string> data = absl::StrSplit(tag_string, ',');
   uid_t uid;
