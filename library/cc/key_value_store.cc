@@ -35,10 +35,10 @@ void c_kv_store_remove(envoy_data key, const void* context) {
 
 envoy_kv_store KeyValueStore::asEnvoyKeyValueStore() {
   return envoy_kv_store{
-    &c_kv_store_read,
-    &c_kv_store_save,
-    &c_kv_store_remove,
-    new KeyValueStoreSharedPtr(shared_from_this()),
+      &c_kv_store_read,
+      &c_kv_store_save,
+      &c_kv_store_remove,
+      new KeyValueStoreSharedPtr(shared_from_this()),
   };
 }
 

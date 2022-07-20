@@ -76,8 +76,8 @@ envoy_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//library/common:envoy_main_interface_lib_no_stamp",
-        "//library/common/extensions/key_value/platform:config",
         "//library/common/data:utility_lib",
+        "//library/common/extensions/key_value/platform:config",
     ],
 )
 

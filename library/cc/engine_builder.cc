@@ -83,7 +83,8 @@ EngineBuilder& EngineBuilder::addVirtualClusters(const std::string& virtual_clus
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addKeyValueStore(const std::string& name, KeyValueStoreSharedPtr key_value_store) {
+EngineBuilder& EngineBuilder::addKeyValueStore(const std::string& name,
+                                               KeyValueStoreSharedPtr key_value_store) {
   this->key_value_stores_[name] = key_value_store;
   return *this;
 }

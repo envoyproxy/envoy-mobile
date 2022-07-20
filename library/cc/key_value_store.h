@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include "absl/types/optional.h"
 #include "envoy/common/pure.h"
 
+#include "absl/types/optional.h"
 #include "library/common/extensions/key_value/platform/c_types.h"
 
 namespace Envoy {
