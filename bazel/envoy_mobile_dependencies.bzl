@@ -102,12 +102,7 @@ def kotlin_dependencies(extra_maven_dependencies = []):
     rules_detekt_dependencies()
     robolectric_repositories()
 
-    grpc_java_repositories(
-        omit_bazel_skylib = True,
-        omit_com_google_protobuf = True,
-        omit_com_google_protobuf_javalite = True,
-        omit_net_zlib = True,
-    )
+    grpc_java_repositories()
     protobuf_repos()
     rules_proto_grpc_java_repos()
 

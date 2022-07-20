@@ -72,8 +72,9 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "36072d4f3614d309d6a703da0dfe48684ec4c65a89611aeb9590b45af7a3e592",
-        url = "https://github.com/bazelbuild/rules_apple/releases/download/1.0.1/rules_apple.1.0.1.tar.gz",
+        sha256 = "d4c2f715b83b5884e1164fb0e9f3de5b053d77d4436a04510b7940274e91699e",
+        strip_prefix = "rules_apple-8533494fa029f0fc44009c4532c191f349acf193",
+        url = "https://github.com/bazelbuild/rules_apple/archive/8533494fa029f0fc44009c4532c191f349acf193.tar.gz",
     )
 
     http_archive(
@@ -105,9 +106,10 @@ def swift_repos():
 def kotlin_repos():
     http_archive(
         name = "rules_java",
-        sha256 = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b",
-        strip_prefix = "rules_java-5.0.0",
-        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/5.0.0.tar.gz",
+        sha256 = "5e84155aa1792a3fabd56533d22fff01571f0ca27bfbc226b26bd36ce0416666",
+        strip_prefix = "rules_java-f6d843ada19ed8446ab7efe5780d2b6d5b15167a",
+        # TODO(jpsim): Switch back to bazelbuild repo when https://github.com/bazelbuild/rules_java/pull/58 is merged
+        url = "https://github.com/comius/rules_java/archive/f6d843ada19ed8446ab7efe5780d2b6d5b15167a.tar.gz",
     )
 
     http_archive(
@@ -137,9 +139,9 @@ def kotlin_repos():
     # https://github.com/grpc/grpc-java/commit/57e7bd394e92015d2891adc74af0eaf9cd347ea8#diff-515bc54a0cbb4b12fb4a7c465758b011L128-L131
     http_archive(
         name = "io_grpc_grpc_java",
-        sha256 = "8b495f58aaf75138b24775600a062bbdaa754d85f7ab2a47b2c9ecb432836dd1",
-        strip_prefix = "grpc-java-1.24.0",
-        urls = ["https://github.com/grpc/grpc-java/archive/v1.24.0.tar.gz"],
+        sha256 = "0f6cf8c1e97757333e08975c8637093b40540a54a201cfd3ce284c8d1d073fae",
+        strip_prefix = "grpc-java-1.47.0",
+        urls = ["https://github.com/grpc/grpc-java/archive/v1.47.0.tar.gz"],
     )
 
     http_archive(
