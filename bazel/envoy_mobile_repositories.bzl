@@ -106,10 +106,10 @@ def swift_repos():
 def kotlin_repos():
     http_archive(
         name = "rules_java",
-        sha256 = "35ed8f0bb0c6cb6c1fd0607d836003513dd1fee7e9825a5e372382062c606906",
-        strip_prefix = "rules_java-1f25ba98cbf785ace97c168fb0d36bfdb81223b2",
-        # https://github.com/bazelbuild/rules_java/pull/63
-        url = "https://github.com/bazelbuild/rules_java/archive/1f25ba98cbf785ace97c168fb0d36bfdb81223b2.tar.gz",
+        sha256 = "19462d64b1586c0d4ea0e87f9325be2514f0eb84e56dbf3245450451b3701581",
+        strip_prefix = "rules_java-43243982abc76390ef64be62379a1353f9011771",
+        # TODO(jpsim): Switch back to bazelbuild repo when https://github.com/bazelbuild/rules_java/pull/65 is merged
+        url = "https://github.com/jpsim/rules_java/archive/43243982abc76390ef64be62379a1353f9011771.tar.gz",
     )
 
     http_archive(
