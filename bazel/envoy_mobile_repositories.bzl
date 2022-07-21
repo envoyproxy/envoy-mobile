@@ -132,18 +132,6 @@ def kotlin_repos():
         url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.6.0.tar.gz",
     )
 
-    # gRPC java for @rules_proto_grpc
-    # The current 0.2.0 uses v1.23.0 of gRPC java which has a buggy version of the grpc_java_repositories
-    # where it tries to bind the zlib and errors out
-    # The fix went in on this commit:
-    # https://github.com/grpc/grpc-java/commit/57e7bd394e92015d2891adc74af0eaf9cd347ea8#diff-515bc54a0cbb4b12fb4a7c465758b011L128-L131
-    http_archive(
-        name = "io_grpc_grpc_java",
-        sha256 = "0f6cf8c1e97757333e08975c8637093b40540a54a201cfd3ce284c8d1d073fae",
-        strip_prefix = "grpc-java-1.47.0",
-        urls = ["https://github.com/grpc/grpc-java/archive/v1.47.0.tar.gz"],
-    )
-
     http_archive(
         name = "rules_proto_grpc",
         sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
