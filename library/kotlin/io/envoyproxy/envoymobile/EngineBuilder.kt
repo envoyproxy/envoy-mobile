@@ -58,6 +58,7 @@ open class EngineBuilder(
   private var enableHappyEyeballs = true
   private var enableGzip = true
   private var enableBrotli = false
+  private var enableSocketTag = false
   private var enableInterfaceBinding = false
   private var forceIPv6 = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
@@ -613,6 +614,7 @@ open class EngineBuilder(
       enableHttp3,
       enableGzip,
       enableBrotli,
+      enableSocketTag,
       enableHappyEyeballs,
       enableInterfaceBinding,
       forceIPv6,

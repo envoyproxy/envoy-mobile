@@ -37,6 +37,7 @@ public:
   EngineBuilder& setStreamIdleTimeoutSeconds(int stream_idle_timeout_seconds);
   EngineBuilder& enableGzip(bool gzip_on);
   EngineBuilder& enableBrotli(bool brotli_on);
+  EngineBuilder& enableSocketTagging(bool socket_tagging_on);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
@@ -78,6 +79,7 @@ private:
   int per_try_idle_timeout_seconds_ = 15;
   bool gzip_filter_ = true;
   bool brotli_filter_ = false;
+  bool socket_tagging_filter_ = false;
 
   // TODO(crockeo): add after filter integration
   // private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
