@@ -46,6 +46,7 @@ swift_library(
         "UpstreamHttpProtocol.swift",
         "filters/*.swift",
         "grpc/*.swift",
+        "ios/*.swift",
         "mocks/*.swift",
         "stats/*.swift",
     ]) + ["@envoy_mobile_extra_swift_sources//:extra_swift_srcs"],

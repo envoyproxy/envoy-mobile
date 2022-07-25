@@ -5,6 +5,7 @@ private let kCellID = "cell-id"
 private let kRequestAuthority = "api.lyft.com"
 private let kRequestPath = "/ping"
 private let kRequestScheme = "https"
+private let kPersistenceKey = "io.envoyproxy.envoymobile.persistence"
 private let kFilteredHeaders =
   ["server", "filter-demo", "async-filter-demo", "x-envoy-upstream-service-time"]
 
@@ -16,6 +17,8 @@ final class ViewController: UITableViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+
+    let userDefaults = UserDefaults(suiteName: kPersistenceKey)!
 
     let engine = EngineBuilder()
       .addLogLevel(.debug)
@@ -35,6 +38,8 @@ final class ViewController: UITableViewController {
       )
       .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
       .addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
+      .addKeyValueStore(name: "demo-kv-store",
+                        keyValueStore: UserDefaultsStore(userDefaults: userDefaults))
       .setEventTracker { NSLog("Envoy event emitted: \($0)") }
       .forceIPv6(true)
       .build()
