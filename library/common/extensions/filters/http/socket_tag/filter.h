@@ -14,17 +14,14 @@ namespace HttpFilters {
 namespace SocketTag {
 
 /**
- * Filter to set upstream socket options based on network conditions.
+ * Filter to set upstream socket tags based on a request header.
+ * See: https://source.android.com/devices/tech/datausage/tags-explained
  */
 class SocketTagFilter final : public Http::PassThroughFilter,
                               public Logger::Loggable<Logger::Id::filter> {
 public:
-  // Http::StreamDecoderFilter
-  void setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) override;
+  // Http::PassThroughDecoderFilter
   Http::FilterHeadersStatus decodeHeaders(Http::RequestHeaderMap& request_headers, bool) override;
-
-private:
-  Http::StreamDecoderFilterCallbacks* callbacks_{};
 };
 
 } // namespace SocketTag

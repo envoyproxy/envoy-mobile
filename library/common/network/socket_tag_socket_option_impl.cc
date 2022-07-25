@@ -19,6 +19,11 @@ bool SocketTagSocketOptionImpl::setOption(
     return true;
   }
 
+  // Because socket tagging happens at the socket level, not at the request level,
+  // requests with different socket tags must not use the same socket. As a result
+  // different socket tag socket options must end up in different socket pools.
+  // This happens because different socket tag socket option generate different
+  // hash keys.
   int fd = socket.ioHandle().fdDoNotUse();
   tag_socket(fd, 0, 0);
   tag_socket(fd, uid_, traffic_stats_tag_);
@@ -39,7 +44,10 @@ absl::optional<Socket::Option::Details> SocketTagSocketOptionImpl::getOptionDeta
   static std::string name = "socket_tag";
   Socket::Option::Details details;
   details.name_ = optname_;
-  //  details.value_ = tag_->dataForLogging();
+  std::vector<uint8_t> data;
+  pushScalarToByteVector(uid_, data);
+  pushScalarToByteVector(traffic_stats_tag_, data);
+  details.value_ = std::string(reinterpret_cast<char*>(data.data()), data.size());
   return absl::make_optional(std::move(details));
 }
 

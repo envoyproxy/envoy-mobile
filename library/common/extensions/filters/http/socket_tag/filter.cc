@@ -24,18 +24,18 @@ Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap&
   uid_t uid;
   uint32_t traffic_stats_tag;
   if (!absl::SimpleAtoi(data.first, &uid) || !absl::SimpleAtoi(data.second, &traffic_stats_tag)) {
+      decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                         "Invalid socket-tag header.",
+                                         nullptr, absl::nullopt, "");
+      // return Http::FilterDataStatus::StopIterationNoBuffer;
     return Http::FilterHeadersStatus::StopIteration;
   }
 
   auto options = std::make_shared<Network::Socket::Options>();
   options->push_back(std::make_shared<Network::SocketTagSocketOptionImpl>(uid, traffic_stats_tag));
-  callbacks_->addUpstreamSocketOptions(options);
+  decoder_callbacks_->addUpstreamSocketOptions(options);
   request_headers.remove(socket_tag_header);
   return Http::FilterHeadersStatus::Continue;
-}
-
-void SocketTagFilter::setDecoderFilterCallbacks(Http::StreamDecoderFilterCallbacks& callbacks) {
-  callbacks_ = &callbacks;
 }
 
 } // namespace SocketTag

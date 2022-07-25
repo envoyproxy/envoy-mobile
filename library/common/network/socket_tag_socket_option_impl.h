@@ -27,7 +27,11 @@ public:
 private:
   const Network::SocketOptionName optname_;
 
+  // Thread stats UID to be applied to the socket.
+  // See: https://developer.android.com/reference/android/net/TrafficStats#setThreadStatsUid(int)
   uid_t uid_;
+  // Thread stats tag to be applied to the socket.
+  // See: https://developer.android.com/reference/android/net/TrafficStats#setThreadStatsTag(int)
   uint32_t traffic_stats_tag_;
 };
 
