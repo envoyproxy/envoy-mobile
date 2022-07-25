@@ -108,7 +108,7 @@ def kotlin_repos():
         name = "rules_java",
         sha256 = "19462d64b1586c0d4ea0e87f9325be2514f0eb84e56dbf3245450451b3701581",
         strip_prefix = "rules_java-43243982abc76390ef64be62379a1353f9011771",
-        # TODO(jpsim): Switch back to bazelbuild repo when https://github.com/bazelbuild/rules_java/pull/65 is merged
+        # TODO(jpsim): Switch back to bazelbuild repo when https://github.com/bazelbuild/rules_java/issues/64 is fixed
         url = "https://github.com/jpsim/rules_java/archive/43243982abc76390ef64be62379a1353f9011771.tar.gz",
     )
 
