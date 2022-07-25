@@ -44,6 +44,7 @@ swift_library(
         "TestEngineBuilder.swift",
         "Trailers.swift",
         "UpstreamHttpProtocol.swift",
+        "UserDefaultsStore.swift",
         "filters/*.swift",
         "grpc/*.swift",
         "mocks/*.swift",

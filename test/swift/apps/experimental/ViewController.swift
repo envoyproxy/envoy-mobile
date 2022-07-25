@@ -17,6 +17,8 @@ final class ViewController: UITableViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
+    let userDefaults = UserDefaults.standard
+
     let engine = EngineBuilder()
       .addLogLevel(.debug)
       .addPlatformFilter(DemoFilter.init)
@@ -35,6 +37,8 @@ final class ViewController: UITableViewController {
       )
       .setOnEngineRunning { NSLog("Envoy async internal setup completed") }
       .addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
+      .addKeyValueStore(name: "demo-kv-store",
+                        keyValueStore: UserDefaultsStore(userDefaults: userDefaults))
       .setEventTracker { NSLog("Envoy event emitted: \($0)") }
       .forceIPv6(true)
       .build()
