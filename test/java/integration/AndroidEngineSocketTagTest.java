@@ -109,7 +109,7 @@ public class AndroidEngineSocketTagTest {
       @Override
       public MockResponse dispatch(RecordedRequest recordedRequest) {
         // No request should be sent to the server because the request has a bad tag.
-        assert(false);
+        assert (false);
         return null;
       }
     });
