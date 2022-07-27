@@ -2,7 +2,7 @@
 
 import Foundation
 
-/// Simple implementation of a `KeyValueStore` leveraging `Userefaults` for persistence.
+/// Simple implementation of a `KeyValueStore` leveraging `UserDefaults` for persistence.
 @objcMembers
 public class UserDefaultsStore: KeyValueStore {
   private let defaults: UserDefaults
