@@ -18,6 +18,7 @@ final class ViewController: UITableViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
 
+    // swiftlint:disable:next force_unwrapping
     let userDefaults = UserDefaults(suiteName: kPersistenceKey)!
 
     let engine = EngineBuilder()
