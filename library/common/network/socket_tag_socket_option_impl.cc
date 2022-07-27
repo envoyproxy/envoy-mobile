@@ -24,6 +24,8 @@ bool SocketTagSocketOptionImpl::setOption(
   // different socket tag socket options must end up in different socket pools.
   // This happens because different socket tag socket option generate different
   // hash keys.
+  // Futher, this only works for sockets which have a raw fd and will be a no-op
+  // otherwise.
   int fd = socket.ioHandle().fdDoNotUse();
   tag_socket(fd, 0, 0);
   tag_socket(fd, uid_, traffic_stats_tag_);

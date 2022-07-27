@@ -323,7 +323,6 @@ public class AndroidEnvoyExplicitFlowTest {
                                           .setHttpMethod(RequestMethod.POST)
                                           .setUrl(mockWebServer.url("post/flowers").toString())
                                           .addHeader("content-length", "23")
-                                          .addHeader("socket-tag", "0,0")
                                           .addBody("This is my request body");
 
     Response response = sendRequest(requestScenario);

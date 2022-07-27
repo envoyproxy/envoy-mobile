@@ -303,6 +303,18 @@ open class EngineBuilder(
   }
 
   /**
+   * Specify whether to do brotli response decompression or not.  Defaults to false.
+   *
+   * @param enableBrotli whether or not to brotli decompress responses.
+   *
+   * @return This builder.
+   */
+  fun enableSocketTag(enableSocketTag: Boolean): EngineBuilder {
+    this.enableSocketTag = enableSocketTag
+    return this
+  }
+
+  /**
    * Specify whether sockets may attempt to bind to a specific interface, based on network
    * conditions.
    *
