@@ -303,9 +303,9 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to do brotli response decompression or not.  Defaults to false.
+   * Specify whether to support socket tagging or not.  Defaults to false.
    *
-   * @param enableBrotli whether or not to brotli decompress responses.
+   * @param enableSocketTag whether or not support socket tagging.
    *
    * @return This builder.
    */
