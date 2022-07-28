@@ -64,8 +64,7 @@ public class Response {
 
   public void setCancelled() {
     if (!cancelled.compareAndSet(false, true)) {
-      assertionError.compareAndSet(null,
-          new AssertionError("setOnCancel called more than once."));
+      assertionError.compareAndSet(null, new AssertionError("setOnCancel called more than once."));
     }
   }
 

@@ -128,10 +128,9 @@ public class QuicTestServerTest {
 
   @Test
   public void get_simpleTxt() throws Exception {
-    RequestScenario requestScenario =
-        new RequestScenario()
-            .setHttpMethod(RequestMethod.GET)
-            .setUrl(QuicTestServer.getServerURL() + "/simple.txt");
+    RequestScenario requestScenario = new RequestScenario()
+                                          .setHttpMethod(RequestMethod.GET)
+                                          .setUrl(QuicTestServer.getServerURL() + "/simple.txt");
 
     Response response = sendRequest(requestScenario);
 
@@ -141,11 +140,9 @@ public class QuicTestServerTest {
     assertThat(response.getEnvoyError()).isNull();
   }
 
-  private Response sendRequest(RequestScenario requestScenario)
-      throws Exception {
+  private Response sendRequest(RequestScenario requestScenario) throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicReference<Response> response =
-        new AtomicReference<>(new Response());
+    final AtomicReference<Response> response = new AtomicReference<>(new Response());
 
     Stream stream = engine.streamClient()
                         .newStreamPrototype()

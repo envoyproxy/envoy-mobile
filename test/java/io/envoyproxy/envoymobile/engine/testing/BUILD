@@ -17,7 +17,7 @@ android_library(
     visibility = ["//test:__subpackages__"],
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
-    ]
+    ],
 )
 
 envoy_mobile_android_test(

@@ -56,14 +56,13 @@ public final class RequestScenario {
   }
 
   public List<ByteBuffer> getBodyChunks() {
-      return closeBodyStream
-          ? Collections.unmodifiableList(bodyChunks.subList(0, bodyChunks.size() - 1))
-          : Collections.unmodifiableList(bodyChunks);
+    return closeBodyStream
+        ? Collections.unmodifiableList(bodyChunks.subList(0, bodyChunks.size() - 1))
+        : Collections.unmodifiableList(bodyChunks);
   }
 
   public Optional<ByteBuffer> getClosingBodyChunk() {
-    return closeBodyStream ? Optional.of(bodyChunks.get(bodyChunks.size() - 1))
-        : Optional.empty();
+    return closeBodyStream ? Optional.of(bodyChunks.get(bodyChunks.size() - 1)) : Optional.empty();
   }
 
   public boolean hasBody() { return !bodyChunks.isEmpty(); }
