@@ -5,7 +5,6 @@ private let kCellID = "cell-id"
 private let kRequestAuthority = "api.lyft.com"
 private let kRequestPath = "/ping"
 private let kRequestScheme = "https"
-private let kPersistenceKey = "io.envoyproxy.envoymobile.persistence"
 private let kFilteredHeaders =
   ["server", "filter-demo", "async-filter-demo", "x-envoy-upstream-service-time"]
 
@@ -19,7 +18,7 @@ final class ViewController: UITableViewController {
     super.viewDidLoad()
 
     // swiftlint:disable:next force_unwrapping
-    let userDefaults = UserDefaults(suiteName: kPersistenceKey)!
+    let userDefaults = UserDefaults.standard
 
     let engine = EngineBuilder()
       .addLogLevel(.debug)

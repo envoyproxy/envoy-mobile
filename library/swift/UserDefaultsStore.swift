@@ -2,7 +2,7 @@ import Foundation
 
 /// Simple implementation of a `KeyValueStore` leveraging `UserDefaults` for persistence.
 @objcMembers
-public class UserDefaultsStore: KeyValueStore {
+public final class UserDefaultsStore: KeyValueStore {
   private let defaults: UserDefaults
 
   public init(userDefaults: UserDefaults) {
@@ -10,14 +10,14 @@ public class UserDefaultsStore: KeyValueStore {
   }
 
   public func readValue(forKey key: String) -> String? {
-    return defaults.string(forKey: key)
+    return self.defaults.string(forKey: key)
   }
 
   public func saveValue(_ value: String, toKey key: String) {
-    defaults.set(value, forKey: key)
+    self.defaults.set(value, forKey: key)
   }
 
   public func removeKey(_ key: String) {
-    defaults.removeObject(forKey: key)
+    self.defaults.removeObject(forKey: key)
   }
 }
