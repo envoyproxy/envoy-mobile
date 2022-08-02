@@ -10,12 +10,16 @@
 namespace Envoy {
 namespace Platform {
 
+/**
+ *`KeyValueStore` is an interface that may be implemented to provide access to an arbitrary
+ * key-value store implementation that may be made accessible to internal Envoy Mobile code.
+ */
 struct KeyValueStore : public std::enable_shared_from_this<KeyValueStore> {
 public:
   virtual ~KeyValueStore() = default;
 
   /**
-   * Returns the value of the key provided.
+   * Returns the value associated with the provided key, if any.
    * @param key supplies a key to return the value of.
    * @return the value, if the key is in the store, absl::nullopt otherwise.
    */
