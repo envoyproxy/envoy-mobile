@@ -18,7 +18,6 @@ Breaking changes:
 - api: engines are no longer a singleton, you may need to update your code to only create engines once and hold on to them.
   You also cannot assume that an `envoy_engine_t` value of `1` will return the default engine.
   Support for using multiple engines concurrently is coming later. (:issue:`#2129 <2129>`)
-- iOS: create simple persistent UserDefaultsStore (:issue: `#2441 <2441>`)
 
 Bugfixes:
 
@@ -46,6 +45,7 @@ Features:
 - iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 - api: improved C++ APIs compatibility with Java / Kotlin / Swift (:issue `#2362 <2362>`)
 - api: add option to use the a ``getaddrinfo``-based system DNS resolver instead of c-ares (:issue: `#2419 <2419>`)
+- iOS: add ``KeyValueStore`` protocol conformance to ``UserDefaults`` (:issue: `#2450 <2450>`)
 
 0.4.6 (April 26, 2022)
 ========================
