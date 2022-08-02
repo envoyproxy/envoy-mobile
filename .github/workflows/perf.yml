@@ -22,10 +22,6 @@ jobs:
           submodules: true
       - name: Add safe directory
         run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
       - name: 'Build test binary'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
