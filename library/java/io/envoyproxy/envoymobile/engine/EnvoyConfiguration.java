@@ -41,7 +41,7 @@ public class EnvoyConfiguration {
   public final Boolean enableHttp3;
   public final Boolean enableGzip;
   public final Boolean enableBrotli;
-  public final Boolean enableSocketTag;
+  public final Boolean enableSocketTagging;
   public final Boolean enableHappyEyeballs;
   public final Boolean enableInterfaceBinding;
   public final Boolean forceIPv6;
@@ -85,7 +85,7 @@ public class EnvoyConfiguration {
    * @param enableHttp3                  whether to enable experimental support for HTTP/3 (QUIC).
    * @param enableGzip                   whether to enable response gzip decompression.
    * @param enableBrotli                 whether to enable response brotli decompression.
-   * @param enableSocketTag              whether to enable socket tagging.
+   * @param enableSocketTagging          whether to enable socket tagging.
    * @param enableHappyEyeballs          whether to enable RFC 6555 handling for IPv4/IPv6.
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param forceIPv6                    whether to force connections to use IPv6.
@@ -115,7 +115,7 @@ public class EnvoyConfiguration {
       String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
       boolean dnsFilterUnroutableFamilies, boolean dnsUseSystemResolver,
       boolean enableDrainPostDnsRefresh, boolean enableHttp3, boolean enableGzip,
-      boolean enableBrotli, boolean enableSocketTag, boolean enableHappyEyeballs,
+      boolean enableBrotli, boolean enableSocketTagging, boolean enableHappyEyeballs,
       boolean enableInterfaceBinding, boolean forceIPv6,
       int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
       boolean h2ExtendKeepaliveTimeout, List<String> h2RawDomains, int maxConnectionsPerHost,
@@ -142,7 +142,7 @@ public class EnvoyConfiguration {
     this.enableHttp3 = enableHttp3;
     this.enableGzip = enableGzip;
     this.enableBrotli = enableBrotli;
-    this.enableSocketTag = enableSocketTag;
+    this.enableSocketTagging = enableSocketTagging;
     this.enableHappyEyeballs = enableHappyEyeballs;
     this.enableInterfaceBinding = enableInterfaceBinding;
     this.forceIPv6 = forceIPv6;
@@ -207,7 +207,7 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(brotliFilterInsert);
     }
 
-    if (enableSocketTag) {
+    if (enableSocketTagging) {
       customFiltersBuilder.append(socketTagFilterInsert);
     }
 

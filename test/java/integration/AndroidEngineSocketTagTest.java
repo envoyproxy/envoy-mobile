@@ -64,7 +64,7 @@ public class AndroidEngineSocketTagTest {
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
                  .addLogLevel(LogLevel.OFF)
-                 .enableSocketTag(true)
+                 .enableSocketTagging(true)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;

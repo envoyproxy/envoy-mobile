@@ -58,7 +58,7 @@ open class EngineBuilder(
   private var enableHappyEyeballs = true
   private var enableGzip = true
   private var enableBrotli = false
-  private var enableSocketTag = false
+  private var enableSocketTagging = false
   private var enableInterfaceBinding = false
   private var forceIPv6 = false
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
@@ -305,12 +305,12 @@ open class EngineBuilder(
   /**
    * Specify whether to support socket tagging or not. Defaults to false.
    *
-   * @param enableSocketTag whether or not support socket tagging.
+   * @param enableSocketTagging whether or not support socket tagging.
    *
    * @return This builder.
    */
-  fun enableSocketTag(enableSocketTag: Boolean): EngineBuilder {
-    this.enableSocketTag = enableSocketTag
+  fun enableSocketTagging(enableSocketTagging: Boolean): EngineBuilder {
+    this.enableSocketTagging = enableSocketTagging
     return this
   }
 
@@ -626,7 +626,7 @@ open class EngineBuilder(
       enableHttp3,
       enableGzip,
       enableBrotli,
-      enableSocketTag,
+      enableSocketTagging,
       enableHappyEyeballs,
       enableInterfaceBinding,
       forceIPv6,
