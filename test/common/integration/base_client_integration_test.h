@@ -45,7 +45,7 @@ protected:
   // Must be called manually by subclasses in their TearDown();
   void TearDown();
   std::shared_ptr<Platform::RequestHeaders>
-  envoyToMobileHeaders(Http::TestRequestHeaderMapImpl *request_headers);
+  envoyToMobileHeaders(Http::TestRequestHeaderMapImpl* request_headers);
 
   Event::ProvisionalDispatcherPtr dispatcher_ = std::make_unique<Event::ProvisionalDispatcher>();
   envoy_http_callbacks bridge_callbacks_;

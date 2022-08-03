@@ -99,7 +99,7 @@ void BaseClientIntegrationTest::initialize() {
 }
 
 std::shared_ptr<Platform::RequestHeaders>
-BaseClientIntegrationTest::envoyToMobileHeaders(Http::TestRequestHeaderMapImpl *request_headers) {
+BaseClientIntegrationTest::envoyToMobileHeaders(Http::TestRequestHeaderMapImpl* request_headers) {
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
 
   envoy_headers envoyHeaders = Http::Utility::toBridgeHeaders(*request_headers);
