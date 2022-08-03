@@ -303,7 +303,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to support socket tagging or not.  Defaults to false.
+   * Specify whether to support socket tagging or not. Defaults to false.
    *
    * @param enableSocketTag whether or not support socket tagging.
    *
