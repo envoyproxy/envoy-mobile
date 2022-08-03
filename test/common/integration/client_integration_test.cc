@@ -245,8 +245,6 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   EXPECT_TRUE(upstream_connection->waitForData(FakeRawConnection::waitForInexactMatch("GET /"),
                                                &upstream_request));
 
-  std::cout << "debug1";
-  std::cout << upstream_request;
   EXPECT_TRUE(absl::StrContains(upstream_request, "FoO: bar")) << upstream_request;
 
   // Send mixed case headers, and verify via setOnHeaders they are received correctly.
