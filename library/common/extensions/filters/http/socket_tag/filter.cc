@@ -24,7 +24,8 @@ Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap&
   uid_t uid;
   uint32_t traffic_stats_tag;
   if (!absl::SimpleAtoi(data.first, &uid) || !absl::SimpleAtoi(data.second, &traffic_stats_tag)) {
-    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest, absl::StrCat("Invalid socket-tag header: ", tag_string),
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
+                                       absl::StrCat("Invalid socket-tag header: ", tag_string),
                                        nullptr, absl::nullopt, "");
     return Http::FilterHeadersStatus::StopIteration;
   }
