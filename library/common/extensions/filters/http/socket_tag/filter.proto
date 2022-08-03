@@ -3,7 +3,7 @@ syntax = "proto3";
 package envoymobile.extensions.filters.http.socket_tag;
 
 // Configuration for the socket tagging filer. This filter uses data from the
-// socket-tag request header to apply and Android Socket Tag to the upstream
+// socket-tag request header to apply an Android Socket Tag to the upstream
 // socket.
 // See: https://source.android.com/devices/tech/datausage/tags-explained
 // See: https://developer.android.com/reference/android/net/TrafficStats#setThreadStatsTag(int)
