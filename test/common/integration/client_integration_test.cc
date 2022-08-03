@@ -48,7 +48,7 @@ TEST_P(ClientIntegrationTest, Basic) {
   custom_headers.addCopy(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
                          std::to_string(request_data.length()));
   std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(custom_headers);
+      envoyToMobileHeaders(&custom_headers);
 
   stream_prototype_->setOnData([this](envoy_data c_data, bool end_stream) {
     if (end_stream) {
@@ -104,7 +104,7 @@ TEST_P(ClientIntegrationTest, BasicReset) {
   HttpTestUtility::addDefaultHeaders(custom_headers);
   custom_headers.addCopy(AutonomousStream::RESET_AFTER_REQUEST, "yes");
   std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(custom_headers);
+      envoyToMobileHeaders(&custom_headers);
 
   stream_->sendHeaders(custom_request_headers, true);
   terminal_callback_.waitReady();
@@ -210,10 +210,26 @@ TEST_P(ClientIntegrationTest, CancelWithPartialStream) {
 // Test header key case sensitivity.
 TEST_P(ClientIntegrationTest, CaseSensitive) {
   autonomous_upstream_ = false;
+  Envoy::Extensions::Http::HeaderFormatters::PreserveCase::
+      forceRegisterPreserveCaseFormatterFactoryConfig();
+  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+    ConfigHelper::HttpProtocolOptions protocol_options;
+    auto typed_extension_config = protocol_options.mutable_explicit_http_config()
+                                      ->mutable_http_protocol_options()
+                                      ->mutable_header_key_format()
+                                      ->mutable_stateful_formatter();
+    typed_extension_config->set_name("preserve_case");
+    typed_extension_config->mutable_typed_config()->set_type_url(
+        "type.googleapis.com/"
+        "envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig");
+    ConfigHelper::setProtocolOptions(*bootstrap.mutable_static_resources()->mutable_clusters(0),
+                                     protocol_options);
+  });
   initialize();
 
   Http::TestRequestHeaderMapImpl custom_headers;
   HttpTestUtility::addDefaultHeaders(custom_headers);
+
   custom_headers.header_map_->setFormatter(
       std::make_unique<
           Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(
@@ -224,7 +240,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   custom_headers.header_map_->formatter().value().get().processKey("FoO");
 
   std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(custom_headers);
+      envoyToMobileHeaders(&custom_headers);
 
   stream_prototype_->setOnHeaders(
       [this](Platform::ResponseHeadersSharedPtr headers, bool, envoy_stream_intel) {
