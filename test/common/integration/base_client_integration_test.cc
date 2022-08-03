@@ -1,7 +1,9 @@
 #include "test/common/integration/base_client_integration_test.h"
 
 #include "gtest/gtest.h"
+#include "library/cc/bridge_utility.h"
 #include "library/common/config/internal.h"
+#include "library/common/http/header_utility.h"
 
 namespace Envoy {
 namespace {
@@ -90,14 +92,28 @@ void BaseClientIntegrationTest::initialize() {
   stream_ = (*stream_prototype_).start(explicit_flow_control_);
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
   Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
-  for (auto& entry : custom_headers_) {
-    auto values = {entry.second};
-    builder.set(entry.first, values);
-  }
   if (upstreamProtocol() == Http::CodecType::HTTP2) {
     builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
   }
   default_request_headers_ = std::make_shared<Platform::RequestHeaders>(builder.build());
+}
+
+std::shared_ptr<Platform::RequestHeaders>
+BaseClientIntegrationTest::envoyToMobileHeaders(Http::TestRequestHeaderMapImpl request_headers) {
+  std::string host(fake_upstreams_[0]->localAddress()->asStringView());
+
+  envoy_headers eh = Http::Utility::toBridgeHeaders(request_headers);
+  Platform::RawHeaderMap rhm = Platform::envoyHeadersAsRawHeaderMap(eh);
+
+  Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
+  for (const auto& pair : rhm) {
+    builder.set(pair.first, pair.second);
+  }
+  if (upstreamProtocol() == Http::CodecType::HTTP2) {
+    builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
+  }
+  auto mobile_headers = std::make_shared<Platform::RequestHeaders>(builder.build());
+  return mobile_headers;
 }
 
 void BaseClientIntegrationTest::threadRoutine(absl::Notification& engine_running) {

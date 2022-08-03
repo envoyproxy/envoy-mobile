@@ -1,6 +1,7 @@
 #include "source/extensions/http/header_formatters/preserve_case/config.h"
 #include "source/extensions/http/header_formatters/preserve_case/preserve_case_formatter.h"
 
+#include "test/common/http/common.h"
 #include "test/common/integration/base_client_integration_test.h"
 #include "test/integration/autonomous_upstream.h"
 
@@ -39,10 +40,15 @@ INSTANTIATE_TEST_SUITE_P(IpVersions, ClientIntegrationTest,
                          TestUtility::ipTestParamsToString);
 
 TEST_P(ClientIntegrationTest, Basic) {
-  Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  custom_headers_.emplace(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
-                          std::to_string(request_data.length()));
   initialize();
+
+  Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
+  Http::TestRequestHeaderMapImpl custom_headers;
+  HttpTestUtility::addDefaultHeaders(custom_headers);
+  custom_headers.addCopy(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
+                         std::to_string(request_data.length()));
+  std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
+      envoyToMobileHeaders(custom_headers);
 
   stream_prototype_->setOnData([this](envoy_data c_data, bool end_stream) {
     if (end_stream) {
@@ -54,7 +60,7 @@ TEST_P(ClientIntegrationTest, Basic) {
     release_envoy_data(c_data);
   });
 
-  stream_->sendHeaders(default_request_headers_, false);
+  stream_->sendHeaders(custom_request_headers, false);
 
   envoy_data c_data = Data::Utility::toBridgeData(request_data);
   stream_->sendData(c_data);
@@ -92,10 +98,15 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
 }
 
 TEST_P(ClientIntegrationTest, BasicReset) {
-  custom_headers_.emplace(AutonomousStream::RESET_AFTER_REQUEST, "yes");
   initialize();
 
-  stream_->sendHeaders(default_request_headers_, true);
+  Http::TestRequestHeaderMapImpl custom_headers;
+  HttpTestUtility::addDefaultHeaders(custom_headers);
+  custom_headers.addCopy(AutonomousStream::RESET_AFTER_REQUEST, "yes");
+  std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
+      envoyToMobileHeaders(custom_headers);
+
+  stream_->sendHeaders(custom_request_headers, true);
   terminal_callback_.waitReady();
 
   ASSERT_EQ(cc_.on_error_calls, 1);
@@ -198,9 +209,22 @@ TEST_P(ClientIntegrationTest, CancelWithPartialStream) {
 
 // Test header key case sensitivity.
 TEST_P(ClientIntegrationTest, CaseSensitive) {
-  custom_headers_.emplace("FoO", "bar");
   autonomous_upstream_ = false;
   initialize();
+
+  Http::TestRequestHeaderMapImpl custom_headers;
+  HttpTestUtility::addDefaultHeaders(custom_headers);
+  custom_headers.header_map_->setFormatter(
+      std::make_unique<
+          Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(
+          false, envoy::extensions::http::header_formatters::preserve_case::v3::
+                     PreserveCaseFormatterConfig::DEFAULT));
+
+  custom_headers.addCopy("FoO", "bar");
+  custom_headers.header_map_->formatter().value().get().processKey("FoO");
+
+  std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
+      envoyToMobileHeaders(custom_headers);
 
   stream_prototype_->setOnHeaders(
       [this](Platform::ResponseHeadersSharedPtr headers, bool, envoy_stream_intel) {
@@ -211,7 +235,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
         return nullptr;
       });
 
-  stream_->sendHeaders(default_request_headers_, true);
+  stream_->sendHeaders(custom_request_headers, true);
 
   Envoy::FakeRawConnectionPtr upstream_connection;
   ASSERT_TRUE(fake_upstreams_[0]->waitForRawConnection(upstream_connection));
@@ -220,6 +244,9 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   std::string upstream_request;
   EXPECT_TRUE(upstream_connection->waitForData(FakeRawConnection::waitForInexactMatch("GET /"),
                                                &upstream_request));
+
+  std::cout << "debug1";
+  std::cout << upstream_request;
   EXPECT_TRUE(absl::StrContains(upstream_request, "FoO: bar")) << upstream_request;
 
   // Send mixed case headers, and verify via setOnHeaders they are received correctly.
