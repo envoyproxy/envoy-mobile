@@ -48,7 +48,7 @@ TEST_P(ClientIntegrationTest, Basic) {
   custom_headers.addCopy(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
                          std::to_string(request_data.length()));
   std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(&custom_headers);
+      envoyToMobileHeaders(custom_headers);
 
   stream_prototype_->setOnData([this](envoy_data c_data, bool end_stream) {
     if (end_stream) {
@@ -104,7 +104,7 @@ TEST_P(ClientIntegrationTest, BasicReset) {
   HttpTestUtility::addDefaultHeaders(custom_headers);
   custom_headers.addCopy(AutonomousStream::RESET_AFTER_REQUEST, "yes");
   std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(&custom_headers);
+      envoyToMobileHeaders(custom_headers);
 
   stream_->sendHeaders(custom_request_headers, true);
   terminal_callback_.waitReady();
@@ -240,7 +240,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   custom_headers.header_map_->formatter().value().get().processKey("FoO");
 
   std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(&custom_headers);
+      envoyToMobileHeaders(custom_headers);
 
   stream_prototype_->setOnHeaders(
       [this](Platform::ResponseHeadersSharedPtr headers, bool, envoy_stream_intel) {

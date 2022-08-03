@@ -98,11 +98,11 @@ void BaseClientIntegrationTest::initialize() {
   default_request_headers_ = std::make_shared<Platform::RequestHeaders>(builder.build());
 }
 
-std::shared_ptr<Platform::RequestHeaders>
-BaseClientIntegrationTest::envoyToMobileHeaders(Http::TestRequestHeaderMapImpl* request_headers) {
+std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobileHeaders(
+    const Http::TestRequestHeaderMapImpl& request_headers) {
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
 
-  envoy_headers envoyHeaders = Http::Utility::toBridgeHeaders(*request_headers);
+  envoy_headers envoyHeaders = Http::Utility::toBridgeHeaders(request_headers);
   Platform::RawHeaderMap rawHeaderMap = Platform::envoyHeadersAsRawHeaderMap(envoyHeaders);
 
   Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
