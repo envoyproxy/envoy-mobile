@@ -79,7 +79,7 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = [], repositor
         exports = deps,
         testonly = True,
     )
-    android_local_test(
+    kt_android_local_test(
         name = name,
         srcs = srcs,
         data = native_deps,
