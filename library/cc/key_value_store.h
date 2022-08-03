@@ -11,7 +11,7 @@ namespace Envoy {
 namespace Platform {
 
 /**
- *`KeyValueStore` is an interface that may be implemented to provide access to an arbitrary
+ * `KeyValueStore` is an interface that may be implemented to provide access to an arbitrary
  * key-value store implementation that may be made accessible to internal Envoy Mobile code.
  */
 struct KeyValueStore : public std::enable_shared_from_this<KeyValueStore> {
