@@ -100,7 +100,7 @@ envoy_status_t set_preferred_network(envoy_engine_t engine, envoy_network_t netw
 
 /**
  * @brief Update the currently active proxy settings.
- * 
+ *
  * @param engine, the engine whose proxy settings should be updated.
  * @param host, the proxy host.
  * @param port, the proxy port.

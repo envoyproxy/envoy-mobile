@@ -130,8 +130,8 @@ public interface EnvoyEngine {
 
   /**
    * Update proxy settings.
-   * 
-   * @param host The proxy host defined as a hostname or an IP address. Android 
+   *
+   * @param host The proxy host defined as a hostname or an IP address. Android
    *             allow users to specify proxy using either one of these.
    * @param port The proxy port.
    */

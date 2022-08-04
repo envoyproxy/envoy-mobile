@@ -148,8 +148,8 @@ public:
 
   /**
    * @brief Sets the current proxy settings.
-   * 
-   * @param host The proxy host defined as a hostname or an IP address. Some platforms 
+   *
+   * @param host The proxy host defined as a hostname or an IP address. Some platforms
    *             (i.e., Android) allow users to specify proxy using either one of these.
    * @param port The proxy port.
    */

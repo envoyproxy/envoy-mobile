@@ -353,9 +353,9 @@ public class JniLibrary {
 
   /**
    * Update the proxy settings.
-   * 
+   *
    * @param engine Handle to the engine whose proxy settings should be updated.
-   * @param host The proxy host. 
+   * @param host The proxy host.
    * @param port The proxy port.
    * @return The resulting status of the operation.
    */

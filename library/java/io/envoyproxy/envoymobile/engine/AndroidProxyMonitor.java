@@ -47,7 +47,7 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
     handleProxyChange();
   }
 
-  private void handleProxyChange() { 
+  private void handleProxyChange() {
     ProxyInfo info = connectivityManager.getDefaultProxy();
     if (info == null) {
         envoyEngine.setProxySettings("", 0);
