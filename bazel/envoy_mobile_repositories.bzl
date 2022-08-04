@@ -121,9 +121,8 @@ def kotlin_repos():
 
     http_archive(
         name = "io_bazel_rules_kotlin",
-        sha256 = "b55ea56cad5180782ffd7b926ef3f9ad8561b4c1341a6861fdb0668a73624933",
-        strip_prefix = "rules_kotlin-0.0.1",
-        url = "https://github.com/Augustyniak/rules_kotlin/archive/refs/tags/v0.0.1.tar.gz",
+        sha256 = "946747acdbeae799b085d12b240ec346f775ac65236dfcf18aa0cd7300f6de78",
+        urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.7.0-RC-2/rules_kotlin_release.tgz"],
     )
 
     http_archive(
