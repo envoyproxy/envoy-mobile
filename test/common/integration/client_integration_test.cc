@@ -1,15 +1,10 @@
 #include "source/extensions/http/header_formatters/preserve_case/config.h"
 #include "source/extensions/http/header_formatters/preserve_case/preserve_case_formatter.h"
 
-#include "test/common/http/common.h"
 #include "test/common/integration/base_client_integration_test.h"
 #include "test/integration/autonomous_upstream.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "library/common/data/utility.h"
-#include "library/common/engine.h"
-#include "library/common/http/header_utility.h"
 #include "library/common/types/c_types.h"
 
 using testing::ReturnRef;
@@ -245,7 +240,6 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   std::string upstream_request;
   EXPECT_TRUE(upstream_connection->waitForData(FakeRawConnection::waitForInexactMatch("GET /"),
                                                &upstream_request));
-
   EXPECT_TRUE(absl::StrContains(upstream_request, "FoO: bar")) << upstream_request;
 
   // Send mixed case headers, and verify via setOnHeaders they are received correctly.

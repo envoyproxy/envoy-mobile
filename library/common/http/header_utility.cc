@@ -62,6 +62,7 @@ envoy_headers toBridgeHeaders(const HeaderMap& header_map, absl::string_view alp
         }
         envoy_data key = Data::Utility::copyToBridgeData(key_val);
         envoy_data value = Data::Utility::copyToBridgeData(header.value().getStringView());
+        
         transformed_headers.entries[transformed_headers.length] = {key, value};
         transformed_headers.length++;
 
