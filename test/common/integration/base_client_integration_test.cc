@@ -3,9 +3,12 @@
 #include "test/common/http/common.h"
 
 #include "gtest/gtest.h"
+#include <string>
 #include "library/cc/bridge_utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/http/header_utility.h"
+#include "library/common/data/utility.h"
+#include "source/common/http/header_map_impl.h"
 
 namespace Envoy {
 namespace {
@@ -93,7 +96,6 @@ void BaseClientIntegrationTest::initialize() {
 
   stream_ = (*stream_prototype_).start(explicit_flow_control_);
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
-  default_request_headers_ = {};
   HttpTestUtility::addDefaultHeaders(default_request_headers_);
   default_request_headers_.setHost(fake_upstreams_[0]->localAddress()->asStringView());
 }
@@ -111,6 +113,21 @@ std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobi
   if (upstreamProtocol() == Http::CodecType::HTTP2) {
     builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
   }
+
+  request_headers.iterate(
+  [&request_headers, &builder](const Http::HeaderEntry& header) -> Http::HeaderMap::Iterate {
+      std::string key_val = std::string(header.key().getStringView());
+      if (request_headers.formatter().has_value()) {
+        const Envoy::Http::StatefulHeaderKeyFormatter& formatter = request_headers.formatter().value();
+        key_val = formatter.format(key_val);
+      }
+      auto key = std::string(key_val);
+      auto value = std::vector<std::string>();
+      value.push_back(std::string(header.value().getStringView()));
+      builder.set(key, value);
+      return Http::HeaderMap::Iterate::Continue;
+    });
+
   for (const auto& pair : rawHeaderMap) {
     builder.set(pair.first, pair.second);
   }
