@@ -1,4 +1,3 @@
-#include "source/extensions/http/header_formatters/preserve_case/config.h"
 #include "source/extensions/http/header_formatters/preserve_case/preserve_case_formatter.h"
 
 #include "test/common/integration/base_client_integration_test.h"
@@ -197,21 +196,6 @@ TEST_P(ClientIntegrationTest, CancelWithPartialStream) {
 // Test header key case sensitivity.
 TEST_P(ClientIntegrationTest, CaseSensitive) {
   autonomous_upstream_ = false;
-  Envoy::Extensions::Http::HeaderFormatters::PreserveCase::
-      forceRegisterPreserveCaseFormatterFactoryConfig();
-  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-    ConfigHelper::HttpProtocolOptions protocol_options;
-    auto typed_extension_config = protocol_options.mutable_explicit_http_config()
-                                      ->mutable_http_protocol_options()
-                                      ->mutable_header_key_format()
-                                      ->mutable_stateful_formatter();
-    typed_extension_config->set_name("preserve_case");
-    typed_extension_config->mutable_typed_config()->set_type_url(
-        "type.googleapis.com/"
-        "envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig");
-    ConfigHelper::setProtocolOptions(*bootstrap.mutable_static_resources()->mutable_clusters(0),
-                                     protocol_options);
-  });
   initialize();
 
   default_request_headers_.header_map_->setFormatter(

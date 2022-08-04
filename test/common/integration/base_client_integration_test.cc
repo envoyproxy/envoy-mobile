@@ -108,20 +108,20 @@ std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobi
   Platform::RequestHeadersBuilder builder(
       Platform::RequestMethod::GET,
       std::string(default_request_headers_.Scheme()->value().getStringView()),
-      std::string(default_request_headers_.Host()->value().getStringView()), "/");
+      std::string(default_request_headers_.Host()->value().getStringView()),
+      std::string(default_request_headers_.Path()->value().getStringView()));
   if (upstreamProtocol() == Http::CodecType::HTTP2) {
     builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
   }
 
   request_headers.iterate(
       [&request_headers, &builder](const Http::HeaderEntry& header) -> Http::HeaderMap::Iterate {
-        std::string key_val = std::string(header.key().getStringView());
+        std::string key = std::string(header.key().getStringView());
         if (request_headers.formatter().has_value()) {
           const Envoy::Http::StatefulHeaderKeyFormatter& formatter =
               request_headers.formatter().value();
-          key_val = formatter.format(key_val);
+          key = formatter.format(key);
         }
-        auto key = std::string(key_val);
         auto value = std::vector<std::string>();
         value.push_back(std::string(header.value().getStringView()));
         builder.set(key, value);
@@ -131,8 +131,7 @@ std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobi
   for (const auto& pair : rawHeaderMap) {
     builder.set(pair.first, pair.second);
   }
-  auto mobile_headers = std::make_shared<Platform::RequestHeaders>(builder.build());
-  return mobile_headers;
+  return std::make_shared<Platform::RequestHeaders>(builder.build());
 }
 
 void BaseClientIntegrationTest::threadRoutine(absl::Notification& engine_running) {
