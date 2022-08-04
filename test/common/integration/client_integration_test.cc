@@ -43,12 +43,8 @@ TEST_P(ClientIntegrationTest, Basic) {
   initialize();
 
   Buffer::OwnedImpl request_data = Buffer::OwnedImpl("request body");
-  Http::TestRequestHeaderMapImpl custom_headers;
-  HttpTestUtility::addDefaultHeaders(custom_headers);
-  custom_headers.addCopy(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
-                         std::to_string(request_data.length()));
-  std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(custom_headers);
+  default_request_headers_.addCopy(AutonomousStream::EXPECT_REQUEST_SIZE_BYTES,
+                                   std::to_string(request_data.length()));
 
   stream_prototype_->setOnData([this](envoy_data c_data, bool end_stream) {
     if (end_stream) {
@@ -60,7 +56,7 @@ TEST_P(ClientIntegrationTest, Basic) {
     release_envoy_data(c_data);
   });
 
-  stream_->sendHeaders(custom_request_headers, false);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), false);
 
   envoy_data c_data = Data::Utility::toBridgeData(request_data);
   stream_->sendData(c_data);
@@ -88,7 +84,7 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
       ->setResponseHeaders(std::make_unique<Http::TestResponseHeaderMapImpl>(
           Http::TestResponseHeaderMapImpl({{":status", "503"}, {"content-length", "0"}})));
 
-  stream_->sendHeaders(default_request_headers_, true);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
   terminal_callback_.waitReady();
 
   ASSERT_EQ(cc_.on_error_calls, 0);
@@ -100,13 +96,9 @@ TEST_P(ClientIntegrationTest, BasicNon2xx) {
 TEST_P(ClientIntegrationTest, BasicReset) {
   initialize();
 
-  Http::TestRequestHeaderMapImpl custom_headers;
-  HttpTestUtility::addDefaultHeaders(custom_headers);
-  custom_headers.addCopy(AutonomousStream::RESET_AFTER_REQUEST, "yes");
-  std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(custom_headers);
+  default_request_headers_.addCopy(AutonomousStream::RESET_AFTER_REQUEST, "yes");
 
-  stream_->sendHeaders(custom_request_headers, true);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
   terminal_callback_.waitReady();
 
   ASSERT_EQ(cc_.on_error_calls, 1);
@@ -127,7 +119,7 @@ TEST_P(ClientIntegrationTest, BasicCancel) {
         return nullptr;
       });
 
-  stream_->sendHeaders(default_request_headers_, true);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
 
   Envoy::FakeRawConnectionPtr upstream_connection;
   ASSERT_TRUE(fake_upstreams_[0]->waitForRawConnection(upstream_connection));
@@ -172,7 +164,7 @@ TEST_P(ClientIntegrationTest, CancelWithPartialStream) {
         return nullptr;
       });
 
-  stream_->sendHeaders(default_request_headers_, true);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
 
   Envoy::FakeRawConnectionPtr upstream_connection;
   ASSERT_TRUE(fake_upstreams_[0]->waitForRawConnection(upstream_connection));
@@ -227,20 +219,14 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
   });
   initialize();
 
-  Http::TestRequestHeaderMapImpl custom_headers;
-  HttpTestUtility::addDefaultHeaders(custom_headers);
-
-  custom_headers.header_map_->setFormatter(
+  default_request_headers_.header_map_->setFormatter(
       std::make_unique<
           Extensions::Http::HeaderFormatters::PreserveCase::PreserveCaseHeaderFormatter>(
           false, envoy::extensions::http::header_formatters::preserve_case::v3::
                      PreserveCaseFormatterConfig::DEFAULT));
 
-  custom_headers.addCopy("FoO", "bar");
-  custom_headers.header_map_->formatter().value().get().processKey("FoO");
-
-  std::shared_ptr<Platform::RequestHeaders> custom_request_headers =
-      envoyToMobileHeaders(custom_headers);
+  default_request_headers_.addCopy("FoO", "bar");
+  default_request_headers_.header_map_->formatter().value().get().processKey("FoO");
 
   stream_prototype_->setOnHeaders(
       [this](Platform::ResponseHeadersSharedPtr headers, bool, envoy_stream_intel) {
@@ -250,8 +236,7 @@ TEST_P(ClientIntegrationTest, CaseSensitive) {
         EXPECT_TRUE((*headers)["My-ResponsE-Header"][0] == "foo");
         return nullptr;
       });
-
-  stream_->sendHeaders(custom_request_headers, true);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
 
   Envoy::FakeRawConnectionPtr upstream_connection;
   ASSERT_TRUE(fake_upstreams_[0]->waitForRawConnection(upstream_connection));
@@ -281,7 +266,7 @@ TEST_P(ClientIntegrationTest, TimeoutOnRequestPath) {
   autonomous_upstream_ = false;
   initialize();
 
-  stream_->sendHeaders(default_request_headers_, false);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), false);
 
   Envoy::FakeRawConnectionPtr upstream_connection;
   ASSERT_TRUE(fake_upstreams_[0]->waitForRawConnection(upstream_connection));
@@ -302,7 +287,7 @@ TEST_P(ClientIntegrationTest, TimeoutOnResponsePath) {
   autonomous_upstream_ = false;
   initialize();
 
-  stream_->sendHeaders(default_request_headers_, true);
+  stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
 
   Envoy::FakeRawConnectionPtr upstream_connection;
   ASSERT_TRUE(fake_upstreams_[0]->waitForRawConnection(upstream_connection));

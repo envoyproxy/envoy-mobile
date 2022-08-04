@@ -1,5 +1,7 @@
 #include "test/common/integration/base_client_integration_test.h"
 
+#include "test/common/http/common.h"
+
 #include "gtest/gtest.h"
 #include "library/cc/bridge_utility.h"
 #include "library/common/config/internal.h"
@@ -91,26 +93,26 @@ void BaseClientIntegrationTest::initialize() {
 
   stream_ = (*stream_prototype_).start(explicit_flow_control_);
   std::string host(fake_upstreams_[0]->localAddress()->asStringView());
-  Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
-  if (upstreamProtocol() == Http::CodecType::HTTP2) {
-    builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
-  }
-  default_request_headers_ = std::make_shared<Platform::RequestHeaders>(builder.build());
+  default_request_headers_ = {};
+  HttpTestUtility::addDefaultHeaders(default_request_headers_);
+  default_request_headers_.setHost(fake_upstreams_[0]->localAddress()->asStringView());
 }
 
 std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobileHeaders(
     const Http::TestRequestHeaderMapImpl& request_headers) {
-  std::string host(fake_upstreams_[0]->localAddress()->asStringView());
 
   envoy_headers envoyHeaders = Http::Utility::toBridgeHeaders(request_headers);
   Platform::RawHeaderMap rawHeaderMap = Platform::envoyHeadersAsRawHeaderMap(envoyHeaders);
 
-  Platform::RequestHeadersBuilder builder(Platform::RequestMethod::GET, scheme_, host, "/");
-  for (const auto& pair : rawHeaderMap) {
-    builder.set(pair.first, pair.second);
-  }
+  Platform::RequestHeadersBuilder builder(
+      Platform::RequestMethod::GET,
+      std::string(default_request_headers_.Scheme()->value().getStringView()),
+      std::string(default_request_headers_.Host()->value().getStringView()), "/");
   if (upstreamProtocol() == Http::CodecType::HTTP2) {
     builder.addUpstreamHttpProtocol(Platform::UpstreamHttpProtocol::HTTP2);
+  }
+  for (const auto& pair : rawHeaderMap) {
+    builder.set(pair.first, pair.second);
   }
   auto mobile_headers = std::make_shared<Platform::RequestHeaders>(builder.build());
   return mobile_headers;

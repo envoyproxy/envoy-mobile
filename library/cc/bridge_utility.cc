@@ -1,6 +1,5 @@
 #include "bridge_utility.h"
 
-#include <iostream>
 #include <sstream>
 
 #include "library/common/data/utility.h"
@@ -39,6 +38,7 @@ RawHeaderMap envoyHeadersAsRawHeaderMap(envoy_headers raw_headers) {
   for (auto i = 0; i < raw_headers.length; i++) {
     auto key = Data::Utility::copyToString(raw_headers.entries[i].key);
     auto value = Data::Utility::copyToString(raw_headers.entries[i].value);
+
     if (!headers.contains(key)) {
       headers.emplace(key, std::vector<std::string>());
     }
