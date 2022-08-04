@@ -50,5 +50,5 @@ internal class MockEnvoyEngine : EnvoyEngine {
 
   override fun setPreferredNetwork(network: EnvoyNetworkType) = Unit
 
-  override fun setProxySettings(hostname: String, address: String) = Unit
+  override fun setProxySettings(host: String, port: Int) = Unit
 }

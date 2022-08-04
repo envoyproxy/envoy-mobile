@@ -48,13 +48,11 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
   }
 
   private void handleProxyChange() { 
-    // print("")
-    // ENVOY_LOG_EVENT(debug, "RAF: identifier", "Proxy change");
     ProxyInfo info = connectivityManager.getDefaultProxy();
     if (info == null) {
-        envoyEngine.setProxySettings("lol", "");
+        envoyEngine.setProxySettings("", 0);
     } else {
-        envoyEngine.setProxySettings("api.lyft.com", info.getHost());
+        envoyEngine.setProxySettings(info.getHost(),  info.getPort());
     }
  }
 }

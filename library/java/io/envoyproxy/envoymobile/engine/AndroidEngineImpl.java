@@ -100,7 +100,7 @@ public class AndroidEngineImpl implements EnvoyEngine {
     envoyEngine.setPreferredNetwork(network);
   }
 
-  public void setProxySettings(String hostname, String address) {
-    envoyEngine.setProxySettings(hostname, address);
+  public void setProxySettings(String host, int port) {
+    envoyEngine.setProxySettings(host, port);
   }
 }

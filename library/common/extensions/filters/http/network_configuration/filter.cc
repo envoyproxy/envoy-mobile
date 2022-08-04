@@ -31,11 +31,16 @@ void NetworkConfigurationFilter::setDecoderFilterCallbacks(
 Http::FilterHeadersStatus NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap&, bool) {
   const auto proxy_settings = connectivity_manager_->getProxySettings();
 
-  if (proxy_settings != NULL && proxy_settings->isValid()) {
+  if (proxy_settings == nullptr) {
+    return Http::FilterHeadersStatus::Continue;  
+  } 
+  
+  const auto proxy_address = proxy_settings->address();
+  if (proxy_address != nullptr) {
     decoder_callbacks_->streamInfo().filterState()->setData(
         Network::Http11ProxyInfoFilterState::key(),
-        std::make_unique<Network::Http11ProxyInfoFilterState>(proxy_settings->hostname_,
-                                                              proxy_settings->address_),
+        std::make_unique<Network::Http11ProxyInfoFilterState>("api.lyft.com",
+                                                              proxy_address),
         StreamInfo::FilterState::StateType::ReadOnly,
         StreamInfo::FilterState::LifeSpan::FilterChain);
   }

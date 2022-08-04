@@ -146,7 +146,14 @@ public:
    */
   static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
-  void setProxySettings(std::string hostname, std::string address);
+  /**
+   * @brief Sets the current proxy settings.
+   * 
+   * @param host The proxy host defined as a hostname or an IP address. Some platforms 
+   *             (i.e., Android) allow users to specify proxy using either one of these.
+   * @param port The proxy port.
+   */
+  void setProxySettings(std::string host, int16_t port);
 
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this
