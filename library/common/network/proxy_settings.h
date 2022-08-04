@@ -18,7 +18,7 @@ struct ProxySettings {
    * @param port The proxy port.
    */
   ProxySettings(const std::string& host, const uint16_t port)
-      : host_(host), port_(port) {}
+      : address_(Envoy::Network::Utility::parseInternetAddressNoThrow(host, port)) {}
 
   /**
    * @brief Returns an address of a proxy. This method returns nullptr for proxy settings
@@ -27,11 +27,10 @@ struct ProxySettings {
    * @return Address of a proxy or nullptr if proxy address is incorrect or host is
    *         defined using a hostname and not an IP address.
    */
-  Envoy::Network::Address::InstanceConstSharedPtr address() const {
-    return Envoy::Network::Utility::parseInternetAddressNoThrow(host_, port_);
+  const Envoy::Network::Address::InstanceConstSharedPtr& address() const {
+    return address_;
   }
 
 private:
-  std::string host_;
-  uint16_t port_;
+  Envoy::Network::Address::InstanceConstSharedPtr address_;
 };
