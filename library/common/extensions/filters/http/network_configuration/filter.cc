@@ -48,6 +48,7 @@ Http::FilterHeadersStatus NetworkConfigurationFilter::decodeHeaders(Http::Reques
 
     const auto authority = authorityHeader[0]->value().getStringView();
 
+    ENVOY_LOG(trace, "set_request_proxy_info", authority, proxy_address->asString());
     decoder_callbacks_->streamInfo().filterState()->setData(
         Network::Http11ProxyInfoFilterState::key(),
         std::make_unique<Network::Http11ProxyInfoFilterState>(authority,
