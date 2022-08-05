@@ -102,9 +102,6 @@ void BaseClientIntegrationTest::initialize() {
 std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobileHeaders(
     const Http::TestRequestHeaderMapImpl& request_headers) {
 
-  envoy_headers envoyHeaders = Http::Utility::toBridgeHeaders(request_headers);
-  Platform::RawHeaderMap rawHeaderMap = Platform::envoyHeadersAsRawHeaderMap(envoyHeaders);
-
   Platform::RequestHeadersBuilder builder(
       Platform::RequestMethod::GET,
       std::string(default_request_headers_.Scheme()->value().getStringView()),
@@ -128,9 +125,6 @@ std::shared_ptr<Platform::RequestHeaders> BaseClientIntegrationTest::envoyToMobi
         return Http::HeaderMap::Iterate::Continue;
       });
 
-  for (const auto& pair : rawHeaderMap) {
-    builder.set(pair.first, pair.second);
-  }
   return std::make_shared<Platform::RequestHeaders>(builder.build());
 }
 
