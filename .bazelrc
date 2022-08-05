@@ -54,6 +54,14 @@ build:ios --define=manual_stamp=manual_stamp
 # Default flags for builds targeting Android
 build:android --define=logger=android --define=include_ifaddrs=true
 
+# Default flags for Android debug builds
+build:dbg-android --config=dbg
+build:dbg-android --config=android
+
+# Default flags for iOS debug builds
+build:dbg-ios --config=dbg
+build:dbg-ios --config=ios
+
 # Locally-runnable ASAN config for MacOS & Linux with standard dev environment
 # See also:
 # https://github.com/bazelbuild/bazel/issues/6932
