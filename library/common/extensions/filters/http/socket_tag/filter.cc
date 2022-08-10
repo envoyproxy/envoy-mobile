@@ -11,15 +11,16 @@ namespace SocketTag {
 
 Http::FilterHeadersStatus SocketTagFilter::decodeHeaders(Http::RequestHeaderMap& request_headers,
                                                          bool) {
-  auto socket_tag_header = Http::LowerCaseString("socket-tag");
-  if (request_headers.get(socket_tag_header).empty()) {
+  static auto socket_tag_header = Http::LowerCaseString("socket-tag");
+  Http::RequestHeaderMap::GetResult header = request_headers.get(socket_tag_header);
+  if (header.empty()) {
     return Http::FilterHeadersStatus::Continue;
   }
 
   // The socket-tag header must contain a pair of number separated by a comma, e.g.:
   // socket-tag: 123,456
   // The first number contains the UID and the second contains the traffic stats tag.
-  std::string tag_string(request_headers.get(socket_tag_header)[0]->value().getStringView());
+  std::string tag_string(header[0]->value().getStringView());
   std::pair<std::string, std::string> data = absl::StrSplit(tag_string, ',');
   uid_t uid;
   uint32_t traffic_stats_tag;
