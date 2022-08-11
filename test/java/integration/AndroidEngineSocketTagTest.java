@@ -85,7 +85,7 @@ public class AndroidEngineSocketTagTest {
       @Override
       public MockResponse dispatch(RecordedRequest recordedRequest) {
         assertThat(recordedRequest.getMethod()).isEqualTo(RequestMethod.GET.name());
-        assertThat(recordedRequest.getHeader("socket-tag")).isEqualTo(null);
+        assertThat(recordedRequest.getHeader("x-envoy-mobile-socket-tag")).isEqualTo(null);
         return new MockResponse().setBody("This is my response Body");
       }
     });
@@ -93,7 +93,7 @@ public class AndroidEngineSocketTagTest {
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(mockWebServer.url("post/flowers").toString())
-                                          .addHeader("socket-tag", "0,0");
+                                          .addHeader("x-envoy-mobile-socket-tag", "0,0");
 
     Response response = sendRequest(requestScenario);
 
@@ -116,7 +116,7 @@ public class AndroidEngineSocketTagTest {
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(mockWebServer.url("post/flowers").toString())
-                                          .addHeader("socket-tag", "a");
+                                          .addHeader("x-envoy-mobile-socket-tag", "a");
 
     Response response = sendRequest(requestScenario);
 

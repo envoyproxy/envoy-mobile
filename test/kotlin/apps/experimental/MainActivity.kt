@@ -118,6 +118,7 @@ class MainActivity : Activity() {
       RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
     )
       .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
+      .addSocketTag(1,2)
       .build()
     engine
       .streamClient()
