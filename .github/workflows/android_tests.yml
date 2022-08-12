@@ -27,3 +27,5 @@ jobs:
             --config=remote-ci-linux \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/io/...
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
