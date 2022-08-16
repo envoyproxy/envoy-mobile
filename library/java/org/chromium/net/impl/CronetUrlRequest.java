@@ -574,10 +574,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
     if (!hasContentType && mUploadDataStream != null) {
       throw new IllegalArgumentException("Requests with upload data must have a Content-Type.");
     }
-    
+
     if (isQuicEnabled) {
       headers.computeIfAbsent("x-envoy-mobile-upstream-protocol", unused -> new ArrayList<>())
-        .add("http3");
+          .add("http3");
     }
 
     return headers;
