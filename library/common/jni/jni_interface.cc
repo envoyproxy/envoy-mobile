@@ -58,6 +58,7 @@ static void jvm_on_log(envoy_data data, const void* context) {
   jmethodID jmid_onLog = env->GetMethodID(jcls_JvmLoggerContext, "log", "(Ljava/lang/String;)V");
   env->CallVoidMethod(j_context, jmid_onLog, str);
 
+  release_envoy_data(data);
   env->DeleteLocalRef(str);
   env->DeleteLocalRef(jcls_JvmLoggerContext);
 }
@@ -1191,6 +1192,8 @@ static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
   return result;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 // `auth_type` and `host` are expected to be UTF-8 encoded.
 static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
                                        std::string auth_type, std::string host,
@@ -1202,6 +1205,7 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
   ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
   env->DeleteLocalRef(result);
 }
+#pragma clang diagnostic pop
 
 static void jvm_add_test_root_certificate(const uint8_t* cert, size_t len) {
   jni_log("[Envoy]", "jvm_add_test_root_certificate");

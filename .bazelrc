@@ -15,10 +15,10 @@ build --host_force_python=PY3
 build --macos_minimum_os=10.14
 build --ios_minimum_os=12.0
 build --ios_simulator_device="iPhone 13"
-build --ios_simulator_version=15.2
+build --ios_simulator_version=15.5
 build --verbose_failures
 build --workspace_status_command=envoy/bazel/get_workspace_status
-build --xcode_version=13.2.1
+build --xcode_version=13.4.0
 build --use_top_level_targets_for_symlinks
 build --experimental_repository_downloader_retries=2
 # https://github.com/bazelbuild/rules_jvm_external/issues/445
@@ -40,8 +40,9 @@ build --java_language_version=8
 # Override PGV validation with NOP functions
 build --@com_envoyproxy_protoc_gen_validate//bazel:template-flavor=nop
 
+build:dbg-common --compilation_mode=dbg
 # Enable source map for debugging in IDEs
-build:dbg --copt="-fdebug-compilation-dir" --copt="/proc/self/cwd"
+build:dbg-common --copt="-fdebug-compilation-dir" --copt="/proc/self/cwd"
 
 # Default flags for builds targeting iOS
 # Manual stamping is necessary in order to get versioning information in the iOS
@@ -52,6 +53,14 @@ build:ios --define=manual_stamp=manual_stamp
 
 # Default flags for builds targeting Android
 build:android --define=logger=android --define=include_ifaddrs=true
+
+# Default flags for Android debug builds
+build:dbg-android --config=dbg-common
+build:dbg-android --config=android
+
+# Default flags for iOS debug builds
+build:dbg-ios --config=dbg-common
+build:dbg-ios --config=ios
 
 # Locally-runnable ASAN config for MacOS & Linux with standard dev environment
 # See also:

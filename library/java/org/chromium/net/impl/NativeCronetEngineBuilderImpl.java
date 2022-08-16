@@ -43,6 +43,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private String mDnsPreresolveHostnames = "[]";
   private List<String> mDnsFallbackNameservers = Collections.emptyList();
   private boolean mEnableDnsFilterUnroutableFamilies = false;
+  private boolean mDnsUseSystemResolver = false;
   private boolean mEnableDrainPostDnsRefresh = false;
   private boolean mEnableGzip = true;
   private boolean mEnableHappyEyeballs = false;
@@ -106,12 +107,13 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
         mDnsQueryTimeoutSeconds, mDnsMinRefreshSeconds, mDnsPreresolveHostnames,
-        mDnsFallbackNameservers, mEnableDnsFilterUnroutableFamilies, mEnableDrainPostDnsRefresh,
-        quicEnabled(), mEnableGzip, brotliEnabled(), mEnableHappyEyeballs, mEnableInterfaceBinding,
-        mForceIPv6, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
-        mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mH2RawDomains,
-        mMaxConnectionsPerHost, mStatsFlushSeconds, mStreamIdleTimeoutSeconds,
-        mPerTryIdleTimeoutSeconds, mAppVersion, mAppId, mTrustChainVerification, mVirtualClusters,
-        nativeFilterChain, platformFilterChain, stringAccessors, keyValueStores);
+        mDnsFallbackNameservers, mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver,
+        mEnableDrainPostDnsRefresh, quicEnabled(), mEnableGzip, brotliEnabled(),
+        mEnableHappyEyeballs, mEnableInterfaceBinding, mForceIPv6,
+        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
+        mH2ExtendKeepaliveTimeout, mH2RawDomains, mMaxConnectionsPerHost, mStatsFlushSeconds,
+        mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,
+        mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
+        stringAccessors, keyValueStores);
   }
 }
