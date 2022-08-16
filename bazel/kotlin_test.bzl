@@ -110,4 +110,5 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = [], repositor
             "-Djava.library.path={}".format(library_path),
             "-Denvoy_jni_library_name={}".format(lib_name),
         ],
+        exec_properties = exec_properties,
     )
