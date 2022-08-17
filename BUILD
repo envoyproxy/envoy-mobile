@@ -149,15 +149,14 @@ xcodeproj(
         xcode_schemes.scheme(
             name = "Swift Library",
             build_action = xcode_schemes.build_action(["//library/swift:ios_lib"]),
-            # TODO(jpsim): Fix tests
-            # test_action = xcode_schemes.test_action([
-            #     "//experimental/swift:quic_stream_test",
-            #     "//test/objective-c:envoy_bridge_utility_test",
-            #     "//test/swift/integration:flatbuffer_test",
-            #     "//test/swift/integration:test",
-            #     "//test/swift/stats:test",
-            #     "//test/swift:test",
-            # ]),
+            test_action = xcode_schemes.test_action([
+                "//experimental/swift:quic_stream_test",
+                "//test/objective-c:envoy_bridge_utility_test",
+                "//test/swift/integration:flatbuffer_test",
+                "//test/swift/integration:test",
+                "//test/swift/stats:test",
+                "//test/swift:test",
+            ]),
         ),
         # TODO(jpsim): Fix these schemes
         # xcode_schemes.scheme(
