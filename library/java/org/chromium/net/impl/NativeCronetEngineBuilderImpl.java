@@ -62,6 +62,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private String mAppId = "unspecified";
   private TrustChainVerification mTrustChainVerification = VERIFY_TRUST_CHAIN;
   private String mVirtualClusters = "[]";
+  private boolean mUsePlatformCertValidator = true;
 
   /**
    * Builder for Native Cronet Engine. Default config enables SPDY, disables QUIC and HTTP cache.
@@ -115,6 +116,6 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mH2ExtendKeepaliveTimeout, mH2RawDomains, mMaxConnectionsPerHost, mStatsFlushSeconds,
         mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,
         mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
-        stringAccessors, keyValueStores);
+        stringAccessors, keyValueStores, mUsePlatformCertValidator);
   }
 }

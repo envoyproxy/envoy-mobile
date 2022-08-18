@@ -60,6 +60,7 @@ public class EnvoyConfiguration {
   public final List<EnvoyNativeFilterConfig> nativeFilterChain;
   public final Map<String, EnvoyStringAccessor> stringAccessors;
   public final Map<String, EnvoyKeyValueStore> keyValueStores;
+  public final Boolean usePlatformCertValidator;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -122,7 +123,7 @@ public class EnvoyConfiguration {
       List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
       Map<String, EnvoyStringAccessor> stringAccessors,
-      Map<String, EnvoyKeyValueStore> keyValueStores) {
+      Map<String, EnvoyKeyValueStore> keyValueStores, boolean usePlatformCertValidator) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
     this.grpcStatsDomain = grpcStatsDomain;
     this.statsdPort = statsdPort;
@@ -160,6 +161,7 @@ public class EnvoyConfiguration {
     this.httpPlatformFilterFactories = httpPlatformFilterFactories;
     this.stringAccessors = stringAccessors;
     this.keyValueStores = keyValueStores;
+    this.usePlatformCertValidator = usePlatformCertValidator;
   }
 
   /**
@@ -204,8 +206,16 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(brotliFilterInsert);
     }
 
+    final StringBuilder certValidationBuilder = new StringBuilder();
+    if (usePlatformCertValidator) {
+      certValidationBuilder.append(JniLibrary.certValidationTemplate(/*use_platform=*/true));
+    } else {
+      certValidationBuilder.append(JniLibrary.certValidationTemplate(/*use_platform=*/false));
+    }
+
     String processedTemplate =
-        configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString());
+        configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString())
+            .replace("#{custom_cert_validation_context}", certValidationBuilder.toString());
 
     String dnsFallbackNameserversAsString = "[]";
     if (!dnsFallbackNameservers.isEmpty()) {

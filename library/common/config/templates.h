@@ -81,3 +81,7 @@ extern const char* brotli_config_insert;
  * direct responses to mutate headers which are then later used for routing.
  */
 extern const char* route_cache_reset_filter_insert;
+
+extern const char* default_cert_validation_context_template;
+
+extern const char* platform_cert_validation_context_template;

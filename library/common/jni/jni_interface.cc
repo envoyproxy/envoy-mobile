@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "library/common/api/c_types.h"
+#include "library/common/data/utility.h"
+#include "library/common/extensions/cert_validator/platform_bridge/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/extensions/key_value/platform/c_types.h"
 #include "library/common/jni/import/jni_import.h"
@@ -11,6 +13,7 @@
 #include "library/common/jni/jni_utility.h"
 #include "library/common/jni/jni_version.h"
 #include "library/common/main_interface.h"
+#include "openssl/ssl.h"
 
 // NOLINT(namespace-envoy)
 
@@ -1122,6 +1125,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_setPreferredNetwork(JNIEnv* env
                                static_cast<envoy_network_t>(network));
 }
 
+// EnvoyCertValidator
 bool jvm_cert_is_issued_by_known_root(JNIEnv* env, jobject result) {
   jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
   jmethodID jmid_isIssuedByKnownRoot =
@@ -1192,8 +1196,6 @@ static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
   return result;
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
 // `auth_type` and `host` are expected to be UTF-8 encoded.
 static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
                                        std::string auth_type, std::string host,
@@ -1205,7 +1207,52 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
   ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
   env->DeleteLocalRef(result);
 }
-#pragma clang diagnostic pop
+
+static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* certs, uint8_t size,
+                                                           const char* host_name,
+                                                           bool allow_expired_cert) {
+  envoy_cert_verify_status_t result;
+  bool is_issued_by_known_root;
+  std::vector<std::string> verified_chain;
+  std::vector<std::string> cert_chain;
+  for (uint8_t i = 0; i < size; ++i) {
+    cert_chain.push_back(Envoy::Data::Utility::copyToString(certs[i]));
+    release_envoy_data(certs[i]);
+  }
+
+  // Android ignores the authType parameter to X509TrustManager.checkServerTrusted, so pass in "RSA"
+  // as dummy value. See https://crbug.com/627154.
+  jvm_verify_x509_cert_chain(cert_chain, "RSA", host_name, &result, &is_issued_by_known_root,
+                             &verified_chain);
+  switch (result) {
+  case CERT_VERIFY_STATUS_OK:
+    return {ENVOY_SUCCESS};
+  case CERT_VERIFY_STATUS_EXPIRED: {
+    if (allow_expired_cert) {
+      return {ENVOY_SUCCESS};
+    }
+    return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_EXPIRED,
+            "AndroidNetworkLibrary_verifyServerCertificates failed: expired cert"};
+  }
+  case CERT_VERIFY_STATUS_FAILED:
+  case CERT_VERIFY_STATUS_NOT_YET_VALID:
+  case CERT_VERIFY_STATUS_UNABLE_TO_PARSE:
+  case CERT_VERIFY_STATUS_INCORRECT_KEY_USAGE:
+  case CERT_VERIFY_STATUS_NO_TRUSTED_ROOT:
+    return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+            "AndroidNetworkLibrary_verifyServerCertificates failed"};
+  }
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerCertValidatorFactory(JNIEnv* env) {
+  jni_log("[Envoy]", "registerCertValidatorFactory");
+  envoy_cert_validator* api = (envoy_cert_validator*)safe_malloc(sizeof(envoy_cert_validator));
+  api->validate_cert = verify_x509_cert_chain;
+  const std::string platform_name = "android_platform";
+  envoy_status_t result = register_platform_api(platform_name.c_str(), api);
+  return result;
+}
 
 static void jvm_add_test_root_certificate(const uint8_t* cert, size_t len) {
   jni_log("[Envoy]", "jvm_add_test_root_certificate");
@@ -1257,4 +1304,15 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_callClearTestRootCertificateFromNative(JNIEnv*,
                                                                                         jclass) {
   jvm_clear_test_root_certificate();
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_certValidationTemplate(JNIEnv* env, jclass,
+                                                                        jboolean use_platform) {
+  if (use_platform) {
+    jstring result = env->NewStringUTF(platform_cert_validation_context_template);
+    return result;
+  }
+  jstring result = env->NewStringUTF(default_cert_validation_context_template);
+  return result;
 }

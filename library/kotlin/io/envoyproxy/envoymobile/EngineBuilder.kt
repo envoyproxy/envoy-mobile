@@ -76,7 +76,8 @@ open class EngineBuilder(
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
   private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
-
+  private var usePlatformCertValidator = false
+  
   /**
    * Add a log level to use with Envoy.
    *
@@ -631,7 +632,8 @@ open class EngineBuilder(
       nativeFilterChain,
       platformFilterChain,
       stringAccessors,
-      keyValueStores
+      keyValueStores,
+      usePlatformCertValidator,
     )
 
     return when (configuration) {

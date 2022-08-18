@@ -75,6 +75,16 @@ const char* brotli_config_insert = R"(
           ignore_no_transform_header: true
 )";
 
+const char* platform_cert_validation_context_template = R"(
+        custom_validator_config:
+          name: "envoy_mobile.cert_validator.platform_bridge_cert_validator"
+)";
+
+const char* default_cert_validation_context_template = R"(
+        trusted_ca:
+          inline_string: *tls_root_certs
+)";
+
 // clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
@@ -154,8 +164,18 @@ R"(
       tls_params:
         tls_maximum_protocol_version: TLSv1_3
       validation_context:
-        trusted_ca:
-          inline_string: *tls_root_certs
+#{custom_cert_validation_context}
+- &base_h2_socket
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+    common_tls_context:
+      alpn_protocols: [h2]
+      tls_params:
+        tls_maximum_protocol_version: TLSv1_3
+      validation_context:
+#{custom_cert_validation_context}
+        trust_chain_verification: *trust_chain_verification
 - &base_h3_socket
   name: envoy.transport_sockets.quic
   typed_config:
@@ -165,8 +185,7 @@ R"(
         tls_params:
           tls_maximum_protocol_version: TLSv1_3
         validation_context:
-          trusted_ca:
-             inline_string: *tls_root_certs
+#{custom_cert_validation_context}
 )";
 
 const char* config_template = R"(
@@ -426,18 +445,7 @@ static_resources:
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket:
-      name: envoy.transport_sockets.tls
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-        common_tls_context:
-          alpn_protocols: [h2]
-          tls_params:
-            tls_maximum_protocol_version: TLSv1_3
-          validation_context:
-            trusted_ca:
-              inline_string: *tls_root_certs
-            trust_chain_verification: *trust_chain_verification
+    transport_socket: *base_h2_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h2_protocol_options

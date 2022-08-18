@@ -315,6 +315,8 @@ public class JniLibrary {
    */
   public static native String brotliConfigInsert();
 
+  public static native String certValidationTemplate(boolean use_platform);
+
   /**
    * Register a platform-provided key-value store implementation.
    *
@@ -334,11 +336,14 @@ public class JniLibrary {
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
 
+  protected static native int registerCertValidatorFactory();
+
   /**
    * Refresh DNS, and drain connections owned by this Engine.
    *
    * @param engine Handle to the engine for which to drain connections.
    */
+
   protected static native int resetConnectivityState(long engine);
 
   /**
