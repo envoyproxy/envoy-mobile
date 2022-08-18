@@ -123,7 +123,7 @@ xcodeproj(
     bazel_path = "./bazelw",
     build_mode = "bazel",
     project_name = "Envoy",
-    scheme_autogeneration_mode = "auto", # Switch to "all" to generate schemes for all deps
+    scheme_autogeneration_mode = "auto",  # Switch to "all" to generate schemes for all deps
     schemes = [
         xcode_schemes.scheme(
             name = "Async Await App",
