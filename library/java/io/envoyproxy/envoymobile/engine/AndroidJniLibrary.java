@@ -45,5 +45,6 @@ public class AndroidJniLibrary {
    * @param connectivityManager Android's ConnectivityManager.
    * @return The resulting status of the initialization.
    */
-  protected static native int initialize(ClassLoader classLoader, ConnectivityManager connectivityManager);
+  protected static native int initialize(ClassLoader classLoader,
+                                         ConnectivityManager connectivityManager);
 }
