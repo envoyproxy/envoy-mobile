@@ -20,6 +20,8 @@ JavaVM* get_vm() { return static_jvm; }
 
 void set_class_loader(jobject class_loader) { static_class_loader = class_loader; }
 
+jobject get_class_loader() { return static_class_loader; }
+
 jclass find_class(const char* class_name) {
   JNIEnv* env = get_env();
   jclass class_loader = env->FindClass("java/lang/ClassLoader");
@@ -27,12 +29,10 @@ jclass find_class(const char* class_name) {
       env->GetMethodID(class_loader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
   jstring str_class_name = env->NewStringUTF(class_name);
   jclass clazz =
-      (jclass)(env->CallObjectMethod(static_class_loader, find_class_method, str_class_name));
+      (jclass)(env->CallObjectMethod(get_class_loader(), find_class_method, str_class_name));
   env->DeleteLocalRef(str_class_name);
   return clazz;
 }
-
-jobject get_class_loader() { return static_class_loader; }
 
 JNIEnv* get_env() {
   if (local_env) {
