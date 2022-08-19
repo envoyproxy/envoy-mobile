@@ -22,7 +22,7 @@ void set_class_loader(jobject class_loader);
  * application's context and should be associated with project's code - Java classes
  * defined by the project. For finding classes of Java built in-types use
  * `env->FindClass(...)` method instead as it is lighter to use.
- * 
+ *
  * The method works on Android targets only as the `set_class_loader` method is not
  * called by JVM-only targets.
  *
