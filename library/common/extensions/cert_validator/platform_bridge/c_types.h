@@ -15,8 +15,7 @@ extern "C" { // function pointers
 #endif
 
 typedef envoy_cert_validation_result (*envoy_validate_cert_f)(const envoy_data* certs, uint8_t size,
-                                                              const char* host_name,
-                                                              bool allow_expired_cert);
+                                                              const char* host_name);
 
 #ifdef __cplusplus
 } // function pointers

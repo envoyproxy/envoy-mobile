@@ -18,44 +18,6 @@ PlatformBridgeCertValidator::~PlatformBridgeCertValidator() {
 
 int PlatformBridgeCertValidator::initializeSslContexts(std::vector<SSL_CTX*> /*contexts*/,
                                                        bool /*handshaker_provides_certificates*/) {
-  /*
-  if (!config_->subjectAltNameMatchers().empty()) {
-    for (const envoy::extensions::transport_sockets::tls::v3::SubjectAltNameMatcher& matcher :
-         cert_validation_config->subjectAltNameMatchers()) {
-      auto san_matcher = createStringSanMatcher(matcher);
-      if (san_matcher == nullptr) {
-        throw EnvoyException(
-            absl::StrCat("Failed to create string SAN matcher of type ", matcher.san_type()));
-      }
-      subject_alt_name_matchers_.push_back(std::move(san_matcher));
-    }
-  }
-
-  if (!config_->verifyCertificateHashList().empty()) {
-    for (auto hash : cert_validation_config->verifyCertificateHashList()) {
-      // Remove colons from the 95 chars long colon-separated "fingerprint"
-      // in order to get the hex-encoded string.
-      if (hash.size() == 95) {
-        hash.erase(std::remove(hash.begin(), hash.end(), ':'), hash.end());
-      }
-      const auto& decoded = Hex::decode(hash);
-      if (decoded.size() != SHA256_DIGEST_LENGTH) {
-        throw EnvoyException(absl::StrCat("Invalid hex-encoded SHA-256 ", hash));
-      }
-      verify_certificate_hash_list_.push_back(decoded);
-    }
-  }
-
-  if (!config_->verifyCertificateSpkiList().empty()) {
-    for (const auto& hash : cert_validation_config->verifyCertificateSpkiList()) {
-      const auto decoded = Base64::decode(hash);
-      if (decoded.size() != SHA256_DIGEST_LENGTH) {
-        throw EnvoyException(absl::StrCat("Invalid base64-encoded SHA-256 ", hash));
-      }
-      verify_certificate_spki_list_.emplace_back(decoded.begin(), decoded.end());
-    }
-  }
-  */
   return SSL_VERIFY_PEER;
 }
 
@@ -89,7 +51,7 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
 
   std::string host_name; // validation_context.host_name);
   std::thread t(&PlatformBridgeCertValidator::verifyCertChainByPlatform, this, std::move(certs),
-                std::move(callback), transport_socket_options, host_name, allows_expired_cert_);
+                std::move(callback), transport_socket_options, host_name);
   std::thread::id t_id = t.get_id();
   validation_threads_[t_id] = std::move(t);
   return {ValidationResults::ValidationStatus::Pending, absl::nullopt, absl::nullopt};
@@ -98,18 +60,18 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
 void PlatformBridgeCertValidator::verifyCertChainByPlatform(
     std::vector<envoy_data> certs, Ssl::ValidateResultCallbackPtr callback,
     const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
-    const std::string host_name, const bool allow_expired_cert) {
+    const std::string host_name) {
   // In a stand alone thread.
   envoy_data leaf_cert = copy_envoy_data(certs[0]);
-  envoy_cert_validation_result result = platform_bridge_api_->validate_cert(
-      certs.data(), certs.size(), host_name.c_str(), allow_expired_cert);
+  envoy_cert_validation_result result =
+      platform_bridge_api_->validate_cert(certs.data(), certs.size(), host_name.c_str());
   std::thread::id t_id = std::this_thread::get_id();
   callback->dispatcher().post([this, result, cb = callback.release(), leaf_cert,
-                               transport_socket_options, t_id]() {
+                               transport_socket_options, t_id, host_name]() {
     // Back to network thread.
     ASSERT(!validation_threads_[t_id].joinable());
     validation_threads_.erase(t_id);
-    auto scoped_cb = Ssl::ValidateResultCallbackPtr(cb);
+    Ssl::ValidateResultCallbackPtr scoped_cb(cb);
     bool success = (result.result == ENVOY_SUCCESS);
     if (!success) {
       onVerifyError(nullptr, result.error_details);
@@ -123,16 +85,15 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
         d2i_X509(nullptr, const_cast<const unsigned char**>(&leaf_cert.bytes), leaf_cert.length));
     release_envoy_data(leaf_cert);
 
-    std::string error_details;
-    uint8_t tls_alert = SSL_AD_CERTIFICATE_UNKNOWN;
-    success = verifyCertAndUpdateStatus(nullptr, cert.get(), transport_socket_options.get(),
-                                        &error_details, &tls_alert);
-
     // Verify that host name matches leaf cert.
-    if (success) {
+    success = verifySubjectAltName(cert.get(), {host_name});
+    if (success || allow_untrusted_certificate_) {
       cb->onCertValidationResult(true, "", SSL_AD_CERTIFICATE_UNKNOWN);
     } else {
-      cb->onCertValidationResult(false, error_details, tls_alert);
+      const char* error_details =
+          "PlatformBridgeCertValidator_verifySubjectAltName failed: SNI mismatch.";
+      onVerifyError(nullptr, error_details);
+      cb->onCertValidationResult(false, error_details, SSL_AD_BAD_CERTIFICATE);
     }
   });
 }

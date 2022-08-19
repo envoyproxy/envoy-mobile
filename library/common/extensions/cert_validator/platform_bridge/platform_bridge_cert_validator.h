@@ -17,8 +17,8 @@ public:
   PlatformBridgeCertValidator(const Envoy::Ssl::CertificateValidationContextConfig* config,
                               SslStats& stats, TimeSource& time_source,
                               const envoy_cert_validator* platform_bridge_api)
-      : DefaultCertValidator(config, stats, time_source), platform_bridge_api_(platform_bridge_api),
-        allows_expired_cert_(config != nullptr && config->allowExpiredCertificate()) {
+      : DefaultCertValidator(config, stats, time_source),
+        platform_bridge_api_(platform_bridge_api) {
     ENVOY_BUG(config != nullptr && config->caCert().empty() &&
                   config->certificateRevocationList().empty(),
               "Invalid cert validation context config.");
@@ -58,13 +58,12 @@ public:
   void verifyCertChainByPlatform(
       std::vector<envoy_data> certs, Ssl::ValidateResultCallbackPtr callback,
       const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
-      const std::string host_name, const bool allow_expired_cert);
+      const std::string host_name);
 
 private:
   // latches the platform extension API.
   const envoy_cert_validator* platform_bridge_api_;
   absl::flat_hash_map<std::thread::id, std::thread> validation_threads_;
-  const bool allows_expired_cert_;
 };
 
 } // namespace Tls

@@ -1209,8 +1209,7 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
 }
 
 static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* certs, uint8_t size,
-                                                           const char* host_name,
-                                                           bool allow_expired_cert) {
+                                                           const char* host_name) {
   envoy_cert_verify_status_t result;
   bool is_issued_by_known_root;
   std::vector<std::string> verified_chain;
@@ -1228,9 +1227,6 @@ static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* cer
   case CERT_VERIFY_STATUS_OK:
     return {ENVOY_SUCCESS};
   case CERT_VERIFY_STATUS_EXPIRED: {
-    if (allow_expired_cert) {
-      return {ENVOY_SUCCESS};
-    }
     return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_EXPIRED,
             "AndroidNetworkLibrary_verifyServerCertificates failed: expired cert"};
   }

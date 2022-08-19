@@ -21,6 +21,7 @@
 #include "source/extensions/upstreams/http/generic/config.h"
 
 #include "extension_registry_platform_additions.h"
+#include "library/common/extensions/cert_validator/platform_bridge/config.h"
 #include "library/common/extensions/filters/http/assertion/config.h"
 #include "library/common/extensions/filters/http/local_error/config.h"
 #include "library/common/extensions/filters/http/network_configuration/config.h"
@@ -59,6 +60,7 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::TransportSockets::RawBuffer::forceRegisterUpstreamRawBufferSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
+  Envoy::Extensions::TransportSockets::Tls::forceRegisterPlatformBridgeCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
   ExtensionRegistryPlatformAdditions::registerFactories();
