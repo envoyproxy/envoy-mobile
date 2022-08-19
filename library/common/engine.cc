@@ -24,8 +24,8 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
   Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
 }
 
-envoy_status_t Engine::run(const std::string config, const std::string log_level,
-                           const std::string admin_address_path) {
+envoy_status_t Engine::run(const std::string& config, const std::string& log_level,
+                           const std::string& admin_address_path) {
   // Start the Envoy on the dedicated thread. Note: due to how the assignment operator works with
   // std::thread, main_thread_ is the same object after this call, but its state is replaced with
   // that of the temporary. The temporary object's state becomes the default state, which does
@@ -35,8 +35,8 @@ envoy_status_t Engine::run(const std::string config, const std::string log_level
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Engine::main(const std::string config, const std::string log_level,
-                            const std::string admin_address_path) {
+envoy_status_t Engine::main(const std::string& config, const std::string& log_level,
+                            const std::string& admin_address_path) {
   // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
   std::unique_ptr<EngineCommon> main_common;
   const std::string name = "envoy";

@@ -16,9 +16,12 @@ envoy_engine_t EngineHandle::initEngine(envoy_engine_callbacks callbacks, envoy_
   return reinterpret_cast<envoy_engine_t>(engine);
 }
 
-envoy_status_t EngineHandle::runEngine(envoy_engine_t handle, const char* config,
-                                       const char* log_level, const char* admin_address_path) {
+envoy_status_t EngineHandle::runEngine(envoy_engine_t handle, const char* c_config,
+                                       const char* c_log_level, const char* c_admin_address_path) {
   if (auto engine = reinterpret_cast<Envoy::Engine*>(handle)) {
+    const auto config = std::string(c_config);
+    const auto log_level = std::string(c_log_level);
+    const auto admin_address_path = std::string(c_admin_address_path);
     engine->run(config, log_level, admin_address_path);
     return ENVOY_SUCCESS;
   }

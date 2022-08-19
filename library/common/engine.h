@@ -36,8 +36,8 @@ public:
    * @param log_level, the log level.
    * @param admin_address_path to set --admin-address-path, or an empty string if not needed.
    */
-  envoy_status_t run(std::string config, std::string log_level,
-                     const std::string admin_address_path);
+  envoy_status_t run(const std::string& config, const std::string& log_level,
+                     const std::string& admin_address_path);
 
   /**
    * Immediately terminate the engine, if running.
@@ -130,7 +130,7 @@ public:
   Upstream::ClusterManager& getClusterManager();
 
 private:
-  envoy_status_t main(std::string config, std::string log_level, std::string admin_address_path);
+  envoy_status_t main(const std::string& config, const std::string& log_level, const std::string& admin_address_path);
   static void logInterfaces(absl::string_view event,
                             std::vector<Network::InterfacePair>& interfaces);
 
