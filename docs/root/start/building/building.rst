@@ -32,7 +32,7 @@ for all bazel commands.
 Java requirements
 --------------------
 
-- Java 8 (works also with Java 11 on Ubuntu 20.04, what about debian?)
+- Java 8 (works also with Java 11 on Ubuntu 20.04, what about debian? Don't know yet)
 
 Make sure that Java 8 set on `PATH` and that `JAVA_HOME` is set to the appropriate SDK.
 
