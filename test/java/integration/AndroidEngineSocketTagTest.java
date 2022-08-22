@@ -93,35 +93,13 @@ public class AndroidEngineSocketTagTest {
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(mockWebServer.url("post/flowers").toString())
-                                          .addHeader("x-envoy-mobile-socket-tag", "0,0");
+                                          .addSocketTag(1,2);
 
     Response response = sendRequest(requestScenario);
 
     assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
     assertThat(response.getBodyAsString()).isEqualTo("This is my response Body");
     assertThat(response.getEnvoyError()).isNull();
-  }
-
-  @Test
-  public void bad_socket_tag() throws Exception {
-    mockWebServer.setDispatcher(new Dispatcher() {
-      @Override
-      public MockResponse dispatch(RecordedRequest recordedRequest) {
-        // No request should be sent to the server because the request has a bad tag.
-        assert (false);
-        return null;
-      }
-    });
-    mockWebServer.start();
-    RequestScenario requestScenario = new RequestScenario()
-                                          .setHttpMethod(RequestMethod.GET)
-                                          .setUrl(mockWebServer.url("post/flowers").toString())
-                                          .addHeader("x-envoy-mobile-socket-tag", "a");
-
-    Response response = sendRequest(requestScenario);
-
-    assertThat(response.getEnvoyError()).isNotNull();
-    assertThat(response.getEnvoyError().getErrorCode()).isEqualTo(0);
   }
 
   private Response sendRequest(RequestScenario requestScenario) throws Exception {

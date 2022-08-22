@@ -430,7 +430,7 @@ Specify whether to enable transparent response Brotli decompression. Defaults to
 ``enableSocketTagging``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Specify whether to enable support for Android socket tagging. Defaults to false.
+Specify whether to enable support for Android socket tagging. Unavailable on iOS. Defaults to false.
 
 **Example**::
 
