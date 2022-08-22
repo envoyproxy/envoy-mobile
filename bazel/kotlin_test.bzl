@@ -1,6 +1,7 @@
 load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_local_test")
 load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_local_test")
 load("//bazel:kotlin_lib.bzl", "native_lib_name")
 
 def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], repository = "", exec_properties = {}):
@@ -14,16 +15,19 @@ def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], reposito
         elif dep.startswith(repository + "//library/java/io/envoyproxy/envoymobile"):
             dep_srcs.append(dep + "_srcs")
 
-    kt_jvm_test(
+    kt_android_local_test(
         name = name,
         test_class = "io.envoyproxy.envoymobile.bazel.EnvoyMobileTestSuite",
         srcs = srcs + dep_srcs,
+        manifest = repository + "//bazel:test_manifest.xml",
         deps = [
             repository + "//bazel:envoy_mobile_test_suite",
             "@maven//:org_assertj_assertj_core",
             "@maven//:junit_junit",
             "@maven//:org_mockito_mockito_inline",
             "@maven//:org_mockito_mockito_core",
+            "@maven//:org_robolectric_robolectric",
+            "@robolectric//bazel:android-all",
         ] + deps,
         data = data,
         jvm_flags = jvm_flags,
