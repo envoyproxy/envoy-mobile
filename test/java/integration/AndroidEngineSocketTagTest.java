@@ -93,7 +93,7 @@ public class AndroidEngineSocketTagTest {
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(mockWebServer.url("post/flowers").toString())
-                                          .addSocketTag(1,2);
+                                          .addSocketTag(1, 2);
 
     Response response = sendRequest(requestScenario);
 
