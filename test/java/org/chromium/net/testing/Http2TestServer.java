@@ -176,7 +176,7 @@ public final class Http2TestServer {
             b.option(ChannelOption.SO_BACKLOG, 1024);
             b.group(group)
                 .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.INFO))
+                .handler(new LoggingHandler(LogLevel.TRACE))
                 .childHandler(new Http2ServerInitializer(mSslCtx, mHangingUrlLatch));
 
             sServerChannel = b.bind(0).sync().channel();

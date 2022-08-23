@@ -76,14 +76,12 @@ const char* brotli_config_insert = R"(
 )";
 
 const char* platform_cert_validation_context_template = R"(
-        custom_validator_config:
-          name: "envoy_mobile.cert_validator.platform_bridge_cert_validator"
-)";
+  custom_validator_config:
+    name: "envoy_mobile.cert_validator.platform_bridge_cert_validator")";
 
 const char* default_cert_validation_context_template = R"(
-        trusted_ca:
-          inline_string: *tls_root_certs
-)";
+  trusted_ca:
+    inline_string: *tls_root_certs)";
 
 // clang-format off
 const std::string config_header = R"(
@@ -155,37 +153,6 @@ R"(- &enable_drain_post_dns_refresh false
 #include "certificates.inc"
 R"(
 
-!ignore tls_socket_defs:
-- &base_tls_socket
-  name: envoy.transport_sockets.tls
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-    common_tls_context:
-      tls_params:
-        tls_maximum_protocol_version: TLSv1_3
-      validation_context:
-#{custom_cert_validation_context}
-- &base_h2_socket
-  name: envoy.transport_sockets.tls
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-    common_tls_context:
-      alpn_protocols: [h2]
-      tls_params:
-        tls_maximum_protocol_version: TLSv1_3
-      validation_context:
-#{custom_cert_validation_context}
-        trust_chain_verification: *trust_chain_verification
-- &base_h3_socket
-  name: envoy.transport_sockets.quic
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
-    upstream_tls_context:
-      common_tls_context:
-        tls_params:
-          tls_maximum_protocol_version: TLSv1_3
-        validation_context:
-#{custom_cert_validation_context}
 )";
 
 const char* config_template = R"(
@@ -299,6 +266,38 @@ const char* config_template = R"(
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+!ignore tls_socket_defs:
+- &validation_context {{custom_cert_validation_context}}
+- &validation_context_config_trust_chain {{custom_cert_validation_context}}
+  trust_chain_verification: *trust_chain_verification
+
+- &base_tls_socket
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+    common_tls_context:
+      tls_params:
+        tls_maximum_protocol_version: TLSv1_3
+      validation_context: *validation_context
+- &base_h2_socket
+  name: envoy.transport_sockets.tls
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+    common_tls_context:
+      alpn_protocols: [h2]
+      tls_params:
+        tls_maximum_protocol_version: TLSv1_3
+      validation_context: *validation_context_config_trust_chain
+- &base_h3_socket
+  name: envoy.transport_sockets.quic
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+    upstream_tls_context:
+      common_tls_context:
+        tls_params:
+          tls_maximum_protocol_version: TLSv1_3
+        validation_context: *validation_context
 
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster

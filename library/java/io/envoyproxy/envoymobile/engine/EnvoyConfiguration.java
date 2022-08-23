@@ -215,7 +215,7 @@ public class EnvoyConfiguration {
 
     String processedTemplate =
         configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString())
-            .replace("#{custom_cert_validation_context}", certValidationBuilder.toString());
+            .replace("{{custom_cert_validation_context}}", certValidationBuilder.toString());
 
     String dnsFallbackNameserversAsString = "[]";
     if (!dnsFallbackNameservers.isEmpty()) {

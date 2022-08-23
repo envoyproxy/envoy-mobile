@@ -1,5 +1,6 @@
 #include <ares.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -1165,11 +1166,14 @@ static void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_veri
                                     bool* is_issued_by_known_root,
                                     std::vector<std::string>* verified_chain) {
   *status = jvm_cert_get_status(env, result);
-
-  *is_issued_by_known_root = jvm_cert_is_issued_by_known_root(env, result);
-
-  jobjectArray chain_byte_array = jvm_cert_get_certificate_chain_encoded(env, result);
-  JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
+  if (*status == CERT_VERIFY_STATUS_OK) {
+    *is_issued_by_known_root = jvm_cert_is_issued_by_known_root(env, result);
+    jobjectArray chain_byte_array = jvm_cert_get_certificate_chain_encoded(env, result);
+    if (chain_byte_array != nullptr) {
+      JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
+      std::cerr << "done JavaArrayOfByteArrayToStringVector\n";
+    }
+  }
 }
 
 // `auth_type` and `host` are expected to be UTF-8 encoded.
@@ -1210,6 +1214,8 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
 
 static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* certs, uint8_t size,
                                                            const char* host_name) {
+  jni_log("[Envoy]", "verify_x509_cert_chain");
+
   envoy_cert_verify_status_t result;
   bool is_issued_by_known_root;
   std::vector<std::string> verified_chain;

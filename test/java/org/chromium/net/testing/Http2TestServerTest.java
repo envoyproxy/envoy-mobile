@@ -48,7 +48,8 @@ public class Http2TestServerTest {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .setTrustChainVerification(ACCEPT_UNTRUSTED)
+                 .usePlatformCertValidator(true)
+                 // .setTrustChainVerification(ACCEPT_UNTRUSTED)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;

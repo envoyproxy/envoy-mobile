@@ -664,4 +664,10 @@ open class EngineBuilder(
     this.engineType = engineType
     return this
   }
+
+  fun usePlatformCertValidator(usePlatformCertValidator: Boolean): EngineBuilder {
+    this.usePlatformCertValidator = usePlatformCertValidator
+    return this
+  }
+
 }
