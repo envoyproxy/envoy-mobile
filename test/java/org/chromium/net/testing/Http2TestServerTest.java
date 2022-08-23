@@ -1,6 +1,7 @@
 package org.chromium.net.testing;
 
 import static io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification.ACCEPT_UNTRUSTED;
+import static io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification.VERIFY_TRUST_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chromium.net.testing.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.testing.CronetTestRule.SERVER_KEY_PKCS8_PEM;
@@ -43,13 +44,13 @@ public class Http2TestServerTest {
     AndroidJniLibrary.loadTestLibrary();
   }
 
-  @Before
-  public void setUpEngine() throws Exception {
+  public void setUpEngine(boolean usePlatformCertValidator) throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .usePlatformCertValidator(true)
-                 // .setTrustChainVerification(ACCEPT_UNTRUSTED)
+                 .usePlatformCertValidator(usePlatformCertValidator)
+                 .setTrustChainVerification(usePlatformCertValidator ? VERIFY_TRUST_CHAIN
+                                                                     : ACCEPT_UNTRUSTED)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
@@ -67,6 +68,23 @@ public class Http2TestServerTest {
 
   @Test
   public void getSchemeIsHttps() throws Exception {
+    setUpEngine(false);
+
+    RequestScenario requestScenario = new RequestScenario()
+                                          .setHttpMethod(RequestMethod.GET)
+                                          .setUrl(Http2TestServer.getEchoAllHeadersUrl());
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
+    assertThat(response.getBodyAsString()).contains(":scheme: https");
+    assertThat(response.getHeaders().value("x-envoy-upstream-alpn")).containsExactly("h2");
+    assertThat(response.getEnvoyError()).isNull();
+  }
+
+  @Test
+  public void testPlatformCertValidator() throws Exception {
+    setUpEngine(true);
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(Http2TestServer.getEchoAllHeadersUrl());

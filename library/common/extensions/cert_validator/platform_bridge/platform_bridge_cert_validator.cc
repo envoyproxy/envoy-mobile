@@ -55,6 +55,10 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
   }
 
   std::string host_name; // validation_context.host_name);
+  if (transport_socket_options != nullptr &&
+      !transport_socket_options->verifySubjectAltNameListOverride().empty()) {
+    host_name = transport_socket_options->verifySubjectAltNameListOverride()[0];
+  }
   std::thread t(&PlatformBridgeCertValidator::verifyCertChainByPlatform, this, std::move(certs),
                 std::move(callback), transport_socket_options, host_name);
   std::thread::id t_id = t.get_id();
@@ -66,7 +70,7 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
     std::vector<envoy_data> certs, Ssl::ValidateResultCallbackPtr callback,
     const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
     const std::string host_name) {
-  std::cerr << "================= verifyCertChainByPlatform\n";
+  std::cerr << "start verifyCertChainByPlatform\n";
   // In a stand alone thread.
   ASSERT(!certs.empty());
   envoy_data leaf_cert = copy_envoy_data(certs[0]);
