@@ -23,9 +23,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
-private const val REQUEST_AUTHORITY = "api.lyft.com"
-private const val REQUEST_PATH = "/ping"
-private const val REQUEST_SCHEME = "https"
+private const val REQUEST_AUTHORITY = "example.com"
+private const val REQUEST_PATH = "/"
+private const val REQUEST_SCHEME = "http"
 private val FILTERED_HEADERS = setOf(
   "server",
   "filter-demo",
@@ -49,18 +49,19 @@ class MainActivity : Activity() {
     setContentView(R.layout.activity_main)
 
     engine = AndroidEngineBuilder(application)
-      .addLogLevel(LogLevel.DEBUG)
-      .addPlatformFilter(::DemoFilter)
-      .addPlatformFilter(::BufferDemoFilter)
-      .addPlatformFilter(::AsyncDemoFilter)
-      .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
-      .addStringAccessor("demo-accessor", { "PlatformString" })
+      .addLogLevel(LogLevel.TRACE)
+      .enableDNSUseSystemResolver(true)
+//      .addPlatformFilter(::DemoFilter)
+//      .addPlatformFilter(::BufferDemoFilter)
+//      .addPlatformFilter(::AsyncDemoFilter)
+//      .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
+//      .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
-      .setEventTracker({
-        for (entry in it.entries) {
-          Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
-        }
-      })
+//      .setEventTracker({
+//        for (entry in it.entries) {
+//          Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
+//        }
+//      })
       .setLogger {
         Log.d("MainActivity", it)
       }
@@ -84,7 +85,7 @@ class MainActivity : Activity() {
         override fun run() {
           try {
             makeRequest()
-            recordStats()
+//            recordStats()
           } catch (e: IOException) {
             Log.d("MainActivity", "exception making request or recording stats", e)
           }
@@ -109,7 +110,7 @@ class MainActivity : Activity() {
     val requestHeaders = RequestHeadersBuilder(
       RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
     )
-      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
+      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP1)
       .build()
     engine
       .streamClient()

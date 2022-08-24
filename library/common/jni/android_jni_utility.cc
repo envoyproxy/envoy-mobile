@@ -16,6 +16,7 @@
 // NOLINT(namespace-envoy)
 
 bool is_cleartext_permitted(absl::string_view hostname) {
+  return true;
 #if defined(__ANDROID_API__)
   envoy_data host = Envoy::Data::Utility::copyToBridgeData(hostname);
   JNIEnv* env = get_env();
