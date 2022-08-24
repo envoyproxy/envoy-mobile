@@ -1,6 +1,6 @@
 load("//bazel:config.bzl", "MINIMUM_IOS_VERSION")
-load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_xcframework")
-load("@build_bazel_rules_apple//apple:ios.bzl", "ios_static_framework")
+load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_xcframework", "apple_xcframework")
+load("@build_bazel_rules_apple//apple:ios.bzl", "ios_dynamic_framework", "ios_static_framework")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 load("//bazel:swift_header_collector.bzl", "swift_header_collector")
 
@@ -114,8 +114,55 @@ ios_static_framework(
     deps = ["ios_lib"],
 )
 
+ios_dynamic_framework(
+    name = "ios_framework_dynamic",
+    hdrs = ["ios_lib_headers"],
+    bundle_id = "io.envoyproxy.Envoy",
+    bundle_name = "Envoy",
+    exported_symbols_lists = ["exported_symbols.txt"],
+    families = [
+        "iphone",
+        "ipad",
+    ],
+    infoplists = ["Info.plist"],
+    minimum_os_version = MINIMUM_IOS_VERSION,
+    # Currently the framework is over 2GB, and is not worth caching
+    tags = [
+        "no-cache",
+        "no-remote",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["ios_lib"],
+)
+
 apple_static_xcframework(
     name = "Envoy",
+    ios = {
+        "simulator": [
+            "arm64",
+            "x86_64",
+        ],
+        "device": [
+            "arm64",
+        ],
+    },
+    minimum_os_versions = {
+        "ios": MINIMUM_IOS_VERSION,
+    },
+    # Currently the framework is over 2GB, and is not worth caching
+    tags = [
+        "no-cache",
+        "no-remote",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["ios_lib"],
+)
+
+apple_xcframework(
+    name = "Envoy.dynamic",
+    bundle_name = "Envoy",
+    exported_symbols_lists = ["exported_symbols.txt"],
+    infoplists = ["Info.plist"],
     ios = {
         "simulator": [
             "arm64",
