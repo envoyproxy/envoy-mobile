@@ -120,8 +120,12 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
-  return run_engine(engine, env->GetStringUTFChars(config, nullptr),
-                    env->GetStringUTFChars(log_level, nullptr), "");
+  const char* string_config = env->GetStringUTFChars(config, nullptr);
+  const char* string_log_level = env->GetStringUTFChars(log_level, nullptr);
+  jint result = run_engine(engine, string_config, string_log_level, "");
+  env->ReleaseStringUTFChars(config, string_config);
+  env->ReleaseStringUTFChars(log_level, string_log_level);
+  return result;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_terminateEngine(
@@ -162,6 +166,12 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_gzipConfigInsert(JNIEnv* env, j
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_brotliConfigInsert(JNIEnv* env, jclass) {
   jstring result = env->NewStringUTF(brotli_config_insert);
+  return result;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_socketTagConfigInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(socket_tag_config_insert);
   return result;
 }
 
