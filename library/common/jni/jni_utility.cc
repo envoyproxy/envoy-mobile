@@ -11,11 +11,28 @@
 // NOLINT(namespace-envoy)
 
 static JavaVM* static_jvm = nullptr;
+static jobject static_class_loader = nullptr;
 static thread_local JNIEnv* local_env = nullptr;
 
 void set_vm(JavaVM* vm) { static_jvm = vm; }
 
 JavaVM* get_vm() { return static_jvm; }
+
+void set_class_loader(jobject class_loader) { static_class_loader = class_loader; }
+
+jobject get_class_loader() { return static_class_loader; }
+
+jclass find_class(const char* class_name) {
+  JNIEnv* env = get_env();
+  jclass class_loader = env->FindClass("java/lang/ClassLoader");
+  jmethodID find_class_method =
+      env->GetMethodID(class_loader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+  jstring str_class_name = env->NewStringUTF(class_name);
+  jclass clazz =
+      (jclass)(env->CallObjectMethod(get_class_loader(), find_class_method, str_class_name));
+  env->DeleteLocalRef(str_class_name);
+  return clazz;
+}
 
 JNIEnv* get_env() {
   if (local_env) {
@@ -25,11 +42,11 @@ JNIEnv* get_env() {
   jint result = static_jvm->GetEnv(reinterpret_cast<void**>(&local_env), JNI_VERSION);
   if (result == JNI_EDETACHED) {
     // Note: the only thread that should need to be attached is Envoy's engine std::thread.
-    JavaVMAttachArgs args = {JNI_VERSION, "EnvoyMain", NULL};
+    static const char* thread_name = "EnvoyMain";
+    JavaVMAttachArgs args = {JNI_VERSION, const_cast<char*>(thread_name), nullptr};
     result = attach_jvm(static_jvm, &local_env, &args);
   }
-  // TODO(goaway): add assertions and uncomment
-  // ASSERT(result == JNI_OK);
+  RELEASE_ASSERT(result == JNI_OK, "Unable to get a JVM env for the current thread");
   return local_env;
 }
 
@@ -197,7 +214,7 @@ envoy_data* buffer_to_native_data_ptr(JNIEnv* env, jobject j_data) {
   // acquire a new strong reference before attempting to interact with an object held by
   // a WeakGlobalRef. See:
   // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html#weak
-  if (j_data == NULL) {
+  if (j_data == nullptr) {
     return nullptr;
   }
 
@@ -216,7 +233,7 @@ envoy_headers* to_native_headers_ptr(JNIEnv* env, jobjectArray headers) {
   // acquire a new strong reference before attempting to interact with an object held by
   // a WeakGlobalRef. See:
   // https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html#weak
-  if (headers == NULL) {
+  if (headers == nullptr) {
     return nullptr;
   }
 
@@ -232,7 +249,7 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries) {
   // Therefore, the length of the native header array is n envoy_data or n/2 envoy_map_entry.
   envoy_map_size_t length = env->GetArrayLength(entries);
   if (length == 0) {
-    return {0, NULL};
+    return {0, nullptr};
   }
 
   envoy_map_entry* entry_array =
@@ -254,4 +271,66 @@ envoy_map to_native_map(JNIEnv* env, jobjectArray entries) {
 
   envoy_map native_map = {length / 2, entry_array};
   return native_map;
+}
+
+jobjectArray ToJavaArrayOfByteArray(JNIEnv* env, const std::vector<std::string>& v) {
+  jclass jcls_byte_array = env->FindClass("[B");
+  jobjectArray joa = env->NewObjectArray(v.size(), jcls_byte_array, nullptr);
+
+  for (size_t i = 0; i < v.size(); ++i) {
+    jbyteArray byte_array =
+        ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(v[i].data()), v[i].length());
+    env->SetObjectArrayElement(joa, i, byte_array);
+  }
+  return joa;
+}
+
+jbyteArray ToJavaByteArray(JNIEnv* env, const uint8_t* bytes, size_t len) {
+  jbyteArray byte_array = env->NewByteArray(len);
+  const jbyte* jbytes = reinterpret_cast<const jbyte*>(bytes);
+  env->SetByteArrayRegion(byte_array, /*start=*/0, len, jbytes);
+  return byte_array;
+}
+
+jbyteArray ToJavaByteArray(JNIEnv* env, const std::string& str) {
+  const uint8_t* str_bytes = reinterpret_cast<const uint8_t*>(str.data());
+  return ToJavaByteArray(env, str_bytes, str.size());
+}
+
+void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
+                                        std::vector<std::string>* out) {
+  size_t len = env->GetArrayLength(array);
+  out->resize(len);
+
+  for (size_t i = 0; i < len; ++i) {
+    jbyteArray bytes_array = static_cast<jbyteArray>(env->GetObjectArrayElement(array, i));
+    jsize bytes_len = env->GetArrayLength(bytes_array);
+    // It doesn't matter if the array returned by GetByteArrayElements is a copy
+    // or not, as the data will be simply be copied into C++ owned memory below.
+    jbyte* bytes = env->GetByteArrayElements(bytes_array, /*isCopy=*/nullptr);
+    (*out)[i].assign(reinterpret_cast<const char*>(bytes), bytes_len);
+    // There is nothing to write back, it is always safe to JNI_ABORT.
+    env->ReleaseByteArrayElements(bytes_array, bytes, JNI_ABORT);
+    // Explicitly delete to keep the local ref count low.
+    env->DeleteLocalRef(bytes_array);
+  }
+}
+
+void JavaArrayOfByteToString(JNIEnv* env, jbyteArray jbytes, std::string* out) {
+  std::vector<uint8_t> bytes;
+  JavaArrayOfByteToBytesVector(env, jbytes, &bytes);
+  *out = std::string(bytes.begin(), bytes.end());
+}
+
+void JavaArrayOfByteToBytesVector(JNIEnv* env, jbyteArray array, std::vector<uint8_t>* out) {
+  const size_t len = env->GetArrayLength(array);
+  out->resize(len);
+
+  // It doesn't matter if the array returned by GetByteArrayElements is a copy
+  // or not, as the data will be simply be copied into C++ owned memory below.
+  jbyte* jbytes = env->GetByteArrayElements(array, /*isCopy=*/nullptr);
+  uint8_t* bytes = reinterpret_cast<uint8_t*>(jbytes);
+  std::copy(bytes, bytes + len, out->begin());
+  // There is nothing to write back, it is always safe to JNI_ABORT.
+  env->ReleaseByteArrayElements(array, jbytes, JNI_ABORT);
 }

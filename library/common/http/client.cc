@@ -13,7 +13,8 @@
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
-#include "library/common/network/configurator.h"
+#include "library/common/jni/android_jni_utility.h"
+#include "library/common/network/connectivity_manager.h"
 #include "library/common/stream_info/extra_stream_info.h"
 
 namespace Envoy {
@@ -26,6 +27,12 @@ namespace Http {
  * If this changes in Envoy, this file will need to change as well.
  * For implementation details @see Client::DirectStreamCallbacks::closeRemote.
  */
+
+namespace {
+
+constexpr auto SlowCallbackWarningTreshold = std::chrono::seconds(1);
+
+} // namespace
 
 Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream,
                                                      envoy_http_callbacks bridge_callbacks,
@@ -66,8 +73,19 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_headers_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers, alpn), end_stream, streamIntel(),
                                bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_headers_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   response_headers_forwarded_ = true;
   if (end_stream) {
     onComplete();
@@ -136,8 +154,18 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_data_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), send_end_stream,
                             streamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_data_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   if (send_end_stream) {
     onComplete();
   }
@@ -170,8 +198,18 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_trailers_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), streamIntel(),
                                 bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_trailers_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   onComplete();
 }
 
@@ -228,7 +266,16 @@ void Client::DirectStreamCallbacks::onComplete() {
     http_client_.stats().stream_failure_.inc();
   }
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_complete_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_complete(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_complete_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -255,8 +302,17 @@ void Client::DirectStreamCallbacks::onError() {
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_error_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_error(error_.value(), streamIntel(), finalStreamIntel(),
                              bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_error_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -269,10 +325,21 @@ void Client::DirectStreamCallbacks::onCancel() {
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
+
   // Attempt to latch the latest stream info. This will be a no-op if the stream
   // is already complete.
   direct_stream_.saveFinalStreamIntel();
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_cancel_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_cancel(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_cancel_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onHasBufferedData() {
@@ -310,7 +377,6 @@ void Client::DirectStream::saveFinalStreamIntel() {
   if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
     return;
   }
-
   StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), parent_.dispatcher_.timeSource(),
                                   envoy_final_stream_intel_);
 }
@@ -414,6 +480,16 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
+
+    // This is largely a check for the android platform: is_cleartext_permitted
+    // is a no-op for other platforms.
+    if (internal_headers->getSchemeValue() != "https" &&
+        !is_cleartext_permitted(internal_headers->getHostValue())) {
+      direct_stream->request_decoder_->sendLocalReply(
+          Http::Code::BadRequest, "Cleartext is not permitted", nullptr, absl::nullopt, "");
+      return;
+    }
+
     setDestinationCluster(*internal_headers);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the
@@ -471,9 +547,14 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     if (direct_stream->explicit_flow_control_ && !end_stream) {
       if (direct_stream->read_disable_count_ == 0) {
         // If there is still buffer space after the write, notify the sender
-        // that send window is available.
+        // that send window is available, on the next dispatcher iteration so
+        // that repeated writes do not starve reads.
         direct_stream->wants_write_notification_ = false;
-        direct_stream->callbacks_->onSendWindowAvailable();
+        // A new callback must be scheduled each time to capture any changes to the
+        // DirectStream's callbacks from call to call.
+        scheduled_callback_ = dispatcher_.createSchedulableCallback(
+            [direct_stream] { direct_stream->callbacks_->onSendWindowAvailable(); });
+        scheduled_callback_->scheduleCallbackNextIteration();
       } else {
         // Otherwise, make sure the stack will send a notification when the
         // buffers are drained.
@@ -511,7 +592,11 @@ void Client::cancelStream(envoy_stream_t stream) {
   // whether it was closed or not.
   Client::DirectStreamSharedPtr direct_stream =
       getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
+  scheduled_callback_ = nullptr;
   if (direct_stream) {
+    // Attempt to latch the latest stream info. This will be a no-op if the stream
+    // is already complete.
+    direct_stream->saveFinalStreamIntel();
     bool stream_was_open =
         getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS) != nullptr;
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());

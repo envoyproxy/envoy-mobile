@@ -15,6 +15,7 @@ void ProvisionalDispatcher::drain(Event::Dispatcher& event_dispatcher) {
 
   // Don't perform any work on the dispatcher if marked as terminated.
   if (terminated_) {
+    event_dispatcher.exit();
     return;
   }
 
@@ -42,6 +43,14 @@ envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
 
   init_queue_.push_back(callback);
   return ENVOY_SUCCESS;
+}
+
+Event::SchedulableCallbackPtr
+ProvisionalDispatcher::createSchedulableCallback(std::function<void()> cb) {
+  RELEASE_ASSERT(
+      isThreadSafe(),
+      "ProvisionalDispatcher::createSchedulableCallback must be called from a threadsafe context");
+  return event_dispatcher_->createSchedulableCallback(cb);
 }
 
 bool ProvisionalDispatcher::isThreadSafe() const {
@@ -81,6 +90,9 @@ TimeSource& ProvisionalDispatcher::timeSource() { return event_dispatcher_->time
 
 void ProvisionalDispatcher::terminate() {
   Thread::LockGuard lock(state_lock_);
+  if (drained_) {
+    event_dispatcher_->exit();
+  }
   terminated_ = true;
 }
 

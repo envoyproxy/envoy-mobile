@@ -9,7 +9,7 @@
 #include "library/common/engine_handle.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/http/client.h"
-#include "library/common/network/configurator.h"
+#include "library/common/network/connectivity_manager.h"
 
 // NOLINT(namespace-envoy)
 
@@ -66,9 +66,10 @@ envoy_status_t reset_stream(envoy_engine_t engine, envoy_stream_t stream) {
 }
 
 envoy_status_t set_preferred_network(envoy_engine_t engine, envoy_network_t network) {
-  envoy_netconf_t configuration_key = Envoy::Network::Configurator::setPreferredNetwork(network);
+  envoy_netconf_t configuration_key =
+      Envoy::Network::ConnectivityManager::setPreferredNetwork(network);
   Envoy::EngineHandle::runOnEngineDispatcher(engine, [configuration_key](auto& engine) -> void {
-    engine.networkConfigurator().refreshDns(configuration_key, true);
+    engine.networkConnectivityManager().refreshDns(configuration_key, true);
   });
   // TODO(snowp): Should this return failure ever?
   return ENVOY_SUCCESS;
@@ -182,13 +183,16 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
   return Envoy::EngineHandle::initEngine(callbacks, logger, event_tracker);
 }
 
-envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level) {
-  return Envoy::EngineHandle::runEngine(engine, config, log_level);
+envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level,
+                          const char* admin_path) {
+  return Envoy::EngineHandle::runEngine(engine, config, log_level, admin_path);
 }
 
-void terminate_engine(envoy_engine_t engine) { Envoy::EngineHandle::terminateEngine(engine); }
+void terminate_engine(envoy_engine_t engine, bool release) {
+  Envoy::EngineHandle::terminateEngine(engine, release);
+}
 
 envoy_status_t reset_connectivity_state(envoy_engine_t e) {
   return Envoy::EngineHandle::runOnEngineDispatcher(
-      e, [](auto& engine) { engine.networkConfigurator().resetConnectivityState(); });
+      e, [](auto& engine) { engine.networkConnectivityManager().resetConnectivityState(); });
 }

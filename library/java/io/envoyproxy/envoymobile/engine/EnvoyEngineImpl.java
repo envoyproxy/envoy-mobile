@@ -3,6 +3,7 @@ package io.envoyproxy.envoymobile.engine;
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory;
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
 import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
@@ -87,11 +88,19 @@ public class EnvoyEngineImpl implements EnvoyEngine {
                                         new JvmStringAccessorContext(entry.getValue()));
     }
 
-    return runWithResolvedYAML(
-        envoyConfiguration.resolveTemplate(configurationYAML, JniLibrary.platformFilterTemplate(),
-                                           JniLibrary.nativeFilterTemplate(),
-                                           JniLibrary.altProtocolCacheFilterInsert()),
-        logLevel);
+    for (Map.Entry<String, EnvoyKeyValueStore> entry :
+         envoyConfiguration.keyValueStores.entrySet()) {
+      JniLibrary.registerKeyValueStore(entry.getKey(),
+                                       new JvmKeyValueStoreContext(entry.getValue()));
+    }
+
+    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
+                                   configurationYAML, JniLibrary.platformFilterTemplate(),
+                                   JniLibrary.nativeFilterTemplate(),
+                                   JniLibrary.altProtocolCacheFilterInsert(),
+                                   JniLibrary.gzipConfigInsert(), JniLibrary.brotliConfigInsert(),
+                                   JniLibrary.socketTagConfigInsert()),
+                               logLevel);
   }
 
   /**

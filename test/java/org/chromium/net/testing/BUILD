@@ -25,6 +25,7 @@ android_library(
         "PathUtils.java",
         "ReportingCollector.java",
         "StrictModeContext.java",
+        "TestBidirectionalStreamCallback.java",
         "TestFilesInstaller.java",
         "TestUploadDataProvider.java",
         "TestUrlRequestCallback.java",
@@ -76,6 +77,25 @@ envoy_mobile_android_test(
     name = "http2_test_server_test",
     srcs = [
         "Http2TestServerTest.java",
+    ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
+    native_deps = [
+        "//library/common/jni:libndk_envoy_jni.so",
+        "//library/common/jni:libndk_envoy_jni.jnilib",
+    ],
+    deps = [
+        ":testing",
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
+    ],
+)
+
+envoy_mobile_android_test(
+    name = "temporary_test",
+    srcs = [
+        "AndroidEnvoyExplicitH2FlowTest.java",
     ],
     exec_properties = {
         # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.

@@ -34,6 +34,9 @@ private val FILTERED_HEADERS = setOf(
   "x-envoy-upstream-service-time"
 )
 
+/**
+ * The main activity of the app.
+ */
 class MainActivity : Activity() {
   private val thread = HandlerThread(REQUEST_HANDLER_THREAD_NAME)
   private lateinit var recyclerView: RecyclerView
@@ -47,7 +50,6 @@ class MainActivity : Activity() {
 
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.DEBUG)
-      .enableInterfaceBinding(true)
       .addPlatformFilter(::DemoFilter)
       .addPlatformFilter(::BufferDemoFilter)
       .addPlatformFilter(::AsyncDemoFilter)
@@ -117,7 +119,7 @@ class MainActivity : Activity() {
         val message = "received headers with status $status"
 
         val sb = StringBuilder()
-        for ((name, value) in responseHeaders.headers) {
+        for ((name, value) in responseHeaders.caseSensitiveHeaders()) {
           if (name in FILTERED_HEADERS) {
             sb.append(name).append(": ").append(value.joinToString()).append("\n")
           }

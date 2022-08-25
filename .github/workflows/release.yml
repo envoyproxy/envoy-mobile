@@ -2,8 +2,11 @@ name: release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - v*
+  pull_request:
 
 jobs:
   android_release_artifacts:
@@ -32,9 +35,9 @@ jobs:
               --define=pom_version="${current_release_version:1}" \
               --config=remote-ci-macos \
               --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-              //:android_dist_ci
+              //:android_dist
       - name: 'Tar artifacts'
-        run: tar -czvf envoy_android_aar_sources.tar.gz dist/envoy.aar dist/envoy-pom.xml dist/envoy-javadoc.jar dist/envoy-sources.jar
+        run: tar -czvf envoy_android_aar_sources.tar.gz bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy.aar bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-pom.xml bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-sources.jar bazel-bin/library/kotlin/io/envoyproxy/envoymobile/envoy-javadoc.jar
       - uses: actions/upload-artifact@v2
         with:
           name: envoy_android_aar_sources
@@ -42,8 +45,9 @@ jobs:
 
   android_release_deploy:
     name: android_release_deploy
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: android_release_artifacts
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v1
@@ -52,8 +56,11 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: envoy_android_aar_sources
-          path: dist/
-      - run: tar -xvf dist/envoy_android_aar_sources.tar.gz
+          path: .
+      - name: Expand archive
+        run: |
+          tar -xvf envoy_android_aar_sources.tar.gz
+          mv bazel-bin/library/kotlin/io/envoyproxy/envoymobile/* .
       - name: 'Configure envoy-bot git user'
         run: |
           # Switch global user to be envoy-bot for deployment
@@ -75,10 +82,10 @@ jobs:
           gpg --passphrase $GPG_PASSPHRASE --batch --import signing-key
           shred signing-key
 
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy.aar
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-pom.xml
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-javadoc.jar
-          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab dist/envoy-sources.jar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab envoy.aar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab envoy-pom.xml
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab envoy-javadoc.jar
+          gpg --pinentry-mode=loopback --passphrase $GPG_PASSPHRASE -ab envoy-sources.jar
       - name: 'Release to sonatype repository'
         env:
           READWRITE_USER: ${{ secrets.sonatype_user }}
@@ -86,22 +93,22 @@ jobs:
           ENVOY_PROXY_PROFILE_ID: ${{ secrets.envoy_proxy_profile_id }}
         run: |
           current_release_tag=$(git describe --tags --abbrev=0 --exact-match)
-          python dist/sonatype_nexus_upload.py \
+          python ci/sonatype_nexus_upload.py \
             --profile_id=$ENVOY_PROXY_PROFILE_ID \
             --version="${current_release_tag:1}" \
             --files \
-                dist/envoy.aar \
-                dist/envoy-pom.xml \
-                dist/envoy-sources.jar \
-                dist/envoy-javadoc.jar \
+                envoy.aar \
+                envoy-pom.xml \
+                envoy-sources.jar \
+                envoy-javadoc.jar \
           --signed_files \
-                dist/envoy-sources.jar.asc \
-                dist/envoy.aar.asc \
-                dist/envoy-pom.xml.asc \
-                dist/envoy-javadoc.jar.asc
+                envoy.aar.asc \
+                envoy-pom.xml.asc \
+                envoy-sources.jar.asc \
+                envoy-javadoc.jar.asc
 
-  ios_release_artifacts_framework:
-    name: ios_release_artifacts_framework
+  ios_release_artifacts:
+    name: ios_release_artifacts
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -110,92 +117,59 @@ jobs:
           submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Build Envoy.framework distributable'
+      - name: 'Build Envoy.xcframework'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
             --config=release-ios \
-            --ios_multi_cpus=i386,x86_64,armv7,arm64 \
             --config=remote-ci-macos \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-            //:ios_dist
-      - name: 'Create temporary directory for artifact to produce properly named zip'
-        run: mkdir -p dist/ios_artifact/Envoy.framework
-      - name: 'Move artifact to directory for zipping'
-        run: mv dist/Envoy.framework/* dist/ios_artifact/Envoy.framework
+            //:ios_xcframework
+      - name: 'Move Envoy.xcframework.zip'
+        run: mv bazel-bin/library/swift/Envoy.xcframework.zip .
       - uses: actions/upload-artifact@v2
         with:
-          name: envoy_ios_framework
-          path: dist/ios_artifact
-
-  ios_release_artifacts_cocoapods:
-    name: ios_release_artifacts_cocoapods
-    runs-on: macos-12
-    timeout-minutes: 45
-    needs: [ios_release_artifacts_framework]
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: 'Install dependencies'
-        run: ./ci/mac_ci_setup.sh
-      - uses: actions/download-artifact@v3
-        with:
-          name: envoy_ios_framework
-          path: dist/envoy_ios_cocoapods
-      - name: 'Copy license for CocoaPods'
-        run: cp LICENSE dist/envoy_ios_cocoapods
-      - name: 'Create empty Swift sources directory'
-        run: mkdir -p dist/envoy_ios_cocoapods/Envoy.framework/Swift
-      - name: 'Create empty Swift file to force Swift libraries to link properly'
-        run: touch dist/envoy_ios_cocoapods/Envoy.framework/Swift/Empty.swift
+          name: ios_framework
+          path: ./Envoy.xcframework.zip
+      - name: 'Build Envoy.doccarchive.zip'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./bazelw build \
+            --output_groups=+swift_symbol_graph \
+            --config=release-ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //library/swift:ios_lib
+          ./tools/docc.sh bazel-bin/library/swift/ios_lib.symbolgraph
+          zip -r Envoy.doccarchive.zip Envoy.doccarchive
       - uses: actions/upload-artifact@v2
         with:
-          name: envoy_ios_cocoapods
-          path: dist/envoy_ios_cocoapods
+          name: ios_docs
+          path: ./Envoy.doccarchive.zip
 
   create_github_release:
     name: create_github_release
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    needs: [android_release_artifacts, ios_release_artifacts_framework, ios_release_artifacts_cocoapods]
+    needs: [android_release_artifacts, ios_release_artifacts]
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
       - uses: actions/download-artifact@v3
         with:
           name: envoy_android_aar_sources
-          path: ./envoy_android_aar_sources.tar.gz
       - uses: actions/download-artifact@v3
         with:
-          name: envoy_ios_framework
-          path: ./envoy_ios_framework.zip
+          name: ios_framework
       - uses: actions/download-artifact@v3
         with:
-          name: envoy_ios_cocoapods
-          path: ./envoy_ios_cocoapods.zip
+          name: ios_docs
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          prerelease: true
           files: |
             envoy_android_aar_sources.tar.gz
-            envoy_ios_framework.zip
-            envoy_ios_cocoapods.zip
-
-  publish_to_cocoapods:
-    name: publish_to_cocoapods
-    runs-on: macos-12
-    timeout-minutes: 45
-    needs: create_github_release
-    steps:
-      - uses: actions/checkout@v1
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7
-          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-      - name: 'Push CocoaPods podspec'
-        run: bundle exec pod trunk push
-        env:
-          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+            Envoy.xcframework.zip
+            Envoy.doccarchive.zip

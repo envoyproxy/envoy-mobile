@@ -10,7 +10,7 @@
 #include "library/common/common/lambda_logger_delegate.h"
 #include "library/common/engine_common.h"
 #include "library/common/http/client.h"
-#include "library/common/network/configurator.h"
+#include "library/common/network/connectivity_manager.h"
 #include "library/common/types/c_types.h"
 
 namespace Envoy {
@@ -34,8 +34,10 @@ public:
    * Run the engine with the provided configuration.
    * @param config, the Envoy bootstrap configuration to use.
    * @param log_level, the log level.
+   * @param admin_address_path to set --admin-address-path, or an empty string if not needed.
    */
-  envoy_status_t run(std::string config, std::string log_level);
+  envoy_status_t run(std::string config, std::string log_level,
+                     const std::string admin_address_path);
 
   /**
    * Immediately terminate the engine, if running.
@@ -56,9 +58,9 @@ public:
 
   /**
    * Accessor for the network configuraator. Must be called from the dispatcher's context.
-   * @return Network::Configurator&, the network configurator.
+   * @return Network::ConnectivityManager&, the network connectivity_manager.
    */
-  Network::Configurator& networkConfigurator();
+  Network::ConnectivityManager& networkConnectivityManager();
 
   /**
    * Increment a counter with a given string of elements and by the given count.
@@ -128,7 +130,7 @@ public:
   Upstream::ClusterManager& getClusterManager();
 
 private:
-  envoy_status_t main(std::string config, std::string log_level);
+  envoy_status_t main(std::string config, std::string log_level, std::string admin_address_path);
   static void logInterfaces(absl::string_view event,
                             std::vector<Network::InterfacePair>& interfaces);
 
@@ -143,7 +145,7 @@ private:
   Thread::MutexBasicLockable mutex_;
   Thread::CondVar cv_;
   Http::ClientPtr http_client_;
-  Network::ConfiguratorSharedPtr network_configurator_;
+  Network::ConnectivityManagerSharedPtr connectivity_manager_;
   Event::ProvisionalDispatcherPtr dispatcher_;
   // Used by the cerr logger to ensure logs don't overwrite each other.
   absl::Mutex log_mutex_;

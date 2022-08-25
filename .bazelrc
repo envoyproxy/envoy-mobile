@@ -15,10 +15,12 @@ build --host_force_python=PY3
 build --macos_minimum_os=10.14
 build --ios_minimum_os=12.0
 build --ios_simulator_device="iPhone 13"
-build --ios_simulator_version=15.2
+build --ios_simulator_version=15.5
 build --verbose_failures
 build --workspace_status_command=envoy/bazel/get_workspace_status
-build --xcode_version=13.2.1
+build --xcode_version=13.4.0
+build --use_top_level_targets_for_symlinks
+build --experimental_repository_downloader_retries=2
 # https://github.com/bazelbuild/rules_jvm_external/issues/445
 build --repo_env=JAVA_HOME=../bazel_tools/jdk
 build --define disable_known_issue_asserts=true
@@ -31,11 +33,16 @@ build --copt -Wno-deprecated-declarations
 # Envoy's runtime system. This option prevents them from being compiled out.
 build --copt -DABSL_FLAGS_STRIP_NAMES=0
 
+# The defaults are JDK 11 on newer versions of Bazel
+build --java_runtime_version=remotejdk_11
+build --java_language_version=8
+
 # Override PGV validation with NOP functions
 build --@com_envoyproxy_protoc_gen_validate//bazel:template-flavor=nop
 
+build:dbg-common --compilation_mode=dbg
 # Enable source map for debugging in IDEs
-build:dbg --copt="-fdebug-compilation-dir" --copt="/proc/self/cwd"
+build:dbg-common --copt="-fdebug-compilation-dir" --copt="/proc/self/cwd"
 
 # Default flags for builds targeting iOS
 # Manual stamping is necessary in order to get versioning information in the iOS
@@ -46,6 +53,14 @@ build:ios --define=manual_stamp=manual_stamp
 
 # Default flags for builds targeting Android
 build:android --define=logger=android --define=include_ifaddrs=true
+
+# Default flags for Android debug builds
+build:dbg-android --config=dbg-common
+build:dbg-android --config=android
+
+# Default flags for iOS debug builds
+build:dbg-ios --config=dbg-common
+build:dbg-ios --config=ios
 
 # Locally-runnable ASAN config for MacOS & Linux with standard dev environment
 # See also:
@@ -87,10 +102,8 @@ build:release-common --config=sizeopt
 build:release-common --copt=-fvisibility=hidden
 
 # Flags for release builds targeting iOS
-build:release-ios --apple_bitcode=embedded
 build:release-ios --config=ios
 build:release-ios --config=release-common
-build:release-ios --copt=-fembed-bitcode
 build:release-ios --compilation_mode=opt
 
 # Flags for release builds targeting Android or the JVM
@@ -124,11 +137,6 @@ build:remote-ci-common --spawn_strategy=remote,sandboxed,local
 # Avoid hanging if the remote side closes the connection without a TCP RST. Only
 # sends a keepalive if we don't receive any messages (server updates every 60s).
 build:remote-ci-common --grpc_keepalive_time=61s
-#############################################################################
-# remote-ci-local-java8: Use a local Java 8 (JDK)
-#############################################################################
-build:remote-ci-local-java8 --java_runtime_version=local_jdk
-build:remote-ci-local-java8 --java_language_version=8
 #############################################################################
 # remote-ci-linux: These options are linux-only using GCC by default
 #############################################################################

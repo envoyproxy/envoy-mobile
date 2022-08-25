@@ -72,14 +72,15 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "12865e5944f09d16364aa78050366aca9dc35a32a018fa35f5950238b08bf744",
-        url = "https://github.com/bazelbuild/rules_apple/releases/download/0.34.2/rules_apple.0.34.2.tar.gz",
+        sha256 = "d4c2f715b83b5884e1164fb0e9f3de5b053d77d4436a04510b7940274e91699e",
+        strip_prefix = "rules_apple-8533494fa029f0fc44009c4532c191f349acf193",
+        url = "https://github.com/bazelbuild/rules_apple/archive/8533494fa029f0fc44009c4532c191f349acf193.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "a2fd565e527f83fb3f9eb07eb9737240e668c9242d3bc318712efa54a7deda97",
-        url = "https://github.com/bazelbuild/rules_swift/releases/download/0.27.0/rules_swift.0.27.0.tar.gz",
+        sha256 = "12057b7aa904467284eee640de5e33853e51d8e31aae50b3fb25d2823d51c6b8",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.0.0/rules_swift.1.0.0.tar.gz",
     )
 
     http_archive(
@@ -96,7 +97,21 @@ def swift_repos():
         url = "https://github.com/realm/SwiftLint/releases/download/0.47.1/portable_swiftlint.zip",
     )
 
+    http_archive(
+        name = "com_github_buildbuddy_io_rules_xcodeproj",
+        sha256 = "a647ad9ee6664a78377cf5707331966b6788be09d1fea48045a61bc450c8f1b1",
+        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.7.0/release.tar.gz",
+    )
+
 def kotlin_repos():
+    http_archive(
+        name = "rules_java",
+        sha256 = "19462d64b1586c0d4ea0e87f9325be2514f0eb84e56dbf3245450451b3701581",
+        strip_prefix = "rules_java-43243982abc76390ef64be62379a1353f9011771",
+        # TODO(jpsim): Switch back to bazelbuild repo when https://github.com/bazelbuild/rules_java/issues/64 is fixed
+        url = "https://github.com/jpsim/rules_java/archive/43243982abc76390ef64be62379a1353f9011771.tar.gz",
+    )
+
     http_archive(
         name = "rules_jvm_external",
         sha256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca",
@@ -106,36 +121,22 @@ def kotlin_repos():
 
     http_archive(
         name = "io_bazel_rules_kotlin",
-        sha256 = "dc1c76f91228ddaf4f7ca4190b82d61939e95369f61dea715e8be28792072b1b",
-        strip_prefix = "rules_kotlin-legacy-1.3.0-rc2",
-        type = "zip",
-        urls = ["https://github.com/bazelbuild/rules_kotlin/archive/legacy-1.3.0-rc2.zip"],
+        sha256 = "f033fa36f51073eae224f18428d9493966e67c27387728b6be2ebbdae43f140e",
+        urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.7.0-RC-3/rules_kotlin_release.tgz"],
     )
 
     http_archive(
         name = "rules_detekt",
-        sha256 = "b1b4c8a3228f880a169ab60a817619bc4cf254443196e7e108ece411cb9c580e",
-        strip_prefix = "bazel_rules_detekt-0.3.0",
-        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.3.0.tar.gz",
-    )
-
-    # gRPC java for @rules_proto_grpc
-    # The current 0.2.0 uses v1.23.0 of gRPC java which has a buggy version of the grpc_java_repositories
-    # where it tries to bind the zlib and errors out
-    # The fix went in on this commit:
-    # https://github.com/grpc/grpc-java/commit/57e7bd394e92015d2891adc74af0eaf9cd347ea8#diff-515bc54a0cbb4b12fb4a7c465758b011L128-L131
-    http_archive(
-        name = "io_grpc_grpc_java",
-        sha256 = "8b495f58aaf75138b24775600a062bbdaa754d85f7ab2a47b2c9ecb432836dd1",
-        strip_prefix = "grpc-java-1.24.0",
-        urls = ["https://github.com/grpc/grpc-java/archive/v1.24.0.tar.gz"],
+        sha256 = "44912c74dc2e164227b1102ef36227d0e78fdbd7c7359868ae13424eb4f0d5c2",
+        strip_prefix = "bazel_rules_detekt-0.6.0",
+        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.6.0.tar.gz",
     )
 
     http_archive(
         name = "rules_proto_grpc",
-        sha256 = "1e08cd6c61f893417b14930ca342950f5f22f71f929a38a8c4bbfeae2a80d03e",
-        strip_prefix = "rules_proto_grpc-0.2.0",
-        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
+        sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
+        strip_prefix = "rules_proto_grpc-4.1.1",
+        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.1.1.tar.gz"],
     )
 
     http_file(

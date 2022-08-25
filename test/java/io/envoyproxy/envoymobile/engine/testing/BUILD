@@ -1,3 +1,4 @@
+load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("@envoy_mobile//bazel:kotlin_test.bzl", "envoy_mobile_android_test")
 
@@ -10,8 +11,13 @@ android_library(
     testonly = True,
     srcs = [
         "QuicTestServer.java",
+        "RequestScenario.java",
+        "Response.java",
     ],
     visibility = ["//test:__subpackages__"],
+    deps = [
+        "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
+    ],
 )
 
 envoy_mobile_android_test(

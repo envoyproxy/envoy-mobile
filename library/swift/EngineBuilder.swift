@@ -22,11 +22,14 @@ open class EngineBuilder: NSObject {
   private var dnsMinRefreshSeconds: UInt32 = 60
   private var dnsPreresolveHostnames: String = "[]"
   private var dnsRefreshSeconds: UInt32 = 60
-  private var enableHappyEyeballs: Bool = false
+  private var enableHappyEyeballs: Bool = true
+  private var enableGzip: Bool = true
+  private var enableBrotli: Bool = false
   private var enableInterfaceBinding: Bool = false
   private var enforceTrustChainVerification: Bool = true
   private var enableDrainPostDnsRefresh: Bool = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
+  private var forceIPv6: Bool = false
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 1
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   private var h2ExtendKeepaliveTimeout: Bool = false
   private var h2RawDomains: [String] = []
@@ -40,10 +43,11 @@ open class EngineBuilder: NSObject {
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
-  private(set) var enableNetworkPathMonitor = false
+  private(set) var monitoringMode: NetworkMonitoringMode = .pathMonitor
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
+  private var keyValueStores: [String: EnvoyKeyValueStore] = [:]
   private var directResponses: [DirectResponse] = []
 
   // MARK: - Public
@@ -99,7 +103,7 @@ open class EngineBuilder: NSObject {
   /// Add a rate at which to refresh DNS in case of DNS failure.
   ///
   /// - parameter base: Base rate in seconds.
-  /// - parameter max: Max rate in seconds.
+  /// - parameter max:  Max rate in seconds.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -154,7 +158,8 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+  /// Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+  /// true.
   ///
   /// - parameter enableHappyEyeballs: whether to enable RFC 6555 handling for IPv4/IPv6.
   ///
@@ -162,6 +167,28 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func enableHappyEyeballs(_ enableHappyEyeballs: Bool) -> Self {
     self.enableHappyEyeballs = enableHappyEyeballs
+    return self
+  }
+
+  /// Specify whether to do gzip response decompression or not.  Defaults to true.
+  ///
+  /// - parameter enableGzip: whether or not to gunzip responses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableGzip(_ enableGzip: Bool) -> Self {
+    self.enableGzip = enableGzip
+    return self
+  }
+
+  /// Specify whether to do brotli response decompression or not.  Defaults to false.
+  ///
+  /// - parameter enableBrotli: whether or not to brotli decompress responses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableBrotli(_ enableBrotli: Bool) -> Self {
+    self.enableBrotli = enableBrotli
     return self
   }
 
@@ -202,8 +229,22 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
+  /// to use IPv6. Note this is an experimental option and should be enabled with caution.
+  ///
+  /// - parameter forceIPv6: whether to force connections to use IPv6.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func forceIPv6(_ forceIPv6: Bool) -> Self {
+    self.forceIPv6 = forceIPv6
+    return self
+  }
+
   /// Add a rate at which to ping h2 connections on new stream creation if the connection has
-  /// sat idle.
+  /// sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
+  /// and results in a connection ping on every new stream creation. Set it to
+  /// 100000000 milliseconds to effectively disable the ping.
   ///
   /// - parameter h2ConnectionKeepaliveIdleIntervalMilliseconds: Rate in milliseconds.
   ///
@@ -276,7 +317,7 @@ open class EngineBuilder: NSObject {
 
   /// Add a custom idle timeout for HTTP streams. Defaults to 15 seconds.
   ///
-  /// - parameter streamIdleSeconds: Idle timeout for HTTP streams.
+  /// - parameter streamIdleTimeoutSeconds: Idle timeout for HTTP streams.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -287,7 +328,7 @@ open class EngineBuilder: NSObject {
 
   /// Add a custom per try idle timeout for HTTP streams. Defaults to 15 seconds.
   ///
-  /// - parameter perTryIdleSeconds: Idle timeout for HTTP streams.
+  /// - parameter perTryIdleTimeoutSeconds: Idle timeout for HTTP streams.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -342,13 +383,25 @@ open class EngineBuilder: NSObject {
 
   /// Add a string accessor to this Envoy Client.
   ///
-  /// - parameter name: the name of the accessor.
+  /// - parameter name:     the name of the accessor.
   /// - parameter accessor: lambda to access a string from the platform layer.
   ///
-  /// - returns this builder.
+  /// - returns: This builder.
   @discardableResult
   public func addStringAccessor(name: String, accessor: @escaping () -> String) -> Self {
     self.stringAccessors[name] = EnvoyStringAccessor(block: accessor)
+    return self
+  }
+
+  /// Register a key-value store implementation for internal use.
+  ///
+  /// - parameter name:          the name of the KV store.
+  /// - parameter keyValueStore: the KV store implementation.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addKeyValueStore(name: String, keyValueStore: KeyValueStore) -> Self {
+    self.keyValueStores[name] = KeyValueStoreImpl(implementation: keyValueStore)
     return self
   }
 
@@ -385,12 +438,15 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Configure the engine to use `NWPathMonitor` to observe network reachability.
+  /// Configure how the engine observes network reachability state changes.
+  /// Defaults to `.pathMonitor`.
+  ///
+  /// - parameter mode: The mode to use.
   ///
   /// - returns: This builder.
   @discardableResult
-  public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
-    self.enableNetworkPathMonitor = enableNetworkPathMonitor
+  public func setNetworkMonitoringMode(_ mode: NetworkMonitoringMode) -> Self {
+    self.monitoringMode = mode
     return self
   }
 
@@ -440,10 +496,13 @@ open class EngineBuilder: NSObject {
 
   /// Builds and runs a new `Engine` instance with the provided configuration.
   ///
+  /// - note: Must be strongly retained in order for network requests to be performed correctly.
+  ///
+  /// - returns: The built `Engine`.
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
                                       eventTracker: self.eventTracker,
-                                      enableNetworkPathMonitor: self.enableNetworkPathMonitor)
+                                      networkMonitoringMode: Int32(self.monitoringMode.rawValue))
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
@@ -455,9 +514,12 @@ open class EngineBuilder: NSObject {
       dnsMinRefreshSeconds: self.dnsMinRefreshSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
       enableHappyEyeballs: self.enableHappyEyeballs,
+      enableGzip: self.enableGzip,
+      enableBrotli: self.enableBrotli,
       enableInterfaceBinding: self.enableInterfaceBinding,
       enableDrainPostDnsRefresh: self.enableDrainPostDnsRefresh,
       enforceTrustChainVerification: self.enforceTrustChainVerification,
+      forceIPv6: self.forceIPv6,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
@@ -478,7 +540,8 @@ open class EngineBuilder: NSObject {
         .joined(separator: "\n"),
       nativeFilterChain: self.nativeFilterChain,
       platformFilterChain: self.platformFilterChain,
-      stringAccessors: self.stringAccessors
+      stringAccessors: self.stringAccessors,
+      keyValueStores: self.keyValueStores
     )
 
     switch self.base {
@@ -495,6 +558,11 @@ open class EngineBuilder: NSObject {
   /// A new instance of this engine will be created when `build()` is called.
   /// Used for testing, as initializing with `EnvoyEngine.Type` results in a
   /// segfault: https://github.com/envoyproxy/envoy-mobile/issues/334
+  ///
+  /// - parameter engineType: The specific implementation of `EnvoyEngine` to use for starting
+  ///                         Envoy.
+  ///
+  /// - returns: This builder.
   @discardableResult
   func addEngineType(_ engineType: EnvoyEngine.Type) -> Self {
     self.engineType = engineType

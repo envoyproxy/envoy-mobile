@@ -6,8 +6,7 @@ licenses(["notice"])  # Apache 2
 swift_library(
     name = "appmain",
     srcs = glob(["*.swift"]),
-    linkopts = ["-lNetwork"],
-    deps = ["//dist:envoy_mobile_ios"],
+    deps = ["//library/swift:ios_lib"],
 )
 
 ios_application(
@@ -16,5 +15,10 @@ ios_application(
     families = ["iphone"],
     infoplists = ["Info.plist"],
     minimum_os_version = "15.0",
+    provisioning_profile = select({
+        "@envoy//bazel:ios_arm64": "//examples:ios_provisioning_profile",
+        "//conditions:default": None,
+    }),
+    visibility = ["//visibility:public"],
     deps = ["appmain"],
 )

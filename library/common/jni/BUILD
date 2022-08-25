@@ -1,6 +1,5 @@
 load("//bazel:kotlin_lib.bzl", "envoy_mobile_so_to_jni_lib")
 load("//bazel:android_debug_info.bzl", "android_debug_info")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("//bazel:envoy_mobile_test_extensions.bzl", "TEST_EXTENSIONS")
 
@@ -54,7 +53,7 @@ cc_library(
 config_setting(
     name = "android_armeabi",
     constraint_values = [
-        "@platforms//cpu:arm",
+        "@platforms//cpu:armv7",
         "@platforms//os:android",
     ],
 )
@@ -198,4 +197,26 @@ cc_library(
     deps = [
         "//library/common/jni/import:jni_import_lib",
     ],
+)
+
+cc_library(
+    name = "android_jni_utility_lib",
+    srcs = [
+        "android_jni_utility.cc",
+    ],
+    hdrs = [
+        "android_jni_utility.h",
+    ],
+    deps = [
+        "@envoy//source/common/common:assert_lib",
+        "//library/common/types:c_types_lib",
+    ] + select({
+        "@envoy//bazel:android": [
+            ":ndk_jni_support",
+            ":jni_utility_lib",
+            "//library/common/data:utility_lib",
+            "//library/common/jni/import:jni_import_lib",
+        ],
+        "//conditions:default": [],
+    }),
 )

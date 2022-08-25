@@ -11,6 +11,18 @@ http_archive(
     ],
 )
 
+# TODO(yannic): Remove once https://github.com/bazelbuild/rules_foreign_cc/pull/938
+# is merged and released.
+http_archive(
+    name = "rules_foreign_cc",
+    sha256 = "bbc605fd36048923939845d6843464197df6e6ffd188db704423952825e4760a",
+    strip_prefix = "rules_foreign_cc-a473d42bada74afac4e32b767964c1785232e07b",
+    urls = [
+        "https://storage.googleapis.com/engflow-tools-public/rules_foreign_cc-a473d42bada74afac4e32b767964c1785232e07b.tar.gz",
+        "https://github.com/EngFlow/rules_foreign_cc/archive/a473d42bada74afac4e32b767964c1785232e07b.tar.gz",
+    ],
+)
+
 load("@envoy_mobile//bazel:envoy_mobile_repositories.bzl", "envoy_mobile_repositories")
 envoy_mobile_repositories()
 
@@ -35,6 +47,9 @@ envoy_dependencies()
 
 load("@envoy//bazel:repositories_extra.bzl", "envoy_dependencies_extra")
 envoy_dependencies_extra()
+
+load("@envoy//bazel:python_dependencies.bzl", "envoy_python_dependencies")
+envoy_python_dependencies()
 
 load("@envoy//bazel:dependency_imports.bzl", "envoy_dependency_imports")
 envoy_dependency_imports()
@@ -61,3 +76,15 @@ android_configure(
 
 load("@local_config_android//:android_configure.bzl", "android_workspace")
 android_workspace()
+
+load("@com_github_buildbuddy_io_rules_xcodeproj//xcodeproj:repositories.bzl", "xcodeproj_rules_dependencies")
+xcodeproj_rules_dependencies()
+
+load(
+    "@build_bazel_rules_apple//apple:apple.bzl",
+    "provisioning_profile_repository",
+)
+
+provisioning_profile_repository(
+    name = "local_provisioning_profiles",
+)

@@ -1,9 +1,11 @@
 #include <ares.h>
 
 #include <string>
+#include <vector>
 
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
+#include "library/common/extensions/key_value/platform/c_types.h"
 #include "library/common/jni/import/jni_import.h"
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
@@ -56,6 +58,7 @@ static void jvm_on_log(envoy_data data, const void* context) {
   jmethodID jmid_onLog = env->GetMethodID(jcls_JvmLoggerContext, "log", "(Ljava/lang/String;)V");
   env->CallVoidMethod(j_context, jmid_onLog, str);
 
+  release_envoy_data(data);
   env->DeleteLocalRef(str);
   env->DeleteLocalRef(jcls_JvmLoggerContext);
 }
@@ -117,13 +120,17 @@ extern "C" JNIEXPORT jlong JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibr
 
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_runEngine(
     JNIEnv* env, jclass, jlong engine, jstring config, jstring log_level) {
-  return run_engine(engine, env->GetStringUTFChars(config, nullptr),
-                    env->GetStringUTFChars(log_level, nullptr));
+  const char* string_config = env->GetStringUTFChars(config, nullptr);
+  const char* string_log_level = env->GetStringUTFChars(log_level, nullptr);
+  jint result = run_engine(engine, string_config, string_log_level, "");
+  env->ReleaseStringUTFChars(config, string_config);
+  env->ReleaseStringUTFChars(log_level, string_log_level);
+  return result;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_terminateEngine(
     JNIEnv* env, jclass, jlong engine_handle) {
-  terminate_engine(static_cast<envoy_engine_t>(engine_handle));
+  terminate_engine(static_cast<envoy_engine_t>(engine_handle), /* release */ false);
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -147,6 +154,24 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_nativeFilterTemplate(JNIEnv* en
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_altProtocolCacheFilterInsert(JNIEnv* env, jclass) {
   jstring result = env->NewStringUTF(alternate_protocols_cache_filter_insert);
+  return result;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_gzipConfigInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(gzip_config_insert);
+  return result;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_brotliConfigInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(brotli_config_insert);
+  return result;
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_socketTagConfigInsert(JNIEnv* env, jclass) {
+  jstring result = env->NewStringUTF(socket_tag_config_insert);
   return result;
 }
 
@@ -442,7 +467,7 @@ static void* jvm_on_metadata(envoy_headers metadata, envoy_stream_intel stream_i
                              void* context) {
   jni_log("[Envoy]", "jvm_on_metadata");
   jni_log("[Envoy]", std::to_string(metadata.length).c_str());
-  return NULL;
+  return nullptr;
 }
 
 static void* jvm_on_trailers(const char* method, envoy_headers trailers,
@@ -601,7 +626,7 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
     headers_length = (jlong)headers->length;
     pass_headers("passHeader", *headers, j_context);
   }
-  jbyteArray j_in_data = NULL;
+  jbyteArray j_in_data = nullptr;
   if (data) {
     j_in_data = native_data_to_array(env, *data);
   }
@@ -623,7 +648,7 @@ jvm_http_filter_on_resume(const char* method, envoy_headers* headers, envoy_data
 
   env->DeleteLocalRef(jcls_JvmCallbackContext);
   env->DeleteLocalRef(j_stream_intel);
-  if (j_in_data != NULL) {
+  if (j_in_data != nullptr) {
     env->DeleteLocalRef(j_in_data);
   }
 
@@ -787,6 +812,58 @@ static void* jvm_on_send_window_available(envoy_stream_intel stream_intel, void*
   return result;
 }
 
+// JvmKeyValueStoreContext
+static envoy_data jvm_kv_store_read(envoy_data key, const void* context) {
+  jni_log("[Envoy]", "jvm_kv_store_read");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
+  jmethodID jmid_read = env->GetMethodID(jcls_JvmKeyValueStoreContext, "read", "([B)[B");
+  jbyteArray j_key = native_data_to_array(env, key);
+  jbyteArray j_value = (jbyteArray)env->CallObjectMethod(j_context, jmid_read, j_key);
+  envoy_data native_data = array_to_native_data(env, j_value);
+
+  env->DeleteLocalRef(j_value);
+  env->DeleteLocalRef(j_key);
+  env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
+
+  return native_data;
+}
+
+static void jvm_kv_store_remove(envoy_data key, const void* context) {
+  jni_log("[Envoy]", "jvm_kv_store_remove");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
+  jmethodID jmid_remove = env->GetMethodID(jcls_JvmKeyValueStoreContext, "remove", "([B)V");
+  jbyteArray j_key = native_data_to_array(env, key);
+  env->CallVoidMethod(j_context, jmid_remove, j_key);
+
+  env->DeleteLocalRef(j_key);
+  env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
+}
+
+static void jvm_kv_store_save(envoy_data key, envoy_data value, const void* context) {
+  jni_log("[Envoy]", "jvm_kv_store_save");
+  JNIEnv* env = get_env();
+
+  jobject j_context = static_cast<jobject>(const_cast<void*>(context));
+
+  jclass jcls_JvmKeyValueStoreContext = env->GetObjectClass(j_context);
+  jmethodID jmid_save = env->GetMethodID(jcls_JvmKeyValueStoreContext, "save", "([B[B)V");
+  jbyteArray j_key = native_data_to_array(env, key);
+  jbyteArray j_value = native_data_to_array(env, value);
+  env->CallVoidMethod(j_context, jmid_save, j_key, j_value);
+
+  env->DeleteLocalRef(j_value);
+  env->DeleteLocalRef(j_key);
+  env->DeleteLocalRef(jcls_JvmKeyValueStoreContext);
+}
+
 // JvmFilterFactoryContext
 
 static const void* jvm_http_filter_init(const void* context) {
@@ -862,6 +939,29 @@ extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibra
   return result;
 }
 
+// EnvoyKeyValueStore
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerKeyValueStore(JNIEnv* env, jclass,
+                                                                       jstring name,
+                                                                       jobject j_context) {
+
+  // TODO(goaway): The java context here leaks, but it's tied to the life of the engine.
+  // This will need to be updated for https://github.com/envoyproxy/envoy-mobile/issues/332
+  jni_log("[Envoy]", "registerKeyValueStore");
+  jni_log_fmt("[Envoy]", "j_context: %p", j_context);
+  jobject retained_context = env->NewGlobalRef(j_context);
+  jni_log_fmt("[Envoy]", "retained_context: %p", retained_context);
+  envoy_kv_store* api = (envoy_kv_store*)safe_malloc(sizeof(envoy_kv_store));
+  api->save = jvm_kv_store_save;
+  api->read = jvm_kv_store_read;
+  api->remove = jvm_kv_store_remove;
+  api->context = retained_context;
+
+  envoy_status_t result = register_platform_api(env->GetStringUTFChars(name, nullptr), api);
+  return result;
+}
+
 // EnvoyHTTPFilter
 
 extern "C" JNIEXPORT jint JNICALL
@@ -891,7 +991,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerFilterFactory(JNIEnv* e
   api->on_error = jvm_http_filter_on_error;
   api->release_filter = jni_delete_const_global_ref;
   api->static_context = retained_context;
-  api->instance_context = NULL;
+  api->instance_context = nullptr;
 
   envoy_status_t result = register_platform_api(env->GetStringUTFChars(filter_name, nullptr), api);
   return result;
@@ -1030,4 +1130,141 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_setPreferredNetwork(JNIEnv* env
   jni_log("[Envoy]", "setting preferred network");
   return set_preferred_network(static_cast<envoy_engine_t>(engine),
                                static_cast<envoy_network_t>(network));
+}
+
+bool jvm_cert_is_issued_by_known_root(JNIEnv* env, jobject result) {
+  jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
+  jmethodID jmid_isIssuedByKnownRoot =
+      env->GetMethodID(jcls_AndroidCertVerifyResult, "isIssuedByKnownRoot", "()Z");
+  bool is_issued_by_known_root =
+      env->CallBooleanMethod(jcls_AndroidCertVerifyResult, jmid_isIssuedByKnownRoot, result);
+  env->DeleteLocalRef(jcls_AndroidCertVerifyResult);
+  return is_issued_by_known_root;
+}
+
+envoy_cert_verify_status_t jvm_cert_get_status(JNIEnv* env, jobject j_result) {
+  jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
+  jmethodID jmid_getStatus = env->GetMethodID(jcls_AndroidCertVerifyResult, "getStatus", "()I");
+  envoy_cert_verify_status_t result = static_cast<envoy_cert_verify_status_t>(
+      env->CallIntMethod(jcls_AndroidCertVerifyResult, jmid_getStatus, j_result));
+  env->DeleteLocalRef(jcls_AndroidCertVerifyResult);
+  return result;
+}
+
+jobjectArray jvm_cert_get_certificate_chain_encoded(JNIEnv* env, jobject result) {
+  jclass jcls_AndroidCertVerifyResult = env->FindClass("org/chromium/net/AndroidCertVerifyResult");
+  jmethodID jmid_getCertificateChainEncoded =
+      env->GetMethodID(jcls_AndroidCertVerifyResult, "getCertificateChainEncoded", "()[[B");
+  jobjectArray certificate_chain = static_cast<jobjectArray>(
+      env->CallObjectMethod(jcls_AndroidCertVerifyResult, jmid_getCertificateChainEncoded, result));
+  env->DeleteLocalRef(jcls_AndroidCertVerifyResult);
+  return certificate_chain;
+}
+
+// Once we have a better picture of how Android's certificate verification will
+// be plugged into EM, we should decide where this function should really live.
+// Context: as of now JNI functions declared in this file are not exported through any
+// header files, instead they are stored as callbacks into plain function
+// tables. For this reason, this function, which would ideally be defined in
+// jni_utility.cc, is currently defined here.
+static void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_verify_status_t* status,
+                                    bool* is_issued_by_known_root,
+                                    std::vector<std::string>* verified_chain) {
+  *status = jvm_cert_get_status(env, result);
+
+  *is_issued_by_known_root = jvm_cert_is_issued_by_known_root(env, result);
+
+  jobjectArray chain_byte_array = jvm_cert_get_certificate_chain_encoded(env, result);
+  JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
+}
+
+// `auth_type` and `host` are expected to be UTF-8 encoded.
+static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
+                                               const std::vector<std::string>& cert_chain,
+                                               std::string auth_type, std::string host) {
+  jni_log("[Envoy]", "jvm_verify_x509_cert_chain");
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_verifyServerCertificates =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "verifyServerCertificates",
+                             "([[B[B[B)Lorg/chromium/net/AndroidCertVerifyResult;");
+
+  jobjectArray chain_byte_array = ToJavaArrayOfByteArray(env, cert_chain);
+  jbyteArray auth_string = ToJavaByteArray(env, auth_type);
+  jbyteArray host_string = ToJavaByteArray(env, host);
+  jobject result =
+      env->CallStaticObjectMethod(jcls_AndroidNetworkLibrary, jmid_verifyServerCertificates,
+                                  chain_byte_array, auth_string, host_string);
+
+  env->DeleteLocalRef(chain_byte_array);
+  env->DeleteLocalRef(auth_string);
+  env->DeleteLocalRef(host_string);
+  env->DeleteLocalRef(jcls_AndroidNetworkLibrary);
+  return result;
+}
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+// `auth_type` and `host` are expected to be UTF-8 encoded.
+static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chain,
+                                       std::string auth_type, std::string host,
+                                       envoy_cert_verify_status_t* status,
+                                       bool* is_issued_by_known_root,
+                                       std::vector<std::string>* verified_chain) {
+  JNIEnv* env = get_env();
+  jobject result = call_jvm_verify_x509_cert_chain(env, cert_chain, auth_type, host);
+  ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
+  env->DeleteLocalRef(result);
+}
+#pragma clang diagnostic pop
+
+static void jvm_add_test_root_certificate(const uint8_t* cert, size_t len) {
+  jni_log("[Envoy]", "jvm_add_test_root_certificate");
+  JNIEnv* env = get_env();
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_addTestRootCertificate =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "addTestRootCertificate", "([B)V");
+
+  jbyteArray cert_array = ToJavaByteArray(env, cert, len);
+  env->CallStaticVoidMethod(jcls_AndroidNetworkLibrary, jmid_addTestRootCertificate, cert_array);
+  env->DeleteLocalRef(cert_array);
+  env->DeleteLocalRef(jcls_AndroidNetworkLibrary);
+}
+
+static void jvm_clear_test_root_certificate() {
+  jni_log("[Envoy]", "jvm_clear_test_root_certificate");
+  JNIEnv* env = get_env();
+  jclass jcls_AndroidNetworkLibrary = env->FindClass("org/chromium/net/AndroidNetworkLibrary");
+  jmethodID jmid_clearTestRootCertificates =
+      env->GetStaticMethodID(jcls_AndroidNetworkLibrary, "clearTestRootCertificates", "()V");
+
+  env->CallStaticVoidMethod(jcls_AndroidNetworkLibrary, jmid_clearTestRootCertificates);
+  env->DeleteLocalRef(jcls_AndroidNetworkLibrary);
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callCertificateVerificationFromNative(
+    JNIEnv* env, jclass, jobjectArray certChain, jbyteArray jauthType, jbyteArray jhost) {
+  std::vector<std::string> cert_chain;
+  std::string auth_type;
+  std::string host;
+
+  JavaArrayOfByteArrayToStringVector(env, certChain, &cert_chain);
+  JavaArrayOfByteToString(env, jauthType, &auth_type);
+  JavaArrayOfByteToString(env, jhost, &host);
+
+  return call_jvm_verify_x509_cert_chain(env, cert_chain, auth_type, host);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callAddTestRootCertificateFromNative(
+    JNIEnv* env, jclass, jbyteArray jcert) {
+  std::vector<uint8_t> cert;
+  JavaArrayOfByteToBytesVector(env, jcert, &cert);
+  jvm_add_test_root_certificate(cert.data(), cert.size());
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callClearTestRootCertificateFromNative(JNIEnv*,
+                                                                                        jclass) {
+  jvm_clear_test_root_certificate();
 }

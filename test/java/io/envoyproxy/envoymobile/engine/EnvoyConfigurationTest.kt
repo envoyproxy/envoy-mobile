@@ -29,6 +29,21 @@ private const val APCF_INSERT =
   - name: AlternateProtocolsCacheFilter
 """
 
+private const val GZIP_INSERT =
+"""
+  - name: GzipFilter
+"""
+
+private const val BROTLI_INSERT =
+"""
+  - name: BrotliFilter
+"""
+
+private const val SOCKET_TAG_INSERT =
+"""
+  - name: SocketTag
+"""
+
 class EnvoyConfigurationTest {
 
   fun buildTestEnvoyConfiguration(
@@ -43,11 +58,16 @@ class EnvoyConfigurationTest {
     dnsMinRefreshSeconds: Int = 12,
     dnsPreresolveHostnames: String = "[hostname]",
     dnsFallbackNameservers: List<String> = emptyList(),
-    enableDnsFilterUnroutableFamilies: Boolean = false,
+    enableDnsFilterUnroutableFamilies: Boolean = true,
+    dnsUseSystemResolver: Boolean = false,
     enableDrainPostDnsRefresh: Boolean = false,
     enableHttp3: Boolean = false,
+    enableGzip: Boolean = true,
+    enableBrotli: Boolean = false,
+    enableSocketTagging: Boolean = false,
     enableHappyEyeballs: Boolean = false,
     enableInterfaceBinding: Boolean = false,
+    forceIPv6: Boolean = false,
     h2ConnectionKeepaliveIdleIntervalMilliseconds: Int = 222,
     h2ConnectionKeepaliveTimeoutSeconds: Int = 333,
     h2ExtendKeepaliveTimeout: Boolean = false,
@@ -74,10 +94,15 @@ class EnvoyConfigurationTest {
       dnsPreresolveHostnames,
       dnsFallbackNameservers,
       enableDnsFilterUnroutableFamilies,
+      dnsUseSystemResolver,
       enableDrainPostDnsRefresh,
       enableHttp3,
+      enableGzip,
+      enableBrotli,
+      enableSocketTagging,
       enableHappyEyeballs,
       enableInterfaceBinding,
+      forceIPv6,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
@@ -92,6 +117,7 @@ class EnvoyConfigurationTest {
       virtualClusters,
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(),
+      emptyMap(),
       emptyMap()
     )
   }
@@ -101,7 +127,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration()
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
     )
     assertThat(resolvedTemplate).contains("&connect_timeout 123s")
 
@@ -117,11 +143,14 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&dns_min_refresh_rate 12s")
     assertThat(resolvedTemplate).contains("&dns_preresolve_hostnames [hostname]")
     assertThat(resolvedTemplate).contains("&dns_resolver_name envoy.network.dns_resolver.cares")
-    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false, \"filter_unroutable_families\": false}")
+    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[],\"use_resolvers_as_fallback\": false, \"filter_unroutable_families\": true}")
     assertThat(resolvedTemplate).contains("&enable_drain_post_dns_refresh false")
 
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding false")
+
+    // Forcing IPv6
+    assertThat(resolvedTemplate).contains("&force_ipv6 false")
 
     // H2 Ping
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
@@ -132,6 +161,12 @@ class EnvoyConfigurationTest {
 
     // H3
     assertThat(resolvedTemplate).doesNotContain(APCF_INSERT);
+
+    // Gzip
+    assertThat(resolvedTemplate).contains(GZIP_INSERT);
+
+    // Brotli
+    assertThat(resolvedTemplate).doesNotContain(BROTLI_INSERT);
 
     // Per Host Limits
     assertThat(resolvedTemplate).contains("&max_connections_per_host 543")
@@ -163,20 +198,23 @@ class EnvoyConfigurationTest {
   fun `configuration resolves with alternate values`() {
     val envoyConfiguration = buildTestEnvoyConfiguration(
       dnsFallbackNameservers = listOf("8.8.8.8"),
-      enableDnsFilterUnroutableFamilies = true,
+      enableDnsFilterUnroutableFamilies = false,
       enableDrainPostDnsRefresh = true,
       enableHappyEyeballs = true,
       enableHttp3 = true,
+      enableGzip = false,
+      enableBrotli = true,
       enableInterfaceBinding = true,
+      forceIPv6 = true,
       h2ExtendKeepaliveTimeout = true
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
     )
 
     // DNS
-    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": true}")
+    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": false}")
     assertThat(resolvedTemplate).contains("&dns_lookup_family ALL")
     assertThat(resolvedTemplate).contains("&dns_multiple_addresses true")
     assertThat(resolvedTemplate).contains("&enable_drain_post_dns_refresh true")
@@ -187,8 +225,31 @@ class EnvoyConfigurationTest {
     // H3
     assertThat(resolvedTemplate).contains(APCF_INSERT);
 
+    // Gzip
+    assertThat(resolvedTemplate).doesNotContain(GZIP_INSERT);
+
+    // Brotli
+    assertThat(resolvedTemplate).contains(BROTLI_INSERT);
+
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding true")
+
+    // Forcing IPv6
+    assertThat(resolvedTemplate).contains("&force_ipv6 true")
+  }
+
+  @Test
+  fun `configuration resolves with system DNS resolver`() {
+    val envoyConfiguration = buildTestEnvoyConfiguration(
+      dnsUseSystemResolver = true
+    )
+
+    val resolvedTemplate = envoyConfiguration.resolveTemplate(
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
+    )
+
+    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig\"}")
+    assertThat(resolvedTemplate).contains("&dns_resolver_name envoy.network.dns_resolver.getaddrinfo")
   }
 
   @Test
@@ -196,7 +257,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration()
 
     try {
-      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "")
+      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "", "", "", "")
       fail("Unresolved configuration keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")
@@ -211,7 +272,7 @@ class EnvoyConfigurationTest {
     )
 
     try {
-      envoyConfiguration.resolveTemplate("", "", "", "")
+      envoyConfiguration.resolveTemplate("", "", "", "", "", "", "")
       fail("Conflicting stats keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("cannot enable both statsD and gRPC metrics sink")
@@ -225,7 +286,7 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
     )
 
     assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\",\"h2-raw.example.com2\"]")
@@ -238,9 +299,9 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
     )
 
-    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}},{\"socket_address\":{\"address\":\"1.1.1.1\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": false}")
+    assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}},{\"socket_address\":{\"address\":\"1.1.1.1\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": true}")
   }
 }

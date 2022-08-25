@@ -6,6 +6,7 @@
 
 #import "library/common/main_interface.h"
 #import "library/common/types/c_types.h"
+#import "library/common/extensions/key_value/platform/c_types.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -334,20 +335,6 @@ static void ios_http_filter_set_response_callbacks(envoy_http_filter_callbacks c
   }
 }
 
-static void ios_http_filter_on_complete(envoy_stream_intel stream_intel,
-                                        envoy_final_stream_intel final_stream_intel,
-                                        const void *context) {
-  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
-  // is necessary to act as a breaker for any Objective-C allocation that happens.
-  @autoreleasepool {
-    EnvoyHTTPFilter *filter = (__bridge EnvoyHTTPFilter *)context;
-    if (filter.onComplete == nil) {
-      return;
-    }
-    filter.onComplete(stream_intel, final_stream_intel);
-  }
-}
-
 static void ios_http_filter_on_cancel(envoy_stream_intel stream_intel,
                                       envoy_final_stream_intel final_stream_intel,
                                       const void *context) {
@@ -394,6 +381,46 @@ static envoy_data ios_get_string(const void *context) {
   return toManagedNativeString(accessor.getEnvoyString());
 }
 
+static envoy_data ios_kv_store_read(envoy_data native_key, const void *context) {
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    id<EnvoyKeyValueStore> keyValueStore = (__bridge id<EnvoyKeyValueStore>)context;
+    NSString *key = [[NSString alloc] initWithBytes:native_key.bytes
+                                             length:native_key.length
+                                           encoding:NSUTF8StringEncoding];
+    NSString *value = [keyValueStore readValueForKey:key];
+    return value != nil ? toManagedNativeString(value) : envoy_nodata;
+  }
+}
+
+static void ios_kv_store_save(envoy_data native_key, envoy_data native_value, const void *context) {
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    id<EnvoyKeyValueStore> keyValueStore = (__bridge id<EnvoyKeyValueStore>)context;
+    NSString *key = [[NSString alloc] initWithBytes:native_key.bytes
+                                             length:native_key.length
+                                           encoding:NSUTF8StringEncoding];
+    NSString *value = [[NSString alloc] initWithBytes:native_key.bytes
+                                               length:native_key.length
+                                             encoding:NSUTF8StringEncoding];
+    [keyValueStore saveValue:value toKey:key];
+  }
+}
+
+static void ios_kv_store_remove(envoy_data native_key, const void *context) {
+  // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
+  // is necessary to act as a breaker for any Objective-C allocation that happens.
+  @autoreleasepool {
+    id<EnvoyKeyValueStore> keyValueStore = (__bridge id<EnvoyKeyValueStore>)context;
+    NSString *key = [[NSString alloc] initWithBytes:native_key.bytes
+                                             length:native_key.length
+                                           encoding:NSUTF8StringEncoding];
+    [keyValueStore removeKey:key];
+  }
+}
+
 static void ios_track_event(envoy_map map, const void *context) {
   // This code block runs inside the Envoy event loop. Therefore, an explicit autoreleasepool block
   // is necessary to act as a breaker for any Objective-C allocation that happens.
@@ -411,7 +438,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
                            eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
-               enableNetworkPathMonitor:(BOOL)enableNetworkPathMonitor {
+                  networkMonitoringMode:(int)networkMonitoringMode {
   self = [super init];
   if (!self) {
     return nil;
@@ -442,10 +469,10 @@ static void ios_track_event(envoy_map map, const void *context) {
   _engineHandle = init_engine(native_callbacks, native_logger, native_event_tracker);
   _networkMonitor = [[EnvoyNetworkMonitor alloc] initWithEngine:_engineHandle];
 
-  if (enableNetworkPathMonitor) {
-    [_networkMonitor startPathMonitor];
-  } else {
+  if (networkMonitoringMode == 1) {
     [_networkMonitor startReachability];
+  } else if (networkMonitoringMode == 2) {
+    [_networkMonitor startPathMonitor];
   }
 
   return self;
@@ -492,6 +519,16 @@ static void ios_track_event(envoy_map map, const void *context) {
   return register_platform_api(name.UTF8String, accessorStruct);
 }
 
+- (int)registerKeyValueStore:(NSString *)name keyValueStore:(id<EnvoyKeyValueStore>)keyValueStore {
+  envoy_kv_store *api = safe_malloc(sizeof(envoy_kv_store));
+  api->save = ios_kv_store_save;
+  api->read = ios_kv_store_read;
+  api->remove = ios_kv_store_remove;
+  api->context = CFBridgingRetain(keyValueStore);
+
+  return register_platform_api(name.UTF8String, api);
+}
+
 - (int)runWithConfig:(EnvoyConfiguration *)config logLevel:(NSString *)logLevel {
   NSString *templateYAML = [[NSString alloc] initWithUTF8String:config_template];
   return [self runWithTemplate:templateYAML config:config logLevel:logLevel];
@@ -514,6 +551,10 @@ static void ios_track_event(envoy_map map, const void *context) {
     [self registerStringAccessor:name accessor:config.stringAccessors[name]];
   }
 
+  for (NSString *name in config.keyValueStores) {
+    [self registerKeyValueStore:name keyValueStore:config.keyValueStores[name]];
+  }
+
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel];
 }
 
@@ -523,7 +564,7 @@ static void ios_track_event(envoy_map map, const void *context) {
   // Envoy exceptions will only be caught here when compiled for 64-bit arches.
   // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Exceptions/Articles/Exceptions64Bit.html
   @try {
-    return (int)run_engine(_engineHandle, configYAML.UTF8String, logLevel.UTF8String);
+    return (int)run_engine(_engineHandle, configYAML.UTF8String, logLevel.UTF8String, "");
   } @catch (NSException *exception) {
     NSLog(@"[Envoy] exception caught: %@", exception);
     [NSNotificationCenter.defaultCenter postNotificationName:@"EnvoyError" object:self];
@@ -587,7 +628,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 }
 
 - (void)terminate {
-  terminate_engine(_engineHandle);
+  terminate_engine(_engineHandle, /* release */ false);
 }
 
 - (void)resetConnectivityState {
@@ -610,7 +651,7 @@ static void ios_track_event(envoy_map map, const void *context) {
 
 - (void)terminateNotification:(NSNotification *)notification {
   NSLog(@"[Envoy %ld] terminating engine (%@)", _engineHandle, notification.name);
-  terminate_engine(_engineHandle);
+  terminate_engine(_engineHandle, /* release */ false);
 }
 
 @end

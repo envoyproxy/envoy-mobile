@@ -370,15 +370,11 @@ Specify a closure to be called by Envoy to access arbitrary strings from Platfor
   builder.addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-``enableNetworkPathMonitor``
+``setNetworkMonitoringMode``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configure the engine to use ``NWPathMonitor`` rather than ``SCNetworkReachability``
-on supported platforms (iOS 12+) to update the preferred Envoy network cluster (e.g. WLAN vs WWAN).
-
-.. attention::
-
-    Only available on iOS 12 or later.
+Configure how the engine observes network reachability state changes to update the preferred Envoy network cluster (e.g. WLAN vs WWAN).
+Defaults to ``NWPathMonitor``, but can be configured to use ``SCNetworkReachability`` or be disabled completely.
 
 **Example**::
 
@@ -386,13 +382,13 @@ on supported platforms (iOS 12+) to update the preferred Envoy network cluster (
   // N/A
 
   // Swift
-  builder.enableNetworkPathMonitor()
+  builder.setNetworkMonitoringMode(.pathMonitor)
 
 ~~~~~~~~~~~~~~~~~~~~~~~
 ``enableHappyEyeballs``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to true.
 
 **Example**::
 
@@ -401,6 +397,45 @@ Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
 
   // Swift
   builder.enableHappyEyeballs(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableGzip``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to enable transparent response Gzip decompression. Defaults to true.
+
+**Example**::
+
+  // Kotlin
+  builder.enableGzip(false)
+
+  // Swift
+  builder.enableGzip(false)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableBrotli``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to enable transparent response Brotli decompression. Defaults to false.
+
+**Example**::
+
+  // Kotlin
+  builder.enableBrotli(true)
+
+  // Swift
+  builder.enableBrotli(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableSocketTagging``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to enable support for Android socket tagging. Unavailable on iOS. Defaults to false.
+
+**Example**::
+
+  // Kotlin
+  builder.enableSocketTagging(true)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``enableInterfaceBinding``
@@ -431,6 +466,53 @@ This can help negate the effect of head-of-line (HOL) blocking for slow connecti
 
   // Swift
   builder.h2ExtendKeepaliveTimeout(true)
+
+
+~~~~~~~~~~~~~~~~~~~~
+``addKeyValueStore``
+~~~~~~~~~~~~~~~~~~~~
+
+Implementations of a public KeyValueStore interface may be added in their respective languages and
+made available to the library. General usage is supported, but typical future usage will be in
+support of HTTP and endpoint property caching.
+
+**Example**::
+
+  // Kotlin
+  builder.addKeyValueStore("io.envoyproxy.envoymobile.MyKeyValueStore", MyKeyValueStoreImpl())
+
+  // Swift
+  // Coming soon.
+
+
+The library also contains a simple Android-specific KeyValueStore implementation based on Android's
+SharedPreferences.
+
+**Example**::
+
+  // Android
+  val preferences = context.getSharedPreferences("io.envoyproxy.envoymobile.MyPreferences", Context.MODE_PRIVATE)
+  builder.addKeyValueStore("io.envoyproxy.envoymobile.MyKeyValueStore", SharedPreferencesStore(preferences))
+
+  // iOS
+  // Coming soon.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+``forceIPv6``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
+to use IPv6. Note this is an experimental option and should be enabled with caution.
+
+**Example**::
+
+  // Kotlin
+  builder.forceIPv6(true)
+
+  // Swift
+  builder.forceIPv6(true)
+
 
 ----------------------
 Advanced configuration

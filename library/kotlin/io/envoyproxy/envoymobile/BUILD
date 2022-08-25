@@ -1,6 +1,6 @@
 load("@envoy_mobile//bazel:android_artifacts.bzl", "android_artifacts")
 load("@envoy_mobile//bazel:kotlin_lib.bzl", "envoy_mobile_kt_library")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_android_library")
+load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_library")
 load("@rules_detekt//detekt:defs.bzl", "detekt")
 
 licenses(["notice"])  # Apache 2
@@ -22,6 +22,7 @@ kt_android_library(
     name = "envoy_lib",
     srcs = [
         "AndroidEngineBuilder.kt",
+        "android/SharedPreferencesStore.kt",
     ],
     custom_package = "io.envoyproxy.envoymobile",
     manifest = "EnvoyManifest.xml",
@@ -43,6 +44,8 @@ envoy_mobile_kt_library(
         "EnvoyError.kt",
         "Headers.kt",
         "HeadersBuilder.kt",
+        "HeadersContainer.kt",
+        "KeyValueStore.kt",
         "LogLevel.kt",
         "PulseClient.kt",
         "PulseClientImpl.kt",

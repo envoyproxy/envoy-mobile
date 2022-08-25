@@ -6,12 +6,25 @@ import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
 
+/**
+ * Envoy engine configuration.
+ */
 sealed class BaseConfiguration
 
+/**
+ * The standard configuration.
+ */
 class Standard : BaseConfiguration()
+
+/**
+ * The configuration based off a custom yaml.
+ *
+ * @param yaml the custom config.
+ */
 class Custom(val yaml: String) : BaseConfiguration()
 
 /**
@@ -35,15 +48,20 @@ open class EngineBuilder(
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
   private var dnsFallbackNameservers = listOf<String>()
-  private var dnsFilterUnroutableFamilies = false
+  private var dnsFilterUnroutableFamilies = true
+  private var dnsUseSystemResolver = false
   private var dnsQueryTimeoutSeconds = 25
   private var dnsMinRefreshSeconds = 60
   private var dnsPreresolveHostnames = "[]"
   private var enableDrainPostDnsRefresh = false
   private var enableHttp3 = false
-  private var enableHappyEyeballs = false
+  private var enableHappyEyeballs = true
+  private var enableGzip = true
+  private var enableBrotli = false
+  private var enableSocketTagging = false
   private var enableInterfaceBinding = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var forceIPv6 = false
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var h2ExtendKeepaliveTimeout = false
   private var h2RawDomains = listOf<String>()
@@ -58,6 +76,7 @@ open class EngineBuilder(
   private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
+  private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
 
   /**
    * Add a log level to use with Envoy.
@@ -190,6 +209,7 @@ open class EngineBuilder(
 
   /**
    * Specify whether to filter unroutable IP families during DNS resolution or not.
+   * Defaults to true.
    *
    * @param dnsFilterUnroutableFamilies whether to filter or not.
    *
@@ -197,6 +217,22 @@ open class EngineBuilder(
    */
   fun enableDNSFilterUnroutableFamilies(dnsFilterUnroutableFamilies: Boolean): EngineBuilder {
     this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies
+    return this
+  }
+
+  /**
+   * Specify whether to use the getaddrinfo-based system DNS resolver or the c-ares resolver.
+   * Defaults to false.
+   *
+   * Note that if this is set, the values of `dnsFallbackNameservers` and
+   * `dnsFilterUnroutableFamilies` will be ignored.
+   *
+   * @param dnsUseSystemResolver whether to use the system DNS resolver.
+   *
+   * @return this builder.
+   */
+  fun enableDNSUseSystemResolver(dnsUseSystemResolver: Boolean): EngineBuilder {
+    this.dnsUseSystemResolver = dnsUseSystemResolver
     return this
   }
 
@@ -230,7 +266,8 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported.
+   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+   * true.
    *
    * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
    *
@@ -238,6 +275,42 @@ open class EngineBuilder(
    */
   fun enableHappyEyeballs(enableHappyEyeballs: Boolean): EngineBuilder {
     this.enableHappyEyeballs = enableHappyEyeballs
+    return this
+  }
+
+  /**
+   * Specify whether to do gzip response decompression or not.  Defaults to true.
+   *
+   * @param enableGzip whether or not to gunzip responses.
+   *
+   * @return This builder.
+   */
+  fun enableGzip(enableGzip: Boolean): EngineBuilder {
+    this.enableGzip = enableGzip
+    return this
+  }
+
+  /**
+   * Specify whether to do brotli response decompression or not.  Defaults to false.
+   *
+   * @param enableBrotli whether or not to brotli decompress responses.
+   *
+   * @return This builder.
+   */
+  fun enableBrotli(enableBrotli: Boolean): EngineBuilder {
+    this.enableBrotli = enableBrotli
+    return this
+  }
+
+  /**
+   * Specify whether to support socket tagging or not. Defaults to false.
+   *
+   * @param enableSocketTagging whether or not support socket tagging.
+   *
+   * @return This builder.
+   */
+  fun enableSocketTagging(enableSocketTagging: Boolean): EngineBuilder {
+    this.enableSocketTagging = enableSocketTagging
     return this
   }
 
@@ -255,10 +328,25 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a rate at which to ping h2 connections on new stream creation if the connection has
-   * sat idle.
+   * Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
+   * to use IPv6. Note this is an experimental option and should be enabled with caution.
    *
-   * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
+   * @param forceIPv6 whether to force connections to use IPv6.
+   *
+   * @return This builder.
+   */
+  fun forceIPv6(forceIPv6: Boolean): EngineBuilder {
+    this.forceIPv6 = forceIPv6
+    return this
+  }
+
+  /**
+   * Add a rate at which to ping h2 connections on new stream creation if the connection has
+   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
+   * and results in a connection ping on every new stream creation. Set it to
+   * 100000000 milliseconds to effectively disable the ping.
+   *
+   * @param idleIntervalMs rate in milliseconds.
    *
    * @return this builder.
    */
@@ -270,7 +358,7 @@ open class EngineBuilder(
   /**
    * Add a rate at which to timeout h2 pings.
    *
-   * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   * @param timeoutSeconds rate in seconds to timeout h2 pings.
    *
    * @return this builder.
    */
@@ -426,6 +514,7 @@ open class EngineBuilder(
     this.eventTracker = eventTracker
     return this
   }
+
   /**
    * Add a string accessor to this Envoy Client.
    *
@@ -436,6 +525,19 @@ open class EngineBuilder(
    */
   fun addStringAccessor(name: String, accessor: () -> String): EngineBuilder {
     this.stringAccessors.put(name, EnvoyStringAccessorAdapter(StringAccessor(accessor)))
+    return this
+  }
+
+  /**
+   * Register a key-value store implementation for internal use.
+   *
+   * @param name the name of the KV store.
+   * @param keyValueStore the KV store implementation.
+   *
+   * @return this builder.
+   */
+  fun addKeyValueStore(name: String, keyValueStore: KeyValueStore): EngineBuilder {
+    this.keyValueStores.put(name, keyValueStore)
     return this
   }
 
@@ -519,10 +621,15 @@ open class EngineBuilder(
       dnsPreresolveHostnames,
       dnsFallbackNameservers,
       dnsFilterUnroutableFamilies,
+      dnsUseSystemResolver,
       enableDrainPostDnsRefresh,
       enableHttp3,
+      enableGzip,
+      enableBrotli,
+      enableSocketTagging,
       enableHappyEyeballs,
       enableInterfaceBinding,
+      forceIPv6,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
@@ -537,7 +644,8 @@ open class EngineBuilder(
       virtualClusters,
       nativeFilterChain,
       platformFilterChain,
-      stringAccessors
+      stringAccessors,
+      keyValueStores
     )
 
     return when (configuration) {

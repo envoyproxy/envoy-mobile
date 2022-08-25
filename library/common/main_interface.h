@@ -191,16 +191,19 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
  * @param engine, handle to the engine to run.
  * @param config, the configuration blob to run envoy with.
  * @param log_level, the logging level to run envoy with.
+ * @param admin_path, the file path to log the admin address to if desired.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level);
+envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level,
+                          const char* admin_path);
 
 /**
  * Terminate an engine. Further interactions with a terminated engine, or streams created by a
  * terminated engine is illegal.
  * @param engine, handle to the engine to terminate.
+ * @param release, set to true to release the engine from memory.
  */
-void terminate_engine(envoy_engine_t engine);
+void terminate_engine(envoy_engine_t engine, bool release);
 
 /**
  * Refresh DNS, and drain connections associated with an engine.

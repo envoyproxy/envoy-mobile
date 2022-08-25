@@ -6,16 +6,47 @@ Pending Release
 
 Breaking changes:
 
-- api: replace the `drainConnections()` method with a broader `resetConnectivityState()`. (:issue:`#2225 <2225>`).
+- api: replace the ``drainConnections()`` method with a broader ``resetConnectivityState()``. (:issue:`#2225 <2225>`).
+- api: disallow setting 'host' header directly (:issue:`#2275 <2275>`)
+- api: add experimental option to force all connections to use IPv6 (:issue: `#2379 <2379>`, :issue: `#2396 <2396>`)
+- android: respect Android's NetworkSecurityPolicy isCleartextTrafficPermitted APIs.
+- net: enable happy eyeballs by default (:issue:`#2272 <2272>`)
+- iOS: remove support for installing via CocoaPods, which had not worked since 2020 (:issue:`#2215 <2215>`)
+- iOS: enable usage of ``NWPathMonitor`` by default (:issue:`#2329 <2329>`)
+- iOS: replace ``enableNetworkPathMonitor`` with a new ``setNetworkMonitoringMode`` API to allow disabling monitoring (:issue:`#2345 <2345>`)
+- iOS: release artifacts no longer embed bitcode
+- api: engines are no longer a singleton, you may need to update your code to only create engines once and hold on to them.
+  You also cannot assume that an `envoy_engine_t` value of `1` will return the default engine.
+  Support for using multiple engines concurrently is coming later. (:issue:`#2129 <2129>`)
 
 Bugfixes:
 
-- None
+- iOS: change release artifacts to use xcframeworks (:issue:`#2216 <2216>`)
+- Cronvoy: Cancel the scheduled onSendWindowAvailable callback when a stream is cancelled (:issue:`#2213 <2213>`)
+- fix bug where writing prevented the read loop from running (:issue:`#2221 <2221>`)
+- Android: update Kotlin standard libraries to 1.6.21 (:issue:`#2256 <2256>`)
+- fix bug where finalStreamIntel was not consistently set on cancel (:issue:`#2285 <2285>`)
+- iOS: fix termination crash in ProvisionalDispatcher (:issue:`#2059 <2059>`)
+- api: make headers lookup in ``HeadersBuilder`` and ``Headers`` case-insensitive. Rename ``allHeaders`` method to ``caseSensitiveHeaders``. (:issue:`#2383 <2383>`, :issue:`#2400 <2400>``)
+- iOS: use correct DNS resolver when using C++ config builder (:issue: `#2378 <2378 >`)
 
 Features:
 
+- Android, iOS, & C++: add support for registering a platform KV store (:issue: `#2134 <2134>`, :issue: `#2335 <2335>`, :issue: `#2430 <2430>`)
 - api: add option to extend the keepalive timeout when any frame is received on the owning HTTP/2 connection. (:issue:`#2229 <2229>`)
 - api: add option to control whether Envoy should drain connections after a soft DNS refresh completes. (:issue:`#2225 <2225>`, :issue:`#2242 <2242>`)
+- api: add option to disable the gzip decompressor. (:issue: `#2321 <2321>`) (:issue: `#2349 <2349>`)
+- api: add option to enable the brotli decompressor. (:issue `#2342 <2342>`) (:issue: `#2349 <2349>`)
+- api: add option to enable socket tagging. (:issue `#1512 <1521>`)
+- configuration: enable h2 ping by default. (:issue: `#2270 <2270>`)
+- android: enable the filtering of unroutable families by default. (:issues: `#2267 <2267>`)
+- instrumentation: add timers and warnings to platform-provided callbacks (:issue: `#2300 <2300>`)
+- iOS: add support for integrating Envoy Mobile via the Swift Package Manager
+- android: create simple persistent SharedPreferencesStore (:issue: `#2319 <2319>`)
+- iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
+- api: improved C++ APIs compatibility with Java / Kotlin / Swift (:issue `#2362 <2362>`)
+- api: add option to use the a ``getaddrinfo``-based system DNS resolver instead of c-ares (:issue: `#2419 <2419>`)
+- iOS: add ``KeyValueStore`` protocol conformance to ``UserDefaults`` (:issue: `#2452 <2452>`)
 
 0.4.6 (April 26, 2022)
 ========================

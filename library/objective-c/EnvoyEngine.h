@@ -315,6 +315,21 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 
 @end
 
+#pragma mark - EnvoyKeyValueStore
+
+@protocol EnvoyKeyValueStore
+
+/// Read a value from the key value store implementation.
+- (NSString *_Nullable)readValueForKey:(NSString *)key;
+
+/// Save a value to the key value store implementation.
+- (void)saveValue:(NSString *)value toKey:(NSString *)key;
+
+/// Remove a value from the key value store implementation.
+- (void)removeKey:(NSString *)key;
+
+@end
+
 #pragma mark - EnvoyNativeFilterConfig
 
 @interface EnvoyNativeFilterConfig : NSObject
@@ -341,9 +356,12 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSString *dnsPreresolveHostnames;
 @property (nonatomic, assign) UInt32 dnsRefreshSeconds;
 @property (nonatomic, assign) BOOL enableHappyEyeballs;
+@property (nonatomic, assign) BOOL enableGzip;
+@property (nonatomic, assign) BOOL enableBrotli;
 @property (nonatomic, assign) BOOL enableInterfaceBinding;
 @property (nonatomic, assign) BOOL enableDrainPostDnsRefresh;
 @property (nonatomic, assign) BOOL enforceTrustChainVerification;
+@property (nonatomic, assign) BOOL forceIPv6;
 @property (nonatomic, assign) UInt32 h2ConnectionKeepaliveIdleIntervalMilliseconds;
 @property (nonatomic, assign) UInt32 h2ConnectionKeepaliveTimeoutSeconds;
 @property (nonatomic, assign) BOOL h2ExtendKeepaliveTimeout;
@@ -360,6 +378,7 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
 @property (nonatomic, strong) NSArray<EnvoyNativeFilterConfig *> *nativeFilterChain;
 @property (nonatomic, strong) NSArray<EnvoyHTTPFilterFactory *> *httpPlatformFilterFactories;
 @property (nonatomic, strong) NSDictionary<NSString *, EnvoyStringAccessor *> *stringAccessors;
+@property (nonatomic, strong) NSDictionary<NSString *, id<EnvoyKeyValueStore>> *keyValueStores;
 
 /**
  Create a new instance of the configuration.
@@ -374,9 +393,12 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                              dnsMinRefreshSeconds:(UInt32)dnsMinRefreshSeconds
                            dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
                               enableHappyEyeballs:(BOOL)enableHappyEyeballs
+                                       enableGzip:(BOOL)enableGzip
+                                     enableBrotli:(BOOL)enableBrotli
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
                         enableDrainPostDnsRefresh:(BOOL)enableDrainPostDnsRefresh
                     enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
+                                        forceIPv6:(BOOL)forceIPv6
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
@@ -397,7 +419,10 @@ extern const int kEnvoyFilterResumeStatusResumeIteration;
                                   (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                                   stringAccessors:
                                       (NSDictionary<NSString *, EnvoyStringAccessor *> *)
-                                          stringAccessors;
+                                          stringAccessors
+                                   keyValueStores:
+                                       (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
+                                           keyValueStores;
 
 /**
  Resolves the provided configuration template using properties on this configuration.
@@ -437,13 +462,12 @@ extern const int kEnvoyFailure;
  running.
  @param logger Logging interface.
  @param eventTracker Event tracking interface.
- @param enableNetworkPathMonitor Configure the engine to use `NWPathMonitor` to observe network
- reachability.
+ @param networkMonitoringMode Configure how the engines observe network reachability.
  */
 - (instancetype)initWithRunningCallback:(nullable void (^)())onEngineRunning
                                  logger:(nullable void (^)(NSString *))logger
                            eventTracker:(nullable void (^)(EnvoyEvent *))eventTracker
-               enableNetworkPathMonitor:(BOOL)enableNetworkPathMonitor;
+                  networkMonitoringMode:(int)networkMonitoringMode;
 /**
  Run the Envoy engine with the provided configuration and log level.
 

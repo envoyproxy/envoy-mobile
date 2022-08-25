@@ -14,9 +14,12 @@
                              dnsMinRefreshSeconds:(UInt32)dnsMinRefreshSeconds
                            dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
                               enableHappyEyeballs:(BOOL)enableHappyEyeballs
+                                       enableGzip:(BOOL)enableGzip
+                                     enableBrotli:(BOOL)enableBrotli
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
                         enableDrainPostDnsRefresh:(BOOL)enableDrainPostDnsRefresh
                     enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
+                                        forceIPv6:(BOOL)forceIPv6
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
@@ -37,7 +40,10 @@
                                   (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                                   stringAccessors:
                                       (NSDictionary<NSString *, EnvoyStringAccessor *> *)
-                                          stringAccessors {
+                                          stringAccessors
+                                   keyValueStores:
+                                       (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
+                                           keyValueStores {
   self = [super init];
   if (!self) {
     return nil;
@@ -53,9 +59,12 @@
   self.dnsMinRefreshSeconds = dnsMinRefreshSeconds;
   self.dnsPreresolveHostnames = dnsPreresolveHostnames;
   self.enableHappyEyeballs = enableHappyEyeballs;
+  self.enableGzip = enableGzip;
+  self.enableBrotli = enableBrotli;
   self.enableInterfaceBinding = enableInterfaceBinding;
   self.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
   self.enforceTrustChainVerification = enforceTrustChainVerification;
+  self.forceIPv6 = forceIPv6;
   self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
@@ -73,6 +82,7 @@
   self.nativeFilterChain = nativeFilterChain;
   self.httpPlatformFilterFactories = httpPlatformFilterFactories;
   self.stringAccessors = stringAccessors;
+  self.keyValueStores = keyValueStores;
   return self;
 }
 
@@ -98,6 +108,16 @@
             stringByReplacingOccurrencesOfString:@"{{ native_filter_typed_config }}"
                                       withString:nativeFilterConfig.typedConfig];
     [customFilters appendString:filterConfig];
+  }
+
+  if (self.enableGzip) {
+    NSString *gzipFilterInsert = [[NSString alloc] initWithUTF8String:gzip_config_insert];
+    [customFilters appendString:gzipFilterInsert];
+  }
+
+  if (self.enableBrotli) {
+    NSString *brotliFilterInsert = [[NSString alloc] initWithUTF8String:brotli_config_insert];
+    [customFilters appendString:brotliFilterInsert];
   }
 
   BOOL hasDirectResponses = self.directResponses.length > 0;
@@ -150,7 +170,6 @@
   [definitions appendFormat:@"- &h2_delay_keepalive_timeout %@\n",
                             self.h2ExtendKeepaliveTimeout ? @"true" : @"false"];
   [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
-  [definitions appendFormat:@"- &dns_resolver_name envoy.network.dns_resolver.apple\n"];
   [definitions appendFormat:@"- &enable_drain_post_dns_refresh %@\n",
                             self.enableDrainPostDnsRefresh ? @"true" : @"false"];
   // No additional values are currently needed for Apple-based DNS resolver.
@@ -163,6 +182,7 @@
   [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
                                                                      ? @"VERIFY_TRUST_CHAIN"
                                                                      : @"ACCEPT_UNTRUSTED"];
+  [definitions appendFormat:@"- &force_ipv6 %@\n", self.forceIPv6 ? @"true" : @"false"];
   [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %.*fs\n", 3,
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",

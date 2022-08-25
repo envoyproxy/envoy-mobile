@@ -5,9 +5,9 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
-    name = "configurator_lib",
+    name = "connectivity_manager_lib",
     srcs = [
-        "configurator.cc",
+        "connectivity_manager.cc",
         "android.cc",
     ] + select({
         "//bazel:include_ifaddrs": [
@@ -19,7 +19,7 @@ envoy_cc_library(
     }),
     hdrs = [
         "android.h",
-        "configurator.h",
+        "connectivity_manager.h",
     ],
     copts = select({
         "//bazel:include_ifaddrs": ["-DINCLUDE_IFADDRS"],
@@ -47,6 +47,20 @@ envoy_cc_library(
     repository = "@envoy",
     deps = [
         "@envoy//envoy/network:address_interface",
+        "@envoy//source/common/network:socket_option_lib",
+        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_library(
+    name = "socket_tag_socket_option_lib",
+    srcs = ["socket_tag_socket_option_impl.cc"],
+    hdrs = ["socket_tag_socket_option_impl.h"],
+    repository = "@envoy",
+    deps = [
+        "//library/common/jni:android_jni_utility_lib",
+        "@envoy//envoy/network:address_interface",
+        "@envoy//source/common/common:scalar_to_byte_vector_lib",
         "@envoy//source/common/network:socket_option_lib",
         "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
     ],

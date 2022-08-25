@@ -306,6 +306,30 @@ public class JniLibrary {
   public static native String altProtocolCacheFilterInsert();
 
   /**
+   * Provides a configuration insert that may be used to enable gzip decompression.
+   */
+  public static native String gzipConfigInsert();
+
+  /**
+   * Provides a configuration insert that may be used to enable brotli decompression.
+   */
+  public static native String brotliConfigInsert();
+
+  /**
+   * Provides a configuration insert that may be used to enable socket tagging.
+   */
+  public static native String socketTagConfigInsert();
+
+  /**
+   * Register a platform-provided key-value store implementation.
+   *
+   * @param name,    unique name identifying this key-value store.
+   * @param context, context containing logic necessary to invoke the key-value store.
+   * @return int,    the resulting status of the operation.
+   */
+  protected static native int registerKeyValueStore(String name, JvmKeyValueStoreContext context);
+
+  /**
    * Register a string accessor to get strings from the platform.
    *
    * @param accessorName, unique name identifying this accessor.
@@ -331,4 +355,30 @@ public class JniLibrary {
    * @return The resulting status of the operation.
    */
   protected static native int setPreferredNetwork(long engine, int network);
+
+  /**
+   * Mimic a call to AndroidNetworkLibrary#verifyServerCertificates from native code.
+   * To be used for testing only.
+   *
+   * @param certChain The ASN.1 DER encoded bytes for certificates.
+   * @param authType The key exchange algorithm name (e.g. RSA).
+   * @param host The hostname of the server.
+   * @return Android certificate verification result code.
+   */
+  public static native Object callCertificateVerificationFromNative(byte[][] certChain,
+                                                                    byte[] authType, byte[] host);
+  /**
+   * Mimic a call to AndroidNetworkLibrary#addTestRootCertificate from native code.
+   * To be used for testing only.
+   *
+   * @param rootCert DER encoded bytes of the certificate.
+   */
+  public static native void callAddTestRootCertificateFromNative(byte[] cert);
+
+  /**
+   * Mimic a call to AndroidNetworkLibrary#clearTestRootCertificate from native code.
+   * To be used for testing only.
+   *
+   */
+  public static native void callClearTestRootCertificateFromNative();
 }
