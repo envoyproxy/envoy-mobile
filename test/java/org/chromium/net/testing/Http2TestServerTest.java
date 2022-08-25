@@ -66,10 +66,8 @@ public class Http2TestServerTest {
     Http2TestServer.shutdownHttp2TestServer();
   }
 
-  @Test
-  public void getSchemeIsHttps() throws Exception {
-    setUpEngine(false);
-
+  private void getSchemeIsHttps(boolean usePlatformCertValidator) throws Exception {
+    setUpEngine(usePlatformCertValidator);
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(Http2TestServer.getEchoAllHeadersUrl());
@@ -82,19 +80,18 @@ public class Http2TestServerTest {
     assertThat(response.getEnvoyError()).isNull();
   }
 
+  /*
+    @Test
+    public void testGetRequest() throws Exception {
+      System.out.println("TEST_testGetRequest");
+      getSchemeIsHttps(false);
+       }
+  */
+
   @Test
-  public void testPlatformCertValidator() throws Exception {
-    setUpEngine(true);
-    RequestScenario requestScenario = new RequestScenario()
-                                          .setHttpMethod(RequestMethod.GET)
-                                          .setUrl(Http2TestServer.getEchoAllHeadersUrl());
-
-    Response response = sendRequest(requestScenario);
-
-    assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
-    assertThat(response.getBodyAsString()).contains(":scheme: https");
-    assertThat(response.getHeaders().value("x-envoy-upstream-alpn")).containsExactly("h2");
-    assertThat(response.getEnvoyError()).isNull();
+  public void testGetRequestWithPlatformCertValidator() throws Exception {
+    System.out.println("TEST_testGetRequestWithPlatformCertValidator");
+    getSchemeIsHttps(true);
   }
 
   private Response sendRequest(RequestScenario requestScenario) throws Exception {

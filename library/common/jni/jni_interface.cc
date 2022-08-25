@@ -1171,8 +1171,8 @@ static void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_veri
     jobjectArray chain_byte_array = jvm_cert_get_certificate_chain_encoded(env, result);
     if (chain_byte_array != nullptr) {
       JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
-      std::cerr << "done JavaArrayOfByteArrayToStringVector\n";
     }
+    std::cerr << "validation succeeded.\n";
   }
 }
 
@@ -1251,7 +1251,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerCertValidatorFactory(JN
   jni_log("[Envoy]", "registerCertValidatorFactory");
   envoy_cert_validator* api = (envoy_cert_validator*)safe_malloc(sizeof(envoy_cert_validator));
   api->validate_cert = verify_x509_cert_chain;
-  const std::string platform_name = "android_platform";
+  const std::string platform_name = "platform_cert_validator";
   envoy_status_t result = register_platform_api(platform_name.c_str(), api);
   return result;
 }

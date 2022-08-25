@@ -38,6 +38,7 @@ public final class AndroidNetworkLibrary {
    */
   public static AndroidCertVerifyResult
   verifyServerCertificates(byte[][] certChain, byte[] authTypeBytes, byte[] hostBytes) {
+    System.out.println("=========== verifyServerCertificates");
     String authType = new String(authTypeBytes, StandardCharsets.UTF_8);
     String host = new String(hostBytes, StandardCharsets.UTF_8);
     if (mUseFakeCertificateVerification) {
@@ -45,6 +46,10 @@ public final class AndroidNetworkLibrary {
     }
 
     try {
+      System.out.println("=========== calling X509Util.verifyServerCertificates on certs:");
+      for (byte[] cert : certChain) {
+        System.out.println(new String(cert, StandardCharsets.UTF_8));
+      }
       return X509Util.verifyServerCertificates(certChain, authType, host);
     } catch (KeyStoreException e) {
       return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);

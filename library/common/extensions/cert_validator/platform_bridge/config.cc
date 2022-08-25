@@ -14,7 +14,7 @@ CertValidatorPtr PlatformBridgeCertValidatorFactory::createCertValidator(
   PANIC("IOS platform based cert validation is not supported.");
 #endif
   platform_bridge_api_ =
-      static_cast<envoy_cert_validator*>(Api::External::retrieveApi("android_platform"));
+      static_cast<envoy_cert_validator*>(Api::External::retrieveApi("platform_cert_validator"));
   return std::make_unique<PlatformBridgeCertValidator>(config, stats, time_source,
                                                        platform_bridge_api_);
 }
