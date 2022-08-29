@@ -36,8 +36,8 @@ protected:
   PlatformStoreTest() { createStore(); }
 
   void createStore() {
-    flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
     ttl_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
+    flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
     store_ = std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_, mock_platform_,
                                                      std::numeric_limits<uint64_t>::max(), key_);
   }
@@ -45,8 +45,8 @@ protected:
   std::string key_{"key"};
   std::unique_ptr<PlatformKeyValueStore> store_{};
   std::chrono::seconds save_interval_{5};
-  Event::MockTimer* ttl_timer_ = nullptr;
   Event::MockTimer* flush_timer_ = nullptr;
+  Event::MockTimer* ttl_timer_ = nullptr;
   TestPlatformInterface mock_platform_;
 };
 
