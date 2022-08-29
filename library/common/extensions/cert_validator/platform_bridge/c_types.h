@@ -17,10 +17,13 @@ extern "C" { // function pointers
 typedef envoy_cert_validation_result (*envoy_validate_cert_f)(const envoy_data* certs, uint8_t size,
                                                               const char* host_name);
 
+typedef void (*envoy_validation_done_f)();
 #ifdef __cplusplus
 } // function pointers
 #endif
 
 typedef struct {
   envoy_validate_cert_f validate_cert;
+  envoy_validation_done_f validation_done;
+
 } envoy_cert_validator;

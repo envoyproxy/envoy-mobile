@@ -30,9 +30,10 @@ import java.nio.charset.StandardCharsets;
  * This class implements net utilities required by the net component.
  */
 public final class AndroidNetworkLibrary {
+
   private static final String TAG = "AndroidNetworkLibrary";
 
-  private static boolean mUseFakeCertificateVerification;
+  private static boolean mUseFakeCertificateVerification = false;
 
   /**
    * Whether a fake should be used in place of X509Util. This allows to easily test the JNI
@@ -40,9 +41,15 @@ public final class AndroidNetworkLibrary {
    *
    * @param useFakeCertificateVerification Whether FakeX509Util should be used or not.
    */
-  public static void
+  public static synchronized void
   setFakeCertificateVerificationForTesting(boolean useFakeCertificateVerification) {
     mUseFakeCertificateVerification = useFakeCertificateVerification;
+    System.out.println("=========== setFakeCertificateVerificationForTesting " +
+                       mUseFakeCertificateVerification);
+  }
+
+  public static synchronized boolean getFakeCertificateVerificationForTesting() {
+    return mUseFakeCertificateVerification;
   }
 
   /**
@@ -56,9 +63,12 @@ public final class AndroidNetworkLibrary {
    * @param host Bytes representing the UTF-8 encoding of the hostname of the server.
    * @return Android certificate verification result code.
    */
-  public static AndroidCertVerifyResult
-  verifyServerCertificates(byte[][] certChain, byte[] authTypeBytes, byte[] hostBytes) {
-    System.out.println("=========== verifyServerCertificates");
+  public static synchronized AndroidCertVerifyResult verifyServerCertificates(byte[][] certChain,
+                                                                              byte[] authTypeBytes,
+                                                                              byte[] hostBytes) {
+    System.out.println(
+        "=========== verifyServerCertificates with mUseFakeCertificateVerification=" +
+        mUseFakeCertificateVerification);
     String authType = new String(authTypeBytes, StandardCharsets.UTF_8);
     String host = new String(hostBytes, StandardCharsets.UTF_8);
     if (mUseFakeCertificateVerification) {
@@ -67,9 +77,6 @@ public final class AndroidNetworkLibrary {
 
     try {
       System.out.println("=========== calling X509Util.verifyServerCertificates on certs:");
-      for (byte[] cert : certChain) {
-        System.out.println(new String(cert, StandardCharsets.UTF_8));
-      }
       return X509Util.verifyServerCertificates(certChain, authType, host);
     } catch (KeyStoreException e) {
       return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
@@ -88,6 +95,9 @@ public final class AndroidNetworkLibrary {
    */
   public static void addTestRootCertificate(byte[] rootCert)
       throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
+    System.out.println(
+        "============= addTestRootCertificate with mUseFakeCertificateVerification=" +
+        mUseFakeCertificateVerification);
     if (mUseFakeCertificateVerification) {
       FakeX509Util.addTestRootCertificate(rootCert);
     } else {
@@ -102,6 +112,10 @@ public final class AndroidNetworkLibrary {
    */
   public static void clearTestRootCertificates()
       throws NoSuchAlgorithmException, CertificateException, KeyStoreException {
+    System.out.println(
+        "============= clearTestRootCertificates with mUseFakeCertificateVerification=" +
+        mUseFakeCertificateVerification);
+
     if (mUseFakeCertificateVerification) {
       FakeX509Util.clearTestRootCertificates();
     } else {

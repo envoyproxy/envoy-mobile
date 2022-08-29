@@ -9,14 +9,13 @@ namespace Tls {
 
 CertValidatorPtr PlatformBridgeCertValidatorFactory::createCertValidator(
     const Envoy::Ssl::CertificateValidationContextConfig* config, SslStats& stats,
-    TimeSource& time_source) {
+    TimeSource& /*time_source*/) {
 #if defined(__APPLE__)
   PANIC("IOS platform based cert validation is not supported.");
 #endif
   platform_bridge_api_ =
       static_cast<envoy_cert_validator*>(Api::External::retrieveApi("platform_cert_validator"));
-  return std::make_unique<PlatformBridgeCertValidator>(config, stats, time_source,
-                                                       platform_bridge_api_);
+  return std::make_unique<PlatformBridgeCertValidator>(config, stats, platform_bridge_api_);
 }
 
 REGISTER_FACTORY(PlatformBridgeCertValidatorFactory, CertValidatorFactory);

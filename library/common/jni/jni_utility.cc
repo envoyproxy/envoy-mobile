@@ -22,7 +22,10 @@ JavaVM* get_vm() { return static_jvm; }
 
 void set_class_loader(jobject class_loader) { static_class_loader = class_loader; }
 
-jobject get_class_loader() { return static_class_loader; }
+jobject get_class_loader() {
+  ASSERT(static_class_loader);
+  return static_class_loader;
+}
 
 jclass find_class(const char* class_name) {
   JNIEnv* env = get_env();

@@ -1,7 +1,6 @@
 package org.chromium.net.testing;
 
-import static io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification.ACCEPT_UNTRUSTED;
-import static io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification.VERIFY_TRUST_CHAIN;
+import static io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.chromium.net.testing.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.testing.CronetTestRule.SERVER_KEY_PKCS8_PEM;
@@ -9,6 +8,7 @@ import static org.chromium.net.testing.CronetTestRule.SERVER_KEY_PKCS8_PEM;
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.chromium.net.AndroidNetworkLibrary;
 import io.envoyproxy.envoymobile.AndroidEngineBuilder;
 import io.envoyproxy.envoymobile.Engine;
 import io.envoyproxy.envoymobile.EnvoyError;
@@ -19,6 +19,7 @@ import io.envoyproxy.envoymobile.ResponseHeaders;
 import io.envoyproxy.envoymobile.ResponseTrailers;
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
+import io.envoyproxy.envoymobile.engine.JniLibrary;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -28,13 +29,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import java.nio.charset.StandardCharsets;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(RobolectricTestRunner.class)
 public class Http2TestServerTest {
 
   private Engine engine;
@@ -42,20 +48,29 @@ public class Http2TestServerTest {
   @BeforeClass
   public static void loadJniLibrary() {
     AndroidJniLibrary.loadTestLibrary();
+    JniLibrary.load();
   }
 
-  public void setUpEngine(boolean usePlatformCertValidator) throws Exception {
+  @Before
+  public void setUp() throws Exception {
+    AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(true);
+  }
+
+  public void setUpEngine(boolean usePlatformCertValidator,
+                          TrustChainVerification trustChainVerification) throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
-    engine = new AndroidEngineBuilder(appContext)
-                 .usePlatformCertValidator(usePlatformCertValidator)
-                 .setTrustChainVerification(usePlatformCertValidator ? VERIFY_TRUST_CHAIN
-                                                                     : ACCEPT_UNTRUSTED)
-                 .setOnEngineRunning(() -> {
-                   latch.countDown();
-                   return null;
-                 })
-                 .build();
+    engine =
+        new AndroidEngineBuilder(appContext)
+            .usePlatformCertValidator(usePlatformCertValidator)
+            .setTrustChainVerification(trustChainVerification)
+            .setOnEngineRunning(() -> {
+              latch.countDown();
+              System.out.println("========= OnEngineRunning, " +
+                                 AndroidNetworkLibrary.getFakeCertificateVerificationForTesting());
+              return null;
+            })
+            .build();
     Http2TestServer.startHttp2TestServer(appContext, SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM);
     latch.await(); // Don't launch a request before initialization has completed.
   }
@@ -64,10 +79,14 @@ public class Http2TestServerTest {
   public void shutdown() throws Exception {
     engine.terminate();
     Http2TestServer.shutdownHttp2TestServer();
+    JniLibrary.callClearTestRootCertificateFromNative();
+    AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(false);
   }
 
-  private void getSchemeIsHttps(boolean usePlatformCertValidator) throws Exception {
-    setUpEngine(usePlatformCertValidator);
+  private void getSchemeIsHttps(boolean usePlatformCertValidator,
+                                TrustChainVerification trustChainVerification) throws Exception {
+    setUpEngine(usePlatformCertValidator, trustChainVerification);
+
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)
                                           .setUrl(Http2TestServer.getEchoAllHeadersUrl());
@@ -83,15 +102,19 @@ public class Http2TestServerTest {
   /*
     @Test
     public void testGetRequest() throws Exception {
-      System.out.println("TEST_testGetRequest");
+      System.out.println("TEST_testGetRequest", ACCEPT_UNTRUSTED);
       getSchemeIsHttps(false);
        }
+VERIFY_TRUST_CHAIN
   */
 
   @Test
   public void testGetRequestWithPlatformCertValidator() throws Exception {
     System.out.println("TEST_testGetRequestWithPlatformCertValidator");
-    getSchemeIsHttps(true);
+    Path caPath = Paths.get(SERVER_CERT_PEM);
+    byte[] caBytes = Files.readAllBytes(caPath);
+    JniLibrary.callAddTestRootCertificateFromNative(caBytes);
+    getSchemeIsHttps(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
   }
 
   private Response sendRequest(RequestScenario requestScenario) throws Exception {
@@ -129,6 +152,13 @@ public class Http2TestServerTest {
         .start(Executors.newSingleThreadExecutor())
         .sendHeaders(requestScenario.getHeaders(), /* hasRequestBody= */ false);
 
+    Path caPath = Paths.get(SERVER_CERT_PEM);
+    byte[] caBytes = Files.readAllBytes(caPath);
+    byte[][] certChain = {caBytes};
+    byte[] host = "www.example.com".getBytes(StandardCharsets.UTF_8);
+    byte[] authType = "RSA".getBytes(StandardCharsets.UTF_8);
+
+    JniLibrary.callCertificateVerificationFromNative(certChain, host, authType);
     latch.await();
     response.get().throwAssertionErrorIfAny();
     return response.get();

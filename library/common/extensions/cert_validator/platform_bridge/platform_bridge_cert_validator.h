@@ -12,17 +12,10 @@ namespace Extensions {
 namespace TransportSockets {
 namespace Tls {
 
-class PlatformBridgeCertValidator : public DefaultCertValidator {
+class PlatformBridgeCertValidator : public CertValidator, Logger::Loggable<Logger::Id::connection> {
 public:
   PlatformBridgeCertValidator(const Envoy::Ssl::CertificateValidationContextConfig* config,
-                              SslStats& stats, TimeSource& time_source,
-                              const envoy_cert_validator* platform_bridge_api)
-      : DefaultCertValidator(config, stats, time_source),
-        platform_bridge_api_(platform_bridge_api) {
-    ENVOY_BUG(config != nullptr && config->caCert().empty() &&
-                  config->certificateRevocationList().empty(),
-              "Invalid cert validation context config.");
-  }
+                              SslStats& stats, const envoy_cert_validator* platform_bridge_api);
 
   ~PlatformBridgeCertValidator() override;
 
@@ -69,6 +62,9 @@ public:
       const std::string host_name);
 
 private:
+  const Envoy::Ssl::CertificateValidationContextConfig* config_;
+  SslStats& stats_;
+  bool allow_untrusted_certificate_{false};
   // latches the platform extension API.
   const envoy_cert_validator* platform_bridge_api_;
   absl::flat_hash_map<std::thread::id, std::thread> validation_threads_;
