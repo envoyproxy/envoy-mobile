@@ -16,6 +16,12 @@
 // NOLINT(namespace-envoy)
 
 bool is_cleartext_permitted(absl::string_view hostname) {
+    JNIEnv* e = get_env();
+    jclass jcls_AndroidNetworkLibrar = find_class("org/chromium/net/AndroidNetworkLibrary");
+    jmethodID jmid_verification = e->GetStaticMethodID(jcls_AndroidNetworkLibrar, "FakeCertificateVerificationForTesting", "()Z");
+    jboolean r = e->CallStaticBooleanMethod(jcls_AndroidNetworkLibrar, jmid_verification);
+    return true;
+
 #if defined(__ANDROID_API__)
   envoy_data host = Envoy::Data::Utility::copyToBridgeData(hostname);
   JNIEnv* env = get_env();

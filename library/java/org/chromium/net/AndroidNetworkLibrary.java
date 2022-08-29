@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
 public final class AndroidNetworkLibrary {
   private static final String TAG = "AndroidNetworkLibrary";
 
-  private static boolean mUseFakeCertificateVerification;
+  public static boolean mUseFakeCertificateVerification;
 
   /**
    * Whether a fake should be used in place of X509Util. This allows to easily test the JNI
@@ -43,6 +43,10 @@ public final class AndroidNetworkLibrary {
   public static void
   setFakeCertificateVerificationForTesting(boolean useFakeCertificateVerification) {
     mUseFakeCertificateVerification = useFakeCertificateVerification;
+  }
+
+  public static boolean FakeCertificateVerificationForTesting() {
+    return mUseFakeCertificateVerification;
   }
 
   /**
