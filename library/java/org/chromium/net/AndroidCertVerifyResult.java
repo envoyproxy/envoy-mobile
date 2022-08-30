@@ -29,7 +29,7 @@ public final class AndroidCertVerifyResult {
 
   public AndroidCertVerifyResult(int status, boolean isIssuedByKnownRoot,
                                  List<X509Certificate> certificateChain) {
-    System.out.println("=========== AndroidCertVerifyResult1 " + status);
+    System.out.println("=========== construct AndroidCertVerifyResult1 " + status);
     mStatus = status;
     mIsIssuedByKnownRoot = isIssuedByKnownRoot;
     mCertificateChain = new ArrayList<X509Certificate>(certificateChain);
@@ -37,7 +37,7 @@ public final class AndroidCertVerifyResult {
   }
 
   public AndroidCertVerifyResult(int status) {
-    System.out.println("=========== AndroidCertVerifyResult2 " + status);
+    System.out.println("=========== construct AndroidCertVerifyResult2 " + status);
     mStatus = status;
     mIsIssuedByKnownRoot = false;
     mCertificateChain = Collections.<X509Certificate>emptyList();
@@ -58,7 +58,6 @@ public final class AndroidCertVerifyResult {
   // TODO(stefanoduo): Hook envoy-mobile JNI.
   //@CalledByNative
   public byte[][] getCertificateChainEncoded() {
-    System.out.println("========= getCertificateChainEncoded: size " + mCertificateChain.size());
     byte[][] verifiedChainArray = new byte[mCertificateChain.size()][];
     try {
       for (int i = 0; i < mCertificateChain.size(); i++) {

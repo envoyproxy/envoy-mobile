@@ -1206,11 +1206,14 @@ static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
   jobject result =
       env->CallStaticObjectMethod(jcls_AndroidNetworkLibrary, jmid_verifyServerCertificates,
                                   chain_byte_array, auth_string, host_string);
+  if (env->ExceptionCheck() == JNI_TRUE) {
+    env->ExceptionDescribe();
+  }
   env->DeleteLocalRef(chain_byte_array);
   env->DeleteLocalRef(auth_string);
   env->DeleteLocalRef(host_string);
   env->DeleteLocalRef(jcls_AndroidNetworkLibrary);
-  return result;
+  return env->NewGlobalRef(result);
 }
 
 // `auth_type` and `host` are expected to be UTF-8 encoded.
@@ -1232,7 +1235,7 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
       *status = CERT_VERIFY_STATUS_FAILED;
     };
   }
-  env->DeleteLocalRef(result);
+  env->DeleteGlobalRef(result);
 }
 
 static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* certs, uint8_t size,

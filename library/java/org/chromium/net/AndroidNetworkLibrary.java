@@ -67,14 +67,16 @@ public final class AndroidNetworkLibrary {
                                                                               byte[] authTypeBytes,
                                                                               byte[] hostBytes) {
     System.out.println(
-        "=========== verifyServerCertificates with mUseFakeCertificateVerification=" +
+        "=========== AndroidNetworkLibrary::verifyServerCertificates with mUseFakeCertificateVerification=" +
         mUseFakeCertificateVerification);
     String authType = new String(authTypeBytes, StandardCharsets.UTF_8);
     String host = new String(hostBytes, StandardCharsets.UTF_8);
     if (mUseFakeCertificateVerification) {
       AndroidCertVerifyResult result =
           FakeX509Util.verifyServerCertificates(certChain, authType, host);
-      System.out.println("============ result from fake x509 util: " + result.getStatus());
+      System.out.println(
+          "============ AndroidNetworkLibrary::verifyServerCertificates return result: " +
+          result.getStatus());
       return result;
     }
 
