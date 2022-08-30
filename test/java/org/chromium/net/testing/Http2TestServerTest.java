@@ -106,14 +106,22 @@ public class Http2TestServerTest {
       getSchemeIsHttps(false);
        }
 VERIFY_TRUST_CHAIN
-  */
 
   @Test
-  public void testGetRequestWithPlatformCertValidator() throws Exception {
+  public void testGetRequestWithPlatformCertValidatorSuccess() throws Exception {
     System.out.println("TEST_testGetRequestWithPlatformCertValidator");
     Path caPath = Paths.get(SERVER_CERT_PEM);
     byte[] caBytes = Files.readAllBytes(caPath);
-    JniLibrary.callAddTestRootCertificateFromNative(caBytes);
+    AndroidNetworkLibrary.addTestRootCertificate(caBytes);
+    getSchemeIsHttps(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
+  }
+  */
+
+  @Test
+  public void testGetRequestWithPlatformCertValidatorFail() throws Exception {
+    System.out.println("TEST_testGetRequestWithPlatformCertValidator");
+    final String fakeCa = new String("fake CA cert");
+    AndroidNetworkLibrary.addTestRootCertificate(fakeCa.getBytes());
     getSchemeIsHttps(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
   }
 
@@ -152,13 +160,6 @@ VERIFY_TRUST_CHAIN
         .start(Executors.newSingleThreadExecutor())
         .sendHeaders(requestScenario.getHeaders(), /* hasRequestBody= */ false);
 
-    Path caPath = Paths.get(SERVER_CERT_PEM);
-    byte[] caBytes = Files.readAllBytes(caPath);
-    byte[][] certChain = {caBytes};
-    byte[] host = "www.example.com".getBytes(StandardCharsets.UTF_8);
-    byte[] authType = "RSA".getBytes(StandardCharsets.UTF_8);
-
-    JniLibrary.callCertificateVerificationFromNative(certChain, host, authType);
     latch.await();
     response.get().throwAssertionErrorIfAny();
     return response.get();

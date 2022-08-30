@@ -22,6 +22,7 @@ public final class FakeX509Util {
   public static final String expectedHost = "www.example.com";
 
   public static void addTestRootCertificate(byte[] rootCertBytes) {
+    System.out.println("============ FakeX509Util::addTestRootCertificate");
     String fakeCertificate = new String(rootCertBytes);
     validFakeCerts.add(fakeCertificate);
   }
@@ -36,6 +37,8 @@ public final class FakeX509Util {
    */
   public static AndroidCertVerifyResult verifyServerCertificates(byte[][] certChain,
                                                                  String authType, String host) {
+    System.out.println("============ FakeX509Util::verifyServerCertificates " + authType +
+                       " host " + host);
     if (certChain == null || certChain.length == 0 || certChain[0] == null) {
       throw new IllegalArgumentException(
           "Expected non-null and non-empty certificate "
@@ -45,6 +48,9 @@ public final class FakeX509Util {
     for (byte[] cert : certChain) {
       String fakeCert = new String(cert);
       if (!validFakeCerts.contains(fakeCert)) {
+        System.out.println(
+            "============ FakeX509Util::validFakeCerts doesn't have cert, return status " +
+            CertVerifyStatusAndroid.NO_TRUSTED_ROOT);
         return new AndroidCertVerifyResult(CertVerifyStatusAndroid.NO_TRUSTED_ROOT);
       }
     }

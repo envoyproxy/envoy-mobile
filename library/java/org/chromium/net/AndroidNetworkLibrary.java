@@ -72,7 +72,10 @@ public final class AndroidNetworkLibrary {
     String authType = new String(authTypeBytes, StandardCharsets.UTF_8);
     String host = new String(hostBytes, StandardCharsets.UTF_8);
     if (mUseFakeCertificateVerification) {
-      return FakeX509Util.verifyServerCertificates(certChain, authType, host);
+      AndroidCertVerifyResult result =
+          FakeX509Util.verifyServerCertificates(certChain, authType, host);
+      System.out.println("============ result from fake x509 util: " + result.getStatus());
+      return result;
     }
 
     try {
