@@ -108,7 +108,7 @@ public final class AndroidNetworkLibrary {
    * Returns true if cleartext traffic to a given host is allowed by the current app.
    */
   public static boolean isCleartextTrafficPermitted(String host) {
-    // TODO(Augustyniak): Implement this method.
+    // TODO(alyssawilk) Implement this method.
     return true;
   }
 
