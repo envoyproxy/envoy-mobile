@@ -179,23 +179,15 @@ public class EnvoyConfiguration {
    *                                 resolved.
    */
   String resolveTemplate(final String configTemplate, final EnvoyConfigHelper configHelper) {
-//  String resolveTemplate(final String configTemplate, final String platformFilterTemplate,
-//                         final String nativeFilterTemplate,
-//                         final String altProtocolCacheFilterInsert, final String gzipFilterInsert,
-//                         final String brotliFilterInsert, final String socketTagFilterInsert) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
       String filterConfig = configHelper.getPlatformFilterInsert(filterFactory.getFilterName());
-//      String filterConfig = platformFilterTemplate.replace("{{ platform_filter_name }}",
-//                                                           filterFactory.getFilterName());
       customFiltersBuilder.append(filterConfig);
     }
 
     for (EnvoyNativeFilterConfig filter : nativeFilterChain) {
       String filterConfig = configHelper.getNativeFilterInsert(filter.name, filter.typedConfig);
-//      String filterConfig = nativeFilterTemplate.replace("{{ native_filter_name }}", filter.name)
-//                                .replace("{{ native_filter_typed_config }}", filter.typedConfig);
       customFiltersBuilder.append(filterConfig);
     }
 
