@@ -290,7 +290,8 @@ class EnvoyConfigurationTest {
   @Test
   fun `resolving multiple dns fallback nameservers`() {
     val envoyConfiguration = buildTestEnvoyConfiguration(
-      dnsFallbackNameservers = listOf("8.8.8.8", "1.1.1.1")
+      dnsFallbackNameservers = listOf("8.8.8.8", "1.1.1.1"),
+      dnsUseSystemResolver = false
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
