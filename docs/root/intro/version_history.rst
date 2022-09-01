@@ -18,7 +18,7 @@ Features:
 
 
 0.5.0 (September 1, 2022)
-===============
+===========================
 
 Breaking changes:
 
