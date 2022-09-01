@@ -169,11 +169,10 @@ std::string EngineBuilder::generateConfigStr() {
       {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},
       {"per_try_idle_timeout", fmt::format("{}s", this->per_try_idle_timeout_seconds_)},
       {"virtual_clusters", this->virtual_clusters_},
+#if defined(__ANDROID_API__)
+      {"force_ipv6", "true"},
+#endif
   };
-
-// #if defined(ANDROID)
-  replacements.push_back({"force_ipv6", "true"});
-// #endif
 
   // NOTE: this does not include support for custom filters
   // which are not yet supported in the C++ platform implementation
