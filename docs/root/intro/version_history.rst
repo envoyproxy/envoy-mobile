@@ -47,6 +47,7 @@ Features:
 - api: improved C++ APIs compatibility with Java / Kotlin / Swift (:issue `#2362 <2362>`)
 - api: add option to use the a ``getaddrinfo``-based system DNS resolver instead of c-ares (:issue: `#2419 <2419>`)
 - iOS: add ``KeyValueStore`` protocol conformance to ``UserDefaults`` (:issue: `#2452 <2452>`)
+- android: enable forcing of IPv6 socket addresses by default and remove ``forceIPv6`` method from the engine builder. (:issue: `#2510 <2510>`)
 
 0.4.6 (April 26, 2022)
 ========================
