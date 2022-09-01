@@ -197,6 +197,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration(
       dnsFallbackNameservers = listOf("8.8.8.8"),
       enableDnsFilterUnroutableFamilies = false,
+      dnsUseSystemResolver = false,
       enableDrainPostDnsRefresh = true,
       enableHappyEyeballs = true,
       enableHttp3 = true,
