@@ -36,8 +36,8 @@ import java.util.Set;
 public class MainActivity extends Activity {
   private static final String REQUEST_HANDLER_THREAD_NAME = "hello_envoy_java";
   private static final String ENVOY_SERVER_HEADER = "server";
-  private static final String REQUEST_AUTHORITY = "api.lyft.com";
-  private static final String REQUEST_PATH = "/ping";
+  private static final String REQUEST_AUTHORITY = "quic.rocks:4433";
+  private static final String REQUEST_PATH = "/";
   private static final String REQUEST_SCHEME = "https";
   private static final Set<String> FILTERED_HEADERS = new HashSet<String>() {
     {
@@ -60,6 +60,7 @@ public class MainActivity extends Activity {
 
     engine = new AndroidEngineBuilder(getApplication())
                  .addLogLevel(LogLevel.DEBUG)
+                 .enableHttp3(true)
                  .setOnEngineRunning(() -> {
                    Log.d("MainActivity", "Envoy async internal setup completed");
                    return null;

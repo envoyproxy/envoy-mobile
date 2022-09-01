@@ -710,6 +710,8 @@ void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
     cluster = BaseCluster;
   }
 
+  cluster = H3Cluster;
+
   if (!protocol_header.empty()) {
     headers.remove(ProtocolHeader);
   }
