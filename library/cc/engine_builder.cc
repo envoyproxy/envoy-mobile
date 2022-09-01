@@ -171,6 +171,10 @@ std::string EngineBuilder::generateConfigStr() {
       {"virtual_clusters", this->virtual_clusters_},
   };
 
+// #if defined(ANDROID)
+  replacements.push_back({"force_ipv6", "true"});
+// #endif
+
   // NOTE: this does not include support for custom filters
   // which are not yet supported in the C++ platform implementation
   std::ostringstream config_builder;
