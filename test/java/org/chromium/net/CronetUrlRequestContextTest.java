@@ -141,7 +141,7 @@ public class CronetUrlRequestContextTest {
     ExperimentalCronetEngine.Builder cronetEngineBuilder =
         new ExperimentalCronetEngine.Builder(getContext());
     if (mTestRule.testingJavaImpl()) {
-      cronetEngineBuilder = mTestRule.createJavaEngineBuilder();
+      cronetEngineBuilder = CronetTestRule.createJavaEngineBuilder(getContext());
     }
     cronetEngineBuilder.setUserAgent(userAgentValue);
     final CronetEngine cronetEngine = cronetEngineBuilder.build();
@@ -1319,6 +1319,17 @@ public class CronetUrlRequestContextTest {
     CronetEngine engine = builder.build();
     assertNotNull(engine);
     assertFalse(loader.wasCalled());
+  }
+
+  @Test
+  @SmallTest
+  @Feature({"Cronet"})
+  @OnlyRunNativeCronet
+  public void testNativeCronetEngineBuilderImplSetsCorrectVersionString() throws Exception {
+    CronetEngine.Builder builder =
+        new CronetEngine.Builder(new NativeCronetEngineBuilderImpl(getContext()));
+    CronetEngine engine = builder.build();
+    assertTrue(engine.getVersionString().startsWith("Cronet/"));
   }
 
   // Creates a CronetEngine on another thread and then one on the main thread. This shouldn't

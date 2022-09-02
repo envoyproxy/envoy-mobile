@@ -166,17 +166,6 @@ R"(
           validation_context:
             trusted_ca:
               inline_string: *tls_root_certs
-- &base_h3_socket
-  name: envoy.transport_sockets.quic
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
-    upstream_tls_context:
-      common_tls_context:
-        tls_params:
-          tls_maximum_protocol_version: TLSv1_3
-        validation_context:
-          trusted_ca:
-             inline_string: *tls_root_certs
 )";
 
 const char* config_template = R"(
@@ -463,7 +452,18 @@ static_resources:
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_h3_socket
+    transport_socket:
+      name: envoy.transport_sockets.quic
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+        upstream_tls_context:
+          common_tls_context:
+            tls_params:
+              tls_maximum_protocol_version: TLSv1_3
+            validation_context:
+              trusted_ca:
+                inline_string: *tls_root_certs
+              trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h3_protocol_options
@@ -474,40 +474,28 @@ stats_config:
     inclusion_list:
       patterns:
         - safe_regex:
-            google_re2: {}
             regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
         - safe_regex:
-            google_re2: {}
             regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
         - safe_regex:
-            google_re2: {}
             regex: '^cluster\.[\w]+?\.update_(attempt|success|failure)'
         - safe_regex:
-            google_re2: {}
             regex: '^cluster\.[\w]+?\.http2.keepalive_timeout'
         - safe_regex:
-            google_re2: {}
             regex: '^dns.apple.*'
         - safe_regex:
-            google_re2: {}
             regex: '^http.client.*'
         - safe_regex:
-            google_re2: {}
             regex: '^http.dispatcher.*'
         - safe_regex:
-            google_re2: {}
             regex: '^http.hcm.decompressor.*'
         - safe_regex:
-            google_re2: {}
             regex: '^http.hcm.downstream_rq_[\w]+'
         - safe_regex:
-            google_re2: {}
             regex: '^pbf_filter.*'
         - safe_regex:
-            google_re2: {}
             regex: '^pulse.*'
         - safe_regex:
-            google_re2: {}
             regex: '^vhost.api.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
   use_all_default_tags:
     false
