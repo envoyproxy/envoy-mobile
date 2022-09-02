@@ -44,8 +44,6 @@ public final class AndroidNetworkLibrary {
   public static synchronized void
   setFakeCertificateVerificationForTesting(boolean useFakeCertificateVerification) {
     mUseFakeCertificateVerification = useFakeCertificateVerification;
-    System.out.println("=========== setFakeCertificateVerificationForTesting " +
-                       mUseFakeCertificateVerification);
   }
 
   public static synchronized boolean getFakeCertificateVerificationForTesting() {
@@ -66,9 +64,6 @@ public final class AndroidNetworkLibrary {
   public static synchronized AndroidCertVerifyResult verifyServerCertificates(byte[][] certChain,
                                                                               byte[] authTypeBytes,
                                                                               byte[] hostBytes) {
-    System.out.println(
-        "=========== AndroidNetworkLibrary::verifyServerCertificates with mUseFakeCertificateVerification=" +
-        mUseFakeCertificateVerification);
     String authType = new String(authTypeBytes, StandardCharsets.UTF_8);
     String host = new String(hostBytes, StandardCharsets.UTF_8);
     if (mUseFakeCertificateVerification) {
@@ -100,9 +95,6 @@ public final class AndroidNetworkLibrary {
    */
   public static void addTestRootCertificate(byte[] rootCert)
       throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
-    System.out.println(
-        "============= addTestRootCertificate with mUseFakeCertificateVerification=" +
-        mUseFakeCertificateVerification);
     if (mUseFakeCertificateVerification) {
       FakeX509Util.addTestRootCertificate(rootCert);
     } else {
@@ -117,9 +109,6 @@ public final class AndroidNetworkLibrary {
    */
   public static void clearTestRootCertificates()
       throws NoSuchAlgorithmException, CertificateException, KeyStoreException {
-    System.out.println(
-        "============= clearTestRootCertificates with mUseFakeCertificateVerification=" +
-        mUseFakeCertificateVerification);
 
     if (mUseFakeCertificateVerification) {
       FakeX509Util.clearTestRootCertificates();

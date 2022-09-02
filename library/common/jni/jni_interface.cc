@@ -1143,8 +1143,7 @@ bool jvm_cert_is_issued_by_known_root(JNIEnv* env, jobject result) {
   jmethodID jmid_isIssuedByKnownRoot =
       env->GetMethodID(jcls_AndroidCertVerifyResult, "isIssuedByKnownRoot", "()Z");
   ASSERT(jmid_isIssuedByKnownRoot);
-  bool is_issued_by_known_root =
-      env->CallBooleanMethod(jcls_AndroidCertVerifyResult, jmid_isIssuedByKnownRoot, result);
+  bool is_issued_by_known_root = env->CallBooleanMethod(result, jmid_isIssuedByKnownRoot);
   env->DeleteLocalRef(jcls_AndroidCertVerifyResult);
   return is_issued_by_known_root;
 }
@@ -1154,8 +1153,7 @@ envoy_cert_verify_status_t jvm_cert_get_status(JNIEnv* env, jobject j_result) {
   jmethodID jmid_getStatus = env->GetMethodID(jcls_AndroidCertVerifyResult, "getStatus", "()I");
   ASSERT(jmid_getStatus);
   envoy_cert_verify_status_t result = CERT_VERIFY_STATUS_FAILED;
-  result = static_cast<envoy_cert_verify_status_t>(
-      env->CallIntMethod(jcls_AndroidCertVerifyResult, jmid_getStatus, j_result));
+  result = static_cast<envoy_cert_verify_status_t>(env->CallIntMethod(j_result, jmid_getStatus));
 
   env->DeleteLocalRef(jcls_AndroidCertVerifyResult);
   return result;
@@ -1165,8 +1163,8 @@ jobjectArray jvm_cert_get_certificate_chain_encoded(JNIEnv* env, jobject result)
   jclass jcls_AndroidCertVerifyResult = find_class("org.chromium.net.AndroidCertVerifyResult");
   jmethodID jmid_getCertificateChainEncoded =
       env->GetMethodID(jcls_AndroidCertVerifyResult, "getCertificateChainEncoded", "()[[B");
-  jobjectArray certificate_chain = static_cast<jobjectArray>(
-      env->CallObjectMethod(jcls_AndroidCertVerifyResult, jmid_getCertificateChainEncoded, result));
+  jobjectArray certificate_chain =
+      static_cast<jobjectArray>(env->CallObjectMethod(result, jmid_getCertificateChainEncoded));
   env->DeleteLocalRef(jcls_AndroidCertVerifyResult);
   return certificate_chain;
 }
@@ -1260,13 +1258,17 @@ static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* cer
     return {ENVOY_SUCCESS};
   case CERT_VERIFY_STATUS_EXPIRED: {
     return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_EXPIRED,
-            "AndroidNetworkLibrary_verifyServerCertificates failed: expired cert"};
+            "AndroidNetworkLibrary_verifyServerCertificates failed: expired cert."};
   }
+  case CERT_VERIFY_STATUS_NO_TRUSTED_ROOT:
+    return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+            "AndroidNetworkLibrary_verifyServerCertificates failed: non-trusted root"};
+  case CERT_VERIFY_STATUS_UNABLE_TO_PARSE:
+    return {ENVOY_FAILURE, SSL_AD_BAD_CERTIFICATE,
+            "AndroidNetworkLibrary_verifyServerCertificates failed: unable to parse cert."};
+  case CERT_VERIFY_STATUS_INCORRECT_KEY_USAGE:
   case CERT_VERIFY_STATUS_FAILED:
   case CERT_VERIFY_STATUS_NOT_YET_VALID:
-  case CERT_VERIFY_STATUS_UNABLE_TO_PARSE:
-  case CERT_VERIFY_STATUS_INCORRECT_KEY_USAGE:
-  case CERT_VERIFY_STATUS_NO_TRUSTED_ROOT:
     return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
             "AndroidNetworkLibrary_verifyServerCertificates failed"};
   }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.chromium.net.testing.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.testing.CronetTestRule.SERVER_KEY_PKCS8_PEM;
 
+import static org.junit.Assert.assertNotNull;
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -39,11 +40,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import java.nio.charset.StandardCharsets;
+import org.chromium.net.testing.CertTestUtil;
+import org.chromium.net.FakeX509Util;
 
 @RunWith(RobolectricTestRunner.class)
 public class Http2TestServerTest {
 
   private Engine engine;
+  private String serverCertPath = SERVER_CERT_PEM;
+  private String serverKeyPath = SERVER_KEY_PKCS8_PEM;
 
   @BeforeClass
   public static void loadJniLibrary() {
@@ -54,24 +59,23 @@ public class Http2TestServerTest {
   @Before
   public void setUp() throws Exception {
     AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(true);
+    FakeX509Util.setExpectedHost(Http2TestServer.getServerHost());
+    AndroidNetworkLibrary.addTestRootCertificate(CertTestUtil.pemToDer(serverCertPath));
   }
 
   public void setUpEngine(boolean usePlatformCertValidator,
                           TrustChainVerification trustChainVerification) throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
-    engine =
-        new AndroidEngineBuilder(appContext)
-            .usePlatformCertValidator(usePlatformCertValidator)
-            .setTrustChainVerification(trustChainVerification)
-            .setOnEngineRunning(() -> {
-              latch.countDown();
-              System.out.println("========= OnEngineRunning, " +
-                                 AndroidNetworkLibrary.getFakeCertificateVerificationForTesting());
-              return null;
-            })
-            .build();
-    Http2TestServer.startHttp2TestServer(appContext, SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM);
+    engine = new AndroidEngineBuilder(appContext)
+                 .usePlatformCertValidator(usePlatformCertValidator)
+                 .setTrustChainVerification(trustChainVerification)
+                 .setOnEngineRunning(() -> {
+                   latch.countDown();
+                   return null;
+                 })
+                 .build();
+    Http2TestServer.startHttp2TestServer(appContext, serverCertPath, serverKeyPath);
     latch.await(); // Don't launch a request before initialization has completed.
   }
 
@@ -79,7 +83,7 @@ public class Http2TestServerTest {
   public void shutdown() throws Exception {
     engine.terminate();
     Http2TestServer.shutdownHttp2TestServer();
-    JniLibrary.callClearTestRootCertificateFromNative();
+    AndroidNetworkLibrary.clearTestRootCertificates();
     AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(false);
   }
 
@@ -99,30 +103,94 @@ public class Http2TestServerTest {
     assertThat(response.getEnvoyError()).isNull();
   }
 
-  /*
-    @Test
-    public void testGetRequest() throws Exception {
-      System.out.println("TEST_testGetRequest", ACCEPT_UNTRUSTED);
-      getSchemeIsHttps(false);
-       }
-VERIFY_TRUST_CHAIN
+  @Test
+  public void testGetRequest() throws Exception {
+    System.out.println("TEST_testGetRequest");
+    getSchemeIsHttps(false, TrustChainVerification.ACCEPT_UNTRUSTED);
+  }
 
   @Test
   public void testGetRequestWithPlatformCertValidatorSuccess() throws Exception {
     System.out.println("TEST_testGetRequestWithPlatformCertValidator");
-    Path caPath = Paths.get(SERVER_CERT_PEM);
-    byte[] caBytes = Files.readAllBytes(caPath);
-    AndroidNetworkLibrary.addTestRootCertificate(caBytes);
     getSchemeIsHttps(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
   }
-  */
 
   @Test
   public void testGetRequestWithPlatformCertValidatorFail() throws Exception {
+    System.out.println("TEST_testGetRequestWithPlatformCertValidatorFail");
+    // Remove any pre-installed test certs, so that following verifications will fail.
+    AndroidNetworkLibrary.clearTestRootCertificates();
+    setUpEngine(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
+    RequestScenario requestScenario = new RequestScenario()
+                                          .setHttpMethod(RequestMethod.GET)
+                                          .setUrl(Http2TestServer.getEchoAllHeadersUrl());
+    final CountDownLatch latch = new CountDownLatch(1);
+    final AtomicReference<Response> response = new AtomicReference<>(new Response());
+    engine.streamClient()
+        .newStreamPrototype()
+        .setOnError((error, ignored) -> {
+          response.get().setEnvoyError(error);
+          latch.countDown();
+          return null;
+        })
+        .setOnCancel((ignored) -> { throw new AssertionError("Unexpected OnCancel called."); })
+        .start(Executors.newSingleThreadExecutor())
+        .sendHeaders(requestScenario.getHeaders(), false);
+
+    latch.await();
+    assertNotNull(response.get().getEnvoyError());
+    assertThat(response.get().getEnvoyError().getErrorCode()).isEqualTo(2);
+    assertThat(response.get().getEnvoyError().getMessage()).contains("CERTIFICATE_VERIFY_FAILED");
+    response.get().throwAssertionErrorIfAny();
+  }
+
+  @Test
+  public void testAcceptUntrustedWithPlatformCertValidator() throws Exception {
     System.out.println("TEST_testGetRequestWithPlatformCertValidator");
-    final String fakeCa = new String("fake CA cert");
-    AndroidNetworkLibrary.addTestRootCertificate(fakeCa.getBytes());
-    getSchemeIsHttps(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
+    // Remove any pre-installed test certs, so that following verifications will fail.
+    AndroidNetworkLibrary.clearTestRootCertificates();
+    getSchemeIsHttps(true, TrustChainVerification.ACCEPT_UNTRUSTED);
+  }
+
+  @Test
+  public void testSubjectAltNameErrorWithPlatformCertValidator() throws Exception {
+    System.out.println("TEST_testSubjectAltNameErrorWithPlatformCertValidator");
+    // Switch to a cert which doesn't have 127.0.0.1 in the SAN list.
+    serverCertPath = "../envoy/test/config/integration/certs/servercert.pem";
+    serverKeyPath = "../envoy/test/config/integration/certs/serverkey.pem";
+    AndroidNetworkLibrary.addTestRootCertificate(CertTestUtil.pemToDer(serverCertPath));
+    setUpEngine(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
+    RequestScenario requestScenario = new RequestScenario()
+                                          .setHttpMethod(RequestMethod.GET)
+                                          .setUrl(Http2TestServer.getEchoAllHeadersUrl());
+    final CountDownLatch latch = new CountDownLatch(1);
+    final AtomicReference<Response> response = new AtomicReference<>(new Response());
+    engine.streamClient()
+        .newStreamPrototype()
+        .setOnError((error, ignored) -> {
+          response.get().setEnvoyError(error);
+          latch.countDown();
+          return null;
+        })
+        .setOnCancel((ignored) -> { throw new AssertionError("Unexpected OnCancel called."); })
+        .start(Executors.newSingleThreadExecutor())
+        .sendHeaders(requestScenario.getHeaders(), false);
+
+    latch.await();
+    assertNotNull(response.get().getEnvoyError());
+    assertThat(response.get().getEnvoyError().getErrorCode()).isEqualTo(2);
+    assertThat(response.get().getEnvoyError().getMessage()).contains("CERTIFICATE_VERIFY_FAILED");
+    response.get().throwAssertionErrorIfAny();
+  }
+
+  @Test
+  public void testSubjectAltNameErrorAllowedWithPlatformCertValidator() throws Exception {
+    System.out.println("TEST_testSubjectAltNameErrorAllowedWithPlatformCertValidator");
+    // Switch to a cert which doesn't have 127.0.0.1 in the SAN list.
+    serverCertPath = "../envoy/test/config/integration/certs/servercert.pem";
+    serverKeyPath = "../envoy/test/config/integration/certs/serverkey.pem";
+    AndroidNetworkLibrary.addTestRootCertificate(CertTestUtil.pemToDer(serverCertPath));
+    getSchemeIsHttps(true, TrustChainVerification.ACCEPT_UNTRUSTED);
   }
 
   private Response sendRequest(RequestScenario requestScenario) throws Exception {
