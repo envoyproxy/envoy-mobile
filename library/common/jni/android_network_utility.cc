@@ -8,7 +8,7 @@
 // NOLINT(namespace-envoy)
 
 // Helper functions call into AndroidNetworkLibrary, but they are not platform dependent
-// because AndroidNetworkLibray can be called in non-Android platform with mock interfaces.
+// because AndroidNetworkLibrary can be called in non-Android platform with mock interfaces.
 
 bool jvm_cert_is_issued_by_known_root(JNIEnv* env, jobject result) {
   jclass jcls_AndroidCertVerifyResult = find_class("org.chromium.net.AndroidCertVerifyResult");

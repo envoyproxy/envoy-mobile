@@ -14,7 +14,7 @@ public final class AndroidCertVerifyResult {
   /**
    * The verification status. One of the values in CertVerifyStatusAndroid.
    */
-  private final int mStatus;
+  @CertVerifyStatusAndroid private final int mStatus;
 
   /**
    * True if the root CA in the chain is in the system store.
@@ -26,29 +26,35 @@ public final class AndroidCertVerifyResult {
    */
   private final List<X509Certificate> mCertificateChain;
 
-  public AndroidCertVerifyResult(int status, boolean isIssuedByKnownRoot,
+  public AndroidCertVerifyResult(@CertVerifyStatusAndroid int status, boolean isIssuedByKnownRoot,
                                  List<X509Certificate> certificateChain) {
     mStatus = status;
     mIsIssuedByKnownRoot = isIssuedByKnownRoot;
     mCertificateChain = new ArrayList<X509Certificate>(certificateChain);
   }
 
-  public AndroidCertVerifyResult(int status) {
+  public AndroidCertVerifyResult(@CertVerifyStatusAndroid int status) {
     mStatus = status;
     mIsIssuedByKnownRoot = false;
     mCertificateChain = Collections.<X509Certificate>emptyList();
   }
 
-  // TODO(stefanoduo): Hook envoy-mobile JNI.
-  //@CalledByNative
-  public int getStatus() { return mStatus; }
+  /**
+   * Called from native.
+   */
+  @CertVerifyStatusAndroid
+  public int getStatus() {
+    return mStatus;
+  }
 
-  // TODO(stefanoduo): Hook envoy-mobile JNI.
-  //@CalledByNative
+  /**
+   * Called from native.
+   */
   public boolean isIssuedByKnownRoot() { return mIsIssuedByKnownRoot; }
 
-  // TODO(stefanoduo): Hook envoy-mobile JNI.
-  //@CalledByNative
+  /**
+   * Called from native.
+   */
   public byte[][] getCertificateChainEncoded() {
     byte[][] verifiedChainArray = new byte[mCertificateChain.size()][];
     try {

@@ -1,12 +1,15 @@
 package org.chromium.net;
 
 import static org.junit.Assert.assertEquals;
+import static org.chromium.net.testing.CronetTestRule.getContext;
 
 import android.content.Context;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
 import io.envoyproxy.envoymobile.engine.JniLibrary;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.lang.reflect.Field;
 
 import org.junit.After;
 import org.junit.Before;
@@ -41,7 +44,7 @@ public final class CertificateVerificationTest {
   @After
   public void tearDown() throws Exception {
     JniLibrary.callClearTestRootCertificateFromNative();
-    AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(true);
+    AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(false);
   }
 
   @Test
@@ -145,5 +148,25 @@ public final class CertificateVerificationTest {
         (AndroidCertVerifyResult)JniLibrary.callCertificateVerificationFromNative(certChain,
                                                                                   authType, host);
     assertEquals(result.getStatus(), CertVerifyStatusAndroid.OK);
+  }
+
+  @Test
+  public void testAndroidCertVerifyResultGetStatusFromNative() throws Exception {
+    for (Field statusField : CertVerifyStatusAndroid.class.getFields()) {
+      @CertVerifyStatusAndroid int status = statusField.getInt(CertVerifyStatusAndroid.class);
+      AndroidCertVerifyResult result =
+          new AndroidCertVerifyResult(status, false, Collections.emptyList());
+      assertEquals(status, JniLibrary.callAndroidCertVerifyResultGetStatusFromNative(result));
+    }
+  }
+
+  @Test
+  public void testAndroidCertVerifyResultIsIssuedByKnownRootFromNative() throws Exception {
+    for (boolean isIssuedByKnownRoot : new boolean[] {true, false}) {
+      AndroidCertVerifyResult result = new AndroidCertVerifyResult(
+          CertVerifyStatusAndroid.OK, isIssuedByKnownRoot, Collections.emptyList());
+      assertEquals(isIssuedByKnownRoot,
+                   JniLibrary.callAndroidCertVerifyResultIsIssuedByKnownRootFromNative(result));
+    }
   }
 }

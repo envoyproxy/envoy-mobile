@@ -381,7 +381,7 @@ public class JniLibrary {
    * @param certChain The ASN.1 DER encoded bytes for certificates.
    * @param authType The key exchange algorithm name (e.g. RSA).
    * @param host The hostname of the server.
-   * @return Android certificate verification result code.
+   * @return AndroidCertVerifyResult representing the certificate verification result.
    */
   public static native Object callCertificateVerificationFromNative(byte[][] certChain,
                                                                     byte[] authType, byte[] host);
@@ -396,7 +396,23 @@ public class JniLibrary {
   /**
    * Mimic a call to AndroidNetworkLibrary#clearTestRootCertificate from native code.
    * To be used for testing only.
-   *
    */
   public static native void callClearTestRootCertificateFromNative();
+
+  /**
+   * Mimic a call to AndroidCertVerifyResult#getStatus from native code.
+   * To be used for testing only.
+   *
+   * @param result AndroidCertVerifyResult to call getStatus onto.
+   */
+  public static native int callAndroidCertVerifyResultGetStatusFromNative(Object result);
+
+  /**
+   * Mimic a call to AndroidCertVerifyResult#isIssuedByKnownRoot from native code.
+   * To be used for testing only.
+   *
+   * @param result AndroidCertVerifyResult to call isIssuedByKnownRoot onto.
+   */
+  public static native boolean
+  callAndroidCertVerifyResultIsIssuedByKnownRootFromNative(Object result);
 }

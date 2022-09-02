@@ -1209,3 +1209,15 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_callClearTestRootCertificateFro
                                                                                         jclass) {
   jvm_clear_test_root_certificate();
 }
+
+extern "C" JNIEXPORT envoy_cert_verify_status_t JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callAndroidCertVerifyResultGetStatusFromNative(
+    JNIEnv* env, jclass, jobject result) {
+  return jvm_cert_get_status(env, result);
+}
+
+extern "C" JNIEXPORT bool JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_callAndroidCertVerifyResultIsIssuedByKnownRootFromNative(
+    JNIEnv* env, jclass, jobject result) {
+  return jvm_cert_is_issued_by_known_root(env, result);
+}
