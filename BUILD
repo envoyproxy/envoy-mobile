@@ -115,11 +115,10 @@ xcodeproj(
             name = "Hello World App",
             launch_action = xcode_schemes.launch_action("//examples/swift/hello_world:app"),
         ),
-        # TODO(jpsim): Fix Objective-C app support
-        # xcode_schemes.scheme(
-        #     name = "Hello World App (ObjC)",
-        #     launch_action = xcode_schemes.launch_action("//examples/objective-c/hello_world:app"),
-        # ),
+        xcode_schemes.scheme(
+            name = "Hello World App (ObjC)",
+            launch_action = xcode_schemes.launch_action("//examples/objective-c/hello_world:app"),
+        ),
         xcode_schemes.scheme(
             name = "Baseline App",
             launch_action = xcode_schemes.launch_action("//test/swift/apps/baseline:app"),
@@ -152,8 +151,7 @@ xcodeproj(
     tags = ["manual"],
     top_level_targets = [
         # Apps
-        # TODO(jpsim): Fix Objective-C app support
-        # top_level_target("//examples/objective-c/hello_world:app", target_environments = ["device", "simulator"]),
+        top_level_target("//examples/objective-c/hello_world:app", target_environments = ["device", "simulator"]),
         top_level_target("//examples/swift/async_await:app", target_environments = ["device", "simulator"]),
         top_level_target("//examples/swift/hello_world:app", target_environments = ["device", "simulator"]),
         top_level_target("//test/swift/apps/baseline:app", target_environments = ["device", "simulator"]),
