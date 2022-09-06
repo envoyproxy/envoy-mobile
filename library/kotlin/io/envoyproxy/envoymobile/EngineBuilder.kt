@@ -77,7 +77,7 @@ open class EngineBuilder(
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
   private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
   private var usePlatformCertValidator = false
-  
+
   /**
    * Add a log level to use with Envoy.
    *
@@ -664,6 +664,13 @@ open class EngineBuilder(
     return this
   }
 
+  /**
+   * Specify whether to use platform provided certificate validation APIs or Envoy built-in validation logic. Defaults to false.
+   *
+   * @param usePlatformCertValidator true if using platform APIs is desired.
+   *
+   * @return This builder.
+   */
   fun usePlatformCertValidator(usePlatformCertValidator: Boolean): EngineBuilder {
     this.usePlatformCertValidator = usePlatformCertValidator
     return this
