@@ -13,5 +13,6 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
                                                                    jobject class_loader,
                                                                    jobject connectivity_manager) {
   set_class_loader(env->NewGlobalRef(class_loader));
+
   return 0;
 }

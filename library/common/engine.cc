@@ -52,7 +52,6 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                          concurrency_arg.c_str(),
                                          log_flag.c_str(),
                                          log_level.c_str()};
-  ENVOY_LOG(trace, "========== run with envoy config: {}", composed_config);
   if (!admin_address_path.empty()) {
     envoy_argv.push_back("--admin-address-path");
     envoy_argv.push_back(admin_address_path.c_str());

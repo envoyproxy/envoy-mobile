@@ -60,7 +60,6 @@ Features:
 - android: create simple persistent SharedPreferencesStore (:issue: `#2319 <2319>`)
 - iOS: A documentation archive is now included in the GitHub release artifact (:issue: `#2335 <2335>`)
 - api: improved C++ APIs compatibility with Java / Kotlin / Swift (:issue `#2362 <2362>`)
-- api: add option to use the a ``getaddrinfo``-based system DNS resolver instead of c-ares (:issue: `#2419 <2419>`)
 - api: add option to support platform provided certificates validation interfaces. (:issue `#2144 <2144>`)
 - Android: default to use a ``getaddrinfo``-based system DNS resolver instead of c-ares (:issue: `#2419 <2419>`)
 - iOS: add ``KeyValueStore`` protocol conformance to ``UserDefaults`` (:issue: `#2452 <2452>`)
