@@ -182,7 +182,8 @@ public class EnvoyConfiguration {
   String resolveTemplate(final String configTemplate, final String platformFilterTemplate,
                          final String nativeFilterTemplate,
                          final String altProtocolCacheFilterInsert, final String gzipFilterInsert,
-                         final String brotliFilterInsert, final String socketTagFilterInsert) {
+                         final String brotliFilterInsert, final String socketTagFilterInsert,
+                         final String certValidationTemplate) {
     final StringBuilder customFiltersBuilder = new StringBuilder();
 
     for (EnvoyHTTPFilterFactory filterFactory : httpPlatformFilterFactories) {
@@ -213,11 +214,7 @@ public class EnvoyConfiguration {
     }
 
     final StringBuilder certValidationBuilder = new StringBuilder();
-    if (usePlatformCertValidator) {
-      certValidationBuilder.append(JniLibrary.certValidationTemplate(/*use_platform=*/true));
-    } else {
-      certValidationBuilder.append(JniLibrary.certValidationTemplate(/*use_platform=*/false));
-    }
+    certValidationBuilder.append(certValidationTemplate);
 
     String processedTemplate =
         configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString())

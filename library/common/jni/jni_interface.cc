@@ -180,6 +180,17 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_socketTagConfigInsert(JNIEnv* e
   return result;
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_io_envoyproxy_envoymobile_engine_JniLibrary_certValidationTemplate(JNIEnv* env, jclass,
+                                                                        jboolean use_platform) {
+  if (use_platform) {
+    jstring result = env->NewStringUTF(platform_cert_validation_context_template);
+    return result;
+  }
+  jstring result = env->NewStringUTF(default_cert_validation_context_template);
+  return result;
+}
+
 extern "C" JNIEXPORT jint JNICALL Java_io_envoyproxy_envoymobile_engine_JniLibrary_recordCounterInc(
     JNIEnv* env,
     jclass, // class
@@ -1185,7 +1196,6 @@ static void ExtractCertVerifyResult(JNIEnv* env, jobject result, envoy_cert_veri
     if (chain_byte_array != nullptr) {
       JavaArrayOfByteArrayToStringVector(env, chain_byte_array, verified_chain);
     }
-    std::cerr << "========== validation succeeded.\n";
   }
 }
 
@@ -1211,7 +1221,7 @@ static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
   env->DeleteLocalRef(auth_string);
   env->DeleteLocalRef(host_string);
   env->DeleteLocalRef(jcls_AndroidNetworkLibrary);
-  return env->NewGlobalRef(result);
+  return result;
 }
 
 // `auth_type` and `host` are expected to be UTF-8 encoded.
@@ -1228,12 +1238,11 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
   } else {
     ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
     if (env->ExceptionCheck() == JNI_TRUE) {
-      std::cerr << "======== exception while extracting validation result\n";
       env->ExceptionDescribe();
       *status = CERT_VERIFY_STATUS_FAILED;
     };
   }
-  env->DeleteGlobalRef(result);
+  env->DeleteLocalRef(result);
 }
 
 static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* certs, uint8_t size,
@@ -1335,15 +1344,4 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_callClearTestRootCertificateFromNative(JNIEnv*,
                                                                                         jclass) {
   jvm_clear_test_root_certificate();
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_certValidationTemplate(JNIEnv* env, jclass,
-                                                                        jboolean use_platform) {
-  if (use_platform) {
-    jstring result = env->NewStringUTF(platform_cert_validation_context_template);
-    return result;
-  }
-  jstring result = env->NewStringUTF(default_cert_validation_context_template);
-  return result;
 }

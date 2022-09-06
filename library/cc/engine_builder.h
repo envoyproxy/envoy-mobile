@@ -41,6 +41,7 @@ public:
   EngineBuilder& enableGzip(bool gzip_on);
   EngineBuilder& enableBrotli(bool brotli_on);
   EngineBuilder& enableSocketTagging(bool socket_tagging_on);
+  EngineBuilder& usePlatformCertValidator(bool use_platform_cert_validator);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
@@ -83,6 +84,7 @@ private:
   bool gzip_filter_ = true;
   bool brotli_filter_ = false;
   bool socket_tagging_filter_ = false;
+  bool use_platform_cert_validator_ = false;
 
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 

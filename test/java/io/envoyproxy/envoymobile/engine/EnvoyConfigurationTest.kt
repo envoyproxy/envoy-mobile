@@ -7,6 +7,9 @@ import org.junit.Test
 
 private const val TEST_CONFIG =
 """
+!ignore tls_socket_defs:
+- &validation_context {{custom_cert_validation_context}}
+
 fixture_template:
 - name: mock
   filters:
@@ -42,6 +45,12 @@ private const val BROTLI_INSERT =
 private const val SOCKET_TAG_INSERT =
 """
   - name: SocketTag
+"""
+
+private const val CERT_VALIDATION_TEMPLATE =
+"""
+  trusted_ca:
+    inline_string: *tls_root_certs
 """
 
 class EnvoyConfigurationTest {
@@ -129,7 +138,8 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration()
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT,
+      CERT_VALIDATION_TEMPLATE
     )
     assertThat(resolvedTemplate).contains("&connect_timeout 123s")
 
@@ -194,6 +204,9 @@ class EnvoyConfigurationTest {
     // Filters
     assertThat(resolvedTemplate).contains("filter_name")
     assertThat(resolvedTemplate).contains("test_config")
+
+    // Cert Validation
+    assertThat(resolvedTemplate).contains("trusted_ca")
   }
 
   @Test
@@ -212,7 +225,8 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT,
+CERT_VALIDATION_TEMPLATE
     )
 
     // DNS
@@ -247,7 +261,8 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT,
+      CERT_VALIDATION_TEMPLATE
     )
 
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig\"}")
@@ -259,7 +274,7 @@ class EnvoyConfigurationTest {
     val envoyConfiguration = buildTestEnvoyConfiguration()
 
     try {
-      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "", "", "", "")
+      envoyConfiguration.resolveTemplate("{{ missing }}", "", "", "", "", "", "", "")
       fail("Unresolved configuration keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")
@@ -274,7 +289,7 @@ class EnvoyConfigurationTest {
     )
 
     try {
-      envoyConfiguration.resolveTemplate("", "", "", "", "", "", "")
+      envoyConfiguration.resolveTemplate("", "", "", "", "", "", "", "")
       fail("Conflicting stats keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("cannot enable both statsD and gRPC metrics sink")
@@ -288,7 +303,7 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT,CERT_VALIDATION_TEMPLATE 
     )
 
     assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\",\"h2-raw.example.com2\"]")
@@ -301,7 +316,8 @@ class EnvoyConfigurationTest {
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
+      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT,
+CERT_VALIDATION_TEMPLATE
     )
 
     assertThat(resolvedTemplate).contains("&dns_resolver_config {\"@type\":\"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\",\"resolvers\":[{\"socket_address\":{\"address\":\"8.8.8.8\"}},{\"socket_address\":{\"address\":\"1.1.1.1\"}}],\"use_resolvers_as_fallback\": true, \"filter_unroutable_families\": true}")

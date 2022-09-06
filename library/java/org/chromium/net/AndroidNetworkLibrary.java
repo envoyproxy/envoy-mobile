@@ -33,7 +33,7 @@ public final class AndroidNetworkLibrary {
 
   private static final String TAG = "AndroidNetworkLibrary";
 
-  private static boolean mUseFakeCertificateVerification = false;
+  private static boolean mUseFakeCertificateVerification;
 
   /**
    * Whether a fake should be used in place of X509Util. This allows to easily test the JNI
@@ -69,14 +69,10 @@ public final class AndroidNetworkLibrary {
     if (mUseFakeCertificateVerification) {
       AndroidCertVerifyResult result =
           FakeX509Util.verifyServerCertificates(certChain, authType, host);
-      System.out.println(
-          "============ AndroidNetworkLibrary::verifyServerCertificates return result: " +
-          result.getStatus());
       return result;
     }
 
     try {
-      System.out.println("=========== calling X509Util.verifyServerCertificates on certs:");
       return X509Util.verifyServerCertificates(certChain, authType, host);
     } catch (KeyStoreException e) {
       return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
@@ -109,7 +105,6 @@ public final class AndroidNetworkLibrary {
    */
   public static void clearTestRootCertificates()
       throws NoSuchAlgorithmException, CertificateException, KeyStoreException {
-
     if (mUseFakeCertificateVerification) {
       FakeX509Util.clearTestRootCertificates();
     } else {

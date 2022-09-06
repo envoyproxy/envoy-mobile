@@ -100,13 +100,15 @@ public class EnvoyEngineImpl implements EnvoyEngine {
       }
     }
 
-    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
-                                   configurationYAML, JniLibrary.platformFilterTemplate(),
-                                   JniLibrary.nativeFilterTemplate(),
-                                   JniLibrary.altProtocolCacheFilterInsert(),
-                                   JniLibrary.gzipConfigInsert(), JniLibrary.brotliConfigInsert(),
-                                   JniLibrary.socketTagConfigInsert()),
-                               logLevel);
+    return runWithResolvedYAML(
+        envoyConfiguration.resolveTemplate(
+            configurationYAML, JniLibrary.platformFilterTemplate(),
+            JniLibrary.nativeFilterTemplate(), JniLibrary.altProtocolCacheFilterInsert(),
+            JniLibrary.gzipConfigInsert(), JniLibrary.brotliConfigInsert(),
+            JniLibrary.socketTagConfigInsert(),
+            JniLibrary.certValidationTemplate(
+                /*use_platform=*/envoyConfiguration.usePlatformCertValidator)),
+        logLevel);
   }
 
   /**

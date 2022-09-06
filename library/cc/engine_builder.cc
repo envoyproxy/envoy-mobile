@@ -124,6 +124,11 @@ EngineBuilder& EngineBuilder::enableSocketTagging(bool socket_tagging_on) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::usePlatformCertValidator(bool use_platform_cert_validator) {
+  this->use_platform_cert_validator_ = use_platform_cert_validator;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -198,6 +203,14 @@ std::string EngineBuilder::generateConfigStr() {
   config_builder << config_template_;
 
   auto config_str = config_builder.str();
+
+  // Choose the right certification validator.
+  absl::StrReplaceAll(
+      {{"{{custom_cert_validation_context}}",
+        (this->use_platform_cert_validator_ ? platform_cert_validation_context_template
+                                            : default_cert_validation_context_template)}},
+      &config_str);
+
   if (config_str.find("{{") != std::string::npos) {
     throw std::runtime_error("could not resolve all template keys in config");
   }

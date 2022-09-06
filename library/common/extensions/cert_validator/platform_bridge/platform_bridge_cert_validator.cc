@@ -45,7 +45,6 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
     SSL_CTX& /*ssl_ctx*/, const CertValidator::ExtraValidationContext& /*validation_context*/,
     bool is_server) {
   ASSERT(!is_server);
-  std::cerr << "================ doVerifyCertChain\n";
   if (sk_X509_num(&cert_chain) == 0) {
     if (ssl_extended_info) {
       ssl_extended_info->setCertificateValidationStatus(
