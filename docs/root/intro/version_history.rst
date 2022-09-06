@@ -10,7 +10,7 @@ Breaking changes:
 
 Bugfixes:
 
-- android: fix app launch crash for when admin interface is enabled. (:issue:`#2520 <2520>`)
+- android: fix engine startup crash for when admin interface is enabled. (:issue:`#2520 <2520>`)
 
 Features:
 
