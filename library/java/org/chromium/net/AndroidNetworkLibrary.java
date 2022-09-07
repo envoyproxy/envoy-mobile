@@ -4,6 +4,7 @@ import android.net.TrafficStats;
 import android.os.ParcelFileDescriptor;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
+import android.security.NetworkSecurityPolicy;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -108,8 +109,15 @@ public final class AndroidNetworkLibrary {
    * Returns true if cleartext traffic to a given host is allowed by the current app.
    */
   public static boolean isCleartextTrafficPermitted(String host) {
-    // TODO(alyssawilk) Implement this method.
-    return true;
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+      // This API was not implemented before Android N.
+      return true;
+    }
+    // M only supported global checks.
+    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+      return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+    }
+    return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
   }
 
   /**
