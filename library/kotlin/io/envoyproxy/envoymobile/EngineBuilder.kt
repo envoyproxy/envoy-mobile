@@ -665,7 +665,8 @@ open class EngineBuilder(
   }
 
   /**
-   * Specify whether to use platform provided certificate validation APIs or Envoy built-in validation logic. Defaults to false.
+   * Specify whether to use platform provided certificate validation APIs or Envoy built-in
+   * validation logic. Defaults to false.
    *
    * @param usePlatformCertValidator true if using platform APIs is desired.
    *
