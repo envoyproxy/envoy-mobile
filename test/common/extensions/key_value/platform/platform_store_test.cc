@@ -36,6 +36,7 @@ protected:
   PlatformStoreTest() { createStore(); }
 
   void createStore() {
+    // Note that timer assignment (to ttl vs flush) is determined by their ordering here
     ttl_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
     flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
     store_ = std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_, mock_platform_,
