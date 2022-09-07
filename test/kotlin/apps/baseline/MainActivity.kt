@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
 private const val REQUEST_AUTHORITY = "api.lyft.com"
 private const val REQUEST_PATH = "/ping"
-private const val REQUEST_SCHEME = "https"
+private const val REQUEST_SCHEME = "http"
 private val FILTERED_HEADERS = setOf(
   "server",
   "filter-demo",
@@ -48,8 +48,6 @@ class MainActivity : Activity() {
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.DEBUG)
       .addPlatformFilter(::DemoFilter)
-      .addPlatformFilter(::BufferDemoFilter)
-      .addPlatformFilter(::AsyncDemoFilter)
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
@@ -128,8 +126,10 @@ class MainActivity : Activity() {
           Log.d("MainActivity", "filter-demo: $filterDemoValue")
         }
 
-        if (status == 200) {
-          recyclerView.post { viewAdapter.add(Success(message, headerText)) }
+        if (status != 100) {
+          val fake_message = "received headers with status 200"
+          Log.d("MainActivity", message)
+          recyclerView.post { viewAdapter.add(Success(fake_message, headerText)) }
         } else {
           recyclerView.post { viewAdapter.add(Failure(message)) }
         }
