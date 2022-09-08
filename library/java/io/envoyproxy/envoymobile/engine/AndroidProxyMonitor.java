@@ -34,6 +34,7 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
     this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     registerReceiver(context);
+    this.handleProxyChange();
   }
 
   private void registerReceiver(Context context) {
