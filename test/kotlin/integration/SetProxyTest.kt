@@ -40,6 +40,8 @@ import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
+private const val emhcmType =
+  "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
 private const val lefType =
   "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
 private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
@@ -51,10 +53,10 @@ static_resources:
   listeners:
   - name: base_api_listener
     address:
-      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10000 }
+      socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
     api_listener:
       api_listener:
-        "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
+        "@type": $emhcmType
         config:
           stat_prefix: api_hcm
           route_config:
@@ -64,31 +66,15 @@ static_resources:
               domains: ["*"]
               routes:
               - match: { prefix: "/" }
-                route: { cluster: base }
+                route: { cluster: fake_remote }
           http_filters:
           - name: envoy.filters.http.local_error
             typed_config:
               "@type": $lefType
-          - name: envoy.filters.http.network_configuration
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
-              enable_drain_post_dns_refresh: false
-              enable_interface_binding: false
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-  - name: base
-    connect_timeout: 10s
-    lb_policy: ROUND_ROBIN
-    transport_socket:
-      name: envoy.transport_sockets.http_11_proxy
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
-        transport_socket:
-          name: envoy.transport_sockets.raw_buffer
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
   - name: fake_remote
     connect_timeout: 0.25s
     type: STATIC
@@ -108,7 +94,6 @@ class SetProxyTest {
     JniLibrary.loadTestLibrary()
   }
 
-  private val startExpectation = CountDownLatch(1)
   private val runExpectation = CountDownLatch(1)
 
   @Test
@@ -127,7 +112,6 @@ class SetProxyTest {
     builder
         .addLogLevel(LogLevel.TRACE)
         .enableProxySupport(true)
-        .setOnEngineRunning { startExpectation.countDown() }
 
     val engine = builder.build()
     val client = engine.streamClient()
@@ -139,9 +123,6 @@ class SetProxyTest {
       path = ""
     )
       .build()
-
-    startExpectation.await(5, TimeUnit.SECONDS)
-    assertThat(startExpectation.count).isEqualTo(0)
 
     client.newStreamPrototype()
       .setOnResponseHeaders { responseHeaders, _, _ ->
