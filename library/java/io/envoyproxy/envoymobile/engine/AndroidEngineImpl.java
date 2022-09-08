@@ -18,11 +18,13 @@ public class AndroidEngineImpl implements EnvoyEngine {
    * @param runningCallback Called when the engine finishes its async startup and begins running.
    */
   public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback,
-                           EnvoyLogger logger, EnvoyEventTracker eventTracker) {
+                           EnvoyLogger logger, EnvoyEventTracker eventTracker, Boolean enableProxySupport) {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger, eventTracker);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
-    AndroidProxyMonitor.load(context, envoyEngine);
+    if (enableProxySupport) {
+      AndroidProxyMonitor.load(context, envoyEngine);
+    }
   }
 
   @Override
@@ -100,7 +102,5 @@ public class AndroidEngineImpl implements EnvoyEngine {
     envoyEngine.setPreferredNetwork(network);
   }
 
-  public void setProxySettings(String host, int port) {
-    envoyEngine.setProxySettings(host, port);
-  }
+  public void setProxySettings(String host, int port) { envoyEngine.setProxySettings(host, port); }
 }

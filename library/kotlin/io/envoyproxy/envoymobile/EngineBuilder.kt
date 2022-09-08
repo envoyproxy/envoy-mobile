@@ -36,6 +36,7 @@ open class EngineBuilder(
   protected var onEngineRunning: (() -> Unit) = {}
   protected var logger: ((String) -> Unit)? = null
   protected var eventTracker: ((Map<String, String>) -> Unit)? = null
+  protected var enableProxySupport = false
   private var engineType: () -> EnvoyEngine = {
     EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
   }
@@ -323,6 +324,24 @@ open class EngineBuilder(
    */
   fun enableInterfaceBinding(enableInterfaceBinding: Boolean): EngineBuilder {
     this.enableInterfaceBinding = enableInterfaceBinding
+    return this
+  }
+
+  /**
+   * Specify whether system proxy settings should be respected. If yes, Envoy Mobile will
+   * use Android APIs to query Android Proxy settings configured on a device and will
+   * respect these settings when establishing connections with remote services.
+   *
+   * The method is introduced for experimentation purposes and as a safety guard against
+   * critical issues in the implementation of the proxying feature. It's intended to be removed
+   * after it's confirmed that proxies on Android work as expected.
+   *
+   * @param enableProxySupport whether to enable Envoy's support for proxies.
+   *
+   * @return This builder.
+   */
+  fun enableProxySupport(enableProxySupport: Boolean): EngineBuilder {
+    this.enableProxySupport = enableProxySupport
     return this
   }
 
@@ -615,6 +634,7 @@ open class EngineBuilder(
       enableSocketTagging,
       enableHappyEyeballs,
       enableInterfaceBinding,
+      enableProxySupport,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
@@ -639,14 +659,14 @@ open class EngineBuilder(
           engineType(),
           engineConfiguration,
           configuration.yaml,
-          logLevel
+          logLevel,
         )
       }
       is Standard -> {
         EngineImpl(
           engineType(),
           engineConfiguration,
-          logLevel
+          logLevel,
         )
       }
     }

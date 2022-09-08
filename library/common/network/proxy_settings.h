@@ -27,9 +27,7 @@ struct ProxySettings {
    * @return Address of a proxy or nullptr if proxy address is incorrect or host is
    *         defined using a hostname and not an IP address.
    */
-  const Envoy::Network::Address::InstanceConstSharedPtr& address() const {
-    return address_;
-  }
+  const Envoy::Network::Address::InstanceConstSharedPtr& address() const { return address_; }
 
 private:
   Envoy::Network::Address::InstanceConstSharedPtr address_;
