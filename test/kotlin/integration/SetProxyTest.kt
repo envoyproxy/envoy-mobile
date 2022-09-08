@@ -40,26 +40,18 @@ import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
+private const val lefType =
+  "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+private const val pbfType = "type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge"
+private const val filterName = "cancel_validation_filter"
 private val remotePort = (10001..11000).random()
 private val config =
 """
 static_resources:
   listeners:
-  - name: listener_0
-    address:
-      socket_address:
-        address: 0.0.0.0
-        port_value: 10000
-    filter_chains:
-      - filters:
-        - name: envoy.filters.network.tcp_proxy
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
-            stat_prefix: destination
-            cluster: cluster_0
   - name: base_api_listener
     address:
-      socket_address: { protocol: TCP, address: 0.0.0.0, port_value: 10000 }
+      socket_address: { protocol: TCP, address: 127.0.0.1, port_value: 10000 }
     api_listener:
       api_listener:
         "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager"
@@ -76,7 +68,7 @@ static_resources:
           http_filters:
           - name: envoy.filters.http.local_error
             typed_config:
-              "@type": "type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError"
+              "@type": $lefType
           - name: envoy.filters.http.network_configuration
             typed_config:
               "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
