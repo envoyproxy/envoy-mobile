@@ -10,7 +10,7 @@
             android:targetSdkVersion="27"/>
 
     <application
-            android:label="Hello Envoy">
+            android:label="Hello Envoy Baseline Test">
         <activity
                 android:name=".MainActivity"
                 android:label="Hello Envoy Kotlin">
