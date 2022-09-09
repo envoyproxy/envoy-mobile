@@ -1214,9 +1214,6 @@ static jobject call_jvm_verify_x509_cert_chain(JNIEnv* env,
   jobject result =
       env->CallStaticObjectMethod(jcls_AndroidNetworkLibrary, jmid_verifyServerCertificates,
                                   chain_byte_array, auth_string, host_string);
-  if (env->ExceptionCheck() == JNI_TRUE) {
-    env->ExceptionDescribe();
-  }
   env->DeleteLocalRef(chain_byte_array);
   env->DeleteLocalRef(auth_string);
   env->DeleteLocalRef(host_string);
@@ -1234,11 +1231,13 @@ static void jvm_verify_x509_cert_chain(const std::vector<std::string>& cert_chai
   jobject result = call_jvm_verify_x509_cert_chain(env, cert_chain, auth_type, host);
   if (env->ExceptionCheck() == JNI_TRUE) {
     env->ExceptionDescribe();
+    env->ExceptionClear();
     *status = CERT_VERIFY_STATUS_NOT_YET_VALID;
   } else {
     ExtractCertVerifyResult(get_env(), result, status, is_issued_by_known_root, verified_chain);
     if (env->ExceptionCheck() == JNI_TRUE) {
       env->ExceptionDescribe();
+      env->ExceptionClear();
       *status = CERT_VERIFY_STATUS_FAILED;
     };
   }
