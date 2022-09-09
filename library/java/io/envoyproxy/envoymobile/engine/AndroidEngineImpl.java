@@ -18,7 +18,8 @@ public class AndroidEngineImpl implements EnvoyEngine {
    * @param runningCallback Called when the engine finishes its async startup and begins running.
    */
   public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback,
-                           EnvoyLogger logger, EnvoyEventTracker eventTracker, Boolean enableProxySupport) {
+                           EnvoyLogger logger, EnvoyEventTracker eventTracker,
+                           Boolean enableProxySupport) {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger, eventTracker);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
