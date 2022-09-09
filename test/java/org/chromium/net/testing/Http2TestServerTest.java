@@ -105,19 +105,16 @@ public class Http2TestServerTest {
 
   @Test
   public void testGetRequest() throws Exception {
-    System.out.println("TEST_testGetRequest");
     getSchemeIsHttps(false, TrustChainVerification.ACCEPT_UNTRUSTED);
   }
 
   @Test
   public void testGetRequestWithPlatformCertValidatorSuccess() throws Exception {
-    System.out.println("TEST_testGetRequestWithPlatformCertValidator");
     getSchemeIsHttps(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
   }
 
   @Test
   public void testGetRequestWithPlatformCertValidatorFail() throws Exception {
-    System.out.println("TEST_testGetRequestWithPlatformCertValidatorFail");
     // Remove any pre-installed test certs, so that following verifications will fail.
     AndroidNetworkLibrary.clearTestRootCertificates();
     setUpEngine(true, TrustChainVerification.VERIFY_TRUST_CHAIN);
@@ -146,7 +143,6 @@ public class Http2TestServerTest {
 
   @Test
   public void testAcceptUntrustedWithPlatformCertValidator() throws Exception {
-    System.out.println("TEST_testGetRequestWithPlatformCertValidator");
     // Remove any pre-installed test certs, so that following verifications will fail.
     AndroidNetworkLibrary.clearTestRootCertificates();
     getSchemeIsHttps(true, TrustChainVerification.ACCEPT_UNTRUSTED);
@@ -154,7 +150,6 @@ public class Http2TestServerTest {
 
   @Test
   public void testSubjectAltNameErrorWithPlatformCertValidator() throws Exception {
-    System.out.println("TEST_testSubjectAltNameErrorWithPlatformCertValidator");
     // Switch to a cert which doesn't have 127.0.0.1 in the SAN list.
     serverCertPath = "../envoy/test/config/integration/certs/servercert.pem";
     serverKeyPath = "../envoy/test/config/integration/certs/serverkey.pem";
@@ -185,7 +180,6 @@ public class Http2TestServerTest {
 
   @Test
   public void testSubjectAltNameErrorAllowedWithPlatformCertValidator() throws Exception {
-    System.out.println("TEST_testSubjectAltNameErrorAllowedWithPlatformCertValidator");
     // Switch to a cert which doesn't have 127.0.0.1 in the SAN list.
     serverCertPath = "../envoy/test/config/integration/certs/servercert.pem";
     serverKeyPath = "../envoy/test/config/integration/certs/serverkey.pem";

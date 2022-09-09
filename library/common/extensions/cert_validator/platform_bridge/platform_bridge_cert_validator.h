@@ -12,13 +12,18 @@ namespace Extensions {
 namespace TransportSockets {
 namespace Tls {
 
+// A certification validation implementation that uses the platform provided APIs to verify
+// certificate chain. Since some platform APIs are slow blocking calls, in order not to block
+// network events, this implementation creates stand-alone threads to make those calls for each
+// validation.
 class PlatformBridgeCertValidator : public CertValidator, Logger::Loggable<Logger::Id::connection> {
 public:
   PlatformBridgeCertValidator(const Envoy::Ssl::CertificateValidationContextConfig* config,
-                              SslStats& stats, const envoy_cert_validator* platform_bridge_api);
+                              SslStats& stats, const envoy_cert_validator* platform_validator);
 
   ~PlatformBridgeCertValidator() override;
 
+  // CertValidator
   // Only called by server TLS context.
   void addClientValidationContext(SSL_CTX* /*context*/, bool /*require_client_cert*/) override {
     PANIC("not reached");
@@ -38,7 +43,8 @@ public:
   }
   absl::optional<uint32_t> daysUntilFirstCertExpires() const override { return absl::nullopt; }
   Envoy::Ssl::CertificateDetailsPtr getCaCertInformation() const override { return nullptr; }
-
+  // Return empty string
+  std::string getCaFileName() const override { return ""; }
   // Overridden to call into platform extension API asynchronously.
   ValidationResults
   doVerifyCertChain(STACK_OF(X509) & cert_chain, Ssl::ValidateResultCallbackPtr callback,
@@ -47,15 +53,14 @@ public:
                     SSL_CTX& ssl_ctx,
                     const CertValidator::ExtraValidationContext& validation_context,
                     bool is_server) override;
-
   // As CA path will not be configured, make sure the return value won’t be SSL_VERIFY_NONE because
   // of that, so that doVerifyCertChain() will be called from the TLS stack.
   int initializeSslContexts(std::vector<SSL_CTX*> contexts,
                             bool handshaker_provides_certificates) override;
 
-  // Return empty string
-  std::string getCaFileName() const override { return ""; }
-
+  // Calls into platform APIs in a stand-alone thread to verify the given certs.
+  // Once the validation is done, the result will be posted back to the current
+  // thread to trigger callback and update verify stats.
   void verifyCertChainByPlatform(
       std::vector<envoy_data> certs, Ssl::ValidateResultCallbackPtr callback,
       const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
@@ -64,9 +69,9 @@ public:
 private:
   const Envoy::Ssl::CertificateValidationContextConfig* config_;
   SslStats& stats_;
-  bool allow_untrusted_certificate_{false};
+  bool allow_untrusted_certificate_ = false;
   // latches the platform extension API.
-  const envoy_cert_validator* platform_bridge_api_;
+  const envoy_cert_validator* platform_validator_;
   absl::flat_hash_map<std::thread::id, std::thread> validation_threads_;
 };
 

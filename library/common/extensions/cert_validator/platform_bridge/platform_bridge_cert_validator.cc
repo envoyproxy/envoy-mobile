@@ -12,8 +12,8 @@ namespace Tls {
 
 PlatformBridgeCertValidator::PlatformBridgeCertValidator(
     const Envoy::Ssl::CertificateValidationContextConfig* config, SslStats& stats,
-    const envoy_cert_validator* platform_bridge_api)
-    : config_(config), stats_(stats), platform_bridge_api_(platform_bridge_api) {
+    const envoy_cert_validator* platform_validator)
+    : config_(config), stats_(stats), platform_validator_(platform_validator) {
   ENVOY_BUG(config != nullptr && config->caCert().empty() &&
                 config->certificateRevocationList().empty(),
             "Invalid cert validation context config.");
@@ -76,10 +76,11 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
       !transport_socket_options->verifySubjectAltNameListOverride().empty()) {
     host_name = transport_socket_options->verifySubjectAltNameListOverride()[0];
   }
-  std::thread t(&PlatformBridgeCertValidator::verifyCertChainByPlatform, this, std::move(certs),
-                std::move(callback), transport_socket_options, host_name);
-  std::thread::id t_id = t.get_id();
-  validation_threads_[t_id] = std::move(t);
+  std::thread verification_thread(&PlatformBridgeCertValidator::verifyCertChainByPlatform, this,
+                                  std::move(certs), std::move(callback), transport_socket_options,
+                                  host_name);
+  std::thread::id thread_id = verification_thread.get_id();
+  validation_threads_[thread_id] = std::move(verification_thread);
   return {ValidationResults::ValidationStatus::Pending, absl::nullopt, absl::nullopt};
 }
 
@@ -88,13 +89,13 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
     const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
     const std::string host_name) {
   ENVOY_LOG(debug, "Start verifyCertChainByPlatform for host {}", host_name);
-  // In a stand alone thread.
+  // This is running in a stand alone thread other than the engine thread.
   ASSERT(!certs.empty());
   envoy_data leaf_cert_der = certs[0];
   bssl::UniquePtr<X509> leaf_cert(d2i_X509(
       nullptr, const_cast<const unsigned char**>(&leaf_cert_der.bytes), leaf_cert_der.length));
   envoy_cert_validation_result result =
-      platform_bridge_api_->validate_cert(certs.data(), certs.size(), host_name.c_str());
+      platform_validator_->validate_cert(certs.data(), certs.size(), host_name.c_str());
   bool success = (result.result == ENVOY_SUCCESS);
   absl::string_view error_details;
   uint8_t tls_alert = SSL_AD_CERTIFICATE_UNKNOWN;
@@ -126,12 +127,12 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
     ENVOY_LOG(debug, result.error_details);
   }
 
-  std::thread::id t_id = std::this_thread::get_id();
+  std::thread::id thread_id = std::this_thread::get_id();
   callback->dispatcher().post([this, success, error = std::string(error_details), tls_alert,
-                               counter_ref, cb = callback.release(), t_id, host_name]() {
+                               counter_ref, cb = callback.release(), thread_id, host_name]() {
     ENVOY_LOG(debug, "Get validation result for {} from platform", host_name);
-    validation_threads_[t_id].join();
-    validation_threads_.erase(t_id);
+    validation_threads_[thread_id].join();
+    validation_threads_.erase(thread_id);
     Ssl::ValidateResultCallbackPtr scoped_cb(cb);
     if (counter_ref.has_value()) {
       const_cast<Stats::Counter&>(counter_ref.ref()).inc();
@@ -142,7 +143,7 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
   ENVOY_LOG(trace,
             "Finished platform cert validation for {}, post result callback to network thread",
             host_name);
-  platform_bridge_api_->validation_done();
+  platform_validator_->validation_done();
 }
 
 } // namespace Tls
