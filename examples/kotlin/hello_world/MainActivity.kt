@@ -51,17 +51,17 @@ class MainActivity : Activity() {
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.TRACE)
       .enableDNSUseSystemResolver(true)
-//      .addPlatformFilter(::DemoFilter)
-//      .addPlatformFilter(::BufferDemoFilter)
-//      .addPlatformFilter(::AsyncDemoFilter)
-//      .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
-//      .addStringAccessor("demo-accessor", { "PlatformString" })
+      .addPlatformFilter(::DemoFilter)
+      .addPlatformFilter(::BufferDemoFilter)
+      .addPlatformFilter(::AsyncDemoFilter)
+      .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
+      .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
-//      .setEventTracker({
-//        for (entry in it.entries) {
-//          Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
-//        }
-//      })
+     .setEventTracker({
+       for (entry in it.entries) {
+         Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
+       }
+     })
       .setLogger {
         Log.d("MainActivity", it)
       }
@@ -85,7 +85,7 @@ class MainActivity : Activity() {
         override fun run() {
           try {
             makeRequest()
-//            recordStats()
+            recordStats()
           } catch (e: IOException) {
             Log.d("MainActivity", "exception making request or recording stats", e)
           }
