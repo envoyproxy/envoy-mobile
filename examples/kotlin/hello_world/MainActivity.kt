@@ -51,6 +51,7 @@ class MainActivity : Activity() {
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.TRACE)
       .enableDNSUseSystemResolver(true)
+      .enableProxySupport(true)
       .addPlatformFilter(::DemoFilter)
       .addPlatformFilter(::BufferDemoFilter)
       .addPlatformFilter(::AsyncDemoFilter)

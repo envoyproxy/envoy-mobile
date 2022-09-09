@@ -58,7 +58,7 @@ class MainActivity : Activity() {
       .h2ExtendKeepaliveTimeout(true)
       .enableAdminInterface()
       .enableInterfaceBinding(true)
-      .enableDNSUseSystemResolver(false)
+      .enableDNSUseSystemResolver(true)
       .enableSocketTagging(true)
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .addStringAccessor("demo-accessor", { "PlatformString" })
