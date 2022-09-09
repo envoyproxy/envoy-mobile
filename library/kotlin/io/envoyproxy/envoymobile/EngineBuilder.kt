@@ -634,7 +634,6 @@ open class EngineBuilder(
       enableSocketTagging,
       enableHappyEyeballs,
       enableInterfaceBinding,
-      enableProxySupport,
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
@@ -659,14 +658,14 @@ open class EngineBuilder(
           engineType(),
           engineConfiguration,
           configuration.yaml,
-          logLevel,
+          logLevel
         )
       }
       is Standard -> {
         EngineImpl(
           engineType(),
           engineConfiguration,
-          logLevel,
+          logLevel
         )
       }
     }
