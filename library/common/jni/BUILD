@@ -109,6 +109,8 @@ cc_binary(
         "//library/common:envoy_main_interface_lib",
         "//library/common/api:c_types",
         "//library/common/jni/import:jni_import_lib",
+        "@envoy//source/common/tcp_proxy",
+        "@envoy//source/extensions/filters/network/tcp_proxy:config",
     ],
 )
 
