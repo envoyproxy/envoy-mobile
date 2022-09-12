@@ -3,6 +3,7 @@
 #include <net/if.h>
 
 #include "envoy/common/platform.h"
+#include "fmt/ostream.h"
 
 #include "source/common/api/os_sys_calls_impl.h"
 #include "source/common/common/assert.h"
@@ -437,3 +438,9 @@ ConnectivityManagerSharedPtr ConnectivityManagerHandle::get() {
 
 } // namespace Network
 } // namespace Envoy
+
+// NOLINT(namespace-envoy)
+namespace fmt {
+// Allow fmtlib to format InterfacePair::string_view
+template <> struct formatter<Envoy::Network::Address::InstanceConstSharedPtr> : ostream_formatter {};
+} // namespace fmt
