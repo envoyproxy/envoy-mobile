@@ -74,7 +74,7 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
   std::string host;
   if (transport_socket_options != nullptr &&
       !transport_socket_options->verifySubjectAltNameListOverride().empty()) {
-    host_name = transport_socket_options->verifySubjectAltNameListOverride()[0];
+    host = transport_socket_options->verifySubjectAltNameListOverride()[0];
   } else {
     host = host_name;
   }
