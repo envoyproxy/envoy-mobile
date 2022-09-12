@@ -26,8 +26,7 @@ public final class CertificateVerificationTest {
     JniLibrary.load();
   }
 
-  private static final byte[] host =
-      FakeX509Util.getExpectedHost().getBytes(StandardCharsets.UTF_8);
+  private static final byte[] host = FakeX509Util.expectedHost.getBytes(StandardCharsets.UTF_8);
   private static final byte[] authType =
       FakeX509Util.expectedAuthType.getBytes(StandardCharsets.UTF_8);
 
