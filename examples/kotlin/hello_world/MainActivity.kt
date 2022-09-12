@@ -111,7 +111,7 @@ class MainActivity : Activity() {
     val requestHeaders = RequestHeadersBuilder(
       RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
     )
-      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP1)
+      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
     engine
       .streamClient()
