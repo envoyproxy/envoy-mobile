@@ -202,13 +202,11 @@ envoy_mobile_jni_kt_test(
 )
 
 envoy_mobile_android_test(
-    name = "set_proxy_test",
+    name = "perform_http_request_using_proxy",
     srcs = [
-        "SetProxyTest.kt",
+        "PerformHTTPRequestUsingProxy.kt",
     ],
     native_deps = [
-        # "//library/common/jni:libjava_jni_lib.so",
-        # "//library/common/jni:java_jni_lib.jnilib",
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
     ],
