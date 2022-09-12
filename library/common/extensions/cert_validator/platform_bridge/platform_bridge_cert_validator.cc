@@ -43,7 +43,7 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
     Ssl::SslExtendedSocketInfo* ssl_extended_info,
     const Network::TransportSocketOptionsConstSharedPtr& transport_socket_options,
     SSL_CTX& /*ssl_ctx*/, const CertValidator::ExtraValidationContext& /*validation_context*/,
-    bool is_server) {
+    bool is_server, absl::string_view host_name) {
   ASSERT(!is_server);
   if (sk_X509_num(&cert_chain) == 0) {
     if (ssl_extended_info) {
@@ -71,14 +71,16 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
     OPENSSL_free(der);
   }
 
-  std::string host_name; // validation_context.host_name);
+  std::string host;
   if (transport_socket_options != nullptr &&
       !transport_socket_options->verifySubjectAltNameListOverride().empty()) {
     host_name = transport_socket_options->verifySubjectAltNameListOverride()[0];
+  } else {
+    host = host_name;
   }
   std::thread verification_thread(&PlatformBridgeCertValidator::verifyCertChainByPlatform, this,
                                   std::move(certs), std::move(callback), transport_socket_options,
-                                  host_name);
+                                  host);
   std::thread::id thread_id = verification_thread.get_id();
   validation_threads_[thread_id] = std::move(verification_thread);
   return {ValidationResults::ValidationStatus::Pending, absl::nullopt, absl::nullopt};

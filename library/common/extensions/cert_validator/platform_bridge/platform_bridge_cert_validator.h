@@ -51,8 +51,8 @@ public:
                     Ssl::SslExtendedSocketInfo* ssl_extended_info,
                     const Network::TransportSocketOptionsConstSharedPtr& transport_socket_options,
                     SSL_CTX& ssl_ctx,
-                    const CertValidator::ExtraValidationContext& validation_context,
-                    bool is_server) override;
+                    const CertValidator::ExtraValidationContext& validation_context, bool is_server,
+                    absl::string_view host_name) override;
   // As CA path will not be configured, make sure the return value won’t be SSL_VERIFY_NONE because
   // of that, so that doVerifyCertChain() will be called from the TLS stack.
   int initializeSslContexts(std::vector<SSL_CTX*> contexts,
