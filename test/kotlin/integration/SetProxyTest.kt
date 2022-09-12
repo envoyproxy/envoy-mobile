@@ -73,19 +73,19 @@ static_resources:
           - name: envoy.filters.http.dynamic_forward_proxy
             typed_config:   
               "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
-              dns_cache_config:
+              dns_cache_config: &dns_cache_config
                 name: base_dns_cache
                 dns_lookup_family: ALL
                 host_ttl: 86400s
                 dns_min_refresh_rate: 20s
                 dns_refresh_rate: 60s
                 dns_failure_refresh_rate:
-                  base_interval: 1s
-                  max_interval: 5s
-                dns_query_timeout: 10s
+                  base_interval: 2s
+                  max_interval: 10s
+                dns_query_timeout: 25s
                 typed_dns_resolver_config:
-                  name: envoy.network.dns_resolver.cares
-                  typed_config: {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
+                  name: envoy.network.dns_resolver.getaddrinfo
+                  typed_config: {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig"}
           - name: envoy.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -103,17 +103,14 @@ static_resources:
               cluster: cluster_0
   clusters:
   - name: base
-    load_assignment:
-      cluster_name: cluster_0
-      endpoints:
-      - lb_endpoints:
-        - endpoint:
-            address:
-              socket_address:
-                address: 127.0.0.1
-                port_value: 10001
     connect_timeout: 10s
-    lb_policy: ROUND_ROBIN
+    lb_policy: CLUSTER_PROVIDED
+    transport_socket:
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
     transport_socket:
       name: envoy.transport_sockets.http_11_proxy
       typed_config:
@@ -189,7 +186,7 @@ class SetProxyTest {
       .start(Executors.newSingleThreadExecutor())
       .sendHeaders(requestHeaders, true)
 
-    runExpectation.await(5, TimeUnit.SECONDS)
+    runExpectation.await(10, TimeUnit.SECONDS)
 
     engine.terminate()
 
