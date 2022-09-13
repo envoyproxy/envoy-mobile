@@ -23,9 +23,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 private const val REQUEST_HANDLER_THREAD_NAME = "hello_envoy_kt"
-private const val REQUEST_AUTHORITY = "example.com"
-private const val REQUEST_PATH = "/"
-private const val REQUEST_SCHEME = "http"
+private const val REQUEST_AUTHORITY = "api.lyft.com"
+private const val REQUEST_PATH = "/ping"
+private const val REQUEST_SCHEME = "https"
 private val FILTERED_HEADERS = setOf(
   "server",
   "filter-demo",
@@ -49,7 +49,7 @@ class MainActivity : Activity() {
     setContentView(R.layout.activity_main)
 
     engine = AndroidEngineBuilder(application)
-      .addLogLevel(LogLevel.TRACE)
+      .addLogLevel(LogLevel.DEBUG)
       .enableDNSUseSystemResolver(true)
       .enableProxySupport(true)
       .addPlatformFilter(::DemoFilter)
@@ -111,7 +111,7 @@ class MainActivity : Activity() {
     val requestHeaders = RequestHeadersBuilder(
       RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
     )
-      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
+      // .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
     engine
       .streamClient()
