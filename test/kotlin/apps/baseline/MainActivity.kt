@@ -126,7 +126,10 @@ class MainActivity : Activity() {
           Log.d("MainActivity", "filter-demo: $filterDemoValue")
         }
 
-        if (status != 100) {
+        // The endpoint redirects http://api.lyft.com/ping to https with a 301
+        // .github/workflows/android_build.yml is hard-coded to only accept 301s so if changing this
+        // code update the expected status code there.
+        if (status == 301) {
           recyclerView.post { viewAdapter.add(Success(message, headerText)) }
         } else {
           recyclerView.post { viewAdapter.add(Failure(message)) }
