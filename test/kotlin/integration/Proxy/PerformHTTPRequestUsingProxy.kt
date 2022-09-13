@@ -113,15 +113,9 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
         transport_socket:
-          name: envoy.transport_sockets.tls
+          name: envoy.transport_sockets.raw_buffer
           typed_config:
-            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-            common_tls_context:
-              tls_params:
-                tls_maximum_protocol_version: TLSv1_3
-              validation_context:
-                trusted_ca:
-                  inline_string: *tls_root_certs
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
 """
 
 @RunWith(RobolectricTestRunner::class)
