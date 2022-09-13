@@ -12,7 +12,7 @@ class AndroidEngineBuilder @JvmOverloads constructor(
   baseConfiguration: BaseConfiguration = Standard()
 ) : EngineBuilder(baseConfiguration) {
   init {
-    addEngineType { 
+    addEngineType {
       AndroidEngineImpl(context, onEngineRunning, logger, eventTracker, enableProxySupport)
     }
   }
