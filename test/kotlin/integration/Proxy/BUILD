@@ -6,17 +6,16 @@ envoy_mobile_kt_library(
     srcs = ["Proxy.kt"],
     visibility = ["//visibility:public"],
     deps = [
-        # "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
-        # "@maven//:org_assertj_assertj_core",
+        "@maven//:org_assertj_assertj_core",
     ],
 )
 
 envoy_mobile_android_test(
     name = "perform_http_request_using_proxy",
     srcs = [
-        "PerformHTTPRequestUsingProxy.kt",
+        "PerformHTTPNewRequestUsingProxy.kt",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
