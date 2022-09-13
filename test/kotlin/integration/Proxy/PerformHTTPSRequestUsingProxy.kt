@@ -35,25 +35,27 @@ class PerformHTTPSRequestUsingProxy {
 
   @Test
   fun `performs an HTTPs request through a proxy`() {
+    val port = (10001..11000).random()
+
     val mockContext = Mockito.mock(Context::class.java)
     Mockito.`when`(mockContext.getApplicationContext()).thenReturn(mockContext)
     val mockConnectivityManager = Mockito.mock(ConnectivityManager::class.java)
     Mockito.`when`(mockContext.getSystemService(Mockito.anyString())).thenReturn(mockConnectivityManager)
-    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("::1", 9998))
+    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("::1", port))
 
     val onEngineRunningLatch = CountDownLatch(2)
     val onRespondeHeadersLatch = CountDownLatch(1)
 
     val builder = AndroidEngineBuilder(mockContext)
     val engine = builder
-      .addLogLevel(LogLevel.TRACE)
+      .addLogLevel(LogLevel.DEBUG)
       .enableProxySupport(true)
       .setOnEngineRunning { onEngineRunningLatch.countDown() }
       .build()
 
-    val proxyEngineBuilder = Proxy(ApplicationProvider.getApplicationContext(), 9999).https()
+    val proxyEngineBuilder = Proxy(ApplicationProvider.getApplicationContext(), port).https()
     val proxyEngine = proxyEngineBuilder
-      .addLogLevel(LogLevel.TRACE)
+      .addLogLevel(LogLevel.DEBUG)
       .setOnEngineRunning { onEngineRunningLatch.countDown() }
       .build()
 

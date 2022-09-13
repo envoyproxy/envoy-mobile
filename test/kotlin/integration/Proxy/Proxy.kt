@@ -9,8 +9,9 @@ import io.envoyproxy.envoymobile.EngineBuilder
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-private val httpConfig =
-"""
+class Proxy constructor(val context: Context, val port: Int) {
+    fun http(): EngineBuilder {    
+      val config = """
 static_resources:
   listeners:
   - name: base_api_listener
@@ -31,7 +32,7 @@ static_resources:
                 direct_response: { status: 400, body: { inline_string: "not found" } }
   - name: listener_proxy
     address:
-      socket_address: { address: ::1, port_value: 9999 }
+      socket_address: { address: ::1, port_value: $port }
     filter_chains:
       - filters:
         - name: envoy.filters.network.http_connection_manager
@@ -85,9 +86,11 @@ static_resources:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
 """
+      return AndroidEngineBuilder(context, Custom(config))
+    }
 
-private val httpsConfig =
-"""
+    fun https(): EngineBuilder {      
+      val config = """
 static_resources:
   listeners:
   - name: base_api_listener
@@ -108,7 +111,7 @@ static_resources:
                 direct_response: { status: 400, body: { inline_string: "not found" } }
   - name: listener_proxy
     address:
-      socket_address: { address: ::1, port_value: 9998 }
+      socket_address: { address: ::1, port_value: $port }
     filter_chains:
       - filters:
         - name: envoy.filters.network.http_connection_manager
@@ -166,14 +169,7 @@ static_resources:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
 """
-
-class Proxy constructor(val context: Context, val port: Int) {
-    fun http(): EngineBuilder {      
-      return AndroidEngineBuilder(context, Custom(httpConfig))
-    }
-
-    fun https(): EngineBuilder {      
-      return AndroidEngineBuilder(context, Custom(httpsConfig))
+      return AndroidEngineBuilder(context, Custom(config))
     }
 }
 
