@@ -57,11 +57,11 @@ class MainActivity : Activity() {
       .addNativeFilter("envoy.filters.http.buffer", "{\"@type\":\"type.googleapis.com/envoy.extensions.filters.http.buffer.v3.Buffer\",\"max_request_bytes\":5242880}")
       .addStringAccessor("demo-accessor", { "PlatformString" })
       .setOnEngineRunning { Log.d("MainActivity", "Envoy async internal setup completed") }
-     .setEventTracker({
-       for (entry in it.entries) {
-         Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
-       }
-     })
+      .setEventTracker({
+        for (entry in it.entries) {
+          Log.d("MainActivity", "Event emitted: ${entry.key}, ${entry.value}")
+        }
+      })
       .setLogger {
         Log.d("MainActivity", it)
       }
@@ -110,7 +110,7 @@ class MainActivity : Activity() {
     val requestHeaders = RequestHeadersBuilder(
       RequestMethod.GET, REQUEST_SCHEME, REQUEST_AUTHORITY, REQUEST_PATH
     )
-      // .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
+      .addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP2)
       .build()
     engine
       .streamClient()
