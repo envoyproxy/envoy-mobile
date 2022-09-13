@@ -94,6 +94,11 @@ static_resources:
                   request_headers_to_remove:
                   - x-forwarded-proto
                   - x-envoy-mobile-cluster
+                response_headers_to_add:
+                  - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                    header:
+                      key: x-proxy-response
+                      value: 'true'
             http_filters:
               - name: envoy.router
                 typed_config:
@@ -158,6 +163,7 @@ class PerformHTTPRequestUsingProxy {
       .setOnResponseHeaders { responseHeaders, _, _ ->
         val status = responseHeaders.httpStatus ?: 0L
         assertThat(status).isEqualTo(200)
+        assertThat(responseHeaders.value("x-proxy-response")).isEqualTo(listOf("true"))
         onRespondeHeadersLatch.countDown()
       }
       .start(Executors.newSingleThreadExecutor())

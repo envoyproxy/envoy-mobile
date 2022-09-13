@@ -41,6 +41,6 @@ envoy_mobile_android_test(
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
-        # "//test/kotlin/integration/proxy:proxy_lib",
+        "//test/kotlin/integration/proxy:proxy_lib",
     ],
 )

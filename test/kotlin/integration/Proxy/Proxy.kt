@@ -60,6 +60,11 @@ static_resources:
   - name: cluster_proxy
     connect_timeout: 30s
     type: LOGICAL_DNS
+    cluster_type:
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
     dns_lookup_family: ALL
     load_assignment:
       cluster_name: cluster_proxy
