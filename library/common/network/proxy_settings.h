@@ -31,6 +31,18 @@ struct ProxySettings {
    */
   const Envoy::Network::Address::InstanceConstSharedPtr& address() const { return address_; }
 
+  bool operator==(ProxySettings const & rhs) const {
+    if (this->address() == nullptr || rhs.address() == nullptr) {
+      return this->address() == nullptr && rhs.address() == nullptr;
+    }
+
+    return this->address()->asString() == rhs.address()->asString();
+  }
+
+  bool operator!=(ProxySettings const & rhs) const {
+    return !(*this == rhs);
+  }
+
 private:
   Envoy::Network::Address::InstanceConstSharedPtr address_;
 };
