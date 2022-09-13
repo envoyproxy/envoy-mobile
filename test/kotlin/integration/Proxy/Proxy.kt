@@ -85,15 +85,6 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    load_assignment:
-      cluster_name: cluster_proxy
-      endpoints:
-        - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address:
-                    address: api.lyft.com
-                    port_value: 80
 """
 
 class Proxy constructor(val context: Context, val port: Int) {
