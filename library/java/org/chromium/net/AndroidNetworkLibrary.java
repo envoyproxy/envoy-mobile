@@ -109,15 +109,16 @@ public final class AndroidNetworkLibrary {
    * Returns true if cleartext traffic to a given host is allowed by the current app.
    */
   public static boolean isCleartextTrafficPermitted(String host) {
-    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+      // This API was not implemented before Android M.
+      return true;
+    } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M) {
       // M only supported global checks.
       return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+    } else {
+      // The host-specific API was implemented in Android N (which came after Android M).
+      return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
     }
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-      // The host-specific API was not implemented before Android N.
-      return true;
-    }
-    return NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted(host);
   }
 
   /**
