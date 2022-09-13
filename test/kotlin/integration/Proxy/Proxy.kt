@@ -31,7 +31,7 @@ static_resources:
                 direct_response: { status: 400, body: { inline_string: "not found" } }
   - name: listener_proxy
     address:
-      socket_address: { address: 127.0.0.1, port_value: 9999 }
+      socket_address: { address: ::1, port_value: 9999 }
     filter_chains:
       - filters:
         - name: envoy.filters.network.http_connection_manager
@@ -108,7 +108,7 @@ static_resources:
                 direct_response: { status: 400, body: { inline_string: "not found" } }
   - name: listener_proxy
     address:
-      socket_address: { address: 127.0.0.1, port_value: 9998 }
+      socket_address: { address: ::1, port_value: 9998 }
     filter_chains:
       - filters:
         - name: envoy.filters.network.http_connection_manager
@@ -122,11 +122,15 @@ static_resources:
                 domains: ["*"]
                 routes:
                 - match: { connect_matcher: {} }
-                  route: { cluster: cluster_proxy }
+                  route:
+                    cluster: cluster_proxy 
+                    upgrade_configs:
+                    - upgrade_type: CONNECT
+                      connect_config:
               response_headers_to_add:
                 - append_action: OVERWRITE_IF_EXISTS_OR_ADD
                   header:
-                    key: x-proxy-response
+                    key: x-response-header-that-should-be-stripped
                     value: 'true'
             http_filters:
               - name: envoy.filters.http.local_error
@@ -161,13 +165,6 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
-    transport_socket: 
-      name: envoy.transport_sockets.tls
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-        common_tls_context:
-          tls_params:
-            tls_maximum_protocol_version: TLSv1_3
 """
 
 class Proxy constructor(val context: Context, val port: Int) {

@@ -37,7 +37,7 @@ class PerformHTTPRequestUsingProxy {
     Mockito.`when`(mockContext.getApplicationContext()).thenReturn(mockContext)
     val mockConnectivityManager = Mockito.mock(ConnectivityManager::class.java)
     Mockito.`when`(mockContext.getSystemService(Mockito.anyString())).thenReturn(mockConnectivityManager)
-    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("127.0.0.1", 9999))
+    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("::1", 9999))
 
     val onEngineRunningLatch = CountDownLatch(2)
     val onRespondeHeadersLatch = CountDownLatch(1)
@@ -79,8 +79,9 @@ class PerformHTTPRequestUsingProxy {
       .start(Executors.newSingleThreadExecutor())
       .sendHeaders(requestHeaders, true)
 
-    onRespondeHeadersLatch.await(10, TimeUnit.SECONDS)
+    onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
+
     proxyEngine.terminate()
     engine.terminate()
   }

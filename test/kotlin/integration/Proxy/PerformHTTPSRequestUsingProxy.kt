@@ -1,5 +1,6 @@
 package test.kotlin.integration.proxy
 
+
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.ProxyInfo
@@ -38,7 +39,7 @@ class PerformHTTPSRequestUsingProxy {
     Mockito.`when`(mockContext.getApplicationContext()).thenReturn(mockContext)
     val mockConnectivityManager = Mockito.mock(ConnectivityManager::class.java)
     Mockito.`when`(mockContext.getSystemService(Mockito.anyString())).thenReturn(mockConnectivityManager)
-    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("127.0.0.1", 9998))
+    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("::1", 9998))
 
     val onEngineRunningLatch = CountDownLatch(2)
     val onRespondeHeadersLatch = CountDownLatch(1)
@@ -73,15 +74,16 @@ class PerformHTTPSRequestUsingProxy {
       .setOnResponseHeaders { responseHeaders, _, _ ->
         val status = responseHeaders.httpStatus ?: 0L
         assertThat(status).isEqualTo(200)
-        assertThat(responseHeaders.value("x-proxy-response")).isEqualTo(listOf("true"))
+        assertThat(responseHeaders.value("x-response-header-that-should-be-stripped")).isNull()
         onRespondeHeadersLatch.countDown()
       }
       .start(Executors.newSingleThreadExecutor())
       .sendHeaders(requestHeaders, true)
 
-    onRespondeHeadersLatch.await(10, TimeUnit.SECONDS)
+    onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
-    engine.terminate()
+
     proxyEngine.terminate()
+    engine.terminate()
   }
 }
