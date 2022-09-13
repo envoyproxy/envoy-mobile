@@ -121,7 +121,7 @@ static_resources:
               - name: remote_service
                 domains: ["*"]
                 routes:
-                - match: { prefix: "/" }
+                - match: { connect_matcher: {} }
                   route: { cluster: cluster_proxy }
               response_headers_to_add:
                 - append_action: OVERWRITE_IF_EXISTS_OR_ADD
