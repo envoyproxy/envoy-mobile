@@ -127,9 +127,7 @@ class MainActivity : Activity() {
         }
 
         if (status != 100) {
-          val fake_message = "received headers with status 200"
-          Log.d("MainActivity", message)
-          recyclerView.post { viewAdapter.add(Success(fake_message, headerText)) }
+          recyclerView.post { viewAdapter.add(Success(message, headerText)) }
         } else {
           recyclerView.post { viewAdapter.add(Failure(message)) }
         }
