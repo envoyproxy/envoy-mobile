@@ -1,4 +1,4 @@
-package test.kotlin.integration.proxy
+package test.kotlin.integration.proxying
 
 import android.content.Context
 
