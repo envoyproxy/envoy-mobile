@@ -4,6 +4,9 @@ struct ProxySettings;
 
 using ProxySettingsConstSharedPtr = std::shared_ptr<const ProxySettings>;
 
+namespace Envoy {
+namespace Network {
+
 /**
  * Proxy settings coming from platform specific APIs, i.e. ConnectivityManager in
  * the case of Android platform.
@@ -32,3 +35,6 @@ struct ProxySettings {
 private:
   Envoy::Network::Address::InstanceConstSharedPtr address_;
 };
+
+} // namespace Network
+} // namespace Envoy
