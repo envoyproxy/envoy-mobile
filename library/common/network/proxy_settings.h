@@ -1,11 +1,10 @@
 #include "source/common/network/utility.h"
 
-struct ProxySettings;
-
-using ProxySettingsConstSharedPtr = std::shared_ptr<const ProxySettings>;
-
 namespace Envoy {
 namespace Network {
+
+struct ProxySettings;
+using ProxySettingsConstSharedPtr = std::shared_ptr<const ProxySettings>;
 
 /**
  * Proxy settings coming from platform specific APIs, i.e. ConnectivityManager in
