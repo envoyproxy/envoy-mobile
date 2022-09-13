@@ -15,7 +15,7 @@ envoy_mobile_kt_library(
 envoy_mobile_android_test(
     name = "perform_http_request_using_proxy",
     srcs = [
-        "PerformHTTPNewRequestUsingProxy.kt",
+        "PerformHTTPRequestUsingProxy.kt",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
