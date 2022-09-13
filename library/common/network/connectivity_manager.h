@@ -130,7 +130,7 @@ public:
   envoy_netconf_t getConfigurationKey();
 
   /**
-   * 
+   *
    * @return the current proxy settings.
    */
   Envoy::Network::ProxySettingsConstSharedPtr getProxySettings();
