@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class Proxy constructor(val context: Context, val port: Int) {
-    fun http(): EngineBuilder {    
+    fun http(): EngineBuilder {
       val config = """
 static_resources:
   listeners:
@@ -57,7 +57,7 @@ static_resources:
                 typed_config:
                   "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
               - name: envoy.filters.http.dynamic_forward_proxy
-                typed_config:   
+                typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
                   dns_cache_config: &dns_cache_config
                     name: base_dns_cache
@@ -89,7 +89,7 @@ static_resources:
       return AndroidEngineBuilder(context, Custom(config))
     }
 
-    fun https(): EngineBuilder {      
+    fun https(): EngineBuilder {
       val config = """
 static_resources:
   listeners:
@@ -126,7 +126,7 @@ static_resources:
                 routes:
                 - match: { connect_matcher: {} }
                   route:
-                    cluster: cluster_proxy 
+                    cluster: cluster_proxy
                     upgrade_configs:
                     - upgrade_type: CONNECT
                       connect_config:
@@ -140,7 +140,7 @@ static_resources:
                 typed_config:
                   "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
               - name: envoy.filters.http.dynamic_forward_proxy
-                typed_config:   
+                typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
                   dns_cache_config: &dns_cache_config
                     name: base_dns_cache
@@ -172,4 +172,3 @@ static_resources:
       return AndroidEngineBuilder(context, Custom(config))
     }
 }
-
