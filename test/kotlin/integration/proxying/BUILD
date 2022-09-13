@@ -8,7 +8,6 @@ envoy_mobile_kt_library(
     deps = [
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_interfaces_lib",
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
-        "@maven//:org_assertj_assertj_core",
     ],
 )
 
