@@ -100,7 +100,7 @@ jobs:
         CC: /opt/llvm/bin/clang
         CXX: /opt/llvm/bin/clang++
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - name: Add safe directory
@@ -117,11 +117,13 @@ jobs:
           fi
       - name: 'Java setup'
         if: steps.check_context.outputs.run_tests == 'true'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: '8'
           java-package: jdk
           architecture: x64
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
