@@ -2,6 +2,8 @@
 
 #include <stddef.h>
 
+// NOLINT(namespace-envoy)
+
 // This file specifies types and interfaces used between the dynamic stat sink and the shared
 // library that receives the stats. Note that we avoid using existing EM types to provide a
 // delineation between internal EM interfaces and once that need to adhere to stricter ABI
