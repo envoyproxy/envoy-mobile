@@ -16,11 +16,15 @@ namespace KeyValue {
 namespace {
 
 class TestPlatformInterface : public PlatformInterface {
-  virtual void save(const std::string& key, const std::string& contents) {
+public:
+  TestPlatformInterface(absl::flat_hash_map<std::string, std::string>& store) : store_(store) {}
+
+  virtual void save(const std::string& key, const std::string& contents) override {
     store_.erase(key);
     store_.emplace(key, contents);
   }
-  virtual std::string read(const std::string& key) const {
+
+  virtual std::string read(const std::string& key) const override {
     auto it = store_.find(key);
     if (it == store_.end()) {
       return "";
@@ -28,7 +32,8 @@ class TestPlatformInterface : public PlatformInterface {
     return it->second;
   }
 
-  absl::flat_hash_map<std::string, std::string> store_;
+private:
+  absl::flat_hash_map<std::string, std::string>& store_;
 };
 
 class PlatformStoreTest : public testing::Test {
@@ -37,7 +42,9 @@ protected:
 
   void createStore() {
     flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
-    store_ = std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_, mock_platform_,
+    auto mock_platform = std::make_unique<TestPlatformInterface>(kv_backing_store_);
+    store_ = std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_,
+                                                     std::move(mock_platform),
                                                      std::numeric_limits<uint64_t>::max(), key_);
   }
   NiceMock<Event::MockDispatcher> dispatcher_;
@@ -45,7 +52,7 @@ protected:
   std::unique_ptr<PlatformKeyValueStore> store_{};
   std::chrono::seconds save_interval_{5};
   Event::MockTimer* flush_timer_ = nullptr;
-  TestPlatformInterface mock_platform_;
+  absl::flat_hash_map<std::string, std::string> kv_backing_store_;
 };
 
 TEST_F(PlatformStoreTest, Basic) {

@@ -15,4 +15,8 @@ message PlatformKeyValueStoreConfig {
 
   // The maximum number of entries that can be stored in the cache.
   uint64 max_entries = 3;
+
+  // Platform key-value store name. This is the name of the KV store registered via the
+  // addKeyValueStore builder API.
+  string kv_store_name = 4 [(validate.rules).string = {min_len: 1}];
 }
