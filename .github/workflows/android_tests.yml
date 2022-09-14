@@ -75,7 +75,7 @@ jobs:
           architecture: x64
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
-        run: ./ci/mac_ci_setup.sh
+        run: ./ci/mac_ci_setup.sh --android --linux
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
@@ -122,8 +122,9 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
+      - name: 'Install dependencies'
+        if: steps.check_context.outputs.run_tests == 'true'
+        run: ./ci/mac_ci_setup.sh
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
