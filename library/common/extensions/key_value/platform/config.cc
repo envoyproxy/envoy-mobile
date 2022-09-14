@@ -12,7 +12,8 @@ namespace Envoy {
 namespace Extensions {
 namespace KeyValue {
 
-class PlatformInterfaceImpl : public PlatformInterface, public Logger::Loggable<Logger::Id::filter> {
+class PlatformInterfaceImpl : public PlatformInterface,
+                              public Logger::Loggable<Logger::Id::filter> {
 public:
   PlatformInterfaceImpl(const std::string& name)
       : bridged_store_(*static_cast<envoy_kv_store*>(Api::External::retrieveApi(name))) {}
