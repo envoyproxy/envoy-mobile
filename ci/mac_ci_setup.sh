@@ -29,12 +29,10 @@ function install {
 #    exit 1
 #fi
 
-if ["${2:-}" != "--linux" ]; then
-    sudo xcode-select --switch /Applications/Xcode_13.4.app
-fi
-
 if [[ "${2:-}" == "--linux" ]]; then
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+else 
+    sudo xcode-select --switch /Applications/Xcode_13.4.app
 fi
 
 DEPS="automake cmake coreutils libtool wget ninja"
