@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package extensions.stat_sinks.loop;
+
+option go_package = "github.com/lyft/envoy-mobile-private/go/extensions/stats_sinks/loop;extensions_stat_sinks_loop";
+
+import "validate/validate.proto";
+
+message DynamicStatsSinkConfig {
+  // The name of the dynamic library that should be used to resolve the dynamic symbols that
+  // implement the dynamic sink. Note that if this is left empty or the implementation fails to
+  // resolve the library specified here, it will attempt to resolve the symbol from the main binary.
+  // As a result, both dynamic and static linking of the library implementing the dynamic stats
+  // interface is possbile.
+  string library_name = 1;
+}
