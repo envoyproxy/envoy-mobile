@@ -62,7 +62,7 @@ if [[ "${1:-}" == "--android" ]]; then
   $SDKMANAGER --uninstall "ndk-bundle"
   
   echo "y" | $SDKMANAGER "ndk;21.4.7075529"
-  $sdkmanager --install "platforms;android-29"
+  $SDKMANAGER --install "platforms;android-29"
 #   ANDROID_ROOT=/usr/local/lib/android
 #   ANDROID_SDK_ROOT=${ANDROID_ROOT}/sdk
 #   SDKMANAGER=${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager
