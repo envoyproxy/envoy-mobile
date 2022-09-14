@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 
 import io.envoyproxy.envoymobile.LogLevel
 import io.envoyproxy.envoymobile.Custom
+import io.envoyproxy.envoymobile.Engine
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol
 import io.envoyproxy.envoymobile.AndroidEngineBuilder
 import io.envoyproxy.envoymobile.RequestHeadersBuilder
@@ -21,6 +22,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -29,6 +31,9 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PerformHTTPSRequestUsingProxy {
+  private lateinit var proxyEngine: Engine
+  private lateinit var engine: Engine
+
   init {
     JniLibrary.loadTestLibrary()
   }
@@ -47,13 +52,13 @@ class PerformHTTPSRequestUsingProxy {
     val onRespondeHeadersLatch = CountDownLatch(1)
 
     val proxyEngineBuilder = Proxy(ApplicationProvider.getApplicationContext(), port).https()
-    val proxyEngine = proxyEngineBuilder
+    proxyEngine = proxyEngineBuilder
       .addLogLevel(LogLevel.DEBUG)
       .setOnEngineRunning { onEngineRunningLatch.countDown() }
       .build()
 
     val builder = AndroidEngineBuilder(mockContext)
-    val engine = builder
+    engine = builder
       .addLogLevel(LogLevel.DEBUG)
       .enableProxySupport(true)
       .setOnEngineRunning { onEngineRunningLatch.countDown() }
@@ -84,7 +89,10 @@ class PerformHTTPSRequestUsingProxy {
 
     onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
+  }
 
+  @After
+  public fun tearDown() {
     engine.terminate()
     proxyEngine.terminate()
   }
