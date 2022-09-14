@@ -12,11 +12,16 @@ namespace Envoy {
 namespace Extensions {
 namespace KeyValue {
 
+namespace {
+constexpr absl::string_view PlatformStoreName{"reserved.platform_store"};
+} // namespace
+
 class PlatformInterfaceImpl : public PlatformInterface,
                               public Logger::Loggable<Logger::Id::filter> {
 public:
-  PlatformInterfaceImpl(const std::string& name)
-      : bridged_store_(*static_cast<envoy_kv_store*>(Api::External::retrieveApi(name))) {}
+  PlatformInterfaceImpl()
+      : bridged_store_(*static_cast<envoy_kv_store*>(
+            Api::External::retrieveApi(std::string(PlatformStoreName)))) {}
 
   ~PlatformInterfaceImpl() override {}
 
@@ -69,8 +74,7 @@ PlatformKeyValueStoreFactory::createStore(const Protobuf::Message& config,
       typed_config.config().typed_config(), validation_visitor);
   auto milliseconds = std::chrono::milliseconds(
       DurationUtil::durationToMilliseconds(platform_kv_store_config.save_interval()));
-  std::unique_ptr<PlatformInterface> platform_interface =
-      std::make_unique<PlatformInterfaceImpl>(platform_kv_store_config.kv_store_name());
+  std::unique_ptr<PlatformInterface> platform_interface = std::make_unique<PlatformInterfaceImpl>();
   return std::make_unique<PlatformKeyValueStore>(
       dispatcher, milliseconds, std::move(platform_interface),
       platform_kv_store_config.max_entries(), platform_kv_store_config.key());
