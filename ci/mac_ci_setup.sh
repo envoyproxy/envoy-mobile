@@ -60,7 +60,9 @@ if [[ "${1:-}" == "--android" ]]; then
   ANDROID_HOME=$ANDROID_SDK_ROOT
   SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/7.0/bin/sdkmanager"
   $SDKMANAGER --uninstall "ndk-bundle"
+  
   echo "y" | $SDKMANAGER "ndk;21.4.7075529"
+  $sdkmanager --install "platforms;android-29"
 #   ANDROID_ROOT=/usr/local/lib/android
 #   ANDROID_SDK_ROOT=${ANDROID_ROOT}/sdk
 #   SDKMANAGER=${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager
