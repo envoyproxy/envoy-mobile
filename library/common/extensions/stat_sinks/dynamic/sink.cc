@@ -1,8 +1,10 @@
 #include "library/common/extensions/stat_sinks/dynamic/sink.h"
-#include "library/common/extensions/stat_sinks/dynamic/dynamic_sink.h"
-#include "envoy/common/exception.h"
 
 #include <dlfcn.h>
+
+#include "envoy/common/exception.h"
+
+#include "library/common/extensions/stat_sinks/dynamic/dynamic_sink.h"
 
 namespace Envoy {
 namespace Extensions {

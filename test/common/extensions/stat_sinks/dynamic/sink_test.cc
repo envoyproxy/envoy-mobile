@@ -1,9 +1,9 @@
-#include "library/common/extensions/stat_sinks/dynamic/sink.h"
 #include "test/mocks/stats/mocks.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
+#include "library/common/extensions/stat_sinks/dynamic/sink.h"
 
 namespace Envoy {
 namespace Extensions {
