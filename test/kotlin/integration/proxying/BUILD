@@ -25,6 +25,10 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/kotlin/integration/proxying:proxy_lib",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
 )
 
 envoy_mobile_android_test(
@@ -41,4 +45,8 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/kotlin/integration/proxying:proxy_lib",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
 )
