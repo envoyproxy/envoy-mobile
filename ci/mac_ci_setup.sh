@@ -31,6 +31,8 @@ function install {
 
 if [[ "${2:-}" == "--linux" ]]; then
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /github/home/.profile
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 else 
     sudo xcode-select --switch /Applications/Xcode_13.4.app
 fi
