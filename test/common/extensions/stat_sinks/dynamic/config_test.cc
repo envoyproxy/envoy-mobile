@@ -2,6 +2,15 @@
 
 #include "gtest/gtest.h"
 
-TEST(ConfigTest, ConfigTest) {
+namespace Envoy {
+namespace Extensions {
+namespace StatSinks {
+namespace Dynamic {
+namespace {
+TEST(ConfigTest, ConfigTest) {}
 
-}
+} // namespace
+} // namespace Dynamic
+} // namespace StatSinks
+} // namespace Extensions
+} // namespace Envoy
