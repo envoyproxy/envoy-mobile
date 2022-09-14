@@ -70,8 +70,8 @@ static_resources:
                       max_interval: 10s
                     dns_query_timeout: 25s
                     typed_dns_resolver_config:
-                      name: envoy.network.dns_resolver.cares
-                      typed_config: {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
+                      name: envoy.network.dns_resolver.getaddrinfo
+                      typed_config: {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig"}
               - name: envoy.router
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -153,8 +153,8 @@ static_resources:
                       max_interval: 10s
                     dns_query_timeout: 25s
                     typed_dns_resolver_config:
-                      name: envoy.network.dns_resolver.cares
-                      typed_config: {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
+                      name: envoy.network.dns_resolver.getaddrinfo
+                      typed_config: {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig"}
               - name: envoy.router
                 typed_config:
                   "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
