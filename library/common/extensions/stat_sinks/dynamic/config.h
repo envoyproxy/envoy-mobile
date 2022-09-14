@@ -5,7 +5,7 @@
 namespace Envoy {
 namespace Extensions {
 namespace StatSinks {
-namespace Loop {
+namespace Dynamic {
 
 /**
  * Config registration for the Sink stats sink. @see StatsSinkFactory.
@@ -23,7 +23,7 @@ public:
 
 DECLARE_FACTORY(Factory);
 
-} // namespace Loop
+} // namespace Dynamic
 } // namespace StatSinks
 } // namespace Extensions
 } // namespace Envoy

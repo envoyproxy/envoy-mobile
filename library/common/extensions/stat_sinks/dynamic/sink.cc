@@ -26,7 +26,8 @@ Sink::Sink(const std::string& library_name) {
 
   // Fail gracefully should symbol resoulution fail.
   if (record_counter_ == nullptr) {
-    throw EnvoyException(fmt::format("failed to load loop stats dynamic symbol: {}", dlerror()));
+    throw EnvoyException(
+        fmt::format("failed to load stats dynamic symbol from {} {}", library_name, dlerror()));
   }
 }
 

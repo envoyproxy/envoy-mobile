@@ -11,9 +11,11 @@ namespace StatSinks {
 namespace Dynamic {
 namespace {
 
-using LoopRecordCounterFunc = std::function<void(em_string_view, em_metric_tag*, size_t, size_t)>;
-LoopRecordCounterFunc* record_counter_handle() {
-  static LoopRecordCounterFunc handle = nullptr;
+// We have to go through a global symbol, so we do this little dance to allow setting the function
+// that will be invoked. Because this test is single threaded, we can simply write to the static.
+using RecordCounterFunc = std::function<void(em_string_view, em_metric_tag*, size_t, size_t)>;
+RecordCounterFunc* record_counter_handle() {
+  static RecordCounterFunc handle = nullptr;
 
   return &handle;
 }
@@ -48,11 +50,11 @@ TEST(SinkTest, SharedLibrary) {
 
 // Verifies the behavior of the conversion to string views and the filtering logic when shared
 // library fails and the symbol is resolved from the main binary.
-TEST(SinkTest, SinkFlushesToLoop) {
+TEST(SinkTest, SinkFlushesToLibrary) {
   Sink sink("doesntexist");
 
   // List of lambdas that will be invoked for counters passed to loop-sdk, in order.
-  auto counter_assertions = std::list<LoopRecordCounterFunc>{
+  auto counter_assertions = std::list<RecordCounterFunc>{
       {[&](em_string_view name, em_metric_tag* tags, size_t tag_count, size_t value) {
          ASSERT_EQ(absl::string_view(name.data, name.size), "counter");
          ASSERT_EQ(tag_count, 1);

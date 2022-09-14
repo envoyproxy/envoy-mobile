@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package extensions.stat_sinks.loop;
+package extensions.stat_sinks.dynamic;
 
-option go_package = "github.com/lyft/envoy-mobile-private/go/extensions/stats_sinks/loop;extensions_stat_sinks_loop";
+option go_package = "github.com/lyft/envoy-mobile/go/extensions/stats_sinks/dynamic;extensions_stat_sinks_dynamic";
 
 import "validate/validate.proto";
 

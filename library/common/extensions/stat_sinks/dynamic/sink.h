@@ -7,6 +7,7 @@
 #include "envoy/stats/sink.h"
 
 #include "library/common/extensions/stat_sinks/dynamic/config.pb.h"
+#include "library/common/extensions/stat_sinks/dynamic/config.pb.validate.h"
 #include "library/common/extensions/stat_sinks/dynamic/dynamic_sink.h"
 
 namespace Envoy {

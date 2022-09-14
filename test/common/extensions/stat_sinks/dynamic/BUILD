@@ -22,6 +22,16 @@ envoy_extension_cc_test(
 )
 
 envoy_extension_cc_test(
+    name = "config_test",
+    srcs = ["config_test.cc"],
+    extension_names = ["envoy.stat_sinks.dynamic"],
+    repository = "@envoy",
+    deps = [
+        "//library/common/extensions/stat_sinks/dynamic:config",
+    ],
+)
+
+envoy_extension_cc_test(
     name = "no_symbol_sink_test",
     srcs = ["sink_test.cc"],
     data = [
