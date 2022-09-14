@@ -29,6 +29,11 @@ function install {
 #    exit 1
 #fi
 
+if [[ "${2:-}" != "--linux" ]]; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    sudo xcode-select --switch /Applications/Xcode_13.4.app
+fi
+
 DEPS="automake cmake coreutils libtool wget ninja"
 for DEP in ${DEPS}
 do
@@ -45,10 +50,6 @@ fi
 
 pip3 install slackclient
 # https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md#xcode
-
-if [[ "${2:-}" != "--linux" ]]; then
-    sudo xcode-select --switch /Applications/Xcode_13.4.app
-fi
 
 if [[ "${1:-}" == "--android" ]]; then
   # Download and set up ndk 21 after GitHub update
