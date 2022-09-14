@@ -58,7 +58,7 @@ if [[ "${1:-}" == "--android" ]]; then
   # Download and set up ndk 21 after GitHub update
   # https://github.com/actions/virtual-environments/issues/5595
   ANDROID_HOME=$ANDROID_SDK_ROOT
-  SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+  SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/7.0/bin/sdkmanager"
   $SDKMANAGER --uninstall "ndk-bundle"
   echo "y" | $SDKMANAGER "ndk;21.4.7075529"
 #   ANDROID_ROOT=/usr/local/lib/android
