@@ -32,7 +32,7 @@ static_resources:
                 direct_response: { status: 400, body: { inline_string: "not found" } }
   - name: listener_proxy
     address:
-      socket_address: { address: ::1, port_value: $port }
+      socket_address: { address: 127.0.0.1, port_value: $port }
     filter_chains:
       - filters:
         - name: envoy.filters.network.http_connection_manager
@@ -111,7 +111,7 @@ static_resources:
                 direct_response: { status: 400, body: { inline_string: "not found" } }
   - name: listener_proxy
     address:
-      socket_address: { address: ::1, port_value: $port }
+      socket_address: { address: 127.0.0.1, port_value: $port }
     filter_chains:
       - filters:
         - name: envoy.filters.network.http_connection_manager
