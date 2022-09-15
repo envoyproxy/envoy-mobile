@@ -28,6 +28,7 @@ envoy_mobile_android_test(
     exec_properties = {
         # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
+        "dockerNetwork": "standard",
     },
 )
 
@@ -48,5 +49,6 @@ envoy_mobile_android_test(
     exec_properties = {
         # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
         "sandboxNetwork": "standard",
+        "dockerNetwork": "standard",
     },
 )
