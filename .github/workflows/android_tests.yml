@@ -77,7 +77,7 @@ jobs:
         uses: android-actions/setup-android@v2
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
-        run: ./ci/mac_ci_setup.sh --android
+        run: ./ci/mac_ci_setup.sh
       - name: 'Run Java library tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
