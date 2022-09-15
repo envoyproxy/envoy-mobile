@@ -21,7 +21,7 @@ popd
 export ANDROID_HOME="$sdk_install_target/sdk"
 export ANDROID_SDK_ROOT=$ANDROID_HOME
 
-export PATH=$ANDROID_SDK_ROOT/platform-tools/:$PATH
+export PATH=$ANDROID_SDK_ROOT/tools/:$ANDROID_SDK_ROOT/platform-tools/:$PATH
 
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 $SDKMANAGER --uninstall "ndk-bundle"
