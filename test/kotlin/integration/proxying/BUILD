@@ -12,9 +12,9 @@ envoy_mobile_kt_library(
 )
 
 envoy_mobile_android_test(
-    name = "perform_http_request_using_proxy",
+    name = "perform_http_request_using_proxy_test",
     srcs = [
-        "PerformHTTPRequestUsingProxy.kt",
+        "PerformHTTPRequestUsingProxyTest.kt",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
@@ -33,9 +33,9 @@ envoy_mobile_android_test(
 )
 
 envoy_mobile_android_test(
-    name = "perform_https_request_using_proxy",
+    name = "perform_https_request_using_proxy_test",
     srcs = [
-        "PerformHTTPSRequestUsingProxy.kt",
+        "PerformHTTPSRequestUsingProxyTest.kt",
     ],
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
