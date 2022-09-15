@@ -2,44 +2,6 @@
 
 set -e
 
-# Copied from mac_ci_setup.sh
-
-export HOMEBREW_NO_AUTO_UPDATE=1
-
-function is_installed {
-    brew ls --versions "$1" >/dev/null
-}
-
-function install {
-    echo "Installing $1"
-    if ! brew install "$1"; then
-        echo "Failed to install $1"
-        exit 1
-    fi
-}
-
-# Disabled due to frequent CI failures for now.
-#if ! brew update; then
-#    echo "Failed to update homebrew"
-#    exit 1
-#fi
-
-# NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-# echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /github/home/.profile
-# eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
-# DEPS="automake cmake coreutils libtool wget ninja"
-# for DEP in ${DEPS}
-# do
-#     is_installed "${DEP}" || install "${DEP}"
-# done
-
-if [ -n "$CIRCLECI" ]; then
-    # bazel uses jgit internally and the default circle-ci .gitconfig says to
-    # convert https://github.com to ssh://git@github.com, which jgit does not support.
-    mv ~/.gitconfig ~/.gitconfig_save
-fi
-
 ./bazelw version
 
 sdk_install_target="/github/home/.android"
@@ -56,8 +18,8 @@ fi
 
 export ANDROID_HOME="$(realpath "$sdk_install_target/sdk")"
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-
 $SDKMANAGER --uninstall "ndk-bundle"
+
 echo "y" | $SDKMANAGER "ndk;21.4.7075529"
 $SDKMANAGER --install "platforms;android-30"
 ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
