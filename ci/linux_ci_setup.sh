@@ -30,8 +30,10 @@ ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
 
 # Download and set up build-tools 30.0.3, 31.0.0 is missing dx.jar.
 $SDKMANAGER --install "build-tools;30.0.2"
-echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
 
+ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529
+
+echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
 echo "export ANDROID_SDK_ROOT=$ANDROID_HOME"
 echo "export ANDROID_HOME=$ANDROID_HOME"
 echo "export ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
