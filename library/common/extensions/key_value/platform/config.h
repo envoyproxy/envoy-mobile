@@ -32,8 +32,6 @@ public:
   void flush() override;
 
 private:
-  // TODO(alyssawilk, goaway) the default PlatformInterface should do up calls through Java and this
-  // can be moved to a non-optional reference.
   PlatformInterface& platform_interface_;
   const std::string key_;
 };
