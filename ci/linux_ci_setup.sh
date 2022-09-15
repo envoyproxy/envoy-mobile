@@ -26,6 +26,7 @@ $SDKMANAGER --install "ndk;21.4.7075529"
 $SDKMANAGER --install "platforms;android-30"
 $SDKMANAGER --install "build-tools;30.0.2"
 
+ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
 export PATH=$ANDROID_HOME/cmdline-tools/latest/bin/:$ANDROID_SDK_ROOT/tools/:$ANDROID_SDK_ROOT/platform-tools/:$PATH
 
 echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
