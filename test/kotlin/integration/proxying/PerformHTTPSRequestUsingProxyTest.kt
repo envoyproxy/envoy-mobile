@@ -92,5 +92,8 @@ class PerformHTTPSRequestUsingProxy {
 
     onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
+
+    engine.terminate()
+    proxyEngine.terminate()
   }
 }

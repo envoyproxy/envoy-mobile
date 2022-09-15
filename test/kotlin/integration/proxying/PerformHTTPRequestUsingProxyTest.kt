@@ -26,10 +26,11 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 
+ lateinit var proxyEngine: Engine
+ lateinit var engine: Engine
+
 @RunWith(RobolectricTestRunner::class)
 class PerformHTTPRequestUsingProxy {
-  private lateinit var proxyEngine: Engine
-  private lateinit var engine: Engine
 
   init {
     JniLibrary.loadTestLibrary()
@@ -91,5 +92,9 @@ class PerformHTTPRequestUsingProxy {
 
     onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
+
+    engine.terminate()
+    Thread.sleep(1_000)
+    proxyEngine.terminate()
   }
 }
