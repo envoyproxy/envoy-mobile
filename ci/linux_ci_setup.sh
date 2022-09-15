@@ -6,7 +6,6 @@ set -e
 
 sdk_install_target="/github/home/.android"
 
-mkdir "$sdk_install_target"
 pushd "$sdk_install_target"
 if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mkdir -p sdk/
@@ -16,7 +15,6 @@ if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mkdir -p sdk/cmdline-tools/latest
 	mv cmdline-tools/* sdk/cmdline-tools/latest
 fi
-popd
 
 export ANDROID_HOME="$sdk_install_target/sdk"
 # export ANDROID_SDK_ROOT=$ANDROID_HOME
