@@ -42,7 +42,9 @@ fi
 
 ./bazelw version
 
-pushd "/github/home/.android"
+sdk_install_target="/github/home/.android"
+
+pushd "$sdk_install_target"
 if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mkdir -p sdk/
 	cmdline_file="commandlinetools-linux-7583922_latest.zip"
