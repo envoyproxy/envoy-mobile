@@ -16,6 +16,11 @@ envoy_mobile_android_test(
     srcs = [
         "PerformHTTPRequestUsingProxyTest.kt",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+        "dockerNetwork": "standard",
+    },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
@@ -25,11 +30,6 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/kotlin/integration/proxying:proxy_lib",
     ],
-    exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
-        "sandboxNetwork": "standard",
-        "dockerNetwork": "standard",
-    },
 )
 
 envoy_mobile_android_test(
@@ -37,6 +37,11 @@ envoy_mobile_android_test(
     srcs = [
         "PerformHTTPSRequestUsingProxyTest.kt",
     ],
+    exec_properties = {
+        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+        "dockerNetwork": "standard",
+    },
     native_deps = [
         "//library/common/jni:libndk_envoy_jni.so",
         "//library/common/jni:libndk_envoy_jni.jnilib",
@@ -46,9 +51,4 @@ envoy_mobile_android_test(
         "//library/kotlin/io/envoyproxy/envoymobile:envoy_lib",
         "//test/kotlin/integration/proxying:proxy_lib",
     ],
-    exec_properties = {
-        # TODO(lfpino): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
-        "sandboxNetwork": "standard",
-        "dockerNetwork": "standard",
-    },
 )
