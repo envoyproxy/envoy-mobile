@@ -2,12 +2,7 @@
 
 set -e
 
-# Copied from Envoy upstream's setup scripts with homebrew update disabled.
-# Installs the dependencies required for a macOS build via homebrew.
-# Tools are not upgraded to new versions.
-# See:
-# https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md for
-# a list of pre-installed tools in the macOS image.
+# Copied from mac_ci_setup.sh
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 
@@ -29,19 +24,15 @@ function install {
 #    exit 1
 #fi
 
-if [[ "${2:-}" == "--linux" ]]; then
-    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /github/home/.profile
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-else
-    sudo xcode-select --switch /Applications/Xcode_13.4.app
-fi
+# NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /github/home/.profile
+# eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-DEPS="automake cmake coreutils libtool wget ninja"
-for DEP in ${DEPS}
-do
-    is_installed "${DEP}" || install "${DEP}"
-done
+# DEPS="automake cmake coreutils libtool wget ninja"
+# for DEP in ${DEPS}
+# do
+#     is_installed "${DEP}" || install "${DEP}"
+# done
 
 if [ -n "$CIRCLECI" ]; then
     # bazel uses jgit internally and the default circle-ci .gitconfig says to
@@ -51,25 +42,24 @@ fi
 
 ./bazelw version
 
-pip3 install slackclient
-# https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md#xcode
-
-if [[ "${1:-}" == "--android" ]]; then
-  # Download and set up ndk 21 after GitHub update
-  # https://github.com/actions/virtual-environments/issues/5595
-  ANDROID_HOME=$ANDROID_SDK_ROOT
-  SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/7.0/bin/sdkmanager"
-  $SDKMANAGER --uninstall "ndk-bundle"
-
-  echo "y" | $SDKMANAGER "ndk;21.4.7075529"
-  $SDKMANAGER --install "platforms;android-30"
-#   ANDROID_ROOT=/usr/local/lib/android
-#   ANDROID_SDK_ROOT=${ANDROID_ROOT}/sdk
-#   SDKMANAGER=${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager
-#   echo "y" | $SDKMANAGER "ndk;21.4.7075529"
-  ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
-
-  # Download and set up build-tools 30.0.3, 31.0.0 is missing dx.jar.
-  $SDKMANAGER --install "build-tools;30.0.2"
-  echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
+pushd "/github/home/.android"
+if [ ! -d ./sdk/cmdline-tools/latest ]; then
+	mkdir -p sdk/
+	cmdline_file="commandlinetools-linux-7583922_latest.zip"
+	curl -OL "https://dl.google.com/android/repository/$cmdline_file"
+	unzip "$cmdline_file"
+	mkdir -p sdk/cmdline-tools/latest
+	mv cmdline-tools/* sdk/cmdline-tools/latest
 fi
+
+export ANDROID_HOME="$(realpath "$sdk_install_target/sdk")"
+SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+
+$SDKMANAGER --uninstall "ndk-bundle"
+echo "y" | $SDKMANAGER "ndk;21.4.7075529"
+$SDKMANAGER --install "platforms;android-30"
+ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
+
+# Download and set up build-tools 30.0.3, 31.0.0 is missing dx.jar.
+$SDKMANAGER --install "build-tools;30.0.2"
+echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
