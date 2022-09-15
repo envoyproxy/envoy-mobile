@@ -122,6 +122,15 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
+        # TODO(Augustyniak) ./ci/linux_ci_setup.sh should be able to perform the 
+        # whole setup needed for Android tests to work but there is something
+        # that `setup-android@v2` does that our script is missing and that's needed for 
+        # tests to work.
+      - name: Run Setup Android Action
+        uses: android-actions/setup-android@v2
+      - name: 'Install dependencies'
+        if: steps.check_context.outputs.run_tests == 'true'
+        run: ./ci/linux_ci_setup.sh
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
