@@ -135,7 +135,7 @@ jobs:
           ./bazelw test \
             --test_output=all \
             --build_tests_only \
-            --sandbox_allow_network_access \
+            --sandbox_allow_network_access=true \
             --config=remote-ci-linux-clang \
             --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //test/kotlin/...
