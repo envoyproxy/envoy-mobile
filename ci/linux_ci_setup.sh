@@ -5,7 +5,7 @@ set -e
 ./bazelw version
 
 sdk_install_target="/github/home/.android"
-
+mkdir "$sdk_install_target"
 pushd "$sdk_install_target"
 if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mkdir -p sdk/
