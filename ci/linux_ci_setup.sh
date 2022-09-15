@@ -5,7 +5,6 @@ set -e
 ./bazelw version
 
 sdk_install_target="/github/home/.android"
-
 pushd "$sdk_install_target"
 if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mkdir -p sdk/
@@ -28,7 +27,9 @@ $SDKMANAGER --install "build-tools;30.0.2"
 ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
 export PATH=$ANDROID_HOME/cmdline-tools/latest/bin/:$ANDROID_SDK_ROOT/tools/:$ANDROID_SDK_ROOT/platform-tools/:$PATH
 
+export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529
 echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
+
 echo "PATH=$PATH"
 echo "export ANDROID_SDK_ROOT=$ANDROID_HOME"
 echo "export ANDROID_HOME=$ANDROID_HOME"
