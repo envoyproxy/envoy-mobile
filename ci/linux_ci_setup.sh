@@ -6,6 +6,7 @@ set -e
 
 sdk_install_target="/github/home/.android"
 
+mkdir "$sdk_install_target"
 pushd "$sdk_install_target"
 if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mkdir -p sdk/
@@ -20,13 +21,10 @@ export ANDROID_HOME="$(realpath "$sdk_install_target/sdk")"
 export ANDROID_SDK_ROOT=$ANDROID_HOME
 
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-$SDKMANAGER --uninstall "ndk-bundle"
-echo "y" | $SDKMANAGER "ndk;21.4.7075529"
+$SDKMANAGER --licences
+$SDKMANAGER --install "ndk;21.4.7075529"
 $SDKMANAGER --install "platforms;android-30"
-ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
 $SDKMANAGER --install "build-tools;30.0.2"
-
-# ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529
 
 export PATH=$ANDROID_HOME/cmdline-tools/latest/bin/:$ANDROID_SDK_ROOT/tools/:$ANDROID_SDK_ROOT/platform-tools/:$PATH
 
