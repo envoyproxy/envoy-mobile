@@ -90,10 +90,4 @@ class PerformHTTPRequestUsingProxy {
     onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
   }
-
-  @After
-  public fun tearDown() {
-    engine.terminate()
-    proxyEngine.terminate()
-  }
 }
