@@ -3,7 +3,6 @@
 #include <net/if.h>
 
 #include "envoy/common/platform.h"
-#include "fmt/ostream.h"
 
 #include "source/common/api/os_sys_calls_impl.h"
 #include "source/common/common/assert.h"
@@ -13,6 +12,7 @@
 #include "source/common/network/address_impl.h"
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_manager_impl.h"
 
+#include "fmt/ostream.h"
 #include "library/common/network/src_addr_socket_option_impl.h"
 
 // Used on Linux (requires root/CAP_NET_RAW)
@@ -442,5 +442,6 @@ ConnectivityManagerSharedPtr ConnectivityManagerHandle::get() {
 // NOLINT(namespace-envoy)
 namespace fmt {
 // Allow fmtlib to format InterfacePair::string_view
-template <> struct formatter<Envoy::Network::Address::InstanceConstSharedPtr> : ostream_formatter {};
+template <>
+struct formatter<Envoy::Network::Address::InstanceConstSharedPtr> : ostream_formatter {};
 } // namespace fmt
