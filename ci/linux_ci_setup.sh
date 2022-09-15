@@ -16,7 +16,7 @@ if [ ! -d ./sdk/cmdline-tools/latest ]; then
 	mv cmdline-tools/* sdk/cmdline-tools/latest
 fi
 
-export ANDROID_HOME="$sdk_install_target/sdk"
+export ANDROID_HOME="$(realpath "$sdk_install_target/sdk")"
 # export ANDROID_SDK_ROOT=$ANDROID_HOME
 
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
