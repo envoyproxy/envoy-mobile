@@ -94,7 +94,6 @@ class PerformHTTPRequestUsingProxy {
     assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
 
     engine.terminate()
-    Thread.sleep(1_000)
     proxyEngine.terminate()
   }
 }
