@@ -21,7 +21,8 @@ export ANDROID_HOME="$(realpath "$sdk_install_target/sdk")"
 export ANDROID_SDK_ROOT=$ANDROID_HOME
 
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-$SDKMANAGER --licenses
+
+echo "y" | $SDKMANAGER --licenses
 $SDKMANAGER --install "ndk;21.4.7075529"
 $SDKMANAGER --install "platforms;android-30"
 $SDKMANAGER --install "build-tools;30.0.2"
