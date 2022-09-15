@@ -19,7 +19,7 @@ if [ ! -d ./sdk/cmdline-tools/latest ]; then
 fi
 
 export ANDROID_HOME="$(realpath "$sdk_install_target/sdk")"
-export ANDROID_SDK_ROOT = ANDROID_HOME
+export ANDROID_SDK_ROOT=ANDROID_HOME
 
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 $SDKMANAGER --uninstall "ndk-bundle"
