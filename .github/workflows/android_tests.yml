@@ -126,7 +126,7 @@ jobs:
         uses: android-actions/setup-android@v2
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
-        run: ./ci/mac_ci_setup.sh --android  --linux
+        run: ./ci/linux_ci_setup.sh --android  --linux
       - name: 'Run Kotlin library integration tests'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
