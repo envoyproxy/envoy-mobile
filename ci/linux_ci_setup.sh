@@ -19,7 +19,7 @@ fi
 popd
 
 export ANDROID_HOME="$sdk_install_target/sdk"
-export ANDROID_SDK_ROOT=$ANDROID_HOME
+# export ANDROID_SDK_ROOT=$ANDROID_HOME
 
 SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 $SDKMANAGER --uninstall "ndk-bundle"
@@ -28,9 +28,9 @@ $SDKMANAGER --install "platforms;android-30"
 ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
 $SDKMANAGER --install "build-tools;30.0.2"
 
-ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529
+# ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529
 
-export PATH=$SDKMANAGER:$ANDROID_SDK_ROOT/tools/:$ANDROID_SDK_ROOT/platform-tools/:$PATH
+# export PATH=$SDKMANAGER:$ANDROID_SDK_ROOT/tools/:$ANDROID_SDK_ROOT/platform-tools/:$PATH
 
 echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
 echo "export ANDROID_SDK_ROOT=$ANDROID_HOME"
