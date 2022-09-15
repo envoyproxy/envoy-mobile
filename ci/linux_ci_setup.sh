@@ -33,7 +33,7 @@ if [[ "${2:-}" == "--linux" ]]; then
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /github/home/.profile
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-else 
+else
     sudo xcode-select --switch /Applications/Xcode_13.4.app
 fi
 
@@ -60,7 +60,7 @@ if [[ "${1:-}" == "--android" ]]; then
   ANDROID_HOME=$ANDROID_SDK_ROOT
   SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/7.0/bin/sdkmanager"
   $SDKMANAGER --uninstall "ndk-bundle"
-  
+
   echo "y" | $SDKMANAGER "ndk;21.4.7075529"
   $SDKMANAGER --install "platforms;android-30"
 #   ANDROID_ROOT=/usr/local/lib/android
