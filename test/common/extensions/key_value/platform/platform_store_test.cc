@@ -17,8 +17,6 @@ namespace {
 
 class TestPlatformInterface : public PlatformInterface {
 public:
-  TestPlatformInterface(absl::flat_hash_map<std::string, std::string>& store) : store_(store) {}
-
   virtual void save(const std::string& key, const std::string& contents) override {
     store_.erase(key);
     store_.emplace(key, contents);
@@ -33,7 +31,7 @@ public:
   }
 
 private:
-  absl::flat_hash_map<std::string, std::string>& store_;
+  absl::flat_hash_map<std::string, std::string> store_;
 };
 
 class PlatformStoreTest : public testing::Test {
@@ -42,9 +40,7 @@ protected:
 
   void createStore() {
     flush_timer_ = new NiceMock<Event::MockTimer>(&dispatcher_);
-    auto mock_platform = std::make_unique<TestPlatformInterface>(kv_backing_store_);
-    store_ = std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_,
-                                                     std::move(mock_platform),
+    store_ = std::make_unique<PlatformKeyValueStore>(dispatcher_, save_interval_, mock_platform_,
                                                      std::numeric_limits<uint64_t>::max(), key_);
   }
   NiceMock<Event::MockDispatcher> dispatcher_;
@@ -52,7 +48,7 @@ protected:
   std::unique_ptr<PlatformKeyValueStore> store_{};
   std::chrono::seconds save_interval_{5};
   Event::MockTimer* flush_timer_ = nullptr;
-  absl::flat_hash_map<std::string, std::string> kv_backing_store_;
+  TestPlatformInterface mock_platform_;
 };
 
 TEST_F(PlatformStoreTest, Basic) {

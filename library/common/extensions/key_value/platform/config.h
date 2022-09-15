@@ -26,15 +26,15 @@ public:
 class PlatformKeyValueStore : public KeyValueStoreBase {
 public:
   PlatformKeyValueStore(Event::Dispatcher& dispatcher, std::chrono::milliseconds save_interval,
-                        std::unique_ptr<PlatformInterface>&& platform_interface,
-                        uint64_t max_entries, const std::string& key);
+                        PlatformInterface& platform_interface, uint64_t max_entries,
+                        const std::string& key);
   // KeyValueStore
   void flush() override;
 
 private:
   // TODO(alyssawilk, goaway) the default PlatformInterface should do up calls through Java and this
   // can be moved to a non-optional reference.
-  std::unique_ptr<PlatformInterface> platform_interface_;
+  PlatformInterface& platform_interface_;
   const std::string key_;
 };
 
