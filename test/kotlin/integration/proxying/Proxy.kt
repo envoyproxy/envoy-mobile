@@ -85,6 +85,14 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
+layered_runtime:
+  layers:
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          # This disables envoy bug stats, which are filtered out of our stats inclusion list anyway
+          # Global stats do not play well with engines with limited lifetimes
+          disallow_global_stats: true
 """
       return AndroidEngineBuilder(context, Custom(config))
     }
@@ -168,6 +176,14 @@ static_resources:
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
         dns_cache_config: *dns_cache_config
+layered_runtime:
+  layers:
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          # This disables envoy bug stats, which are filtered out of our stats inclusion list anyway
+          # Global stats do not play well with engines with limited lifetimes
+          disallow_global_stats: true
 """
       return AndroidEngineBuilder(context, Custom(config))
     }
