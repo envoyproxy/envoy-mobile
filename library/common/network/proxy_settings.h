@@ -31,6 +31,14 @@ struct ProxySettings {
    */
   const Envoy::Network::Address::InstanceConstSharedPtr& address() const { return address_; }
 
+  /**
+   * @brief Returns a human readable representation of the proxy settings represented
+   *        by the receiver
+   *
+   * @return const A human readable representation of the receiver.
+   */
+  const std::string& asString() const { return address_->asString(); }
+
   bool operator==(ProxySettings const& rhs) const {
     if (this->address() == nullptr || rhs.address() == nullptr) {
       return this->address() == nullptr && rhs.address() == nullptr;
