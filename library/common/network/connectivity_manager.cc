@@ -104,7 +104,7 @@ envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network
 
 void ConnectivityManager::setProxySettings(std::string host, int16_t port) {
   const auto proxy_settings = std::make_shared<ProxySettings>(host, port);
-  if (proxy_settings_.get() == proxy_settings.get()) {
+  if (*proxy_settings_ == *proxy_settings) {
     return;
   }
 
