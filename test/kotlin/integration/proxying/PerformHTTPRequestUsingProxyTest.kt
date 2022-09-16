@@ -26,11 +26,10 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 
- lateinit var proxyEngine: Engine
- lateinit var engine: Engine
-
 @RunWith(RobolectricTestRunner::class)
 class PerformHTTPRequestUsingProxy {
+  private lateinit var proxyEngine: Engine
+  private lateinit var engine: Engine
 
   init {
     JniLibrary.loadTestLibrary()
