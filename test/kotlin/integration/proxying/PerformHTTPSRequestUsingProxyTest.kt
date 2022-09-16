@@ -44,7 +44,7 @@ class PerformHTTPSRequestUsingProxy {
   init {
     JniLibrary.loadTestLibrary()
   }
-  
+
   @Test
   fun `performs an HTTPs request through a proxy`() {
     val port = (10001..11000).random()
