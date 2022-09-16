@@ -28,9 +28,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class PerformHTTPRequestUsingProxy {
-  private lateinit var proxyEngine: Engine
-  private lateinit var engine: Engine
-
   init {
     JniLibrary.loadTestLibrary()
   }
@@ -51,7 +48,7 @@ class PerformHTTPRequestUsingProxy {
 
     val proxyEngineBuilder = Proxy(ApplicationProvider.getApplicationContext(), port)
       .http()
-    proxyEngine = proxyEngineBuilder
+    val proxyEngine = proxyEngineBuilder
       .addLogLevel(LogLevel.DEBUG)
       .setOnEngineRunning { onProxyEngineRunningLatch.countDown() }
       .build()
@@ -60,7 +57,7 @@ class PerformHTTPRequestUsingProxy {
     assertThat(onProxyEngineRunningLatch.count).isEqualTo(0)
 
     val builder = AndroidEngineBuilder(mockContext)
-    engine = builder
+    val engine = builder
       .addLogLevel(LogLevel.DEBUG)
       .enableProxySupport(true)
       .setOnEngineRunning { onEngineRunningLatch.countDown() }
