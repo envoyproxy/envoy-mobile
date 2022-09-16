@@ -4,7 +4,7 @@ set -e
 
 ./bazelw version
 
-sdk_install_target=".android"
+sdk_install_target="./.android"
 
 mkdir "$sdk_install_target"
 pushd "$sdk_install_target"
