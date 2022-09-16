@@ -37,7 +37,12 @@ struct ProxySettings {
    *
    * @return const A human readable representation of the receiver.
    */
-  const std::string& asString() const { return address_->asString(); }
+  const std::string asString() const {
+    if (address_ != nullptr) {
+      return address_->asString();
+    }
+    return "no_proxy_configured";
+  }
 
   bool operator==(ProxySettings const& rhs) const {
     if (this->address() == nullptr || rhs.address() == nullptr) {
