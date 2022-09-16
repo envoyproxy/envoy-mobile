@@ -104,12 +104,12 @@ envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network
 
 void ConnectivityManager::setProxySettings(std::string host, int16_t port) {
   const auto proxy_settings = std::make_shared<ProxySettings>(host, port);
-  if (*proxy_settings_ == *proxy_settings) {
-    return;
+  if (proxy_settings_ == nullptr || *proxy_settings_ != *proxy_settings) {
+    ENVOY_LOG_EVENT(debug, "netconf_proxy_change", proxy_settings->asString());
+    proxy_settings_ = proxy_settings;
   }
 
-  ENVOY_LOG_EVENT(debug, "netconf_proxy_change", proxy_settings->asString());
-  proxy_settings_ = proxy_settings;
+  return;
 }
 
 ProxySettingsConstSharedPtr ConnectivityManager::getProxySettings() { return proxy_settings_; }
