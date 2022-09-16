@@ -24,7 +24,7 @@ struct ProxySettings {
 
   /**
    * @brief Returns an address of a proxy. This method returns nullptr for proxy settings
-   *        that are initialized with a host represted using a hostname.
+   *        that are initialized with anything other than an IP address.
    *
    * @return Address of a proxy or nullptr if proxy address is incorrect or host is
    *         defined using a hostname and not an IP address.
