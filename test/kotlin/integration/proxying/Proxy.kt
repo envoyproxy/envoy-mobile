@@ -9,6 +9,8 @@ import io.envoyproxy.envoymobile.EngineBuilder
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+// A convienient wrapper for creating an builder for an engine that 
+// proxies network requests.
 class Proxy constructor(val context: Context, val port: Int) {
     fun http(): EngineBuilder {
       val config = """

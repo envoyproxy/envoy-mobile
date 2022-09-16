@@ -26,6 +26,17 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 
+//                                               ┌──────────────────┐
+//                                               │   Proxy Engine   │
+//                                               │ ┌──────────────┐ │
+// ┌────────────────────────┐                  ┌─┼─►listener_proxy│ │
+// │http://api.lyft.com/ping│  ┌──────────────┬┘ │ └──────┬───────┘ │ ┌────────────┐
+// │        Request         ├──►Android Engine│  │        │         │ │api.lyft.com│
+// └────────────────────────┘  └──────────────┘  │ ┌──────▼──────┐  │ └──────▲─────┘
+//                                               │ │cluster_proxy│  │        │
+//                                               │ └─────────────┴──┼────────┘
+//                                               │                  │
+//                                               └──────────────────┘
 @RunWith(RobolectricTestRunner::class)
 class PerformHTTPRequestUsingProxy {
   init {

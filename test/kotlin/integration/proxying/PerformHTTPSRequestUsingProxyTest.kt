@@ -28,12 +28,23 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 
+//                                                ┌──────────────────┐
+//                                                │   Proxy Engine   │
+//                                                │ ┌──────────────┐ │
+// ┌─────────────────────────┐                  ┌─┼─►listener_proxy│ │
+// │https://api.lyft.com/ping│  ┌──────────────┬┘ │ └──────┬───────┘ │ ┌────────────┐
+// │         Request         ├──►Android Engine│  │        │         │ │api.lyft.com│
+// └─────────────────────────┘  └──────────────┘  │ ┌──────▼──────┐  │ └──────▲─────┘
+//                                                │ │cluster_proxy│  │        │
+//                                                │ └─────────────┴──┼────────┘
+//                                                │                  │
+//                                                └──────────────────┘
 @RunWith(RobolectricTestRunner::class)
 class PerformHTTPSRequestUsingProxy {
   init {
     JniLibrary.loadTestLibrary()
   }
-
+  
   @Test
   fun `performs an HTTPs request through a proxy`() {
     val port = (10001..11000).random()
