@@ -34,7 +34,7 @@ Http::FilterHeadersStatus
 NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap& request_headers, bool) {
   const auto proxy_settings = connectivity_manager_->getProxySettings();
 
-  ENVOY_LOG(debug, "NetworkConfigurationFilter::decodeHeaders", request_headers);
+  ENVOY_LOG(trace, "NetworkConfigurationFilter::decodeHeaders", request_headers);
   if (proxy_settings == nullptr) {
     return Http::FilterHeadersStatus::Continue;
   }
@@ -49,7 +49,7 @@ NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap& request_header
 
     const auto authority = authorityHeader[0]->value().getStringView();
 
-    ENVOY_LOG(trace, "set_request_proxy_info", authority, proxy_address->asString());
+    ENVOY_LOG(trace, "netconf_filter_set_proxy_for_request", proxy_settings->asString());
     decoder_callbacks_->streamInfo().filterState()->setData(
         Network::Http11ProxyInfoFilterState::key(),
         std::make_unique<Network::Http11ProxyInfoFilterState>(authority, proxy_address),
