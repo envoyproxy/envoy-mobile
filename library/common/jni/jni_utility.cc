@@ -20,7 +20,10 @@ JavaVM* get_vm() { return static_jvm; }
 
 void set_class_loader(jobject class_loader) { static_class_loader = class_loader; }
 
-jobject get_class_loader() { return static_class_loader; }
+jobject get_class_loader() {
+  ASSERT(static_class_loader);
+  return static_class_loader;
+}
 
 jclass find_class(const char* class_name) {
   JNIEnv* env = get_env();
@@ -299,6 +302,8 @@ jbyteArray ToJavaByteArray(JNIEnv* env, const std::string& str) {
 
 void JavaArrayOfByteArrayToStringVector(JNIEnv* env, jobjectArray array,
                                         std::vector<std::string>* out) {
+  ASSERT(out);
+  ASSERT(array);
   size_t len = env->GetArrayLength(array);
   out->resize(len);
 
