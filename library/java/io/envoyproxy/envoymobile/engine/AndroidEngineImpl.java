@@ -19,11 +19,11 @@ public class AndroidEngineImpl implements EnvoyEngine {
    */
   public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback,
                            EnvoyLogger logger, EnvoyEventTracker eventTracker,
-                           Boolean enableProxySupport) {
+                           Boolean enableProxying) {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger, eventTracker);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
-    if (enableProxySupport) {
+    if (enableProxying) {
       AndroidProxyMonitor.load(context, envoyEngine);
     }
   }

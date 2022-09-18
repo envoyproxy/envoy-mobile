@@ -70,7 +70,7 @@ class PerformHTTPRequestUsingProxy {
     val builder = AndroidEngineBuilder(mockContext)
     val engine = builder
       .addLogLevel(LogLevel.DEBUG)
-      .enableProxySupport(true)
+      .enableProxying(true)
       .setOnEngineRunning { onEngineRunningLatch.countDown() }
       .build()
 

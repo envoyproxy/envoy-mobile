@@ -50,7 +50,7 @@ class MainActivity : Activity() {
 
     engine = AndroidEngineBuilder(application)
       .addLogLevel(LogLevel.DEBUG)
-      .enableProxySupport(true)
+      .enableProxying(true)
       .addPlatformFilter(::DemoFilter)
       .addPlatformFilter(::BufferDemoFilter)
       .addPlatformFilter(::AsyncDemoFilter)

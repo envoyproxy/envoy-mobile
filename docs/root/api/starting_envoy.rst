@@ -515,7 +515,7 @@ to use IPv6. Note this is an experimental option and should be enabled with caut
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-``enableProxySupport``
+``enableProxying``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Specify whether to respect system Proxy settings when establishing connections.
 Available on Andorid only.
@@ -523,7 +523,7 @@ Available on Andorid only.
 **Example**::
 
     // Kotlin
-    builder.enableProxySupport(true)
+    builder.enableProxying(true)
 
 
 ----------------------

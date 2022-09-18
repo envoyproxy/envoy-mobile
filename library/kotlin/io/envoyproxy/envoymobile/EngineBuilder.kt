@@ -1,4 +1,4 @@
-package io.envoyproxy.envoymobile
+ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification
@@ -36,7 +36,7 @@ open class EngineBuilder(
   protected var onEngineRunning: (() -> Unit) = {}
   protected var logger: ((String) -> Unit)? = null
   protected var eventTracker: ((Map<String, String>) -> Unit)? = null
-  protected var enableProxySupport = false
+  protected var enableProxying = false
   private var engineType: () -> EnvoyEngine = {
     EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
   }
@@ -336,12 +336,12 @@ open class EngineBuilder(
    * critical issues in the implementation of the proxying feature. It's intended to be removed
    * after it's confirmed that proxies on Android work as expected.
    *
-   * @param enableProxySupport whether to enable Envoy's support for proxies.
+   * @param enableProxying whether to enable Envoy's support for proxies.
    *
    * @return This builder.
    */
-  fun enableProxySupport(enableProxySupport: Boolean): EngineBuilder {
-    this.enableProxySupport = enableProxySupport
+  fun enableProxying(enableProxying: Boolean): EngineBuilder {
+    this.enableProxying = enableProxying
     return this
   }
 
