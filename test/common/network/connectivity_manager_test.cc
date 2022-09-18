@@ -205,5 +205,26 @@ TEST_F(ConnectivityManagerTest, EnumerateInterfacesFiltersByFlags) {
   EXPECT_EQ(empty.size(), 0);
 }
 
+TEST_F(ConnectivityManagerTest, IgnoresDuplicatedProxySettingsUpdates) {
+  connectivity_manager_->setProxySettings("127.0.0.1", 9999);
+  const auto proxy_settings = connectivity_manager_->getProxySettings();
+
+  EXPECT_EQ(proxy_settings->asString(), "127.0.0.1:9999");
+
+  connectivity_manager_->setProxySettings("127.0.0.1", 9999);
+  EXPECT_EQ(proxy_settings, connectivity_manager_->getProxySettings());
+}
+
+TEST_F(ConnectivityManagerTest, ClearsProxySettingsWhenEmptyProxySettingsAreProvided) {
+  connectivity_manager_->setProxySettings("127.0.0.1", 9999);
+  const auto proxy_settings = connectivity_manager_->getProxySettings();
+
+  EXPECT_EQ(proxy_settings->asString(), "127.0.0.1:9999");
+
+  connectivity_manager_->setProxySettings("", 0);
+  EXPECT_EQ(nullptr, connectivity_manager_->getProxySettings()->address());
+  EXPECT_EQ("no_proxy_configured", connectivity_manager_->getProxySettings()->asString());
+}
+
 } // namespace Network
 } // namespace Envoy
