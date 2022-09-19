@@ -2,6 +2,7 @@
 
 #include "source/common/network/default_client_connection_factory.h"
 #include "source/common/network/socket_interface_impl.h"
+#include "source/common/router/upstream_codec_filter.h"
 #include "source/common/upstream/logical_dns_cluster.h"
 #include "source/extensions/clusters/dynamic_forward_proxy/cluster.h"
 #include "source/extensions/compression/brotli/decompressor/config.h"
@@ -60,6 +61,7 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
+  Envoy::Extensions::forceUpstreamCodecFilterFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
   ExtensionRegistryPlatformAdditions::registerFactories();
 
