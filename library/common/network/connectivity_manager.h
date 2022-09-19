@@ -153,11 +153,9 @@ public:
   /**
    * @brief Sets the current proxy settings.
    *
-   * @param host The proxy host defined as a hostname or an IP address. Some platforms
-   *             (i.e., Android) allow users to specify proxy using either one of these.
-   * @param port The proxy port.
+   * @param host The proxy settings. `nullptr` if there is no proxy configured on a device.
    */
-  void setProxySettings(std::string host, int16_t port);
+  void setProxySettings(ProxySettingsConstSharedPtr proxy_settings);
 
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "source/common/network/utility.h"
 
 namespace Envoy {
@@ -21,6 +23,25 @@ struct ProxySettings {
    */
   ProxySettings(const std::string& host, const uint16_t port)
       : address_(Envoy::Network::Utility::parseInternetAddressNoThrow(host, port)) {}
+
+  /**
+   * @brief Parses given host and domain and creates proxy settings. Returns nullptr
+   *        for an empty host and a port equal to 0 as they are passed to c++ native layer
+   *        as a synonym of the lack of proxy settings configured on a device.
+   *
+   * @param host The proxy host defined as a hostname or an IP address. Some platforms
+   *             (i.e., Android) allow users to specify proxy using either one of these.
+   * @param port The proxy port.
+   * @return The created proxy settings, nullptr if the passed host is an empty string and
+   *         port is equal to 0.
+   */
+  static const ProxySettingsConstSharedPtr parseHostAndPort(const std::string& host,
+                                                            const uint16_t port) {
+    if (host == "" && port == 0) {
+      return nullptr;
+    }
+    return std::make_shared<ProxySettings>(host, port);
+  }
 
   /**
    * @brief Returns an address of a proxy. This method returns nullptr for proxy settings

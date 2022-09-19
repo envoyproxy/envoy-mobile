@@ -102,11 +102,17 @@ envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network
   return network_state_.configuration_key_;
 }
 
-void ConnectivityManager::setProxySettings(std::string host, int16_t port) {
-  const auto proxy_settings = std::make_shared<ProxySettings>(host, port);
-  if (proxy_settings_ == nullptr || *proxy_settings_ != *proxy_settings) {
-    ENVOY_LOG_EVENT(info, "netconf_proxy_change", proxy_settings->asString());
-    proxy_settings_ = proxy_settings;
+void ConnectivityManager::setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) {
+  if (proxy_settings_ == nullptr && new_proxy_settings != nullptr) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
+    proxy_settings_ = new_proxy_settings;
+  } else if (proxy_settings_ != nullptr && new_proxy_settings == nullptr) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", "no_proxy_configured");
+    proxy_settings_ = new_proxy_settings;
+  } else if (proxy_settings_ != nullptr && new_proxy_settings != nullptr &&
+             *proxy_settings_ != *new_proxy_settings) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
+    proxy_settings_ = new_proxy_settings;
   }
 
   return;
