@@ -21,7 +21,8 @@ JavaVM* get_vm() { return static_jvm; }
 void set_class_loader(jobject class_loader) { static_class_loader = class_loader; }
 
 jobject get_class_loader() {
-  ASSERT(static_class_loader);
+  RELEASE_ASSERT(static_class_loader,
+                 "find_class() is used before calling AndroidJniLibrary.load()");
   return static_class_loader;
 }
 
