@@ -60,7 +60,7 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::TransportSockets::RawBuffer::forceRegisterUpstreamRawBufferSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
   Envoy::Extensions::TransportSockets::Http11Connect::
-      forceRegisterUpstreamHttp11ConnectSocketConfigFactory();
+      forceRegisterUpstreamHttp11ConnectSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
