@@ -26,5 +26,10 @@ TEST_F(ProxySettingsTest, EmptyAddressStringResultsInNullAddress) {
   EXPECT_EQ(ProxySettings("", 0).asString(), "no_proxy_configured");
 }
 
+TEST_F(ProxySettingsTest, Hostname) {
+  EXPECT_EQ(ProxySettings("foo.com", 0).address(), nullptr);
+  EXPECT_EQ(ProxySettings("foo.com", 80).asString(), "foo.com:80");
+}
+
 } // namespace Network
 } // namespace Envoy
