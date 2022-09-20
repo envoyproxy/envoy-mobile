@@ -53,15 +53,16 @@ class PerformHTTPSRequestUsingProxy {
     Mockito.`when`(mockContext.getApplicationContext()).thenReturn(mockContext)
     val mockConnectivityManager = Mockito.mock(ConnectivityManager::class.java)
     Mockito.`when`(mockContext.getSystemService(Mockito.anyString())).thenReturn(mockConnectivityManager)
-    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("localhost", port))
+    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("loopback", port))
 
     val onEngineRunningLatch = CountDownLatch(1)
     val onProxyEngineRunningLatch = CountDownLatch(1)
-    val onRespondeHeadersLatch = CountDownLatch(1)
+    val onErrorLatch = CountDownLatch(1)
 
     val proxyEngineBuilder = Proxy(ApplicationProvider.getApplicationContext(), port).https()
     val proxyEngine = proxyEngineBuilder
       .addLogLevel(LogLevel.DEBUG)
+      .addDNSQueryTimeoutSeconds(2)
       .setOnEngineRunning { onProxyEngineRunningLatch.countDown() }
       .build()
 
@@ -89,17 +90,14 @@ class PerformHTTPSRequestUsingProxy {
     engine
       .streamClient()
       .newStreamPrototype()
-      .setOnResponseHeaders { responseHeaders, _, _ ->
-        val status = responseHeaders.httpStatus ?: 0L
-        assertThat(status).isEqualTo(200)
-        assertThat(responseHeaders.value("x-response-header-that-should-be-stripped")).isNull()
-        onRespondeHeadersLatch.countDown()
+      .setOnError { _, _ ->
+        onErrorLatch.countDown()
       }
       .start(Executors.newSingleThreadExecutor())
       .sendHeaders(requestHeaders, true)
 
-    onRespondeHeadersLatch.await(15, TimeUnit.SECONDS)
-    assertThat(onRespondeHeadersLatch.count).isEqualTo(0)
+    onErrorLatch.await(15, TimeUnit.SECONDS)
+    assertThat(onErrorLatch.count).isEqualTo(0)
 
     engine.terminate()
     proxyEngine.terminate()
