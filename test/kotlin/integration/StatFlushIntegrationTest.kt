@@ -30,7 +30,7 @@ class StatFlushIntegrationTest {
     engine = EngineBuilder()
       .addLogLevel(LogLevel.INFO)
       .addStatsFlushSeconds(1)
-      .onEngineRunning { countDownLatch.countDown() }
+      .setOnEngineRunning { countDownLatch.countDown() }
       .build()
 
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
@@ -52,7 +52,7 @@ class StatFlushIntegrationTest {
       .addStatsDPort(8125)
       // Really high flush interval so it won't trigger during test execution.
       .addStatsFlushSeconds(100)
-      .onEngineRunning { countDownLatch.countDown() }
+      .setOnEngineRunning { countDownLatch.countDown() }
       .build()
 
     assertThat(countDownLatch.await(30, TimeUnit.SECONDS)).isTrue()
