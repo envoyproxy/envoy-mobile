@@ -45,6 +45,7 @@ platform(
         "container-image": "docker://envoyproxy/envoy-build-ubuntu@sha256:8c1f2988318b29df9d70b32ca5a78cf5c95b5732524e71fd97e6eff8a1d0a1bd",
         "OSFamily": "Linux",
         "Pool": "linux",
+        "cache-silo-key": "1",
     },
 )
 
