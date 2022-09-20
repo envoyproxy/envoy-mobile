@@ -58,6 +58,7 @@ NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap& request_header
     return Http::FilterHeadersStatus::Continue;
   }
 
+  ENVOY_LOG(trace, "netconf_filter_processing_proxy_for_request", proxy_settings->asString());
   // If there is a proxy with a raw address, set the information, and continue.
   const auto proxy_address = proxy_settings->address();
   if (proxy_address != nullptr) {

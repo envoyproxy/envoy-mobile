@@ -11,6 +11,7 @@
 #include "library/common/data/utility.h"
 #include "library/common/extensions/filters/http/network_configuration/filter.h"
 #include "library/common/extensions/filters/http/network_configuration/filter.pb.h"
+#include "library/common/network/proxy_settings.h"
 
 using Envoy::Extensions::Common::DynamicForwardProxy::DnsCache;
 using Envoy::Extensions::Common::DynamicForwardProxy::MockDnsCache;
@@ -35,7 +36,7 @@ public:
   MOCK_METHOD(envoy_netconf_t, getConfigurationKey, ());
   MOCK_METHOD(Envoy::Network::ProxySettingsConstSharedPtr, getProxySettings, ());
   MOCK_METHOD(void, reportNetworkUsage, (envoy_netconf_t configuration_key, bool network_fault));
-  MOCK_METHOD(void, setProxySettings, (std::string host, int16_t port));
+  MOCK_METHOD(void, setProxySettings, (Envoy::Network::ProxySettingsConstSharedPtr proxy_settings));
   MOCK_METHOD(void, setDrainPostDnsRefreshEnabled, (bool enabled));
   MOCK_METHOD(void, setInterfaceBindingEnabled, (bool enabled));
   MOCK_METHOD(void, refreshDns, (envoy_netconf_t configuration_key, bool drain_connections));

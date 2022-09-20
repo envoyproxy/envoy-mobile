@@ -133,11 +133,10 @@ public:
   /**
    * @brief Sets the current proxy settings.
    *
-   * @param host The proxy host defined as a hostname or an IP address. Some platforms
-   *             (i.e., Android) allow users to specify proxy using either one of these.
-   * @param port The proxy port.
+   * @param new_proxy_settings The proxy settings. `nullptr` if there is no proxy configured on a
+   * device.
    */
-  virtual void setProxySettings(std::string host, int16_t port) PURE;
+  virtual void setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) PURE;
 
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this
@@ -223,7 +222,7 @@ public:
   envoy_netconf_t getConfigurationKey() override;
   Envoy::Network::ProxySettingsConstSharedPtr getProxySettings() override;
   void reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault) override;
-  void setProxySettings(std::string host, int16_t port) override;
+  void setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) override;
   void setDrainPostDnsRefreshEnabled(bool enabled) override;
   void setInterfaceBindingEnabled(bool enabled) override;
   void refreshDns(envoy_netconf_t configuration_key, bool drain_connections) override;

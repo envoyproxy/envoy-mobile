@@ -102,14 +102,20 @@ envoy_netconf_t ConnectivityManagerImpl::setPreferredNetwork(envoy_network_t net
   return network_state_.configuration_key_;
 }
 
-void ConnectivityManagerImpl::setProxySettings(std::string host, int16_t port) {
-  ENVOY_LOG_EVENT(debug, "netconf_proxy_settings_changed", host, port);
-  const auto proxy_settings = std::make_shared<ProxySettings>(host, port);
-  if (proxy_settings_.get() == proxy_settings.get()) {
-    return;
+void ConnectivityManagerImpl::setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) {
+  if (proxy_settings_ == nullptr && new_proxy_settings != nullptr) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
+    proxy_settings_ = new_proxy_settings;
+  } else if (proxy_settings_ != nullptr && new_proxy_settings == nullptr) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", "no_proxy_configured");
+    proxy_settings_ = new_proxy_settings;
+  } else if (proxy_settings_ != nullptr && new_proxy_settings != nullptr &&
+             *proxy_settings_ != *new_proxy_settings) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
+    proxy_settings_ = new_proxy_settings;
   }
 
-  proxy_settings_ = std::make_shared<ProxySettings>(host, port);
+  return;
 }
 
 ProxySettingsConstSharedPtr ConnectivityManagerImpl::getProxySettings() { return proxy_settings_; }
