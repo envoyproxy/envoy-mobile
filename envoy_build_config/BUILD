@@ -14,6 +14,7 @@ envoy_cc_library(
     deps = [
         "extension_registry_platform_additions",
         "@envoy//source/common/network:socket_lib",
+        "@envoy//source/common/router:upstream_codec_filter_lib",
         "@envoy//source/common/upstream:logical_dns_cluster_lib",
         "@envoy//source/extensions/clusters/dynamic_forward_proxy:cluster",
         "@envoy//source/extensions/compression/brotli/decompressor:config",
@@ -27,6 +28,7 @@ envoy_cc_library(
         "@envoy//source/extensions/http/header_formatters/preserve_case:config",
         "@envoy//source/extensions/stat_sinks/metrics_service:config",
         "@envoy//source/extensions/stat_sinks/statsd:config",
+        "@envoy//source/extensions/transport_sockets/http_11_proxy:upstream_config",
         "@envoy//source/extensions/transport_sockets/raw_buffer:config",
         "@envoy//source/extensions/transport_sockets/tls:config",
         "@envoy//source/extensions/transport_sockets/tls/cert_validator:cert_validator_lib",

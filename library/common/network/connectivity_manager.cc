@@ -12,6 +12,7 @@
 #include "source/common/network/address_impl.h"
 #include "source/extensions/common/dynamic_forward_proxy/dns_cache_manager_impl.h"
 
+#include "fmt/ostream.h"
 #include "library/common/network/src_addr_socket_option_impl.h"
 
 // Used on Linux (requires root/CAP_NET_RAW)
@@ -100,6 +101,24 @@ envoy_netconf_t ConnectivityManager::setPreferredNetwork(envoy_network_t network
 
   return network_state_.configuration_key_;
 }
+
+void ConnectivityManager::setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) {
+  if (proxy_settings_ == nullptr && new_proxy_settings != nullptr) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
+    proxy_settings_ = new_proxy_settings;
+  } else if (proxy_settings_ != nullptr && new_proxy_settings == nullptr) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", "no_proxy_configured");
+    proxy_settings_ = new_proxy_settings;
+  } else if (proxy_settings_ != nullptr && new_proxy_settings != nullptr &&
+             *proxy_settings_ != *new_proxy_settings) {
+    ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
+    proxy_settings_ = new_proxy_settings;
+  }
+
+  return;
+}
+
+ProxySettingsConstSharedPtr ConnectivityManager::getProxySettings() { return proxy_settings_; }
 
 envoy_network_t ConnectivityManager::getPreferredNetwork() {
   Thread::LockGuard lock{network_state_.mutex_};
@@ -437,3 +456,10 @@ ConnectivityManagerSharedPtr ConnectivityManagerHandle::get() {
 
 } // namespace Network
 } // namespace Envoy
+
+// NOLINT(namespace-envoy)
+namespace fmt {
+// Allow fmtlib to format InterfacePair::string_view
+template <>
+struct formatter<Envoy::Network::Address::InstanceConstSharedPtr> : ostream_formatter {};
+} // namespace fmt

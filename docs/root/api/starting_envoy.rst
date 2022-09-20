@@ -526,6 +526,18 @@ Specify whether to use platform provided certificate validation interfaces. Curr
   builder.usePlatformCertValidator(true)
 
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableProxying``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Specify whether to respect system Proxy settings when establishing connections.
+Available on Andorid only.
+
+**Example**::
+
+    // Kotlin
+    builder.enableProxying(true)
+
+
 ----------------------
 Advanced configuration
 ----------------------
