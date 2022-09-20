@@ -32,15 +32,25 @@ void NetworkConfigurationFilter::setDecoderFilterCallbacks(
 
 void NetworkConfigurationFilter::onLoadDnsCacheComplete(
     const Common::DynamicForwardProxy::DnsHostInfoSharedPtr& host_info) {
-  dns_cache_handle_.reset();
+  if (onAddressResolved(host_info)) {
+    continue_decoding_callback_ = decoder_callbacks_->dispatcher().createSchedulableCallback(
+        [this]() { decoder_callbacks_->continueDecoding(); });
+    continue_decoding_callback_->scheduleCallbackNextIteration();
+    return;
+  }
+}
+
+bool NetworkConfigurationFilter::onAddressResolved(
+    const Common::DynamicForwardProxy::DnsHostInfoSharedPtr& host_info) {
   if (host_info->address()) {
     setInfo(decoder_callbacks_->streamInfo().getRequestHeaders()->getHostValue(),
             host_info->address());
-    decoder_callbacks_->continueDecoding();
+    return true;
   }
   decoder_callbacks_->sendLocalReply(Http::Code::BadRequest,
                                      "Proxy configured but DNS resolution failed", nullptr,
                                      absl::nullopt, "no_dns_address_for_proxy");
+  return false;
 }
 
 Http::FilterHeadersStatus
@@ -94,8 +104,11 @@ NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap& request_header
 
   // If the hostname is in cache, set the info and continue.
   if (result.host_info_.has_value()) {
-    onLoadDnsCacheComplete(*result.host_info_);
-    return Http::FilterHeadersStatus::Continue;
+    if (onAddressResolved(*result.host_info_)) {
+      return Http::FilterHeadersStatus::Continue;
+    } else {
+      return Http::FilterHeadersStatus::StopIteration;
+    }
   }
 
   // If DNS lookup straight up fails, fail the request.

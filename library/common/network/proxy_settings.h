@@ -23,7 +23,7 @@ struct ProxySettings {
    */
   ProxySettings(const std::string& host, const uint16_t port)
       : address_(Envoy::Network::Utility::parseInternetAddressNoThrow(host, port)),
-        hostname_(host) {}
+        hostname_(absl::StrCat(host, ":", port)) {}
 
   /**
    * @brief Parses given host and domain and creates proxy settings. Returns nullptr

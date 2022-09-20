@@ -46,6 +46,8 @@ public:
 
 private:
   void setInfo(absl::string_view authority, Network::Address::InstanceConstSharedPtr address);
+  bool
+  onAddressResolved(const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr& host_info);
 
   // This is only present if there is an active proxy DNS lookup in progress.
   std::unique_ptr<Extensions::Common::DynamicForwardProxy::DnsCache::LoadDnsCacheEntryHandle>
@@ -54,6 +56,7 @@ private:
   StreamInfo::ExtraStreamInfo* extra_stream_info_;
   bool enable_drain_post_dns_refresh_;
   bool enable_interface_binding_;
+  Event::SchedulableCallbackPtr continue_decoding_callback_;
 };
 
 } // namespace NetworkConfiguration
