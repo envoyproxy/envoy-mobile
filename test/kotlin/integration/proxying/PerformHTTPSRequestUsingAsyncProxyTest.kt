@@ -53,7 +53,7 @@ class PerformHTTPSRequestUsingProxy {
     Mockito.`when`(mockContext.getApplicationContext()).thenReturn(mockContext)
     val mockConnectivityManager = Mockito.mock(ConnectivityManager::class.java)
     Mockito.`when`(mockContext.getSystemService(Mockito.anyString())).thenReturn(mockConnectivityManager)
-    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("loopback", port))
+    Mockito.`when`(mockConnectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("localhost", port))
 
     val onEngineRunningLatch = CountDownLatch(1)
     val onProxyEngineRunningLatch = CountDownLatch(1)
