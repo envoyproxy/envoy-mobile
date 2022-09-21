@@ -301,7 +301,6 @@ TEST_P(ClientIntegrationTest, Proxying) {
   // The initial request will do the DNS lookup and resolve localhost to 127.0.0.1
   stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
   terminal_callback_.waitReady();
-  ASSERT_EQ(cc_.on_headers_calls, 1);
   ASSERT_EQ(cc_.status, "200");
   ASSERT_EQ(cc_.on_complete_calls, 1);
   stream_.reset();
@@ -310,7 +309,6 @@ TEST_P(ClientIntegrationTest, Proxying) {
   stream_ = (*stream_prototype_).start(explicit_flow_control_);
   stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
   terminal_callback_.waitReady();
-  ASSERT_EQ(cc_.on_headers_calls, 2);
   ASSERT_EQ(cc_.status, "200");
   ASSERT_EQ(cc_.on_complete_calls, 2);
 }

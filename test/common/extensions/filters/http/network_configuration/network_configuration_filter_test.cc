@@ -61,7 +61,7 @@ class NetworkConfigurationFilterTest : public testing::Test {
 public:
   NetworkConfigurationFilterTest()
       : connectivity_manager_(new NiceMock<MockConnectivityManager>),
-        proxy_settings_(new Network::ProxySettings("127.0.0.1", 80)),
+        proxy_settings_(new Network::ProxySettings("127.0.0.1", 82)),
         filter_(connectivity_manager_, false, false) {
     filter_.setDecoderFilterCallbacks(decoder_callbacks_);
     ON_CALL(decoder_callbacks_.stream_info_, getRequestHeaders())
@@ -116,7 +116,7 @@ TEST_F(NetworkConfigurationFilterTest, IPProxyConfigNoAuthority) {
 }
 
 TEST_F(NetworkConfigurationFilterTest, HostnameProxyConfigNoCache) {
-  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 80),
+  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 82),
 
   // With an hostname based config, and no dns cache, expect a local reply.
       EXPECT_CALL(*connectivity_manager_, getProxySettings()).WillOnce(Return(proxy_settings_));
@@ -127,13 +127,13 @@ TEST_F(NetworkConfigurationFilterTest, HostnameProxyConfigNoCache) {
 }
 
 TEST_F(NetworkConfigurationFilterTest, HostnameProxyConfig) {
-  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 80);
+  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 82);
   createCache();
 
   // With an hostname based config, and a cached address, expect the proxy info to be set.
   EXPECT_CALL(*connectivity_manager_, getProxySettings()).WillOnce(Return(proxy_settings_));
   EXPECT_CALL(decoder_callbacks_.stream_info_, filterState());
-  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost:80"), 80, _))
+  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, _))
       .WillOnce(Invoke([&](absl::string_view, uint16_t, DnsCache::LoadDnsCacheEntryCallbacks&) {
         return MockDnsCache::MockLoadDnsCacheEntryResult{DnsCache::LoadDnsCacheEntryStatus::InCache,
                                                          nullptr, host_info_};
@@ -143,13 +143,13 @@ TEST_F(NetworkConfigurationFilterTest, HostnameProxyConfig) {
 }
 
 TEST_F(NetworkConfigurationFilterTest, HostnameDnsLookupFail) {
-  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 80);
+  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 82);
   createCache();
 
   // With a DNS lookup failure, send a local reply.
   EXPECT_CALL(*connectivity_manager_, getProxySettings()).WillOnce(Return(proxy_settings_));
   EXPECT_CALL(decoder_callbacks_.stream_info_, filterState()).Times(0);
-  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost:80"), 80, _))
+  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, _))
       .WillOnce(Return(MockDnsCache::MockLoadDnsCacheEntryResult{
           DnsCache::LoadDnsCacheEntryStatus::Overflow, nullptr, absl::nullopt}));
   EXPECT_EQ(Http::FilterHeadersStatus::StopIteration,
@@ -157,7 +157,7 @@ TEST_F(NetworkConfigurationFilterTest, HostnameDnsLookupFail) {
 }
 
 TEST_F(NetworkConfigurationFilterTest, AsyncDnsLookupSuccess) {
-  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 80);
+  proxy_settings_ = std::make_shared<Network::ProxySettings>("localhost", 82);
   createCache();
 
   // With an hostname based config, and a cached address, expect iteration to stop.
@@ -166,7 +166,7 @@ TEST_F(NetworkConfigurationFilterTest, AsyncDnsLookupSuccess) {
   Extensions::Common::DynamicForwardProxy::MockLoadDnsCacheEntryHandle* handle =
       new NiceMock<Extensions::Common::DynamicForwardProxy::MockLoadDnsCacheEntryHandle>();
   EXPECT_CALL(*handle, onDestroy());
-  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost:80"), 80, _))
+  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, _))
       .WillOnce(Invoke([&](absl::string_view, uint16_t, DnsCache::LoadDnsCacheEntryCallbacks&) {
         return MockDnsCache::MockLoadDnsCacheEntryResult{DnsCache::LoadDnsCacheEntryStatus::Loading,
                                                          handle, absl::nullopt};
