@@ -13,6 +13,9 @@ jobs:
     name: kotlin_tests_mac
     runs-on: macos-12
     timeout-minutes: 90
+    concurrency: 
+      group: ${{ github.head_ref || github.run_id }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v1
         with:
@@ -52,6 +55,9 @@ jobs:
     name: java_tests_mac
     runs-on: macos-12
     timeout-minutes: 120
+    concurrency: 
+      group: ${{ github.head_ref || github.run_id }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v1
         with:
@@ -94,6 +100,9 @@ jobs:
     name: kotlin_tests_linux
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    concurrency: 
+      group: ${{ github.head_ref || github.run_id }}
+      cancel-in-progress: true
     container:
       image: envoyproxy/envoy-build-ubuntu:0a02a76af5951bf7f4c7029c0ea6d29d96c0f682
       env:
