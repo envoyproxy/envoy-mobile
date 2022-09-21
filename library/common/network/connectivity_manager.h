@@ -133,10 +133,10 @@ public:
   /**
    * @brief Sets the current proxy settings.
    *
-   * @param new_proxy_settings The proxy settings. `nullptr` if there is no proxy configured on a
+   * @param proxy_settings The proxy settings. `nullptr` if there is no proxy configured on a
    * device.
    */
-  virtual void setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) PURE;
+  virtual void setProxySettings(ProxySettingsConstSharedPtr proxy_settings) PURE;
 
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this

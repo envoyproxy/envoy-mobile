@@ -55,7 +55,7 @@ bool NetworkConfigurationFilter::onAddressResolved(
 
 Http::FilterHeadersStatus
 NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap& request_headers, bool) {
-  ENVOY_LOG(debug, "NetworkConfigurationFilter::decodeHeaders", request_headers);
+  ENVOY_LOG(trace, "NetworkConfigurationFilter::decodeHeaders", request_headers);
 
   const auto authority = request_headers.getHostValue();
   if (authority.empty()) {
@@ -92,11 +92,12 @@ NetworkConfigurationFilter::decodeHeaders(Http::RequestHeaderMap& request_header
   }
 
   // Attempt to load the proxy's hostname from the DNS cache.
-  auto result =
-      connectivity_manager_->dnsCache()->loadDnsCacheEntry(proxy_settings->hostname(), 80, *this);
+  auto result = connectivity_manager_->dnsCache()->loadDnsCacheEntry(proxy_settings->hostname(),
+                                                                     proxy_settings->port(), *this);
 
-  // If the hostname is not in the cache, pause filter iteration and wait for onLoadDnsCacheComplete
-  // to be called.
+  // If the hostname is not in the cache, pause filter iteration. The DNS cache will call
+  // onLoadDnsCacheComplete when DNS resolution succeeds, fails, or times out and processing
+  // will resume from there.
   if (result.status_ == Common::DynamicForwardProxy::DnsCache::LoadDnsCacheEntryStatus::Loading) {
     dns_cache_handle_ = std::move(result.handle_);
     return Http::FilterHeadersStatus::StopAllIterationAndWatermark;

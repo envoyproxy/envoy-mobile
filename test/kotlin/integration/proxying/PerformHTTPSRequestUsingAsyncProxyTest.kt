@@ -40,13 +40,13 @@ import org.robolectric.RobolectricTestRunner
 //                                                │                  │
 //                                                └──────────────────┘
 @RunWith(RobolectricTestRunner::class)
-class PerformHTTPSRequestUsingProxy {
+class PerformHTTPSRequestUsingAsyncProxyTest {
   init {
     JniLibrary.loadTestLibrary()
   }
 
   @Test
-  fun `performs an HTTPs request through a proxy`() {
+  fun `performs an HTTPs request through a proxy using async DNS resolution`() {
     val port = (10001..11000).random()
 
     val mockContext = Mockito.mock(Context::class.java)

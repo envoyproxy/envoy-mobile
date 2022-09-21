@@ -17,6 +17,18 @@ TEST_F(ProxySettingsTest, DifferentPortsAreNotEqual) {
   EXPECT_NE(ProxySettings("127.0.0.1", 1111), ProxySettings("127.0.0.1", 2222));
 }
 
+TEST_F(ProxySettingsTest, HostnamesAreEqual) {
+  EXPECT_EQ(ProxySettings("foo.com", 2222), ProxySettings("foo.com", 2222));
+}
+
+TEST_F(ProxySettingsTest, HostnamesWithDifferentPortsAreNotEqual) {
+  EXPECT_NE(ProxySettings("foo.com", 2), ProxySettings("foo.com", 2222));
+}
+
+TEST_F(ProxySettingsTest, DifferentHostnamesAreNotEqual) {
+  EXPECT_NE(ProxySettings("bar.com", 2222), ProxySettings("foo.com", 2222));
+}
+
 TEST_F(ProxySettingsTest, DifferentAddressesAreNotEqual) {
   EXPECT_NE(ProxySettings("127.0.0.2", 1111), ProxySettings("127.0.0.1", 1111));
 }
