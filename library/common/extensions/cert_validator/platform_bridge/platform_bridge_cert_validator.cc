@@ -71,7 +71,7 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
     OPENSSL_free(der);
   }
 
-  std::string_view host;
+  absl::string_view host;
   if (transport_socket_options != nullptr &&
       !transport_socket_options->verifySubjectAltNameListOverride().empty()) {
     host = transport_socket_options->verifySubjectAltNameListOverride()[0];
@@ -143,7 +143,7 @@ void PlatformBridgeCertValidator::PendingValidation::verifyCertsByPlatform() {
 }
 
 void PlatformBridgeCertValidator::PendingValidation::postVerifyResult(
-    bool success, std::string_view error_details, uint8_t tls_alert,
+    bool success, absl::string_view error_details, uint8_t tls_alert,
     OptRef<Stats::Counter> error_counter_to_inc) {
   std::weak_ptr<size_t> weak_alive_indicator(parent_.alive_indicator_);
   result_callback_->dispatcher().post(

@@ -62,7 +62,7 @@ private:
   class PendingValidation {
   public:
     PendingValidation(PlatformBridgeCertValidator& parent, std::vector<envoy_data> certs,
-                      std::string_view host_name,
+                      absl::string_view host_name,
                       const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
                       Ssl::ValidateResultCallbackPtr result_callback)
         : parent_(parent), certs_(std::move(certs)), host_name_(host_name),
@@ -71,7 +71,7 @@ private:
 
     void verifyCertsByPlatform();
 
-    void postVerifyResult(bool success, std::string_view error_details, uint8_t tls_alert,
+    void postVerifyResult(bool success, absl::string_view error_details, uint8_t tls_alert,
                           OptRef<Stats::Counter> error_counter_to_inc);
 
     struct Hash {
