@@ -290,6 +290,7 @@ TEST_P(ClientIntegrationTest, TimeoutOnResponsePath) {
 }
 
 TEST_P(ClientIntegrationTest, Proxying) {
+  addLogLevel(Platform::LogLevel::trace);
   initialize();
   if (version_ == Network::Address::IpVersion::v6) {
     // Loopback only resolves to an ipv4 address - alas no kernel happy eyeballs.
