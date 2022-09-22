@@ -20,10 +20,9 @@ import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.org.chromium.net.NetError;
-
 import org.chromium.net.impl.BidirectionalStreamNetworkException;
 import org.chromium.net.impl.CronetBidirectionalStream;
+import org.chromium.net.impl.Errors.NetError;
 import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestUtil;
 import org.chromium.net.testing.Feature;
@@ -1541,7 +1540,6 @@ public class BidirectionalStreamTest {
   @Feature({"Cronet"})
   @Test
   @OnlyRunNativeCronet
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1594")
   public void testErrorCodes() throws Exception {
     // Non-BidirectionalStream specific error codes.
     checkSpecificErrorCode(NetError.ERR_NAME_NOT_RESOLVED,
@@ -1580,11 +1578,12 @@ public class BidirectionalStreamTest {
     return new String(contents);
   }
 
-  private static void checkSpecificErrorCode(int netError, int errorCode,
+  private static void checkSpecificErrorCode(NetError netError, int errorCode,
                                              boolean immediatelyRetryable) throws Exception {
-    NetworkException exception = new BidirectionalStreamNetworkException("", errorCode, netError);
+    NetworkException exception =
+        new BidirectionalStreamNetworkException("", errorCode, netError.getValue());
     assertEquals(immediatelyRetryable, exception.immediatelyRetryable());
-    assertEquals(netError, exception.getCronetInternalErrorCode());
+    assertEquals(netError.getValue(), exception.getCronetInternalErrorCode());
     assertEquals(errorCode, exception.getErrorCode());
   }
 

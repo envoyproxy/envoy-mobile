@@ -3,11 +3,14 @@ package org.chromium.net.testing;
 import static junit.framework.Assert.assertTrue;
 
 import org.chromium.net.CronetEngine;
+import org.chromium.net.ExperimentalCronetEngine;
 
 /**
  * Helper class to set up url interceptors for testing purposes.
  */
 public final class MockUrlRequestJobFactory {
+
+  private static final String TEST_URL = "http://0.0.0.0:10000";
 
   private final CronetEngine mCronetEngine;
 
@@ -21,21 +24,32 @@ public final class MockUrlRequestJobFactory {
   }
 
   /**
+   * Sets up URL interceptors.
+   */
+  public MockUrlRequestJobFactory(ExperimentalCronetEngine.Builder builder) {
+    // Add a filter to immediately return a response
+    mCronetEngine =
+        CronetTestUtil.getCronetEngineBuilderImpl(builder).addUrlInterceptorsForTesting().build();
+  }
+
+  /**
    * Remove URL Interceptors.
    */
   public void shutdown() {
     // Remove the filter;
+    mCronetEngine.shutdown();
   }
+
+  public CronetEngine getCronetEngine() { return mCronetEngine; }
 
   /**
    * Constructs a mock URL that hangs or fails at certain phase.
    *
    * @param phase at which request fails. It should be a value in
    *              org.chromium.net.test.FailurePhase.
-   * @param netError reported by UrlRequestJob. Passing -1, results in hang.
+   // * @param netError reported by UrlRequestJob. Passing -1, results in hang.
    */
-  public static String getMockUrlWithFailure(int phase, int netError) {
-    assertTrue(netError < 0);
+  public static String getMockUrlWithFailure(String phase, String envoyMobileError) {
     switch (phase) {
     case FailurePhase.START:
     case FailurePhase.READ_SYNC:
@@ -44,6 +58,10 @@ public final class MockUrlRequestJobFactory {
     default:
       throw new IllegalArgumentException("phase not in org.chromium.net.test.FailurePhase");
     }
+    return TEST_URL + "/failed?" + phase + "=" + envoyMobileError;
+  }
+
+  public static String getMockUrlWithFailure(String phase, int netError) {
     return "To be implemented";
   }
 

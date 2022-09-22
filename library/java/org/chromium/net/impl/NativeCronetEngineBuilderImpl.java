@@ -62,6 +62,10 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private String mAppId = "unspecified";
   private TrustChainVerification mTrustChainVerification = VERIFY_TRUST_CHAIN;
   private String mVirtualClusters = "[]";
+  private List<EnvoyHTTPFilterFactory> platformFilterChain = Collections.emptyList();
+  private List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
+  private Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
+  private Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
 
   /**
    * Builder for Native Cronet Engine. Default config enables SPDY, disables QUIC and HTTP cache.
@@ -78,6 +82,19 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   @VisibleForTesting
   public CronetEngineBuilderImpl setMockCertVerifierForTesting() {
     mTrustChainVerification = TrustChainVerification.ACCEPT_UNTRUSTED;
+    return this;
+  }
+
+  /**
+   * Adds url interceptors to the cronetEngine
+   *
+   * @return the builder to facilitate chaining.
+   */
+  @VisibleForTesting
+  public CronetEngineBuilderImpl addUrlInterceptorsForTesting() {
+    nativeFilterChain.add(new EnvoyNativeFilterConfig(
+        "envoy.filters.http.test_read",
+        "{\"@type\": type.googleapis.com/envoymobile.extensions.filters.http.test_read.TestRead}"));
     return this;
   }
 
@@ -99,11 +116,6 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   }
 
   private EnvoyConfiguration createEnvoyConfiguration() {
-    List<EnvoyHTTPFilterFactory> platformFilterChain = Collections.emptyList();
-    List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
-    Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
-    Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
-
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
         mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,

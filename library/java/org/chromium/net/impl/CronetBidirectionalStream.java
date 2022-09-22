@@ -1,5 +1,8 @@
 package org.chromium.net.impl;
 
+import static org.chromium.net.impl.Errors.mapEnvoyMobileErrorToNetError;
+import static org.chromium.net.impl.Errors.mapNetErrorToApiErrorCode;
+
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -15,6 +18,7 @@ import org.chromium.net.UrlResponseInfo;
 import org.chromium.net.impl.Annotations.RequestPriority;
 import org.chromium.net.impl.CronetBidirectionalState.Event;
 import org.chromium.net.impl.CronetBidirectionalState.NextAction;
+import org.chromium.net.impl.Errors.NetError;
 import org.chromium.net.impl.UrlResponseInfoImpl.HeaderBlockImpl;
 
 import java.net.MalformedURLException;
@@ -643,21 +647,24 @@ public final class CronetBidirectionalStream
     });
   }
 
-  private void onErrorReceived(int errorCode, int nativeError, int nativeQuicError,
-                               String errorString, long receivedByteCount) {
+  private void onErrorReceived(int errorCode, EnvoyFinalStreamIntel finalStreamIntel) {
     if (mResponseInfo != null) {
-      mResponseInfo.setReceivedByteCount(receivedByteCount);
+      mResponseInfo.setReceivedByteCount(finalStreamIntel.getReceivedByteCount());
     }
-    CronetException exception;
+
+    NetError netError = mapEnvoyMobileErrorToNetError(finalStreamIntel.getResponseFlags());
+    int javaError = mapNetErrorToApiErrorCode(netError);
     if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
         errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
-      exception = new QuicExceptionImpl("Exception in BidirectionalStream: " + errorString,
-                                        errorCode, nativeError, nativeQuicError);
+      mException.set(
+          new QuicExceptionImpl("Exception in BidirectionalStream: " + netError.getModifiedString(),
+                                javaError, netError.getValue(), /*nativeQuicError*/ 0));
     } else {
-      exception = new BidirectionalStreamNetworkException(
-          "Exception in BidirectionalStream: " + errorString, errorCode, nativeError);
+      mException.set(new BidirectionalStreamNetworkException("Exception in BidirectionalStream: " +
+                                                                 netError.getModifiedString(),
+                                                             javaError, netError.getValue()));
     }
-    mException.set(exception);
+
     failWithException();
   }
 
@@ -1031,9 +1038,7 @@ public final class CronetBidirectionalStream
     mEnvoyFinalStreamIntel = finalStreamIntel;
     switch (mState.nextAction(Event.ON_ERROR)) {
     case NextAction.NOTIFY_USER_NETWORK_ERROR:
-      // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1594): fix error scheme.
-      onErrorReceived(errorCode, /* nativeError= */ -1,
-                      /* nativeQuicError */ 0, message, finalStreamIntel.getReceivedByteCount());
+      onErrorReceived(errorCode, finalStreamIntel);
       break;
     case NextAction.NOTIFY_USER_FAILED:
       // There was already an error in-progress - the network error came too late and is ignored.

@@ -1,5 +1,8 @@
 package org.chromium.net.impl;
 
+import static org.chromium.net.impl.Errors.mapEnvoyMobileErrorToNetError;
+import static org.chromium.net.impl.Errors.mapNetErrorToApiErrorCode;
+
 import android.os.ConditionVariable;
 import android.util.Log;
 import androidx.annotation.IntDef;
@@ -30,9 +33,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.chromium.net.CallbackException;
 import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
+import org.chromium.net.NetworkException;
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestFinishedInfo.Metrics;
 import org.chromium.net.UploadDataProvider;
+import org.chromium.net.impl.Errors.NetError;
 
 /** UrlRequest, backed by Envoy-Mobile. */
 public final class CronetUrlRequest extends UrlRequestBase {
@@ -927,9 +932,20 @@ public final class CronetUrlRequest extends UrlRequestBase {
         return;
       }
 
-      String errorMessage = "failed with error after " + attemptCount + " attempts. Message=[" +
-                            message + "] Code=[" + errorCode + "]";
-      CronetException exception = new CronetExceptionImpl(errorMessage, /* cause= */ null);
+      NetError netError = mapEnvoyMobileErrorToNetError(finalStreamIntel.getResponseFlags());
+      int javaError = mapNetErrorToApiErrorCode(netError);
+      CronetException exception;
+      if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
+          errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
+        exception =
+            new QuicExceptionImpl("Exception in CronetUrlRequest: " + netError.getModifiedString(),
+                                  javaError, netError.getValue(), /*nativeQuicError*/ 0);
+      } else {
+        exception = new NetworkExceptionImpl("Exception in CronetUrlRequest: " +
+                                                 netError.getModifiedString(),
+                                             javaError, netError.getValue());
+      }
+
       enterErrorState(exception); // No-op if already in a terminal state.
     }
 
