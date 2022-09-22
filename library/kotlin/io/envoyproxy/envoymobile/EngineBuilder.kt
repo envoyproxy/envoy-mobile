@@ -76,7 +76,7 @@ open class EngineBuilder(
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
   private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
-  private var statSinks = listOf<String>()
+  private var statsSinks = listOf<String>()
 
   /**
    * Add a log level to use with Envoy.
@@ -91,7 +91,8 @@ open class EngineBuilder(
   }
 
   /**
-   * Specifies the the domain (e.g. `example.com`) to use in the default gRPC stat sink to flush stats.
+   * Specifies the the domain (e.g. `example.com`) to use in the default gRPC stat sink to flush
+   * stats.
    *
    * Setting this value enables the gRPC stat sink, which periodically flushes stats via the gRPC
    * MetricsService API. The flush interval is specified via addStatsFlushSeconds.
@@ -114,8 +115,8 @@ open class EngineBuilder(
    *
    * @return this builder.
    */
-  fun addStatsSinks(statSinks: List<String>): EngineBuilder {
-    this.statSinks = statSinks
+  fun addStatsSinks(statsSinks: List<String>): EngineBuilder {
+    this.statsSinks = statsSinks
     return this
   }
 
@@ -648,7 +649,7 @@ open class EngineBuilder(
       platformFilterChain,
       stringAccessors,
       keyValueStores,
-      statSinks
+      statsSinks
     )
 
     return when (configuration) {
