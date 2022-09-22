@@ -1550,11 +1550,13 @@ public class BidirectionalStreamTest {
     //                        NetworkException.ERROR_INTERNET_DISCONNECTED, false);
     // checkSpecificErrorCode(NetError.ERR_NETWORK_CHANGED, NetworkException.ERROR_NETWORK_CHANGED,
     //                        true);
-    // checkSpecificErrorCode(NetError.ERR_CONNECTION_CLOSED, NetworkException.ERROR_CONNECTION_CLOSED,
+    // checkSpecificErrorCode(NetError.ERR_CONNECTION_CLOSED,
+    // NetworkException.ERROR_CONNECTION_CLOSED,
     //                        true);
     // checkSpecificErrorCode(NetError.ERR_CONNECTION_REFUSED,
     //                        NetworkException.ERROR_CONNECTION_REFUSED, false);
-    // checkSpecificErrorCode(NetError.ERR_CONNECTION_RESET, NetworkException.ERROR_CONNECTION_RESET,
+    // checkSpecificErrorCode(NetError.ERR_CONNECTION_RESET,
+    // NetworkException.ERROR_CONNECTION_RESET,
     //                        true);
     // checkSpecificErrorCode(NetError.ERR_CONNECTION_TIMED_OUT,
     //                        NetworkException.ERROR_CONNECTION_TIMED_OUT, true);
