@@ -1,6 +1,7 @@
 #include "library/common/extensions/cert_validator/platform_bridge/platform_bridge_cert_validator.h"
 
 #include <list>
+#include <memory>
 #include <type_traits>
 
 #include "library/common/data/utility.h"
@@ -16,7 +17,7 @@ PlatformBridgeCertValidator::PlatformBridgeCertValidator(
     : config_(config), stats_(stats), platform_validator_(platform_validator) {
   ENVOY_BUG(config != nullptr && config->caCert().empty() &&
                 config->certificateRevocationList().empty(),
-            "Invalid cert validation context config.");
+            "Invalid certificate validation context config.");
   if (config_ != nullptr) {
     allow_untrusted_certificate_ = config_->trustChainVerification() ==
                                    envoy::extensions::transport_sockets::tls::v3::
@@ -50,7 +51,7 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
       ssl_extended_info->setCertificateValidationStatus(
           Envoy::Ssl::ClientValidationStatus::NotValidated);
     }
-    const char* error = "verify cert failed: empty cert chain";
+    const char* error = "verify cert chain failed: empty cert chain.";
     stats_.fail_verify_error_.inc();
     ENVOY_LOG(debug, error);
     return {ValidationResults::ValidationStatus::Failed, absl::nullopt, error};
@@ -62,13 +63,14 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
   std::vector<envoy_data> certs;
   for (uint64_t i = 0; i < sk_X509_num(&cert_chain); i++) {
     X509* cert = sk_X509_value(&cert_chain, i);
-    unsigned char* der = nullptr;
-    int der_length = i2d_X509(cert, &der);
-    ASSERT(der_length > 0 && der != nullptr);
+    unsigned char* cert_in_der = nullptr;
+    int der_length = i2d_X509(cert, &cert_in_der);
+    ASSERT(der_length > 0 && cert_in_der != nullptr);
 
-    absl::string_view cert_str(reinterpret_cast<char*>(der), static_cast<size_t>(der_length));
+    absl::string_view cert_str(reinterpret_cast<char*>(cert_in_der),
+                               static_cast<size_t>(der_length));
     certs.push_back(Data::Utility::copyToBridgeData(cert_str));
-    OPENSSL_free(der);
+    OPENSSL_free(cert_in_der);
   }
 
   absl::string_view host;
@@ -100,37 +102,28 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
       nullptr, const_cast<const unsigned char**>(&leaf_cert_der.bytes), leaf_cert_der.length));
   envoy_cert_validation_result result =
       platform_validator_->validate_cert(cert_chain.data(), cert_chain.size(), host_name.c_str());
-  bool success = (result.result == ENVOY_SUCCESS);
-  absl::string_view error_details;
-  uint8_t tls_alert = SSL_AD_CERTIFICATE_UNKNOWN;
-  OptRef<Stats::Counter> counter_ref;
-  if (success) {
-    // Verify that host name matches leaf cert.
-    success = DefaultCertValidator::verifySubjectAltName(leaf_cert.get(), subject_alt_names);
-    if (!success) {
-      error_details = "PlatformBridgeCertValidator_verifySubjectAltName failed: SNI mismatch.";
-      if (!allow_untrusted_certificate_) {
-        tls_alert = SSL_AD_BAD_CERTIFICATE;
-      } else {
-        success = true;
-      }
-      ENVOY_LOG(debug, error_details);
-      counter_ref = makeOptRef(stats_.fail_verify_san_);
-    }
-  } else {
-    if (!allow_untrusted_certificate_) {
-      error_details = result.error_details;
-      tls_alert = result.tls_alert;
-    } else {
-      success = true;
-    }
-    counter_ref = makeOptRef(stats_.fail_verify_error_);
+  bool success = result.result == ENVOY_SUCCESS;
+  if (!success) {
     ENVOY_LOG(debug, result.error_details);
+    pending_validation.postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_,
+                                                  result.error_details, result.tls_alert,
+                                                  makeOptRef(stats_.fail_verify_error_));
+    return;
   }
 
-  pending_validation.postVerifyResult(success, error_details, tls_alert, counter_ref);
-
-  platform_validator_->validation_done();
+  absl::string_view error_details;
+  // Verify that host name matches leaf cert.
+  success = DefaultCertValidator::verifySubjectAltName(leaf_cert.get(), subject_alt_names);
+  if (!success) {
+    error_details = "PlatformBridgeCertValidator_verifySubjectAltName failed: SNI mismatch.";
+    ENVOY_LOG(debug, error_details);
+    pending_validation.postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_,
+                                                  error_details, SSL_AD_BAD_CERTIFICATE,
+                                                  makeOptRef(stats_.fail_verify_san_));
+    return;
+  }
+  pending_validation.postVerifyResultAndCleanUp(success, error_details, SSL_AD_CERTIFICATE_UNKNOWN,
+                                                {});
 }
 
 void PlatformBridgeCertValidator::PendingValidation::verifyCertsByPlatform() {
@@ -142,28 +135,30 @@ void PlatformBridgeCertValidator::PendingValidation::verifyCertsByPlatform() {
       *this);
 }
 
-void PlatformBridgeCertValidator::PendingValidation::postVerifyResult(
+void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
     bool success, absl::string_view error_details, uint8_t tls_alert,
-    OptRef<Stats::Counter> error_counter_to_inc) {
+    OptRef<Stats::Counter> error_counter) {
   std::weak_ptr<size_t> weak_alive_indicator(parent_.alive_indicator_);
-  result_callback_->dispatcher().post(
-      [this, weak_alive_indicator, success, error = std::string(error_details), tls_alert,
-       error_counter_to_inc, thread_id = std::this_thread::get_id()]() {
-        if (weak_alive_indicator.expired()) {
-          return;
-        }
-        ENVOY_LOG(debug, "Get validation result for {} from platform", host_name_);
-        parent_.validation_threads_[thread_id].join();
-        parent_.validation_threads_.erase(thread_id);
-        if (error_counter_to_inc.has_value()) {
-          const_cast<Stats::Counter&>(error_counter_to_inc.ref()).inc();
-        }
-        result_callback_->onCertValidationResult(success, error, tls_alert);
-        parent_.validations_.erase(*this);
-      });
+  result_callback_->dispatcher().post([this, weak_alive_indicator, success,
+                                       error = std::string(error_details), tls_alert, error_counter,
+                                       thread_id = std::this_thread::get_id()]() {
+    if (weak_alive_indicator.expired()) {
+      return;
+    }
+    ENVOY_LOG(debug, "Get validation result for {} from platform", host_name_);
+    parent_.validation_threads_[thread_id].join();
+    parent_.validation_threads_.erase(thread_id);
+    if (error_counter.has_value()) {
+      const_cast<Stats::Counter&>(error_counter.ref()).inc();
+    }
+    result_callback_->onCertValidationResult(success, error, tls_alert);
+    parent_.validations_.erase(*this);
+  });
   ENVOY_LOG(trace,
             "Finished platform cert validation for {}, post result callback to network thread",
             host_name_);
+
+  parent_.platform_validator_->release_validator();
 }
 
 } // namespace Tls

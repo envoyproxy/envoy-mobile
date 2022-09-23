@@ -63,12 +63,12 @@ public class Http2TestServerTest {
     AndroidNetworkLibrary.addTestRootCertificate(CertTestUtil.pemToDer(serverCertPath));
   }
 
-  public void setUpEngine(boolean usePlatformCertValidator,
+  public void setUpEngine(boolean enablePlatformCertificatesValidation,
                           TrustChainVerification trustChainVerification) throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .usePlatformCertValidator(usePlatformCertValidator)
+                 .enablePlatformCertificatesValidation(enablePlatformCertificatesValidation)
                  .setTrustChainVerification(trustChainVerification)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
@@ -87,9 +87,9 @@ public class Http2TestServerTest {
     AndroidNetworkLibrary.setFakeCertificateVerificationForTesting(false);
   }
 
-  private void getSchemeIsHttps(boolean usePlatformCertValidator,
+  private void getSchemeIsHttps(boolean enablePlatformCertificatesValidation,
                                 TrustChainVerification trustChainVerification) throws Exception {
-    setUpEngine(usePlatformCertValidator, trustChainVerification);
+    setUpEngine(enablePlatformCertificatesValidation, trustChainVerification);
 
     RequestScenario requestScenario = new RequestScenario()
                                           .setHttpMethod(RequestMethod.GET)

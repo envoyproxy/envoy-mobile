@@ -60,7 +60,7 @@ public class EnvoyConfiguration {
   public final List<EnvoyNativeFilterConfig> nativeFilterChain;
   public final Map<String, EnvoyStringAccessor> stringAccessors;
   public final Map<String, EnvoyKeyValueStore> keyValueStores;
-  public final Boolean usePlatformCertValidator;
+  public final Boolean enablePlatformCertificatesValidation;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -123,7 +123,8 @@ public class EnvoyConfiguration {
       List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
       Map<String, EnvoyStringAccessor> stringAccessors,
-      Map<String, EnvoyKeyValueStore> keyValueStores, boolean usePlatformCertValidator) {
+      Map<String, EnvoyKeyValueStore> keyValueStores,
+      boolean enablePlatformCertificatesValidation) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
     this.grpcStatsDomain = grpcStatsDomain;
     this.statsdPort = statsdPort;
@@ -161,7 +162,7 @@ public class EnvoyConfiguration {
     this.httpPlatformFilterFactories = httpPlatformFilterFactories;
     this.stringAccessors = stringAccessors;
     this.keyValueStores = keyValueStores;
-    this.usePlatformCertValidator = usePlatformCertValidator;
+    this.enablePlatformCertificatesValidation = enablePlatformCertificatesValidation;
   }
 
   /**

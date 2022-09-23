@@ -24,14 +24,18 @@ public:
   ~PlatformBridgeCertValidator() override;
 
   // CertValidator
-  // Only called by server TLS context.
+  // These are not very meaningful interfaces for cert validator on client side and are only called
+  // by server TLS context. Ideally they should be moved from CertValidator into an extended server
+  // cert validator interface. And this class only extends the client interface. But their owner
+  // (Tls::ContextImpl) doesn't have endpoint perspective today, so there will need more refactoring
+  // to achieve this.
   void addClientValidationContext(SSL_CTX* /*context*/, bool /*require_client_cert*/) override {
-    PANIC("not reached");
+    PANIC("Should not be reached");
   }
   void updateDigestForSessionId(bssl::ScopedEVP_MD_CTX& /*md*/,
                                 uint8_t* /*hash_buffer[EVP_MAX_MD_SIZE]*/,
                                 unsigned /*hash_length*/) override {
-    PANIC("not reached");
+    PANIC("Should not be reached");
   }
   int doSynchronousVerifyCertChain(
       X509_STORE_CTX* /*store_ctx*/,
@@ -39,7 +43,7 @@ public:
       /*ssl_extended_info*/,
       X509& /*leaf_cert*/,
       const Network::TransportSocketOptions* /*transport_socket_options*/) override {
-    PANIC("not reached");
+    PANIC("Should not be reached");
   }
   absl::optional<uint32_t> daysUntilFirstCertExpires() const override { return absl::nullopt; }
   Envoy::Ssl::CertificateDetailsPtr getCaCertInformation() const override { return nullptr; }
@@ -71,8 +75,8 @@ private:
 
     void verifyCertsByPlatform();
 
-    void postVerifyResult(bool success, absl::string_view error_details, uint8_t tls_alert,
-                          OptRef<Stats::Counter> error_counter_to_inc);
+    void postVerifyResultAndCleanUp(bool success, absl::string_view error_details,
+                                    uint8_t tls_alert, OptRef<Stats::Counter> error_counter);
 
     struct Hash {
       size_t operator()(const PendingValidation& p) const {

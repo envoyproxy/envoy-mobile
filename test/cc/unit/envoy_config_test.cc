@@ -156,17 +156,17 @@ TEST(TestConfig, RemainingTemplatesThrows) {
   }
 }
 
-TEST(TestConfig, UsePlatformCertValidator) {
+TEST(TestConfig, EnablePlatformCertificatesValidation) {
   auto engine_builder = EngineBuilder();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  engine_builder.usePlatformCertValidator(false);
+  engine_builder.enablePlatformCertificatesValidation(false);
   auto config_str1 = engine_builder.generateConfigStr();
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str1), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(),
               Not(HasSubstr("envoy_mobile.cert_validator.platform_bridge_cert_validator")));
   ASSERT_THAT(bootstrap.DebugString(), HasSubstr("trusted_ca"));
 
-  engine_builder.usePlatformCertValidator(true);
+  engine_builder.enablePlatformCertificatesValidation(true);
   auto config_str2 = engine_builder.generateConfigStr();
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str2), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(),

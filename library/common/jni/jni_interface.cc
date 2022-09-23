@@ -1285,24 +1285,30 @@ static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* cer
   }
   case CERT_VERIFY_STATUS_NO_TRUSTED_ROOT:
     return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
-            "AndroidNetworkLibrary_verifyServerCertificates failed: non-trusted root"};
+            "AndroidNetworkLibrary_verifyServerCertificates failed: no trusted root."};
   case CERT_VERIFY_STATUS_UNABLE_TO_PARSE:
     return {ENVOY_FAILURE, SSL_AD_BAD_CERTIFICATE,
             "AndroidNetworkLibrary_verifyServerCertificates failed: unable to parse cert."};
   case CERT_VERIFY_STATUS_INCORRECT_KEY_USAGE:
+    return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+            "AndroidNetworkLibrary_verifyServerCertificates failed: incorrect key usage."};
   case CERT_VERIFY_STATUS_FAILED:
+    return {
+        ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+        "AndroidNetworkLibrary_verifyServerCertificates failed: validation couldn't be conducted."};
   case CERT_VERIFY_STATUS_NOT_YET_VALID:
     return {ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
-            "AndroidNetworkLibrary_verifyServerCertificates failed"};
+            "AndroidNetworkLibrary_verifyServerCertificates failed: not yet valid."};
   }
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerCertValidatorFactory(JNIEnv* env) {
   jni_log("[Envoy]", "registerCertValidatorFactory");
+  // TODO(danzh) this object leaks, but it's tied to the life of the engine.
   envoy_cert_validator* api = (envoy_cert_validator*)safe_malloc(sizeof(envoy_cert_validator));
   api->validate_cert = verify_x509_cert_chain;
-  api->validation_done = jvm_detach_thread;
+  api->release_validator = jvm_detach_thread;
   const std::string platform_name = "platform_cert_validator";
   envoy_status_t result = register_platform_api(platform_name.c_str(), api);
   return result;

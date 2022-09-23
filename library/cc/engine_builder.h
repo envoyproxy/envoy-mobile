@@ -41,7 +41,7 @@ public:
   EngineBuilder& enableGzip(bool gzip_on);
   EngineBuilder& enableBrotli(bool brotli_on);
   EngineBuilder& enableSocketTagging(bool socket_tagging_on);
-  EngineBuilder& usePlatformCertValidator(bool use_platform_cert_validator);
+  EngineBuilder& enablePlatformCertificatesValidation(bool platform_certificates_validation_on);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();

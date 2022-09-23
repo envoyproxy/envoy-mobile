@@ -93,22 +93,22 @@ public class EnvoyEngineImpl implements EnvoyEngine {
       JniLibrary.registerKeyValueStore(entry.getKey(),
                                        new JvmKeyValueStoreContext(entry.getValue()));
     }
-    if (envoyConfiguration.usePlatformCertValidator) {
+    if (envoyConfiguration.enablePlatformCertificatesValidation) {
       int result = JniLibrary.registerCertValidatorFactory();
       if (result == ENVOY_FAILURE) {
         return result;
       }
     }
 
-    return runWithResolvedYAML(
-        envoyConfiguration.resolveTemplate(
-            configurationYAML, JniLibrary.platformFilterTemplate(),
-            JniLibrary.nativeFilterTemplate(), JniLibrary.altProtocolCacheFilterInsert(),
-            JniLibrary.gzipConfigInsert(), JniLibrary.brotliConfigInsert(),
-            JniLibrary.socketTagConfigInsert(),
-            JniLibrary.certValidationTemplate(
-                /*use_platform=*/envoyConfiguration.usePlatformCertValidator)),
-        logLevel);
+    return runWithResolvedYAML(envoyConfiguration.resolveTemplate(
+                                   configurationYAML, JniLibrary.platformFilterTemplate(),
+                                   JniLibrary.nativeFilterTemplate(),
+                                   JniLibrary.altProtocolCacheFilterInsert(),
+                                   JniLibrary.gzipConfigInsert(), JniLibrary.brotliConfigInsert(),
+                                   JniLibrary.socketTagConfigInsert(),
+                                   JniLibrary.certValidationTemplate(
+                                       envoyConfiguration.enablePlatformCertificatesValidation)),
+                               logLevel);
   }
 
   /**

@@ -88,7 +88,7 @@ class EnvoyConfigurationTest {
     appId: String = "com.example.myapp",
     trustChainVerification: TrustChainVerification = TrustChainVerification.VERIFY_TRUST_CHAIN,
     virtualClusters: String = "[test]",
-    usePlatformCertValidator: Boolean = false
+    enablePlatformCertificatesValidation: Boolean = false
   ): EnvoyConfiguration {
     return EnvoyConfiguration(
       adminInterfaceEnabled,
@@ -127,7 +127,7 @@ class EnvoyConfigurationTest {
       emptyList(),
       emptyMap(),
       emptyMap(),
-      usePlatformCertValidator
+      enablePlatformCertificatesValidation
     )
   }
 

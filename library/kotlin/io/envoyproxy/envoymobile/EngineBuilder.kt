@@ -77,7 +77,7 @@ open class EngineBuilder(
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
   private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
-  private var usePlatformCertValidator = false
+  private var enablePlatformCertificatesValidation = false
 
   /**
    * Add a log level to use with Envoy.
@@ -651,7 +651,7 @@ open class EngineBuilder(
       platformFilterChain,
       stringAccessors,
       keyValueStores,
-      usePlatformCertValidator,
+      enablePlatformCertificatesValidation,
     )
 
     return when (configuration) {
@@ -687,12 +687,12 @@ open class EngineBuilder(
    * Specify whether to use platform provided certificate validation APIs or Envoy built-in
    * validation logic. Defaults to false.
    *
-   * @param usePlatformCertValidator true if using platform APIs is desired.
+   * @param enablePlatformCertificatesValidation true if using platform APIs is desired.
    *
    * @return This builder.
    */
-  fun usePlatformCertValidator(usePlatformCertValidator: Boolean): EngineBuilder {
-    this.usePlatformCertValidator = usePlatformCertValidator
+  fun enablePlatformCertificatesValidation(enablePlatformCertificatesValidation: Boolean): EngineBuilder {
+    this.enablePlatformCertificatesValidation = enablePlatformCertificatesValidation
     return this
   }
 

@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream>
-
 #include "source/common/common/assert.h"
 
 #include "library/common/jni/jni_support.h"
