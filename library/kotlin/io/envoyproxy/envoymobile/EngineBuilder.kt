@@ -91,7 +91,7 @@ open class EngineBuilder(
   }
 
   /**
-   * Specifies the the domain (e.g. `example.com`) to use in the default gRPC stat sink to flush
+   * Specifies the domain (e.g. `example.com`) to use in the default gRPC stat sink to flush
    * stats.
    *
    * Setting this value enables the gRPC stat sink, which periodically flushes stats via the gRPC

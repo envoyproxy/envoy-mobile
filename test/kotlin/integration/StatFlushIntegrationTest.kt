@@ -45,7 +45,7 @@ class StatFlushIntegrationTest {
   }
 
   @Test
-  fun `multipe stat sinks configured`() {
+  fun `multiple stat sinks configured`() {
     val countDownLatch = CountDownLatch(1)
     engine = EngineBuilder()
       .addLogLevel(LogLevel.DEBUG)
@@ -86,7 +86,7 @@ class StatFlushIntegrationTest {
     statsdServer2.awaitStatMatching { s -> s == "envoy.pulse.foo.bar:1|c" }
   }
 
-  fun statsdSinkConfig(port: Int): String {
+  private fun statsdSinkConfig(port: Int): String {
 return """{ name: envoy.stat_sinks.statsd,
       typed_config: {
         "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink,
