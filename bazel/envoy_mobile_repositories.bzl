@@ -71,15 +71,15 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "5d58663f55aedbd6beffcc61f9f24ec6f2b1512ca1ab52a261ae41a8b880df97",
-        strip_prefix = "rules_apple-d04edf4136b4818662d7126582ec257aee372339",
-        url = "https://github.com/bazelbuild/rules_apple/archive/d04edf4136b4818662d7126582ec257aee372339.tar.gz",
+        sha256 = "687644bf48ccf91286f31c4ec26cf6591800b39bee8a630438626fc9bb4042de",
+        strip_prefix = "rules_apple-a0f8748ce89698a599149d984999eaefd834c004",
+        url = "https://github.com/bazelbuild/rules_apple/archive/a0f8748ce89698a599149d984999eaefd834c004.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "043897b483781cfd6cbd521569bfee339c8fbb2ad0f0bdcd1b3749523a262cf4",
-        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.1.1/rules_swift.1.1.1.tar.gz",
+        sha256 = "51efdaf85e04e51174de76ef563f255451d5a5cd24c61ad902feeadafc7046d9",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.2.0/rules_swift.1.2.0.tar.gz",
     )
 
     http_archive(
@@ -147,9 +147,9 @@ def kotlin_repos():
 
     http_archive(
         name = "robolectric",
-        sha256 = "d4f2eb078a51f4e534ebf5e18b6cd4646d05eae9b362ac40b93831bdf46112c7",
-        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.4.tar.gz"],
-        strip_prefix = "robolectric-bazel-4.4",
+        sha256 = "5bcde5db598f6938c9887a140a0a1249f95d3c16274d40869503d0c322a20d5d",
+        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.8.2.tar.gz"],
+        strip_prefix = "robolectric-bazel-4.8.2",
     )
 
 def android_repos():
