@@ -1581,9 +1581,9 @@ public class BidirectionalStreamTest {
   private static void checkSpecificErrorCode(NetError netError, int errorCode,
                                              boolean immediatelyRetryable) throws Exception {
     NetworkException exception =
-        new BidirectionalStreamNetworkException("", errorCode, netError.getValue());
+        new BidirectionalStreamNetworkException("", errorCode, netError.getErrorCode());
     assertEquals(immediatelyRetryable, exception.immediatelyRetryable());
-    assertEquals(netError.getValue(), exception.getCronetInternalErrorCode());
+    assertEquals(netError.getErrorCode(), exception.getCronetInternalErrorCode());
     assertEquals(errorCode, exception.getErrorCode());
   }
 

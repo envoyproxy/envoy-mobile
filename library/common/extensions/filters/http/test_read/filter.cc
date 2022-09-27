@@ -10,11 +10,9 @@ namespace TestRead {
 Http::FilterHeadersStatus TestReadFilter::decodeHeaders(Http::RequestHeaderMap& request_headers,
                                                         bool) {
   // sample path is /failed?start=0x10000
-  std::basic_string_view<char> str = request_headers.Path()->value().getStringView();
-  std::vector<std::string> query = absl::StrSplit(str, absl::ByAnyChar("?="));
-  ASSERT(query.size() == 3,
-         "url path should be in the format: /{status}?{phase}={errorcode} eg /failed?start=0x1000");
-  uint64_t response_flag = std::stoul(query[2], nullptr, 16);
+  Http::Utility::QueryParams query_parameters =
+      Http::Utility::parseQueryString(request_headers.Path()->value().getStringView());
+  uint64_t response_flag = std::stoul(query_parameters.at("start"), nullptr, 16);
   decoder_callbacks_->streamInfo().setResponseFlag(
       TestReadFilter::mapErrorToResponseFlag(response_flag));
   decoder_callbacks_->sendLocalReply(Http::Code::BadRequest, "test_read filter threw: ", nullptr,

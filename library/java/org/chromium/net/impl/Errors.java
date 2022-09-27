@@ -39,11 +39,11 @@ public class Errors {
     ERR_ADDRESS_UNREACHABLE(-109),
     ERR_OTHER(-1000);
 
-    private final int value;
+    private final int errorCode;
 
-    NetError(int errorCode) { this.value = errorCode; }
+    NetError(int errorCode) { this.errorCode = errorCode; }
 
-    public int getValue() { return value; }
+    public int getErrorCode() { return errorCode; }
 
     public String getModifiedString() { return "net::" + this.toString(); }
   }
@@ -76,7 +76,7 @@ public class Errors {
     }
   }
 
-  public static int mapNetErrorToApiErrorCode(NetError netError) {
+  public static int mapNetErrorToCronetApiErrorCode(NetError netError) {
     switch (netError) {
     case ERR_NAME_NOT_RESOLVED:
       return NetworkException.ERROR_HOSTNAME_NOT_RESOLVED;

@@ -2104,7 +2104,7 @@ public class CronetUrlRequestTest {
     TestUrlRequestCallback callback = startAndWaitForComplete(
         mMockUrlRequestJobFactory.getCronetEngine(),
         MockUrlRequestJobFactory.getMockUrlWithFailure(
-            FailurePhase.START, NetError.ERR_QUIC_PROTOCOL_ERROR.getValue()));
+            FailurePhase.START, NetError.ERR_QUIC_PROTOCOL_ERROR.getErrorCode()));
     assertNull(callback.mResponseInfo);
     assertNotNull(callback.mError);
     assertEquals(NetworkException.ERROR_QUIC_PROTOCOL_FAILED,
@@ -2121,10 +2121,10 @@ public class CronetUrlRequestTest {
   @OnlyRunNativeCronet
   @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
   public void testQuicErrorCodeForNetworkChanged() throws Exception {
-    TestUrlRequestCallback callback =
-        startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
-                                MockUrlRequestJobFactory.getMockUrlWithFailure(
-                                    FailurePhase.START, NetError.ERR_NETWORK_CHANGED.getValue()));
+    TestUrlRequestCallback callback = startAndWaitForComplete(
+        mMockUrlRequestJobFactory.getCronetEngine(),
+        MockUrlRequestJobFactory.getMockUrlWithFailure(
+            FailurePhase.START, NetError.ERR_NETWORK_CHANGED.getErrorCode()));
     assertNull(callback.mResponseInfo);
     assertNotNull(callback.mError);
     assertEquals(NetworkException.ERROR_NETWORK_CHANGED,
@@ -2208,7 +2208,7 @@ public class CronetUrlRequestTest {
         MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, envoyMobileError));
     assertNull(callback.mResponseInfo);
     assertNotNull(callback.mError);
-    assertEquals(netError.getValue(),
+    assertEquals(netError.getErrorCode(),
                  ((NetworkException)callback.mError).getCronetInternalErrorCode());
     assertEquals(errorCode, ((NetworkException)callback.mError).getErrorCode());
     assertEquals(immediatelyRetryable, ((NetworkException)callback.mError).immediatelyRetryable());

@@ -3,6 +3,7 @@
 #include "envoy/http/filter.h"
 
 #include "source/common/common/logger.h"
+#include "source/common/http/utility.h"
 #include "source/common/stream_info/stream_info_impl.h"
 #include "source/extensions/filters/http/common/pass_through_filter.h"
 

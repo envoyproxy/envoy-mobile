@@ -24,6 +24,7 @@ envoy_cc_extension(
     repository = "@envoy",
     deps = [
         "filter_cc_proto",
+        "@envoy//source/common/http:utility_lib",
         "@envoy//source/common/stream_info:stream_info_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
     ],

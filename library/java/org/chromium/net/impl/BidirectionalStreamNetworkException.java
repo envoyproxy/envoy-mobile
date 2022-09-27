@@ -13,8 +13,8 @@ public final class BidirectionalStreamNetworkException extends NetworkExceptionI
 
   @Override
   public boolean immediatelyRetryable() {
-    if (mCronetInternalErrorCode == NetError.ERR_HTTP2_PING_FAILED.getValue() ||
-        mCronetInternalErrorCode == NetError.ERR_QUIC_HANDSHAKE_FAILED.getValue()) {
+    if (mCronetInternalErrorCode == NetError.ERR_HTTP2_PING_FAILED.getErrorCode() ||
+        mCronetInternalErrorCode == NetError.ERR_QUIC_HANDSHAKE_FAILED.getErrorCode()) {
       assert mErrorCode == ERROR_OTHER;
       return true;
     }
