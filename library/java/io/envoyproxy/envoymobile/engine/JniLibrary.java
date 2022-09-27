@@ -321,7 +321,7 @@ public class JniLibrary {
    * @param use_platform true if the usage of platform validation APIs is desired.
    * @return string, the config template string.
    */
-  public static native String certValidationTemplate(boolean use_platform);
+  public static native String certValidationTemplate(boolean usePlatform);
 
   /**
    * Provides a configuration insert that may be used to enable socket tagging.

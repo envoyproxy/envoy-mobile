@@ -157,7 +157,17 @@ R"(- &enable_drain_post_dns_refresh false
 !ignore tls_root_ca_defs: &tls_root_certs |
 )"
 #include "certificates.inc"
-;
+R"(
+
+!ignore validation_context_defs:
+- &validation_context
+  trusted_ca:
+    inline_string: *tls_root_certs
+- &validation_context_config_trust_chain
+  trusted_ca:
+    inline_string: *tls_root_certs
+  trust_chain_verification: *trust_chain_verification
+)";
 
 const char* config_template = R"(
 !ignore local_error_defs: &local_error_config
@@ -272,10 +282,6 @@ const char* config_template = R"(
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
 !ignore tls_socket_defs:
-- &validation_context {{custom_cert_validation_context}}
-- &validation_context_config_trust_chain {{custom_cert_validation_context}}
-  trust_chain_verification: *trust_chain_verification
-
 - &base_tls_socket
   name: envoy.transport_sockets.http_11_proxy
   typed_config:

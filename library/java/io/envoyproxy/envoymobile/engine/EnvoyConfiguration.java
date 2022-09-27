@@ -211,12 +211,8 @@ public class EnvoyConfiguration {
       customFiltersBuilder.append(socketTagFilterInsert);
     }
 
-    final StringBuilder certValidationBuilder = new StringBuilder();
-    certValidationBuilder.append(certValidationTemplate);
-
     String processedTemplate =
-        configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString())
-            .replace("{{custom_cert_validation_context}}", certValidationBuilder.toString());
+        configTemplate.replace("#{custom_filters}", customFiltersBuilder.toString());
 
     String dnsFallbackNameserversAsString = "[]";
     if (!dnsFallbackNameservers.isEmpty()) {
@@ -305,6 +301,10 @@ public class EnvoyConfiguration {
       configBuilder.append("- &statsd_port ").append(statsdPort).append("\n");
       configBuilder.append("- &stats_sinks [ *base_statsd ]\n");
     }
+
+    // Add new anchors to override the default anchors in config header.
+    configBuilder.append("- &validation_context").append(certValidationTemplate).append("\n");
+    configBuilder.append("- &validation_context_config_trust_chain").append(certValidationTemplate).append("\n  trust_chain_verification: *trust_chain_verification\n");
 
     if (adminInterfaceEnabled) {
       configBuilder.append("admin: *admin_interface\n");

@@ -182,7 +182,7 @@ Java_io_envoyproxy_envoymobile_engine_JniLibrary_socketTagConfigInsert(JNIEnv* e
 extern "C" JNIEXPORT jstring JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_certValidationTemplate(JNIEnv* env, jclass,
                                                                         jboolean use_platform) {
-  if (use_platform) {
+  if (use_platform == JNI_TRUE) {
     jstring result = env->NewStringUTF(platform_cert_validation_context_template);
     return result;
   }

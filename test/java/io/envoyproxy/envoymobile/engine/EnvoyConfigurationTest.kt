@@ -7,9 +7,6 @@ import org.junit.Test
 
 private const val TEST_CONFIG =
 """
-!ignore tls_socket_defs:
-- &validation_context {{custom_cert_validation_context}}
-
 fixture_template:
 - name: mock
   filters:
@@ -49,8 +46,8 @@ private const val SOCKET_TAG_INSERT =
 
 private const val CERT_VALIDATION_TEMPLATE =
 """
-  trusted_ca:
-    inline_string: *tls_root_certs
+  custom_validator_config:
+    name: "dumb_validator"
 """
 
 class EnvoyConfigurationTest {
@@ -204,7 +201,7 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("test_config")
 
     // Cert Validation
-    assertThat(resolvedTemplate).contains("trusted_ca")
+    assertThat(resolvedTemplate).contains("custom_validator_config")
   }
 
   @Test
@@ -219,7 +216,8 @@ class EnvoyConfigurationTest {
       enableGzip = false,
       enableBrotli = true,
       enableInterfaceBinding = true,
-      h2ExtendKeepaliveTimeout = true
+      h2ExtendKeepaliveTimeout = true,
+      enablePlatformCertificatesValidation = true
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -247,6 +245,9 @@ CERT_VALIDATION_TEMPLATE
 
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding true")
+
+    // Cert Validation
+    assertThat(resolvedTemplate).contains("custom_validator_config")
   }
 
   @Test
