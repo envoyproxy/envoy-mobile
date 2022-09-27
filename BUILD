@@ -151,11 +151,41 @@ xcodeproj(
     tags = ["manual"],
     top_level_targets = [
         # Apps
-        top_level_target("//examples/objective-c/hello_world:app", target_environments = ["device", "simulator"]),
-        top_level_target("//examples/swift/async_await:app", target_environments = ["device", "simulator"]),
-        top_level_target("//examples/swift/hello_world:app", target_environments = ["device", "simulator"]),
-        top_level_target("//test/swift/apps/baseline:app", target_environments = ["device", "simulator"]),
-        top_level_target("//test/swift/apps/experimental:app", target_environments = ["device", "simulator"]),
+        top_level_target(
+            "//examples/objective-c/hello_world:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//examples/swift/async_await:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//examples/swift/hello_world:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//test/swift/apps/baseline:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//test/swift/apps/experimental:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
         # Tests
         "//experimental/swift:quic_stream_test",
         "//test/objective-c:envoy_bridge_utility_test",
