@@ -55,7 +55,6 @@ class EnvoyConfigurationTest {
   fun buildTestEnvoyConfiguration(
     adminInterfaceEnabled: Boolean = false,
     grpcStatsDomain: String = "stats.example.com",
-    statsDPort: Int? = null,
     connectTimeoutSeconds: Int = 123,
     dnsRefreshSeconds: Int = 234,
     dnsFailureRefreshSecondsBase: Int = 345,
@@ -90,7 +89,6 @@ class EnvoyConfigurationTest {
     return EnvoyConfiguration(
       adminInterfaceEnabled,
       grpcStatsDomain,
-      statsDPort,
       connectTimeoutSeconds,
       dnsRefreshSeconds,
       dnsFailureRefreshSecondsBase,
@@ -124,6 +122,7 @@ class EnvoyConfigurationTest {
       emptyList(),
       emptyMap(),
       emptyMap(),
+      emptyList(),
       enablePlatformCertificatesValidation
     )
   }
@@ -274,21 +273,6 @@ CERT_VALIDATION_TEMPLATE
       fail("Unresolved configuration keys should trigger exception.")
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")
-    }
-  }
-
-  @Test
-  fun `cannot configure both statsD and gRPC stat sink`() {
-    val envoyConfiguration = buildTestEnvoyConfiguration(
-      grpcStatsDomain = "stats.example.com",
-      statsDPort = 5050
-    )
-
-    try {
-      envoyConfiguration.resolveTemplate("", "", "", "", "", "", "", "")
-      fail("Conflicting stats keys should trigger exception.")
-    } catch (e: EnvoyConfiguration.ConfigurationException) {
-      assertThat(e.message).contains("cannot enable both statsD and gRPC metrics sink")
     }
   }
 
