@@ -9,6 +9,7 @@ on:
 jobs:
   tsan:
     name: tsan
+    if: github.repository_owner == 'envoyproxy'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     container:
@@ -38,7 +39,7 @@ jobs:
           java-version: '8'
           java-package: jdk
           architecture: x64
-      - name: 'Run tests'
+      - name: 'Run tests remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: steps.check_context.outputs.run_tests == 'true'

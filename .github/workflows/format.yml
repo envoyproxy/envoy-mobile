@@ -58,6 +58,7 @@ jobs:
         run: ./bazelw run @DrString//:drstring check
   kotlinlint:
     name: kotlin_lint
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 45
     steps:
@@ -71,7 +72,7 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
-      - name: 'Run Kotlin Lint (Detekt)'
+      - name: 'Run Kotlin Lint remotely (Detekt)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

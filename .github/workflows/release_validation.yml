@@ -9,6 +9,7 @@ on:
 jobs:
   validate_swiftpm_example:
     name: validate_swiftpm_example
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -19,8 +20,13 @@ jobs:
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build --config=ios --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //:ios_xcframework
-        name: 'Build xcframework'
+        run: |
+          ./bazelw build \
+            --config=ios \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //:ios_xcframework
+        name: 'Build xcframework remotely'
       # Ignore errors: Bad CRC when unzipping large files: https://bbs.archlinux.org/viewtopic.php?id=153011
       - run: unzip bazel-bin/library/swift/Envoy.xcframework.zip -d examples/swift/swiftpm/Packages || true
         name: 'Unzip xcframework'

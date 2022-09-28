@@ -9,6 +9,7 @@ on:
 jobs:
   sizecurrent:
     name: size_current
+    if: github.repository_owner == 'envoyproxy'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     container:
@@ -22,7 +23,7 @@ jobs:
           submodules: true
       - name: Add safe directory
         run: git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
-      - name: 'Build test binary'
+      - name: 'Build test binary remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -37,6 +38,7 @@ jobs:
           path: bazel-bin/test/performance/test_binary_size
   sizemain:
     name: size_main
+    if: github.repository_owner == 'envoyproxy'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     container:
@@ -52,7 +54,7 @@ jobs:
         run: |
           git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile/envoy
           git config --global --add safe.directory /__w/envoy-mobile/envoy-mobile
-      - name: 'Build test binary'
+      - name: 'Build test binary remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

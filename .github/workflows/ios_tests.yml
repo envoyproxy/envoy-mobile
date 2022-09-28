@@ -9,6 +9,7 @@ on:
 jobs:
   swifttests:
     name: swift_tests
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -27,13 +28,21 @@ jobs:
           fi
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Run swift library tests'
-        if: steps.check_context.outputs.run_tests == 'true'
+      - name: 'Run swift library tests remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw test --experimental_ui_max_stdouterr_bytes=10485760 --test_output=all --config=ios --build_tests_only --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/swift/...
+        run: |
+          ./bazelw test \
+            --experimental_ui_max_stdouterr_bytes=10485760 \
+            --test_output=all \
+            --config=ios \
+            --build_tests_only \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/swift/...
   objctests:
     name: c_and_objc_tests
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -52,8 +61,15 @@ jobs:
           fi
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Run Objective-C library tests'
-        if: steps.check_context.outputs.run_tests == 'true'
+      - name: 'Run Objective-C library tests remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw test --test_output=all --config=ios --build_tests_only --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" //test/objective-c/...  //test/cc/unit:envoy_config_test
+        run: |
+          ./bazelw test \
+            --test_output=all \
+            --config=ios \
+            --build_tests_only \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/objective-c/... \
+            //test/cc/unit:envoy_config_test

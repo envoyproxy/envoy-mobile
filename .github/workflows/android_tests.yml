@@ -11,6 +11,7 @@ jobs:
     # revert to //test/kotlin/... once fixed
     # https://github.com/envoyproxy/envoy-mobile/issues/1932
     name: kotlin_tests_mac
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 90
     steps:
@@ -37,7 +38,7 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Run Kotlin library tests'
+      - name: 'Run Kotlin library tests remotely'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,6 +51,7 @@ jobs:
             //test/kotlin/io/...
   javatestsmac:
     name: java_tests_mac
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -76,7 +78,7 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Run Java library tests'
+      - name: 'Run Java library tests remotely'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,6 +94,7 @@ jobs:
     # Only kotlin tests are executed since with linux:
     # https://github.com/envoyproxy/envoy-mobile/issues/1418.
     name: kotlin_tests_linux
+    if: github.repository_owner == 'envoyproxy'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     container:
@@ -125,7 +128,7 @@ jobs:
       - name: 'Install dependencies'
         if: steps.check_context.outputs.run_tests == 'true'
         run: ./ci/linux_ci_setup.sh
-      - name: 'Run Kotlin library integration tests'
+      - name: 'Run Kotlin library integration tests remotely'
         if: steps.check_context.outputs.run_tests == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

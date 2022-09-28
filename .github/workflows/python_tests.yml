@@ -9,6 +9,7 @@ on:
 jobs:
   pythontests:
     name: python_tests
+    if: github.repository_owner == 'envoyproxy'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     container:
@@ -29,8 +30,7 @@ jobs:
             echo "Skipping tests."
             echo "::set-output name=run_tests::false"
           fi
-      - name: 'Run tests'
-        if: steps.check_context.outputs.run_tests == 'true'
+      - name: 'Run tests remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

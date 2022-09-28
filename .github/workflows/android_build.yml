@@ -9,6 +9,7 @@ on:
 jobs:
   androidbuild:
     name: android_build
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 90
     steps:
@@ -22,7 +23,7 @@ jobs:
           architecture: x64
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh --android
-      - name: 'Build envoy.aar distributable'
+      - name: 'Build envoy.aar distributable remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -33,6 +34,7 @@ jobs:
             //:android_dist
   javahelloworld:
     name: java_helloworld
+    if: github.repository_owner == 'envoyproxy'
     needs: androidbuild
     runs-on: macos-12
     timeout-minutes: 25
@@ -52,7 +54,7 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/java/hello_world:hello_envoy
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
-      - name: 'Start java app'
+      - name: 'Start java app (built remotely)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -67,6 +69,7 @@ jobs:
         run: adb logcat -e "received headers with status 200" -m 1
   kotlinhelloworld:
     name: kotlin_helloworld
+    if: github.repository_owner == 'envoyproxy'
     needs: androidbuild
     runs-on: macos-12
     timeout-minutes: 25
@@ -86,7 +89,7 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
-      - name: 'Start kotlin app'
+      - name: 'Start kotlin app (built remotely)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -101,6 +104,7 @@ jobs:
         run: adb logcat -e "received headers with status 200" -m 1
   kotlinbaselineapp:
     name: kotlin_baseline_app
+    if: github.repository_owner == 'envoyproxy'
     needs: androidbuild
     runs-on: macos-12
     timeout-minutes: 25
@@ -120,7 +124,7 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
-      - name: 'Start kotlin app'
+      - name: 'Start kotlin app (built remotely)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -135,6 +139,7 @@ jobs:
         run: adb logcat -e "received headers with status 301" -m 1
   kotlinexperimentalapp:
     name: kotlin_experimental_app
+    if: github.repository_owner == 'envoyproxy'
     needs: androidbuild
     runs-on: macos-12
     timeout-minutes: 25
@@ -154,7 +159,7 @@ jobs:
       # Return to using:
       #   ./bazelw mobile-install --fat_apk_cpu=x86_64 --start_app //examples/kotlin/hello_world:hello_envoy_kt
       # When https://github.com/envoyproxy/envoy-mobile/issues/853 is fixed.
-      - name: 'Start kotlin app'
+      - name: 'Start kotlin app (built remotely)'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

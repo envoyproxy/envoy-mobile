@@ -11,6 +11,7 @@ on:
 jobs:
   android_release_artifacts:
     name: android_release_artifacts
+    if: github.repository_owner == 'envoyproxy'
     runs-on: macos-12
     timeout-minutes: 120
     steps:
@@ -24,7 +25,7 @@ jobs:
           architecture: x64
       - run: ./ci/mac_ci_setup.sh --android
         name: 'Install dependencies'
-      - name: 'Build envoy.aar distributable'
+      - name: 'Build envoy.aar distributable remotely'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -117,7 +118,8 @@ jobs:
           submodules: true
       - name: 'Install dependencies'
         run: ./ci/mac_ci_setup.sh
-      - name: 'Build Envoy.xcframework'
+      - name: 'Build Envoy.xcframework remotely'
+        if: github.repository_owner == 'envoyproxy'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -132,7 +134,8 @@ jobs:
         with:
           name: ios_framework
           path: ./Envoy.xcframework.zip
-      - name: 'Build Envoy.doccarchive.zip'
+      - name: 'Build Envoy.doccarchive.zip remotely'
+        if: github.repository_owner == 'envoyproxy'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

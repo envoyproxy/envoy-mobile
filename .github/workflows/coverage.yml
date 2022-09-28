@@ -9,6 +9,7 @@ on:
 jobs:
   coverage:
     name: coverage
+    if: github.repository_owner == 'envoyproxy'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     defaults:
@@ -32,7 +33,7 @@ jobs:
             echo "Skipping coverage."
             echo "::set-output name=run_coverage::false"
           fi
-      - name: 'Run coverage'
+      - name: 'Run coverage remotely'
         if: steps.check_context.outputs.run_coverage == 'true'
         continue-on-error: true
         run: |
