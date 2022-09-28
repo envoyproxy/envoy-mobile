@@ -186,6 +186,15 @@ std::string EngineBuilder::generateConfigStr() {
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
+
+  const std::string& cert_validation_template =
+      (this->platform_certificates_validation_on_ ? platform_cert_validation_context_template
+                                                  : default_cert_validation_context_template);
+  config_builder << "- &validation_context" << cert_validation_template << std::endl
+                 << "- &validation_context_config_trust_chain" << cert_validation_template
+                 << std::endl
+                 << "  trust_chain_verification: *trust_chain_verification" << std::endl;
+
   if (this->gzip_filter_) {
     absl::StrReplaceAll(
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
@@ -206,13 +215,6 @@ std::string EngineBuilder::generateConfigStr() {
   config_builder << config_template_;
 
   auto config_str = config_builder.str();
-
-  // Choose the right certification validator.
-  absl::StrReplaceAll(
-      {{"{{custom_cert_validation_context}}",
-        (this->platform_certificates_validation_on_ ? platform_cert_validation_context_template
-                                                    : default_cert_validation_context_template)}},
-      &config_str);
 
   if (config_str.find("{{") != std::string::npos) {
     throw std::runtime_error("could not resolve all template keys in config");

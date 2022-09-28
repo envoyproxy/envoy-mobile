@@ -151,11 +151,6 @@
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_filters}"
                                                          withString:customFilters];
 
-  NSString *cert_validator_template =
-      [[NSString alloc] initWithUTF8String:default_cert_validation_context_template];
-  templateYAML =
-      [templateYAML stringByReplacingOccurrencesOfString:@"{{custom_cert_validation_context}}"
-                                              withString:cert_validator_template];
   NSMutableString *definitions =
       [[NSMutableString alloc] initWithString:@"!ignore platform_defs:\n"];
 
@@ -207,6 +202,12 @@
 
   [definitions
       appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
+
+  NSString *cert_validator_template =
+      [[NSString alloc] initWithUTF8String:default_cert_validation_context_template];
+  [definitions appendFormat:@"- &validation_context_config_trust_chain%@\n"
+                            @"  trust_chain_verification: *trust_chain_verification\n",
+                            cert_validator_template];
 
   NSMutableArray *stat_sinks_config = [self.statsSinks mutableCopy];
 
