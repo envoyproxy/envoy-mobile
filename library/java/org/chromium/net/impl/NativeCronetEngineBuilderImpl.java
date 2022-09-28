@@ -33,7 +33,6 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private final EnvoyEventTracker mEnvoyEventTracker = null;
   private boolean mAdminInterfaceEnabled = false;
   private String mGrpcStatsDomain = null;
-  private Integer mStatsDPort = null;
   private int mConnectTimeoutSeconds = 30;
   private int mDnsRefreshSeconds = 60;
   private int mDnsFailureRefreshSecondsBase = 2;
@@ -66,7 +65,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
   private Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
   private Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
-
+  private List<String> statSinks = Collections.emptyList();
   /**
    * Builder for Native Cronet Engine. Default config enables SPDY, disables QUIC and HTTP cache.
    *
@@ -117,16 +116,15 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
 
   private EnvoyConfiguration createEnvoyConfiguration() {
     return new EnvoyConfiguration(
-        mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
-        mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
-        mDnsQueryTimeoutSeconds, mDnsMinRefreshSeconds, mDnsPreresolveHostnames,
-        mDnsFallbackNameservers, mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver,
-        mEnableDrainPostDnsRefresh, quicEnabled(), mEnableGzip, brotliEnabled(), mEnableSocketTag,
-        mEnableHappyEyeballs, mEnableInterfaceBinding,
-        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mH2ExtendKeepaliveTimeout, mH2RawDomains, mMaxConnectionsPerHost, mStatsFlushSeconds,
-        mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,
-        mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
-        stringAccessors, keyValueStores);
+        mAdminInterfaceEnabled, mGrpcStatsDomain, mConnectTimeoutSeconds, mDnsRefreshSeconds,
+        mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax, mDnsQueryTimeoutSeconds,
+        mDnsMinRefreshSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers,
+        mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver, mEnableDrainPostDnsRefresh,
+        quicEnabled(), mEnableGzip, brotliEnabled(), mEnableSocketTag, mEnableHappyEyeballs,
+        mEnableInterfaceBinding, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
+        mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mH2RawDomains,
+        mMaxConnectionsPerHost, mStatsFlushSeconds, mStreamIdleTimeoutSeconds,
+        mPerTryIdleTimeoutSeconds, mAppVersion, mAppId, mTrustChainVerification, mVirtualClusters,
+        nativeFilterChain, platformFilterChain, stringAccessors, keyValueStores, statSinks);
   }
 }
