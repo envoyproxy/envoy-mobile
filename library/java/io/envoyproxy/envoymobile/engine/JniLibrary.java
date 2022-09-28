@@ -318,7 +318,7 @@ public class JniLibrary {
   /**
    * Provides a template to config the certification validator to be used.
    *
-   * @param use_platform true if the usage of platform validation APIs is desired.
+   * @param usePlatform true if the usage of platform validation APIs is desired.
    * @return string, the config template string.
    */
   public static native String certValidationTemplate(boolean usePlatform);

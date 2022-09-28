@@ -84,7 +84,7 @@ private:
   bool gzip_filter_ = true;
   bool brotli_filter_ = false;
   bool socket_tagging_filter_ = false;
-  bool use_platform_cert_validator_ = false;
+  bool platform_certificates_validation_on_ = false;
 
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 

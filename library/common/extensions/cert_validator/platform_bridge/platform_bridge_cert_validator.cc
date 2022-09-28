@@ -95,7 +95,7 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
     std::vector<envoy_data>& cert_chain, const std::string& host_name,
     const std::vector<std::string>& subject_alt_names, PendingValidation& pending_validation) {
   ASSERT(!cert_chain.empty());
-  ENVOY_LOG(debug, "Start verifyCertChainByPlatform for host {}", host_name);
+  ENVOY_LOG(trace, "Start verifyCertChainByPlatform for host {}", host_name);
   // This is running in a stand alone thread other than the engine thread.
   envoy_data leaf_cert_der = cert_chain[0];
   bssl::UniquePtr<X509> leaf_cert(d2i_X509(
@@ -145,7 +145,7 @@ void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
     if (weak_alive_indicator.expired()) {
       return;
     }
-    ENVOY_LOG(debug, "Get validation result for {} from platform", host_name_);
+    ENVOY_LOG(trace, "Get validation result for {} from platform", host_name_);
     parent_.validation_threads_[thread_id].join();
     parent_.validation_threads_.erase(thread_id);
     if (error_counter.has_value()) {
