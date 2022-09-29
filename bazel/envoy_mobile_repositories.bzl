@@ -51,7 +51,6 @@ def upstream_envoy_overrides():
     # supports platform toolchains.
     http_archive(
         name = "com_google_absl",
-        patches = ["@envoy_mobile//bazel:abseil.patch"],
         sha256 = "3a0bb3d2e6f53352526a8d1a7e7b5749c68cd07f2401766a404fb00d2853fa49",
         strip_prefix = "abseil-cpp-4bbdb026899fea9f882a95cbd7d6a4adaf49b2dd",
         # 2022-07-05
