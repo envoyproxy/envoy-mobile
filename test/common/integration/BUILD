@@ -42,6 +42,27 @@ envoy_cc_test(
 )
 
 envoy_cc_test(
+    name = "traffic_director_integration_test",
+    srcs = ["traffic_director_integration_test.cc"],
+    exec_properties = {
+        # TODO(willengflow): Remove this once the sandboxNetwork=off works for ipv4 localhost addresses.
+        "sandboxNetwork": "standard",
+    },
+    repository = "@envoy",
+    deps = [
+        "@envoy//source/common/protobuf:utility_lib",
+        "@envoy//test/integration:http_integration_lib",
+        "@envoy//test/test_common:network_utility_lib",
+        "@envoy//test/test_common:resources_lib",
+        "@envoy//test/test_common:utility_lib",
+        "@envoy_api//envoy/admin/v3:pkg_cc_proto",
+        "@envoy_api//envoy/config/bootstrap/v3:pkg_cc_proto",
+        "@envoy_api//envoy/config/cluster/v3:pkg_cc_proto",
+        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_test(
     name = "sds_integration_test",
     srcs = [
         "sds_integration_test.cc",
