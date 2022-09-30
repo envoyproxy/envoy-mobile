@@ -4,6 +4,8 @@
 
 #include "source/common/common/base_logger.h"
 
+// trigger-ci: yes!
+
 namespace Envoy {
 namespace Platform {
 
