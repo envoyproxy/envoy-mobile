@@ -1,6 +1,8 @@
 # Envoy Mobile Bazel build/test options.
 try-import ./envoy/.bazelrc
 
+build --remote_accept_cached=false
+
 # Common flags for all builds
 build --platform_mappings=envoy/bazel/platform_mappings
 build --define=google_grpc=disabled
