@@ -119,7 +119,7 @@ build:release-android --compilation_mode=opt
 build:coverage --instrumentation_filter="//library/common[/:]"
 
 #############################################################################
-# Experimental EngFlow Remote Execution Services
+# Experimental EngFlow Remote Execution Configs
 #############################################################################
 # remote-ci-common: These options are valid for any platform, use the configs below
 # to add platform-specific options. Avoid using this config directly and
