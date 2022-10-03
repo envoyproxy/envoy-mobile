@@ -40,7 +40,8 @@ jobs:
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build \
+        run: |
+          ./bazelw build \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -49,7 +50,8 @@ jobs:
       # Run the app in the background and redirect logs.
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run \
+        run: |
+          ./bazelw run \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -73,7 +75,8 @@ jobs:
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build \
+        run: |
+          ./bazelw build \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -82,7 +85,8 @@ jobs:
       # Run the app in the background and redirect logs.
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run \
+        run: |
+          ./bazelw run \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -106,7 +110,8 @@ jobs:
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build \
+        run: |
+          ./bazelw build \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -115,7 +120,8 @@ jobs:
       # Run the app in the background and redirect logs.
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run \
+        run: |
+          ./bazelw run \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -139,7 +145,8 @@ jobs:
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build \
+        run: |
+          ./bazelw build \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -148,7 +155,8 @@ jobs:
       # Run the app in the background and redirect logs.
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run \
+        run: |
+          ./bazelw run \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -172,7 +180,8 @@ jobs:
         name: 'Install dependencies'
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw build \
+        run: |
+          ./bazelw build \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
@@ -181,7 +190,8 @@ jobs:
       # Run the app in the background and redirect logs.
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./bazelw run \
+        run: |
+          ./bazelw run \
           --config=ios \
           --config=remote-ci-macos \
           --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
