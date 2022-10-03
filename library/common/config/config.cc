@@ -75,13 +75,19 @@ const char* brotli_config_insert = R"(
           ignore_no_transform_header: true
 )";
 
-const char* platform_cert_validation_context_template = R"(
-  custom_validator_config:
-    name: "envoy_mobile.cert_validator.platform_bridge_cert_validator")";
-
 const char* default_cert_validation_context_template = R"(
+- &validation_context
   trusted_ca:
-    inline_string: *tls_root_certs)";
+    inline_string: *tls_root_certs
+  trust_chain_verification: *trust_chain_verification
+)";
+
+const char* platform_cert_validation_context_template = R"(
+- &validation_context
+  custom_validator_config:
+    name: "envoy_mobile.cert_validator.platform_bridge_cert_validator"
+  trust_chain_verification: *trust_chain_verification
+)";
 
 const char* socket_tag_config_insert = R"(
   - name: envoy.filters.http.socket_tag
@@ -153,9 +159,6 @@ R"(
 
 !ignore validation_context_defs:
 - &validation_context
-  trusted_ca:
-    inline_string: *tls_root_certs
-- &validation_context_config_trust_chain
   trusted_ca:
     inline_string: *tls_root_certs
   trust_chain_verification: *trust_chain_verification
@@ -298,7 +301,7 @@ const char* config_template = R"(
           alpn_protocols: [h2]
           tls_params:
             tls_maximum_protocol_version: TLSv1_3
-          validation_context: *validation_context_config_trust_chain
+          validation_context: *validation_context
 - &base_h3_socket
   name: envoy.transport_sockets.quic
   typed_config:
@@ -307,7 +310,7 @@ const char* config_template = R"(
       common_tls_context:
         tls_params:
           tls_maximum_protocol_version: TLSv1_3
-        validation_context: *validation_context_config_trust_chain
+        validation_context: *validation_context
 
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster

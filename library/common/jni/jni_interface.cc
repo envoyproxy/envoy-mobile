@@ -18,16 +18,6 @@
 
 // NOLINT(namespace-envoy)
 
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-  JNIEnv* env = nullptr;
-  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION) != JNI_OK) {
-    return -1;
-  }
-
-  set_vm(vm);
-  return JNI_VERSION;
-}
-
 // JniLibrary
 
 static void jvm_on_engine_running(void* context) {
@@ -1302,16 +1292,14 @@ static envoy_cert_validation_result verify_x509_cert_chain(const envoy_data* cer
   }
 }
 
-extern "C" JNIEXPORT jint JNICALL
-Java_io_envoyproxy_envoymobile_engine_JniLibrary_registerCertValidatorFactory(JNIEnv* env) {
+envoy_status_t jvm_register_cert_validator() {
   jni_log("[Envoy]", "registerCertValidatorFactory");
   // TODO(danzh) this object leaks, but it's tied to the life of the engine.
   envoy_cert_validator* api = (envoy_cert_validator*)safe_malloc(sizeof(envoy_cert_validator));
   api->validate_cert = verify_x509_cert_chain;
   api->release_validator = jvm_detach_thread;
   const std::string platform_name = "platform_cert_validator";
-  envoy_status_t result = register_platform_api(platform_name.c_str(), api);
-  return result;
+  return register_platform_api(platform_name.c_str(), api);
 }
 
 static void jvm_add_test_root_certificate(const uint8_t* cert, size_t len) {
@@ -1364,4 +1352,19 @@ extern "C" JNIEXPORT void JNICALL
 Java_io_envoyproxy_envoymobile_engine_JniLibrary_callClearTestRootCertificateFromNative(JNIEnv*,
                                                                                         jclass) {
   jvm_clear_test_root_certificate();
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+  JNIEnv* env = nullptr;
+  if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION) != JNI_OK) {
+    return -1;
+  }
+
+  set_vm(vm);
+  // At this point, we know Android APIs are available. Register cert chain validation JNI calls.
+  envoy_status_t result = jvm_register_cert_validator();
+  if (result == ENVOY_FAILURE) {
+    return -1;
+  }
+  return JNI_VERSION;
 }

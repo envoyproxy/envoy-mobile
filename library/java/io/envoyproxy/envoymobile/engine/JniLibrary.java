@@ -347,8 +347,6 @@ public class JniLibrary {
   protected static native int registerStringAccessor(String accessorName,
                                                      JvmStringAccessorContext context);
 
-  protected static native int registerCertValidatorFactory();
-
   /**
    * Refresh DNS, and drain connections owned by this Engine.
    *

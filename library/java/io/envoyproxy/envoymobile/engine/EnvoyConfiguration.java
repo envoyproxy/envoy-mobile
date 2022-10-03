@@ -304,11 +304,8 @@ public class EnvoyConfiguration {
       configBuilder.append("] \n");
     }
 
-    // Add new anchors to override the default anchors in config header.
-    configBuilder.append("- &validation_context").append(certValidationTemplate).append("\n");
-    configBuilder.append("- &validation_context_config_trust_chain")
-        .append(certValidationTemplate)
-        .append("\n  trust_chain_verification: *trust_chain_verification\n");
+    // Add a new anchor to override the default anchors in config header.
+    configBuilder.append(certValidationTemplate).append("\n");
 
     if (adminInterfaceEnabled) {
       configBuilder.append("admin: *admin_interface\n");
