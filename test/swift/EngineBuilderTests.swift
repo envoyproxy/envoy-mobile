@@ -512,7 +512,6 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout true"))
-    XCTAssertTrue(resolvedYAML.contains("&h2_raw_domains [\"h2-raw.domain\"]"))
 
     XCTAssertTrue(resolvedYAML.contains("&max_connections_per_host 100"))
 

@@ -151,9 +151,6 @@ class EnvoyConfigurationTest {
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_timeout 333s")
 
-    // H2 Hostnames
-    assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\"]")
-
     // H3
     assertThat(resolvedTemplate).doesNotContain(APCF_INSERT);
 
