@@ -75,7 +75,6 @@ class EnvoyConfigurationTest {
     h2ConnectionKeepaliveIdleIntervalMilliseconds: Int = 222,
     h2ConnectionKeepaliveTimeoutSeconds: Int = 333,
     h2ExtendKeepaliveTimeout: Boolean = false,
-    h2RawDomains: List<String> = listOf("h2-raw.example.com"),
     maxConnectionsPerHost: Int = 543,
     statsFlushSeconds: Int = 567,
     streamIdleTimeoutSeconds: Int = 678,
@@ -109,7 +108,6 @@ class EnvoyConfigurationTest {
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
-      h2RawDomains,
       maxConnectionsPerHost,
       statsFlushSeconds,
       streamIdleTimeoutSeconds,
@@ -161,9 +159,6 @@ class EnvoyConfigurationTest {
     // H2 Ping
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_timeout 333s")
-
-    // H2 Hostnames
-    assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\"]")
 
     // H3
     assertThat(resolvedTemplate).doesNotContain(APCF_INSERT);
@@ -274,19 +269,6 @@ CERT_VALIDATION_TEMPLATE
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")
     }
-  }
-
-  @Test
-  fun `resolving multiple h2 raw domains`() {
-    val envoyConfiguration = buildTestEnvoyConfiguration(
-      h2RawDomains = listOf("h2-raw.example.com", "h2-raw.example.com2")
-    )
-
-    val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT,CERT_VALIDATION_TEMPLATE
-    )
-
-    assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\",\"h2-raw.example.com2\"]")
   }
 
   @Test
