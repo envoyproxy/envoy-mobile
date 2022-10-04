@@ -691,7 +691,8 @@ open class EngineBuilder(
    *
    * @return This builder.
    */
-  fun enablePlatformCertificatesValidation(enablePlatformCertificatesValidation: Boolean): EngineBuilder {
+  fun enablePlatformCertificatesValidation(enablePlatformCertificatesValidation: Boolean):
+    EngineBuilder {
     this.enablePlatformCertificatesValidation = enablePlatformCertificatesValidation
     return this
   }

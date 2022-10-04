@@ -126,6 +126,9 @@ EngineBuilder& EngineBuilder::enableSocketTagging(bool socket_tagging_on) {
 
 EngineBuilder&
 EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_validation_on) {
+#if defined(__APPLE__)
+  PANIC("Certificates validation using platform provided APIs is not supported in IOS.");
+#endif
   this->platform_certificates_validation_on_ = platform_certificates_validation_on;
   return *this;
 }
@@ -212,7 +215,6 @@ std::string EngineBuilder::generateConfigStr() {
   config_builder << config_template_;
 
   auto config_str = config_builder.str();
-
   if (config_str.find("{{") != std::string::npos) {
     throw std::runtime_error("could not resolve all template keys in config");
   }
