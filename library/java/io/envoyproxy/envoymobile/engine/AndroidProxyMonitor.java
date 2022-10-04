@@ -62,7 +62,7 @@ class AndroidProxyMonitor extends BroadcastReceiver {
   private ProxyInfo extractProxyInfo(final Intent intent) {
     ProxyInfo info = connectivityManager.getDefaultProxy();
 
-    // If proxy is configured using the PAC file use the
+    // If a proxy is configured using the PAC file use
     // Android's injected localhost HTTP proxy.
     //
     // Android's injected localhost proxy can be accessed using a proxy host
