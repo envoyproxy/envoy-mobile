@@ -1,26 +1,31 @@
 package org.chromium.net.impl;
 
 import android.util.Log;
-import androidx.annotation.IntDef;
+import androidx.annotation.LongDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.chromium.net.NetworkException;
 
 public class Errors {
+  private static final Map<Long, NetError> EnvoyMobileErrorToNetError = createErrorMapping();
+
   /**Subset of errors defined in
    * https://github.com/envoyproxy/envoy/blob/main/envoy/stream_info/stream_info.h */
-  @IntDef({EnvoyMobileError.DNS_RESOLUTION_FAILED, EnvoyMobileError.DURATION_TIMEOUT,
-           EnvoyMobileError.STREAM_IDLE_TIMEOUT, EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE,
-           EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION,
-           EnvoyMobileError.UPSTREAM_REMOTE_RESET})
+  @LongDef({EnvoyMobileError.DNS_RESOLUTION_FAILED, EnvoyMobileError.DURATION_TIMEOUT,
+            EnvoyMobileError.STREAM_IDLE_TIMEOUT, EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE,
+            EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION,
+            EnvoyMobileError.UPSTREAM_REMOTE_RESET})
   @Retention(RetentionPolicy.SOURCE)
   public @interface EnvoyMobileError {
-    int DNS_RESOLUTION_FAILED = 0x4000000;
-    int DURATION_TIMEOUT = 0x400000;
-    int STREAM_IDLE_TIMEOUT = 0x10000;
-    int UPSTREAM_CONNECTION_FAILURE = 0x20;
-    int UPSTREAM_CONNECTION_TERMINATION = 0x40;
-    int UPSTREAM_REMOTE_RESET = 0x10;
+    long DNS_RESOLUTION_FAILED = 0x4000000;
+    long DURATION_TIMEOUT = 0x400000;
+    long STREAM_IDLE_TIMEOUT = 0x10000;
+    long UPSTREAM_CONNECTION_FAILURE = 0x20;
+    long UPSTREAM_CONNECTION_TERMINATION = 0x40;
+    long UPSTREAM_REMOTE_RESET = 0x10;
   }
 
   /** Subset of errors defined in chromium/src/net/base/net_error_list.h */
@@ -48,32 +53,17 @@ public class Errors {
     public String getModifiedString() { return "net::" + this.toString(); }
   }
 
+  /**
+   * returns the NetError that the EnvoyMobileError maps to
+   */
   public static NetError mapEnvoyMobileErrorToNetError(long responseFlag) {
-    int errorCode = Math.toIntExact(responseFlag);
-    switch (errorCode) {
-    case EnvoyMobileError.DNS_RESOLUTION_FAILED:
-      // Todo(colibie): if NetworkChangeNofitier.isOffline, return
-      // NetError.ERR_INTERNET_DISCONNECTED
-      return NetError.ERR_NAME_NOT_RESOLVED;
-    case EnvoyMobileError.DURATION_TIMEOUT:
-    case EnvoyMobileError.STREAM_IDLE_TIMEOUT:
-      return NetError.ERR_TIMED_OUT;
-    case EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION:
-      return NetError.ERR_CONNECTION_CLOSED;
-    case EnvoyMobileError.UPSTREAM_REMOTE_RESET:
-      return NetError.ERR_CONNECTION_RESET;
-    case EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE:
-      // Todo(colibie) if NetworkChangeNofitier.isOffline, return NetError.ERR_INTERNET_DISCONNECTED
-      return NetError
-          .ERR_CONNECTION_REFUSED; // or ERR_ADDRESS_UNREACHABLE or ERR_CONNECTION_TIMED_OUT
-    default:
-      return NetError.ERR_OTHER;
-      // case EnvoyMobileError.NETWORK_CHANGED:
-      //   return NetError.ERR_NETWORK_CHANGED;
-      //  Todo(colibie): if negotiated_protocol is quic
-      // case net::ERR_QUIC_PROTOCOL_ERROR:
-      //   return QUIC_PROTOCOL_FAILED;
-    }
+    /* Todo(https://github.com/envoyproxy/envoy-mobile/issues/1594):
+     * if (EnvoyMobileError.DNS_RESOLUTION_FAILED || EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE)
+     * && NetworkChangeNotifier.isOffline return NetError.ERR_INTERNET_DISCONNECTED
+     *
+     * if negotiated_protocol is quic return QUIC_PROTOCOL_FAILED
+     */
+    return EnvoyMobileErrorToNetError.getOrDefault(responseFlag, NetError.ERR_OTHER);
   }
 
   public static int mapNetErrorToCronetApiErrorCode(NetError netError) {
@@ -99,6 +89,17 @@ public class Errors {
     }
     Log.e(CronetUrlRequestContext.LOG_TAG, "Unknown error code: " + netError);
     return NetworkException.ERROR_OTHER;
+  }
+
+  private static Map<Long, NetError> createErrorMapping() {
+    Map<Long, NetError> errorMap = new HashMap<>();
+    errorMap.put(EnvoyMobileError.DNS_RESOLUTION_FAILED, NetError.ERR_NAME_NOT_RESOLVED);
+    errorMap.put(EnvoyMobileError.DURATION_TIMEOUT, NetError.ERR_TIMED_OUT);
+    errorMap.put(EnvoyMobileError.STREAM_IDLE_TIMEOUT, NetError.ERR_TIMED_OUT);
+    errorMap.put(EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION, NetError.ERR_CONNECTION_CLOSED);
+    errorMap.put(EnvoyMobileError.UPSTREAM_REMOTE_RESET, NetError.ERR_CONNECTION_RESET);
+    errorMap.put(EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE, NetError.ERR_CONNECTION_REFUSED);
+    return Collections.unmodifiableMap(errorMap);
   }
 
   private Errors() {}
