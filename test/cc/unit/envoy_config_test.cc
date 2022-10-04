@@ -156,6 +156,7 @@ TEST(TestConfig, RemainingTemplatesThrows) {
   }
 }
 
+#if not defined(__APPLE__)
 TEST(TestConfig, EnablePlatformCertificatesValidation) {
   auto engine_builder = EngineBuilder();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
@@ -173,6 +174,7 @@ TEST(TestConfig, EnablePlatformCertificatesValidation) {
               HasSubstr("envoy_mobile.cert_validator.platform_bridge_cert_validator"));
   ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("trusted_ca")));
 }
+#endif
 
 } // namespace
 } // namespace Envoy
