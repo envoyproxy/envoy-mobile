@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.Proxy;
 import android.net.ProxyInfo;
 import android.os.Build;
+import android.os.Bundle;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class AndroidProxyMonitor extends BroadcastReceiver {
@@ -34,7 +35,6 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
     this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     registerReceiver(context);
-    this.handleProxyChange();
   }
 
   private void registerReceiver(Context context) {
@@ -45,15 +45,31 @@ public class AndroidProxyMonitor extends BroadcastReceiver {
 
   @Override
   public void onReceive(Context context, Intent intent) {
-    handleProxyChange();
+    handleProxyChange(intent);
   }
 
-  private void handleProxyChange() {
-    ProxyInfo info = connectivityManager.getDefaultProxy();
+  private void handleProxyChange(final Intent intent) {
+    ProxyInfo info = this.extractProxyInfo(intent);
+
     if (info == null) {
       envoyEngine.setProxySettings("", 0);
     } else {
       envoyEngine.setProxySettings(info.getHost(), info.getPort());
     }
+  }
+
+  private ProxyInfo extractProxyInfo(final Intent intent) {
+    ProxyInfo info = connectivityManager.getDefaultProxy();
+
+    if (info.getPacFileUrl() != null) {
+      Bundle extras = intent.getExtras();
+      if (extras == null) {
+        return null;
+      }
+
+      info = (ProxyInfo)extras.get("android.intent.extra.PROXY_INFO");
+    }
+
+    return info;
   }
 }
