@@ -53,7 +53,7 @@ class PerformHTTPSRequestUsingAsyncProxyTest {
     val context = Mockito.spy(ApplicationProvider.getApplicationContext<Context>())
     val connectivityManager: ConnectivityManager = Mockito.mock(ConnectivityManager::class.java)
     Mockito.doReturn(connectivityManager).`when`(context).getSystemService(Context.CONNECTIVITY_SERVICE)
-    Mockito.`when`(connectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("127.0.0.1", port))
+    Mockito.`when`(connectivityManager.getDefaultProxy()).thenReturn(ProxyInfo.buildDirectProxy("localhost", port))
 
     val onEngineRunningLatch = CountDownLatch(1)
     val onProxyEngineRunningLatch = CountDownLatch(1)
