@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "source/common/common/assert.h"
+
 #include "absl/strings/str_replace.h"
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
