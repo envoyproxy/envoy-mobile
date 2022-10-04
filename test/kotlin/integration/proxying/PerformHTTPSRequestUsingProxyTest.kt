@@ -2,7 +2,6 @@ package test.kotlin.integration.proxying
 
 import android.content.Intent
 import android.content.Context
-import android.os.UserHandle
 import android.net.ConnectivityManager
 import android.net.Proxy
 import android.net.ProxyInfo
