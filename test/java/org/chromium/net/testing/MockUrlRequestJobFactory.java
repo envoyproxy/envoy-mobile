@@ -47,9 +47,9 @@ public final class MockUrlRequestJobFactory {
    *
    * @param phase at which request fails. It should be a value in
    *              org.chromium.net.test.FailurePhase.
-   // * @param netError reported by UrlRequestJob. Passing -1, results in hang.
+   * @param envoyMobileError reported by the engine.
    */
-  public static String getMockUrlWithFailure(String phase, String envoyMobileError) {
+  public static String getMockUrlWithFailure(String phase, int envoyMobileError) {
     switch (phase) {
     case FailurePhase.START:
     case FailurePhase.READ_SYNC:
@@ -59,10 +59,6 @@ public final class MockUrlRequestJobFactory {
       throw new IllegalArgumentException("phase not in org.chromium.net.test.FailurePhase");
     }
     return TEST_URL + "/failed?" + phase + "=" + envoyMobileError;
-  }
-
-  public static String getMockUrlWithFailure(String phase, int netError) {
-    return "To be implemented";
   }
 
   /**

@@ -2066,7 +2066,7 @@ public class CronetUrlRequestTest {
                            NetworkException.ERROR_CONNECTION_RESET, "CONNECTION_RESET", true);
     checkSpecificErrorCode(EnvoyMobileError.STREAM_IDLE_TIMEOUT, NetError.ERR_TIMED_OUT,
                            NetworkException.ERROR_TIMED_OUT, "TIMED_OUT", true);
-    checkSpecificErrorCode("0x2000", NetError.ERR_OTHER, NetworkException.ERROR_OTHER, "OTHER",
+    checkSpecificErrorCode(0x2000, NetError.ERR_OTHER, NetworkException.ERROR_OTHER, "OTHER",
                            false);
     // Todo(colibie): https://github.com/envoyproxy/envoy-mobile/issues/1549
     // checkSpecificErrorCode(-106, NetworkException.ERROR_INTERNET_DISCONNECTED,
@@ -2201,7 +2201,7 @@ public class CronetUrlRequestTest {
     assertFalse(failedExpectation.get());
   }
 
-  private void checkSpecificErrorCode(String envoyMobileError, NetError netError, int errorCode,
+  private void checkSpecificErrorCode(int envoyMobileError, NetError netError, int errorCode,
                                       String name, boolean immediatelyRetryable) throws Exception {
     TestUrlRequestCallback callback = startAndWaitForComplete(
         mMockUrlRequestJobFactory.getCronetEngine(),

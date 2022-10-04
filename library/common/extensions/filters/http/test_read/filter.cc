@@ -12,11 +12,13 @@ Http::FilterHeadersStatus TestReadFilter::decodeHeaders(Http::RequestHeaderMap& 
   // sample path is /failed?start=0x10000
   Http::Utility::QueryParams query_parameters =
       Http::Utility::parseQueryString(request_headers.Path()->value().getStringView());
-  uint64_t response_flag = std::stoul(query_parameters.at("start"), nullptr, 16);
-  decoder_callbacks_->streamInfo().setResponseFlag(
-      TestReadFilter::mapErrorToResponseFlag(response_flag));
-  decoder_callbacks_->sendLocalReply(Http::Code::BadRequest, "test_read filter threw: ", nullptr,
-                                     absl::nullopt, "");
+  uint64_t response_flag;
+  if (absl::SimpleAtoi(query_parameters.at("start"), &response_flag)) {
+    decoder_callbacks_->streamInfo().setResponseFlag(
+        TestReadFilter::mapErrorToResponseFlag(response_flag));
+    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest, "test_read filter threw: ", nullptr,
+                                       absl::nullopt, "");
+  }
   return Http::FilterHeadersStatus::StopIteration;
 }
 

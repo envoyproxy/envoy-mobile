@@ -1,7 +1,7 @@
 package org.chromium.net.impl;
 
 import android.util.Log;
-import androidx.annotation.StringDef;
+import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import org.chromium.net.NetworkException;
@@ -9,18 +9,18 @@ import org.chromium.net.NetworkException;
 public class Errors {
   /**Subset of errors defined in
    * https://github.com/envoyproxy/envoy/blob/main/envoy/stream_info/stream_info.h */
-  @StringDef({EnvoyMobileError.DNS_RESOLUTION_FAILED, EnvoyMobileError.DURATION_TIMEOUT,
-              EnvoyMobileError.STREAM_IDLE_TIMEOUT, EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE,
-              EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION,
-              EnvoyMobileError.UPSTREAM_REMOTE_RESET})
+  @IntDef({EnvoyMobileError.DNS_RESOLUTION_FAILED, EnvoyMobileError.DURATION_TIMEOUT,
+           EnvoyMobileError.STREAM_IDLE_TIMEOUT, EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE,
+           EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION,
+           EnvoyMobileError.UPSTREAM_REMOTE_RESET})
   @Retention(RetentionPolicy.SOURCE)
   public @interface EnvoyMobileError {
-    String DNS_RESOLUTION_FAILED = "0x4000000";
-    String DURATION_TIMEOUT = "0x400000";
-    String STREAM_IDLE_TIMEOUT = "0x10000";
-    String UPSTREAM_CONNECTION_FAILURE = "0x20";
-    String UPSTREAM_CONNECTION_TERMINATION = "0x40";
-    String UPSTREAM_REMOTE_RESET = "0x10";
+    int DNS_RESOLUTION_FAILED = 0x4000000;
+    int DURATION_TIMEOUT = 0x400000;
+    int STREAM_IDLE_TIMEOUT = 0x10000;
+    int UPSTREAM_CONNECTION_FAILURE = 0x20;
+    int UPSTREAM_CONNECTION_TERMINATION = 0x40;
+    int UPSTREAM_REMOTE_RESET = 0x10;
   }
 
   /** Subset of errors defined in chromium/src/net/base/net_error_list.h */
@@ -49,7 +49,7 @@ public class Errors {
   }
 
   public static NetError mapEnvoyMobileErrorToNetError(long responseFlag) {
-    String errorCode = "0x" + Long.toHexString(responseFlag);
+    int errorCode = Math.toIntExact(responseFlag);
     switch (errorCode) {
     case EnvoyMobileError.DNS_RESOLUTION_FAILED:
       // Todo(colibie): if NetworkChangeNofitier.isOffline, return
