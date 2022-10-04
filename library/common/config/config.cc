@@ -329,6 +329,12 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
+)"
+// The list of virtual hosts impacts directly the number of virtual cluster stats.
+// That's because we create a separate set of virtual clusters stats for every
+// "virtual cluster" <> "virtual host" pair. Increasing the number of virtual hosts
+// from 1 to 2 doubles the number of virtual cluster stats.
+R"(
             - name: api
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
