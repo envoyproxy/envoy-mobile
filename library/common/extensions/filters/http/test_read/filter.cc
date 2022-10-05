@@ -35,7 +35,7 @@ StreamInfo::ResponseFlag TestReadFilter::mapErrorToResponseFlag(uint64_t errorCo
   case 0x10000:
     return StreamInfo::StreamIdleTimeout;
   default:
-    // Any other error that we arent interested in, picked a random error
+    // Any other error that we aren't interested in. I picked a random error.
     return StreamInfo::RateLimitServiceError;
   }
 }
