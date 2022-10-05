@@ -11,44 +11,44 @@
 namespace Envoy {
 namespace {
 
-const static std::string CONFIG_TEMPLATE = "\
-static_resources:\n\
-  listeners:\n\
-  - name: base_api_listener\n\
-    address:\n\
-      socket_address:\n\
-        protocol: TCP\n\
-        address: 0.0.0.0\n\
-        port_value: 10000\n\
-    api_listener:\n\
-      api_listener:\n\
-        \"@type\": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager\n\
-        config:\n\
-          stat_prefix: hcm\n\
-          route_config:\n\
-            name: api_router\n\
-            virtual_hosts:\n\
-              - name: api\n\
-                domains:\n\
-                  - \"*\"\n\
-                routes:\n\
-                  - match:\n\
-                      prefix: \"/\"\n\
-                    direct_response:\n\
-                      status: 200\n\
-          http_filters:\n\
-            - name: envoy.filters.http.assertion\n\
-              typed_config:\n\
-                \"@type\": type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion\n\
-                match_config:\n\
-                  http_request_headers_match:\n\
-                    headers:\n\
-                      - name: \":authority\"\n\
-                        exact_match: example.com\n\
-            - name: envoy.router\n\
-              typed_config:\n\
-                \"@type\": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router\n\
-";
+const static std::string CONFIG_TEMPLATE = R"(
+static_resources:
+  listeners:
+  - name: base_api_listener
+    address:
+      socket_address:
+        protocol: TCP
+        address: 0.0.0.0
+        port_value: 10000
+    api_listener:
+      api_listener:
+        "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.EnvoyMobileHttpConnectionManager
+        config:
+          stat_prefix: hcm
+          route_config:
+            name: api_router
+            virtual_hosts:
+              - name: api
+                domains:
+                  - "*"
+                routes:
+                  - match:
+                      prefix: "/"
+                    direct_response:
+                      status: 200
+          http_filters:
+            - name: envoy.filters.http.assertion
+              typed_config:
+                "@type": type.googleapis.com/envoymobile.extensions.filters.http.assertion.Assertion
+                match_config:
+                  http_request_headers_match:
+                    headers:
+                      - name: ":authority"
+                        exact_match: example.com
+            - name: envoy.router
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+)";
 
 struct Status {
   int status_code;
@@ -69,16 +69,20 @@ TEST(TestSendHeaders, CanSendHeaders) {
   Platform::StreamSharedPtr stream;
   auto stream_prototype = engine->streamClient()->newStreamPrototype();
 
-  stream_prototype->setOnHeaders([&](Platform::ResponseHeadersSharedPtr headers, bool end_stream) {
-    status.status_code = headers->httpStatus();
-    status.end_stream = end_stream;
-  });
-  stream_prototype->setOnComplete([&]() { stream_complete.Notify(); });
-  stream_prototype->setOnError([&](Platform::EnvoyErrorSharedPtr envoy_error) {
-    (void)envoy_error;
-    stream_complete.Notify();
-  });
-  stream_prototype->setOnCancel([&]() { stream_complete.Notify(); });
+  stream_prototype->setOnHeaders(
+      [&](Platform::ResponseHeadersSharedPtr headers, bool end_stream, envoy_stream_intel) {
+        status.status_code = headers->httpStatus();
+        status.end_stream = end_stream;
+      });
+  stream_prototype->setOnComplete(
+      [&](envoy_stream_intel, envoy_final_stream_intel) { stream_complete.Notify(); });
+  stream_prototype->setOnError(
+      [&](Platform::EnvoyErrorSharedPtr envoy_error, envoy_stream_intel, envoy_final_stream_intel) {
+        (void)envoy_error;
+        stream_complete.Notify();
+      });
+  stream_prototype->setOnCancel(
+      [&](envoy_stream_intel, envoy_final_stream_intel) { stream_complete.Notify(); });
 
   stream = stream_prototype->start();
 

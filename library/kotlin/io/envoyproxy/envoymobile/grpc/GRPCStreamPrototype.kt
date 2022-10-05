@@ -89,7 +89,7 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnError(
-    closure: (error: EnvoyError, streamIntel: StreamIntel) -> Unit
+    closure: (error: EnvoyError, finalStreamIntel: FinalStreamIntel) -> Unit
   ): GRPCStreamPrototype {
     underlyingStream.setOnError(closure)
     return this
@@ -103,7 +103,7 @@ class GRPCStreamPrototype(
    * @return This stream, for chaining syntax.
    */
   fun setOnCancel(
-    closure: (streamIntel: StreamIntel) -> Unit
+    closure: (finalStreamIntel: FinalStreamIntel) -> Unit
   ): GRPCStreamPrototype {
     underlyingStream.setOnCancel(closure)
     return this
@@ -151,7 +151,7 @@ private class GRPCMessageProcessor {
         }
 
         val compressionFlag = byteArray[0]
-        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501.
+        // TODO: Support gRPC compression https://github.com/envoyproxy/envoy-mobile/issues/501.
         if (compressionFlag.compareTo(0) != 0) {
           bufferedStream.reset()
         }

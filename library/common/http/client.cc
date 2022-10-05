@@ -13,7 +13,8 @@
 #include "library/common/data/utility.h"
 #include "library/common/http/header_utility.h"
 #include "library/common/http/headers.h"
-#include "library/common/network/configurator.h"
+#include "library/common/jni/android_jni_utility.h"
+#include "library/common/network/connectivity_manager.h"
 #include "library/common/stream_info/extra_stream_info.h"
 
 namespace Envoy {
@@ -26,6 +27,12 @@ namespace Http {
  * If this changes in Envoy, this file will need to change as well.
  * For implementation details @see Client::DirectStreamCallbacks::closeRemote.
  */
+
+namespace {
+
+constexpr auto SlowCallbackWarningTreshold = std::chrono::seconds(1);
+
+} // namespace
 
 Client::DirectStreamCallbacks::DirectStreamCallbacks(DirectStream& direct_stream,
                                                      envoy_http_callbacks bridge_callbacks,
@@ -41,20 +48,44 @@ void Client::DirectStreamCallbacks::encodeHeaders(const ResponseHeaderMap& heade
 
   ASSERT(http_client_.getStream(direct_stream_.stream_handle_,
                                 GetStreamFilters::ALLOW_FOR_ALL_STREAMS));
-  direct_stream_.saveLatestStreamIntel();
+
+  // Capture some metadata before potentially closing the stream.
+  absl::string_view alpn = "";
+  if (direct_stream_.request_decoder_) {
+    direct_stream_.saveLatestStreamIntel();
+    const auto& info = direct_stream_.request_decoder_->streamInfo();
+    // Set the initial number of bytes consumed for the non terminal callbacks.
+    direct_stream_.stream_intel_.consumed_bytes_from_response =
+        info.getUpstreamBytesMeter() ? info.getUpstreamBytesMeter()->headerBytesReceived() : 0;
+    // Capture the alpn if available.
+    if (info.upstreamInfo() && info.upstreamInfo()->upstreamSslConnection()) {
+      alpn = info.upstreamInfo()->upstreamSslConnection()->alpn();
+    }
+  }
+
   if (end_stream) {
     closeStream();
   }
 
-  uint64_t response_status = Utility::getResponseStatus(headers);
-
   // Track success for later bookkeeping (stream could still be reset).
+  uint64_t response_status = Utility::getResponseStatus(headers);
   success_ = CodeUtility::is2xx(response_status);
 
   ENVOY_LOG(debug, "[S{}] dispatching to platform response headers for stream (end_stream={}):\n{}",
             direct_stream_.stream_handle_, end_stream, headers);
-  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers), end_stream, streamIntel(),
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_headers_callback_latency_, http_client_.timeSource());
+
+  bridge_callbacks_.on_headers(Utility::toBridgeHeaders(headers, alpn), end_stream, streamIntel(),
                                bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_headers_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   response_headers_forwarded_ = true;
   if (end_stream) {
     onComplete();
@@ -114,6 +145,8 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
 
   // Cap by bytes_to_send_ if and only if applying explicit flow control.
   uint32_t bytes_to_send = calculateBytesToSend(data, bytes_to_send_);
+  // Update the number of bytes consumed by this non terminal callback.
+  direct_stream_.stream_intel_.consumed_bytes_from_response += bytes_to_send;
   // Only send end stream if all data is being sent.
   bool send_end_stream = end_stream && (bytes_to_send == data.length());
 
@@ -121,8 +154,18 @@ void Client::DirectStreamCallbacks::sendDataToBridge(Buffer::Instance& data, boo
             "[S{}] dispatching to platform response data for stream (length={} end_stream={})",
             direct_stream_.stream_handle_, bytes_to_send, send_end_stream);
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_data_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_data(Data::Utility::toBridgeData(data, bytes_to_send), send_end_stream,
                             streamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_data_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   if (send_end_stream) {
     onComplete();
   }
@@ -155,8 +198,18 @@ void Client::DirectStreamCallbacks::sendTrailersToBridge(const ResponseTrailerMa
   ENVOY_LOG(debug, "[S{}] dispatching to platform response trailers for stream:\n{}",
             direct_stream_.stream_handle_, trailers);
 
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_trailers_callback_latency_, http_client_.timeSource());
+
   bridge_callbacks_.on_trailers(Utility::toBridgeHeaders(trailers), streamIntel(),
                                 bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_trailers_cb", std::to_string(elapsed.count()) + "ms");
+  }
+
   onComplete();
 }
 
@@ -189,6 +242,8 @@ void Client::DirectStreamCallbacks::resumeData(int32_t bytes_to_send) {
 
 void Client::DirectStreamCallbacks::closeStream() {
   remote_end_stream_received_ = true;
+  // Latch stream intel on stream completion, as the stream info will go away.
+  direct_stream_.saveFinalStreamIntel();
 
   auto& client = direct_stream_.parent_;
   auto stream = client.getStream(direct_stream_.stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS);
@@ -198,6 +253,7 @@ void Client::DirectStreamCallbacks::closeStream() {
     size_t erased = client.streams_.erase(direct_stream_.stream_handle_);
     ASSERT(erased == 1, "closeStream should always remove one entry from the streams map");
   }
+  direct_stream_.request_decoder_ = nullptr;
 }
 
 void Client::DirectStreamCallbacks::onComplete() {
@@ -209,7 +265,17 @@ void Client::DirectStreamCallbacks::onComplete() {
   } else {
     http_client_.stats().stream_failure_.inc();
   }
-  bridge_callbacks_.on_complete(streamIntel(), bridge_callbacks_.context);
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_complete_callback_latency_, http_client_.timeSource());
+
+  bridge_callbacks_.on_complete(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_complete_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onError() {
@@ -236,7 +302,17 @@ void Client::DirectStreamCallbacks::onError() {
             direct_stream_.stream_handle_);
   http_client_.stats().stream_failure_.inc();
 
-  bridge_callbacks_.on_error(error_.value(), streamIntel(), bridge_callbacks_.context);
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_error_callback_latency_, http_client_.timeSource());
+
+  bridge_callbacks_.on_error(error_.value(), streamIntel(), finalStreamIntel(),
+                             bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_error_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onSendWindowAvailable() {
@@ -246,9 +322,24 @@ void Client::DirectStreamCallbacks::onSendWindowAvailable() {
 
 void Client::DirectStreamCallbacks::onCancel() {
   ScopeTrackerScopeState scope(&direct_stream_, http_client_.scopeTracker());
+
   ENVOY_LOG(debug, "[S{}] dispatching to platform cancel stream", direct_stream_.stream_handle_);
   http_client_.stats().stream_cancel_.inc();
-  bridge_callbacks_.on_cancel(streamIntel(), bridge_callbacks_.context);
+
+  // Attempt to latch the latest stream info. This will be a no-op if the stream
+  // is already complete.
+  direct_stream_.saveFinalStreamIntel();
+
+  auto callback_time_ms = std::make_unique<Stats::HistogramCompletableTimespanImpl>(
+      http_client_.stats().on_cancel_callback_latency_, http_client_.timeSource());
+
+  bridge_callbacks_.on_cancel(streamIntel(), finalStreamIntel(), bridge_callbacks_.context);
+
+  callback_time_ms->complete();
+  auto elapsed = callback_time_ms->elapsed();
+  if (elapsed > SlowCallbackWarningTreshold) {
+    ENVOY_LOG_EVENT(warn, "slow_on_cancel_cb", std::to_string(elapsed.count()) + "ms");
+  }
 }
 
 void Client::DirectStreamCallbacks::onHasBufferedData() {
@@ -269,11 +360,25 @@ envoy_stream_intel Client::DirectStreamCallbacks::streamIntel() {
   return direct_stream_.stream_intel_;
 }
 
+envoy_final_stream_intel& Client::DirectStreamCallbacks::finalStreamIntel() {
+  return direct_stream_.envoy_final_stream_intel_;
+}
+
 void Client::DirectStream::saveLatestStreamIntel() {
   const auto& info = request_decoder_->streamInfo();
-  stream_intel_.connection_id = info.upstreamConnectionId().value_or(-1);
+  if (info.upstreamInfo()) {
+    stream_intel_.connection_id = info.upstreamInfo()->upstreamConnectionId().value_or(-1);
+  }
   stream_intel_.stream_id = static_cast<uint64_t>(stream_handle_);
   stream_intel_.attempt_count = info.attemptCount().value_or(0);
+}
+
+void Client::DirectStream::saveFinalStreamIntel() {
+  if (!request_decoder_ || !parent_.getStream(stream_handle_, ALLOW_ONLY_FOR_OPEN_STREAMS)) {
+    return;
+  }
+  StreamInfo::setFinalStreamIntel(request_decoder_->streamInfo(), parent_.dispatcher_.timeSource(),
+                                  envoy_final_stream_intel_);
 }
 
 envoy_error Client::DirectStreamCallbacks::streamError() {
@@ -283,6 +388,8 @@ envoy_error Client::DirectStreamCallbacks::streamError() {
   if (info.responseCode().has_value()) {
     error.error_code = Bridge::Utility::errorCodeFromLocalStatus(
         static_cast<Http::Code>(info.responseCode().value()));
+  } else if (StreamInfo::isStreamIdleTimeout(info)) {
+    error.error_code = ENVOY_REQUEST_TIMEOUT;
   } else {
     error.error_code = ENVOY_STREAM_RESET;
   }
@@ -309,6 +416,7 @@ void Client::DirectStream::resetStream(StreamResetReason reason) {
   // This seems in line with other codec implementations, and so the assumption is that this is in
   // line with upstream expectations.
   // TODO(goaway): explore an upstream fix to get the HCM to clean up ActiveStream itself.
+  saveFinalStreamIntel(); // Take a snapshot now in case the stream gets destroyed.
   runResetCallbacks(reason);
   if (!parent_.getStream(stream_handle_, GetStreamFilters::ALLOW_FOR_ALL_STREAMS)) {
     // We don't assert here, because Envoy will issue a stream reset if a stream closes remotely
@@ -368,10 +476,20 @@ void Client::sendHeaders(envoy_stream_t stream, envoy_headers headers, bool end_
   // TODO: handle potential race condition with cancellation or failure get a stream in the
   // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
   // from the caller.
-  // https://github.com/lyft/envoy-mobile/issues/301
+  // https://github.com/envoyproxy/envoy-mobile/issues/301
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestHeaderMapPtr internal_headers = Utility::toRequestHeaders(headers);
+
+    // This is largely a check for the android platform: is_cleartext_permitted
+    // is a no-op for other platforms.
+    if (internal_headers->getSchemeValue() != "https" &&
+        !is_cleartext_permitted(internal_headers->getHostValue())) {
+      direct_stream->request_decoder_->sendLocalReply(
+          Http::Code::BadRequest, "Cleartext is not permitted", nullptr, absl::nullopt, "");
+      return;
+    }
+
     setDestinationCluster(*internal_headers);
     // Set the x-forwarded-proto header to https because Envoy Mobile only has clusters with TLS
     // enabled. This is done here because the ApiListener's synthetic connection would make the
@@ -415,7 +533,7 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   // TODO: handle potential race condition with cancellation or failure get a stream in the
   // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
   // from the caller.
-  // https://github.com/lyft/envoy-mobile/issues/301
+  // https://github.com/envoyproxy/envoy-mobile/issues/301
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     // The buffer is moved internally, in a synchronous fashion, so we don't need the lifetime
@@ -429,9 +547,14 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
     if (direct_stream->explicit_flow_control_ && !end_stream) {
       if (direct_stream->read_disable_count_ == 0) {
         // If there is still buffer space after the write, notify the sender
-        // that send window is available.
+        // that send window is available, on the next dispatcher iteration so
+        // that repeated writes do not starve reads.
         direct_stream->wants_write_notification_ = false;
-        direct_stream->callbacks_->onSendWindowAvailable();
+        // A new callback must be scheduled each time to capture any changes to the
+        // DirectStream's callbacks from call to call.
+        scheduled_callback_ = dispatcher_.createSchedulableCallback(
+            [direct_stream] { direct_stream->callbacks_->onSendWindowAvailable(); });
+        scheduled_callback_->scheduleCallbackNextIteration();
       } else {
         // Otherwise, make sure the stack will send a notification when the
         // buffers are drained.
@@ -441,7 +564,7 @@ void Client::sendData(envoy_stream_t stream, envoy_data data, bool end_stream) {
   }
 }
 
-void Client::sendMetadata(envoy_stream_t, envoy_headers) { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+void Client::sendMetadata(envoy_stream_t, envoy_headers) { PANIC("not implemented"); }
 
 void Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   ASSERT(dispatcher_.isThreadSafe());
@@ -453,7 +576,7 @@ void Client::sendTrailers(envoy_stream_t stream, envoy_headers trailers) {
   // TODO: handle potential race condition with cancellation or failure get a stream in the
   // first place. Additionally it is possible to get a nullptr due to bogus envoy_stream_t
   // from the caller.
-  // https://github.com/lyft/envoy-mobile/issues/301
+  // https://github.com/envoyproxy/envoy-mobile/issues/301
   if (direct_stream) {
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     RequestTrailerMapPtr internal_trailers = Utility::toRequestTrailers(trailers);
@@ -469,12 +592,17 @@ void Client::cancelStream(envoy_stream_t stream) {
   // whether it was closed or not.
   Client::DirectStreamSharedPtr direct_stream =
       getStream(stream, GetStreamFilters::ALLOW_FOR_ALL_STREAMS);
+  scheduled_callback_ = nullptr;
   if (direct_stream) {
+    // Attempt to latch the latest stream info. This will be a no-op if the stream
+    // is already complete.
+    direct_stream->saveFinalStreamIntel();
     bool stream_was_open =
         getStream(stream, GetStreamFilters::ALLOW_ONLY_FOR_OPEN_STREAMS) != nullptr;
     ScopeTrackerScopeState scope(direct_stream.get(), scopeTracker());
     removeStream(direct_stream->stream_handle_);
 
+    ENVOY_LOG(debug, "[S{}] application cancelled stream", stream);
     direct_stream->callbacks_->onCancel();
 
     // Since https://github.com/envoyproxy/envoy/pull/13052, the connection manager expects that
@@ -545,47 +673,45 @@ void Client::removeStream(envoy_stream_t stream_handle) {
 namespace {
 
 const LowerCaseString ClusterHeader{"x-envoy-mobile-cluster"};
-const LowerCaseString H2UpstreamHeader{"x-envoy-mobile-upstream-protocol"};
-
-// Alternate clusters included here are a stopgap to make it less likely for a given connection
-// class to suffer "catastrophic" failure of all outbound requests due to a network blip, by
-// distributing requests across a minimum of two potential connections per connection class.
-// Long-term we will be working to generally provide more responsive connection handling within
-// Envoy itself.
+const LowerCaseString ProtocolHeader{"x-envoy-mobile-upstream-protocol"};
 
 const char* BaseCluster = "base";
 const char* H2Cluster = "base_h2";
+const char* H3Cluster = "base_h3";
 const char* ClearTextCluster = "base_clear";
-const char* AlpnCluster = "base_alpn";
 
 } // namespace
 
 void Client::setDestinationCluster(Http::RequestHeaderMap& headers) {
   // Determine upstream cluster:
-  // - Use TLS by default.
+  // - Use TLS with ALPN by default.
   // - Use http/2 or ALPN if requested explicitly via x-envoy-mobile-upstream-protocol.
   // - Force http/1.1 if request scheme is http (cleartext).
   const char* cluster{};
-  auto h2_header = headers.get(H2UpstreamHeader);
+  auto protocol_header = headers.get(ProtocolHeader);
   if (headers.getSchemeValue() == Headers::get().SchemeValues.Http) {
     cluster = ClearTextCluster;
-  } else if (!h2_header.empty()) {
-    ASSERT(h2_header.size() == 1);
-    const auto value = h2_header[0]->value().getStringView();
+  } else if (!protocol_header.empty()) {
+    ASSERT(protocol_header.size() == 1);
+    const auto value = protocol_header[0]->value().getStringView();
+    // NOTE: This cluster *forces* H2-Raw and does not use ALPN.
     if (value == "http2") {
       cluster = H2Cluster;
-    } else if (value == "alpn") {
-      cluster = AlpnCluster;
-    } else {
-      RELEASE_ASSERT(value == "http1", fmt::format("using unsupported protocol version {}", value));
+      // NOTE: This cluster will attempt to negotiate H3, but defaults to ALPN over TCP.
+    } else if (value == "http3") {
+      cluster = H3Cluster;
+      // FIXME(goaway): No cluster actually forces H1 today except cleartext!
+    } else if (value == "alpn" || value == "http1") {
       cluster = BaseCluster;
+    } else {
+      PANIC(fmt::format("using unsupported protocol version {}", value));
     }
   } else {
     cluster = BaseCluster;
   }
 
-  if (!h2_header.empty()) {
-    headers.remove(H2UpstreamHeader);
+  if (!protocol_header.empty()) {
+    headers.remove(ProtocolHeader);
   }
 
   headers.addCopy(ClusterHeader, std::string{cluster});

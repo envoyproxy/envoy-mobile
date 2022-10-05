@@ -1,16 +1,30 @@
-package io.envoyproxy.envoymobile
+ package io.envoyproxy.envoymobile
 
 import io.envoyproxy.envoymobile.engine.EnvoyConfiguration
+import io.envoyproxy.envoymobile.engine.EnvoyConfiguration.TrustChainVerification
 import io.envoyproxy.envoymobile.engine.EnvoyEngine
 import io.envoyproxy.envoymobile.engine.EnvoyEngineImpl
 import io.envoyproxy.envoymobile.engine.EnvoyNativeFilterConfig
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPFilterFactory
+import io.envoyproxy.envoymobile.engine.types.EnvoyKeyValueStore
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor
 import java.util.UUID
 
+/**
+ * Envoy engine configuration.
+ */
 sealed class BaseConfiguration
 
+/**
+ * The standard configuration.
+ */
 class Standard : BaseConfiguration()
+
+/**
+ * The configuration based off a custom yaml.
+ *
+ * @param yaml the custom config.
+ */
 class Custom(val yaml: String) : BaseConfiguration()
 
 /**
@@ -22,31 +36,47 @@ open class EngineBuilder(
   protected var onEngineRunning: (() -> Unit) = {}
   protected var logger: ((String) -> Unit)? = null
   protected var eventTracker: ((Map<String, String>) -> Unit)? = null
+  protected var enableProxying = false
   private var engineType: () -> EnvoyEngine = {
     EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
   }
   private var logLevel = LogLevel.INFO
   private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String? = null
-  private var statsDPort: Int? = null
   private var connectTimeoutSeconds = 30
   private var dnsRefreshSeconds = 60
   private var dnsFailureRefreshSecondsBase = 2
   private var dnsFailureRefreshSecondsMax = 10
+  private var dnsFallbackNameservers = listOf<String>()
+  private var dnsFilterUnroutableFamilies = true
+  private var dnsUseSystemResolver = true
   private var dnsQueryTimeoutSeconds = 25
+  private var dnsMinRefreshSeconds = 60
   private var dnsPreresolveHostnames = "[]"
+  private var enableDrainPostDnsRefresh = false
+  private var enableHttp3 = false
+  private var enableHappyEyeballs = true
+  private var enableGzip = true
+  private var enableBrotli = false
+  private var enableSocketTagging = false
   private var enableInterfaceBinding = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
+  private var h2ExtendKeepaliveTimeout = false
+  private var h2RawDomains = listOf<String>()
+  private var maxConnectionsPerHost = 7
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
   private var perTryIdleTimeoutSeconds = 15
   private var appVersion = "unspecified"
   private var appId = "unspecified"
+  private var trustChainVerification = TrustChainVerification.VERIFY_TRUST_CHAIN
   private var virtualClusters = "[]"
   private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
   private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
+  private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
+  private var statsSinks = listOf<String>()
 
   /**
    * Add a log level to use with Envoy.
@@ -61,12 +91,13 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a domain to flush stats to.
-   * Passing nil disables stats emission via the gRPC stat sink.
+   * Specifies the domain (e.g. `example.com`) to use in the default gRPC stat sink to flush
+   * stats.
    *
-   * Only one of the statsd and gRPC stat sink can be enabled.
+   * Setting this value enables the gRPC stat sink, which periodically flushes stats via the gRPC
+   * MetricsService API. The flush interval is specified via addStatsFlushSeconds.
    *
-   * @param grpcStatsDomain The domain to use for stats.
+   * @param grpcStatsDomain The domain to use for the gRPC stats sink.
    *
    * @return this builder.
    */
@@ -76,17 +107,16 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a loopback port to emit statsD stats to.
-   * Passing nil disables stats emission via the statsD stat sink.
+   * Adds additional stats sinks, in the form of the raw YAML/JSON configuration.
+   * Sinks added in this fashion will be included in addition to the gRPC stats sink
+   * that may be enabled via addGrpcStatsDomain.
    *
-   * Only one of the statsD and gRPC stat sink can be enabled.
-   *
-   * @param port The port to send statsD UDP packets to via loopback
+   * @param statsSinks Configurations of stat sinks to add.
    *
    * @return this builder.
    */
-  fun addStatsDPort(port: Int): EngineBuilder {
-    this.statsDPort = port
+  fun addStatsSinks(statsSinks: List<String>): EngineBuilder {
+    this.statsSinks = statsSinks
     return this
   }
 
@@ -103,9 +133,9 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a rate at which to refresh DNS.
+   * Add a default rate at which to refresh DNS.
    *
-   * @param dnsRefreshSeconds rate in seconds to refresh DNS.
+   * @param dnsRefreshSeconds default rate in seconds at which to refresh DNS.
    *
    * @return this builder.
    */
@@ -141,6 +171,19 @@ open class EngineBuilder(
   }
 
   /**
+   * Add the minimum rate at which to refresh DNS. Once DNS has been resolved for a host, DNS TTL
+   * will be respected, subject to this minimum. Defaults to 60 seconds.
+   *
+   * @param dnsMinRefreshSeconds minimum rate in seconds at which to refresh DNS.
+   *
+   * @return this builder.
+   */
+  fun addDNSMinRefreshSeconds(dnsMinRefreshSeconds: Int): EngineBuilder {
+    this.dnsMinRefreshSeconds = dnsMinRefreshSeconds
+    return this
+  }
+
+  /**
    * Add a list of hostnames to preresolve on Engine startup.
    *
    * @param dnsPreresolveHostnames hostnames to preresolve.
@@ -149,6 +192,125 @@ open class EngineBuilder(
    */
   fun addDNSPreresolveHostnames(dnsPreresolveHostnames: String): EngineBuilder {
     this.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return this
+  }
+
+  /**
+   * Add a list of IP addresses to use as fallback DNS name servers.
+   *
+   * @param dnsFallbackNameservers addresses to use.
+   *
+   * @return this builder.
+   */
+  fun addDNSFallbackNameservers(dnsFallbackNameservers: List<String>): EngineBuilder {
+    this.dnsFallbackNameservers = dnsFallbackNameservers
+    return this
+  }
+
+  /**
+   * Specify whether to filter unroutable IP families during DNS resolution or not.
+   * Defaults to true.
+   *
+   * @param dnsFilterUnroutableFamilies whether to filter or not.
+   *
+   * @return this builder.
+   */
+  fun enableDNSFilterUnroutableFamilies(dnsFilterUnroutableFamilies: Boolean): EngineBuilder {
+    this.dnsFilterUnroutableFamilies = dnsFilterUnroutableFamilies
+    return this
+  }
+
+  /**
+   * Specify whether to use the getaddrinfo-based system DNS resolver or the c-ares resolver.
+   * Defaults to true.
+   *
+   * Note that if this is set, the values of `dnsFallbackNameservers` and
+   * `dnsFilterUnroutableFamilies` will be ignored.
+   *
+   * @param dnsUseSystemResolver whether to use the system DNS resolver.
+   *
+   * @return this builder.
+   */
+  fun enableDNSUseSystemResolver(dnsUseSystemResolver: Boolean): EngineBuilder {
+    this.dnsUseSystemResolver = dnsUseSystemResolver
+    return this
+  }
+
+  /**
+   * Specify whether to drain connections after the resolution of a soft DNS refresh. A refresh may
+   * be triggered directly via the Engine API, or as a result of a network status update provided by
+   * the OS. Draining connections does not interrupt existing connections or requests, but will
+   * establish new connections for any further requests.
+   *
+   * @param enableDrainPostDnsRefresh whether to drain connections after soft DNS refresh.
+   *
+   * @return This builder.
+   */
+  fun enableDrainPostDnsRefresh(enableDrainPostDnsRefresh: Boolean): EngineBuilder {
+    this.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh
+    return this
+  }
+
+  /**
+   * Specify whether to enable experimental HTTP/3 (QUIC) support. Note the actual protocol will
+   * be negotiated with the upstream endpoint and so upstream support is still required for HTTP/3
+   * to be utilized.
+   *
+   * @param enableHttp3 whether to enable HTTP/3.
+   *
+   * @return This builder.
+   */
+  fun enableHttp3(enableHttp3: Boolean): EngineBuilder {
+    this.enableHttp3 = enableHttp3
+    return this
+  }
+
+  /**
+   * Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+   * true.
+   *
+   * @param enableHappyEyeballs whether to enable RFC 6555 handling for IPv4/IPv6.
+   *
+   * @return This builder.
+   */
+  fun enableHappyEyeballs(enableHappyEyeballs: Boolean): EngineBuilder {
+    this.enableHappyEyeballs = enableHappyEyeballs
+    return this
+  }
+
+  /**
+   * Specify whether to do gzip response decompression or not.  Defaults to true.
+   *
+   * @param enableGzip whether or not to gunzip responses.
+   *
+   * @return This builder.
+   */
+  fun enableGzip(enableGzip: Boolean): EngineBuilder {
+    this.enableGzip = enableGzip
+    return this
+  }
+
+  /**
+   * Specify whether to do brotli response decompression or not.  Defaults to false.
+   *
+   * @param enableBrotli whether or not to brotli decompress responses.
+   *
+   * @return This builder.
+   */
+  fun enableBrotli(enableBrotli: Boolean): EngineBuilder {
+    this.enableBrotli = enableBrotli
+    return this
+  }
+
+  /**
+   * Specify whether to support socket tagging or not. Defaults to false.
+   *
+   * @param enableSocketTagging whether or not support socket tagging.
+   *
+   * @return This builder.
+   */
+  fun enableSocketTagging(enableSocketTagging: Boolean): EngineBuilder {
+    this.enableSocketTagging = enableSocketTagging
     return this
   }
 
@@ -166,10 +328,30 @@ open class EngineBuilder(
   }
 
   /**
-   * Add a rate at which to ping h2 connections on new stream creation if the connection has
-   * sat idle.
+   * Specify whether system proxy settings should be respected. If yes, Envoy Mobile will
+   * use Android APIs to query Android Proxy settings configured on a device and will
+   * respect these settings when establishing connections with remote services.
    *
-   * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds.
+   * The method is introduced for experimentation purposes and as a safety guard against
+   * critical issues in the implementation of the proxying feature. It's intended to be removed
+   * after it's confirmed that proxies on Android work as expected.
+   *
+   * @param enableProxying whether to enable Envoy's support for proxies.
+   *
+   * @return This builder.
+   */
+  fun enableProxying(enableProxying: Boolean): EngineBuilder {
+    this.enableProxying = enableProxying
+    return this
+  }
+
+  /**
+   * Add a rate at which to ping h2 connections on new stream creation if the connection has
+   * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
+   * and results in a connection ping on every new stream creation. Set it to
+   * 100000000 milliseconds to effectively disable the ping.
+   *
+   * @param idleIntervalMs rate in milliseconds.
    *
    * @return this builder.
    */
@@ -181,12 +363,48 @@ open class EngineBuilder(
   /**
    * Add a rate at which to timeout h2 pings.
    *
-   * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
+   * @param timeoutSeconds rate in seconds to timeout h2 pings.
    *
    * @return this builder.
    */
   fun addH2ConnectionKeepaliveTimeoutSeconds(timeoutSeconds: Int): EngineBuilder {
     this.h2ConnectionKeepaliveTimeoutSeconds = timeoutSeconds
+    return this
+  }
+
+  /**
+   * Extend the keepalive timeout when *any* frame is received on the owning HTTP/2 connection.
+   *
+   * @param h2ExtendKeepaliveTimeout whether to extend the keepalive timeout.
+   *
+   * @return This builder.
+   */
+  fun h2ExtendKeepaliveTimeout(h2ExtendKeepaliveTimeout: Boolean): EngineBuilder {
+    this.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout
+    return this
+  }
+
+  /**
+   * Add a list of domains to which h2 connections will be established without protocol negotiation.
+   *
+   * @param h2RawDomains list of domains to which connections should be raw h2.
+   *
+   * @return this builder.
+   */
+  fun addH2RawDomains(h2RawDomains: List<String>): EngineBuilder {
+    this.h2RawDomains = h2RawDomains
+    return this
+  }
+
+  /**
+   * Set the maximum number of connections to open to a single host. Default is 7.
+   *
+   * @param maxConnectionsPerHost the maximum number of connections per host.
+   *
+   * @return this builder.
+   */
+  fun setMaxConnectionsPerHost(maxConnectionsPerHost: Int): EngineBuilder {
+    this.maxConnectionsPerHost = maxConnectionsPerHost
     return this
   }
 
@@ -301,6 +519,7 @@ open class EngineBuilder(
     this.eventTracker = eventTracker
     return this
   }
+
   /**
    * Add a string accessor to this Envoy Client.
    *
@@ -311,6 +530,19 @@ open class EngineBuilder(
    */
   fun addStringAccessor(name: String, accessor: () -> String): EngineBuilder {
     this.stringAccessors.put(name, EnvoyStringAccessorAdapter(StringAccessor(accessor)))
+    return this
+  }
+
+  /**
+   * Register a key-value store implementation for internal use.
+   *
+   * @param name the name of the KV store.
+   * @param keyValueStore the KV store implementation.
+   *
+   * @return this builder.
+   */
+  fun addKeyValueStore(name: String, keyValueStore: KeyValueStore): EngineBuilder {
+    this.keyValueStores.put(name, keyValueStore)
     return this
   }
 
@@ -335,6 +567,18 @@ open class EngineBuilder(
    */
   fun addAppId(appId: String): EngineBuilder {
     this.appId = appId
+    return this
+  }
+
+  /**
+   * Set how the TrustChainVerification must be handled.
+   *
+   * @param trustChainVerification whether to mute TLS Cert verification - intended for testing
+   *
+   * @return this builder.
+   */
+  fun setTrustChainVerification(trustChainVerification: TrustChainVerification): EngineBuilder {
+    this.trustChainVerification = trustChainVerification
     return this
   }
 
@@ -367,19 +611,52 @@ open class EngineBuilder(
    *
    * @return A new instance of Envoy.
    */
+  @Suppress("LongMethod")
   fun build(): Engine {
+    val engineConfiguration = EnvoyConfiguration(
+      adminInterfaceEnabled,
+      grpcStatsDomain,
+      connectTimeoutSeconds,
+      dnsRefreshSeconds,
+      dnsFailureRefreshSecondsBase,
+      dnsFailureRefreshSecondsMax,
+      dnsQueryTimeoutSeconds,
+      dnsMinRefreshSeconds,
+      dnsPreresolveHostnames,
+      dnsFallbackNameservers,
+      dnsFilterUnroutableFamilies,
+      dnsUseSystemResolver,
+      enableDrainPostDnsRefresh,
+      enableHttp3,
+      enableGzip,
+      enableBrotli,
+      enableSocketTagging,
+      enableHappyEyeballs,
+      enableInterfaceBinding,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds,
+      h2ConnectionKeepaliveTimeoutSeconds,
+      h2ExtendKeepaliveTimeout,
+      h2RawDomains,
+      maxConnectionsPerHost,
+      statsFlushSeconds,
+      streamIdleTimeoutSeconds,
+      perTryIdleTimeoutSeconds,
+      appVersion,
+      appId,
+      trustChainVerification,
+      virtualClusters,
+      nativeFilterChain,
+      platformFilterChain,
+      stringAccessors,
+      keyValueStores,
+      statsSinks
+    )
+
     return when (configuration) {
       is Custom -> {
         EngineImpl(
           engineType(),
-          EnvoyConfiguration(
-            adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
-            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
-          ),
+          engineConfiguration,
           configuration.yaml,
           logLevel
         )
@@ -387,14 +664,7 @@ open class EngineBuilder(
       is Standard -> {
         EngineImpl(
           engineType(),
-          EnvoyConfiguration(
-            adminInterfaceEnabled, grpcStatsDomain, statsDPort, connectTimeoutSeconds,
-            dnsRefreshSeconds, dnsFailureRefreshSecondsBase, dnsFailureRefreshSecondsMax,
-            dnsQueryTimeoutSeconds, dnsPreresolveHostnames, enableInterfaceBinding,
-            h2ConnectionKeepaliveIdleIntervalMilliseconds, h2ConnectionKeepaliveTimeoutSeconds,
-            statsFlushSeconds, streamIdleTimeoutSeconds, perTryIdleTimeoutSeconds, appVersion,
-            appId, virtualClusters, nativeFilterChain, platformFilterChain, stringAccessors
-          ),
+          engineConfiguration,
           logLevel
         )
       }

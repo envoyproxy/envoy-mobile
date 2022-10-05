@@ -1,4 +1,6 @@
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kt_jvm_test")
+load("@build_bazel_rules_android//android:rules.bzl", "android_library")
+load("@io_bazel_rules_kotlin//kotlin:android.bzl", "kt_android_local_test")
+load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
 load("//bazel:kotlin_lib.bzl", "native_lib_name")
 
 def _internal_kt_test(name, srcs, deps = [], data = [], jvm_flags = [], repository = "", exec_properties = {}):
@@ -40,6 +42,7 @@ def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = [], library_pa
         jvm_flags = [
             "-Djava.library.path={}".format(library_path),
             "-Denvoy_jni_library_name={}".format(lib_name),
+            "-Xcheck:jni",
         ],
         repository = repository,
         exec_properties = exec_properties,
@@ -61,22 +64,22 @@ def envoy_mobile_jni_kt_test(name, srcs, native_deps = [], deps = [], library_pa
 #         "ExampleTest.kt",
 #     ],
 # )
-def envoy_mobile_kt_test(name, srcs, deps = [], repository = ""):
-    _internal_kt_test(name, srcs, deps, repository = repository)
+def envoy_mobile_kt_test(name, srcs, deps = [], repository = "", exec_properties = {}):
+    _internal_kt_test(name, srcs, deps, repository = repository, exec_properties = exec_properties)
 
 # A basic macro to run android based (robolectric) tests with native dependencies
 def envoy_mobile_android_test(name, srcs, deps = [], native_deps = [], repository = "", library_path = "library/common/jni", exec_properties = {}):
     lib_name = native_lib_name(native_deps[0])[3:]
-    native.android_library(
+    android_library(
         name = name + "_test_lib",
         custom_package = "io.envoyproxy.envoymobile.test",
         manifest = repository + "//bazel:test_manifest.xml",
         visibility = ["//visibility:public"],
         data = native_deps,
         exports = deps,
+        testonly = True,
     )
-
-    native.android_local_test(
+    kt_android_local_test(
         name = name,
         srcs = srcs,
         data = native_deps,
@@ -96,7 +99,7 @@ def envoy_mobile_android_test(name, srcs, deps = [], native_deps = [], repositor
             "@maven//:org_mockito_mockito_core",
             "@maven//:com_squareup_okhttp3_okhttp",
             "@maven//:com_squareup_okhttp3_mockwebserver",
-            "@maven//:com_squareup_okio_okio",
+            "@maven//:com_squareup_okio_okio_jvm",
             "@maven//:org_hamcrest_hamcrest",
             "@maven//:com_google_truth_truth",
         ],

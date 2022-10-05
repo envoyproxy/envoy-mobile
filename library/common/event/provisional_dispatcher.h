@@ -42,6 +42,15 @@ public:
   virtual envoy_status_t post(Event::PostCb callback);
 
   /**
+   * Allocates a schedulable callback. @see SchedulableCallback for docs on how to use the wrapped
+   * callback.
+   * @param cb supplies the callback to invoke when the SchedulableCallback is triggered on the
+   * event loop.
+   * Must be called from context where ProvisionalDispatcher::isThreadSafe() is true.
+   */
+  virtual Event::SchedulableCallbackPtr createSchedulableCallback(std::function<void()> cb);
+
+  /**
    * @return false before the Event::Dispatcher is running, otherwise the result of the
    * underlying call to Event::Dispatcher::isThreadSafe().
    */
@@ -52,6 +61,16 @@ public:
    * ProvisionalDispatcher::isThreadSafe() is true.
    */
   virtual void deferredDelete(DeferredDeletablePtr&& to_delete);
+
+  /**
+   * Exposes the TimeSource held by the underlying Event::Dispatcher.
+   */
+  virtual TimeSource& timeSource();
+
+  /**
+   * Marks the dispatcher as terminated, preventing any future work from being enqueued.
+   */
+  virtual void terminate();
 
   // Used for testing.
   Thread::ThreadSynchronizer& synchronizer() { return synchronizer_; }
@@ -64,6 +83,7 @@ private:
   std::list<Event::PostCb> init_queue_ GUARDED_BY(state_lock_);
   Event::Dispatcher* event_dispatcher_{};
   Thread::ThreadSynchronizer synchronizer_;
+  bool terminated_ GUARDED_BY(state_lock_){};
 };
 
 using ProvisionalDispatcherPtr = std::unique_ptr<ProvisionalDispatcher>;

@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
+import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
 import java.util.Map;
@@ -115,7 +116,24 @@ public interface EnvoyEngine {
   String dumpStats();
 
   /**
-   * Drain all connections owned by this Engine.
+   * Refresh DNS, and drain connections owned by this Engine.
    */
-  void drainConnections();
+  void resetConnectivityState();
+
+  /**
+   * Update the network interface to the preferred network for opening new
+   * streams.
+   *
+   * @param network The network to be preferred for new streams.
+   */
+  void setPreferredNetwork(EnvoyNetworkType network);
+
+  /**
+   * Update proxy settings.
+   *
+   * @param host The proxy host defined as a hostname or an IP address. Android
+   *             allow users to specify proxy using either one of these.
+   * @param port The proxy port.
+   */
+  void setProxySettings(String host, int port);
 }

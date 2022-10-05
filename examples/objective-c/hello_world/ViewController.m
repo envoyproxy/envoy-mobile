@@ -90,9 +90,9 @@ NSString *_REQUEST_SCHEME = @"https";
     NSString *message = [NSString stringWithFormat:@"received headers with status %i", statusCode];
 
     NSMutableString *headerMessage = [NSMutableString new];
-    for (NSString *name in headers.allHeaders) {
+    for (NSString *name in headers.caseSensitiveHeaders) {
       if ([self.filteredHeaders containsObject:name]) {
-        NSArray<NSString *> *values = headers.allHeaders[name];
+        NSArray<NSString *> *values = headers.caseSensitiveHeaders[name];
         NSString *joined = [values componentsJoinedByString:@", "];
         NSString *pair = [NSString stringWithFormat:@"%@: %@\n", name, joined];
         [headerMessage appendString:pair];
@@ -103,8 +103,8 @@ NSString *_REQUEST_SCHEME = @"https";
 
     [weakSelf addResponseMessage:message headerMessage:headerMessage error:nil];
   }];
-  [prototype setOnErrorWithClosure:^(EnvoyError *error, StreamIntel *ignored) {
-    // TODO: expose attemptCount. https://github.com/lyft/envoy-mobile/issues/823
+  [prototype setOnErrorWithClosure:^(EnvoyError *error, FinalStreamIntel *ignored) {
+    // TODO: expose attemptCount. https://github.com/envoyproxy/envoy-mobile/issues/823
     NSString *message =
         [NSString stringWithFormat:@"failed within Envoy library %@", error.message];
     NSLog(@"%@", message);

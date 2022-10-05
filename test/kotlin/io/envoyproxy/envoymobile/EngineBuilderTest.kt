@@ -26,7 +26,7 @@ class EngineBuilderTest {
     engineBuilder.addGrpcStatsDomain("stats.envoyproxy.io")
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.grpcStatsDomain).isEqualTo("stats.envoyproxy.io")
+    assertThat(engine.envoyConfiguration.grpcStatsDomain).isEqualTo("stats.envoyproxy.io")
   }
 
   @Test
@@ -36,7 +36,27 @@ class EngineBuilderTest {
     engineBuilder.enableAdminInterface()
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.adminInterfaceEnabled).isTrue()
+    assertThat(engine.envoyConfiguration.adminInterfaceEnabled).isTrue()
+  }
+
+  @Test
+  fun `enabling happy eyeballs overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableHappyEyeballs(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.enableHappyEyeballs).isTrue()
+  }
+
+  @Test
+  fun `enabling interface binding overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableInterfaceBinding(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.enableInterfaceBinding).isTrue()
   }
 
   @Test
@@ -46,7 +66,17 @@ class EngineBuilderTest {
     engineBuilder.addConnectTimeoutSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.connectTimeoutSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.connectTimeoutSeconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying min DNS refresh overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addDNSMinRefreshSeconds(1234)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.dnsMinRefreshSeconds).isEqualTo(1234)
   }
 
   @Test
@@ -56,7 +86,7 @@ class EngineBuilderTest {
     engineBuilder.addDNSRefreshSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.dnsRefreshSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.dnsRefreshSeconds).isEqualTo(1234)
   }
 
   @Test
@@ -66,8 +96,8 @@ class EngineBuilderTest {
     engineBuilder.addDNSFailureRefreshSeconds(1234, 5678)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.dnsFailureRefreshSecondsBase).isEqualTo(1234)
-    assertThat(engine.envoyConfiguration!!.dnsFailureRefreshSecondsMax).isEqualTo(5678)
+    assertThat(engine.envoyConfiguration.dnsFailureRefreshSecondsBase).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.dnsFailureRefreshSecondsMax).isEqualTo(5678)
   }
 
   @Test
@@ -77,7 +107,27 @@ class EngineBuilderTest {
     engineBuilder.addDNSQueryTimeoutSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.dnsQueryTimeoutSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.dnsQueryTimeoutSeconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying dns fallback nameservers overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addDNSFallbackNameservers(listOf<String>("8.8.8.8"))
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.dnsFallbackNameservers.size).isEqualTo(1)
+  }
+
+  @Test
+  fun `specifying dns filter unroutable families overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.enableDNSFilterUnroutableFamilies(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.dnsFilterUnroutableFamilies).isTrue()
   }
 
   @Test
@@ -87,7 +137,7 @@ class EngineBuilderTest {
     engineBuilder.addH2ConnectionKeepaliveIdleIntervalMilliseconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.h2ConnectionKeepaliveIdleIntervalMilliseconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.h2ConnectionKeepaliveIdleIntervalMilliseconds).isEqualTo(1234)
   }
 
   @Test
@@ -97,7 +147,37 @@ class EngineBuilderTest {
     engineBuilder.addH2ConnectionKeepaliveTimeoutSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.h2ConnectionKeepaliveTimeoutSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.h2ConnectionKeepaliveTimeoutSeconds).isEqualTo(1234)
+  }
+
+  @Test
+  fun `specifying max connections per host overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.setMaxConnectionsPerHost(1234)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.maxConnectionsPerHost).isEqualTo(1234)
+  }
+
+  @Test
+  fun `enabling h2 keepalive extension overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.h2ExtendKeepaliveTimeout(true)
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.h2ExtendKeepaliveTimeout).isTrue()
+  }
+
+  @Test
+  fun `specifying h2 hostnames overrides default`() {
+    engineBuilder = EngineBuilder(Standard())
+    engineBuilder.addEngineType { envoyEngine }
+    engineBuilder.addH2RawDomains(listOf<String>("h2-raw.domain"))
+
+    val engine = engineBuilder.build() as EngineImpl
+    assertThat(engine.envoyConfiguration.h2RawDomains.size).isEqualTo(1)
   }
 
   @Test
@@ -107,7 +187,7 @@ class EngineBuilderTest {
     engineBuilder.addStatsFlushSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.statsFlushSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.statsFlushSeconds).isEqualTo(1234)
   }
 
   @Test
@@ -117,7 +197,7 @@ class EngineBuilderTest {
     engineBuilder.addStreamIdleTimeoutSeconds(1234)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.streamIdleTimeoutSeconds).isEqualTo(1234)
+    assertThat(engine.envoyConfiguration.streamIdleTimeoutSeconds).isEqualTo(1234)
   }
 
   @Test
@@ -127,7 +207,7 @@ class EngineBuilderTest {
     engineBuilder.addPerTryIdleTimeoutSeconds(5678)
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.perTryIdleTimeoutSeconds).isEqualTo(5678)
+    assertThat(engine.envoyConfiguration.perTryIdleTimeoutSeconds).isEqualTo(5678)
   }
 
   @Test
@@ -137,7 +217,7 @@ class EngineBuilderTest {
     engineBuilder.addAppVersion("v1.2.3")
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.appVersion).isEqualTo("v1.2.3")
+    assertThat(engine.envoyConfiguration.appVersion).isEqualTo("v1.2.3")
   }
 
   @Test
@@ -147,7 +227,7 @@ class EngineBuilderTest {
     engineBuilder.addAppId("com.envoymobile.android")
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.appId).isEqualTo("com.envoymobile.android")
+    assertThat(engine.envoyConfiguration.appId).isEqualTo("com.envoymobile.android")
   }
 
   @Test
@@ -157,7 +237,7 @@ class EngineBuilderTest {
     engineBuilder.addVirtualClusters("[test]")
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.virtualClusters).isEqualTo("[test]")
+    assertThat(engine.envoyConfiguration.virtualClusters).isEqualTo("[test]")
   }
 
   @Test
@@ -167,6 +247,6 @@ class EngineBuilderTest {
     engineBuilder.addNativeFilter("name", "config")
 
     val engine = engineBuilder.build() as EngineImpl
-    assertThat(engine.envoyConfiguration!!.nativeFilterChain.size).isEqualTo(1)
+    assertThat(engine.envoyConfiguration.nativeFilterChain.size).isEqualTo(1)
   }
 }

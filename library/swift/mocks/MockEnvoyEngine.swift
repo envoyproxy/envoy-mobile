@@ -4,7 +4,7 @@ import Foundation
 /// Mock implementation of `EnvoyEngine`. Used internally for testing the bridging layer & mocking.
 final class MockEnvoyEngine: NSObject {
   init(runningCallback onEngineRunning: (() -> Void)? = nil, logger: ((String) -> Void)? = nil,
-       eventTracker: (([String: String]) -> Void)? = nil, enableNetworkPathMonitor: Bool = true) {}
+       eventTracker: (([String: String]) -> Void)? = nil, networkMonitoringMode: Int32 = 0) {}
 
   /// Closure called when `run(withConfig:)` is called.
   static var onRunWithConfig: ((_ config: EnvoyConfiguration, _ logLevel: String?) -> Void)?
@@ -51,7 +51,7 @@ extension MockEnvoyEngine: EnvoyEngine {
     with callbacks: EnvoyHTTPCallbacks,
     explicitFlowControl: Bool
   ) -> EnvoyHTTPStream {
-    return MockEnvoyHTTPStream(handle: 0, callbacks: callbacks,
+    return MockEnvoyHTTPStream(handle: 0, engine: 0, callbacks: callbacks,
                                explicitFlowControl: explicitFlowControl)
   }
 
@@ -96,5 +96,5 @@ extension MockEnvoyEngine: EnvoyEngine {
 
   func terminate() {}
 
-  func drainConnections() {}
+  func resetConnectivityState() {}
 }

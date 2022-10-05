@@ -16,14 +16,24 @@ open class EngineBuilder: NSObject {
   private var adminInterfaceEnabled = false
   private var grpcStatsDomain: String?
   private var connectTimeoutSeconds: UInt32 = 30
-  private var dnsRefreshSeconds: UInt32 = 60
   private var dnsFailureRefreshSecondsBase: UInt32 = 2
   private var dnsFailureRefreshSecondsMax: UInt32 = 10
   private var dnsQueryTimeoutSeconds: UInt32 = 25
+  private var dnsMinRefreshSeconds: UInt32 = 60
   private var dnsPreresolveHostnames: String = "[]"
+  private var dnsRefreshSeconds: UInt32 = 60
+  private var enableHappyEyeballs: Bool = true
+  private var enableGzip: Bool = true
+  private var enableBrotli: Bool = false
   private var enableInterfaceBinding: Bool = false
-  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 100000000
+  private var enforceTrustChainVerification: Bool = true
+  private var enableDrainPostDnsRefresh: Bool = false
+  private var forceIPv6: Bool = false
+  private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 1
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
+  private var h2ExtendKeepaliveTimeout: Bool = false
+  private var h2RawDomains: [String] = []
+  private var maxConnectionsPerHost: UInt32 = 7
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
   private var perTryIdleTimeoutSeconds: UInt32 = 15
@@ -33,11 +43,13 @@ open class EngineBuilder: NSObject {
   private var onEngineRunning: (() -> Void)?
   private var logger: ((String) -> Void)?
   private var eventTracker: (([String: String]) -> Void)?
-  private(set) var enableNetworkPathMonitor = false
+  private(set) var monitoringMode: NetworkMonitoringMode = .pathMonitor
   private var nativeFilterChain: [EnvoyNativeFilterConfig] = []
   private var platformFilterChain: [EnvoyHTTPFilterFactory] = []
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
+  private var keyValueStores: [String: EnvoyKeyValueStore] = [:]
   private var directResponses: [DirectResponse] = []
+  private var statsSinks: [String] = []
 
   // MARK: - Public
 
@@ -66,6 +78,19 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Adds additional stats sink, in the form of the raw YAML/JSON configuration.
+  /// Sinks added in this fashion will be included in addition to the gRPC stats sink
+  /// that may be enabled via addGrpcStatsDomain.
+  ///
+  /// - parameter statsSinks: Configurations of stat sinks to add.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addStatsSinks(_ statsSinks: [String]) -> Self {
+    self.statsSinks = statsSinks
+    return self
+  }
+
   /// Add a log level to use with Envoy.
   ///
   /// - parameter logLevel: The log level to use with Envoy.
@@ -89,21 +114,10 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Add a rate at which to refresh DNS.
-  ///
-  /// - parameter dnsRefreshSeconds: Rate in seconds to refresh DNS.
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func addDNSRefreshSeconds(_ dnsRefreshSeconds: UInt32) -> Self {
-    self.dnsRefreshSeconds = dnsRefreshSeconds
-    return self
-  }
-
   /// Add a rate at which to refresh DNS in case of DNS failure.
   ///
   /// - parameter base: Base rate in seconds.
-  /// - parameter max: Max rate in seconds.
+  /// - parameter max:  Max rate in seconds.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -124,6 +138,18 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Add the minimum rate at which to refresh DNS. Once DNS has been resolved for a host, DNS TTL
+  /// will be respected, subject to this minimum. Defaults to 60 seconds.
+  ///
+  /// - parameter dnsMinRefreshSeconds: Minimum rate in seconds at which to refresh DNS.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addDNSMinRefreshSeconds(_ dnsMinRefreshSeconds: UInt32) -> Self {
+    self.dnsMinRefreshSeconds = dnsMinRefreshSeconds
+    return self
+  }
+
   /// Add a list of hostnames to preresolve on Engine startup.
   ///
   /// - parameter dnsPreresolveHostnames: the hostnames to resolve.
@@ -132,6 +158,51 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func addDNSPreresolveHostnames(dnsPreresolveHostnames: String) -> Self {
     self.dnsPreresolveHostnames = dnsPreresolveHostnames
+    return self
+  }
+
+  /// Add a default rate at which to refresh DNS.
+  ///
+  /// - parameter dnsRefreshSeconds: Default rate in seconds at which to refresh DNS.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addDNSRefreshSeconds(_ dnsRefreshSeconds: UInt32) -> Self {
+    self.dnsRefreshSeconds = dnsRefreshSeconds
+    return self
+  }
+
+  /// Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to
+  /// true.
+  ///
+  /// - parameter enableHappyEyeballs: whether to enable RFC 6555 handling for IPv4/IPv6.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableHappyEyeballs(_ enableHappyEyeballs: Bool) -> Self {
+    self.enableHappyEyeballs = enableHappyEyeballs
+    return self
+  }
+
+  /// Specify whether to do gzip response decompression or not.  Defaults to true.
+  ///
+  /// - parameter enableGzip: whether or not to gunzip responses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableGzip(_ enableGzip: Bool) -> Self {
+    self.enableGzip = enableGzip
+    return self
+  }
+
+  /// Specify whether to do brotli response decompression or not.  Defaults to false.
+  ///
+  /// - parameter enableBrotli: whether or not to brotli decompress responses.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableBrotli(_ enableBrotli: Bool) -> Self {
+    self.enableBrotli = enableBrotli
     return self
   }
 
@@ -147,8 +218,47 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Specify whether to drain connections after the resolution of a soft DNS refresh.
+  /// A refresh may be triggered directly via the Engine API, or as a result of a network
+  /// status update provided by the OS. Draining connections does not interrupt existing
+  /// connections or requests, but will establish new connections for any further requests.
+  ///
+  /// - parameter enableDrainPostDnsRefresh: whether to drain connections after soft DNS refresh.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enableDrainPostDnsRefresh(_ enableDrainPostDnsRefresh: Bool) -> Self {
+    self.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh
+    return self
+  }
+
+  /// Specify whether to enforce TLS trust chain verification for secure sockets.
+  ///
+  /// - parameter enforceTrustChainVerification: whether to enforce trust chain verification.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func enforceTrustChainVerification(_ enforceTrustChainVerification: Bool) -> Self {
+    self.enforceTrustChainVerification = enforceTrustChainVerification
+    return self
+  }
+
+  /// Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
+  /// to use IPv6. Note this is an experimental option and should be enabled with caution.
+  ///
+  /// - parameter forceIPv6: whether to force connections to use IPv6.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func forceIPv6(_ forceIPv6: Bool) -> Self {
+    self.forceIPv6 = forceIPv6
+    return self
+  }
+
   /// Add a rate at which to ping h2 connections on new stream creation if the connection has
-  /// sat idle.
+  /// sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
+  /// and results in a connection ping on every new stream creation. Set it to
+  /// 100000000 milliseconds to effectively disable the ping.
   ///
   /// - parameter h2ConnectionKeepaliveIdleIntervalMilliseconds: Rate in milliseconds.
   ///
@@ -173,6 +283,41 @@ open class EngineBuilder: NSObject {
     return self
   }
 
+  /// Extend the keepalive timeout when *any* frame is received on the owning HTTP/2 connection.
+  ///
+  /// - parameter h2ExtendKeepaliveTimeout: whether to extend the keepalive timeout.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func h2ExtendKeepaliveTimeout(_ h2ExtendKeepaliveTimeout: Bool) -> Self {
+    self.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout
+    return self
+  }
+
+  /// Add a list of domains to which h2 connections will be established without protocol
+  /// negotiation.
+  ///
+  /// - parameter h2RawDomains: list of domains to which connections should be raw h2.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addH2RawDomains(
+    _ h2RawDomains: [String]) -> Self {
+    self.h2RawDomains = h2RawDomains
+    return self
+  }
+
+  /// Set the maximum number of connections to open to a single host. Default is 7.
+  ///
+  /// - parameter maxConnectionsPerHost: the maximum number of connections per host.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func setMaxConnectionsPerHost(_ maxConnectionsPerHost: UInt32) -> Self {
+    self.maxConnectionsPerHost = maxConnectionsPerHost
+    return self
+  }
+
   /// Add an interval at which to flush Envoy stats.
   ///
   /// - parameter statsFlushSeconds: Interval at which to flush Envoy stats.
@@ -186,7 +331,7 @@ open class EngineBuilder: NSObject {
 
   /// Add a custom idle timeout for HTTP streams. Defaults to 15 seconds.
   ///
-  /// - parameter streamIdleSeconds: Idle timeout for HTTP streams.
+  /// - parameter streamIdleTimeoutSeconds: Idle timeout for HTTP streams.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -197,7 +342,7 @@ open class EngineBuilder: NSObject {
 
   /// Add a custom per try idle timeout for HTTP streams. Defaults to 15 seconds.
   ///
-  /// - parameter perTryIdleSeconds: Idle timeout for HTTP streams.
+  /// - parameter perTryIdleTimeoutSeconds: Idle timeout for HTTP streams.
   ///
   /// - returns: This builder.
   @discardableResult
@@ -252,13 +397,25 @@ open class EngineBuilder: NSObject {
 
   /// Add a string accessor to this Envoy Client.
   ///
-  /// - parameter name: the name of the accessor.
+  /// - parameter name:     the name of the accessor.
   /// - parameter accessor: lambda to access a string from the platform layer.
   ///
-  /// - returns this builder.
+  /// - returns: This builder.
   @discardableResult
   public func addStringAccessor(name: String, accessor: @escaping () -> String) -> Self {
     self.stringAccessors[name] = EnvoyStringAccessor(block: accessor)
+    return self
+  }
+
+  /// Register a key-value store implementation for internal use.
+  ///
+  /// - parameter name:          the name of the KV store.
+  /// - parameter keyValueStore: the KV store implementation.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addKeyValueStore(name: String, keyValueStore: KeyValueStore) -> Self {
+    self.keyValueStores[name] = KeyValueStoreImpl(implementation: keyValueStore)
     return self
   }
 
@@ -295,13 +452,15 @@ open class EngineBuilder: NSObject {
     return self
   }
 
-  /// Configure the engine to use `NWPathMonitor` to observe network reachability.
+  /// Configure how the engine observes network reachability state changes.
+  /// Defaults to `.pathMonitor`.
+  ///
+  /// - parameter mode: The mode to use.
   ///
   /// - returns: This builder.
   @discardableResult
-  @available(iOS 12, *)
-  public func enableNetworkPathMonitor(_ enableNetworkPathMonitor: Bool) -> Self {
-    self.enableNetworkPathMonitor = enableNetworkPathMonitor
+  public func setNetworkMonitoringMode(_ mode: NetworkMonitoringMode) -> Self {
+    self.monitoringMode = mode
     return self
   }
 
@@ -351,10 +510,13 @@ open class EngineBuilder: NSObject {
 
   /// Builds and runs a new `Engine` instance with the provided configuration.
   ///
+  /// - note: Must be strongly retained in order for network requests to be performed correctly.
+  ///
+  /// - returns: The built `Engine`.
   public func build() -> Engine {
     let engine = self.engineType.init(runningCallback: self.onEngineRunning, logger: self.logger,
                                       eventTracker: self.eventTracker,
-                                      enableNetworkPathMonitor: self.enableNetworkPathMonitor)
+                                      networkMonitoringMode: Int32(self.monitoringMode.rawValue))
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: self.adminInterfaceEnabled,
       grpcStatsDomain: self.grpcStatsDomain,
@@ -363,11 +525,21 @@ open class EngineBuilder: NSObject {
       dnsFailureRefreshSecondsBase: self.dnsFailureRefreshSecondsBase,
       dnsFailureRefreshSecondsMax: self.dnsFailureRefreshSecondsMax,
       dnsQueryTimeoutSeconds: self.dnsQueryTimeoutSeconds,
+      dnsMinRefreshSeconds: self.dnsMinRefreshSeconds,
       dnsPreresolveHostnames: self.dnsPreresolveHostnames,
+      enableHappyEyeballs: self.enableHappyEyeballs,
+      enableGzip: self.enableGzip,
+      enableBrotli: self.enableBrotli,
       enableInterfaceBinding: self.enableInterfaceBinding,
+      enableDrainPostDnsRefresh: self.enableDrainPostDnsRefresh,
+      enforceTrustChainVerification: self.enforceTrustChainVerification,
+      forceIPv6: self.forceIPv6,
       h2ConnectionKeepaliveIdleIntervalMilliseconds:
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
+      h2ExtendKeepaliveTimeout: self.h2ExtendKeepaliveTimeout,
+      h2RawDomains: self.h2RawDomains,
+      maxConnectionsPerHost: self.maxConnectionsPerHost,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
       perTryIdleTimeoutSeconds: self.perTryIdleTimeoutSeconds,
@@ -382,7 +554,9 @@ open class EngineBuilder: NSObject {
         .joined(separator: "\n"),
       nativeFilterChain: self.nativeFilterChain,
       platformFilterChain: self.platformFilterChain,
-      stringAccessors: self.stringAccessors
+      stringAccessors: self.stringAccessors,
+      keyValueStores: self.keyValueStores,
+      statsSinks: self.statsSinks
     )
 
     switch self.base {
@@ -398,7 +572,12 @@ open class EngineBuilder: NSObject {
   /// Add a specific implementation of `EnvoyEngine` to use for starting Envoy.
   /// A new instance of this engine will be created when `build()` is called.
   /// Used for testing, as initializing with `EnvoyEngine.Type` results in a
-  /// segfault: https://github.com/lyft/envoy-mobile/issues/334
+  /// segfault: https://github.com/envoyproxy/envoy-mobile/issues/334
+  ///
+  /// - parameter engineType: The specific implementation of `EnvoyEngine` to use for starting
+  ///                         Envoy.
+  ///
+  /// - returns: This builder.
   @discardableResult
   func addEngineType(_ engineType: EnvoyEngine.Type) -> Self {
     self.engineType = engineType

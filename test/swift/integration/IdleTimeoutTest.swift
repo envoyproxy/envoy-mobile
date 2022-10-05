@@ -81,6 +81,13 @@ static_resources:
         - endpoint:
             address:
               socket_address: { address: 127.0.0.1, port_value: \(remotePort) }
+layered_runtime:
+  layers:
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          reloadable_features:
+            override_request_timeout_by_gateway_timeout: false
 """
 
     class IdleTimeoutValidationFilter: AsyncResponseFilter, ResponseFilter {
@@ -125,14 +132,16 @@ static_resources:
         return .stopIteration
       }
 
-      func onError(_ error: EnvoyError, streamIntel: StreamIntel) {
+      func onError(_ error: EnvoyError, streamIntel: FinalStreamIntel) {
         XCTAssertEqual(error.errorCode, 4)
         timeoutExpectation.fulfill()
       }
 
-      func onCancel(streamIntel: StreamIntel) {
+      func onCancel(streamIntel: FinalStreamIntel) {
         XCTFail("Unexpected call to onCancel filter callback")
       }
+
+      func onComplete(streamIntel: FinalStreamIntel) {}
     }
 
     let filterExpectation = self.expectation(description: "Stream idle timeout received by filter")

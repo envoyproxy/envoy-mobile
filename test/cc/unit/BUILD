@@ -9,6 +9,8 @@ envoy_cc_test(
     srcs = ["envoy_config_test.cc"],
     repository = "@envoy",
     deps = [
+        "//library/cc:engine_builder_lib",
         "//library/cc:envoy_engine_cc_lib_no_stamp",
+        "@envoy_build_config//:extension_registry",
     ],
 )

@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider;
 import io.envoyproxy.envoymobile.AndroidEngineBuilder;
 import io.envoyproxy.envoymobile.Engine;
 import io.envoyproxy.envoymobile.EnvoyError;
+import io.envoyproxy.envoymobile.FinalStreamIntel;
 import io.envoyproxy.envoymobile.LogLevel;
 import io.envoyproxy.envoymobile.RequestHeaders;
 import io.envoyproxy.envoymobile.RequestHeadersBuilder;
@@ -14,8 +15,11 @@ import io.envoyproxy.envoymobile.RequestMethod;
 import io.envoyproxy.envoymobile.ResponseHeaders;
 import io.envoyproxy.envoymobile.ResponseTrailers;
 import io.envoyproxy.envoymobile.Stream;
+import io.envoyproxy.envoymobile.StreamIntel;
 import io.envoyproxy.envoymobile.UpstreamHttpProtocol;
 import io.envoyproxy.envoymobile.engine.AndroidJniLibrary;
+import io.envoyproxy.envoymobile.engine.testing.RequestScenario;
+import io.envoyproxy.envoymobile.engine.testing.Response;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -27,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,7 +63,7 @@ public class AndroidEnvoyExplicitFlowTest {
     CountDownLatch latch = new CountDownLatch(1);
     Context appContext = ApplicationProvider.getApplicationContext();
     engine = new AndroidEngineBuilder(appContext)
-                 .addLogLevel(LogLevel.INFO)
+                 .addLogLevel(LogLevel.OFF)
                  .setOnEngineRunning(() -> {
                    latch.countDown();
                    return null;
@@ -89,6 +94,64 @@ public class AndroidEnvoyExplicitFlowTest {
     assertThat(response.getBodyAsString()).isEqualTo("hello, world");
     assertThat(response.getEnvoyError()).isNull();
     assertThat(response.getNbResponseChunks()).isEqualTo(1);
+    assertThat(response.getStreamIntels().size()).isEqualTo(3);
+    assertThat(response.getStreamIntels().get(2).getAttemptCount()).isEqualTo(1);
+    assertThat(response.getFinalStreamIntel().getSentByteCount()).isEqualTo(75);
+  }
+
+  @Test
+  public void get_waitOnReadData() throws Exception {
+    mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
+    mockWebServer.start();
+    RequestScenario requestScenario =
+        new RequestScenario()
+            .setHttpMethod(RequestMethod.GET)
+            .setUrl(mockWebServer.url("get/flowers").toString())
+            .waitOnReadData()
+            .setResponseBufferSize(20); // Larger than the response body size
+
+    Response response = sendRequest(requestScenario);
+
+    assertThat(response.getHeaders().getHttpStatus()).isEqualTo(200);
+    assertThat(response.getBodyAsString()).isEqualTo("hello, world");
+    assertThat(response.getEnvoyError()).isNull();
+    assertThat(response.getNbResponseChunks()).isEqualTo(1);
+    assertThat(response.getStreamIntels().size()).isEqualTo(3);
+    assertThat(response.getStreamIntels().get(2).getAttemptCount()).isEqualTo(1);
+    assertThat(response.getFinalStreamIntel().getSentByteCount()).isEqualTo(75);
+  }
+
+  @Test
+  public void get_multipleRequests_randomBehavior() throws Exception {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    List<Throwable> errors = new ArrayList<>();
+    mockWebServer.start();
+    for (int i = 0; i < 100; i++) {
+      executorService.submit(() -> {
+        try {
+          mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
+          RequestScenario requestScenario =
+              new RequestScenario()
+                  .setHttpMethod(RequestMethod.GET)
+                  .setUrl(mockWebServer.url("get/flowers").toString())
+                  .setResponseBufferSize(20); // Larger than the response body size
+          if (Math.random() > 0.5d) {
+            requestScenario.cancelOnResponseHeaders();
+          }
+          if (Math.random() > 0.5d) {
+            requestScenario.waitOnReadData();
+          } else if (Math.random() > 0.5d) {
+            requestScenario.useDirectExecutor();
+          }
+          sendRequest(requestScenario);
+        } catch (Throwable t) {
+          errors.add(t);
+        }
+      });
+    }
+    executorService.shutdown();
+    executorService.awaitTermination(20, TimeUnit.SECONDS);
+    assertThat(errors).isEmpty();
   }
 
   @Test
@@ -284,6 +347,7 @@ public class AndroidEnvoyExplicitFlowTest {
     });
     mockWebServer.start();
     RequestScenario requestScenario = new RequestScenario()
+                                          .closeBodyStream()
                                           .setHttpMethod(RequestMethod.POST)
                                           .setUrl(mockWebServer.url("post/flowers").toString())
                                           .addBody("This is the first part of by body. ")
@@ -308,6 +372,7 @@ public class AndroidEnvoyExplicitFlowTest {
     });
     mockWebServer.start();
     RequestScenario requestScenario = new RequestScenario()
+                                          .closeBodyStream()
                                           .setHttpMethod(RequestMethod.PUT)
                                           .setUrl(mockWebServer.url("put/flowers").toString());
     byte[] buf = new byte[10_000];
@@ -353,6 +418,41 @@ public class AndroidEnvoyExplicitFlowTest {
     assertThat(response.getEnvoyError()).isNull();
   }
 
+  @Test
+  public void post_multipleRequests_randomBehavior() throws Exception {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    List<Throwable> errors = new ArrayList<>();
+    mockWebServer.start();
+    for (int i = 0; i < 100; i++) {
+      executorService.submit(() -> {
+        try {
+          mockWebServer.enqueue(new MockResponse().setBody("hello, world"));
+          RequestScenario requestScenario =
+              new RequestScenario()
+                  .setHttpMethod(RequestMethod.GET)
+                  .setUrl(mockWebServer.url("get/flowers").toString())
+                  .addBody("This is my body part 1")
+                  .addBody("This is my body part 2")
+                  .setResponseBufferSize(20); // Larger than the response body size
+          if (Math.random() > 0.5d) {
+            requestScenario.cancelUploadOnChunk(1);
+          }
+          if (Math.random() > 0.5d) {
+            requestScenario.waitOnReadData();
+          } else if (Math.random() > 0.5d) {
+            requestScenario.useDirectExecutor();
+          }
+          sendRequest(requestScenario);
+        } catch (Throwable t) {
+          errors.add(t);
+        }
+      });
+    }
+    executorService.shutdown();
+    executorService.awaitTermination(20, TimeUnit.SECONDS);
+    assertThat(errors).isEmpty();
+  }
+
   private Response sendRequest(RequestScenario requestScenario) throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<Response> response = new AtomicReference<>(new Response());
@@ -367,39 +467,60 @@ public class AndroidEnvoyExplicitFlowTest {
                                     response.get());
               return null;
             })
-            .setOnResponseHeaders((responseHeaders, endStream, ignored) -> {
+            .setOnResponseHeaders((responseHeaders, endStream, streamIntel) -> {
               response.get().setHeaders(responseHeaders);
+              response.get().addStreamIntel(streamIntel);
               if (requestScenario.cancelOnResponseHeaders) {
                 streamRef.get().cancel(); // Should be a noop when endStream == true
               } else {
+                if (requestScenario.waitOnReadData) {
+                  try {
+                    Thread.sleep(100 + (int)(Math.random() * 50));
+                  } catch (InterruptedException e) {
+                    // Don't care
+                  }
+                }
                 streamRef.get().readData(requestScenario.responseBufferSize);
-              }
-              if (endStream) {
-                latch.countDown();
               }
               return null;
             })
-            .setOnResponseData((data, endStream, ignored) -> {
+            .setOnResponseData((data, endStream, streamIntel) -> {
               response.get().addBody(data);
-              if (endStream) {
-                latch.countDown();
-              } else {
+              response.get().addStreamIntel(streamIntel);
+              if (!endStream) {
+                if (requestScenario.waitOnReadData) {
+                  try {
+                    Thread.sleep(100 + (int)(Math.random() * 50));
+                  } catch (InterruptedException e) {
+                    // Don't care
+                  }
+                }
                 streamRef.get().readData(requestScenario.responseBufferSize);
               }
               return null;
             })
-            .setOnResponseTrailers((trailers, ignored) -> {
+            .setOnResponseTrailers((trailers, streamIntel) -> {
               response.get().setTrailers(trailers);
-              latch.countDown();
+              response.get().addStreamIntel(streamIntel);
               return null;
             })
-            .setOnError((error, ignored) -> {
+            .setOnError((error, finalStreamIntel) -> {
               response.get().setEnvoyError(error);
+              response.get().addStreamIntel(finalStreamIntel);
+              response.get().setFinalStreamIntel(finalStreamIntel);
               latch.countDown();
               return null;
             })
-            .setOnCancel((ignored) -> {
+            .setOnCancel((finalStreamIntel) -> {
               response.get().setCancelled();
+              response.get().addStreamIntel(finalStreamIntel);
+              response.get().setFinalStreamIntel(finalStreamIntel);
+              latch.countDown();
+              return null;
+            })
+            .setOnComplete((finalStreamIntel) -> {
+              response.get().addStreamIntel(finalStreamIntel);
+              response.get().setFinalStreamIntel(finalStreamIntel);
               latch.countDown();
               return null;
             })
@@ -427,149 +548,7 @@ public class AndroidEnvoyExplicitFlowTest {
     if (chunkIterator.hasNext()) {
       stream.sendData(chunkIterator.next());
     } else {
-      stream.close(requestScenario.getClosingBodyChunk());
-    }
-  }
-
-  private static class RequestScenario {
-    private URL url;
-    private RequestMethod method = null;
-    private final List<ByteBuffer> bodyChunks = new ArrayList<>();
-    private final List<Map.Entry<String, String>> headers = new ArrayList<>();
-    private int responseBufferSize = 1000;
-    private boolean cancelOnResponseHeaders = false;
-    private int cancelUploadOnChunk = -1;
-    private boolean useDirectExecutor = false;
-
-    RequestHeaders getHeaders() {
-      RequestHeadersBuilder requestHeadersBuilder =
-          new RequestHeadersBuilder(method, url.getProtocol(), url.getAuthority(), url.getPath());
-      headers.forEach(entry -> requestHeadersBuilder.add(entry.getKey(), entry.getValue()));
-      // HTTP1 is the only way to send HTTP requests (not HTTPS)
-      return requestHeadersBuilder.addUpstreamHttpProtocol(UpstreamHttpProtocol.HTTP1).build();
-    }
-
-    List<ByteBuffer> getBodyChunks() {
-      return Collections.unmodifiableList(
-          bodyChunks.subList(0, Math.max(bodyChunks.size() - 1, 0)));
-    }
-
-    ByteBuffer getClosingBodyChunk() { return bodyChunks.get(bodyChunks.size() - 1); }
-
-    boolean hasBody() { return !bodyChunks.isEmpty(); }
-
-    RequestScenario setHttpMethod(RequestMethod requestMethod) {
-      this.method = requestMethod;
-      return this;
-    }
-
-    RequestScenario setUrl(String url) throws MalformedURLException {
-      this.url = new URL(url);
-      return this;
-    }
-
-    RequestScenario addBody(byte[] requestBodyChunk) {
-      ByteBuffer byteBuffer = ByteBuffer.wrap(requestBodyChunk);
-      bodyChunks.add(byteBuffer);
-      return this;
-    }
-
-    RequestScenario addBody(String requestBodyChunk) {
-      return addBody(requestBodyChunk.getBytes());
-    }
-
-    RequestScenario addHeader(String key, String value) {
-      headers.add(new SimpleImmutableEntry<>(key, value));
-      return this;
-    }
-
-    RequestScenario setResponseBufferSize(int responseBufferSize) {
-      this.responseBufferSize = responseBufferSize;
-      return this;
-    }
-
-    RequestScenario cancelOnResponseHeaders() {
-      this.cancelOnResponseHeaders = true;
-      return this;
-    }
-
-    public RequestScenario cancelUploadOnChunk(int chunkNo) {
-      this.cancelUploadOnChunk = chunkNo;
-      return this;
-    }
-
-    public RequestScenario useDirectExecutor() {
-      this.useDirectExecutor = true;
-      return this;
-    }
-  }
-
-  private static class Response {
-    private final AtomicReference<ResponseHeaders> headers = new AtomicReference<>();
-    private final AtomicReference<ResponseTrailers> trailers = new AtomicReference<>();
-    private final AtomicReference<EnvoyError> envoyError = new AtomicReference<>();
-    private final List<ByteBuffer> bodies = new ArrayList<>();
-    private final AtomicBoolean cancelled = new AtomicBoolean(false);
-    private final AtomicReference<AssertionError> assertionError = new AtomicReference<>();
-    private int requestChunkSent = 0;
-
-    void setHeaders(ResponseHeaders headers) {
-      if (!this.headers.compareAndSet(null, headers)) {
-        assertionError.compareAndSet(
-            null, new AssertionError("setOnResponseHeaders called more than once."));
-      }
-    }
-
-    void addBody(ByteBuffer body) { bodies.add(body); }
-
-    void setTrailers(ResponseTrailers trailers) {
-      if (!this.trailers.compareAndSet(null, trailers)) {
-        assertionError.compareAndSet(
-            null, new AssertionError("setOnResponseTrailers called more than once."));
-      }
-    }
-
-    void setEnvoyError(EnvoyError envoyError) {
-      if (!this.envoyError.compareAndSet(null, envoyError)) {
-        assertionError.compareAndSet(null, new AssertionError("setOnError called more than once."));
-      }
-    }
-
-    void setCancelled() {
-      if (!cancelled.compareAndSet(false, true)) {
-        assertionError.compareAndSet(null,
-                                     new AssertionError("setOnCancel called more than once."));
-      }
-    }
-
-    EnvoyError getEnvoyError() { return envoyError.get(); }
-
-    ResponseHeaders getHeaders() { return headers.get(); }
-
-    ResponseTrailers getTrailers() { return trailers.get(); }
-
-    boolean isCancelled() { return cancelled.get(); }
-
-    int getRequestChunkSent() { return requestChunkSent; }
-
-    String getBodyAsString() {
-      int totalSize = bodies.stream().mapToInt(ByteBuffer::limit).sum();
-      byte[] body = new byte[totalSize];
-      int pos = 0;
-      for (ByteBuffer buffer : bodies) {
-        int bytesToRead = buffer.limit();
-        buffer.get(body, pos, bytesToRead);
-        pos += bytesToRead;
-      }
-      return new String(body);
-    }
-
-    int getNbResponseChunks() { return bodies.size(); }
-
-    void throwAssertionErrorIfAny() {
-      if (assertionError.get() != null) {
-        throw assertionError.get();
-      }
+      requestScenario.getClosingBodyChunk().ifPresent(stream::close);
     }
   }
 }

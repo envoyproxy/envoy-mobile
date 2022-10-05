@@ -5,16 +5,18 @@
 This page lists all active maintainers and their areas of expertise. This can be used for
 routing PRs, questions, etc. to the right place.
 
-* Alan Chiu ([buildbreaker](https://github.com/buildbreaker)) (achiu@lyft.com)
-  * Android (kotlin/java) platform bindings.
-* Jose Nino ([junr03](https://github.com/junr03)) (jnino@lyft.com)
-  * Envoy mobile core, C bridge layer, C++ extensions, build system, Envoy upstream.
 * Snow Pettersen ([snowp](https://github.com/snowp)) (aickck@gmail.com)
   * Envoy Upstream. Stats.
-* Michael Rebello ([rebello95](https://github.com/rebello95)) (mrebello@lyft.com)
-  * iOS (swift/objective-c) platform bindings.
 * Mike Schore ([goaway](https://github.com/goaway)) (mschore@lyft.com)
   * General.
+* JP Simard ([jpsim](https://github.com/jpsim)) (jp@lyft.com)
+  * iOS (swift/objective-c) platform bindings.
+* Charles Le Borgne ([carloseltuerto](http://github.com/carloseltuerto)) (cleborgne@google.com)
+  * Cronvoy.
+* Rafal Augustyniak ([Augustyniak](https://github.com/Augustyniak)) (raugustyniak@lyft.com)
+  * iOS (swift/objective-c) platform bindings.
+* Ryan Hamilton ([RyanTheOptimist](https://github.com/ryantheoptimist)) (rch@google.com)
+  * Envoy, HTTP/3, upstream connection management.
 
 # Friends of Envoy Mobile
 
@@ -31,3 +33,9 @@ matter expert reviews. Feel free to loop them in as needed.
   * Cronet API shim aka "Cronvoy".
 * Keith Smiley ([keith](https://github.com/keith)) (keithbsmiley@gmail.com)
   * Bazel build magician
+
+# Emeritus maintainers
+
+* Michael Rebello ([rebello95](https://github.com/rebello95)) (mrebello@lyft.com)
+* Alan Chiu ([buildbreaker](https://github.com/buildbreaker)) (achiu@lyft.com)
+* Jose Nino ([junr03](https://github.com/junr03)) (recruiting@junr03.com)

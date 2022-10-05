@@ -1,5 +1,6 @@
 #include "test/mocks/event/mocks.h"
 #include "test/mocks/http/mocks.h"
+#include "test/mocks/server/factory_context.h"
 #include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
@@ -44,7 +45,7 @@ public:
     TestUtility::loadFromYaml(yaml, config);
     Api::External::registerApi(config.platform_filter_name(), platform_filter);
 
-    config_ = std::make_shared<PlatformBridgeFilterConfig>(config);
+    config_ = std::make_shared<PlatformBridgeFilterConfig>(context_, config);
     filter_ = std::make_shared<PlatformBridgeFilter>(config_, dispatcher_);
     filter_->setDecoderFilterCallbacks(decoder_callbacks_);
     filter_->setEncoderFilterCallbacks(encoder_callbacks_);
@@ -98,6 +99,7 @@ public:
     unsigned int release_filter_calls;
   } filter_invocations;
 
+  NiceMock<Server::Configuration::MockFactoryContext> context_;
   PlatformBridgeFilterConfigSharedPtr config_;
   PlatformBridgeFilterSharedPtr filter_;
   NiceMock<Event::MockDispatcher> dispatcher_;
@@ -676,7 +678,7 @@ TEST_F(PlatformBridgeFilterTest, BasicError) {
     release_envoy_data(c_data);
     return {kEnvoyFilterDataStatusStopIterationNoBuffer, envoy_nodata, nullptr};
   };
-  platform_filter.on_error = [](envoy_error c_error, envoy_stream_intel,
+  platform_filter.on_error = [](envoy_error c_error, envoy_stream_intel, envoy_final_stream_intel,
                                 const void* context) -> void {
     filter_invocations* invocations = static_cast<filter_invocations*>(const_cast<void*>(context));
     invocations->on_error_calls++;

@@ -7,11 +7,14 @@
 #include "envoy/http/api_listener.h"
 #include "envoy/http/codec.h"
 #include "envoy/http/header_map.h"
+#include "envoy/stats/histogram.h"
 #include "envoy/stats/stats_macros.h"
 
 #include "source/common/buffer/watermark_buffer.h"
 #include "source/common/common/logger.h"
 #include "source/common/http/codec_helper.h"
+#include "source/common/network/socket_impl.h"
+#include "source/common/stats/timespan_impl.h"
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/optional.h"
@@ -25,16 +28,22 @@ namespace Http {
 /**
  * All http client stats. @see stats_macros.h
  */
-#define ALL_HTTP_CLIENT_STATS(COUNTER)                                                             \
+#define ALL_HTTP_CLIENT_STATS(COUNTER, HISTOGRAM)                                                  \
   COUNTER(stream_success)                                                                          \
   COUNTER(stream_failure)                                                                          \
-  COUNTER(stream_cancel)
+  COUNTER(stream_cancel)                                                                           \
+  HISTOGRAM(on_headers_callback_latency, Milliseconds)                                             \
+  HISTOGRAM(on_data_callback_latency, Milliseconds)                                                \
+  HISTOGRAM(on_trailers_callback_latency, Milliseconds)                                            \
+  HISTOGRAM(on_complete_callback_latency, Milliseconds)                                            \
+  HISTOGRAM(on_cancel_callback_latency, Milliseconds)                                              \
+  HISTOGRAM(on_error_callback_latency, Milliseconds)
 
 /**
  * Struct definition for client stats. @see stats_macros.h
  */
 struct HttpClientStats {
-  ALL_HTTP_CLIENT_STATS(GENERATE_COUNTER_STRUCT)
+  ALL_HTTP_CLIENT_STATS(GENERATE_COUNTER_STRUCT, GENERATE_HISTOGRAM_STRUCT)
 };
 
 /**
@@ -45,8 +54,11 @@ public:
   Client(ApiListener& api_listener, Event::ProvisionalDispatcher& dispatcher, Stats::Scope& scope,
          Random::RandomGenerator& random)
       : api_listener_(api_listener), dispatcher_(dispatcher),
-        stats_(HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."))}),
-        address_(std::make_shared<Network::Address::SyntheticAddressImpl>()), random_(random) {}
+        stats_(
+            HttpClientStats{ALL_HTTP_CLIENT_STATS(POOL_COUNTER_PREFIX(scope, "http.client."),
+                                                  POOL_HISTOGRAM_PREFIX(scope, "http.client."))}),
+        address_provider_(std::make_shared<Network::Address::SyntheticAddressImpl>(), nullptr),
+        random_(random) {}
 
   /**
    * Attempts to open a new stream to the remote. Note that this function is asynchronous and
@@ -108,9 +120,11 @@ public:
   const HttpClientStats& stats() const;
   Event::ScopeTracker& scopeTracker() const { return dispatcher_; }
 
+  TimeSource& timeSource() { return dispatcher_.timeSource(); }
+
   // Used to fill response code details for streams that are cancelled via cancelStream.
   const std::string& getCancelDetails() {
-    CONSTRUCT_ON_FIRST_USE(std::string, "client cancelled stream");
+    CONSTRUCT_ON_FIRST_USE(std::string, "client_cancelled_stream");
   }
 
 private:
@@ -144,13 +158,13 @@ private:
     void encodeTrailers(const ResponseTrailerMap& trailers) override;
     Stream& getStream() override { return direct_stream_; }
     Http1StreamEncoderOptionsOptRef http1StreamEncoderOptions() override { return absl::nullopt; }
-    void encode100ContinueHeaders(const ResponseHeaderMap&) override {
+    void encode1xxHeaders(const ResponseHeaderMap&) override {
       // TODO(goaway): implement?
-      NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+      PANIC("not implemented");
     }
     bool streamErrorOnInvalidHttpMessage() const override { return false; }
 
-    void encodeMetadata(const MetadataMapVector&) override { NOT_IMPLEMENTED_GCOVR_EXCL_LINE; }
+    void encodeMetadata(const MetadataMapVector&) override { PANIC("not implemented"); }
 
     void onHasBufferedData();
     void onBufferedDataDrained();
@@ -166,12 +180,15 @@ private:
     // than bytes_to_send.
     void resumeData(int32_t bytes_to_send);
 
+    void setFinalStreamIntel(StreamInfo::StreamInfo& stream_info);
+
   private:
     bool hasBufferedData() { return response_data_.get() && response_data_->length() != 0; }
 
     void sendDataToBridge(Buffer::Instance& data, bool end_stream);
     void sendTrailersToBridge(const ResponseTrailerMap& trailers);
     envoy_stream_intel streamIntel();
+    envoy_final_stream_intel& finalStreamIntel();
     envoy_error streamError();
 
     DirectStream& direct_stream_;
@@ -214,8 +231,8 @@ private:
     void addCallbacks(StreamCallbacks& callbacks) override { addCallbacksHelper(callbacks); }
     void removeCallbacks(StreamCallbacks& callbacks) override { removeCallbacksHelper(callbacks); }
     void resetStream(StreamResetReason) override;
-    const Network::Address::InstanceConstSharedPtr& connectionLocalAddress() override {
-      return parent_.address_;
+    Network::ConnectionInfoProvider& connectionInfoProvider() override {
+      return parent_.address_provider_;
     }
     absl::string_view responseDetails() override { return response_details_; }
     // This is called any time upstream buffers exceed the configured flow
@@ -225,7 +242,10 @@ private:
     // It only has an effect in explicit flow control mode, where when all buffers are drained,
     // on_send_window_available callbacks are called.
     void readDisable(bool disable) override;
-    uint32_t bufferLimit() override { return 65000; }
+    uint32_t bufferLimit() const override {
+      // 1Mb
+      return 1024000;
+    }
     // Not applicable
     void setAccount(Buffer::BufferMemoryAccountSharedPtr) override {
       // Acounting became default in https://github.com/envoyproxy/envoy/pull/17702 but is a no=op.
@@ -241,8 +261,11 @@ private:
       response_details_ = response_details;
     }
 
-    // Saves latest "Intel" data as it may not be available when accessed.
+    // Latches stream information as it may not be available when accessed.
     void saveLatestStreamIntel();
+
+    // Latches latency info from stream info before it goes away.
+    void saveFinalStreamIntel();
 
     const envoy_stream_t stream_handle_;
 
@@ -270,7 +293,9 @@ private:
     // read faster than the mobile caller can process it.
     bool explicit_flow_control_ = false;
     // Latest intel data retrieved from the StreamInfo.
-    envoy_stream_intel stream_intel_;
+    envoy_stream_intel stream_intel_{-1, -1, 0, 0};
+    envoy_final_stream_intel envoy_final_stream_intel_{-1, -1, -1, -1, -1, -1, -1, -1,
+                                                       -1, -1, -1, 0,  0,  0,  0};
     StreamInfo::BytesMeterSharedPtr bytes_meter_;
   };
 
@@ -310,6 +335,7 @@ private:
 
   ApiListener& api_listener_;
   Event::ProvisionalDispatcher& dispatcher_;
+  Event::SchedulableCallbackPtr scheduled_callback_;
   HttpClientStats stats_;
   // The set of open streams, which can safely have request data sent on them
   // or response data received.
@@ -317,8 +343,8 @@ private:
   // The set of closed streams, where end stream has been received from upstream
   // but not yet communicated to the mobile library.
   absl::flat_hash_map<envoy_stream_t, DirectStreamSharedPtr> closed_streams_;
-  // Shared synthetic address across DirectStreams.
-  Network::Address::InstanceConstSharedPtr address_;
+  // Shared synthetic address providers across DirectStreams.
+  Network::ConnectionInfoSetterImpl address_provider_;
   Random::RandomGenerator& random_;
 };
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import io.envoyproxy.envoymobile.engine.types.EnvoyEventTracker;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyLogger;
+import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
 import io.envoyproxy.envoymobile.engine.types.EnvoyOnEngineRunning;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStringAccessor;
 
@@ -17,10 +18,14 @@ public class AndroidEngineImpl implements EnvoyEngine {
    * @param runningCallback Called when the engine finishes its async startup and begins running.
    */
   public AndroidEngineImpl(Context context, EnvoyOnEngineRunning runningCallback,
-                           EnvoyLogger logger, EnvoyEventTracker eventTracker) {
+                           EnvoyLogger logger, EnvoyEventTracker eventTracker,
+                           Boolean enableProxying) {
     this.envoyEngine = new EnvoyEngineImpl(runningCallback, logger, eventTracker);
     AndroidJniLibrary.load(context);
     AndroidNetworkMonitor.load(context, envoyEngine);
+    if (enableProxying) {
+      AndroidProxyMonitor.load(context, envoyEngine);
+    }
   }
 
   @Override
@@ -89,7 +94,14 @@ public class AndroidEngineImpl implements EnvoyEngine {
   }
 
   @Override
-  public void drainConnections() {
-    envoyEngine.drainConnections();
+  public void resetConnectivityState() {
+    envoyEngine.resetConnectivityState();
   }
+
+  @Override
+  public void setPreferredNetwork(EnvoyNetworkType network) {
+    envoyEngine.setPreferredNetwork(network);
+  }
+
+  public void setProxySettings(String host, int port) { envoyEngine.setProxySettings(host, port); }
 }

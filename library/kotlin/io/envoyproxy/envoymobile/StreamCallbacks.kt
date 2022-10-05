@@ -1,5 +1,6 @@
 package io.envoyproxy.envoymobile
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks
 import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel
 import java.nio.ByteBuffer
@@ -17,9 +18,12 @@ internal class StreamCallbacks {
   )? = null
   var onData: ((data: ByteBuffer, endStream: Boolean, streamIntel: StreamIntel) -> Unit)? = null
   var onTrailers: ((trailers: ResponseTrailers, streamIntel: StreamIntel) -> Unit)? = null
-  var onCancel: ((streamIntel: StreamIntel) -> Unit)? = null
-  var onError: ((error: EnvoyError, streamIntel: StreamIntel) -> Unit)? = null
+  var onCancel: ((finalStreamIntel: FinalStreamIntel) -> Unit)? = null
+  var onError: (
+    (error: EnvoyError, finalStreamIntel: FinalStreamIntel) -> Unit
+  )? = null
   var onSendWindowAvailable: ((streamIntel: StreamIntel) -> Unit)? = null
+  var onComplete: ((finalStreamIntel: FinalStreamIntel) -> Unit)? = null
 }
 
 /**
@@ -54,19 +58,24 @@ internal class EnvoyHTTPCallbacksAdapter(
     errorCode: Int,
     message: String,
     attemptCount: Int,
-    streamIntel: EnvoyStreamIntel
+    streamIntel: EnvoyStreamIntel,
+    finalStreamIntel: EnvoyFinalStreamIntel
   ) {
     callbacks.onError?.invoke(
       EnvoyError(errorCode, message, attemptCount),
-      StreamIntel(streamIntel)
+      FinalStreamIntel(streamIntel, finalStreamIntel)
     )
   }
 
-  override fun onCancel(streamIntel: EnvoyStreamIntel) {
-    callbacks.onCancel?.invoke(StreamIntel(streamIntel))
+  override fun onCancel(streamIntel: EnvoyStreamIntel, finalStreamIntel: EnvoyFinalStreamIntel) {
+    callbacks.onCancel?.invoke(FinalStreamIntel(streamIntel, finalStreamIntel))
   }
 
   override fun onSendWindowAvailable(streamIntel: EnvoyStreamIntel) {
     callbacks.onSendWindowAvailable?.invoke(StreamIntel(streamIntel))
+  }
+
+  override fun onComplete(streamIntel: EnvoyStreamIntel, finalStreamIntel: EnvoyFinalStreamIntel) {
+    callbacks.onComplete?.invoke(FinalStreamIntel(streamIntel, finalStreamIntel))
   }
 }

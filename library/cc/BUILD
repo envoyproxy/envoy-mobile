@@ -5,14 +5,28 @@ licenses(["notice"])  # Apache 2
 envoy_package()
 
 envoy_cc_library(
+    name = "engine_builder_lib",
+    srcs = [
+        "engine_builder.cc",
+    ],
+    hdrs = [
+        "engine_builder.h",
+    ],
+    repository = "@envoy",
+    deps = [
+        ":envoy_engine_cc_lib_no_stamp",
+    ],
+)
+
+envoy_cc_library(
     name = "envoy_engine_cc_lib_no_stamp",
     srcs = [
         "bridge_utility.cc",
         "engine.cc",
-        "engine_builder.cc",
         "engine_callbacks.cc",
         "headers.cc",
         "headers_builder.cc",
+        "key_value_store.cc",
         "log_level.cc",
         "request_headers.cc",
         "request_headers_builder.cc",
@@ -33,11 +47,11 @@ envoy_cc_library(
     hdrs = [
         "bridge_utility.h",
         "engine.h",
-        "engine_builder.h",
         "engine_callbacks.h",
         "envoy_error.h",
         "headers.h",
         "headers_builder.h",
+        "key_value_store.h",
         "log_level.h",
         "pulse_client.h",
         "request_headers.h",
@@ -63,6 +77,7 @@ envoy_cc_library(
     deps = [
         "//library/common:envoy_main_interface_lib_no_stamp",
         "//library/common/data:utility_lib",
+        "//library/common/extensions/key_value/platform:config",
     ],
 )
 
@@ -70,6 +85,7 @@ envoy_cc_library(
     name = "envoy_engine_cc_lib",
     repository = "@envoy",
     deps = [
+        ":engine_builder_lib",
         ":envoy_engine_cc_lib_no_stamp",
         "//library/common:engine_common_lib_stamped",
     ],

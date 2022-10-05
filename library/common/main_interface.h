@@ -23,71 +23,90 @@ envoy_stream_t init_stream(envoy_engine_t engine);
 /**
  * Open an underlying HTTP stream. Note: Streams must be started before other other interaction can
  * can occur.
+ * @param engine, handle to the engine associated with this stream.
  * @param stream, handle to the stream to be started.
  * @param callbacks, the callbacks that will run the stream callbacks.
  * @param explicit_flow_control, whether to enable explicit flow control on the response stream.
  * @return envoy_stream, with a stream handle and a success status, or a failure status.
  */
-envoy_status_t start_stream(envoy_stream_t stream, envoy_http_callbacks callbacks,
-                            bool explicit_flow_control);
+envoy_status_t start_stream(envoy_engine_t engine, envoy_stream_t stream,
+                            envoy_http_callbacks callbacks, bool explicit_flow_control);
 
 /**
  * Send headers over an open HTTP stream. This method can be invoked once and needs to be called
  * before send_data.
+ * @param engine, the engine associated with this stream.
  * @param stream, the stream to send headers over.
  * @param headers, the headers to send.
  * @param end_stream, supplies whether this is headers only.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t send_headers(envoy_stream_t stream, envoy_headers headers, bool end_stream);
+envoy_status_t send_headers(envoy_engine_t engine, envoy_stream_t stream, envoy_headers headers,
+                            bool end_stream);
 
 /**
  * Notify the stream that the caller is ready to receive more data from the response stream. Only
  * used in explicit flow control mode.
  * @param bytes_to_read, the quantity of data the caller is prepared to process.
  */
-envoy_status_t read_data(envoy_stream_t stream, size_t bytes_to_read);
+envoy_status_t read_data(envoy_engine_t engine, envoy_stream_t stream, size_t bytes_to_read);
 
 /**
  * Send data over an open HTTP stream. This method can be invoked multiple times.
+ * @param engine, the engine associated with this stream.
  * @param stream, the stream to send data over.
  * @param data, the data to send.
  * @param end_stream, supplies whether this is the last data in the stream.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t send_data(envoy_stream_t stream, envoy_data data, bool end_stream);
+envoy_status_t send_data(envoy_engine_t engine, envoy_stream_t stream, envoy_data data,
+                         bool end_stream);
 
 /**
  * Send metadata over an HTTP stream. This method can be invoked multiple times.
+ * @param engine, the engine associated with this stream.
  * @param stream, the stream to send metadata over.
  * @param metadata, the metadata to send.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t send_metadata(envoy_stream_t stream, envoy_headers metadata);
+envoy_status_t send_metadata(envoy_engine_t engine, envoy_stream_t stream, envoy_headers metadata);
 
 /**
  * Send trailers over an open HTTP stream. This method can only be invoked once per stream.
  * Note that this method implicitly ends the stream.
+ * @param engine, the engine associated with this stream.
  * @param stream, the stream to send trailers over.
  * @param trailers, the trailers to send.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t send_trailers(envoy_stream_t stream, envoy_headers trailers);
+envoy_status_t send_trailers(envoy_engine_t engine, envoy_stream_t stream, envoy_headers trailers);
 
 /**
  * Detach all callbacks from a stream and send an interrupt upstream if supported by transport.
+ * @param engine, the engine associated with this stream.
  * @param stream, the stream to evict.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t reset_stream(envoy_stream_t stream);
+envoy_status_t reset_stream(envoy_engine_t engine, envoy_stream_t stream);
 
 /**
  * Update the network interface to the preferred network for opening new streams.
  * Note that this state is shared by all engines.
+ * @param engine, the engine whose preferred network should be set.
  * @param network, the network to be preferred for new streams.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t set_preferred_network(envoy_network_t network);
+envoy_status_t set_preferred_network(envoy_engine_t engine, envoy_network_t network);
+
+/**
+ * @brief Update the currently active proxy settings.
+ *
+ * @param engine, the engine whose proxy settings should be updated.
+ * @param host, the proxy host.
+ * @param port, the proxy port.
+ * @return envoy_status_t, the resulting status of the operation.
+ */
+envoy_status_t set_proxy_settings(envoy_engine_t engine, const char* host, const uint16_t port);
 
 /**
  * Increment a counter with the given elements and by the given count.
@@ -182,23 +201,26 @@ envoy_engine_t init_engine(envoy_engine_callbacks callbacks, envoy_logger logger
  * @param engine, handle to the engine to run.
  * @param config, the configuration blob to run envoy with.
  * @param log_level, the logging level to run envoy with.
+ * @param admin_path, the file path to log the admin address to if desired.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level);
+envoy_status_t run_engine(envoy_engine_t engine, const char* config, const char* log_level,
+                          const char* admin_path);
 
 /**
  * Terminate an engine. Further interactions with a terminated engine, or streams created by a
  * terminated engine is illegal.
  * @param engine, handle to the engine to terminate.
+ * @param release, set to true to release the engine from memory.
  */
-void terminate_engine(envoy_engine_t engine);
+void terminate_engine(envoy_engine_t engine, bool release);
 
 /**
- * Drain all upstream connections associated with an engine
+ * Refresh DNS, and drain connections associated with an engine.
  * @param engine, handle to the engine to drain.
  * @return envoy_status_t, the resulting status of the operation.
  */
-envoy_status_t drain_connections(envoy_engine_t engine);
+envoy_status_t reset_connectivity_state(envoy_engine_t engine);
 
 #ifdef __cplusplus
 } // functions

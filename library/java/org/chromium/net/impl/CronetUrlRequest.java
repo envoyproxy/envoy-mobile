@@ -4,6 +4,7 @@ import android.os.ConditionVariable;
 import android.util.Log;
 import androidx.annotation.IntDef;
 import io.envoyproxy.envoymobile.engine.EnvoyHTTPStream;
+import io.envoyproxy.envoymobile.engine.types.EnvoyFinalStreamIntel;
 import io.envoyproxy.envoymobile.engine.types.EnvoyHTTPCallbacks;
 import io.envoyproxy.envoymobile.engine.types.EnvoyStreamIntel;
 import java.lang.annotation.Retention;
@@ -15,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,8 +30,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.chromium.net.CallbackException;
 import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
+import org.chromium.net.RequestFinishedInfo;
+import org.chromium.net.RequestFinishedInfo.Metrics;
 import org.chromium.net.UploadDataProvider;
-import org.chromium.net.UrlResponseInfo;
 
 /** UrlRequest, backed by Envoy-Mobile. */
 public final class CronetUrlRequest extends UrlRequestBase {
@@ -62,23 +65,44 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
   @IntDef({CancelState.READY, CancelState.BUSY, CancelState.CANCELLED})
   @Retention(RetentionPolicy.SOURCE)
-  @interface CancelState {
+  private @interface CancelState {
     int READY = 0;
     int BUSY = 1;
     int CANCELLED = 2;
   }
 
+  @IntDef(flag = true, // This is a bitmap.
+          value = {SucceededState.UNDETERMINED, SucceededState.FINAL_READ_DONE,
+                   SucceededState.ON_COMPLETE_RECEIVED, SucceededState.SUCCESS_READY})
+  @Retention(RetentionPolicy.SOURCE)
+  private @interface SucceededState {
+    int UNDETERMINED = 0b00;
+    int FINAL_READ_DONE = 0b01;
+    int ON_COMPLETE_RECEIVED = 0b10;
+    int SUCCESS_READY = FINAL_READ_DONE | ON_COMPLETE_RECEIVED;
+  }
+
+  @IntDef(flag = true, // This is a bitmap.
+          value = {ReportState.INITIAL_STATE, ReportState.USER_FINAL_CALLBACK_DONE,
+                   ReportState.NETWORK_FINAL_CALLBACK_RECEIVED, ReportState.REPORT_READY})
+  @Retention(RetentionPolicy.SOURCE)
+  private @interface ReportState {
+    int INITIAL_STATE = 0b00;
+    int USER_FINAL_CALLBACK_DONE = 0b01;
+    int NETWORK_FINAL_CALLBACK_RECEIVED = 0b10;
+    int REPORT_READY = USER_FINAL_CALLBACK_DONE | NETWORK_FINAL_CALLBACK_RECEIVED;
+  }
+
   private static final String X_ENVOY = "x-envoy";
-  private static final String X_ENVOY_SELECTED_TRANSPORT = "x-android-selected-transport";
+  private static final String X_ENVOY_UPSTREAM_ALPN = "x-envoy-upstream-alpn";
   private static final String TAG = CronetUrlRequest.class.getSimpleName();
   private static final String USER_AGENT = "User-Agent";
   private static final String CONTENT_TYPE = "Content-Type";
-  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.allocateDirect(0);
   private static final Executor DIRECT_EXECUTOR = new DirectExecutor();
 
   private final String mUserAgent;
   private final HeadersList mRequestHeaders = new HeadersList();
-  private final List<String> mUrlChain = new ArrayList<>();
+  private final Collection<Object> mRequestAnnotations;
   private final CronetUrlRequestContext mRequestContext;
   private final AtomicBoolean mWaitingOnRedirect = new AtomicBoolean(false);
   private final AtomicBoolean mWaitingOnRead = new AtomicBoolean(false);
@@ -94,17 +118,42 @@ public final class CronetUrlRequest extends UrlRequestBase {
    * exception), or cancellation.
    */
   private final AtomicInteger mState = new AtomicInteger(State.NOT_STARTED);
-
-  private final AtomicBoolean mUploadProviderClosed = new AtomicBoolean(false);
+  /**
+   * Ensures that the "mCallback.onSucceeded" callback will be invoked after observing the required
+   * events, and that it will be done only once.
+   *
+   * <p>At the end of a successful request, "mCallback.onSucceeded" is invoked. Before doing so,
+   * two events must have occurred first: the "completion of the final read" and the "onComplete
+   * Network callback". The Thread involved with the last of these two events is in charge of the
+   * registering the task to execute "mCallback.onSucceeded" - this is intrinsically racy.
+   */
+  private final AtomicCombinatoryState mSucceededState =
+      new AtomicCombinatoryState(SucceededState.SUCCESS_READY);
+  /**
+   * Ensures that the CronetMetrics will be posted after observing the required events, and that it
+   * will be done only once.
+   *
+   * <p>At the end of a request, mRequestFinishedListener is used to post the CronetMetrics. Before
+   * doing so, two events must have occurred first: the "final user callback" and the "final Network
+   * callback". The Thread involved with the last of these two events is in charge of the posting -
+   * this is intrinsically racy.
+   */
+  private final AtomicCombinatoryState mReportState =
+      new AtomicCombinatoryState(ReportState.REPORT_READY);
 
   private final boolean mAllowDirectExecutor;
 
   /* These don't change with redirects */
   private String mInitialMethod;
-  private CronetUploadDataStream mUploadDataStream;
   private final Executor mUserExecutor;
   private final VersionSafeCallbacks.UrlRequestCallback mCallback;
+  private final String mInitialUrl;
+  private final VersionSafeCallbacks.RequestFinishedInfoListener mRequestFinishedListener;
   private final ConditionVariable mStartBlock = new ConditionVariable();
+
+  private CronetUploadDataStream mUploadDataStream;
+
+  private volatile CronetException mException;
 
   /**
    * Holds a subset of StatusValues - {@link State#STARTED} can represent {@link
@@ -117,23 +166,26 @@ public final class CronetUrlRequest extends UrlRequestBase {
    * only used with the STARTED state, so it's inconsequential.
    */
   @StatusValues private volatile int mAdditionalStatusDetails = Status.INVALID;
-  private final AtomicReference<CronetException> mError = new AtomicReference<>();
 
   /* These change with redirects. */
   private final AtomicReference<EnvoyHTTPStream> mStream = new AtomicReference<>();
+  private final List<String> mUrlChain = new ArrayList<>();
+  private volatile EnvoyFinalStreamIntel mEnvoyFinalStreamIntel;
+  private long mBytesReceivedFromRedirects = 0;
+  private long mBytesReceivedFromLastRedirect = 0;
   private CronvoyHttpCallbacks mCronvoyCallbacks;
   private String mCurrentUrl;
-  private UrlResponseInfoImpl mUrlResponseInfo;
+  private volatile UrlResponseInfoImpl mUrlResponseInfo;
   private String mPendingRedirectUrl;
 
   /**
    * @param executor The executor for orchestrating tasks between envoy-mobile callbacks
-   * @param userExecutor The executor used to dispatch to Cronet {@code callback}
    */
-  CronetUrlRequest(CronetUrlRequestContext cronvoyEngine, Callback callback, Executor executor,
-                   String url, String userAgent, boolean allowDirectExecutor,
-                   boolean trafficStatsTagSet, int trafficStatsTag, boolean trafficStatsUidSet,
-                   int trafficStatsUid) {
+  CronetUrlRequest(CronetUrlRequestContext cronvoyEngine, String url, Callback callback,
+                   Executor executor, String userAgent, boolean allowDirectExecutor,
+                   Collection<Object> connectionAnnotations, boolean trafficStatsTagSet,
+                   int trafficStatsTag, boolean trafficStatsUidSet, int trafficStatsUid,
+                   RequestFinishedInfo.Listener requestFinishedListener) {
     if (url == null) {
       throw new NullPointerException("URL is required");
     }
@@ -144,11 +196,17 @@ public final class CronetUrlRequest extends UrlRequestBase {
       throw new NullPointerException("Executor is required");
     }
     mCallback = new VersionSafeCallbacks.UrlRequestCallback(callback);
+    mRequestFinishedListener =
+        requestFinishedListener != null
+            ? new VersionSafeCallbacks.RequestFinishedInfoListener(requestFinishedListener)
+            : null;
     mRequestContext = cronvoyEngine;
     mAllowDirectExecutor = allowDirectExecutor;
     mUserExecutor = executor;
+    mInitialUrl = url;
     mCurrentUrl = url;
     mUserAgent = userAgent;
+    mRequestAnnotations = connectionAnnotations;
   }
 
   @Override
@@ -245,7 +303,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
     if (mState.compareAndSet(State.AWAITING_READ, streamEnded() ? State.COMPLETE : State.READING)) {
       if (streamEnded()) {
-        onSucceeded(mUrlResponseInfo);
+        if (mSucceededState.hasReachedFinalState(SucceededState.FINAL_READ_DONE)) {
+          onSucceeded();
+        }
         return;
       }
       mUserCurrentReadBuffer = buffer;
@@ -293,8 +353,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
   @Override
   public void getStatus(StatusListener listener) {
+    @StatusValues int extraStatus = mAdditionalStatusDetails;
     @State int state = mState.get();
-    int extraStatus = mAdditionalStatusDetails;
 
     @StatusValues final int status;
     switch (state) {
@@ -389,7 +449,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
   }
 
   private void enterErrorState(CronetException error) {
-    mError.compareAndSet(null, error);
     @State int originalState;
     @State int updatedState;
     do {
@@ -402,6 +461,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     if (isTerminalState(originalState)) {
       return;
     }
+    mException = error;
     fireCloseUploadDataProvider();
     if (updatedState == State.ERROR_PENDING_CANCEL) {
       CronvoyHttpCallbacks cronvoyCallbacks = this.mCronvoyCallbacks;
@@ -457,15 +517,21 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
   }
 
+  // This method is only called when in STARTED state. This means a "cancel" request won't be
+  // executed immediately - that quite important here, otherwise this would lead to unfortunate
+  // race conditions. A "cancel" request will then be honnored on the first callback.
   private void fireOpenConnection() {
     if (mInitialMethod == null) {
       mInitialMethod = "GET";
     }
+    mUrlResponseInfo = null;
+    mEnvoyFinalStreamIntel = null;
+    mBytesReceivedFromRedirects += mBytesReceivedFromLastRedirect;
     mAdditionalStatusDetails = Status.CONNECTING;
     mUrlChain.add(mCurrentUrl);
     Map<String, List<String>> envoyRequestHeaders =
         buildEnvoyRequestHeaders(mInitialMethod, mRequestHeaders, mUploadDataStream, mUserAgent,
-                                 mCurrentUrl, mRequestContext.getBuilder().http2Enabled());
+                                 mCurrentUrl, mRequestContext.getBuilder().quicEnabled());
     mCronvoyCallbacks = new CronvoyHttpCallbacks();
     mStream.set(mRequestContext.getEnvoyEngine().startStream(mCronvoyCallbacks,
                                                              /* explicitFlowCrontrol= */ true));
@@ -478,7 +544,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
   private static Map<String, List<String>>
   buildEnvoyRequestHeaders(String initialMethod, HeadersList headersList,
                            CronetUploadDataStream mUploadDataStream, String userAgent,
-                           String currentUrl, boolean isHttp2Enabled) {
+                           String currentUrl, boolean isQuicEnabled) {
     Map<String, List<String>> headers = new LinkedHashMap<>();
     final URL url;
     try {
@@ -493,6 +559,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
     boolean hasUserAgent = false;
     boolean hasContentType = false;
     for (Map.Entry<String, String> header : headersList) {
+      if (header.getKey().isEmpty()) {
+        throw new IllegalArgumentException("Invalid header =");
+      }
       hasUserAgent = hasUserAgent ||
                      (header.getKey().equalsIgnoreCase(USER_AGENT) && !header.getValue().isEmpty());
       hasContentType = hasContentType || (header.getKey().equalsIgnoreCase(CONTENT_TYPE) &&
@@ -505,11 +574,12 @@ public final class CronetUrlRequest extends UrlRequestBase {
     if (!hasContentType && mUploadDataStream != null) {
       throw new IllegalArgumentException("Requests with upload data must have a Content-Type.");
     }
-    String protocol =
-        isHttp2Enabled && url.getProtocol().equalsIgnoreCase("https") ? "http2" : "http1";
 
-    headers.computeIfAbsent("x-envoy-mobile-upstream-protocol", unused -> new ArrayList<>())
-        .add(protocol);
+    if (isQuicEnabled) {
+      headers.computeIfAbsent("x-envoy-mobile-upstream-protocol", unused -> new ArrayList<>())
+          .add("http3");
+    }
+
     return headers;
   }
 
@@ -554,22 +624,24 @@ public final class CronetUrlRequest extends UrlRequestBase {
       public void run() {
         try {
           mCallback.onCanceled(CronetUrlRequest.this, mUrlResponseInfo);
+          maybeReportMetrics(ReportState.USER_FINAL_CALLBACK_DONE);
         } catch (Exception exception) {
-          Log.e(TAG, "Exception in onCanceled method", exception);
+          Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onCanceled method", exception);
         }
       }
     };
     execute(task);
   }
 
-  void onSucceeded(final UrlResponseInfo info) {
+  void onSucceeded() {
     Runnable task = new Runnable() {
       @Override
       public void run() {
         try {
-          mCallback.onSucceeded(CronetUrlRequest.this, info);
+          mCallback.onSucceeded(CronetUrlRequest.this, mUrlResponseInfo);
+          maybeReportMetrics(ReportState.USER_FINAL_CALLBACK_DONE);
         } catch (Exception exception) {
-          Log.e(TAG, "Exception in onSucceeded method", exception);
+          Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onSucceeded method", exception);
         }
       }
     };
@@ -581,9 +653,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
       @Override
       public void run() {
         try {
-          mCallback.onFailed(CronetUrlRequest.this, mUrlResponseInfo, mError.get());
+          mCallback.onFailed(CronetUrlRequest.this, mUrlResponseInfo, mException);
+          maybeReportMetrics(ReportState.USER_FINAL_CALLBACK_DONE);
         } catch (Exception exception) {
-          Log.e(TAG, "Exception in onFailed method", exception);
+          Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in onFailed method", exception);
         }
       }
     };
@@ -618,12 +691,62 @@ public final class CronetUrlRequest extends UrlRequestBase {
     return cronvoyCallbacks != null && cronvoyCallbacks.mEndStream;
   }
 
-  private static class HeadersList extends ArrayList<Map.Entry<String, String>> {}
+  private void recordEnvoyFinalStreamIntel(EnvoyFinalStreamIntel envoyFinalStreamIntel) {
+    mEnvoyFinalStreamIntel = envoyFinalStreamIntel;
+    if (mUrlResponseInfo != null) { // Null if cancelled before receiving a Response.
+      mUrlResponseInfo.setReceivedByteCount(envoyFinalStreamIntel.getReceivedByteCount() +
+                                            mBytesReceivedFromRedirects);
+    }
+    maybeReportMetrics(ReportState.NETWORK_FINAL_CALLBACK_RECEIVED);
+  }
 
-  private static class DirectExecutor implements Executor {
-    @Override
-    public void execute(Runnable runnable) {
-      runnable.run();
+  private void recordEnvoyStreamIntel(EnvoyStreamIntel envoyStreamIntel) {
+    mUrlResponseInfo.setReceivedByteCount(envoyStreamIntel.getConsumedBytesFromResponse() +
+                                          mBytesReceivedFromRedirects);
+  }
+
+  private void maybeReportMetrics(@ReportState int reportStateEvent) {
+    if (!mReportState.hasReachedFinalState(reportStateEvent)) {
+      return;
+    }
+    Metrics metrics = getMetrics(mEnvoyFinalStreamIntel, mBytesReceivedFromRedirects);
+    final RequestFinishedInfo requestInfo =
+        new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, metrics, getFinishedReason(),
+                                    mUrlResponseInfo, mException);
+    mRequestContext.reportRequestFinished(requestInfo);
+    if (mRequestFinishedListener != null) {
+      try {
+        mRequestFinishedListener.getExecutor().execute(new Runnable() {
+          @Override
+          public void run() {
+            mRequestFinishedListener.onRequestFinished(requestInfo);
+          }
+        });
+      } catch (RejectedExecutionException failException) {
+        Log.e(CronetUrlRequestContext.LOG_TAG, "Exception posting task to executor", failException);
+      }
+    }
+  }
+
+  private static Metrics getMetrics(EnvoyFinalStreamIntel intel, long bytesReceivedFromRedirects) {
+    return new CronetMetrics(
+        intel.getStreamStartMs(), intel.getDnsStartMs(), intel.getDnsEndMs(),
+        intel.getConnectStartMs(), intel.getConnectEndMs(), intel.getSslStartMs(),
+        intel.getSslEndMs(), intel.getSendingStartMs(), intel.getSendingEndMs(),
+        /* pushStartMs= */ -1, /* pushEndMs= */ -1, intel.getResponseStartMs(),
+        intel.getStreamEndMs(), intel.getSocketReused(), intel.getSentByteCount(),
+        intel.getReceivedByteCount() + bytesReceivedFromRedirects);
+  }
+
+  @RequestFinishedInfoImpl.FinishedReason
+  private int getFinishedReason() {
+    switch (mState.get()) {
+    case State.COMPLETE:
+      return RequestFinishedInfoImpl.SUCCEEDED;
+    case State.CANCELLED:
+      return RequestFinishedInfoImpl.CANCELED;
+    default:
+      return RequestFinishedInfoImpl.FAILED;
     }
   }
 
@@ -636,6 +759,15 @@ public final class CronetUrlRequest extends UrlRequestBase {
       return endStream ? State.ERROR : State.ERROR_PENDING_CANCEL;
     default:
       return desired;
+    }
+  }
+
+  private static class HeadersList extends ArrayList<Map.Entry<String, String>> {}
+
+  private static class DirectExecutor implements Executor {
+    @Override
+    public void execute(Runnable runnable) {
+      runnable.run();
     }
   }
 
@@ -652,16 +784,15 @@ public final class CronetUrlRequest extends UrlRequestBase {
     @Override
     public void onHeaders(Map<String, List<String>> headers, boolean endStream,
                           EnvoyStreamIntel streamIntel) {
-      if (isAbandoned()) {
-        return;
-      }
+      mUrlResponseInfo = new UrlResponseInfoImpl();
+      recordEnvoyStreamIntel(streamIntel);
       mEndStream = endStream;
       List<String> statuses = headers.get(":status");
       final int responseCode =
           statuses != null && !statuses.isEmpty() ? Integer.valueOf(statuses.get(0)) : -1;
       final String locationField;
       if (responseCode >= 300 && responseCode < 400) {
-        mUrlResponseInfo = createUrlResponseInfoImpl(headers, responseCode);
+        setUrlResponseInfo(headers, responseCode);
         List<String> locationFields = mUrlResponseInfo.getAllHeaders().get("location");
         locationField = locationFields == null ? null : locationFields.get(0);
       } else {
@@ -684,6 +815,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
 
       if (locationField != null) {
+        mBytesReceivedFromLastRedirect = streamIntel.getConsumedBytesFromResponse();
         cancel(); // Abort the the original request - we are being redirected.
       }
 
@@ -693,7 +825,10 @@ public final class CronetUrlRequest extends UrlRequestBase {
           checkCallingThread();
           try {
             if (locationField != null) {
-              mCronvoyCallbacks = null; // Makes CronvoyHttpCallbacks abandoned.
+              // This CronvoyHttpCallbacks instance is already in an abandoned state at this point:
+              // mState == State.AWAITING_FOLLOW_REDIRECT. But mState will change soon, so this line
+              // puts the final nail in the coffin. isAbandoned() can only keep returning true.
+              mCronvoyCallbacks = null;
               mStream.set(null);
               mPendingRedirectUrl = URI.create(mCurrentUrl).resolve(locationField).toString();
               mWaitingOnRedirect.set(true);
@@ -701,7 +836,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
                                            mPendingRedirectUrl);
             } else {
               if (responseCode < 300 || responseCode >= 400) {
-                mUrlResponseInfo = createUrlResponseInfoImpl(headers, responseCode);
+                setUrlResponseInfo(headers, responseCode);
               }
               fireCloseUploadDataProvider(); // Idempotent
               mWaitingOnRead.set(true);
@@ -720,6 +855,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (isAbandoned()) {
         return;
       }
+      recordEnvoyStreamIntel(streamIntel);
       mEndStream = endStream;
       @State int originalState;
       @State int updatedState;
@@ -767,14 +903,19 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (completeAbandonIfAny(originalState, updatedState)) {
         return;
       }
+      if (mState.compareAndSet(State.READING, State.COMPLETE)) {
+        // onComplete still needs to be called - this always returns false.
+        mSucceededState.hasReachedFinalState(SucceededState.FINAL_READ_DONE);
+      }
     }
 
     @Override
     public void onError(int errorCode, String message, int attemptCount,
-                        EnvoyStreamIntel streamIntel) {
+                        EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
       if (isAbandoned()) {
         return;
       }
+      recordEnvoyFinalStreamIntel(finalStreamIntel);
       mEndStream = true;
       @State int originalState;
       @State int updatedState;
@@ -793,10 +934,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     @Override
-    public void onCancel(EnvoyStreamIntel streamIntel) {
+    public void onCancel(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
       if (isAbandoned()) {
         return;
       }
+      recordEnvoyFinalStreamIntel(finalStreamIntel);
       mEndStream = true;
       @State int originalState;
       @State int updatedState;
@@ -831,6 +973,17 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
 
       mUploadDataStream.readDataReady(); // Have the next request body chunk to be sent.
+    }
+
+    @Override
+    public void onComplete(EnvoyStreamIntel streamIntel, EnvoyFinalStreamIntel finalStreamIntel) {
+      if (isAbandoned()) {
+        return;
+      }
+      recordEnvoyFinalStreamIntel(finalStreamIntel);
+      if (mSucceededState.hasReachedFinalState(SucceededState.ON_COMPLETE_RECEIVED)) {
+        onSucceeded();
+      }
     }
 
     /**
@@ -875,7 +1028,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
      */
     void cancel() {
       EnvoyHTTPStream stream = mStream.get();
-      if (isAbandoned() || mEndStream) {
+      if (this != mCronvoyCallbacks || mEndStream) {
         return;
       }
       @CancelState int oldState = mCancelState.getAndSet(CancelState.CANCELLED);
@@ -884,8 +1037,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       }
     }
 
-    private UrlResponseInfoImpl createUrlResponseInfoImpl(Map<String, List<String>> responseHeaders,
-                                                          int responseCode) {
+    private void setUrlResponseInfo(Map<String, List<String>> responseHeaders, int responseCode) {
       mAdditionalStatusDetails = Status.WAITING_FOR_RESPONSE;
       List<Map.Entry<String, String>> headerList = new ArrayList<>();
       String selectedTransport = "unknown";
@@ -896,7 +1048,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         if (headerEntry.getValue().get(0) == null) {
           continue;
         }
-        if (X_ENVOY_SELECTED_TRANSPORT.equals(headerKey)) {
+        if (X_ENVOY_UPSTREAM_ALPN.equals(headerKey)) {
           selectedTransport = headerEntry.getValue().get(0);
         }
         if (!headerKey.startsWith(X_ENVOY) && !headerKey.equals("date") &&
@@ -909,12 +1061,11 @@ public final class CronetUrlRequest extends UrlRequestBase {
       // Important to copy the list here, because although we never concurrently modify
       // the list ourselves, user code might iterate over it while we're redirecting, and
       // that would throw ConcurrentModificationException.
-      // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1426) set receivedByteCount
       // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1622) support proxy
-      // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1546) negotiated protocol
-      return new UrlResponseInfoImpl(
+      // TODO(https://github.com/envoyproxy/envoy-mobile/issues/1578) http caching
+      mUrlResponseInfo.setResponseValues(
           new ArrayList<>(mUrlChain), responseCode, HttpReason.getReason(responseCode),
-          Collections.unmodifiableList(headerList), false, selectedTransport, ":0", 0);
+          Collections.unmodifiableList(headerList), false, selectedTransport, ":0");
     }
 
     private boolean completeAbandonIfAny(@State int originalState, @State int updatedState) {

@@ -1,4 +1,4 @@
-exclude: '(/certificates.inc$)|(test/.*/testing/data/)'
+exclude: '(^third_party/rbe_configs/cc/module.modulemap$)|(/certificates.inc$)|(test/.*/testing/data/)'
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v2.1.0
@@ -14,7 +14,7 @@ repos:
       exclude: 'experimental/swift/QUICStreamTest.swift'
     - id: mixed-line-ending
 - repo: https://github.com/codespell-project/codespell
-  rev: v1.16.0
+  rev: v2.1.0
   hooks:
     - id: codespell
-      args: [-L=uint, -L=keyserver]
+      args: ['-L=inout,keyserver,optin,uint']

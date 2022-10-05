@@ -1,3 +1,4 @@
+load("@build_bazel_rules_android//android:rules.bzl", "android_library")
 load("@rules_java//java:defs.bzl", "java_library")
 
 licenses(["notice"])  # Apache 2
@@ -8,6 +9,7 @@ android_library(
         "AndroidEngineImpl.java",
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",
+        "AndroidProxyMonitor.java",
     ],
     custom_package = "io.envoyproxy.envoymobile.engine",
     manifest = "AndroidEngineManifest.xml",
@@ -15,6 +17,7 @@ android_library(
     deps = [
         "//library/java/io/envoyproxy/envoymobile/engine:envoy_base_engine_lib",
         "//library/java/io/envoyproxy/envoymobile/engine/types:envoy_c_types_lib",
+        "//library/java/org/chromium/net",
         "@maven//:androidx_core_core",
     ],
 )
@@ -25,6 +28,7 @@ java_library(
         "EnvoyConfiguration.java",
         "EnvoyEngine.java",
         "EnvoyEngineImpl.java",
+        "EnvoyFinalStreamIntelImpl.java",
         "EnvoyHTTPFilterCallbacksImpl.java",
         "EnvoyHTTPStream.java",
         "EnvoyNativeFilterConfig.java",
@@ -38,6 +42,7 @@ java_library(
         "JvmCallbackContext.java",
         "JvmFilterContext.java",
         "JvmFilterFactoryContext.java",
+        "JvmKeyValueStoreContext.java",
         "JvmStringAccessorContext.java",
     ],
     visibility = ["//visibility:public"],

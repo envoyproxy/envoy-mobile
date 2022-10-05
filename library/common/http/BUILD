@@ -18,7 +18,8 @@ envoy_cc_library(
         "//library/common/extensions/filters/http/local_error:local_error_filter_lib",
         "//library/common/extensions/filters/http/network_configuration:network_configuration_filter_lib",
         "//library/common/http:header_utility_lib",
-        "//library/common/network:configurator_lib",
+        "//library/common/jni:android_jni_utility_lib",
+        "//library/common/network:connectivity_manager_lib",
         "//library/common/network:synthetic_address_lib",
         "//library/common/stream_info:extra_stream_info_lib",
         "//library/common/types:c_types_lib",
@@ -29,6 +30,7 @@ envoy_cc_library(
         "@envoy//envoy/http:header_map_interface",
         "@envoy//envoy/stats:stats_interface",
         "@envoy//envoy/stats:stats_macros",
+        "@envoy//envoy/stats:timespan_interface",
         "@envoy//source/common/buffer:buffer_lib",
         "@envoy//source/common/buffer:watermark_buffer_lib",
         "@envoy//source/common/common:lock_guard_lib",
@@ -39,6 +41,8 @@ envoy_cc_library(
         "@envoy//source/common/http:header_map_lib",
         "@envoy//source/common/http:headers_lib",
         "@envoy//source/common/http:utility_lib",
+        "@envoy//source/common/network:socket_lib",
+        "@envoy//source/common/stats:timespan_lib",
     ],
 )
 

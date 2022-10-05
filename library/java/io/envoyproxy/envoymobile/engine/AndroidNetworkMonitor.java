@@ -1,5 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
+import io.envoyproxy.envoymobile.engine.types.EnvoyNetworkType;
+
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -33,6 +35,8 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
 
   private static volatile AndroidNetworkMonitor instance = null;
 
+  private int previousNetworkType = ConnectivityManager.TYPE_DUMMY;
+  private EnvoyEngine envoyEngine;
   private ConnectivityManager connectivityManager;
   private NetworkCallback networkCallback;
   private NetworkRequest networkRequest;
@@ -61,6 +65,8 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
       }
       return;
     }
+
+    this.envoyEngine = envoyEngine;
 
     connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -105,19 +111,21 @@ public class AndroidNetworkMonitor extends BroadcastReceiver {
 
   private void handleNetworkChange() {
     NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-    if (networkInfo == null) {
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
+    int networkType = networkInfo == null ? -1 : networkInfo.getType();
+    if (networkType == previousNetworkType) {
       return;
     }
-    switch (networkInfo.getType()) {
+    previousNetworkType = networkType;
+
+    switch (networkType) {
     case ConnectivityManager.TYPE_MOBILE:
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WWAN);
+      envoyEngine.setPreferredNetwork(EnvoyNetworkType.ENVOY_NETWORK_TYPE_WWAN);
       return;
     case ConnectivityManager.TYPE_WIFI:
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_WLAN);
+      envoyEngine.setPreferredNetwork(EnvoyNetworkType.ENVOY_NETWORK_TYPE_WLAN);
       return;
     default:
-      AndroidJniLibrary.setPreferredNetwork(ENVOY_NET_GENERIC);
+      envoyEngine.setPreferredNetwork(EnvoyNetworkType.ENVOY_NETWORK_TYPE_GENERIC);
     }
   }
 }

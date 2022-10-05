@@ -1,6 +1,6 @@
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_unit_test")
 load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-load("@rules_cc//cc:defs.bzl", "objc_library")
+load("//bazel:config.bzl", "MINIMUM_IOS_VERSION")
 
 # Macro providing a way to easily/consistently define Swift unit test targets.
 #
@@ -18,7 +18,7 @@ load("@rules_cc//cc:defs.bzl", "objc_library")
 #     ],
 # )
 #
-def envoy_mobile_swift_test(name, srcs, data = [], deps = [], repository = ""):
+def envoy_mobile_swift_test(name, srcs, data = [], deps = [], tags = [], repository = "", visibility = []):
     test_lib_name = name + "_lib"
     swift_library(
         name = test_lib_name,
@@ -28,6 +28,7 @@ def envoy_mobile_swift_test(name, srcs, data = [], deps = [], repository = ""):
             repository + "//library/swift:ios_lib",
         ] + deps,
         linkopts = ["-lresolv.9"],
+        testonly = True,
         visibility = ["//visibility:private"],
     )
 
@@ -35,12 +36,14 @@ def envoy_mobile_swift_test(name, srcs, data = [], deps = [], repository = ""):
         name = name,
         data = data,
         deps = [test_lib_name],
-        minimum_os_version = "11.0",
+        minimum_os_version = MINIMUM_IOS_VERSION,
+        tags = tags,
+        visibility = visibility,
     )
 
-def envoy_mobile_objc_test(name, srcs, data = [], deps = []):
+def envoy_mobile_objc_test(name, srcs, data = [], deps = [], tags = [], visibility = []):
     test_lib_name = name + "_lib"
-    objc_library(
+    native.objc_library(
         name = test_lib_name,
         srcs = srcs,
         data = data,
@@ -52,5 +55,7 @@ def envoy_mobile_objc_test(name, srcs, data = [], deps = []):
         name = name,
         data = data,
         deps = [test_lib_name],
-        minimum_os_version = "11.0",
+        minimum_os_version = MINIMUM_IOS_VERSION,
+        tags = tags,
+        visibility = visibility,
     )

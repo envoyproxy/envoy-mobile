@@ -33,6 +33,7 @@ public class AndroidJniLibrary {
   private static class AndroidLoader {
     private AndroidLoader(Context context) {
       AndroidJniLibrary.initialize(
+          context.getClassLoader(),
           (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
   }
@@ -40,17 +41,10 @@ public class AndroidJniLibrary {
   /**
    * Native binding to register the ConnectivityManager to C-Ares.
    *
+   * @param classLoader Application's class loader.
    * @param connectivityManager Android's ConnectivityManager.
    * @return The resulting status of the initialization.
    */
-  protected static native int initialize(ConnectivityManager connectivityManager);
-
-  /**
-   * Update the network interface to the preferred network for opening new
-   * streams. Note that this state is shared by all engines.
-   *
-   * @param network, the network to be preferred for new streams.
-   * @return The resulting status of the operation.
-   */
-  protected static native int setPreferredNetwork(int network);
+  protected static native int initialize(ClassLoader classLoader,
+                                         ConnectivityManager connectivityManager);
 }

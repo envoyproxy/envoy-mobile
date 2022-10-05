@@ -28,18 +28,17 @@ final class EngineBuilderTests: XCTestCase {
     MockEnvoyEngine.onRunWithTemplate = nil
   }
 
-  func testEnableNetworkPathMonitorDefaultsToFalse() {
+  func testMonitoringModeDefaultsToPathMonitor() {
     let builder = EngineBuilder()
-    XCTAssertFalse(builder.enableNetworkPathMonitor)
+    XCTAssertEqual(builder.monitoringMode, .pathMonitor)
   }
 
-  @available(iOS 12, *)
-  func testEnableNetworkPathMonitorSetsToValue() {
+  func testMonitoringModeSetsToValue() {
     let builder = EngineBuilder()
-      .enableNetworkPathMonitor(true)
-    XCTAssertTrue(builder.enableNetworkPathMonitor)
-    builder.enableNetworkPathMonitor(false)
-    XCTAssertFalse(builder.enableNetworkPathMonitor)
+      .setNetworkMonitoringMode(.disabled)
+    XCTAssertEqual(builder.monitoringMode, .disabled)
+    builder.setNetworkMonitoringMode(.reachability)
+    XCTAssertEqual(builder.monitoringMode, .reachability)
   }
 
   func testCustomConfigTemplateUsesSpecifiedYAMLWhenRunningEnvoy() {
@@ -96,6 +95,62 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testEnablingHappyEyeballsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with enabled happy eyeballs")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.enableHappyEyeballs)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enableHappyEyeballs(true)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testEnablingInterfaceBindingAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with enabled interface binding")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.enableInterfaceBinding)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enableInterfaceBinding(true)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testEnforcingTrustChainVerificationAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with enforced cert verification")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.enforceTrustChainVerification)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .enforceTrustChainVerification(true)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testForceIPv6AddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with force IPv6")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.forceIPv6)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .forceIPv6(true)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testAddinggrpcStatsDomainAddsToConfigurationWhenRunningEnvoy() {
     let expectation = self.expectation(description: "Run called with expected data")
     MockEnvoyEngine.onRunWithConfig = { config, _ in
@@ -134,6 +189,20 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addDNSRefreshSeconds(23)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingDNSMinRefreshSecondsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(23, config.dnsMinRefreshSeconds)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addDNSMinRefreshSeconds(23)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -191,6 +260,48 @@ final class EngineBuilderTests: XCTestCase {
     _ = EngineBuilder()
       .addEngineType(MockEnvoyEngine.self)
       .addH2ConnectionKeepaliveTimeoutSeconds(234)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingH2ExtendKeepaliveTimeoutAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with h2ExtendKeepaliveTimeout")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertTrue(config.h2ExtendKeepaliveTimeout)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .h2ExtendKeepaliveTimeout(true)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testAddingH2RawDomainsAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(1, config.h2RawDomains.count)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addH2RawDomains(["h2-raw.domain"])
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
+  func testSettingMaxConnectionsPerHostAddsToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual(23, config.maxConnectionsPerHost)
+      expectation.fulfill()
+    }
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .setMaxConnectionsPerHost(23)
       .build()
     self.waitForExpectations(timeout: 0.01)
   }
@@ -321,6 +432,42 @@ final class EngineBuilderTests: XCTestCase {
     self.waitForExpectations(timeout: 0.01)
   }
 
+  func testAddingKeyValueStoreToConfigurationWhenRunningEnvoy() {
+    let expectation = self.expectation(description: "Run called with expected data")
+    MockEnvoyEngine.onRunWithConfig = { config, _ in
+      XCTAssertEqual("bar", config.keyValueStores["name"]?.readValue(forKey: "foo"))
+      expectation.fulfill()
+    }
+
+    let testStore: KeyValueStore = {
+      class TestStore: KeyValueStore {
+        private var dict: [String: String] = [:]
+
+        func readValue(forKey key: String) -> String? {
+          return dict[key]
+        }
+
+        func saveValue(_ value: String, toKey key: String) {
+          dict[key] = value
+        }
+
+        func removeKey(_ key: String) {
+          dict[key] = nil
+        }
+      }
+
+      return TestStore()
+    }()
+
+    testStore.saveValue("bar", toKey: "foo")
+
+    _ = EngineBuilder()
+      .addEngineType(MockEnvoyEngine.self)
+      .addKeyValueStore(name: "name", keyValueStore: testStore)
+      .build()
+    self.waitForExpectations(timeout: 0.01)
+  }
+
   func testResolvesYAMLWithIndividuallySetValues() throws {
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: false,
@@ -330,10 +477,20 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
+      dnsMinRefreshSeconds: 100,
       dnsPreresolveHostnames: "[test]",
-      enableInterfaceBinding: false,
+      enableHappyEyeballs: true,
+      enableGzip: true,
+      enableBrotli: false,
+      enableInterfaceBinding: true,
+      enableDrainPostDnsRefresh: false,
+      enforceTrustChainVerification: false,
+      forceIPv6: false,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2ExtendKeepaliveTimeout: true,
+      h2RawDomains: ["h2-raw.domain"],
+      maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 777,
@@ -348,7 +505,9 @@ final class EngineBuilderTests: XCTestCase {
       platformFilterChain: [
         EnvoyHTTPFilterFactory(filterName: "TestFilter", factory: TestFilter.init),
       ],
-      stringAccessors: [:]
+      stringAccessors: [:],
+      keyValueStores: [:],
+      statsSinks: []
     )
     let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
     XCTAssertTrue(resolvedYAML.contains("&connect_timeout 200s"))
@@ -356,16 +515,30 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_base_interval 400s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_fail_max_interval 500s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_query_timeout 800s"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_min_refresh_rate 100s"))
     XCTAssertTrue(resolvedYAML.contains("&dns_preresolve_hostnames [test]"))
-    XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family ALL"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses true"))
+    XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding true"))
+    XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification ACCEPT_UNTRUSTED"))
+    XCTAssertTrue(resolvedYAML.contains("&enable_drain_post_dns_refresh false"))
 
+    // HTTP/2
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_idle_interval 0.001s"))
     XCTAssertTrue(resolvedYAML.contains("&h2_connection_keepalive_timeout 333s"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout true"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_raw_domains [\"h2-raw.domain\"]"))
+
+    XCTAssertTrue(resolvedYAML.contains("&max_connections_per_host 100"))
 
     XCTAssertTrue(resolvedYAML.contains("&stream_idle_timeout 700s"))
     XCTAssertTrue(resolvedYAML.contains("&per_try_idle_timeout 777s"))
 
     XCTAssertFalse(resolvedYAML.contains("admin: *admin_interface"))
+
+    // Decompression
+    XCTAssertTrue(resolvedYAML.contains("decompressor.v3.Gzip"))
+    XCTAssertFalse(resolvedYAML.contains("decompressor.v3.Brotli"))
 
     // Metadata
     XCTAssertTrue(resolvedYAML.contains("device_os: iOS"))
@@ -384,6 +557,60 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("typed_config: test_config"))
   }
 
+  func testResolvesYAMLWithAlternateValues() throws {
+    let config = EnvoyConfiguration(
+      adminInterfaceEnabled: false,
+      grpcStatsDomain: "stats.envoyproxy.io",
+      connectTimeoutSeconds: 200,
+      dnsRefreshSeconds: 300,
+      dnsFailureRefreshSecondsBase: 400,
+      dnsFailureRefreshSecondsMax: 500,
+      dnsQueryTimeoutSeconds: 800,
+      dnsMinRefreshSeconds: 100,
+      dnsPreresolveHostnames: "[test]",
+      enableHappyEyeballs: false,
+      enableGzip: false,
+      enableBrotli: true,
+      enableInterfaceBinding: false,
+      enableDrainPostDnsRefresh: true,
+      enforceTrustChainVerification: true,
+      forceIPv6: true,
+      h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
+      h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2ExtendKeepaliveTimeout: false,
+      h2RawDomains: [],
+      maxConnectionsPerHost: 100,
+      statsFlushSeconds: 600,
+      streamIdleTimeoutSeconds: 700,
+      perTryIdleTimeoutSeconds: 777,
+      appVersion: "v1.2.3",
+      appId: "com.envoymobile.ios",
+      virtualClusters: "[test]",
+      directResponseMatchers: "",
+      directResponses: "",
+      nativeFilterChain: [
+        EnvoyNativeFilterConfig(name: "filter_name", typedConfig: "test_config"),
+      ],
+      platformFilterChain: [
+        EnvoyHTTPFilterFactory(filterName: "TestFilter", factory: TestFilter.init),
+      ],
+      stringAccessors: [:],
+      keyValueStores: [:],
+      statsSinks: []
+    )
+    let resolvedYAML = try XCTUnwrap(config.resolveTemplate(kMockTemplate))
+    XCTAssertTrue(resolvedYAML.contains("&dns_lookup_family V4_PREFERRED"))
+    XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses false"))
+    XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
+    XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification VERIFY_TRUST_CHAIN"))
+    XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout false"))
+    XCTAssertTrue(resolvedYAML.contains("&enable_drain_post_dns_refresh true"))
+
+    // Decompression
+    XCTAssertFalse(resolvedYAML.contains("decompressor.v3.Gzip"))
+    XCTAssertTrue(resolvedYAML.contains("decompressor.v3.Brotli"))
+  }
+
   func testReturnsNilWhenUnresolvedValueInTemplate() {
     let config = EnvoyConfiguration(
       adminInterfaceEnabled: true,
@@ -393,10 +620,20 @@ final class EngineBuilderTests: XCTestCase {
       dnsFailureRefreshSecondsBase: 400,
       dnsFailureRefreshSecondsMax: 500,
       dnsQueryTimeoutSeconds: 800,
+      dnsMinRefreshSeconds: 100,
       dnsPreresolveHostnames: "[test]",
+      enableHappyEyeballs: false,
+      enableGzip: false,
+      enableBrotli: false,
       enableInterfaceBinding: false,
+      enableDrainPostDnsRefresh: false,
+      enforceTrustChainVerification: true,
+      forceIPv6: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
+      h2ExtendKeepaliveTimeout: false,
+      h2RawDomains: [],
+      maxConnectionsPerHost: 100,
       statsFlushSeconds: 600,
       streamIdleTimeoutSeconds: 700,
       perTryIdleTimeoutSeconds: 700,
@@ -407,7 +644,9 @@ final class EngineBuilderTests: XCTestCase {
       directResponses: "",
       nativeFilterChain: [],
       platformFilterChain: [],
-      stringAccessors: [:]
+      stringAccessors: [:],
+      keyValueStores: [:],
+      statsSinks: []
     )
     XCTAssertNil(config.resolveTemplate("{{ missing }}"))
   }

@@ -8,6 +8,16 @@
 // NOLINT(namespace-envoy)
 
 /**
+ * Throughout this file one may note that most callbacks take a void* context parameter, and most
+ * callback structs have a void* context field. In typical practice, the value for context on the
+ * struct is the one passed through in every call made to a callback. This allows platform
+ * callbacks to propagate state when supplying the callbacks and later, receiving them. Common code
+ * will not attempt to use or modify this state - it's purely for the platform implementation to
+ * leverage. Often that might mean it contains references to platform-native objects and/or thread
+ * dispatch mechanisms that can be used to dispatch the callback as appropriate to platform code.
+ */
+
+/**
  * Handle to an Envoy engine instance. Valid only for the lifetime of the engine and not intended
  * for any external interpretation or use.
  */
@@ -141,7 +151,8 @@ typedef struct {
 } envoy_error;
 
 /**
- * Contains internal HTTP stream metrics, context, and other details.
+ * Contains internal HTTP stream metrics, context, and other details which are
+ * sent with most callbacks.
  *
  * Note these values may change over the lifecycle of a stream.
  */
@@ -152,7 +163,57 @@ typedef struct {
   int64_t connection_id;
   // The number of internal attempts to carry out a request/operation. 0 if not present.
   uint64_t attempt_count;
+  // Number of bytes consumed by the non terminal callbacks out of the response.
+  // NOTE: on terminal callbacks (on_complete, on_error_, on_cancel), this value will not be equal
+  //       to envoy_final_stream_intel.received_byte_count. The latter represents the real number
+  //       of bytes received before decompression. consumed_bytes_from_response omits the number
+  //       number of bytes related to the Status Line, and is after decompression.
+  uint64_t consumed_bytes_from_response;
 } envoy_stream_intel;
+
+/**
+ * Contains internal HTTP stream metrics which sent at stream end.
+ *
+ * Note: for the signed fields, -1 means not present.
+ */
+typedef struct {
+  // The time the stream started (a.k.a request started), in ms since the epoch.
+  int64_t stream_start_ms;
+  // The time the DNS resolution for this request started, in ms since the epoch.
+  int64_t dns_start_ms;
+  // The time the DNS resolution for this request completed, in ms since the epoch.
+  int64_t dns_end_ms;
+  // The time the upstream connection started, in ms since the epoch.
+  // This may not be set if socket_reused is false.
+  int64_t connect_start_ms;
+  // The time the upstream connection completed, in ms since the epoch.
+  // This may not be set if socket_reused is false.
+  int64_t connect_end_ms;
+  // The time the SSL handshake started, in ms since the epoch.
+  // This may not be set if socket_reused is false.
+  int64_t ssl_start_ms;
+  // The time the SSL handshake completed, in ms since the epoch.
+  // This may not be set if socket_reused is false.
+  int64_t ssl_end_ms;
+  // The time the first byte of the request was sent upstream, in ms since the epoch.
+  int64_t sending_start_ms;
+  // The time the last byte of the request was sent upstream, in ms since the epoch.
+  int64_t sending_end_ms;
+  // The time the first byte of the response was received, in ms since the epoch.
+  int64_t response_start_ms;
+  // The time when the stream reached a final state: Error, Cancel, Success.
+  int64_t stream_end_ms;
+  // True if the upstream socket had been used previously.
+  uint64_t socket_reused;
+  // The number of bytes sent upstream.
+  uint64_t sent_byte_count;
+  // The number of bytes received from upstream.
+  uint64_t received_byte_count;
+  // The final response flags for the stream. See
+  // https://github.com/envoyproxy/envoy/blob/main/envoy/stream_info/stream_info.h
+  // for the ResponseFlag enum.
+  uint64_t response_flags;
+} envoy_final_stream_intel;
 
 #ifdef __cplusplus
 extern "C" { // utility functions
@@ -298,12 +359,13 @@ typedef void* (*envoy_on_trailers_f)(envoy_headers trailers, envoy_stream_intel 
  *
  * @param envoy_error, the error received/caused by the async HTTP stream.
  * @param stream_intel, contains internal stream metrics, context, and other details.
+ * @param final_stream_intel, contains final internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  * @return void*, return context (may be unused).
  */
 typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_intel,
-                                  void* context);
+                                  envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Callback signature for when an HTTP stream bi-directionally completes without error.
@@ -311,11 +373,13 @@ typedef void* (*envoy_on_error_f)(envoy_error error, envoy_stream_intel stream_i
  * This is a TERMINAL callback. Exactly one terminal callback will be called per stream.
  *
  * @param stream_intel, contains internal stream metrics, context, and other details.
+ * @param final_stream_intel, contains final internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel,
+                                     envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Callback signature for when an HTTP stream is cancelled.
@@ -323,11 +387,13 @@ typedef void* (*envoy_on_complete_f)(envoy_stream_intel stream_intel, void* cont
  * This is a TERMINAL callback. Exactly one terminal callback will be called per stream.
  *
  * @param stream_intel, contains internal stream metrics, context, and other details.
+ * @param final_stream_intel, contains final internal stream metrics, context, and other details.
  * @param context, contains the necessary state to carry out platform-specific dispatch and
  * execution.
  * @return void*, return context (may be unused).
  */
-typedef void* (*envoy_on_cancel_f)(envoy_stream_intel stream_intel, void* context);
+typedef void* (*envoy_on_cancel_f)(envoy_stream_intel stream_intel,
+                                   envoy_final_stream_intel final_stream_intel, void* context);
 
 /**
  * Called when the envoy engine is exiting.
@@ -432,3 +498,27 @@ typedef struct {
   // Context passed through to callbacks to provide dispatch and execution state.
   const void* context;
 } envoy_event_tracker;
+
+/**
+ * The list of certificate verification results returned from Java side to the
+ * C++ side.
+ * A Java counterpart lives in org.chromium.net.CertVerifyStatusAndroid.java
+ */
+typedef enum {
+  // Certificate is trusted.
+  CERT_VERIFY_STATUS_OK = 0,
+  // Certificate verification could not be conducted.
+  CERT_VERIFY_STATUS_FAILED = -1,
+  // Certificate is not trusted due to non-trusted root of the certificate
+  // chain.
+  CERT_VERIFY_STATUS_NO_TRUSTED_ROOT = -2,
+  // Certificate is not trusted because it has expired.
+  CERT_VERIFY_STATUS_EXPIRED = -3,
+  // Certificate is not trusted because it is not valid yet.
+  CERT_VERIFY_STATUS_NOT_YET_VALID = -4,
+  // Certificate is not trusted because it could not be parsed.
+  CERT_VERIFY_STATUS_UNABLE_TO_PARSE = -5,
+  // Certificate is not trusted because it has an extendedKeyUsage field, but
+  // its value is not correct for a web server.
+  CERT_VERIFY_STATUS_INCORRECT_KEY_USAGE = -6,
+} envoy_cert_verify_status_t;

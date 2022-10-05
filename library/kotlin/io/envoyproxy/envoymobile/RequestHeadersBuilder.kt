@@ -1,6 +1,6 @@
 package io.envoyproxy.envoymobile
 
-/*
+/**
  * Builder used for constructing instances of RequestHeaders`.
  */
 class RequestHeadersBuilder : HeadersBuilder {
@@ -18,13 +18,14 @@ class RequestHeadersBuilder : HeadersBuilder {
     authority: String,
     path: String
   ) :
-    super(
-      mutableMapOf(
+    super(HeadersContainer(
+      mapOf(
         ":authority" to mutableListOf(authority),
         ":method" to mutableListOf(method.stringValue),
         ":path" to mutableListOf(path),
         ":scheme" to mutableListOf(scheme)
       )
+    )
     )
 
   /**
@@ -33,7 +34,14 @@ class RequestHeadersBuilder : HeadersBuilder {
    *
    * @param headers: The headers to start with.
    */
-  internal constructor(headers: MutableMap<String, MutableList<String>>) : super(headers)
+  internal constructor(headers: Map<String, MutableList<String>>) : super(HeadersContainer(headers))
+
+  /**
+   * Instantiate a new builder.
+   *
+   * @param container: The headers container to start with.
+   */
+  internal constructor(container: HeadersContainer) : super(container)
 
   override fun add(name: String, value: String): RequestHeadersBuilder {
     super.add(name, value)
@@ -87,11 +95,33 @@ class RequestHeadersBuilder : HeadersBuilder {
     }
 
   /**
+   * Add a socket tag to be applied to the socket.
+   *
+   * @param uid: Traffic stats UID to be applied.
+   * @param tag: Traffic stats tag to be applied.
+   *
+   * See: https://source.android.com/devices/tech/datausage/tags-explained
+   * See: https://developer.android.com/reference/android/net/TrafficStats#setThreadStatsTag(int)
+   * See: https://developer.android.com/reference/android/net/TrafficStats#setThreadStatsUid(int)
+   * See: https://developer.android.com/reference/android/net/TrafficStats#tagSocket(java.net.Socket)
+   *
+   * @return RequestHeadersBuilder, This builder.
+   */
+  fun addSocketTag(uid: Int, tag: Int):
+    RequestHeadersBuilder {
+      internalSet(
+        "x-envoy-mobile-socket-tag",
+        mutableListOf(uid.toString() + "," + tag.toString())
+      )
+      return this
+    }
+
+  /**
    * Build the request headers using the current builder.
    *
    * @return RequestHeaders, New instance of request headers.
    */
   fun build(): RequestHeaders {
-    return RequestHeaders(headers)
+    return RequestHeaders(container)
   }
 }

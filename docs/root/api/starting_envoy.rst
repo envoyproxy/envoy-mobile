@@ -116,6 +116,36 @@ The configuration is expected as a JSON list.
   // Swift
   builder.addDNSPreresolveHostnames("[{\"address\": \"foo.com", \"port_value\": 443}]")
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``addDNSFallbackNameservers``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attention::
+
+  This API is only available for Kotlin.
+
+Add a list of IP addresses to use as fallback DNS name servers.
+See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/network/dns_resolver/cares/v3/cares_dns_resolver.proto#extensions-network-dns-resolver-cares-v3-caresdnsresolverconfig>`__
+for further information.
+
+  // Kotlin
+  builder.addDNSFallbackNameservers(listOf<String>("8.8.8.8"))
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableDNSFilterUnroutableFamilies``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attention::
+
+  This API is only available for Kotlin.
+
+Specify whether to filter unroutable IP families during DNS resolution or not.
+See `the Envoy docs <https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/network/dns_resolver/cares/v3/cares_dns_resolver.proto#extensions-network-dns-resolver-cares-v3-caresdnsresolverconfig>`__
+for further information.
+
+  // Kotlin
+  builder.enableDNSFilterUnroutableFamilies(true)
+
 ~~~~~~~~~~~~~~~
 ``addLogLevel``
 ~~~~~~~~~~~~~~~
@@ -340,15 +370,11 @@ Specify a closure to be called by Envoy to access arbitrary strings from Platfor
   builder.addStringAccessor(name: "demo-accessor", accessor: { return "PlatformString" })
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-``enableNetworkPathMonitor``
+``setNetworkMonitoringMode``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configure the engine to use ``NWPathMonitor`` rather than ``SCNetworkReachability``
-on supported platforms (iOS 12+) to update the preferred Envoy network cluster (e.g. WLAN vs WWAN).
-
-.. attention::
-
-    Only available on iOS 12 or later.
+Configure how the engine observes network reachability state changes to update the preferred Envoy network cluster (e.g. WLAN vs WWAN).
+Defaults to ``NWPathMonitor``, but can be configured to use ``SCNetworkReachability`` or be disabled completely.
 
 **Example**::
 
@@ -356,7 +382,149 @@ on supported platforms (iOS 12+) to update the preferred Envoy network cluster (
   // N/A
 
   // Swift
-  builder.enableNetworkPathMonitor()
+  builder.setNetworkMonitoringMode(.pathMonitor)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableHappyEyeballs``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to use Happy Eyeballs when multiple IP stacks may be supported. Defaults to true.
+
+**Example**::
+
+  // Kotlin
+  builder.enableHappyEyeballs(true)
+
+  // Swift
+  builder.enableHappyEyeballs(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableGzip``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to enable transparent response Gzip decompression. Defaults to true.
+
+**Example**::
+
+  // Kotlin
+  builder.enableGzip(false)
+
+  // Swift
+  builder.enableGzip(false)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableBrotli``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to enable transparent response Brotli decompression. Defaults to false.
+
+**Example**::
+
+  // Kotlin
+  builder.enableBrotli(true)
+
+  // Swift
+  builder.enableBrotli(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~
+``enableSocketTagging``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to enable support for Android socket tagging. Unavailable on iOS. Defaults to false.
+
+**Example**::
+
+  // Kotlin
+  builder.enableSocketTagging(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableInterfaceBinding``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether sockets may attempt to bind to a specific interface, based on network conditions.
+
+**Example**::
+
+  // Kotlin
+  builder.enableInterfaceBinding(true)
+
+  // Swift
+  builder.enableInterfaceBinding(true)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``h2ExtendKeepaliveTimeout``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Extend the keepalive timeout when *any* frame is received on the owning HTTP/2 connection.
+
+This can help negate the effect of head-of-line (HOL) blocking for slow connections.
+
+**Example**::
+
+  // Kotlin
+  builder.h2ExtendKeepaliveTimeout(true)
+
+  // Swift
+  builder.h2ExtendKeepaliveTimeout(true)
+
+
+~~~~~~~~~~~~~~~~~~~~
+``addKeyValueStore``
+~~~~~~~~~~~~~~~~~~~~
+
+Implementations of a public KeyValueStore interface may be added in their respective languages and
+made available to the library. General usage is supported, but typical future usage will be in
+support of HTTP and endpoint property caching.
+
+**Example**::
+
+  // Kotlin
+  builder.addKeyValueStore("io.envoyproxy.envoymobile.MyKeyValueStore", MyKeyValueStoreImpl())
+
+  // Swift
+  // Coming soon.
+
+
+The library also contains a simple Android-specific KeyValueStore implementation based on Android's
+SharedPreferences.
+
+**Example**::
+
+  // Android
+  val preferences = context.getSharedPreferences("io.envoyproxy.envoymobile.MyPreferences", Context.MODE_PRIVATE)
+  builder.addKeyValueStore("io.envoyproxy.envoymobile.MyKeyValueStore", SharedPreferencesStore(preferences))
+
+  // iOS
+  // Coming soon.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+``forceIPv6``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Specify whether to remap IPv4 addresses to the IPv6 space and always force connections
+to use IPv6. Note this is an experimental option and should be enabled with caution.
+
+**Example**::
+
+  // Kotlin
+  builder.forceIPv6(true)
+
+  // Swift
+  builder.forceIPv6(true)
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+``enableProxying``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Specify whether to respect system Proxy settings when establishing connections.
+Available on Andorid only.
+
+**Example**::
+
+    // Kotlin
+    builder.enableProxying(true)
+
 
 ----------------------
 Advanced configuration

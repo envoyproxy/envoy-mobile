@@ -50,21 +50,34 @@ interface ResponseFilter : Filter {
   /**
    * Called at most once when an error within Envoy occurs.
    *
+   * Only one of onError, onCancel, or onComplete will be called per stream.
    * This should be considered a terminal state, and invalidates any previous attempts to
    * `stopIteration{...}`.
    *
    * @param error:       The error that occurred within Envoy.
-   * @param streamIntel: Internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
    */
-  fun onError(error: EnvoyError, streamIntel: StreamIntel)
+  fun onError(error: EnvoyError, finalStreamIntel: FinalStreamIntel)
 
   /**
    * Called at most once when the client cancels the stream.
    *
+   * Only one of onError, onCancel, or onComplete will be called per stream.
    * This should be considered a terminal state, and invalidates any previous attempts to
    * `stopIteration{...}`.
    *
-   * @param streamIntel: Internal HTTP stream metrics, context, and other details.
+   * @param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
    */
-  fun onCancel(streamIntel: StreamIntel)
+  fun onCancel(finalStreamIntel: FinalStreamIntel)
+
+/**
+   * Called at most once when the stream completes gracefully.
+   *
+   * Only one of onError, onCancel, or onComplete will be called per stream.
+   * This should be considered a terminal state, and invalidates any previous attempts to
+   * `stopIteration{...}`.
+   *
+   * @param finalStreamIntel: Final internal HTTP stream metrics, context, and other details.
+   */
+  fun onComplete(finalStreamIntel: FinalStreamIntel)
 }

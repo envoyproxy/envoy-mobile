@@ -12,6 +12,13 @@ void ProvisionalDispatcher::drain(Event::Dispatcher& event_dispatcher) {
   // because of behavioral oddities in Event::Dispatcher: event_dispatcher_->isThreadSafe() will
   // crash.
   Thread::LockGuard lock(state_lock_);
+
+  // Don't perform any work on the dispatcher if marked as terminated.
+  if (terminated_) {
+    event_dispatcher.exit();
+    return;
+  }
+
   RELEASE_ASSERT(!drained_, "ProvisionalDispatcher::drain must only occur once");
   drained_ = true;
   event_dispatcher_ = &event_dispatcher;
@@ -24,6 +31,11 @@ void ProvisionalDispatcher::drain(Event::Dispatcher& event_dispatcher) {
 envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
   Thread::LockGuard lock(state_lock_);
 
+  // Don't perform any work on the dispatcher if marked as terminated.
+  if (terminated_) {
+    return ENVOY_FAILURE;
+  }
+
   if (drained_) {
     event_dispatcher_->post(callback);
     return ENVOY_SUCCESS;
@@ -31,6 +43,14 @@ envoy_status_t ProvisionalDispatcher::post(Event::PostCb callback) {
 
   init_queue_.push_back(callback);
   return ENVOY_SUCCESS;
+}
+
+Event::SchedulableCallbackPtr
+ProvisionalDispatcher::createSchedulableCallback(std::function<void()> cb) {
+  RELEASE_ASSERT(
+      isThreadSafe(),
+      "ProvisionalDispatcher::createSchedulableCallback must be called from a threadsafe context");
+  return event_dispatcher_->createSchedulableCallback(cb);
 }
 
 bool ProvisionalDispatcher::isThreadSafe() const {
@@ -64,6 +84,16 @@ bool ProvisionalDispatcher::trackedObjectStackIsEmpty() const {
       isThreadSafe(),
       "ProvisionalDispatcher::trackedObjectStackIsEmpty must be called from a threadsafe context");
   return event_dispatcher_->trackedObjectStackIsEmpty();
+}
+
+TimeSource& ProvisionalDispatcher::timeSource() { return event_dispatcher_->timeSource(); }
+
+void ProvisionalDispatcher::terminate() {
+  Thread::LockGuard lock(state_lock_);
+  if (drained_) {
+    event_dispatcher_->exit();
+  }
+  terminated_ = true;
 }
 
 } // namespace Event

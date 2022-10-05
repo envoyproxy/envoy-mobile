@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "objc_library")
+load("//bazel:config.bzl", "MINIMUM_IOS_VERSION")
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_application")
 
 licenses(["notice"])  # Apache 2
@@ -9,7 +9,7 @@ objc_library(
         "*.h",
         "*.m",
     ]),
-    deps = ["//dist:envoy_mobile_ios"],
+    deps = ["//:envoy_mobile_ios"],
 )
 
 ios_application(
@@ -17,8 +17,11 @@ ios_application(
     bundle_id = "io.envoyproxy.envoymobile.helloworld",
     families = ["iphone"],
     infoplists = ["Info.plist"],
-    minimum_os_version = "11.0",
-    deps = [
-        "appmain",
-    ],
+    minimum_os_version = MINIMUM_IOS_VERSION,
+    provisioning_profile = select({
+        "@envoy//bazel:ios_arm64": "//examples:ios_provisioning_profile",
+        "//conditions:default": None,
+    }),
+    visibility = ["//visibility:public"],
+    deps = ["appmain"],
 )

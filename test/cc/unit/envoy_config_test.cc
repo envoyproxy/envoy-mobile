@@ -1,10 +1,22 @@
 #include <string>
 #include <vector>
 
+#include "test/test_common/utility.h"
+
+#include "absl/strings/str_replace.h"
 #include "absl/synchronization/notification.h"
 #include "gtest/gtest.h"
 #include "library/cc/engine_builder.h"
 #include "library/cc/log_level.h"
+#include "library/common/config/internal.h"
+
+#if defined(__APPLE__)
+#include "source/extensions/network/dns_resolver/apple/apple_dns_impl.h"
+#endif
+
+using testing::HasSubstr;
+using testing::Not;
+extern const char* alternate_protocols_cache_filter_insert;
 
 namespace Envoy {
 namespace {
@@ -46,6 +58,92 @@ TEST(TestConfig, ConfigIsApplied) {
   for (const auto& string : must_contain) {
     ASSERT_NE(config_str.find(string), std::string::npos) << "'" << string << "' not found";
   }
+}
+
+TEST(TestConfig, ConfigIsValid) {
+  auto engine_builder = EngineBuilder();
+  auto config_str = engine_builder.generateConfigStr();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+
+  // Test per-platform DNS fixes.
+#if defined(__APPLE__)
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.network.dns_resolver.getaddrinfo")));
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("envoy.network.dns_resolver.apple"));
+#else
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("envoy.network.dns_resolver.getaddrinfo"));
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.network.dns_resolver.apple")));
+#endif
+}
+
+#if !defined(__APPLE__)
+TEST(TestConfig, SetUseDnsCAresResolver) {
+  auto engine_builder = EngineBuilder();
+  engine_builder.useDnsSystemResolver(false);
+  auto config_str = engine_builder.generateConfigStr();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("envoy.network.dns_resolver.cares"));
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.network.dns_resolver.getaddrinfo")));
+}
+#endif
+
+TEST(TestConfig, SetGzip) {
+  auto engine_builder = EngineBuilder();
+
+  engine_builder.enableGzip(false);
+  auto config_str = engine_builder.generateConfigStr();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.filters.http.decompressor")));
+
+  engine_builder.enableGzip(true);
+  config_str = engine_builder.generateConfigStr();
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("envoy.filters.http.decompressor"));
+}
+
+TEST(TestConfig, SetBrotli) {
+  auto engine_builder = EngineBuilder();
+
+  engine_builder.enableBrotli(false);
+  auto config_str = engine_builder.generateConfigStr();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("brotli.decompressor.v3.Brotli")));
+
+  engine_builder.enableBrotli(true);
+  config_str = engine_builder.generateConfigStr();
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("brotli.decompressor.v3.Brotli"));
+}
+
+TEST(TestConfig, SetSocketTag) {
+  auto engine_builder = EngineBuilder();
+
+  engine_builder.enableSocketTagging(false);
+  auto config_str = engine_builder.generateConfigStr();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("http.socket_tag.SocketTag")));
+
+  engine_builder.enableSocketTagging(true);
+  config_str = engine_builder.generateConfigStr();
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("http.socket_tag.SocketTag"));
+}
+
+TEST(TestConfig, SetAltSvcCache) {
+  auto engine_builder = EngineBuilder();
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+
+  absl::StrReplaceAll({{"#{custom_filters}", alternate_protocols_cache_filter_insert}},
+                      &config_str);
+
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
 TEST(TestConfig, RemainingTemplatesThrows) {

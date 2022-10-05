@@ -7,7 +7,7 @@ public protocol Engine: AnyObject {
   /// - returns: A client for opening and managing HTTP streams.
   func streamClient() -> StreamClient
 
-  /// A client for recording time series metrics.
+  /// - returns: A client for recording time series metrics.
   func pulseClient() -> PulseClient
 
   /// Flush the stats sinks outside of a flushing interval.
@@ -20,6 +20,6 @@ public protocol Engine: AnyObject {
   /// Terminates the running engine.
   func terminate()
 
-  /// Drain all connections owned by this Engine.
-  func drainConnections()
+  /// Refresh DNS, and drain connections owned by this Engine.
+  func resetConnectivityState()
 }

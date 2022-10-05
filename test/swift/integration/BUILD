@@ -15,13 +15,14 @@ envoy_mobile_swift_test(
         "DirectResponsePrefixHeadersMatchIntegrationTest.swift",
         "DirectResponsePrefixPathMatchIntegrationTest.swift",
         "DirectResponseSuffixHeadersMatchIntegrationTest.swift",
-        "DrainConnectionsTest.swift",
         "EngineApiTest.swift",
         "FilterResetIdleTest.swift",
         "GRPCReceiveErrorTest.swift",
         "IdleTimeoutTest.swift",
+        "KeyValueStoreTest.swift",
         "ReceiveDataTest.swift",
         "ReceiveErrorTest.swift",
+        "ResetConnectivityStateTest.swift",
         "SendDataTest.swift",
         "SendHeadersTest.swift",
         "SendTrailersTest.swift",
@@ -30,9 +31,27 @@ envoy_mobile_swift_test(
         "SetLoggerTest.swift",
         "StatFlushIntegrationTest.swift",
     ],
+    # TODO(jpsim): Fix remote execution for these tests
+    tags = [
+        "no-remote-exec",
+    ],
+    visibility = ["//visibility:public"],
     deps = [
         ":test_extensions",
         "//library/objective-c:envoy_engine_objc_lib",
+    ],
+)
+
+envoy_mobile_swift_test(
+    name = "flatbuffer_test",
+    srcs = [
+        "FlatBufferTest.swift",
+    ] + [
+        "//test/fbs:test_fb_swift_srcs",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@swift_flatbuffers//swift",
     ],
 )
 

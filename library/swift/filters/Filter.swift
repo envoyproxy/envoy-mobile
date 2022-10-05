@@ -15,6 +15,8 @@ extension EnvoyHTTPFilterFactory {
 
 extension EnvoyHTTPFilter {
   /// Initialize an EnvoyHTTPFilter using the instance methods of a concrete Filter implementation.
+  ///
+  /// - parameter filter: The contrete `Filter` to wrap.
   convenience init(filter: Filter) {
     self.init()
 
@@ -25,7 +27,7 @@ extension EnvoyHTTPFilter {
                                                     streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
-          return [kEnvoyFilterHeadersStatusContinue, headers.headers]
+          return [kEnvoyFilterHeadersStatusContinue, headers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, NSNull()]
         }
@@ -42,7 +44,10 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, NSNull()]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.headers as Any]
+          return [
+                    kEnvoyFilterDataStatusResumeIteration, data,
+                    headers?.caseSensitiveHeaders() as Any,
+          ]
         }
       }
 
@@ -51,14 +56,14 @@ extension EnvoyHTTPFilter {
                                                      streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
+          return [kEnvoyFilterTrailersStatusContinue, trailers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, NSNull()]
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterTrailersStatusResumeIteration,
-            trailers.headers,
-            headers?.headers as Any,
+            trailers.caseSensitiveHeaders(),
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
           ]
         }
@@ -72,7 +77,7 @@ extension EnvoyHTTPFilter {
                                                       streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let headers):
-          return [kEnvoyFilterHeadersStatusContinue, headers.headers]
+          return [kEnvoyFilterHeadersStatusContinue, headers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterHeadersStatusStopIteration, NSNull()]
         }
@@ -89,7 +94,10 @@ extension EnvoyHTTPFilter {
         case .stopIterationNoBuffer:
           return [kEnvoyFilterDataStatusStopIterationNoBuffer, NSNull()]
         case .resumeIteration(let headers, let data):
-          return [kEnvoyFilterDataStatusResumeIteration, data, headers?.headers as Any]
+          return [
+                    kEnvoyFilterDataStatusResumeIteration, data,
+                    headers?.caseSensitiveHeaders() as Any,
+          ]
         }
       }
 
@@ -98,27 +106,31 @@ extension EnvoyHTTPFilter {
                                                        streamIntel: StreamIntel(streamIntel))
         switch result {
         case .continue(let trailers):
-          return [kEnvoyFilterTrailersStatusContinue, trailers.headers]
+          return [kEnvoyFilterTrailersStatusContinue, trailers.caseSensitiveHeaders()]
         case .stopIteration:
           return [kEnvoyFilterTrailersStatusStopIteration, NSNull()]
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterTrailersStatusResumeIteration,
-            trailers.headers,
-            headers?.headers as Any,
+            trailers.caseSensitiveHeaders(),
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
           ]
         }
       }
 
-      self.onError = { errorCode, message, attemptCount, streamIntel in
+      self.onError = { errorCode, message, attemptCount, streamIntel, finalStreamIntel in
         let error = EnvoyError(errorCode: errorCode, message: message,
                                attemptCount: UInt32(exactly: attemptCount), cause: nil)
-        responseFilter.onError(error, streamIntel: StreamIntel(streamIntel))
+        responseFilter.onError(error, streamIntel: FinalStreamIntel(streamIntel, finalStreamIntel))
       }
 
-      self.onCancel = { streamIntel in
-        responseFilter.onCancel(streamIntel: StreamIntel(streamIntel))
+      self.onCancel = { streamIntel, finalStreamIntel in
+        responseFilter.onCancel(streamIntel: FinalStreamIntel(streamIntel, finalStreamIntel))
+      }
+
+      self.onComplete = { streamIntel, finalStreamIntel in
+        responseFilter.onComplete(streamIntel: FinalStreamIntel(streamIntel, finalStreamIntel))
       }
     }
 
@@ -140,9 +152,9 @@ extension EnvoyHTTPFilter {
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterResumeStatusResumeIteration,
-            headers?.headers as Any,
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
-            trailers?.headers as Any,
+            trailers?.caseSensitiveHeaders() as Any,
           ]
         }
       }
@@ -166,9 +178,9 @@ extension EnvoyHTTPFilter {
         case .resumeIteration(let headers, let data, let trailers):
           return [
             kEnvoyFilterResumeStatusResumeIteration,
-            headers?.headers as Any,
+            headers?.caseSensitiveHeaders() as Any,
             data as Any,
-            trailers?.headers as Any,
+            trailers?.caseSensitiveHeaders() as Any,
           ]
         }
       }

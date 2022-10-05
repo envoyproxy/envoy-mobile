@@ -4,7 +4,7 @@
 
 const int custom_cluster_indent = 2;
 const int custom_listener_indent = 2;
-const int custom_filter_indent = 10;
+const int custom_filter_indent = 2;
 const int custom_route_indent = 16;
 
 const int fake_remote_response_indent = 14;
@@ -13,43 +13,111 @@ const char* fake_remote_listener_insert = "  - *fake_remote_listener\n";
 const char* fake_remote_route_insert = "              - *fake_remote_route\n";
 
 const char* platform_filter_template = R"(
-          - name: envoy.filters.http.platform_bridge
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
-              platform_filter_name: {{ platform_filter_name }}
+  - name: envoy.filters.http.platform_bridge
+    typed_config:
+      "@type": type.googleapis.com/envoymobile.extensions.filters.http.platform_bridge.PlatformBridge
+      platform_filter_name: {{ platform_filter_name }}
 )";
 
 const char* native_filter_template = R"(
-          - name: {{ native_filter_name }}
-            typed_config: {{ native_filter_typed_config }}
+  - name: {{ native_filter_name }}
+    typed_config: {{ native_filter_typed_config }}
 )";
 
 const char* route_cache_reset_filter_insert = R"(
-          - name: envoy.filters.http.route_cache_reset
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
+  - name: envoy.filters.http.route_cache_reset
+    typed_config:
+      "@type": type.googleapis.com/envoymobile.extensions.filters.http.route_cache_reset.RouteCacheReset
+)";
+
+const char* alternate_protocols_cache_filter_insert = R"(
+  - name: alternate_protocols_cache
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig
+      alternate_protocols_cache_options:
+        name: default_alternate_protocols_cache
+)";
+
+const char* gzip_config_insert = R"(
+  - name: envoy.filters.http.decompressor
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+      decompressor_library:
+        name: gzip
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
+          window_bits: 15
+      request_direction_config:
+        common_config:
+          enabled:
+            default_value: false
+            runtime_key: request_decompressor_enabled
+      response_direction_config:
+        common_config:
+          ignore_no_transform_header: true
+)";
+
+const char* brotli_config_insert = R"(
+  - name: envoy.filters.http.decompressor
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
+      decompressor_library:
+        name: text_optimized
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.compression.brotli.decompressor.v3.Brotli
+      request_direction_config:
+        common_config:
+          enabled:
+            default_value: false
+            runtime_key: request_decompressor_enabled
+      response_direction_config:
+        common_config:
+          ignore_no_transform_header: true
+)";
+
+const char* socket_tag_config_insert = R"(
+  - name: envoy.filters.http.socket_tag
+    typed_config:
+      "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_tag.SocketTag
 )";
 
 // clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
 - &connect_timeout 30s
-- &dns_refresh_rate 60s
 - &dns_fail_base_interval 2s
 - &dns_fail_max_interval 10s
-- &dns_query_timeout 25s
+- &dns_lookup_family ALL
+- &dns_min_refresh_rate 60s
+- &dns_multiple_addresses true
 - &dns_preresolve_hostnames []
+- &dns_query_timeout 25s
+- &dns_refresh_rate 60s
+- &force_ipv6 false
+)"
+#if defined(__APPLE__)
+R"(- &dns_resolver_name envoy.network.dns_resolver.apple
+- &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig"}
+)"
+#else
+R"(- &dns_resolver_name envoy.network.dns_resolver.cares
+- &dns_resolver_config {"@type":"type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig"}
+)"
+#endif
+R"(- &enable_drain_post_dns_refresh false
 - &enable_interface_binding false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
+- &h2_delay_keepalive_timeout false
+- &h2_raw_domains []
+- &max_connections_per_host 7
 - &metadata {}
 - &stats_domain 127.0.0.1
 - &stats_flush_interval 60s
 - &stats_sinks []
-- &statsd_host 127.0.0.1
-- &statsd_port 8125
 - &stream_idle_timeout 15s
 - &per_try_idle_timeout 15s
+- &trust_chain_verification VERIFY_TRUST_CHAIN
 - &virtual_clusters []
 
 !ignore stats_defs:
@@ -63,31 +131,11 @@ const std::string config_header = R"(
       grpc_service:
         envoy_grpc:
           cluster_name: stats
-  base_statsd: &base_statsd
-    name: envoy.stat_sinks.statsd
-    typed_config:
-      "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
-      address:
-        socket_address: { address: *statsd_host, port_value: *statsd_port }
-
-!ignore protocol_defs: &http1_protocol_options_defs
-    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-      "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-      explicit_http_config:
-        http_protocol_options:
-          header_key_format:
-            stateful_formatter:
-              name: preserve_case
-              typed_config:
-                "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-      upstream_http_protocol_options:
-        auto_sni: true
-        auto_san_validation: true
 
 !ignore admin_interface_defs: &admin_interface
     address:
       socket_address:
-        address: 127.0.0.1
+        address: ::1
         port_value: 9901
 
 !ignore tls_root_ca_defs: &tls_root_certs |
@@ -97,46 +145,104 @@ R"(
 
 !ignore tls_socket_defs:
 - &base_tls_socket
-  name: envoy.transport_sockets.tls
+  name: envoy.transport_sockets.http_11_proxy
   typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-    common_tls_context:
-      tls_params:
-        tls_maximum_protocol_version: TLSv1_3
-      validation_context:
-        trusted_ca:
-          inline_string: *tls_root_certs
-- &base_tls_h2_socket
-  name: envoy.transport_sockets.tls
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-    common_tls_context:
-      alpn_protocols: [h2]
-      tls_params:
-        tls_maximum_protocol_version: TLSv1_3
-      validation_context:
-        trusted_ca:
-          inline_string: *tls_root_certs
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        common_tls_context:
+          tls_params:
+            tls_maximum_protocol_version: TLSv1_3
+          validation_context:
+            trusted_ca:
+              inline_string: *tls_root_certs
 )";
 
 const char* config_template = R"(
-!ignore base_protocol_options_defs: &base_protocol_options
+!ignore local_error_defs: &local_error_config
+  "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
+
+!ignore network_defs: &network_configuration_config
+  "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
+  enable_drain_post_dns_refresh: *enable_drain_post_dns_refresh
+  enable_interface_binding: *enable_interface_binding
+
+!ignore dfp_defs: &dfp_config
+  "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
+  dns_cache_config: &dns_cache_config
+    name: base_dns_cache
+    preresolve_hostnames: *dns_preresolve_hostnames
+    dns_lookup_family: *dns_lookup_family
+    host_ttl: 86400s
+    dns_min_refresh_rate: *dns_min_refresh_rate
+    dns_refresh_rate: *dns_refresh_rate
+    dns_failure_refresh_rate:
+      base_interval: *dns_fail_base_interval
+      max_interval: *dns_fail_max_interval
+    dns_query_timeout: *dns_query_timeout
+    typed_dns_resolver_config:
+      name: *dns_resolver_name
+      typed_config: *dns_resolver_config
+
+!ignore router_defs: &router_config
+  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+!ignore http_filter_defs: &http_filters
+#{custom_filters}
+  - name: envoy.filters.http.network_configuration
+    typed_config: *network_configuration_config
+  - name: envoy.filters.http.local_error
+    typed_config: *local_error_config
+  - name: envoy.filters.http.dynamic_forward_proxy
+    typed_config: *dfp_config
+  - name: envoy.router
+    typed_config: *router_config
+
+!ignore protocol_options_defs:
+- &h1_protocol_options
   envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
     "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-    auto_config:
-      http2_protocol_options:
-        connection_keepalive:
-          connection_idle_interval: *h2_connection_keepalive_idle_interval
-          timeout: *h2_connection_keepalive_timeout
-      http_protocol_options:
+    explicit_http_config:
+      http_protocol_options: &h1_config
         header_key_format:
           stateful_formatter:
             name: preserve_case
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
-    upstream_http_protocol_options:
+              forward_reason_phrase: false
+              formatter_type_on_envoy_headers: DEFAULT
+    upstream_http_protocol_options: &upstream_http_protocol_options
       auto_sni: true
       auto_san_validation: true
+- &h2_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    explicit_http_config:
+      http2_protocol_options: &h2_config
+        connection_keepalive:
+          connection_idle_interval: *h2_connection_keepalive_idle_interval
+          timeout: *h2_connection_keepalive_timeout
+        max_concurrent_streams: 100
+    upstream_http_protocol_options: *upstream_http_protocol_options
+- &alpn_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    auto_config:
+      http2_protocol_options: *h2_config
+      http_protocol_options: *h1_config
+    upstream_http_protocol_options: *upstream_http_protocol_options
+- &h3_protocol_options
+  envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+    "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+    auto_config:
+      alternate_protocols_cache_options:
+        name: default_alternate_protocols_cache
+      http3_protocol_options: {}
+      http2_protocol_options: *h2_config
+      http_protocol_options: *h1_config
+    upstream_http_protocol_options: *upstream_http_protocol_options
 
 !ignore custom_listener_defs:
   fake_remote_listener: &fake_remote_listener
@@ -173,7 +279,11 @@ const char* config_template = R"(
     wait_for_warm_on_init: false
     connect_timeout: *connect_timeout
     dns_refresh_rate: *dns_refresh_rate
-    http2_protocol_options: {}
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
     lb_policy: ROUND_ROBIN
     load_assignment:
       cluster_name: stats
@@ -196,6 +306,10 @@ const char* config_template = R"(
             address:
               socket_address: { address: 127.0.0.1, port_value: 10101 }
 
+typed_dns_resolver_config:
+  name: *dns_resolver_name
+  typed_config: *dns_resolver_config
+
 static_resources:
   listeners:
 #{custom_listeners}
@@ -216,7 +330,25 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-            - name: api
+            - name: h2_raw
+              include_attempt_count_in_response: true
+              virtual_clusters: *virtual_clusters
+              domains: *h2_raw_domains
+              routes:
+#{custom_routes}
+              - match: { prefix: "/" }
+                request_headers_to_remove:
+                - x-forwarded-proto
+                - x-envoy-mobile-cluster
+                route:
+                  cluster: base_h2
+                  timeout: 0s
+                  retry_policy:
+                    per_try_idle_timeout: *per_try_idle_timeout
+                    retry_back_off:
+                      base_interval: 0.25s
+                      max_interval: 60s
+            - name: primary
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
               domains: ["*"]
@@ -234,61 +366,7 @@ static_resources:
                     retry_back_off:
                       base_interval: 0.25s
                       max_interval: 60s
-          http_filters:
-#{custom_filters}
-          - name: envoy.filters.http.network_configuration
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.network_configuration.NetworkConfiguration
-              enable_interface_binding: *enable_interface_binding
-          - name: envoy.filters.http.local_error
-            typed_config:
-              "@type": type.googleapis.com/envoymobile.extensions.filters.http.local_error.LocalError
-          - name: envoy.filters.http.dynamic_forward_proxy
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.dynamic_forward_proxy.v3.FilterConfig
-              dns_cache_config: &dns_cache_config
-                name: base_dns_cache
-)"              // TODO: Support API for overriding prefetch_hostnames:
-                // https://github.com/envoyproxy/envoy-mobile/issues/1534
-R"(
-                preresolve_hostnames: *dns_preresolve_hostnames
-)"              // TODO: Support IPV6 https://github.com/lyft/envoy-mobile/issues/1022
-R"(
-                dns_lookup_family: V4_PREFERRED
-)"              // On mobile, backgrounding might cause the host to be past its TTL without good
-                // reason. Given the host would be deleted, and new streams for a given domain
-                // would have to wait for resolution, it is better to not delete existing hosts;
-                // especially since deletion only happens when re-resolving is already in progress.
-                // There is no way to disable so the value below is equivalent to 24 hours.
-R"(
-                host_ttl: 86400s
-                dns_refresh_rate: *dns_refresh_rate
-                dns_failure_refresh_rate:
-                  base_interval: *dns_fail_base_interval
-                  max_interval: *dns_fail_max_interval
-                dns_query_timeout: *dns_query_timeout
-          # TODO: make this configurable for users.
-          - name: envoy.filters.http.decompressor
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.decompressor.v3.Decompressor
-              decompressor_library:
-                name: gzip
-                typed_config:
-                  "@type": type.googleapis.com/envoy.extensions.compression.gzip.decompressor.v3.Gzip
-)"                // Maximum window bits to allow for any stream to be decompressed. Optimally this
-                  // would be set to 0. According to the zlib manual this would allow the decompressor
-                  // to use the window bits in the zlib header to perform the decompression.
-                  // Unfortunately, the proto field constraint makes this impossible currently.
-R"(
-                  window_bits: 15
-              request_direction_config:
-                common_config:
-                  enabled:
-                    default_value: false
-                    runtime_key: request_decompressor_enabled
-          - name: envoy.router
-            typed_config:
-              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+          http_filters: *http_filters
   clusters:
 #{custom_clusters}
   - *stats_cluster
@@ -302,49 +380,85 @@ R"(
         dns_cache_config: *dns_cache_config
     transport_socket: *base_tls_socket
     upstream_connection_options: &upstream_opts
+      set_local_interface_name_on_upstream_connections: true
       tcp_keepalive:
         keepalive_interval: 5
         keepalive_probes: 1
         keepalive_time: 10
     circuit_breakers: &circuit_breakers_settings
       thresholds:
-        - priority: DEFAULT
-          # Don't impose limits on concurrent retries.
-          retry_budget:
-            budget_percent:
-              value: 100
-            min_retry_concurrency: 0xffffffff # uint32 max
-)"  // Used to reap dead connections. In mobile devices it is less important to keep a "host" ejected
-    // a long period and more important to be able to cycle connections assigned to given hosts.
-    // Therefore, the ejection time is short and the interval for unejection is tight, but not too
-    // tight to cause unnecessary churn.
-R"(
-    typed_extension_protocol_options: *http1_protocol_options_defs
+      - priority: DEFAULT
+        # Don't impose limits on concurrent retries.
+        retry_budget:
+          budget_percent:
+            value: 100
+          min_retry_concurrency: 0xffffffff # uint32 max
+      per_host_thresholds:
+      - priority: DEFAULT
+        max_connections: *max_connections_per_host
+    typed_extension_protocol_options: *alpn_protocol_options
   - name: base_clear
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: { name: envoy.transport_sockets.raw_buffer }
+    transport_socket:
+      name: envoy.transport_sockets.http_11_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+        transport_socket:
+          name: envoy.transport_sockets.raw_buffer
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *http1_protocol_options_defs
+    typed_extension_protocol_options: *h1_protocol_options
   - name: base_h2
-    http2_protocol_options: {}
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_tls_h2_socket
+    transport_socket:
+      name: envoy.transport_sockets.http_11_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+        transport_socket:
+          name: envoy.transport_sockets.tls
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+            common_tls_context:
+              alpn_protocols: [h2]
+              tls_params:
+                tls_maximum_protocol_version: TLSv1_3
+              validation_context:
+                trusted_ca:
+                  inline_string: *tls_root_certs
+                trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *base_protocol_options
-  - name: base_alpn
+    typed_extension_protocol_options: *h2_protocol_options
+  - name: base_h3
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket: *base_tls_socket
+    transport_socket:
+      name: envoy.transport_sockets.quic
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+        upstream_tls_context:
+          common_tls_context:
+            tls_params:
+              tls_maximum_protocol_version: TLSv1_3
+            validation_context:
+              trusted_ca:
+                inline_string: *tls_root_certs
+              trust_chain_verification: *trust_chain_verification
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *base_protocol_options
+    typed_extension_protocol_options: *h3_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
@@ -352,46 +466,58 @@ stats_config:
     inclusion_list:
       patterns:
         - safe_regex:
-            google_re2: {}
             regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
         - safe_regex:
-            google_re2: {}
             regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
         - safe_regex:
-            google_re2: {}
+            regex: '^cluster\.[\w]+?\.update_(attempt|success|failure)'
+        - safe_regex:
+            regex: '^cluster\.[\w]+?\.http2.keepalive_timeout'
+        - safe_regex:
             regex: '^dns.apple.*'
         - safe_regex:
-            google_re2: {}
+            regex: '^http.client.*'
+        - safe_regex:
             regex: '^http.dispatcher.*'
         - safe_regex:
-            google_re2: {}
             regex: '^http.hcm.decompressor.*'
         - safe_regex:
-            google_re2: {}
-            regex: '^http.hcm.downstream_rq_(?:[12345]xx|total|completed)'
+            regex: '^http.hcm.downstream_rq_[\w]+'
         - safe_regex:
-            google_re2: {}
+            regex: '^pbf_filter.*'
+        - safe_regex:
             regex: '^pulse.*'
         - safe_regex:
-            google_re2: {}
-            regex: '^vhost.api.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
+            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
   use_all_default_tags:
     false
-watchdog:
-  megamiss_timeout: 60s
-  miss_timeout: 60s
+watchdogs:
+  main_thread_watchdog:
+    megamiss_timeout: 60s
+    miss_timeout: 60s
+  worker_watchdog:
+    megamiss_timeout: 60s
+    miss_timeout: 60s
 node:
   id: envoy-mobile
   cluster: envoy-mobile
   metadata: *metadata
-)"
-// Needed due to warning in
-// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
-R"(
 layered_runtime:
   layers:
     - name: static_layer_0
       static_layer:
+        envoy:
+          # This disables envoy bug stats, which are filtered out of our stats inclusion list anyway
+          # Global stats do not play well with engines with limited lifetimes
+          disallow_global_stats: true
+          reloadable_features:
+            allow_multiple_dns_addresses: *dns_multiple_addresses
+            always_use_v6: *force_ipv6
+            http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
+)"
+// Needed due to warning in
+// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
+R"(
         overload:
           global_downstream_max_connections: 0xffffffff # uint32 max
 )";

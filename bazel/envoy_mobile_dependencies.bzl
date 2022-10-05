@@ -3,12 +3,12 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories")
-load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
-load("@rules_proto_grpc//protobuf:repositories.bzl", "protobuf_repos")
-load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
+load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 load("@rules_python//python:pip.bzl", "pip_install")
 load("@robolectric//bazel:robolectric.bzl", "robolectric_repositories")
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies")
 
 def _default_extra_swift_sources_impl(ctx):
     ctx.file("WORKSPACE", "")
@@ -42,14 +42,14 @@ _default_extra_jni_deps = repository_rule(
     implementation = _default_extra_jni_deps_impl,
 )
 
-def envoy_mobile_dependencies():
+def envoy_mobile_dependencies(extra_maven_dependencies = []):
     if not native.existing_rule("envoy_mobile_extra_swift_sources"):
         _default_extra_swift_sources(name = "envoy_mobile_extra_swift_sources")
     if not native.existing_rule("envoy_mobile_extra_jni_deps"):
         _default_extra_jni_deps(name = "envoy_mobile_extra_jni_deps")
 
     swift_dependencies()
-    kotlin_dependencies()
+    kotlin_dependencies(extra_maven_dependencies)
     python_dependencies()
 
 def swift_dependencies():
@@ -57,38 +57,43 @@ def swift_dependencies():
     apple_rules_dependencies(ignore_version_differences = True)
     swift_rules_dependencies()
 
-def kotlin_dependencies():
+def kotlin_dependencies(extra_maven_dependencies = []):
+    rules_java_dependencies()
     maven_install(
         artifacts = [
             "com.google.code.findbugs:jsr305:3.0.2",
+            "com.google.flatbuffers:flatbuffers-java:2.0.8",
             # Kotlin
-            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.11",
+            "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21",
+            "org.jetbrains.kotlin:kotlin-stdlib-common:1.6.21",
+            "org.jetbrains.kotlin:kotlin-stdlib:1.6.21",
             "androidx.recyclerview:recyclerview:1.1.0",
             "androidx.core:core:1.3.2",
             # Dokka
             "org.jetbrains.dokka:dokka-cli:1.5.31",
             "org.jetbrains.dokka:javadoc-plugin:1.5.31",
             # Test artifacts
-            "org.assertj:assertj-core:3.12.0",
-            "junit:junit:4.12",
-            "org.mockito:mockito-inline:2.28.2",
-            "org.mockito:mockito-core:2.28.2",
-            "com.squareup.okhttp3:okhttp:4.9.1",
-            "com.squareup.okhttp3:mockwebserver:4.9.1",
-            "io.github.classgraph:classgraph:4.8.121",
+            "org.assertj:assertj-core:3.23.1",
+            "junit:junit:4.13",
+            "org.mockito:mockito-inline:4.8.0",
+            "org.mockito:mockito-core:4.8.0",
+            "com.squareup.okhttp3:okhttp:4.10.0",
+            "com.squareup.okhttp3:mockwebserver:4.10.0",
+            "io.github.classgraph:classgraph:4.8.149",
+            "io.netty:netty-all:4.1.82.Final",
             # Android test artifacts
-            "androidx.test:core:1.3.0",
-            "androidx.test:rules:1.3.0",
-            "androidx.test:runner:1.3.0",
-            "androidx.test:monitor:1.3.0",
-            "androidx.test.ext:junit:1.1.2",
-            "org.robolectric:robolectric:4.4",
+            "androidx.test:core:1.4.0",
+            "androidx.test:rules:1.4.0",
+            "androidx.test:runner:1.4.0",
+            "androidx.test:monitor:1.5.0",
+            "androidx.test.ext:junit:1.1.3",
+            "org.robolectric:robolectric:4.8.2",
             "org.hamcrest:hamcrest:2.2",
-            "com.google.truth:truth:1.1",
-        ],
+            "com.google.truth:truth:1.1.3",
+        ] + extra_maven_dependencies,
+        version_conflict_policy = "pinned",
         repositories = [
             "https://repo1.maven.org/maven2",
-            "https://jcenter.bintray.com/",
             "https://maven.google.com",
         ],
     )
@@ -96,14 +101,10 @@ def kotlin_dependencies():
     rules_detekt_dependencies()
     robolectric_repositories()
 
-    grpc_java_repositories(
-        omit_bazel_skylib = True,
-        omit_com_google_protobuf = True,
-        omit_com_google_protobuf_javalite = True,
-        omit_net_zlib = True,
-    )
-    protobuf_repos()
-    rules_proto_grpc_java_repos()
+    rules_proto_grpc_toolchains()
+    rules_proto_grpc_repos()
+    rules_proto_dependencies()
+    rules_proto_toolchains()
 
 def python_dependencies():
     # TODO: bifurcate dev deps vs. prod deps
@@ -111,5 +112,6 @@ def python_dependencies():
     #     requirements = ":dev_requirements.txt",
     # )
     pip_install(
-        requirements = ":requirements.txt",
+        requirements = "//third_party/python:requirements.txt",
+        timeout = 1000,
     )

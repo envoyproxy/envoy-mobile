@@ -27,8 +27,8 @@ envoy_headers rawHeaderMapAsEnvoyHeaders(const RawHeaderMap& headers) {
   }
 
   envoy_headers raw_headers{
-      .length = static_cast<envoy_map_size_t>(header_count),
-      .entries = headers_list,
+      static_cast<envoy_map_size_t>(header_count),
+      headers_list,
   };
   return raw_headers;
 }

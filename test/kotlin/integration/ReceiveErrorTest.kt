@@ -6,6 +6,7 @@ import io.envoyproxy.envoymobile.EnvoyError
 import io.envoyproxy.envoymobile.FilterDataStatus
 import io.envoyproxy.envoymobile.FilterHeadersStatus
 import io.envoyproxy.envoymobile.FilterTrailersStatus
+import io.envoyproxy.envoymobile.FinalStreamIntel
 import io.envoyproxy.envoymobile.GRPCRequestHeadersBuilder
 import io.envoyproxy.envoymobile.ResponseFilter
 import io.envoyproxy.envoymobile.ResponseHeaders
@@ -92,11 +93,12 @@ class ReceiveErrorTest {
       return FilterTrailersStatus.Continue(trailers)
     }
 
-    override fun onError(error: EnvoyError, streamIntel: StreamIntel) {
+    override fun onError(error: EnvoyError, finalStreamIntel: FinalStreamIntel) {
       receivedError.countDown()
     }
+    override fun onComplete(finalStreamIntel: FinalStreamIntel) {}
 
-    override fun onCancel(streamIntel: StreamIntel) {
+    override fun onCancel(finalStreamIntel: FinalStreamIntel) {
       notCancelled.countDown()
     }
   }
@@ -129,15 +131,16 @@ class ReceiveErrorTest {
         errorCode = error.errorCode
         callbackReceivedError.countDown()
       }
-      .setOnCancel { fail("Unexpected call to onCancel response callback") }
+      .setOnCancel { _ ->
+        fail("Unexpected call to onCancel response callback")
+      }
       .start()
       .sendHeaders(requestHeader, true)
-
-    engine.terminate()
 
     filterReceivedError.await(10, TimeUnit.SECONDS)
     filterNotCancelled.await(1, TimeUnit.SECONDS)
     callbackReceivedError.await(10, TimeUnit.SECONDS)
+    engine.terminate()
 
     assertThat(filterReceivedError.count)
       .withFailMessage("Missing call to onError filter callback")

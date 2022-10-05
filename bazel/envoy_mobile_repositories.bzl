@@ -1,3 +1,5 @@
+load("@bazel_gazelle//:deps.bzl", "go_repository")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file", "http_jar")
 
 def envoy_mobile_repositories():
@@ -6,6 +8,13 @@ def envoy_mobile_repositories():
         sha256 = "d8c9586b24ce4a5513d972668f94b62eb7d705b92405d4bc102131f294751f1d",
         strip_prefix = "bazel-common-413b433b91f26dbe39cdbc20f742ad6555dd1e27",
         urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
+    )
+
+    http_archive(
+        name = "swift_flatbuffers",
+        sha256 = "f97965a727d26386afaefff950badef2db3ab6af9afe23ed6d94bfb65f95f37e",
+        strip_prefix = "flatbuffers-2.0.8",
+        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.8.tar.gz"],
     )
 
     upstream_envoy_overrides()
@@ -27,7 +36,7 @@ def upstream_envoy_overrides():
         urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v3.16.0/protobuf-all-3.16.0.tar.gz"],
     )
 
-    # Workaround old NDK version breakages https://github.com/lyft/envoy-mobile/issues/934
+    # Workaround old NDK version breakages https://github.com/envoyproxy/envoy-mobile/issues/934
     http_archive(
         name = "com_github_libevent_libevent",
         urls = ["https://github.com/libevent/libevent/archive/0d7d85c2083f7a4c9efe01c061486f332b576d28.tar.gz"],
@@ -38,7 +47,7 @@ def upstream_envoy_overrides():
 
     # Patch upstream Abseil to prevent Foundation dependency from leaking into Android builds.
     # Workaround for https://github.com/abseil/abseil-cpp/issues/326.
-    # TODO: Should be removed in https://github.com/lyft/envoy-mobile/issues/136 once rules_android
+    # TODO: Should be removed in https://github.com/envoyproxy/envoy-mobile/issues/136 once rules_android
     # supports platform toolchains.
     http_archive(
         name = "com_google_absl",
@@ -54,86 +63,79 @@ def upstream_envoy_overrides():
     http_archive(
         name = "boringssl",
         patches = ["@envoy_mobile//bazel:boringssl.patch"],
-        sha256 = "70e9d8737e35d67f94b9e742ca59c02c36f30f1d822d5a3706511a23798d8049",
-        strip_prefix = "boringssl-75edea1922aefe415e0e60ac576116634b0a94f8",
-        urls = ["https://github.com/google/boringssl/archive/75edea1922aefe415e0e60ac576116634b0a94f8.tar.gz"],
-    )
-
-    # Envoy uses rules_python v0.1.0, which does not include tooling for packaging Python.  The
-    # Python platform implementation needs to be packaged and uploaded to pypi, so we need a more
-    # recent version.
-    http_archive(
-        name = "rules_python",
-        sha256 = "ecd139e703b41ae2ea115f4f4229b4ea2d70bab908fb75a3b49640f976213009",
-        strip_prefix = "rules_python-6f37aa9966f53e063c41b7509a386d53a9f156c3",
-        urls = ["https://github.com/bazelbuild/rules_python/archive/6f37aa9966f53e063c41b7509a386d53a9f156c3.tar.gz"],
-    )
-
-    http_archive(
-        name = "com_github_nlohmann_json",
-        # 3.10.4 introduced incompatible changes with Envoy Mobile. Until Envoy Mobile updates it's
-        # minimum iOS version to 13+ this dependency cannot be updated.
-        sha256 = "081ed0f9f89805c2d96335c3acfa993b39a0a5b4b4cef7edb68dd2210a13458c",
-        strip_prefix = "json-3.10.2",
-        urls = ["https://github.com/nlohmann/json/archive/v3.10.2.tar.gz"],
-        build_file = "@envoy//bazel/external:json.BUILD",
+        sha256 = "579cb415458e9f3642da0a39a72f79fdfe6dc9c1713b3a823f1e276681b9703e",
+        strip_prefix = "boringssl-648cbaf033401b7fe7acdce02f275b06a88aab5c",
+        urls = ["https://github.com/google/boringssl/archive/648cbaf033401b7fe7acdce02f275b06a88aab5c.tar.gz"],
     )
 
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "b3f41da1a26e03250575b554c55a56b0b1f5b394192e2ca202f74d7c4c6670e5",
-        strip_prefix = "rules_apple-d1d40821dc932ee488eb22c0b9712e26f39c04fa",
-        url = "https://github.com/bazelbuild/rules_apple/archive/d1d40821dc932ee488eb22c0b9712e26f39c04fa.tar.gz",
+        sha256 = "687644bf48ccf91286f31c4ec26cf6591800b39bee8a630438626fc9bb4042de",
+        strip_prefix = "rules_apple-a0f8748ce89698a599149d984999eaefd834c004",
+        url = "https://github.com/bazelbuild/rules_apple/archive/a0f8748ce89698a599149d984999eaefd834c004.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "a85f0cb6a0d6a8c1165073418de28b202bc98f58c4c080bc57faeb63a2d7eee8",
-        strip_prefix = "rules_swift-a81f40700f1ba45034465a82673f46bd2631be62",
-        url = "https://github.com/bazelbuild/rules_swift/archive/a81f40700f1ba45034465a82673f46bd2631be62.tar.gz",
+        sha256 = "51efdaf85e04e51174de76ef563f255451d5a5cd24c61ad902feeadafc7046d9",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.2.0/rules_swift.1.2.0.tar.gz",
+    )
+
+    http_archive(
+        name = "DrString",
+        build_file_content = """exports_files(["drstring"])""",
+        sha256 = "860788450cf9900613454a51276366ea324d5bfe71d1844106e9c1f1d7dfd82b",
+        url = "https://github.com/dduan/DrString/releases/download/0.5.2/drstring-x86_64-apple-darwin.tar.gz",
+    )
+
+    http_archive(
+        name = "SwiftLint",
+        build_file_content = """exports_files(["swiftlint"])""",
+        sha256 = "61d335766a39ba8fa499017a560950bd9fa0b0e5bc318559a9c1c7f4da679256",
+        url = "https://github.com/realm/SwiftLint/releases/download/0.47.1/portable_swiftlint.zip",
+    )
+
+    http_archive(
+        name = "com_github_buildbuddy_io_rules_xcodeproj",
+        sha256 = "663bf83d8725f39694125d790eacd373e4c063bf80be4e6b5daa0a5dbe74df1f",
+        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.8.0/release.tar.gz",
     )
 
 def kotlin_repos():
     http_archive(
+        name = "rules_java",
+        sha256 = "19462d64b1586c0d4ea0e87f9325be2514f0eb84e56dbf3245450451b3701581",
+        strip_prefix = "rules_java-43243982abc76390ef64be62379a1353f9011771",
+        # TODO(jpsim): Switch back to bazelbuild repo when https://github.com/bazelbuild/rules_java/issues/64 is fixed
+        url = "https://github.com/jpsim/rules_java/archive/43243982abc76390ef64be62379a1353f9011771.tar.gz",
+    )
+
+    http_archive(
         name = "rules_jvm_external",
-        sha256 = "f36441aa876c4f6427bfb2d1f2d723b48e9d930b62662bf723ddfb8fc80f0140",
-        strip_prefix = "rules_jvm_external-4.1",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/4.1.zip",
+        sha256 = "cd1a77b7b02e8e008439ca76fd34f5b07aecb8c752961f9640dea15e9e5ba1ca",
+        strip_prefix = "rules_jvm_external-4.2",
+        url = "https://github.com/bazelbuild/rules_jvm_external/archive/4.2.zip",
     )
 
     http_archive(
         name = "io_bazel_rules_kotlin",
-        sha256 = "dc1c76f91228ddaf4f7ca4190b82d61939e95369f61dea715e8be28792072b1b",
-        strip_prefix = "rules_kotlin-legacy-1.3.0-rc2",
-        type = "zip",
-        urls = ["https://github.com/bazelbuild/rules_kotlin/archive/legacy-1.3.0-rc2.zip"],
+        sha256 = "f033fa36f51073eae224f18428d9493966e67c27387728b6be2ebbdae43f140e",
+        urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.7.0-RC-3/rules_kotlin_release.tgz"],
     )
 
     http_archive(
         name = "rules_detekt",
-        sha256 = "b1b4c8a3228f880a169ab60a817619bc4cf254443196e7e108ece411cb9c580e",
-        strip_prefix = "bazel_rules_detekt-0.3.0",
-        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.3.0.tar.gz",
-    )
-
-    # gRPC java for @rules_proto_grpc
-    # The current 0.2.0 uses v1.23.0 of gRPC java which has a buggy version of the grpc_java_repositories
-    # where it tries to bind the zlib and errors out
-    # The fix went in on this commit:
-    # https://github.com/grpc/grpc-java/commit/57e7bd394e92015d2891adc74af0eaf9cd347ea8#diff-515bc54a0cbb4b12fb4a7c465758b011L128-L131
-    http_archive(
-        name = "io_grpc_grpc_java",
-        sha256 = "8b495f58aaf75138b24775600a062bbdaa754d85f7ab2a47b2c9ecb432836dd1",
-        strip_prefix = "grpc-java-1.24.0",
-        urls = ["https://github.com/grpc/grpc-java/archive/v1.24.0.tar.gz"],
+        sha256 = "44912c74dc2e164227b1102ef36227d0e78fdbd7c7359868ae13424eb4f0d5c2",
+        strip_prefix = "bazel_rules_detekt-0.6.0",
+        url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v0.6.0.tar.gz",
     )
 
     http_archive(
         name = "rules_proto_grpc",
-        sha256 = "1e08cd6c61f893417b14930ca342950f5f22f71f929a38a8c4bbfeae2a80d03e",
-        strip_prefix = "rules_proto_grpc-0.2.0",
-        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/0.2.0.tar.gz"],
+        sha256 = "507e38c8d95c7efa4f3b1c0595a8e8f139c885cb41a76cab7e20e4e67ae87731",
+        strip_prefix = "rules_proto_grpc-4.1.1",
+        urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.1.1.tar.gz"],
     )
 
     http_file(
@@ -145,15 +147,15 @@ def kotlin_repos():
 
     http_archive(
         name = "robolectric",
-        sha256 = "d4f2eb078a51f4e534ebf5e18b6cd4646d05eae9b362ac40b93831bdf46112c7",
-        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.4.tar.gz"],
-        strip_prefix = "robolectric-bazel-4.4",
+        sha256 = "5bcde5db598f6938c9887a140a0a1249f95d3c16274d40869503d0c322a20d5d",
+        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.8.2.tar.gz"],
+        strip_prefix = "robolectric-bazel-4.8.2",
     )
 
 def android_repos():
     http_archive(
         name = "build_bazel_rules_android",
-        urls = ["https://github.com/bazelbuild/rules_android/archive/v0.1.1.zip"],
+        urls = ["https://github.com/bazelbuild/rules_android/archive/refs/tags/v0.1.1.zip"],
         sha256 = "cd06d15dd8bb59926e4d65f9003bfc20f9da4b2519985c27e190cddc8b7a7806",
         strip_prefix = "rules_android-0.1.1",
     )

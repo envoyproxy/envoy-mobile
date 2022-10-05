@@ -7,6 +7,7 @@
 #include "library/common/bridge/utility.h"
 #include "library/common/config/internal.h"
 #include "library/common/data/utility.h"
+#include "library/common/network/android.h"
 #include "library/common/stats/utility.h"
 
 namespace Envoy {
@@ -15,27 +16,27 @@ Engine::Engine(envoy_engine_callbacks callbacks, envoy_logger logger,
                envoy_event_tracker event_tracker)
     : callbacks_(callbacks), logger_(logger), event_tracker_(event_tracker),
       dispatcher_(std::make_unique<Event::ProvisionalDispatcher>()) {
-  // Ensure static factory registration occurs on time.
-  // TODO: ensure this is only called one time once multiple Engine objects can be allocated.
-  // https://github.com/lyft/envoy-mobile/issues/332
   ExtensionRegistry::registerFactories();
 
   // TODO(Augustyniak): Capturing an address of event_tracker_ and registering it in the API
   // registry may lead to crashes at Engine shutdown. To be figured out as part of
-  // https://github.com/lyft/envoy-mobile/issues/332
+  // https://github.com/envoyproxy/envoy-mobile/issues/332
   Envoy::Api::External::registerApi(std::string(envoy_event_tracker_api_name), &event_tracker_);
 }
 
-envoy_status_t Engine::run(const std::string config, const std::string log_level) {
+envoy_status_t Engine::run(const std::string config, const std::string log_level,
+                           const std::string admin_address_path) {
   // Start the Envoy on the dedicated thread. Note: due to how the assignment operator works with
   // std::thread, main_thread_ is the same object after this call, but its state is replaced with
   // that of the temporary. The temporary object's state becomes the default state, which does
   // nothing.
-  main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level));
+  main_thread_ = std::thread(&Engine::main, this, std::string(config), std::string(log_level),
+                             admin_address_path);
   return ENVOY_SUCCESS;
 }
 
-envoy_status_t Engine::main(const std::string config, const std::string log_level) {
+envoy_status_t Engine::main(const std::string config, const std::string log_level,
+                            const std::string admin_address_path) {
   // Using unique_ptr ensures main_common's lifespan is strictly scoped to this function.
   std::unique_ptr<EngineCommon> main_common;
   const std::string name = "envoy";
@@ -50,8 +51,12 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
                                          concurrency_option.c_str(),
                                          concurrency_arg.c_str(),
                                          log_flag.c_str(),
-                                         log_level.c_str(),
-                                         nullptr};
+                                         log_level.c_str()};
+  if (!admin_address_path.empty()) {
+    envoy_argv.push_back("--admin-address-path");
+    envoy_argv.push_back(admin_address_path.c_str());
+  }
+  envoy_argv.push_back(nullptr);
   {
     Thread::LockGuard lock(mutex_);
     try {
@@ -70,6 +75,7 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
             });
       }
 
+      // We let the thread clean up this log delegate pointer
       if (logger_.log) {
         log_delegate_ptr_ =
             std::make_unique<Logger::LambdaDelegate>(logger_, Logger::Registry::getSink());
@@ -102,10 +108,11 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
         Envoy::Server::ServerLifecycleNotifier::Stage::PostInit, [this]() -> void {
           ASSERT(Thread::MainThread::isMainOrTestThread());
 
-          network_configurator_ =
-              Network::ConfiguratorFactory{server_->serverFactoryContext()}.get();
-          auto v4_interfaces = network_configurator_->enumerateV4Interfaces();
-          auto v6_interfaces = network_configurator_->enumerateV4Interfaces();
+          connectivity_manager_ =
+              Network::ConnectivityManagerFactory{server_->serverFactoryContext()}.get();
+          Envoy::Network::Android::Utility::setAlternateGetifaddrs();
+          auto v4_interfaces = connectivity_manager_->enumerateV4Interfaces();
+          auto v6_interfaces = connectivity_manager_->enumerateV6Interfaces();
           logInterfaces("netconf_get_v4_interfaces", v4_interfaces);
           logInterfaces("netconf_get_v6_interfaces", v6_interfaces);
           client_scope_ = server_->serverFactoryContext().scope().createScope("pulse.");
@@ -131,10 +138,9 @@ envoy_status_t Engine::main(const std::string config, const std::string log_leve
 
   // Ensure destructors run on Envoy's main thread.
   postinit_callback_handler_.reset(nullptr);
-  network_configurator_.reset();
-  client_scope_.reset(nullptr);
+  connectivity_manager_.reset();
+  client_scope_.reset();
   stat_name_set_.reset();
-  log_delegate_ptr_.reset(nullptr);
   main_common.reset(nullptr);
   bug_handler_registration_.reset(nullptr);
   assert_handler_registration_.reset(nullptr);
@@ -159,13 +165,14 @@ envoy_status_t Engine::terminate() {
     }
 
     ASSERT(event_dispatcher_);
+    ASSERT(dispatcher_);
 
     // Exit the event loop and finish up in Engine::run(...)
     if (std::this_thread::get_id() == main_thread_.get_id()) {
       // TODO(goaway): figure out some way to support this.
       PANIC("Terminating the engine from its own main thread is currently unsupported.");
     } else {
-      event_dispatcher_->exit();
+      dispatcher_->terminate();
     }
   } // lock(_mutex)
 
@@ -268,7 +275,7 @@ envoy_status_t Engine::makeAdminCall(absl::string_view path, absl::string_view m
   std::string body;
   const auto code = server_->admin().request(path, method, *response_headers, body);
   if (code != Http::Code::OK) {
-    ENVOY_LOG(warn, "admin call failed with status {} body {}", code, body);
+    ENVOY_LOG(warn, "admin call failed with status {} body {}", static_cast<uint64_t>(code), body);
     return ENVOY_FAILURE;
   }
 
@@ -285,10 +292,10 @@ Http::Client& Engine::httpClient() {
   return *http_client_;
 }
 
-Network::Configurator& Engine::networkConfigurator() {
+Network::ConnectivityManager& Engine::networkConnectivityManager() {
   RELEASE_ASSERT(dispatcher_->isThreadSafe(),
-                 "networkConfigurator must be accessed from dispatcher's context");
-  return *network_configurator_;
+                 "networkConnectivityManager must be accessed from dispatcher's context");
+  return *connectivity_manager_;
 }
 
 void Engine::flushStats() {
@@ -297,10 +304,10 @@ void Engine::flushStats() {
   server_->flushStats();
 }
 
-void Engine::drainConnections() {
+Upstream::ClusterManager& Engine::getClusterManager() {
   ASSERT(dispatcher_->isThreadSafe(),
-         "drainConnections must be called from the dispatcher's context");
-  server_->clusterManager().drainConnections();
+         "getClusterManager must be called from the dispatcher's context");
+  return server_->clusterManager();
 }
 
 void Engine::logInterfaces(absl::string_view event,

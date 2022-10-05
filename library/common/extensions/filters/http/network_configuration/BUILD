@@ -22,7 +22,7 @@ envoy_cc_extension(
     deps = [
         ":filter_cc_proto",
         "//library/common/http:internal_headers_lib",
-        "//library/common/network:configurator_lib",
+        "//library/common/network:connectivity_manager_lib",
         "//library/common/stream_info:extra_stream_info_lib",
         "//library/common/types:c_types_lib",
         "@envoy//envoy/http:codes_interface",
@@ -33,6 +33,7 @@ envoy_cc_extension(
         "@envoy//source/common/http:header_map_lib",
         "@envoy//source/common/http:headers_lib",
         "@envoy//source/common/http:utility_lib",
+        "@envoy//source/common/network:filter_state_proxy_info_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
     ],
 )

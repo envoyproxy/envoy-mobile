@@ -87,7 +87,7 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This handler, which may be used for chaining syntax.
   @discardableResult
   public func setOnError(
-    _ closure: @escaping (_ error: EnvoyError, _ streamIntel: StreamIntel) -> Void
+    _ closure: @escaping (_ error: EnvoyError, _ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnError(closure: closure)
     return self
@@ -101,9 +101,23 @@ public final class GRPCStreamPrototype: NSObject {
   /// - returns: This stream, for chaining syntax.
   @discardableResult
   public func setOnCancel(
-    closure: @escaping (_ streamInte: StreamIntel) -> Void
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
   ) -> GRPCStreamPrototype {
     self.underlyingStream.setOnCancel(closure: closure)
+    return self
+  }
+
+  /// Specify a callback for when the stream completes gracefully.
+  /// If the closure is called, the stream is complete.
+  ///
+  /// - parameter closure: Closure which will be called when the stream is closed.
+  ///
+  /// - returns: This stream, for chaining syntax.
+  @discardableResult
+  public func setOnComplete(
+    closure: @escaping (_ streamIntel: FinalStreamIntel) -> Void
+  ) -> GRPCStreamPrototype {
+    self.underlyingStream.setOnComplete(closure: closure)
     return self
   }
 }
@@ -122,9 +136,10 @@ private enum GRPCMessageProcessor {
   /// Recursively processes a buffer of data, buffering it into messages based on state.
   /// When a message has been fully buffered, `onMessage` will be called with the message.
   ///
-  /// - parameter buffer:    The buffer of data from which to determine state and messages.
-  /// - parameter state:     The current state of the buffering.
-  /// - parameter onMessage: Closure to call when a new message is available.
+  /// - parameter buffer:      The buffer of data from which to determine state and messages.
+  /// - parameter state:       The current state of the buffering.
+  /// - parameter streamIntel: Internal HTTP stream metrics, context, and other details.
+  /// - parameter onMessage:   Closure to call when a new message is available.
   static func processBuffer(_ buffer: inout Data, state: inout State, streamIntel: StreamIntel,
                             onMessage: (_ message: Data, _ streamIntel: StreamIntel) -> Void)
   {
@@ -135,7 +150,7 @@ private enum GRPCMessageProcessor {
       }
 
       guard compressionFlag == 0 else {
-        // TODO: Support gRPC compression https://github.com/lyft/envoy-mobile/issues/501
+        // TODO: Support gRPC compression https://github.com/envoyproxy/envoy-mobile/issues/501
         buffer.removeAll()
         state = .expectingCompressionFlag
         return

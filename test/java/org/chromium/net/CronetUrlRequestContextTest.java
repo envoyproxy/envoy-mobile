@@ -141,7 +141,7 @@ public class CronetUrlRequestContextTest {
     ExperimentalCronetEngine.Builder cronetEngineBuilder =
         new ExperimentalCronetEngine.Builder(getContext());
     if (mTestRule.testingJavaImpl()) {
-      cronetEngineBuilder = mTestRule.createJavaEngineBuilder();
+      cronetEngineBuilder = CronetTestRule.createJavaEngineBuilder(getContext());
     }
     cronetEngineBuilder.setUserAgent(userAgentValue);
     final CronetEngine cronetEngine = cronetEngineBuilder.build();
@@ -1138,8 +1138,10 @@ public class CronetUrlRequestContextTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore("This causes a deadlock")
-  public void testInitTwoEnginesSimultaneously() throws Exception {
+  @Ignore(
+      "Multiple Engines are not yet supported: https://github.com/envoyproxy/envoy-mobile/issues/332")
+  public void
+  testInitTwoEnginesSimultaneously() throws Exception {
     // Threads will block on runBlocker to ensure simultaneous execution.
     ConditionVariable runBlocker = new ConditionVariable(false);
     RequestThread thread1 = new RequestThread(mUrl, runBlocker);
@@ -1173,8 +1175,10 @@ public class CronetUrlRequestContextTest {
   @Test
   @SmallTest
   @Feature({"Cronet"})
-  @Ignore("This causes a crash")
-  public void testInitDifferentEngines() throws Exception {
+  @Ignore(
+      "Multiple Engines are not yet supported: https://github.com/envoyproxy/envoy-mobile/issues/332")
+  public void
+  testInitDifferentEngines() throws Exception {
     // Test that concurrently instantiating Cronet context's upon various
     // different versions of the same Android Context does not cause crashes
     // like crbug.com/453845
@@ -1191,7 +1195,7 @@ public class CronetUrlRequestContextTest {
   @SmallTest
   @Feature({"Cronet"})
   @OnlyRunNativeCronet // Java engine doesn't produce metrics
-  @Ignore("Metrics not implemented yet: https://github.com/envoyproxy/envoy-mobile/issues/1520")
+  @Ignore("UMA not implemented yet: https://github.com/envoyproxy/envoy-mobile/issues/1615")
   public void testGetGlobalMetricsDeltas() throws Exception {
     final CronetTestFramework testFramework = mTestRule.startCronetTestFramework();
 
@@ -1315,6 +1319,17 @@ public class CronetUrlRequestContextTest {
     CronetEngine engine = builder.build();
     assertNotNull(engine);
     assertFalse(loader.wasCalled());
+  }
+
+  @Test
+  @SmallTest
+  @Feature({"Cronet"})
+  @OnlyRunNativeCronet
+  public void testNativeCronetEngineBuilderImplSetsCorrectVersionString() throws Exception {
+    CronetEngine.Builder builder =
+        new CronetEngine.Builder(new NativeCronetEngineBuilderImpl(getContext()));
+    CronetEngine engine = builder.build();
+    assertTrue(engine.getVersionString().startsWith("Cronet/"));
   }
 
   // Creates a CronetEngine on another thread and then one on the main thread. This shouldn't

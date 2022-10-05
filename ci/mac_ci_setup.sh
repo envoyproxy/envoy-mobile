@@ -6,7 +6,7 @@ set -e
 # Installs the dependencies required for a macOS build via homebrew.
 # Tools are not upgraded to new versions.
 # See:
-# https://github.com/actions/virtual-environments/blob/master/images/macos/macos-10.15-Readme.md for
+# https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md for
 # a list of pre-installed tools in the macOS image.
 
 export HOMEBREW_NO_AUTO_UPDATE=1
@@ -41,30 +41,22 @@ if [ -n "$CIRCLECI" ]; then
     mv ~/.gitconfig ~/.gitconfig_save
 fi
 
-# Required as bazel and a foreign bazelisk are installed in the latest macos vm image, we have
-# to unlink/overwrite them to install bazelisk
-echo "Installing bazelisk"
-brew reinstall --force bazelisk
-if ! brew link --overwrite bazelisk; then
-    echo "Failed to install and link bazelisk"
-    exit 1
-fi
-
-bazel version
+./bazelw version
 
 pip3 install slackclient
-# https://github.com/actions/virtual-environments/blob/main/images/macos/macos-11-Readme.md#xcode
-sudo xcode-select --switch /Applications/Xcode_13.0.app
+# https://github.com/actions/virtual-environments/blob/main/images/macos/macos-12-Readme.md#xcode
+sudo xcode-select --switch /Applications/Xcode_13.4.app
 
-# Download and set up ndk 21. Github upgraded to ndk 22 for their Mac image.
-ANDROID_HOME=$ANDROID_SDK_ROOT
-SDKMANAGER=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
+if [[ "${1:-}" == "--android" ]]; then
+  # Download and set up ndk 21 after GitHub update
+  # https://github.com/actions/virtual-environments/issues/5595
+  ANDROID_HOME=$ANDROID_SDK_ROOT
+  SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+  $SDKMANAGER --uninstall "ndk-bundle"
+  echo "y" | $SDKMANAGER "ndk;21.4.7075529"
+  ln -sfn $ANDROID_SDK_ROOT/ndk/21.4.7075529 "${ANDROID_SDK_ROOT}/ndk-bundle"
 
-$SDKMANAGER --uninstall "ndk-bundle"
-$SDKMANAGER --install "ndk;21.3.6528147"
-
-# Download and set up build-tools 30.0.3, 31.0.0 is missing dx.jar.
-$SDKMANAGER --uninstall "build-tools;31.0.0"
-$SDKMANAGER --install "build-tools;30.0.3"
-
-export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.3.6528147
+  # Download and set up build-tools 30.0.3, 31.0.0 is missing dx.jar.
+  $SDKMANAGER --install "build-tools;30.0.3"
+  echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529" >> $GITHUB_ENV
+fi

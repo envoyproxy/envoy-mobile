@@ -1,25 +1,45 @@
+load("@build_bazel_rules_android//android:rules.bzl", "aar_import")
+load("@build_bazel_rules_apple//apple:apple.bzl", "apple_static_framework_import")
 load("@io_bazel_rules_kotlin//kotlin/internal:toolchains.bzl", "define_kt_toolchain")
+load(
+    "@com_github_buildbuddy_io_rules_xcodeproj//xcodeproj:xcodeproj.bzl",
+    "top_level_target",
+    "xcode_schemes",
+    "xcodeproj",
+)
+load("//bazel:framework_imports_extractor.bzl", "framework_imports_extractor")
 
 licenses(["notice"])  # Apache 2
 
 alias(
-    name = "ios_framework",
-    actual = "//library/swift:ios_framework",
+    name = "ios_xcframework",
+    actual = "//library/swift:Envoy",
     visibility = ["//visibility:public"],
 )
 
-genrule(
+alias(
     name = "ios_dist",
-    srcs = [":ios_framework"],
-    outs = ["ios_out"],
-    cmd = """
-unzip -o $< -d dist/
-touch $@
-""",
-    stamp = True,
-    # This action writes to a non-hermetic output location, so running it
-    # remotely isn't currently possible.
-    tags = ["local"],
+    actual = "//library/swift:ios_framework",
+)
+
+framework_imports_extractor(
+    name = "framework_imports",
+    framework = "//library/swift:ios_framework",
+)
+
+apple_static_framework_import(
+    name = "envoy_mobile_ios",
+    framework_imports = [":framework_imports"],
+    sdk_dylibs = [
+        "resolv.9",
+        "c++",
+    ],
+    sdk_frameworks = [
+        "Network",
+        "SystemConfiguration",
+        "UIKit",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 alias(
@@ -28,41 +48,15 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-genrule(
-    name = "android_dist_ci",
-    srcs = [
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_with_artifacts",
-    ],
-    outs = ["envoy_mobile.zip"],
-    cmd = """
-    for artifact in $(SRCS); do
-        chmod 755 $$artifact
-        cp $$artifact dist/
-    done
-    touch $@
-    """,
-    local = True,
-    stamp = True,
-    tools = ["//bazel:zipper"],
+aar_import(
+    name = "envoy_mobile_android",
+    aar = "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar",
     visibility = ["//visibility:public"],
 )
 
-genrule(
+alias(
     name = "android_dist",
-    srcs = [
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar",
-        "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_pom_xml",
-    ],
-    outs = ["output_in_dist_directory"],
-    cmd = """
-    set -- $(SRCS)
-    chmod 755 $$1
-    chmod 755 $$2
-    cp $$1 dist/envoy.aar
-    cp $$2 dist/envoy-pom.xml
-    touch $@
-    """,
-    stamp = True,
+    actual = "//library/kotlin/io/envoyproxy/envoymobile:envoy_aar_with_artifacts",
 )
 
 define_kt_toolchain(
@@ -104,4 +98,100 @@ genrule(
         --editorconfig=$(location //:editor_config)
     """,
     tools = ["@kotlin_formatter//file"],
+)
+
+xcodeproj(
+    name = "xcodeproj",
+    bazel_path = "./bazelw",
+    build_mode = "bazel",
+    project_name = "Envoy",
+    scheme_autogeneration_mode = "auto",  # Switch to "all" to generate schemes for all deps
+    schemes = [
+        xcode_schemes.scheme(
+            name = "Async Await App",
+            launch_action = xcode_schemes.launch_action("//examples/swift/async_await:app"),
+        ),
+        xcode_schemes.scheme(
+            name = "Hello World App",
+            launch_action = xcode_schemes.launch_action("//examples/swift/hello_world:app"),
+        ),
+        xcode_schemes.scheme(
+            name = "Hello World App (ObjC)",
+            launch_action = xcode_schemes.launch_action("//examples/objective-c/hello_world:app"),
+        ),
+        xcode_schemes.scheme(
+            name = "Baseline App",
+            launch_action = xcode_schemes.launch_action("//test/swift/apps/baseline:app"),
+        ),
+        xcode_schemes.scheme(
+            name = "Experimental App",
+            launch_action = xcode_schemes.launch_action("//test/swift/apps/experimental:app"),
+        ),
+        xcode_schemes.scheme(
+            name = "Swift Library",
+            build_action = xcode_schemes.build_action(["//library/swift:ios_lib"]),
+        ),
+        xcode_schemes.scheme(
+            name = "iOS Tests",
+            test_action = xcode_schemes.test_action([
+                "//experimental/swift:quic_stream_test",
+                "//test/objective-c:envoy_bridge_utility_test",
+                "//test/swift/integration:flatbuffer_test",
+                "//test/swift/integration:test",
+                "//test/swift/stats:test",
+                "//test/swift:test",
+            ]),
+        ),
+        xcode_schemes.scheme(
+            name = "Objective-C Library",
+            build_action = xcode_schemes.build_action(["//library/objective-c:envoy_engine_objc_lib"]),
+            test_action = xcode_schemes.test_action(["//test/objective-c:envoy_bridge_utility_test"]),
+        ),
+    ],
+    tags = ["manual"],
+    top_level_targets = [
+        # Apps
+        top_level_target(
+            "//examples/objective-c/hello_world:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//examples/swift/async_await:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//examples/swift/hello_world:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//test/swift/apps/baseline:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        top_level_target(
+            "//test/swift/apps/experimental:app",
+            target_environments = [
+                "device",
+                "simulator",
+            ],
+        ),
+        # Tests
+        "//experimental/swift:quic_stream_test",
+        "//test/objective-c:envoy_bridge_utility_test",
+        "//test/swift/integration:flatbuffer_test",
+        "//test/swift/integration:test",
+        "//test/swift/stats:test",
+        "//test/swift:test",
+    ],
 )

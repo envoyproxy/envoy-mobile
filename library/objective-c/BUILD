@@ -1,5 +1,3 @@
-load("@rules_cc//cc:defs.bzl", "objc_library")
-
 licenses(["notice"])  # Apache 2
 
 exports_files([
@@ -30,8 +28,13 @@ objc_library(
     sdk_frameworks = [
         "Network",
         "SystemConfiguration",
-        "UIKit",
-    ],
+    ] + select({
+        "@platforms//os:macos": [
+        ],
+        "//conditions:default": [
+            "UIKit",
+        ],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":envoy_objc_bridge_lib",

@@ -9,10 +9,10 @@ on:
 jobs:
   formatall:
     name: format_all
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     container:
-      image: envoyproxy/envoy-build-ubuntu:8ca107a75ee98b255aa59db2ab40fd0800a3ce99
+      image: envoyproxy/envoy-build-ubuntu:0a02a76af5951bf7f4c7029c0ea6d29d96c0f682
       env:
         CLANG_FORMAT: /opt/llvm/bin/clang-format
         BUILDIFIER_BIN: /usr/local/bin/buildifier
@@ -26,7 +26,7 @@ jobs:
         run: ./tools/check_format.sh
   precommit:
     name: precommit
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v1
@@ -36,17 +36,29 @@ jobs:
         run: pre-commit run --all-files
   swiftlint:
     name: swift_lint
-    runs-on: ubuntu-18.04
-    timeout-minutes: 45
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     container:
-      image: norionomura/swiftlint:0.33.0_swift-5.0
+      image: ghcr.io/realm/swiftlint:0.47.1
     steps:
       - uses: actions/checkout@v1
       - name: 'Run Swift Lint (SwiftLint)'
         run: swiftlint lint --strict
+  drstring:
+    name: drstring
+    runs-on: macos-12
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: 'Run DrString'
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+        run: ./bazelw run @DrString//:drstring check
   kotlinlint:
     name: kotlin_lint
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v1
@@ -63,10 +75,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          bazel build \
+          ./bazelw build \
             --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //library/kotlin/io/envoyproxy/envoymobile:envoy_lib_lint \
             //examples/kotlin/hello_world:hello_envoy_kt_lint
       - name: 'Run Kotlin Formatter (ktlint)'
         run: |
-          bazel build kotlin_format
+          ./bazelw build kotlin_format

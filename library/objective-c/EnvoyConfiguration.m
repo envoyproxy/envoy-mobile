@@ -11,11 +11,21 @@
                      dnsFailureRefreshSecondsBase:(UInt32)dnsFailureRefreshSecondsBase
                       dnsFailureRefreshSecondsMax:(UInt32)dnsFailureRefreshSecondsMax
                            dnsQueryTimeoutSeconds:(UInt32)dnsQueryTimeoutSeconds
+                             dnsMinRefreshSeconds:(UInt32)dnsMinRefreshSeconds
                            dnsPreresolveHostnames:(NSString *)dnsPreresolveHostnames
+                              enableHappyEyeballs:(BOOL)enableHappyEyeballs
+                                       enableGzip:(BOOL)enableGzip
+                                     enableBrotli:(BOOL)enableBrotli
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
+                        enableDrainPostDnsRefresh:(BOOL)enableDrainPostDnsRefresh
+                    enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
+                                        forceIPv6:(BOOL)forceIPv6
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
+                         h2ExtendKeepaliveTimeout:(BOOL)h2ExtendKeepaliveTimeout
+                                     h2RawDomains:(NSArray<NSString *> *)h2RawDomains
+                            maxConnectionsPerHost:(UInt32)maxConnectionsPerHost
                                 statsFlushSeconds:(UInt32)statsFlushSeconds
                          streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
                          perTryIdleTimeoutSeconds:(UInt32)perTryIdleTimeoutSeconds
@@ -30,7 +40,11 @@
                                   (NSArray<EnvoyHTTPFilterFactory *> *)httpPlatformFilterFactories
                                   stringAccessors:
                                       (NSDictionary<NSString *, EnvoyStringAccessor *> *)
-                                          stringAccessors {
+                                          stringAccessors
+                                   keyValueStores:
+                                       (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
+                                           keyValueStores
+                                       statsSinks:(NSArray<NSString *> *)statsSinks {
   self = [super init];
   if (!self) {
     return nil;
@@ -43,11 +57,21 @@
   self.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
   self.dnsFailureRefreshSecondsMax = dnsFailureRefreshSecondsMax;
   self.dnsQueryTimeoutSeconds = dnsQueryTimeoutSeconds;
+  self.dnsMinRefreshSeconds = dnsMinRefreshSeconds;
   self.dnsPreresolveHostnames = dnsPreresolveHostnames;
+  self.enableHappyEyeballs = enableHappyEyeballs;
+  self.enableGzip = enableGzip;
+  self.enableBrotli = enableBrotli;
   self.enableInterfaceBinding = enableInterfaceBinding;
+  self.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
+  self.enforceTrustChainVerification = enforceTrustChainVerification;
+  self.forceIPv6 = forceIPv6;
   self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
+  self.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout;
+  self.h2RawDomains = h2RawDomains;
+  self.maxConnectionsPerHost = maxConnectionsPerHost;
   self.statsFlushSeconds = statsFlushSeconds;
   self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
   self.perTryIdleTimeoutSeconds = perTryIdleTimeoutSeconds;
@@ -59,6 +83,8 @@
   self.nativeFilterChain = nativeFilterChain;
   self.httpPlatformFilterFactories = httpPlatformFilterFactories;
   self.stringAccessors = stringAccessors;
+  self.keyValueStores = keyValueStores;
+  self.statsSinks = statsSinks;
   return self;
 }
 
@@ -86,6 +112,16 @@
     [customFilters appendString:filterConfig];
   }
 
+  if (self.enableGzip) {
+    NSString *gzipFilterInsert = [[NSString alloc] initWithUTF8String:gzip_config_insert];
+    [customFilters appendString:gzipFilterInsert];
+  }
+
+  if (self.enableBrotli) {
+    NSString *brotliFilterInsert = [[NSString alloc] initWithUTF8String:brotli_config_insert];
+    [customFilters appendString:brotliFilterInsert];
+  }
+
   BOOL hasDirectResponses = self.directResponses.length > 0;
   if (hasDirectResponses) {
     templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{fake_remote_responses}"
@@ -97,6 +133,14 @@
     [customFilters
         appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
   }
+
+  NSMutableString *h2RawDomainsString = [[NSMutableString alloc] initWithString:@"["];
+  if (self.h2RawDomains.count > 0) {
+    [h2RawDomainsString appendString:@"\""];
+    [h2RawDomainsString appendString:[self.h2RawDomains componentsJoinedByString:@"\",\""]];
+    [h2RawDomainsString appendString:@"\""];
+  }
+  [h2RawDomainsString appendString:@"]"];
 
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_clusters}"
                                                          withString:customClusters];
@@ -112,20 +156,42 @@
 
   [definitions
       appendFormat:@"- &connect_timeout %lus\n", (unsigned long)self.connectTimeoutSeconds];
-  [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
   [definitions appendFormat:@"- &dns_fail_base_interval %lus\n",
                             (unsigned long)self.dnsFailureRefreshSecondsBase];
   [definitions appendFormat:@"- &dns_fail_max_interval %lus\n",
                             (unsigned long)self.dnsFailureRefreshSecondsMax];
   [definitions
       appendFormat:@"- &dns_query_timeout %lus\n", (unsigned long)self.dnsQueryTimeoutSeconds];
+  [definitions
+      appendFormat:@"- &dns_min_refresh_rate %lus\n", (unsigned long)self.dnsMinRefreshSeconds];
   [definitions appendFormat:@"- &dns_preresolve_hostnames %@\n", self.dnsPreresolveHostnames];
+  [definitions appendFormat:@"- &dns_lookup_family %@\n",
+                            self.enableHappyEyeballs ? @"ALL" : @"V4_PREFERRED"];
+  [definitions appendFormat:@"- &dns_multiple_addresses %@\n",
+                            self.enableHappyEyeballs ? @"true" : @"false"];
+  [definitions appendFormat:@"- &h2_delay_keepalive_timeout %@\n",
+                            self.h2ExtendKeepaliveTimeout ? @"true" : @"false"];
+  [definitions appendFormat:@"- &dns_refresh_rate %lus\n", (unsigned long)self.dnsRefreshSeconds];
+  [definitions appendFormat:@"- &enable_drain_post_dns_refresh %@\n",
+                            self.enableDrainPostDnsRefresh ? @"true" : @"false"];
+  // No additional values are currently needed for Apple-based DNS resolver.
+  [definitions
+      appendFormat:@"- &dns_resolver_config "
+                   @"{\"@type\":\"type.googleapis.com/"
+                   @"envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\"}\n"];
   [definitions appendFormat:@"- &enable_interface_binding %@\n",
                             self.enableInterfaceBinding ? @"true" : @"false"];
+  [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
+                                                                     ? @"VERIFY_TRUST_CHAIN"
+                                                                     : @"ACCEPT_UNTRUSTED"];
+  [definitions appendFormat:@"- &force_ipv6 %@\n", self.forceIPv6 ? @"true" : @"false"];
   [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %.*fs\n", 3,
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
+  [definitions appendFormat:@"- &h2_raw_domains %@\n", h2RawDomainsString];
+  [definitions
+      appendFormat:@"- &max_connections_per_host %lu\n", (unsigned long)self.maxConnectionsPerHost];
   [definitions
       appendFormat:@"- &stream_idle_timeout %lus\n", (unsigned long)self.streamIdleTimeoutSeconds];
   [definitions
@@ -134,11 +200,20 @@
                             self.appVersion, self.appId];
   [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
 
+  [definitions
+      appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
+
+  NSMutableArray *stat_sinks_config = [self.statsSinks mutableCopy];
+
   if (self.grpcStatsDomain != nil) {
     [definitions appendFormat:@"- &stats_domain %@\n", self.grpcStatsDomain];
-    [definitions
-        appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
-    [definitions appendString:@"- &stats_sinks [ *base_metrics_service ]\n"];
+    [stat_sinks_config addObject:@"*base_metrics_service"];
+  }
+
+  if (stat_sinks_config.count > 0) {
+    [definitions appendString:@"- &stats_sinks ["];
+    [definitions appendString:[stat_sinks_config componentsJoinedByString:@","]];
+    [definitions appendString:@"]\n"];
   }
 
   if (self.adminInterfaceEnabled) {
