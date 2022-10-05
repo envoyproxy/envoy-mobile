@@ -22,7 +22,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw test \
-          --test_output=all \
-          --config=remote-ci-macos \
-          --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
-          //test/common/...
+            --test_output=all \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            //test/common/...
