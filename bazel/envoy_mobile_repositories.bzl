@@ -12,9 +12,9 @@ def envoy_mobile_repositories():
 
     http_archive(
         name = "swift_flatbuffers",
-        sha256 = "f97965a727d26386afaefff950badef2db3ab6af9afe23ed6d94bfb65f95f37e",
-        strip_prefix = "flatbuffers-2.0.8",
-        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.8.tar.gz"],
+        sha256 = "372df01795c670f6538055a7932fc7eb3e81b3653be4a216c081e9c3c26b1b6d",
+        strip_prefix = "flatbuffers-22.9.29",
+        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v22.9.29.tar.gz"],
     )
 
     upstream_envoy_overrides()
