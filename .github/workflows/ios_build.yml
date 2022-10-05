@@ -17,6 +17,10 @@ jobs:
           submodules: true
       - run: ./ci/mac_ci_setup.sh
         name: 'Install dependencies'
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
