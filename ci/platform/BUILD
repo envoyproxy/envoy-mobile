@@ -8,5 +8,6 @@ platform(
     ],
     exec_properties = {
         "Pool": "xcode_14",
+        "cache-silo-key": "12345",
     },
 )
