@@ -195,7 +195,7 @@ std::string EngineBuilder::generateConfigStr() {
   const std::string& cert_validation_template =
       (this->platform_certificates_validation_on_ ? platform_cert_validation_context_template
                                                   : default_cert_validation_context_template);
-  config_builder << "- &validation_context" << cert_validation_template << std::endl;
+  config_builder << cert_validation_template << std::endl;
 
   if (this->gzip_filter_) {
     absl::StrReplaceAll(
