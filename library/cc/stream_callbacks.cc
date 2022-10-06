@@ -24,9 +24,8 @@ void* c_on_headers(envoy_headers headers, bool end_stream, envoy_stream_intel in
     }
     auto on_headers = stream_callbacks->on_headers.value();
     on_headers(builder.build(), end_stream, intel);
-  } else {
-    release_envoy_headers(headers);
   }
+
   release_envoy_headers(headers);
   return context;
 }
@@ -36,8 +35,6 @@ void* c_on_data(envoy_data data, bool end_stream, envoy_stream_intel, void* cont
   if (stream_callbacks->on_data.has_value()) {
     auto on_data = stream_callbacks->on_data.value();
     on_data(data, end_stream);
-  } else {
-    release_envoy_data(data);
   }
   release_envoy_data(data);
   return context;
@@ -53,9 +50,8 @@ void* c_on_trailers(envoy_headers metadata, envoy_stream_intel intel, void* cont
     }
     auto on_trailers = stream_callbacks->on_trailers.value();
     on_trailers(builder.build(), intel);
-  } else {
-    release_envoy_headers(metadata);
   }
+
   release_envoy_headers(metadata);
   return context;
 }
