@@ -35,8 +35,11 @@ void* c_on_data(envoy_data data, bool end_stream, envoy_stream_intel, void* cont
   if (stream_callbacks->on_data.has_value()) {
     auto on_data = stream_callbacks->on_data.value();
     on_data(data, end_stream);
+  } else {
+    // TODO(snowp): The API here is pretty error prone in that we require implementations of onData
+    // to free the provided data. Consider mapping to a view-type and handling cleanup in one place.
+    release_envoy_data(data);
   }
-  release_envoy_data(data);
   return context;
 }
 

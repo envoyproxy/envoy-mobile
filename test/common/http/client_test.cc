@@ -89,6 +89,7 @@ public:
       callbacks_called* cc = static_cast<callbacks_called*>(context);
       cc->on_data_calls++;
       cc->body_data_ += Data::Utility::copyToString(c_data);
+      release_envoy_data(c_data);
       return nullptr;
     };
     bridge_callbacks_.on_cancel = [](envoy_stream_intel, envoy_final_stream_intel,
