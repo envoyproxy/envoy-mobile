@@ -29,6 +29,8 @@ import org.chromium.net.ICronetEngineBuilder;
  */
 public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
 
+  // TODO(refactor) move unshared variables into their specific methods.
+  private final List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
   private final EnvoyLogger mEnvoyLogger = null;
   private final EnvoyEventTracker mEnvoyEventTracker = null;
   private boolean mAdminInterfaceEnabled = false;
@@ -61,11 +63,6 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private String mAppId = "unspecified";
   private TrustChainVerification mTrustChainVerification = VERIFY_TRUST_CHAIN;
   private String mVirtualClusters = "[]";
-  private List<EnvoyHTTPFilterFactory> platformFilterChain = Collections.emptyList();
-  private List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
-  private Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
-  private Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
-  private List<String> statSinks = Collections.emptyList();
   /**
    * Builder for Native Cronet Engine. Default config enables SPDY, disables QUIC and HTTP cache.
    *
@@ -115,6 +112,11 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   }
 
   private EnvoyConfiguration createEnvoyConfiguration() {
+    List<EnvoyHTTPFilterFactory> platformFilterChain = Collections.emptyList();
+    Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
+    Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
+    List<String> statSinks = Collections.emptyList();
+
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mConnectTimeoutSeconds, mDnsRefreshSeconds,
         mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax, mDnsQueryTimeoutSeconds,

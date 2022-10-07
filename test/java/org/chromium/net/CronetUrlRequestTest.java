@@ -2201,8 +2201,9 @@ public class CronetUrlRequestTest {
     assertFalse(failedExpectation.get());
   }
 
-  private void checkSpecificErrorCode(long envoyMobileError, NetError netError, int errorCode,
-                                      String name, boolean immediatelyRetryable) throws Exception {
+  private void checkSpecificErrorCode(@EnvoyMobileError long envoyMobileError, NetError netError,
+                                      int errorCode, String name, boolean immediatelyRetryable)
+      throws Exception {
     TestUrlRequestCallback callback = startAndWaitForComplete(
         mMockUrlRequestJobFactory.getCronetEngine(),
         MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, envoyMobileError));

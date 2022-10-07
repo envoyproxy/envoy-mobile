@@ -1,5 +1,6 @@
 package org.chromium.net.impl;
 
+import static org.chromium.net.impl.Errors.isQuicException;
 import static org.chromium.net.impl.Errors.mapEnvoyMobileErrorToNetError;
 import static org.chromium.net.impl.Errors.mapNetErrorToCronetApiErrorCode;
 
@@ -654,14 +655,14 @@ public final class CronetBidirectionalStream
 
     NetError netError = mapEnvoyMobileErrorToNetError(finalStreamIntel.getResponseFlags());
     int javaError = mapNetErrorToCronetApiErrorCode(netError);
-    if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
-        errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
+
+    if (isQuicException(javaError)) {
       mException.set(
-          new QuicExceptionImpl("Exception in BidirectionalStream: " + netError.getModifiedString(),
+          new QuicExceptionImpl("Exception in BidirectionalStream: " + netError,
                                 javaError, netError.getErrorCode(), /*nativeQuicError*/ 0));
     } else {
       mException.set(new BidirectionalStreamNetworkException("Exception in BidirectionalStream: " +
-                                                                 netError.getModifiedString(),
+                                                                 netError,
                                                              javaError, netError.getErrorCode()));
     }
 

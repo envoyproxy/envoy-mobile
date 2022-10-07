@@ -9,15 +9,21 @@ import java.util.HashMap;
 import java.util.Map;
 import org.chromium.net.NetworkException;
 
+/**
+ * Handles mapping of the error codes that exist in the Cronvoy space. That is,
+ * from Envoymobile error to Chromium neterror and finally to the public Network Exception.
+ */
 public class Errors {
-  private static final Map<Long, NetError> EnvoyMobileErrorToNetError = createErrorMapping();
+  private static final Map<Long, NetError> ENVOYMOBILE_ERROR_TO_NET_ERROR = buildErrorMap();
 
   /**Subset of errors defined in
    * https://github.com/envoyproxy/envoy/blob/main/envoy/stream_info/stream_info.h */
-  @LongDef({EnvoyMobileError.DNS_RESOLUTION_FAILED, EnvoyMobileError.DURATION_TIMEOUT,
-            EnvoyMobileError.STREAM_IDLE_TIMEOUT, EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE,
-            EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION,
-            EnvoyMobileError.UPSTREAM_REMOTE_RESET})
+  @LongDef(flag = true,
+           value = {EnvoyMobileError.DNS_RESOLUTION_FAILED, EnvoyMobileError.DURATION_TIMEOUT,
+                    EnvoyMobileError.STREAM_IDLE_TIMEOUT,
+                    EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE,
+                    EnvoyMobileError.UPSTREAM_CONNECTION_TERMINATION,
+                    EnvoyMobileError.UPSTREAM_REMOTE_RESET})
   @Retention(RetentionPolicy.SOURCE)
   public @interface EnvoyMobileError {
     long DNS_RESOLUTION_FAILED = 0x4000000;
@@ -50,11 +56,14 @@ public class Errors {
 
     public int getErrorCode() { return errorCode; }
 
-    public String getModifiedString() { return "net::" + this.toString(); }
+    @Override
+    public String toString() { return "net::" + name(); }
   }
 
   /**
-   * returns the NetError that the EnvoyMobileError maps to
+   * Maps Envoymobile's errorcode to chromium's net errorcode
+   * @param responseFlag envoymobile's finalStreamIntel responseFlag
+   * @return the NetError that the EnvoyMobileError maps to
    */
   public static NetError mapEnvoyMobileErrorToNetError(long responseFlag) {
     /* Todo(https://github.com/envoyproxy/envoy-mobile/issues/1594):
@@ -63,9 +72,13 @@ public class Errors {
      *
      * if negotiated_protocol is quic return QUIC_PROTOCOL_FAILED
      */
-    return EnvoyMobileErrorToNetError.getOrDefault(responseFlag, NetError.ERR_OTHER);
+    return ENVOYMOBILE_ERROR_TO_NET_ERROR.getOrDefault(responseFlag, NetError.ERR_OTHER);
   }
 
+  /**
+   * Maps chromium's net errorcode to Cronet API errorcode
+   * @return the corresponding NetworkException errorcode
+   */
   public static int mapNetErrorToCronetApiErrorCode(NetError netError) {
     switch (netError) {
     case ERR_NAME_NOT_RESOLVED:
@@ -91,7 +104,15 @@ public class Errors {
     return NetworkException.ERROR_OTHER;
   }
 
-  private static Map<Long, NetError> createErrorMapping() {
+  /**
+   * Returns {@code true} if the error is specific to quic
+   */
+  public static boolean isQuicException(int javaError) {
+    return javaError == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
+        javaError == NetworkException.ERROR_NETWORK_CHANGED;
+  }
+
+  private static Map<Long, NetError> buildErrorMap() {
     Map<Long, NetError> errorMap = new HashMap<>();
     errorMap.put(EnvoyMobileError.DNS_RESOLUTION_FAILED, NetError.ERR_NAME_NOT_RESOLVED);
     errorMap.put(EnvoyMobileError.DURATION_TIMEOUT, NetError.ERR_TIMED_OUT);

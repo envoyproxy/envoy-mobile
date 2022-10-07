@@ -7,6 +7,7 @@ import org.chromium.net.ExperimentalCronetEngine;
 
 /**
  * Helper class to set up url interceptors for testing purposes.
+ * TODO("https://github.com/envoyproxy/envoy-mobile/issues/1549")
  */
 public final class MockUrlRequestJobFactory {
 
@@ -49,11 +50,11 @@ public final class MockUrlRequestJobFactory {
    *              org.chromium.net.test.FailurePhase.
    * @param @param envoyMobileError reported by the engine.
    */
-  public static String getMockUrlWithFailure(String phase, long envoyMobileError) {
+  public static String getMockUrlWithFailure(FailurePhase phase, long envoyMobileError) {
     switch (phase) {
-    case FailurePhase.START:
-    case FailurePhase.READ_SYNC:
-    case FailurePhase.READ_ASYNC:
+    case START:
+    case READ_SYNC:
+    case READ_ASYNC:
       break;
     default:
       throw new IllegalArgumentException("phase not in org.chromium.net.test.FailurePhase");
@@ -61,8 +62,8 @@ public final class MockUrlRequestJobFactory {
     return TEST_URL + "/failed?" + phase + "=" + envoyMobileError;
   }
 
-  public static String getMockUrlWithFailure(String phase, int netError) {
-    return "To be implemented";
+  public static String getMockUrlWithFailure(FailurePhase phase, int netError) {
+    throw new UnsupportedOperationException("To be implemented");
   }
 
   /**

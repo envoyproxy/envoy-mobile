@@ -1,10 +1,12 @@
 package org.chromium.net.testing;
 
-public final class FailurePhase {
+public enum FailurePhase {
+  START,
+  READ_SYNC,
+  READ_ASYNC;
 
-  public static final String START = "start";
-  public static final String READ_SYNC = "readsync";
-  public static final String READ_ASYNC = "readasync";
-
-  private FailurePhase() {}
+  @Override
+  public String toString() {
+    return name().toLowerCase();
+  }
 }

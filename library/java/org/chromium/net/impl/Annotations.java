@@ -4,7 +4,7 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-/** Annotations for "int" based Enums. */
+/** Annotations for Enums. */
 public final class Annotations {
   /** Enum defined here: chromium/src/net/base/request_priority.h */
   @IntDef({RequestPriority.THROTTLED, RequestPriority.IDLE, RequestPriority.LOWEST,

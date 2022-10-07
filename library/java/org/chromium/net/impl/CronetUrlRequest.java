@@ -1,5 +1,6 @@
 package org.chromium.net.impl;
 
+import static org.chromium.net.impl.Errors.isQuicException;
 import static org.chromium.net.impl.Errors.mapEnvoyMobileErrorToNetError;
 import static org.chromium.net.impl.Errors.mapNetErrorToCronetApiErrorCode;
 
@@ -453,6 +454,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
   }
 
+  // No-op if already in a terminal state.
   private void enterErrorState(CronetException error) {
     @State int originalState;
     @State int updatedState;
@@ -934,19 +936,17 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
       NetError netError = mapEnvoyMobileErrorToNetError(finalStreamIntel.getResponseFlags());
       int javaError = mapNetErrorToCronetApiErrorCode(netError);
-      CronetException exception;
-      if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
-          errorCode == NetworkException.ERROR_NETWORK_CHANGED) {
-        exception =
-            new QuicExceptionImpl("Exception in CronetUrlRequest: " + netError.getModifiedString(),
-                                  javaError, netError.getErrorCode(), /*nativeQuicError*/ 0);
-      } else {
-        exception = new NetworkExceptionImpl("Exception in CronetUrlRequest: " +
-                                                 netError.getModifiedString(),
-                                             javaError, netError.getErrorCode());
+
+      if (isQuicException(javaError)) {
+        enterErrorState(
+            new QuicExceptionImpl("Exception in CronetUrlRequest: " + netError,
+                                  javaError, netError.getErrorCode(), /*nativeQuicError*/ 0));
+        return;
       }
 
-      enterErrorState(exception); // No-op if already in a terminal state.
+      enterErrorState(
+          new NetworkExceptionImpl("Exception in CronetUrlRequest: " + netError,
+                                   javaError, netError.getErrorCode()));
     }
 
     @Override
