@@ -107,7 +107,7 @@ public class Errors {
   }
 
   /**
-   * Returns {@code true} if the error is specific to quic
+   * Returns {@code true} if the error may contain QUIC specific errorcode
    */
   public static boolean isQuicException(int javaError) {
     return javaError == NetworkException.ERROR_QUIC_PROTOCOL_FAILED ||
