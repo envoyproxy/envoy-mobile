@@ -657,13 +657,12 @@ public final class CronetBidirectionalStream
     int javaError = mapNetErrorToCronetApiErrorCode(netError);
 
     if (isQuicException(javaError)) {
-      mException.set(
-          new QuicExceptionImpl("Exception in BidirectionalStream: " + netError,
-                                javaError, netError.getErrorCode(), /*nativeQuicError*/ 0));
+      mException.set(new QuicExceptionImpl("Exception in BidirectionalStream: " + netError,
+                                           javaError, netError.getErrorCode(),
+                                           /*nativeQuicError*/ 0));
     } else {
-      mException.set(new BidirectionalStreamNetworkException("Exception in BidirectionalStream: " +
-                                                                 netError,
-                                                             javaError, netError.getErrorCode()));
+      mException.set(new BidirectionalStreamNetworkException(
+          "Exception in BidirectionalStream: " + netError, javaError, netError.getErrorCode()));
     }
 
     failWithException();

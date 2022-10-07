@@ -938,15 +938,14 @@ public final class CronetUrlRequest extends UrlRequestBase {
       int javaError = mapNetErrorToCronetApiErrorCode(netError);
 
       if (isQuicException(javaError)) {
-        enterErrorState(
-            new QuicExceptionImpl("Exception in CronetUrlRequest: " + netError,
-                                  javaError, netError.getErrorCode(), /*nativeQuicError*/ 0));
+        enterErrorState(new QuicExceptionImpl("Exception in CronetUrlRequest: " + netError,
+                                              javaError, netError.getErrorCode(),
+                                              /*nativeQuicError*/ 0));
         return;
       }
 
-      enterErrorState(
-          new NetworkExceptionImpl("Exception in CronetUrlRequest: " + netError,
-                                   javaError, netError.getErrorCode()));
+      enterErrorState(new NetworkExceptionImpl("Exception in CronetUrlRequest: " + netError,
+                                               javaError, netError.getErrorCode()));
     }
 
     @Override

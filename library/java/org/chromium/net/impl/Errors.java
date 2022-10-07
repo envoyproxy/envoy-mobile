@@ -57,7 +57,9 @@ public class Errors {
     public int getErrorCode() { return errorCode; }
 
     @Override
-    public String toString() { return "net::" + name(); }
+    public String toString() {
+      return "net::" + name();
+    }
   }
 
   /**
