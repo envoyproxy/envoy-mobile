@@ -188,6 +188,20 @@ TEST(TestConfig, EnableAdminInterface) {
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
+TEST(TestConfig, EnableInterfaceBinding) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&enable_interface_binding false"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.enableInterfaceBinding(true);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&enable_interface_binding true"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
 TEST(TestConfig, EnableHappyEyeballs) {
   EngineBuilder engine_builder;
 

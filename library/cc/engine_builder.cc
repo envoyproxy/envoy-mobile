@@ -139,6 +139,11 @@ EngineBuilder& EngineBuilder::enableHappyEyeballs(bool happy_eyeballs_on) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::enableInterfaceBinding(bool interface_binding_on) {
+  this->enable_interface_binding_ = interface_binding_on;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -171,6 +176,7 @@ std::string EngineBuilder::generateConfigStr() {
         {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
         {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},
         {"dns_resolver_name", dns_resolver_name}, {"dns_resolver_config", dns_resolver_config},
+        {"enable_interface_binding", enable_interface_binding_ ? "true" : "false"},
         {"h2_connection_keepalive_idle_interval",
          fmt::format("{}s", this->h2_connection_keepalive_idle_interval_milliseconds_ / 1000.0)},
         {"h2_connection_keepalive_timeout",
