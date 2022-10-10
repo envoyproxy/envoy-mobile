@@ -134,6 +134,11 @@ EngineBuilder& EngineBuilder::enableAdminInterface(bool admin_interface_on) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::enableHappyEyeballs(bool happy_eyeballs_on) {
+  this->enable_happy_eyeballs_ = happy_eyeballs_on;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -160,6 +165,8 @@ std::string EngineBuilder::generateConfigStr() {
     {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
         {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
         {"dns_fail_max_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_max_)},
+        {"dns_lookup_family", enable_happy_eyeballs_ ? "ALL" : "V4_PREFERRED"},
+        {"dns_multiple_addresses", enable_happy_eyeballs_ ? "true" : "false"},
         {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
         {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
         {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},

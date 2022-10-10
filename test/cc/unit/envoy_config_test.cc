@@ -188,6 +188,25 @@ TEST(TestConfig, EnableAdminInterface) {
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
+TEST(TestConfig, EnableHappyEyeballs) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, Not(HasSubstr("&dns_lookup_family V4_PREFERRED")));
+  ASSERT_THAT(config_str, HasSubstr("&dns_lookup_family ALL"));
+  ASSERT_THAT(config_str, Not(HasSubstr("&dns_multiple_addresses false")));
+  ASSERT_THAT(config_str, HasSubstr("&dns_multiple_addresses true"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.enableHappyEyeballs(false);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&dns_lookup_family V4_PREFERRED"));
+  ASSERT_THAT(config_str, HasSubstr("&dns_multiple_addresses false"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
 TEST(TestConfig, RemainingTemplatesThrows) {
   auto engine_builder = EngineBuilder("{{ template_that_i_will_not_fill }}");
   try {
