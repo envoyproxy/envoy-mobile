@@ -129,6 +129,11 @@ EngineBuilder& EngineBuilder::enableSocketTagging(bool socket_tagging_on) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::enableAdminInterface(bool admin_interface_on) {
+  this->admin_interface_enabled_ = admin_interface_on;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -203,6 +208,10 @@ std::string EngineBuilder::generateConfigStr() {
   }
 
   config_builder << config_template_;
+
+  if (admin_interface_enabled_) {
+    config_builder << "admin: *admin_interface" << std::endl;
+  }
 
   auto config_str = config_builder.str();
   if (config_str.find("{{") != std::string::npos) {

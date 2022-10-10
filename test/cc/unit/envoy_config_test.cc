@@ -174,6 +174,20 @@ TEST(TestConfig, PerTryIdleTimeout) {
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
+TEST(TestConfig, EnableAdminInterface) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, Not(HasSubstr("admin: *admin_interface")));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.enableAdminInterface(true);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("admin: *admin_interface"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
 TEST(TestConfig, RemainingTemplatesThrows) {
   auto engine_builder = EngineBuilder("{{ template_that_i_will_not_fill }}");
   try {

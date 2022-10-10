@@ -44,6 +44,7 @@ public:
   EngineBuilder& enableGzip(bool gzip_on);
   EngineBuilder& enableBrotli(bool brotli_on);
   EngineBuilder& enableSocketTagging(bool socket_tagging_on);
+  EngineBuilder& enableAdminInterface(bool admin_interface_on);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
@@ -89,8 +90,8 @@ private:
 
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 
+  bool admin_interface_enabled_ = false;
   /*
-  bool admin_interface_enabled_;
   int dns_min_refresh_seconds_;
   bool enable_happy_eyeballs_;
   bool enable_interface_binding_;
@@ -99,7 +100,7 @@ private:
   int max_connections_per_host_;
   std::vector<std::string> stat_sinks_;
   bool enforce_trust_chain_verification_;
-*/
+  */
 
   // TODO(crockeo): add after filter integration
   // std::vector<EnvoyHTTPFilterFactory> http_platform_filter_factories_;
