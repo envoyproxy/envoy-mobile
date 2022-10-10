@@ -60,6 +60,7 @@ public class EnvoyConfiguration {
   public final Map<String, EnvoyStringAccessor> stringAccessors;
   public final Map<String, EnvoyKeyValueStore> keyValueStores;
   public final List<String> statSinks;
+  public final Boolean enableSkipDNSLookupForProxiedRequests;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -89,21 +90,26 @@ public class EnvoyConfiguration {
    * @param enableInterfaceBinding       whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *     pings on stream creation.
-   * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
-   * @param h2ExtendKeepaliveTimeout     Extend the keepalive timeout when *any* frame is received
-   *                                     on the owning HTTP/2 connection.
-   * @param maxConnectionsPerHost        maximum number of connections to open to a single host.
-   * @param statsFlushSeconds            interval at which to flush Envoy stats.
-   * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
-   * @param perTryIdleTimeoutSeconds     per try idle timeout for HTTP streams.
-   * @param appVersion                   the App Version of the App using this Envoy Client.
-   * @param appId                        the App ID of the App using this Envoy Client.
-   * @param trustChainVerification       whether to mute TLS Cert verification - for tests.
-   * @param virtualClusters              the JSON list of virtual cluster configs.
-   * @param nativeFilterChain            the configuration for native filters.
-   * @param httpPlatformFilterFactories  the configuration for platform filters.
-   * @param stringAccessors              platform string accessors to register.
-   * @param keyValueStores               platform key-value store implementations.
+   * @param h2ConnectionKeepaliveTimeoutSeconds           rate in seconds to timeout h2 pings.
+   * @param h2ExtendKeepaliveTimeout                      Extend the keepalive timeout when *any*
+   *     frame is received
+   *                                                      on the owning HTTP/2 connection.
+   * @param maxConnectionsPerHost                         maximum number of connections to open to a
+   *     single host.
+   * @param statsFlushSeconds                      interval at which to flush Envoy stats.
+   * @param streamIdleTimeoutSeconds              idle timeout for HTTP streams.
+   * @param perTryIdleTimeoutSeconds              per try idle timeout for HTTP streams.
+   * @param appVersion                            the App Version of the App using this Envoy
+   *     Client.
+   * @param appId                                 the App ID of the App using this Envoy Client.
+   * @param trustChainVerification                whether to mute TLS Cert verification - for tests.
+   * @param virtualClusters                       the JSON list of virtual cluster configs.
+   * @param nativeFilterChain                     the configuration for native filters.
+   * @param httpPlatformFilterFactories           the configuration for platform filters.
+   * @param stringAccessors                       platform string accessors to register.
+   * @param keyValueStores                        platform key-value store implementations.
+   * @param enableSkipDNSLookupForProxiedRequests whether to skip waiting on DNS response for
+   *     proxied requests.
    */
   public EnvoyConfiguration(
       boolean adminInterfaceEnabled, String grpcStatsDomain, int connectTimeoutSeconds,
@@ -120,7 +126,8 @@ public class EnvoyConfiguration {
       List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
       Map<String, EnvoyStringAccessor> stringAccessors,
-      Map<String, EnvoyKeyValueStore> keyValueStores, List<String> statSinks) {
+      Map<String, EnvoyKeyValueStore> keyValueStores, List<String> statSinks,
+      Boolean enableSkipDNSLookupForProxiedRequests) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
     this.grpcStatsDomain = grpcStatsDomain;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
@@ -157,6 +164,7 @@ public class EnvoyConfiguration {
     this.stringAccessors = stringAccessors;
     this.keyValueStores = keyValueStores;
     this.statSinks = statSinks;
+    this.enableSkipDNSLookupForProxiedRequests = enableSkipDNSLookupForProxiedRequests;
   }
 
   /**
@@ -266,6 +274,8 @@ public class EnvoyConfiguration {
         .append(String.format("- &metadata { device_os: %s, app_version: %s, app_id: %s }\n",
                               "Android", appVersion, appId))
         .append(String.format("- &trust_chain_verification %s\n", trustChainVerification.name()))
+        .append(String.format("- &skip_dns_lookup_for_proxied_requests %s\n",
+                              enableSkipDNSLookupForProxiedRequests ? "true" : "false"))
         .append("- &virtual_clusters ")
         .append(virtualClusters)
         .append("\n");

@@ -184,6 +184,9 @@ class EnvoyConfigurationTest {
     // Filters
     assertThat(resolvedTemplate).contains("filter_name")
     assertThat(resolvedTemplate).contains("test_config")
+
+    // Proxying
+    assertThat(resolvedTemplate).contains("&skip_dns_lookup_for_proxied_requests false")
   }
 
   @Test
@@ -199,6 +202,7 @@ class EnvoyConfigurationTest {
       enableBrotli = true,
       enableInterfaceBinding = true,
       h2ExtendKeepaliveTimeout = true
+      enableSkipDNSLookupForProxiedRequests = true,
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
@@ -225,6 +229,9 @@ class EnvoyConfigurationTest {
 
     // Interface Binding
     assertThat(resolvedTemplate).contains("&enable_interface_binding true")
+
+    // Proxying
+    assertThat(resolvedTemplate).contains("&skip_dns_lookup_for_proxied_requests true")
   }
 
   @Test
