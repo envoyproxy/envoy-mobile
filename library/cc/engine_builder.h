@@ -1,7 +1,9 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "engine.h"
@@ -87,10 +89,22 @@ private:
 
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 
+  /*
+  bool admin_interface_enabled_;
+  int dns_min_refresh_seconds_;
+  bool enable_happy_eyeballs_;
+  bool enable_interface_binding_;
+  bool enable_drain_post_dns_refresh_;
+  bool h2_extend_keepalive_timeout_;
+  int max_connections_per_host_;
+  std::vector<std::string> stat_sinks_;
+  bool enforce_trust_chain_verification_;
+*/
+
   // TODO(crockeo): add after filter integration
-  // private var platformFilterChain = mutableListOf<EnvoyHTTPFilterFactory>()
-  // private var nativeFilterChain = mutableListOf<EnvoyNativeFilterConfig>()
-  // private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
+  // std::vector<EnvoyHTTPFilterFactory> http_platform_filter_factories_;
+  // std::vector<EnvoyNativeFilterConfig> native_filter_chain_;
+  // std::map<std::string, EnvoyStringAccessor> string_accessors_;
 };
 
 using EngineBuilderSharedPtr = std::shared_ptr<EngineBuilder>;
