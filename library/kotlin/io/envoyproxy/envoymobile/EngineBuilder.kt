@@ -356,7 +356,7 @@ open class EngineBuilder(
    *
    * @return This builder.
    */
-  fun enableSkipDNSLookupForProxiedRequests(enableSkipDNSLookup: Boolean) {
+  fun enableSkipDNSLookupForProxiedRequests(enableSkipDNSLookup: Boolean): EngineBuilder {
     this.enableSkipDNSLookupForProxiedRequests = enableSkipDNSLookup
     return this
   }
