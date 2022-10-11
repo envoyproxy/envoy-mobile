@@ -19,11 +19,11 @@ public:
       : dns_cache_manager_(
             new NiceMock<Extensions::Common::DynamicForwardProxy::MockDnsCacheManager>()),
         dns_cache_(dns_cache_manager_->dns_cache_),
-        connectivity_manager_(std::make_shared<ConnectivityManager>(cm_, dns_cache_manager_)) {
+        connectivity_manager_(std::make_shared<ConnectivityManagerImpl>(cm_, dns_cache_manager_)) {
     ON_CALL(*dns_cache_manager_, lookUpCacheByName(_)).WillByDefault(Return(dns_cache_));
     // Toggle network to reset network state.
-    ConnectivityManager::setPreferredNetwork(ENVOY_NET_GENERIC);
-    ConnectivityManager::setPreferredNetwork(ENVOY_NET_WLAN);
+    ConnectivityManagerImpl::setPreferredNetwork(ENVOY_NET_GENERIC);
+    ConnectivityManagerImpl::setPreferredNetwork(ENVOY_NET_WLAN);
   }
 
   std::shared_ptr<NiceMock<Extensions::Common::DynamicForwardProxy::MockDnsCacheManager>>
@@ -35,7 +35,7 @@ public:
 
 TEST_F(ConnectivityManagerTest, SetPreferredNetworkWithNewNetworkChangesConfigurationKey) {
   envoy_netconf_t original_key = connectivity_manager_->getConfigurationKey();
-  envoy_netconf_t new_key = ConnectivityManager::setPreferredNetwork(ENVOY_NET_WWAN);
+  envoy_netconf_t new_key = ConnectivityManagerImpl::setPreferredNetwork(ENVOY_NET_WWAN);
   EXPECT_NE(original_key, new_key);
   EXPECT_EQ(new_key, connectivity_manager_->getConfigurationKey());
 }
@@ -43,7 +43,7 @@ TEST_F(ConnectivityManagerTest, SetPreferredNetworkWithNewNetworkChangesConfigur
 TEST_F(ConnectivityManagerTest,
        DISABLED_SetPreferredNetworkWithUnchangedNetworkReturnsStaleConfigurationKey) {
   envoy_netconf_t original_key = connectivity_manager_->getConfigurationKey();
-  envoy_netconf_t stale_key = ConnectivityManager::setPreferredNetwork(ENVOY_NET_WLAN);
+  envoy_netconf_t stale_key = ConnectivityManagerImpl::setPreferredNetwork(ENVOY_NET_WLAN);
   EXPECT_NE(original_key, stale_key);
   EXPECT_EQ(original_key, connectivity_manager_->getConfigurationKey());
 }
@@ -168,7 +168,7 @@ TEST_F(ConnectivityManagerTest, ReportNetworkUsageDisablesOverrideAfterThirdFaul
 
 TEST_F(ConnectivityManagerTest, ReportNetworkUsageDisregardsCallsWithStaleConfigurationKey) {
   envoy_netconf_t stale_key = connectivity_manager_->getConfigurationKey();
-  envoy_netconf_t current_key = ConnectivityManager::setPreferredNetwork(ENVOY_NET_WWAN);
+  envoy_netconf_t current_key = ConnectivityManagerImpl::setPreferredNetwork(ENVOY_NET_WWAN);
   EXPECT_NE(stale_key, current_key);
 
   connectivity_manager_->setInterfaceBindingEnabled(true);
@@ -203,6 +203,43 @@ TEST_F(ConnectivityManagerTest, EnumerateInterfacesFiltersByFlags) {
   // Select AND reject loopback.
   auto empty = connectivity_manager_->enumerateInterfaces(AF_INET, IFF_LOOPBACK, IFF_LOOPBACK);
   EXPECT_EQ(empty.size(), 0);
+}
+
+TEST_F(ConnectivityManagerTest, OverridesNoProxySettingsWithNewProxySettings) {
+  EXPECT_EQ(nullptr, connectivity_manager_->getProxySettings());
+
+  const auto proxy_settings = ProxySettings::parseHostAndPort("127.0.0.1", 9999);
+  connectivity_manager_->setProxySettings(proxy_settings);
+  EXPECT_EQ("127.0.0.1:9999", connectivity_manager_->getProxySettings()->asString());
+}
+
+TEST_F(ConnectivityManagerTest, OverridesCurrentProxySettingsWithNoProxySettings) {
+  const auto proxy_settings = ProxySettings::parseHostAndPort("127.0.0.1", 9999);
+  connectivity_manager_->setProxySettings(proxy_settings);
+  EXPECT_EQ("127.0.0.1:9999", connectivity_manager_->getProxySettings()->asString());
+
+  connectivity_manager_->setProxySettings(nullptr);
+  EXPECT_EQ(nullptr, connectivity_manager_->getProxySettings());
+}
+
+TEST_F(ConnectivityManagerTest, OverridesCurrentProxySettingsWithNewProxySettings) {
+  const auto proxy_settings1 = ProxySettings::parseHostAndPort("127.0.0.1", 9999);
+  connectivity_manager_->setProxySettings(proxy_settings1);
+  EXPECT_EQ("127.0.0.1:9999", connectivity_manager_->getProxySettings()->asString());
+
+  const auto proxy_settings2 = ProxySettings::parseHostAndPort("127.0.0.1", 8888);
+  connectivity_manager_->setProxySettings(proxy_settings2);
+  EXPECT_EQ(proxy_settings2, connectivity_manager_->getProxySettings());
+}
+
+TEST_F(ConnectivityManagerTest, IgnoresDuplicatedProxySettingsUpdates) {
+  const auto proxy_settings1 = ProxySettings::parseHostAndPort("127.0.0.1", 9999);
+  connectivity_manager_->setProxySettings(proxy_settings1);
+  EXPECT_EQ("127.0.0.1:9999", connectivity_manager_->getProxySettings()->asString());
+
+  const auto proxy_settings2 = ProxySettings::parseHostAndPort("127.0.0.1", 9999);
+  connectivity_manager_->setProxySettings(proxy_settings2);
+  EXPECT_EQ(proxy_settings1, connectivity_manager_->getProxySettings());
 }
 
 } // namespace Network

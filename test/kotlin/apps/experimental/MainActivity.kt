@@ -1,4 +1,4 @@
-package io.envoyproxy.envoymobile.helloenvoykotlin
+package io.envoyproxy.envoymobile.helloenvoyexperimentaltest
 
 import android.app.Activity
 import android.content.Context
@@ -56,6 +56,7 @@ class MainActivity : Activity() {
       .addPlatformFilter(::BufferDemoFilter)
       .addPlatformFilter(::AsyncDemoFilter)
       .h2ExtendKeepaliveTimeout(true)
+      .enableAdminInterface()
       .enableInterfaceBinding(true)
       .enableDNSUseSystemResolver(false)
       .enableSocketTagging(true)

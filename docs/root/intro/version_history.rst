@@ -6,15 +6,17 @@ Pending Release
 
 Breaking changes:
 
--
+- ios/android: remove ``addH2RawDomains`` method. (:issue: `#2590 <2590>`)
 
 Bugfixes:
 
--
+- android: fix engine startup crash for when admin interface is enabled. (:issue:`#2520 <2520>`)
+- android: respect system security policy when determining whether clear text requests are allowed. (:issue:`#2528 <2528>`)
 
 Features:
 
 - api: Add a ``setPerTryIdleTimeoutSeconds()`` method to C++ EngineBuilder.
+- kotlin: add a way to tell Envoy Mobile to respect system proxy settings by calling an ``enableProxying(true)`` method on the engine builder. (:issue:`#2416 <2416>`)
 
 
 0.5.0 (September 2, 2022)

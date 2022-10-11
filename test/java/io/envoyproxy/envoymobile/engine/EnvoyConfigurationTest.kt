@@ -49,7 +49,6 @@ class EnvoyConfigurationTest {
   fun buildTestEnvoyConfiguration(
     adminInterfaceEnabled: Boolean = false,
     grpcStatsDomain: String = "stats.example.com",
-    statsDPort: Int? = null,
     connectTimeoutSeconds: Int = 123,
     dnsRefreshSeconds: Int = 234,
     dnsFailureRefreshSecondsBase: Int = 345,
@@ -70,7 +69,6 @@ class EnvoyConfigurationTest {
     h2ConnectionKeepaliveIdleIntervalMilliseconds: Int = 222,
     h2ConnectionKeepaliveTimeoutSeconds: Int = 333,
     h2ExtendKeepaliveTimeout: Boolean = false,
-    h2RawDomains: List<String> = listOf("h2-raw.example.com"),
     maxConnectionsPerHost: Int = 543,
     statsFlushSeconds: Int = 567,
     streamIdleTimeoutSeconds: Int = 678,
@@ -83,7 +81,6 @@ class EnvoyConfigurationTest {
     return EnvoyConfiguration(
       adminInterfaceEnabled,
       grpcStatsDomain,
-      statsDPort,
       connectTimeoutSeconds,
       dnsRefreshSeconds,
       dnsFailureRefreshSecondsBase,
@@ -104,7 +101,6 @@ class EnvoyConfigurationTest {
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
-      h2RawDomains,
       maxConnectionsPerHost,
       statsFlushSeconds,
       streamIdleTimeoutSeconds,
@@ -116,7 +112,8 @@ class EnvoyConfigurationTest {
       listOf(EnvoyNativeFilterConfig("filter_name", "test_config")),
       emptyList(),
       emptyMap(),
-      emptyMap()
+      emptyMap(),
+      emptyList()
     )
   }
 
@@ -153,9 +150,6 @@ class EnvoyConfigurationTest {
     // H2 Ping
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_idle_interval 0.222s")
     assertThat(resolvedTemplate).contains("&h2_connection_keepalive_timeout 333s")
-
-    // H2 Hostnames
-    assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\"]")
 
     // H3
     assertThat(resolvedTemplate).doesNotContain(APCF_INSERT);
@@ -257,34 +251,6 @@ class EnvoyConfigurationTest {
     } catch (e: EnvoyConfiguration.ConfigurationException) {
       assertThat(e.message).contains("missing")
     }
-  }
-
-  @Test
-  fun `cannot configure both statsD and gRPC stat sink`() {
-    val envoyConfiguration = buildTestEnvoyConfiguration(
-      grpcStatsDomain = "stats.example.com",
-      statsDPort = 5050
-    )
-
-    try {
-      envoyConfiguration.resolveTemplate("", "", "", "", "", "", "")
-      fail("Conflicting stats keys should trigger exception.")
-    } catch (e: EnvoyConfiguration.ConfigurationException) {
-      assertThat(e.message).contains("cannot enable both statsD and gRPC metrics sink")
-    }
-  }
-
-  @Test
-  fun `resolving multiple h2 raw domains`() {
-    val envoyConfiguration = buildTestEnvoyConfiguration(
-      h2RawDomains = listOf("h2-raw.example.com", "h2-raw.example.com2")
-    )
-
-    val resolvedTemplate = envoyConfiguration.resolveTemplate(
-      TEST_CONFIG, PLATFORM_FILTER_CONFIG, NATIVE_FILTER_CONFIG, APCF_INSERT, GZIP_INSERT, BROTLI_INSERT, SOCKET_TAG_INSERT
-    )
-
-    assertThat(resolvedTemplate).contains("&h2_raw_domains [\"h2-raw.example.com\",\"h2-raw.example.com2\"]")
   }
 
   @Test

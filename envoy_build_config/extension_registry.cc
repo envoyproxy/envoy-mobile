@@ -2,6 +2,7 @@
 
 #include "source/common/network/default_client_connection_factory.h"
 #include "source/common/network/socket_interface_impl.h"
+#include "source/common/router/upstream_codec_filter.h"
 #include "source/common/upstream/logical_dns_cluster.h"
 #include "source/extensions/clusters/dynamic_forward_proxy/cluster.h"
 #include "source/extensions/compression/brotli/decompressor/config.h"
@@ -15,6 +16,7 @@
 #include "source/extensions/http/header_formatters/preserve_case/config.h"
 #include "source/extensions/http/original_ip_detection/xff/config.h"
 #include "source/extensions/stat_sinks/metrics_service/config.h"
+#include "source/extensions/transport_sockets/http_11_proxy/config.h"
 #include "source/extensions/transport_sockets/raw_buffer/config.h"
 #include "source/extensions/transport_sockets/tls/cert_validator/default_validator.h"
 #include "source/extensions/transport_sockets/tls/config.h"
@@ -58,10 +60,13 @@ void ExtensionRegistry::registerFactories() {
   Envoy::Extensions::StatSinks::MetricsService::forceRegisterMetricsServiceSinkFactory();
   Envoy::Extensions::TransportSockets::RawBuffer::forceRegisterUpstreamRawBufferSocketFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterUpstreamSslSocketFactory();
+  Envoy::Extensions::TransportSockets::Http11Connect::
+      forceRegisterUpstreamHttp11ConnectSocketConfigFactory();
   Envoy::Extensions::TransportSockets::Tls::forceRegisterDefaultCertValidatorFactory();
   Envoy::Extensions::Upstreams::Http::Generic::forceRegisterGenericGenericConnPoolFactory();
   Envoy::Upstream::forceRegisterLogicalDnsClusterFactory();
   ExtensionRegistryPlatformAdditions::registerFactories();
+  Router::forceRegisterUpstreamCodecFilterFactory();
 
   // TODO: add a "force initialize" function to the upstream code, or clean up the upstream code
   // in such a way that does not depend on the statically initialized variable.

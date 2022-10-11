@@ -32,7 +32,6 @@ open class EngineBuilder: NSObject {
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds: UInt32 = 1
   private var h2ConnectionKeepaliveTimeoutSeconds: UInt32 = 10
   private var h2ExtendKeepaliveTimeout: Bool = false
-  private var h2RawDomains: [String] = []
   private var maxConnectionsPerHost: UInt32 = 7
   private var statsFlushSeconds: UInt32 = 60
   private var streamIdleTimeoutSeconds: UInt32 = 15
@@ -49,6 +48,7 @@ open class EngineBuilder: NSObject {
   private var stringAccessors: [String: EnvoyStringAccessor] = [:]
   private var keyValueStores: [String: EnvoyKeyValueStore] = [:]
   private var directResponses: [DirectResponse] = []
+  private var statsSinks: [String] = []
 
   // MARK: - Public
 
@@ -74,6 +74,19 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func addGrpcStatsDomain(_ grpcStatsDomain: String?) -> Self {
     self.grpcStatsDomain = grpcStatsDomain
+    return self
+  }
+
+  /// Adds additional stats sink, in the form of the raw YAML/JSON configuration.
+  /// Sinks added in this fashion will be included in addition to the gRPC stats sink
+  /// that may be enabled via addGrpcStatsDomain.
+  ///
+  /// - parameter statsSinks: Configurations of stat sinks to add.
+  ///
+  /// - returns: This builder.
+  @discardableResult
+  public func addStatsSinks(_ statsSinks: [String]) -> Self {
+    self.statsSinks = statsSinks
     return self
   }
 
@@ -277,19 +290,6 @@ open class EngineBuilder: NSObject {
   @discardableResult
   public func h2ExtendKeepaliveTimeout(_ h2ExtendKeepaliveTimeout: Bool) -> Self {
     self.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout
-    return self
-  }
-
-  /// Add a list of domains to which h2 connections will be established without protocol
-  /// negotiation.
-  ///
-  /// - parameter h2RawDomains: list of domains to which connections should be raw h2.
-  ///
-  /// - returns: This builder.
-  @discardableResult
-  public func addH2RawDomains(
-    _ h2RawDomains: [String]) -> Self {
-    self.h2RawDomains = h2RawDomains
     return self
   }
 
@@ -524,7 +524,6 @@ open class EngineBuilder: NSObject {
         self.h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds: self.h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout: self.h2ExtendKeepaliveTimeout,
-      h2RawDomains: self.h2RawDomains,
       maxConnectionsPerHost: self.maxConnectionsPerHost,
       statsFlushSeconds: self.statsFlushSeconds,
       streamIdleTimeoutSeconds: self.streamIdleTimeoutSeconds,
@@ -541,7 +540,8 @@ open class EngineBuilder: NSObject {
       nativeFilterChain: self.nativeFilterChain,
       platformFilterChain: self.platformFilterChain,
       stringAccessors: self.stringAccessors,
-      keyValueStores: self.keyValueStores
+      keyValueStores: self.keyValueStores,
+      statsSinks: self.statsSinks
     )
 
     switch self.base {

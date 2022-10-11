@@ -12,10 +12,9 @@ def envoy_mobile_repositories():
 
     http_archive(
         name = "swift_flatbuffers",
-        sha256 = "ffd68aebdfb300c9e82582ea38bf4aa9ce65c77344c94d5047f3be754cc756ea",
-        build_file = "@envoy_mobile//bazel:flatbuffers.BUILD",
-        strip_prefix = "flatbuffers-2.0.0",
-        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.0.zip"],
+        sha256 = "f97965a727d26386afaefff950badef2db3ab6af9afe23ed6d94bfb65f95f37e",
+        strip_prefix = "flatbuffers-2.0.8",
+        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.8.tar.gz"],
     )
 
     upstream_envoy_overrides()
@@ -53,10 +52,10 @@ def upstream_envoy_overrides():
     http_archive(
         name = "com_google_absl",
         patches = ["@envoy_mobile//bazel:abseil.patch"],
-        sha256 = "2e4ace2ed32a4ccfd29e856ad72b4fd1eae2ec060d3ba8646857fa170d6e8269",
-        strip_prefix = "abseil-cpp-17c954d90d5661e27db8fc5f086085690a8372d9",
-        # 2021-06-03
-        urls = ["https://github.com/abseil/abseil-cpp/archive/17c954d90d5661e27db8fc5f086085690a8372d9.tar.gz"],
+        sha256 = "3a0bb3d2e6f53352526a8d1a7e7b5749c68cd07f2401766a404fb00d2853fa49",
+        strip_prefix = "abseil-cpp-4bbdb026899fea9f882a95cbd7d6a4adaf49b2dd",
+        # 2022-07-05
+        urls = ["https://github.com/abseil/abseil-cpp/archive/4bbdb026899fea9f882a95cbd7d6a4adaf49b2dd.tar.gz"],
     )
 
     # This should be kept in sync with Envoy itself, we just need to apply this patch
@@ -72,15 +71,15 @@ def upstream_envoy_overrides():
 def swift_repos():
     http_archive(
         name = "build_bazel_rules_apple",
-        sha256 = "5d58663f55aedbd6beffcc61f9f24ec6f2b1512ca1ab52a261ae41a8b880df97",
-        strip_prefix = "rules_apple-d04edf4136b4818662d7126582ec257aee372339",
-        url = "https://github.com/bazelbuild/rules_apple/archive/d04edf4136b4818662d7126582ec257aee372339.tar.gz",
+        sha256 = "687644bf48ccf91286f31c4ec26cf6591800b39bee8a630438626fc9bb4042de",
+        strip_prefix = "rules_apple-a0f8748ce89698a599149d984999eaefd834c004",
+        url = "https://github.com/bazelbuild/rules_apple/archive/a0f8748ce89698a599149d984999eaefd834c004.tar.gz",
     )
 
     http_archive(
         name = "build_bazel_rules_swift",
-        sha256 = "043897b483781cfd6cbd521569bfee339c8fbb2ad0f0bdcd1b3749523a262cf4",
-        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.1.1/rules_swift.1.1.1.tar.gz",
+        sha256 = "51efdaf85e04e51174de76ef563f255451d5a5cd24c61ad902feeadafc7046d9",
+        url = "https://github.com/bazelbuild/rules_swift/releases/download/1.2.0/rules_swift.1.2.0.tar.gz",
     )
 
     http_archive(
@@ -99,8 +98,8 @@ def swift_repos():
 
     http_archive(
         name = "com_github_buildbuddy_io_rules_xcodeproj",
-        sha256 = "a647ad9ee6664a78377cf5707331966b6788be09d1fea48045a61bc450c8f1b1",
-        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.7.0/release.tar.gz",
+        sha256 = "564381b33261ba29e3c8f505de82fc398452700b605d785ce3e4b9dd6c73b623",
+        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.9.0/release.tar.gz",
     )
 
 def kotlin_repos():
@@ -148,9 +147,9 @@ def kotlin_repos():
 
     http_archive(
         name = "robolectric",
-        sha256 = "d4f2eb078a51f4e534ebf5e18b6cd4646d05eae9b362ac40b93831bdf46112c7",
-        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.4.tar.gz"],
-        strip_prefix = "robolectric-bazel-4.4",
+        sha256 = "5bcde5db598f6938c9887a140a0a1249f95d3c16274d40869503d0c322a20d5d",
+        urls = ["https://github.com/robolectric/robolectric-bazel/archive/4.8.2.tar.gz"],
+        strip_prefix = "robolectric-bazel-4.8.2",
     )
 
 def android_repos():

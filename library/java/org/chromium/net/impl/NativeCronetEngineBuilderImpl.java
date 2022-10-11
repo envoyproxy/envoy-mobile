@@ -33,7 +33,6 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private final EnvoyEventTracker mEnvoyEventTracker = null;
   private boolean mAdminInterfaceEnabled = false;
   private String mGrpcStatsDomain = null;
-  private Integer mStatsDPort = null;
   private int mConnectTimeoutSeconds = 30;
   private int mDnsRefreshSeconds = 60;
   private int mDnsFailureRefreshSecondsBase = 2;
@@ -49,10 +48,10 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private boolean mEnableSocketTag = true;
   private boolean mEnableHappyEyeballs = false;
   private boolean mEnableInterfaceBinding = false;
+  private boolean mEnableProxying = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
   private int mH2ConnectionKeepaliveTimeoutSeconds = 10;
   private boolean mH2ExtendKeepaliveTimeout = false;
-  private List<String> mH2RawDomains = Collections.emptyList();
   private int mMaxConnectionsPerHost = 7;
   private int mStatsFlushSeconds = 60;
   private int mStreamIdleTimeoutSeconds = 15;
@@ -89,8 +88,8 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   }
 
   EnvoyEngine createEngine(EnvoyOnEngineRunning onEngineRunning) {
-    AndroidEngineImpl engine =
-        new AndroidEngineImpl(getContext(), onEngineRunning, mEnvoyLogger, mEnvoyEventTracker);
+    AndroidEngineImpl engine = new AndroidEngineImpl(getContext(), onEngineRunning, mEnvoyLogger,
+                                                     mEnvoyEventTracker, mEnableProxying);
     AndroidJniLibrary.load(getContext());
     AndroidNetworkMonitor.load(getContext(), engine);
     engine.runWithConfig(createEnvoyConfiguration(), getLogLevel());
@@ -99,21 +98,21 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
 
   private EnvoyConfiguration createEnvoyConfiguration() {
     List<EnvoyHTTPFilterFactory> platformFilterChain = Collections.emptyList();
-    List<EnvoyNativeFilterConfig> nativeFilterChain = new ArrayList<>();
+    List<EnvoyNativeFilterConfig> nativeFilterChain = Collections.emptyList();
     Map<String, EnvoyStringAccessor> stringAccessors = Collections.emptyMap();
     Map<String, EnvoyKeyValueStore> keyValueStores = Collections.emptyMap();
+    List<String> statSinks = Collections.emptyList();
 
     return new EnvoyConfiguration(
-        mAdminInterfaceEnabled, mGrpcStatsDomain, mStatsDPort, mConnectTimeoutSeconds,
-        mDnsRefreshSeconds, mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax,
-        mDnsQueryTimeoutSeconds, mDnsMinRefreshSeconds, mDnsPreresolveHostnames,
-        mDnsFallbackNameservers, mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver,
-        mEnableDrainPostDnsRefresh, quicEnabled(), mEnableGzip, brotliEnabled(), mEnableSocketTag,
-        mEnableHappyEyeballs, mEnableInterfaceBinding,
-        mH2ConnectionKeepaliveIdleIntervalMilliseconds, mH2ConnectionKeepaliveTimeoutSeconds,
-        mH2ExtendKeepaliveTimeout, mH2RawDomains, mMaxConnectionsPerHost, mStatsFlushSeconds,
-        mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion, mAppId,
-        mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
-        stringAccessors, keyValueStores);
+        mAdminInterfaceEnabled, mGrpcStatsDomain, mConnectTimeoutSeconds, mDnsRefreshSeconds,
+        mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax, mDnsQueryTimeoutSeconds,
+        mDnsMinRefreshSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers,
+        mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver, mEnableDrainPostDnsRefresh,
+        quicEnabled(), mEnableGzip, brotliEnabled(), mEnableSocketTag, mEnableHappyEyeballs,
+        mEnableInterfaceBinding, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
+        mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mMaxConnectionsPerHost,
+        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
+        mAppId, mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
+        stringAccessors, keyValueStores, statSinks);
   }
 }

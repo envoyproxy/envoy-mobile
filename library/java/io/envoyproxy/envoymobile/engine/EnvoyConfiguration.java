@@ -1,6 +1,7 @@
 package io.envoyproxy.envoymobile.engine;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -26,7 +27,6 @@ public class EnvoyConfiguration {
 
   public final Boolean adminInterfaceEnabled;
   public final String grpcStatsDomain;
-  public final Integer statsdPort;
   public final Integer connectTimeoutSeconds;
   public final Integer dnsRefreshSeconds;
   public final Integer dnsFailureRefreshSecondsBase;
@@ -47,7 +47,6 @@ public class EnvoyConfiguration {
   public final Integer h2ConnectionKeepaliveIdleIntervalMilliseconds;
   public final Integer h2ConnectionKeepaliveTimeoutSeconds;
   public final Boolean h2ExtendKeepaliveTimeout;
-  public final List<String> h2RawDomains;
   public final Integer maxConnectionsPerHost;
   public final List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories;
   public final Integer statsFlushSeconds;
@@ -60,6 +59,7 @@ public class EnvoyConfiguration {
   public final List<EnvoyNativeFilterConfig> nativeFilterChain;
   public final Map<String, EnvoyStringAccessor> stringAccessors;
   public final Map<String, EnvoyKeyValueStore> keyValueStores;
+  public final List<String> statSinks;
 
   private static final Pattern UNRESOLVED_KEY_PATTERN = Pattern.compile("\\{\\{ (.+) \\}\\}");
 
@@ -92,7 +92,6 @@ public class EnvoyConfiguration {
    * @param h2ConnectionKeepaliveTimeoutSeconds rate in seconds to timeout h2 pings.
    * @param h2ExtendKeepaliveTimeout     Extend the keepalive timeout when *any* frame is received
    *                                     on the owning HTTP/2 connection.
-   * @param h2RawDomains                 list of domains to which connections should be raw h2.
    * @param maxConnectionsPerHost        maximum number of connections to open to a single host.
    * @param statsFlushSeconds            interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds     idle timeout for HTTP streams.
@@ -107,25 +106,23 @@ public class EnvoyConfiguration {
    * @param keyValueStores               platform key-value store implementations.
    */
   public EnvoyConfiguration(
-      boolean adminInterfaceEnabled, String grpcStatsDomain, @Nullable Integer statsdPort,
-      int connectTimeoutSeconds, int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase,
-      int dnsFailureRefreshSecondsMax, int dnsQueryTimeoutSeconds, int dnsMinRefreshSeconds,
-      String dnsPreresolveHostnames, List<String> dnsFallbackNameservers,
-      boolean dnsFilterUnroutableFamilies, boolean dnsUseSystemResolver,
-      boolean enableDrainPostDnsRefresh, boolean enableHttp3, boolean enableGzip,
-      boolean enableBrotli, boolean enableSocketTagging, boolean enableHappyEyeballs,
-      boolean enableInterfaceBinding, int h2ConnectionKeepaliveIdleIntervalMilliseconds,
-      int h2ConnectionKeepaliveTimeoutSeconds, boolean h2ExtendKeepaliveTimeout,
-      List<String> h2RawDomains, int maxConnectionsPerHost, int statsFlushSeconds,
+      boolean adminInterfaceEnabled, String grpcStatsDomain, int connectTimeoutSeconds,
+      int dnsRefreshSeconds, int dnsFailureRefreshSecondsBase, int dnsFailureRefreshSecondsMax,
+      int dnsQueryTimeoutSeconds, int dnsMinRefreshSeconds, String dnsPreresolveHostnames,
+      List<String> dnsFallbackNameservers, boolean dnsFilterUnroutableFamilies,
+      boolean dnsUseSystemResolver, boolean enableDrainPostDnsRefresh, boolean enableHttp3,
+      boolean enableGzip, boolean enableBrotli, boolean enableSocketTagging,
+      boolean enableHappyEyeballs, boolean enableInterfaceBinding,
+      int h2ConnectionKeepaliveIdleIntervalMilliseconds, int h2ConnectionKeepaliveTimeoutSeconds,
+      boolean h2ExtendKeepaliveTimeout, int maxConnectionsPerHost, int statsFlushSeconds,
       int streamIdleTimeoutSeconds, int perTryIdleTimeoutSeconds, String appVersion, String appId,
       TrustChainVerification trustChainVerification, String virtualClusters,
       List<EnvoyNativeFilterConfig> nativeFilterChain,
       List<EnvoyHTTPFilterFactory> httpPlatformFilterFactories,
       Map<String, EnvoyStringAccessor> stringAccessors,
-      Map<String, EnvoyKeyValueStore> keyValueStores) {
+      Map<String, EnvoyKeyValueStore> keyValueStores, List<String> statSinks) {
     this.adminInterfaceEnabled = adminInterfaceEnabled;
     this.grpcStatsDomain = grpcStatsDomain;
-    this.statsdPort = statsdPort;
     this.connectTimeoutSeconds = connectTimeoutSeconds;
     this.dnsRefreshSeconds = dnsRefreshSeconds;
     this.dnsFailureRefreshSecondsBase = dnsFailureRefreshSecondsBase;
@@ -147,7 +144,6 @@ public class EnvoyConfiguration {
         h2ConnectionKeepaliveIdleIntervalMilliseconds;
     this.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
     this.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout;
-    this.h2RawDomains = h2RawDomains;
     this.maxConnectionsPerHost = maxConnectionsPerHost;
     this.statsFlushSeconds = statsFlushSeconds;
     this.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
@@ -160,6 +156,7 @@ public class EnvoyConfiguration {
     this.httpPlatformFilterFactories = httpPlatformFilterFactories;
     this.stringAccessors = stringAccessors;
     this.keyValueStores = keyValueStores;
+    this.statSinks = statSinks;
   }
 
   /**
@@ -224,19 +221,6 @@ public class EnvoyConfiguration {
       dnsFallbackNameserversAsString = sb.toString();
     }
 
-    String h2RawDomainsAsString = "[]";
-    if (!h2RawDomains.isEmpty()) {
-      StringBuilder sb = new StringBuilder("[");
-      String separator = "";
-      for (String hostname : h2RawDomains) {
-        sb.append(separator);
-        separator = ",";
-        sb.append(String.format("\"%s\"", hostname));
-      }
-      sb.append("]");
-      h2RawDomainsAsString = sb.toString();
-    }
-
     String dnsResolverName = "";
     String dnsResolverConfig = "";
     if (dnsUseSystemResolver) {
@@ -276,7 +260,6 @@ public class EnvoyConfiguration {
                               h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0))
         .append(String.format("- &h2_connection_keepalive_timeout %ss\n",
                               h2ConnectionKeepaliveTimeoutSeconds))
-        .append(String.format("- &h2_raw_domains %s\n", h2RawDomainsAsString))
         .append(String.format("- &max_connections_per_host %s\n", maxConnectionsPerHost))
         .append(String.format("- &stream_idle_timeout %ss\n", streamIdleTimeoutSeconds))
         .append(String.format("- &per_try_idle_timeout %ss\n", perTryIdleTimeoutSeconds))
@@ -287,16 +270,18 @@ public class EnvoyConfiguration {
         .append(virtualClusters)
         .append("\n");
 
-    // TODO(goaway): enable support for both types of sinks, since it's now much easier.
-    if (statsdPort != null && grpcStatsDomain != null) {
-      throw new ConfigurationException("cannot enable both statsD and gRPC metrics sink");
-    } else if (grpcStatsDomain != null) {
+    configBuilder.append(String.format("- &stats_flush_interval %ss\n", statsFlushSeconds));
+
+    List<String> stat_sinks_config = new ArrayList<>(statSinks);
+    if (grpcStatsDomain != null) {
+      stat_sinks_config.add("*base_metrics_service");
       configBuilder.append("- &stats_domain ").append(grpcStatsDomain).append("\n");
-      configBuilder.append(String.format("- &stats_flush_interval %ss\n", statsFlushSeconds));
-      configBuilder.append("- &stats_sinks [ *base_metrics_service ]\n");
-    } else if (statsdPort != null) {
-      configBuilder.append("- &statsd_port ").append(statsdPort).append("\n");
-      configBuilder.append("- &stats_sinks [ *base_statsd ]\n");
+    }
+
+    if (!stat_sinks_config.isEmpty()) {
+      configBuilder.append("- &stats_sinks [");
+      configBuilder.append(String.join(",", stat_sinks_config));
+      configBuilder.append("] \n");
     }
 
     if (adminInterfaceEnabled) {

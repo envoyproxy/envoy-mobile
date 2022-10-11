@@ -24,7 +24,6 @@
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
                          h2ExtendKeepaliveTimeout:(BOOL)h2ExtendKeepaliveTimeout
-                                     h2RawDomains:(NSArray<NSString *> *)h2RawDomains
                             maxConnectionsPerHost:(UInt32)maxConnectionsPerHost
                                 statsFlushSeconds:(UInt32)statsFlushSeconds
                          streamIdleTimeoutSeconds:(UInt32)streamIdleTimeoutSeconds
@@ -43,7 +42,8 @@
                                           stringAccessors
                                    keyValueStores:
                                        (NSDictionary<NSString *, id<EnvoyKeyValueStore>> *)
-                                           keyValueStores {
+                                           keyValueStores
+                                       statsSinks:(NSArray<NSString *> *)statsSinks {
   self = [super init];
   if (!self) {
     return nil;
@@ -69,7 +69,6 @@
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
   self.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout;
-  self.h2RawDomains = h2RawDomains;
   self.maxConnectionsPerHost = maxConnectionsPerHost;
   self.statsFlushSeconds = statsFlushSeconds;
   self.streamIdleTimeoutSeconds = streamIdleTimeoutSeconds;
@@ -83,6 +82,7 @@
   self.httpPlatformFilterFactories = httpPlatformFilterFactories;
   self.stringAccessors = stringAccessors;
   self.keyValueStores = keyValueStores;
+  self.statsSinks = statsSinks;
   return self;
 }
 
@@ -132,14 +132,6 @@
         appendString:[[NSString alloc] initWithUTF8String:route_cache_reset_filter_insert]];
   }
 
-  NSMutableString *h2RawDomainsString = [[NSMutableString alloc] initWithString:@"["];
-  if (self.h2RawDomains.count > 0) {
-    [h2RawDomainsString appendString:@"\""];
-    [h2RawDomainsString appendString:[self.h2RawDomains componentsJoinedByString:@"\",\""]];
-    [h2RawDomainsString appendString:@"\""];
-  }
-  [h2RawDomainsString appendString:@"]"];
-
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_clusters}"
                                                          withString:customClusters];
   templateYAML = [templateYAML stringByReplacingOccurrencesOfString:@"#{custom_listeners}"
@@ -187,7 +179,6 @@
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
                             (unsigned long)self.h2ConnectionKeepaliveTimeoutSeconds];
-  [definitions appendFormat:@"- &h2_raw_domains %@\n", h2RawDomainsString];
   [definitions
       appendFormat:@"- &max_connections_per_host %lu\n", (unsigned long)self.maxConnectionsPerHost];
   [definitions
@@ -198,11 +189,20 @@
                             self.appVersion, self.appId];
   [definitions appendFormat:@"- &virtual_clusters %@\n", self.virtualClusters];
 
+  [definitions
+      appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
+
+  NSMutableArray *stat_sinks_config = [self.statsSinks mutableCopy];
+
   if (self.grpcStatsDomain != nil) {
     [definitions appendFormat:@"- &stats_domain %@\n", self.grpcStatsDomain];
-    [definitions
-        appendFormat:@"- &stats_flush_interval %lus\n", (unsigned long)self.statsFlushSeconds];
-    [definitions appendString:@"- &stats_sinks [ *base_metrics_service ]\n"];
+    [stat_sinks_config addObject:@"*base_metrics_service"];
+  }
+
+  if (stat_sinks_config.count > 0) {
+    [definitions appendString:@"- &stats_sinks ["];
+    [definitions appendString:[stat_sinks_config componentsJoinedByString:@","]];
+    [definitions appendString:@"]\n"];
   }
 
   if (self.adminInterfaceEnabled) {
