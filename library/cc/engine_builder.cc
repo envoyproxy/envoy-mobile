@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
@@ -20,6 +21,11 @@ EngineBuilder& EngineBuilder::addLogLevel(LogLevel log_level) {
 
 EngineBuilder& EngineBuilder::setOnEngineRunning(std::function<void()> closure) {
   this->callbacks_->on_engine_running = closure;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::addStatsSinks(const std::vector<std::string>& stat_sinks) {
+  this->stat_sinks_ = stat_sinks;
   return *this;
 }
 
@@ -232,6 +238,13 @@ std::string EngineBuilder::generateConfigStr() {
   config_builder << "!ignore platform_defs:" << std::endl;
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
+  }
+  std::vector<std::string> stat_sinks = stat_sinks_;
+  stat_sinks.push_back("*base_metrics_service");
+  if (!stat_sinks.empty()) {
+    config_builder << "- &stats_sinks [";
+    config_builder << absl::StrJoin(stat_sinks, ",");
+    config_builder << "] " << std::endl;
   }
   if (this->gzip_filter_) {
     absl::StrReplaceAll(

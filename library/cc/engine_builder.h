@@ -22,6 +22,7 @@ public:
   EngineBuilder& addLogLevel(LogLevel log_level);
   EngineBuilder& setOnEngineRunning(std::function<void()> closure);
 
+  EngineBuilder& addStatsSinks(const std::vector<std::string>& stat_sinks);
   EngineBuilder& addGrpcStatsDomain(const std::string& stats_domain);
   EngineBuilder& addConnectTimeoutSeconds(int connect_timeout_seconds);
   EngineBuilder& addDnsRefreshSeconds(int dns_refresh_seconds);
@@ -104,10 +105,7 @@ private:
   bool h2_extend_keepalive_timeout_ = false;
   int dns_min_refresh_seconds_ = 60;
   int max_connections_per_host_ = 7;
-
-  /*
   std::vector<std::string> stat_sinks_;
-  */
 
   // TODO(crockeo): add after filter integration
   // std::vector<EnvoyHTTPFilterFactory> http_platform_filter_factories_;
