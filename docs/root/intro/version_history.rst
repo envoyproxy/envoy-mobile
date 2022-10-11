@@ -14,7 +14,7 @@ Bugfixes:
 
 Features:
 
--
+- api: Add a ``setPerTryIdleTimeoutSeconds()`` method to C++ EngineBuilder.
 
 
 0.5.0 (September 2, 2022)
