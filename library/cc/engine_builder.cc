@@ -155,6 +155,11 @@ EngineBuilder& EngineBuilder::enableHappyEyeballs(bool happy_eyeballs_on) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::enableHttp3(bool http3_on) {
+  this->enable_http3_ = http3_on;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::enableInterfaceBinding(bool interface_binding_on) {
   this->enable_interface_binding_ = interface_binding_on;
   return *this;
@@ -256,10 +261,14 @@ std::string EngineBuilder::generateConfigStr() {
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", brotli_config_insert)}},
         &config_template_);
   }
-
   if (this->socket_tagging_filter_) {
     absl::StrReplaceAll(
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", socket_tag_config_insert)}},
+        &config_template_);
+  }
+  if (this->enable_http3_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", alternate_protocols_cache_filter_insert)}},
         &config_template_);
   }
 
