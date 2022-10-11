@@ -151,7 +151,7 @@ TEST_F(NetworkConfigurationFilterTest, HostnameDnsLookupFail) {
   EXPECT_CALL(decoder_callbacks_.stream_info_, filterState()).Times(0);
   EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, false, _))
       .WillOnce(Return(MockDnsCache::MockLoadDnsCacheEntryResult{
-          DnsCache::LoadDnsCacheEntryStatus::Overflow, nullptr, bool, absl::nullopt}));
+          DnsCache::LoadDnsCacheEntryStatus::Overflow, nullptr, absl::nullopt}));
   EXPECT_EQ(Http::FilterHeadersStatus::StopIteration,
             filter_.decodeHeaders(default_request_headers_, false));
 }
