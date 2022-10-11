@@ -48,6 +48,7 @@ public:
   EngineBuilder& enableHappyEyeballs(bool happy_eyeballs_on);
   EngineBuilder& enableInterfaceBinding(bool interface_binding_on);
   EngineBuilder& enableDrainPostDnsRefresh(bool drain_post_dns_refresh_on);
+  EngineBuilder& enforceTrustChainVerification(bool trust_chain_verification_on);
   // this is separated from build() for the sake of testability
   std::string generateConfigStr();
 
@@ -96,13 +97,13 @@ private:
   bool enable_happy_eyeballs_ = true;
   bool enable_interface_binding_ = false;
   bool enable_drain_post_dns_refresh_ = false;
+  bool enforce_trust_chain_verification_ = true;
 
   /*
   int dns_min_refresh_seconds_;
   bool h2_extend_keepalive_timeout_;
   int max_connections_per_host_;
   std::vector<std::string> stat_sinks_;
-  bool enforce_trust_chain_verification_;
   */
 
   // TODO(crockeo): add after filter integration

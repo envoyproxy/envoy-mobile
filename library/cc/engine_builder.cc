@@ -149,6 +149,11 @@ EngineBuilder& EngineBuilder::enableDrainPostDnsRefresh(bool drain_post_dns_refr
   return *this;
 }
 
+EngineBuilder& EngineBuilder::enforceTrustChainVerification(bool trust_chain_verification_on) {
+  this->enforce_trust_chain_verification_ = trust_chain_verification_on;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -195,6 +200,7 @@ std::string EngineBuilder::generateConfigStr() {
         {"stats_domain", this->stats_domain_},
         {"stats_flush_interval", fmt::format("{}s", this->stats_flush_seconds_)},
         {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},
+        {"trust_chain_verification", enforce_trust_chain_verification_ ? "VERIFY_TRUST_CHAIN" : "ACCEPT_UNTRUSTED"},
         {"per_try_idle_timeout", fmt::format("{}s", this->per_try_idle_timeout_seconds_)},
         {"virtual_clusters", this->virtual_clusters_},
 #if defined(__ANDROID_API__)

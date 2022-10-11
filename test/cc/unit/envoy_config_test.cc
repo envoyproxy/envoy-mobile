@@ -235,6 +235,21 @@ TEST(TestConfig, EnableHappyEyeballs) {
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
+TEST(TestConfig, EnforceTrustChainVerification) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&trust_chain_verification VERIFY_TRUST_CHAIN"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.enforceTrustChainVerification(false);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&trust_chain_verification ACCEPT_UNTRUSTED"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
 TEST(TestConfig, RemainingTemplatesThrows) {
   auto engine_builder = EngineBuilder("{{ template_that_i_will_not_fill }}");
   try {
