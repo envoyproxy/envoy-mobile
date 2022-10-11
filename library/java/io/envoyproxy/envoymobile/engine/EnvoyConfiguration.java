@@ -67,26 +67,41 @@ public class EnvoyConfiguration {
   /**
    * Create a new instance of the configuration.
    *
-   * @param adminInterfaceEnabled                         whether admin interface should be enabled or not.
+   * @param adminInterfaceEnabled                         whether admin interface should be enabled
+   *     or not.
    * @param grpcStatsDomain                               the domain to flush stats to.
-   * @param connectTimeoutSeconds                         timeout for new network connections to hosts in
+   * @param connectTimeoutSeconds                         timeout for new network connections to
+   *     hosts in
    *                                                      the cluster.
-   * @param dnsRefreshSeconds                             default rate in seconds at which to refresh DNS.
-   * @param dnsFailureRefreshSecondsBase                  base rate in seconds to refresh DNS on failure.
-   * @param dnsFailureRefreshSecondsMax                   max rate in seconds to refresh DNS on failure.
+   * @param dnsRefreshSeconds                             default rate in seconds at which to
+   *     refresh DNS.
+   * @param dnsFailureRefreshSecondsBase                  base rate in seconds to refresh DNS on
+   *     failure.
+   * @param dnsFailureRefreshSecondsMax                   max rate in seconds to refresh DNS on
+   *     failure.
    * @param dnsQueryTimeoutSeconds                        rate in seconds to timeout DNS queries.
-   * @param dnsMinRefreshSeconds                          minimum rate in seconds at which to refresh DNS.
-   * @param dnsPreresolveHostnames                        hostnames to preresolve on Envoy Client construction.
-   * @param dnsFallbackNameservers                        addresses to use as DNS name server fallback.
-   * @param dnsFilterUnroutableFamilies                   whether to filter unroutable IP families or not.
-   * @param dnsUseSystemResolver                          whether to use the getaddrinfo-based system resolver or
+   * @param dnsMinRefreshSeconds                          minimum rate in seconds at which to
+   *     refresh DNS.
+   * @param dnsPreresolveHostnames                        hostnames to preresolve on Envoy Client
+   *     construction.
+   * @param dnsFallbackNameservers                        addresses to use as DNS name server
+   *     fallback.
+   * @param dnsFilterUnroutableFamilies                   whether to filter unroutable IP families
+   *     or not.
+   * @param dnsUseSystemResolver                          whether to use the getaddrinfo-based
+   *     system resolver or
    *                                                      c-ares.
-   * @param enableDrainPostDnsRefresh                     whether to drain connections after soft DNS refresh.
-   * @param enableHttp3                                   whether to enable experimental support for HTTP/3 (QUIC).
-   * @param enableGzip                                    whether to enable response gzip decompression.
-   * @param enableBrotli                                  whether to enable response brotli decompression.
+   * @param enableDrainPostDnsRefresh                     whether to drain connections after soft
+   *     DNS refresh.
+   * @param enableHttp3                                   whether to enable experimental support for
+   *     HTTP/3 (QUIC).
+   * @param enableGzip                                    whether to enable response gzip
+   *     decompression.
+   * @param enableBrotli                                  whether to enable response brotli
+   *     decompression.
    * @param enableSocketTagging                           whether to enable socket tagging.
-   * @param enableHappyEyeballs                           whether to enable RFC 6555 handling for IPv4/IPv6.
+   * @param enableHappyEyeballs                           whether to enable RFC 6555 handling for
+   *     IPv4/IPv6.
    * @param enableInterfaceBinding                        whether to allow interface binding.
    * @param h2ConnectionKeepaliveIdleIntervalMilliseconds rate in milliseconds seconds to send h2
    *                                                      pings on stream creation.
@@ -99,17 +114,20 @@ public class EnvoyConfiguration {
    * @param statsFlushSeconds                             interval at which to flush Envoy stats.
    * @param streamIdleTimeoutSeconds                      idle timeout for HTTP streams.
    * @param perTryIdleTimeoutSeconds                      per try idle timeout for HTTP streams.
-   * @param appVersion                                    the App Version of the App using this Envoy
+   * @param appVersion                                    the App Version of the App using this
+   *     Envoy
    *                                                      Client.
-   * @param appId                                         the App ID of the App using this Envoy Client.
-   * @param trustChainVerification                        whether to mute TLS Cert verification - for tests.
+   * @param appId                                         the App ID of the App using this Envoy
+   *     Client.
+   * @param trustChainVerification                        whether to mute TLS Cert verification -
+   *     for tests.
    * @param virtualClusters                               the JSON list of virtual cluster configs.
    * @param nativeFilterChain                             the configuration for native filters.
    * @param httpPlatformFilterFactories                   the configuration for platform filters.
    * @param stringAccessors                               platform string accessors to register.
    * @param keyValueStores                                platform key-value store implementations.
-   * @param enableSkipDNSLookupForProxiedRequests         whether to skip waiting on DNS response for
-   *                                                      proxied requests.
+   * @param enableSkipDNSLookupForProxiedRequests         whether to skip waiting on DNS response
+   *     for proxied requests.
    */
   public EnvoyConfiguration(
       boolean adminInterfaceEnabled, String grpcStatsDomain, int connectTimeoutSeconds,
