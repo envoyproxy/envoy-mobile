@@ -27,6 +27,7 @@ public:
   EngineBuilder& addDnsRefreshSeconds(int dns_refresh_seconds);
   EngineBuilder& addDnsFailureRefreshSeconds(int base, int max);
   EngineBuilder& addDnsQueryTimeoutSeconds(int dns_query_timeout_seconds);
+  EngineBuilder& addDnsMinRefreshSeconds(int dns_min_refresh_seconds);
   EngineBuilder& addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames);
   EngineBuilder& useDnsSystemResolver(bool use_system_resolver);
   EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(
@@ -100,9 +101,9 @@ private:
   bool enable_drain_post_dns_refresh_ = false;
   bool enforce_trust_chain_verification_ = true;
   bool h2_extend_keepalive_timeout_ = false;
+  int dns_min_refresh_seconds_ = 60;
 
   /*
-  int dns_min_refresh_seconds_;
   int max_connections_per_host_;
   std::vector<std::string> stat_sinks_;
   */

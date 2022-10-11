@@ -28,6 +28,7 @@ TEST(TestConfig, ConfigIsApplied) {
   engine_builder.addGrpcStatsDomain("asdf.fake.website")
       .addConnectTimeoutSeconds(123)
       .addDnsRefreshSeconds(456)
+      .addDnsMinRefreshSeconds(567)
       .addDnsFailureRefreshSeconds(789, 987)
       .addDnsQueryTimeoutSeconds(321)
       .addDnsPreresolveHostnames("[hostname]")
@@ -46,6 +47,7 @@ TEST(TestConfig, ConfigIsApplied) {
       "- &dns_refresh_rate 456s",
       "- &dns_fail_base_interval 789s",
       "- &dns_fail_max_interval 987s",
+      "- &dns_min_refresh_rate 567s",
       "- &dns_query_timeout 321s",
       "- &dns_preresolve_hostnames [hostname]",
       "- &h2_connection_keepalive_idle_interval 0.222s",

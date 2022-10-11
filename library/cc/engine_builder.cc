@@ -38,6 +38,11 @@ EngineBuilder& EngineBuilder::addDnsRefreshSeconds(int dns_refresh_seconds) {
   return *this;
 }
 
+EngineBuilder& EngineBuilder::addDnsMinRefreshSeconds(int dns_min_refresh_seconds) {
+  this->dns_min_refresh_seconds_ = dns_min_refresh_seconds;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::addDnsFailureRefreshSeconds(int base, int max) {
   this->dns_failure_refresh_seconds_base_ = base;
   this->dns_failure_refresh_seconds_max_ = max;
@@ -186,6 +191,7 @@ std::string EngineBuilder::generateConfigStr() {
         {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
         {"dns_fail_max_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_max_)},
         {"dns_lookup_family", enable_happy_eyeballs_ ? "ALL" : "V4_PREFERRED"},
+        {"dns_min_refresh_rate", fmt::format("{}s", this->dns_min_refresh_seconds_)},
         {"dns_multiple_addresses", enable_happy_eyeballs_ ? "true" : "false"},
         {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
         {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
