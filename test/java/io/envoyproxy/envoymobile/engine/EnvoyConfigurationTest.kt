@@ -114,7 +114,8 @@ class EnvoyConfigurationTest {
       emptyList(),
       emptyMap(),
       emptyMap(),
-      emptyList()
+      emptyList(),
+      enableSkipDNSLookupForProxiedRequests
     )
   }
 
