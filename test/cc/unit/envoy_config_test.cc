@@ -151,134 +151,134 @@ TEST(TestConfig, SetAltSvcCache) {
 TEST(TestConfig, StreamIdleTimeout) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&stream_idle_timeout 15s"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.setStreamIdleTimeoutSeconds(42);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&stream_idle_timeout 42s"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, PerTryIdleTimeout) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&per_try_idle_timeout 15s"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.setPerTryIdleTimeoutSeconds(42);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&per_try_idle_timeout 42s"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, EnableAdminInterface) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, Not(HasSubstr("admin: *admin_interface")));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enableAdminInterface(true);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("admin: *admin_interface"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, EnableInterfaceBinding) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&enable_interface_binding false"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enableInterfaceBinding(true);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&enable_interface_binding true"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, EnableDrainPostDnsRefresh) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&enable_drain_post_dns_refresh false"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enableDrainPostDnsRefresh(true);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&enable_drain_post_dns_refresh true"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, EnableH2ExtendKeepaliveTimeout) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&h2_delay_keepalive_timeout false"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enableH2ExtendKeepaliveTimeout(true);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&h2_delay_keepalive_timeout true"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, EnableHappyEyeballs) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
   ASSERT_THAT(config_str, Not(HasSubstr("&dns_lookup_family V4_PREFERRED")));
   ASSERT_THAT(config_str, HasSubstr("&dns_lookup_family ALL"));
   ASSERT_THAT(config_str, Not(HasSubstr("&dns_multiple_addresses false")));
   ASSERT_THAT(config_str, HasSubstr("&dns_multiple_addresses true"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enableHappyEyeballs(false);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&dns_lookup_family V4_PREFERRED"));
+  ASSERT_THAT(config_str, Not(HasSubstr("&dns_lookup_family ALL")));
   ASSERT_THAT(config_str, HasSubstr("&dns_multiple_addresses false"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  ASSERT_THAT(config_str, Not(HasSubstr("&dns_multiple_addresses true")));
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, EnforceTrustChainVerification) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&trust_chain_verification VERIFY_TRUST_CHAIN"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enforceTrustChainVerification(false);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&trust_chain_verification ACCEPT_UNTRUSTED"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, AddMaxConnectionsPerHost) {
   EngineBuilder engine_builder;
 
-  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&max_connections_per_host 7"));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.addMaxConnectionsPerHost(16);
-  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("&max_connections_per_host 16"));
-  TestUtility::loadFromYaml(config_str, bootstrap);
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
 TEST(TestConfig, RemainingTemplatesThrows) {
