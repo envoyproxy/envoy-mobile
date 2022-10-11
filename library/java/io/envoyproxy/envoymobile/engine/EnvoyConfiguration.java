@@ -115,8 +115,7 @@ public class EnvoyConfiguration {
    * @param streamIdleTimeoutSeconds                      idle timeout for HTTP streams.
    * @param perTryIdleTimeoutSeconds                      per try idle timeout for HTTP streams.
    * @param appVersion                                    the App Version of the App using this
-   *     Envoy
-   *                                                      Client.
+   *     Envoy Client.
    * @param appId                                         the App ID of the App using this Envoy
    *     Client.
    * @param trustChainVerification                        whether to mute TLS Cert verification -
