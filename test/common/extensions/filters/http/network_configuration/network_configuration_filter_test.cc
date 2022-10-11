@@ -133,7 +133,7 @@ TEST_F(NetworkConfigurationFilterTest, HostnameProxyConfig) {
   // With an hostname based config, and a cached address, expect the proxy info to be set.
   EXPECT_CALL(*connectivity_manager_, getProxySettings()).WillOnce(Return(proxy_settings_));
   EXPECT_CALL(decoder_callbacks_.stream_info_, filterState());
-  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, _))
+  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, false, _))
       .WillOnce(Invoke([&](absl::string_view, uint16_t, DnsCache::LoadDnsCacheEntryCallbacks&) {
         return MockDnsCache::MockLoadDnsCacheEntryResult{DnsCache::LoadDnsCacheEntryStatus::InCache,
                                                          nullptr, host_info_};
@@ -149,7 +149,7 @@ TEST_F(NetworkConfigurationFilterTest, HostnameDnsLookupFail) {
   // With a DNS lookup failure, send a local reply.
   EXPECT_CALL(*connectivity_manager_, getProxySettings()).WillOnce(Return(proxy_settings_));
   EXPECT_CALL(decoder_callbacks_.stream_info_, filterState()).Times(0);
-  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, _))
+  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, false, _))
       .WillOnce(Return(MockDnsCache::MockLoadDnsCacheEntryResult{
           DnsCache::LoadDnsCacheEntryStatus::Overflow, nullptr, absl::nullopt}));
   EXPECT_EQ(Http::FilterHeadersStatus::StopIteration,
@@ -166,7 +166,7 @@ TEST_F(NetworkConfigurationFilterTest, AsyncDnsLookupSuccess) {
   Extensions::Common::DynamicForwardProxy::MockLoadDnsCacheEntryHandle* handle =
       new NiceMock<Extensions::Common::DynamicForwardProxy::MockLoadDnsCacheEntryHandle>();
   EXPECT_CALL(*handle, onDestroy());
-  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, _))
+  EXPECT_CALL(*dns_cache_, loadDnsCacheEntry_(Eq("localhost"), 82, false, _))
       .WillOnce(Invoke([&](absl::string_view, uint16_t, DnsCache::LoadDnsCacheEntryCallbacks&) {
         return MockDnsCache::MockLoadDnsCacheEntryResult{DnsCache::LoadDnsCacheEntryStatus::Loading,
                                                          handle, absl::nullopt};
