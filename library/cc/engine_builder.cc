@@ -229,7 +229,8 @@ std::string EngineBuilder::generateConfigStr() {
         {"stats_domain", this->stats_domain_},
         {"stats_flush_interval", fmt::format("{}s", this->stats_flush_seconds_)},
         {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},
-        {"trust_chain_verification", enforce_trust_chain_verification_ ? "VERIFY_TRUST_CHAIN" : "ACCEPT_UNTRUSTED"},
+        {"trust_chain_verification",
+         enforce_trust_chain_verification_ ? "VERIFY_TRUST_CHAIN" : "ACCEPT_UNTRUSTED"},
         {"per_try_idle_timeout", fmt::format("{}s", this->per_try_idle_timeout_seconds_)},
         {"virtual_clusters", this->virtual_clusters_},
 #if defined(__ANDROID_API__)
@@ -268,7 +269,8 @@ std::string EngineBuilder::generateConfigStr() {
   }
   if (this->enable_http3_) {
     absl::StrReplaceAll(
-        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", alternate_protocols_cache_filter_insert)}},
+        {{"#{custom_filters}",
+          absl::StrCat("#{custom_filters}\n", alternate_protocols_cache_filter_insert)}},
         &config_template_);
   }
 

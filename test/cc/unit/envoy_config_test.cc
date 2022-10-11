@@ -285,7 +285,8 @@ std::string statsdSinkConfig(int port) {
   std::string config = R"({ name: envoy.stat_sinks.statsd,
       typed_config: {
         "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink,
-        address: { socket_address: { address: 127.0.0.1, port_value: )" + fmt::format("{}", port)+ " } } } }";
+        address: { socket_address: { address: 127.0.0.1, port_value: )" +
+                       fmt::format("{}", port) + " } } } }";
   return config;
 }
 
@@ -297,24 +298,27 @@ TEST(TestConfig, AddStatsSinks) {
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
-  engine_builder.addStatsSinks({statsdSinkConfig(1),statsdSinkConfig(2)});
+  engine_builder.addStatsSinks({statsdSinkConfig(1), statsdSinkConfig(2)});
   config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, HasSubstr("&stats_sinks ["+statsdSinkConfig(1)+","+statsdSinkConfig(2)+",*base_metrics_service]"));
+  ASSERT_THAT(config_str, HasSubstr("&stats_sinks [" + statsdSinkConfig(1) + "," +
+                                    statsdSinkConfig(2) + ",*base_metrics_service]"));
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
-
 
 TEST(TestConfig, EnableHttp3) {
   EngineBuilder engine_builder;
 
   std::string config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, Not(HasSubstr("envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig")));
+  ASSERT_THAT(
+      config_str,
+      Not(HasSubstr("envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig")));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.enableHttp3(true);
   config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, HasSubstr("envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig"));
+  ASSERT_THAT(config_str,
+              HasSubstr("envoy.extensions.filters.http.alternate_protocols_cache.v3.FilterConfig"));
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
