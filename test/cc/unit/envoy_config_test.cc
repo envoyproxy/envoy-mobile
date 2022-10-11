@@ -216,6 +216,20 @@ TEST(TestConfig, EnableDrainPostDnsRefresh) {
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
+TEST(TestConfig, EnableH2ExtendKeepaliveTimeout) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&h2_delay_keepalive_timeout false"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.enableH2ExtendKeepaliveTimeout(true);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&h2_delay_keepalive_timeout true"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
 TEST(TestConfig, EnableHappyEyeballs) {
   EngineBuilder engine_builder;
 
