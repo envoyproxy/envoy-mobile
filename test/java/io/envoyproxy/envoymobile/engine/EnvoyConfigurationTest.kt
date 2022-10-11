@@ -202,8 +202,8 @@ class EnvoyConfigurationTest {
       enableGzip = false,
       enableBrotli = true,
       enableInterfaceBinding = true,
-      h2ExtendKeepaliveTimeout = true
-      enableSkipDNSLookupForProxiedRequests = true,
+      h2ExtendKeepaliveTimeout = true,
+      enableSkipDNSLookupForProxiedRequests = true
     )
 
     val resolvedTemplate = envoyConfiguration.resolveTemplate(
