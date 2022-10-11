@@ -7,6 +7,6 @@ platform(
         "@platforms//os:macos",
     ],
     exec_properties = {
-        "Pool": "xcode_14",
+        "Pool": "macos",
     },
 )
