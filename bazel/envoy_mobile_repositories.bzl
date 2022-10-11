@@ -10,13 +10,6 @@ def envoy_mobile_repositories():
         urls = ["https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip"],
     )
 
-    http_archive(
-        name = "swift_flatbuffers",
-        sha256 = "f97965a727d26386afaefff950badef2db3ab6af9afe23ed6d94bfb65f95f37e",
-        strip_prefix = "flatbuffers-2.0.8",
-        urls = ["https://github.com/google/flatbuffers/archive/refs/tags/v2.0.8.tar.gz"],
-    )
-
     upstream_envoy_overrides()
     swift_repos()
     kotlin_repos()
@@ -98,8 +91,8 @@ def swift_repos():
 
     http_archive(
         name = "com_github_buildbuddy_io_rules_xcodeproj",
-        sha256 = "663bf83d8725f39694125d790eacd373e4c063bf80be4e6b5daa0a5dbe74df1f",
-        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.8.0/release.tar.gz",
+        sha256 = "564381b33261ba29e3c8f505de82fc398452700b605d785ce3e4b9dd6c73b623",
+        url = "https://github.com/buildbuddy-io/rules_xcodeproj/releases/download/0.9.0/release.tar.gz",
     )
 
 def kotlin_repos():
