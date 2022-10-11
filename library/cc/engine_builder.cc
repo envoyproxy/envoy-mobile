@@ -60,6 +60,11 @@ EngineBuilder::addDnsPreresolveHostnames(const std::string& dns_preresolve_hostn
   return *this;
 }
 
+EngineBuilder& EngineBuilder::addMaxConnectionsPerHost(int max_connections_per_host) {
+  this->max_connections_per_host_ = max_connections_per_host;
+  return *this;
+}
+
 EngineBuilder& EngineBuilder::useDnsSystemResolver(bool use_system_resolver) {
   this->use_system_resolver_ = use_system_resolver;
   return *this;
@@ -209,6 +214,7 @@ std::string EngineBuilder::generateConfigStr() {
             fmt::format("{{ device_os: {}, app_version: {}, app_id: {} }}", this->device_os_,
                         this->app_version_, this->app_id_),
         },
+        {"max_connections_per_host", fmt::format("{}", this->max_connections_per_host_)},
         {"stats_domain", this->stats_domain_},
         {"stats_flush_interval", fmt::format("{}s", this->stats_flush_seconds_)},
         {"stream_idle_timeout", fmt::format("{}s", this->stream_idle_timeout_seconds_)},

@@ -29,6 +29,7 @@ public:
   EngineBuilder& addDnsQueryTimeoutSeconds(int dns_query_timeout_seconds);
   EngineBuilder& addDnsMinRefreshSeconds(int dns_min_refresh_seconds);
   EngineBuilder& addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames);
+  EngineBuilder& addMaxConnectionsPerHost(int max_connections_per_host);
   EngineBuilder& useDnsSystemResolver(bool use_system_resolver);
   EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(
       int h2_connection_keepalive_idle_interval_milliseconds);
@@ -102,9 +103,9 @@ private:
   bool enforce_trust_chain_verification_ = true;
   bool h2_extend_keepalive_timeout_ = false;
   int dns_min_refresh_seconds_ = 60;
+  int max_connections_per_host_ = 7;
 
   /*
-  int max_connections_per_host_;
   std::vector<std::string> stat_sinks_;
   */
 

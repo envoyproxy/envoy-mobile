@@ -266,6 +266,21 @@ TEST(TestConfig, EnforceTrustChainVerification) {
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
+TEST(TestConfig, AddMaxConnectionsPerHost) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&max_connections_per_host 7"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.addMaxConnectionsPerHost(16);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&max_connections_per_host 16"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
 TEST(TestConfig, RemainingTemplatesThrows) {
   auto engine_builder = EngineBuilder("{{ template_that_i_will_not_fill }}");
   try {
