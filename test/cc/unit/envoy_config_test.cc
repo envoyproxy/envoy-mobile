@@ -184,7 +184,6 @@ TEST(TestConfig, RemainingTemplatesThrows) {
   }
 }
 
-#if not defined(__APPLE__)
 TEST(TestConfig, EnablePlatformCertificatesValidation) {
   auto engine_builder = EngineBuilder();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
@@ -195,14 +194,18 @@ TEST(TestConfig, EnablePlatformCertificatesValidation) {
               Not(HasSubstr("envoy_mobile.cert_validator.platform_bridge_cert_validator")));
   ASSERT_THAT(bootstrap.DebugString(), HasSubstr("trusted_ca"));
 
+#if not defined(__APPLE__)
   engine_builder.enablePlatformCertificatesValidation(true);
   auto config_str2 = engine_builder.generateConfigStr();
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str2), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(),
               HasSubstr("envoy_mobile.cert_validator.platform_bridge_cert_validator"));
   ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("trusted_ca")));
-}
+#else
+  EXPECT_DEATH(engine_builder.enablePlatformCertificatesValidation(true),
+               "Certificates validation using platform provided APIs is not supported in IOS");
 #endif
+}
 
 } // namespace
 } // namespace Envoy

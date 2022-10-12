@@ -134,7 +134,9 @@ EngineBuilder& EngineBuilder::enableSocketTagging(bool socket_tagging_on) {
 EngineBuilder&
 EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_validation_on) {
 #if defined(__APPLE__)
-  PANIC("Certificates validation using platform provided APIs is not supported in IOS.");
+  if (platform_certificates_validation_on) {
+    PANIC("Certificates validation using platform provided APIs is not supported in IOS.");
+  }
 #endif
   this->platform_certificates_validation_on_ = platform_certificates_validation_on;
   return *this;
