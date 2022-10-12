@@ -83,6 +83,7 @@ class EnvoyConfigurationTest {
     appId: String = "com.example.myapp",
     trustChainVerification: TrustChainVerification = TrustChainVerification.VERIFY_TRUST_CHAIN,
     virtualClusters: String = "[test]",
+    enableSkipDNSLookupForProxiedRequests: Boolean = false,
     enablePlatformCertificatesValidation: Boolean = false
   ): EnvoyConfiguration {
     return EnvoyConfiguration(
@@ -121,6 +122,7 @@ class EnvoyConfigurationTest {
       emptyMap(),
       emptyMap(),
       emptyList(),
+      enableSkipDNSLookupForProxiedRequests,
       enablePlatformCertificatesValidation
     )
   }
@@ -196,6 +198,9 @@ class EnvoyConfigurationTest {
 
     // Cert Validation
     assertThat(resolvedTemplate).contains("custom_validator_config")
+
+    // Proxying
+    assertThat(resolvedTemplate).contains("&skip_dns_lookup_for_proxied_requests false")
   }
 
   @Test
@@ -211,6 +216,7 @@ class EnvoyConfigurationTest {
       enableBrotli = true,
       enableInterfaceBinding = true,
       h2ExtendKeepaliveTimeout = true,
+      enableSkipDNSLookupForProxiedRequests = true,
       enablePlatformCertificatesValidation = true
     )
 
@@ -242,6 +248,9 @@ CERT_VALIDATION_TEMPLATE
 
     // Cert Validation
     assertThat(resolvedTemplate).contains("custom_validator_config")
+
+    // Proxying
+    assertThat(resolvedTemplate).contains("&skip_dns_lookup_for_proxied_requests true")
   }
 
   @Test

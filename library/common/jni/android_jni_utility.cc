@@ -5,6 +5,7 @@
 #include "source/common/common/assert.h"
 
 #include "library/common/data/utility.h"
+#include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
 #include "openssl/ssl.h"
 

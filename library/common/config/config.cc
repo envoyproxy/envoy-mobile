@@ -132,6 +132,7 @@ R"(- &enable_drain_post_dns_refresh false
 - &per_try_idle_timeout 15s
 - &trust_chain_verification VERIFY_TRUST_CHAIN
 - &virtual_clusters []
+- &skip_dns_lookup_for_proxied_requests false
 
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
@@ -302,15 +303,18 @@ const char* config_template = R"(
             tls_maximum_protocol_version: TLSv1_3
           validation_context: *validation_context
 - &base_h3_socket
-  name: envoy.transport_sockets.quic
+  name: envoy.transport_sockets.http_11_proxy
   typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
-    upstream_tls_context:
-      common_tls_context:
-        tls_params:
-          tls_maximum_protocol_version: TLSv1_3
-        validation_context: *validation_context
-
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+    transport_socket:
+      name: envoy.transport_sockets.quic
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+        upstream_tls_context:
+          common_tls_context:
+            tls_params:
+              tls_maximum_protocol_version: TLSv1_3
+            validation_context: *validation_context
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster
     name: stats
@@ -515,6 +519,7 @@ layered_runtime:
             allow_multiple_dns_addresses: *dns_multiple_addresses
             always_use_v6: *force_ipv6
             http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
+            skip_dns_lookup_for_proxied_requests: *skip_dns_lookup_for_proxied_requests
 )"
 // Needed due to warning in
 // https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546

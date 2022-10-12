@@ -54,7 +54,7 @@ jobs:
           submodules: true
       - name: 'Run DrString'
         env:
-          DEVELOPER_DIR: /Applications/Xcode_13.4.app
+          DEVELOPER_DIR: /Applications/Xcode_14.0.app
         run: ./bazelw run @DrString//:drstring check
   kotlinlint:
     name: kotlin_lint
@@ -76,7 +76,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./bazelw build \
-            --config=remote-ci-macos --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
+            --config=remote-ci-macos \
+            --remote_header="Authorization=Bearer $GITHUB_TOKEN" \
             //library/kotlin/io/envoyproxy/envoymobile:envoy_lib_lint \
             //examples/kotlin/hello_world:hello_envoy_kt_lint
       - name: 'Run Kotlin Formatter (ktlint)'

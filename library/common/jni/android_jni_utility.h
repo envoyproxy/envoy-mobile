@@ -7,8 +7,6 @@
 #include "library/common/api/c_types.h"
 #include "library/common/extensions/cert_validator/platform_bridge/c_types.h"
 #include "library/common/jni/import/jni_import.h"
-#include "library/common/jni/jni_support.h"
-#include "library/common/jni/jni_version.h"
 
 // NOLINT(namespace-envoy)
 
@@ -33,4 +31,4 @@ jobject call_jvm_verify_x509_cert_chain(JNIEnv* env, const std::vector<std::stri
  */
 envoy_cert_validator* get_android_cert_validator_api();
 
-static constexpr const char* platform_name = "platform_cert_validator";
+static constexpr const char* cert_validator_name = "platform_cert_validator";
