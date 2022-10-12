@@ -215,6 +215,7 @@ cc_library(
         "//library/common/api:c_types",
         "//library/common/jni/import:jni_import_lib",
         "//library/common/data:utility_lib",
+        "@envoy//bazel:boringssl",
     ] + select({
         "@envoy//bazel:android": [
             ":ndk_jni_support",
