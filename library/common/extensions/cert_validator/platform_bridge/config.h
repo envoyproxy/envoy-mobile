@@ -19,7 +19,7 @@ public:
   }
 
 private:
-  const envoy_cert_validator* platform_validator_;
+  const envoy_cert_validator* platform_validator_ = nullptr;
 };
 
 DECLARE_FACTORY(PlatformBridgeCertValidatorFactory);
