@@ -73,7 +73,7 @@ private:
   EngineCallbacksSharedPtr callbacks_;
 
   std::string config_template_;
-  std::string stats_domain_ = "0.0.0.0";
+  std::string stats_domain_;
   int connect_timeout_seconds_ = 30;
   int dns_refresh_seconds_ = 60;
   int dns_failure_refresh_seconds_base_ = 2;
