@@ -246,7 +246,9 @@ std::string EngineBuilder::generateConfigStr() {
     config_builder << "- &" << key << " " << value << std::endl;
   }
   std::vector<std::string> stat_sinks = stat_sinks_;
-  stat_sinks.push_back("*base_metrics_service");
+  if (!stats_domain_.empty()) {
+    stat_sinks.push_back("*base_metrics_service");
+  }
   if (!stat_sinks.empty()) {
     config_builder << "- &stats_sinks [";
     config_builder << absl::StrJoin(stat_sinks, ",");
