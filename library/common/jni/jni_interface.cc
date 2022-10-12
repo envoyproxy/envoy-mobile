@@ -4,7 +4,7 @@
 #include "library/common/data/utility.h"
 #include "library/common/extensions/filters/http/platform_bridge/c_types.h"
 #include "library/common/extensions/key_value/platform/c_types.h"
-#include "library/common/jni/android_jni_utility.h"
+#include "library/common/jni/android_network_utility.h"
 #include "library/common/jni/import/jni_import.h"
 #include "library/common/jni/jni_support.h"
 #include "library/common/jni/jni_utility.h"
