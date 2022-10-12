@@ -294,14 +294,14 @@ TEST(TestConfig, AddStatsSinks) {
   EngineBuilder engine_builder;
 
   std::string config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, HasSubstr("&stats_sinks [*base_metrics_service]"));
+  ASSERT_THAT(config_str, Not(HasSubstr("&stats_sinks")));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
   engine_builder.addStatsSinks({statsdSinkConfig(1), statsdSinkConfig(2)});
   config_str = engine_builder.generateConfigStr();
-  ASSERT_THAT(config_str, HasSubstr("&stats_sinks [" + statsdSinkConfig(1) + "," +
-                                    statsdSinkConfig(2) + ",*base_metrics_service]"));
+  ASSERT_THAT(config_str,
+              HasSubstr("&stats_sinks [" + statsdSinkConfig(1) + "," + statsdSinkConfig(2) + "]"));
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 
