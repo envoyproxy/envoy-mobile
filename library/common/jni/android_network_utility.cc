@@ -5,6 +5,8 @@
 #include "library/common/jni/jni_utility.h"
 #include "openssl/ssl.h"
 
+// NOLINT(namespace-envoy)
+
 // Helper functions call into AndroidNetworkLibrary, but they are not platform dependent
 // because AndroidNetworkLibray can be called in non-Android platform with mock interfaces.
 
