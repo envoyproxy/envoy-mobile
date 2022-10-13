@@ -127,6 +127,7 @@ cc_library(
     ],
     deps = [
         "base_java_jni_lib",
+        ":android_network_utility_lib",
     ],
     alwayslink = True,
 )

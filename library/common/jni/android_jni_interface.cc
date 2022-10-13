@@ -20,7 +20,7 @@ Java_io_envoyproxy_envoymobile_engine_AndroidJniLibrary_initialize(JNIEnv* env,
   envoy_status_t result =
       register_platform_api(cert_validator_name, get_android_cert_validator_api());
   if (result == ENVOY_FAILURE) {
-    return -1;
+    return ENVOY_FAILURE;
   }
 
   // See note above about c-ares.

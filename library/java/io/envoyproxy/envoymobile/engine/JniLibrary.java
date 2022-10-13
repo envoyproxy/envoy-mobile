@@ -352,7 +352,6 @@ public class JniLibrary {
    *
    * @param engine Handle to the engine for which to drain connections.
    */
-
   protected static native int resetConnectivityState(long engine);
 
   /**
