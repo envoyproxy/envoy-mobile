@@ -46,7 +46,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private boolean mEnableDrainPostDnsRefresh = false;
   private boolean mEnableGzip = true;
   private boolean mEnableSocketTag = true;
-  private boolean mEnableHappyEyeballs = false;
+  private boolean mEnableHappyEyeballs = true;
   private boolean mEnableInterfaceBinding = false;
   private boolean mEnableProxying = false;
   private boolean mEnableSkipDNSLookupForProxiedRequests = false;
