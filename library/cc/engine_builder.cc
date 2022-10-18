@@ -2,11 +2,12 @@
 
 #include <sstream>
 
+#include "source/common/common/assert.h"
+
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
-#include "source/common/common/assert.h"
 
 namespace Envoy {
 namespace Platform {
