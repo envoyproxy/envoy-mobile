@@ -1,6 +1,6 @@
-#include "library/common/extensions/filters/http/test_read/config.h"
+#include "test/common/extensions/filters/http/test_read/config.h"
 
-#include "library/common/extensions/filters/http/test_read/filter.h"
+#include "test/common/extensions/filters/http/test_read/filter.h"
 
 namespace Envoy {
 namespace Extensions {

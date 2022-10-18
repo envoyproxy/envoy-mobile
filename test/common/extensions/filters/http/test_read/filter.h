@@ -7,7 +7,7 @@
 #include "source/common/stream_info/stream_info_impl.h"
 #include "source/extensions/filters/http/common/pass_through_filter.h"
 
-#include "library/common/extensions/filters/http/test_read/filter.pb.h"
+#include "test/common/extensions/filters/http/test_read/filter.pb.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -15,7 +15,7 @@ namespace HttpFilters {
 namespace TestRead {
 
 /**
- * Filter to return specified error code based on a request header.
+ * This is a test-only filter to return specified error code based on a request header.
  */
 class TestReadFilter final : public Http::PassThroughFilter,
                              public Logger::Loggable<Logger::Id::filter> {

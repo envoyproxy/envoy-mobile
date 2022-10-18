@@ -6,5 +6,5 @@ TEST_EXTENSIONS = [
     "//library/common/extensions/filters/http/test_accessor:config",
     "//library/common/extensions/filters/http/test_event_tracker:config",
     "//library/common/extensions/filters/http/test_kv_store:config",
-    "//library/common/extensions/filters/http/test_read:config",
+    "//test/common/extensions/filters/http/test_read:config",
 ]
