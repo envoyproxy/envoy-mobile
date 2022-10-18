@@ -24,7 +24,7 @@ namespace {
 using namespace Platform;
 
 TEST(TestConfig, ConfigIsApplied) {
-  auto engine_builder = EngineBuilder();
+  EngineBuilder engine_builder;
   engine_builder.addGrpcStatsDomain("asdf.fake.website")
       .addConnectTimeoutSeconds(123)
       .addDnsRefreshSeconds(456)
@@ -38,31 +38,31 @@ TEST(TestConfig, ConfigIsApplied) {
       .setAppVersion("1.2.3")
       .setAppId("1234-1234-1234")
       .setDeviceOs("probably-ubuntu-on-CI");
-  auto config_str = engine_builder.generateConfigStr();
+  std::string config_str = engine_builder.generateConfigStr();
 
-  std::vector<std::string> must_contain = {
-      "- &stats_domain asdf.fake.website",
-      "- &connect_timeout 123s",
-      "- &dns_refresh_rate 456s",
-      "- &dns_fail_base_interval 789s",
-      "- &dns_fail_max_interval 987s",
-      "- &dns_query_timeout 321s",
-      "- &dns_preresolve_hostnames [hostname]",
-      "- &h2_connection_keepalive_idle_interval 0.222s",
-      "- &h2_connection_keepalive_timeout 333s",
-      "- &stats_flush_interval 654s",
-      "- &virtual_clusters [virtual-clusters]",
-      ("- &metadata { device_os: probably-ubuntu-on-CI, "
-       "app_version: 1.2.3, app_id: 1234-1234-1234 }"),
-  };
+  std::vector<std::string> must_contain = {"- &stats_domain asdf.fake.website",
+                                           "- &connect_timeout 123s",
+                                           "- &dns_refresh_rate 456s",
+                                           "- &dns_fail_base_interval 789s",
+                                           "- &dns_fail_max_interval 987s",
+                                           "- &dns_query_timeout 321s",
+                                           "- &dns_preresolve_hostnames [hostname]",
+                                           "- &h2_connection_keepalive_idle_interval 0.222s",
+                                           "- &h2_connection_keepalive_timeout 333s",
+                                           "- &stats_flush_interval 654s",
+                                           "- &virtual_clusters [virtual-clusters]",
+                                           ("- &metadata { device_os: probably-ubuntu-on-CI, "
+                                            "app_version: 1.2.3, app_id: 1234-1234-1234 }"),
+                                           R"(- &validation_context
+  trusted_ca:)"};
   for (const auto& string : must_contain) {
     ASSERT_NE(config_str.find(string), std::string::npos) << "'" << string << "' not found";
   }
 }
 
 TEST(TestConfig, ConfigIsValid) {
-  auto engine_builder = EngineBuilder();
-  auto config_str = engine_builder.generateConfigStr();
+  EngineBuilder engine_builder;
+  std::string config_str = engine_builder.generateConfigStr();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
@@ -78,9 +78,9 @@ TEST(TestConfig, ConfigIsValid) {
 
 #if !defined(__APPLE__)
 TEST(TestConfig, SetUseDnsCAresResolver) {
-  auto engine_builder = EngineBuilder();
+  EngineBuilder engine_builder;
   engine_builder.useDnsSystemResolver(false);
-  auto config_str = engine_builder.generateConfigStr();
+  std::string config_str = engine_builder.generateConfigStr();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
@@ -90,10 +90,10 @@ TEST(TestConfig, SetUseDnsCAresResolver) {
 #endif
 
 TEST(TestConfig, SetGzip) {
-  auto engine_builder = EngineBuilder();
+  EngineBuilder engine_builder;
 
   engine_builder.enableGzip(false);
-  auto config_str = engine_builder.generateConfigStr();
+  std::string config_str = engine_builder.generateConfigStr();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("envoy.filters.http.decompressor")));
@@ -105,10 +105,10 @@ TEST(TestConfig, SetGzip) {
 }
 
 TEST(TestConfig, SetBrotli) {
-  auto engine_builder = EngineBuilder();
+  EngineBuilder engine_builder;
 
   engine_builder.enableBrotli(false);
-  auto config_str = engine_builder.generateConfigStr();
+  std::string config_str = engine_builder.generateConfigStr();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("brotli.decompressor.v3.Brotli")));
@@ -120,10 +120,10 @@ TEST(TestConfig, SetBrotli) {
 }
 
 TEST(TestConfig, SetSocketTag) {
-  auto engine_builder = EngineBuilder();
+  EngineBuilder engine_builder;
 
   engine_builder.enableSocketTagging(false);
-  auto config_str = engine_builder.generateConfigStr();
+  std::string config_str = engine_builder.generateConfigStr();
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("http.socket_tag.SocketTag")));
@@ -135,7 +135,7 @@ TEST(TestConfig, SetSocketTag) {
 }
 
 TEST(TestConfig, SetAltSvcCache) {
-  auto engine_builder = EngineBuilder();
+  EngineBuilder engine_builder;
 
   std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
 
@@ -143,6 +143,34 @@ TEST(TestConfig, SetAltSvcCache) {
                       &config_str);
 
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
+TEST(TestConfig, StreamIdleTimeout) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&stream_idle_timeout 15s"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.setStreamIdleTimeoutSeconds(42);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&stream_idle_timeout 42s"));
+  TestUtility::loadFromYaml(config_str, bootstrap);
+}
+
+TEST(TestConfig, PerTryIdleTimeout) {
+  EngineBuilder engine_builder;
+
+  std::string config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&per_try_idle_timeout 15s"));
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  TestUtility::loadFromYaml(config_str, bootstrap);
+
+  engine_builder.setPerTryIdleTimeoutSeconds(42);
+  config_str = absl::StrCat(config_header, engine_builder.generateConfigStr());
+  ASSERT_THAT(config_str, HasSubstr("&per_try_idle_timeout 42s"));
   TestUtility::loadFromYaml(config_str, bootstrap);
 }
 
@@ -154,6 +182,29 @@ TEST(TestConfig, RemainingTemplatesThrows) {
   } catch (std::runtime_error& err) {
     EXPECT_EQ(err.what(), std::string("could not resolve all template keys in config"));
   }
+}
+
+TEST(TestConfig, EnablePlatformCertificatesValidation) {
+  auto engine_builder = EngineBuilder();
+  envoy::config::bootstrap::v3::Bootstrap bootstrap;
+  engine_builder.enablePlatformCertificatesValidation(false);
+  auto config_str1 = engine_builder.generateConfigStr();
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str1), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(),
+              Not(HasSubstr("envoy_mobile.cert_validator.platform_bridge_cert_validator")));
+  ASSERT_THAT(bootstrap.DebugString(), HasSubstr("trusted_ca"));
+
+#if not defined(__APPLE__)
+  engine_builder.enablePlatformCertificatesValidation(true);
+  auto config_str2 = engine_builder.generateConfigStr();
+  TestUtility::loadFromYaml(absl::StrCat(config_header, config_str2), bootstrap);
+  ASSERT_THAT(bootstrap.DebugString(),
+              HasSubstr("envoy_mobile.cert_validator.platform_bridge_cert_validator"));
+  ASSERT_THAT(bootstrap.DebugString(), Not(HasSubstr("trusted_ca")));
+#else
+  EXPECT_DEATH(engine_builder.enablePlatformCertificatesValidation(true),
+               "Certificates validation using platform provided APIs is not supported in IOS");
+#endif
 }
 
 } // namespace

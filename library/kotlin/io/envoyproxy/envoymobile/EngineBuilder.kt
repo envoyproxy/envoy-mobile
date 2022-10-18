@@ -37,6 +37,7 @@ open class EngineBuilder(
   protected var logger: ((String) -> Unit)? = null
   protected var eventTracker: ((Map<String, String>) -> Unit)? = null
   protected var enableProxying = false
+  private var enableSkipDNSLookupForProxiedRequests = false
   private var engineType: () -> EnvoyEngine = {
     EnvoyEngineImpl(onEngineRunning, logger, eventTracker)
   }
@@ -63,7 +64,6 @@ open class EngineBuilder(
   private var h2ConnectionKeepaliveIdleIntervalMilliseconds = 1
   private var h2ConnectionKeepaliveTimeoutSeconds = 10
   private var h2ExtendKeepaliveTimeout = false
-  private var h2RawDomains = listOf<String>()
   private var maxConnectionsPerHost = 7
   private var statsFlushSeconds = 60
   private var streamIdleTimeoutSeconds = 15
@@ -77,6 +77,7 @@ open class EngineBuilder(
   private var stringAccessors = mutableMapOf<String, EnvoyStringAccessor>()
   private var keyValueStores = mutableMapOf<String, EnvoyKeyValueStore>()
   private var statsSinks = listOf<String>()
+  private var enablePlatformCertificatesValidation = false
 
   /**
    * Add a log level to use with Envoy.
@@ -346,6 +347,22 @@ open class EngineBuilder(
   }
 
   /**
+   * Allows Envoy to avoid having to wait on DNS response in the dynamic forward proxy filter
+   * for requests that are proxied i.e., a proxied request that goes to example.com will
+   * not have to wait for the DNS resolution for example.com domain if skipping of the DNS lookup
+   * is enabled. Defaults to false.
+   *
+   * @param enableSkipDNSLookup whether to ship waiting for DNS responses in the
+   *                            dynamic forward proxy filter for proxied requests.
+   *
+   * @return This builder.
+   */
+  fun enableSkipDNSLookupForProxiedRequests(enableSkipDNSLookup: Boolean): EngineBuilder {
+    this.enableSkipDNSLookupForProxiedRequests = enableSkipDNSLookup
+    return this
+  }
+
+  /**
    * Add a rate at which to ping h2 connections on new stream creation if the connection has
    * sat idle. Defaults to 1 millisecond which effectively enables h2 ping functionality
    * and results in a connection ping on every new stream creation. Set it to
@@ -381,18 +398,6 @@ open class EngineBuilder(
    */
   fun h2ExtendKeepaliveTimeout(h2ExtendKeepaliveTimeout: Boolean): EngineBuilder {
     this.h2ExtendKeepaliveTimeout = h2ExtendKeepaliveTimeout
-    return this
-  }
-
-  /**
-   * Add a list of domains to which h2 connections will be established without protocol negotiation.
-   *
-   * @param h2RawDomains list of domains to which connections should be raw h2.
-   *
-   * @return this builder.
-   */
-  fun addH2RawDomains(h2RawDomains: List<String>): EngineBuilder {
-    this.h2RawDomains = h2RawDomains
     return this
   }
 
@@ -636,7 +641,6 @@ open class EngineBuilder(
       h2ConnectionKeepaliveIdleIntervalMilliseconds,
       h2ConnectionKeepaliveTimeoutSeconds,
       h2ExtendKeepaliveTimeout,
-      h2RawDomains,
       maxConnectionsPerHost,
       statsFlushSeconds,
       streamIdleTimeoutSeconds,
@@ -649,7 +653,9 @@ open class EngineBuilder(
       platformFilterChain,
       stringAccessors,
       keyValueStores,
-      statsSinks
+      statsSinks,
+      enableSkipDNSLookupForProxiedRequests,
+      enablePlatformCertificatesValidation
     )
 
     return when (configuration) {
@@ -680,4 +686,19 @@ open class EngineBuilder(
     this.engineType = engineType
     return this
   }
+
+  /**
+   * Specify whether to use platform provided certificate validation APIs or Envoy built-in
+   * validation logic. Defaults to false.
+   *
+   * @param enablePlatformCertificatesValidation true if using platform APIs is desired.
+   *
+   * @return This builder.
+   */
+  fun enablePlatformCertificatesValidation(enablePlatformCertificatesValidation: Boolean):
+    EngineBuilder {
+    this.enablePlatformCertificatesValidation = enablePlatformCertificatesValidation
+    return this
+  }
+
 }

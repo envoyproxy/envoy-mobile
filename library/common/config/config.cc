@@ -75,6 +75,20 @@ const char* brotli_config_insert = R"(
           ignore_no_transform_header: true
 )";
 
+const char* default_cert_validation_context_template = R"(
+- &validation_context
+  trusted_ca:
+    inline_string: *tls_root_certs
+  trust_chain_verification: *trust_chain_verification
+)";
+
+const char* platform_cert_validation_context_template = R"(
+- &validation_context
+  custom_validator_config:
+    name: "envoy_mobile.cert_validator.platform_bridge_cert_validator"
+  trust_chain_verification: *trust_chain_verification
+)";
+
 const char* socket_tag_config_insert = R"(
   - name: envoy.filters.http.socket_tag
     typed_config:
@@ -109,7 +123,6 @@ R"(- &enable_drain_post_dns_refresh false
 - &h2_connection_keepalive_idle_interval 100000s
 - &h2_connection_keepalive_timeout 10s
 - &h2_delay_keepalive_timeout false
-- &h2_raw_domains []
 - &max_connections_per_host 7
 - &metadata {}
 - &stats_domain 127.0.0.1
@@ -119,6 +132,7 @@ R"(- &enable_drain_post_dns_refresh false
 - &per_try_idle_timeout 15s
 - &trust_chain_verification VERIFY_TRUST_CHAIN
 - &virtual_clusters []
+- &skip_dns_lookup_for_proxied_requests false
 
 !ignore stats_defs:
   base_metrics_service: &base_metrics_service
@@ -143,21 +157,11 @@ R"(- &enable_drain_post_dns_refresh false
 #include "certificates.inc"
 R"(
 
-!ignore tls_socket_defs:
-- &base_tls_socket
-  name: envoy.transport_sockets.http_11_proxy
-  typed_config:
-    "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
-    transport_socket:
-      name: envoy.transport_sockets.tls
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-        common_tls_context:
-          tls_params:
-            tls_maximum_protocol_version: TLSv1_3
-          validation_context:
-            trusted_ca:
-              inline_string: *tls_root_certs
+!ignore validation_context_defs:
+- &validation_context
+  trusted_ca:
+    inline_string: *tls_root_certs
+  trust_chain_verification: *trust_chain_verification
 )";
 
 const char* config_template = R"(
@@ -272,6 +276,45 @@ const char* config_template = R"(
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
+!ignore tls_socket_defs:
+- &base_tls_socket
+  name: envoy.transport_sockets.http_11_proxy
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        common_tls_context:
+          tls_params:
+            tls_maximum_protocol_version: TLSv1_3
+          validation_context: *validation_context
+- &base_h2_socket
+  name: envoy.transport_sockets.http_11_proxy
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        common_tls_context:
+          alpn_protocols: [h2]
+          tls_params:
+            tls_maximum_protocol_version: TLSv1_3
+          validation_context: *validation_context
+- &base_h3_socket
+  name: envoy.transport_sockets.http_11_proxy
+  typed_config:
+    "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+    transport_socket:
+      name: envoy.transport_sockets.quic
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+        upstream_tls_context:
+          common_tls_context:
+            tls_params:
+              tls_maximum_protocol_version: TLSv1_3
+            validation_context: *validation_context
 !ignore custom_cluster_defs:
   stats_cluster: &stats_cluster
     name: stats
@@ -330,25 +373,13 @@ static_resources:
           route_config:
             name: api_router
             virtual_hosts:
-            - name: h2_raw
-              include_attempt_count_in_response: true
-              virtual_clusters: *virtual_clusters
-              domains: *h2_raw_domains
-              routes:
-#{custom_routes}
-              - match: { prefix: "/" }
-                request_headers_to_remove:
-                - x-forwarded-proto
-                - x-envoy-mobile-cluster
-                route:
-                  cluster: base_h2
-                  timeout: 0s
-                  retry_policy:
-                    per_try_idle_timeout: *per_try_idle_timeout
-                    retry_back_off:
-                      base_interval: 0.25s
-                      max_interval: 60s
-            - name: primary
+)"
+// The list of virtual hosts impacts directly the number of virtual cluster stats.
+// That's because we create a separate set of virtual clusters stats for every
+// "virtual cluster" <> "virtual host" pair. Increasing the number of virtual hosts
+// from 1 to 2 doubles the number of virtual cluster stats.
+R"(
+            - name: api
               include_attempt_count_in_response: true
               virtual_clusters: *virtual_clusters
               domains: ["*"]
@@ -421,22 +452,7 @@ static_resources:
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket:
-      name: envoy.transport_sockets.http_11_proxy
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
-        transport_socket:
-          name: envoy.transport_sockets.tls
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-            common_tls_context:
-              alpn_protocols: [h2]
-              tls_params:
-                tls_maximum_protocol_version: TLSv1_3
-              validation_context:
-                trusted_ca:
-                  inline_string: *tls_root_certs
-                trust_chain_verification: *trust_chain_verification
+    transport_socket: *base_h2_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h2_protocol_options
@@ -444,18 +460,7 @@ static_resources:
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket:
-      name: envoy.transport_sockets.quic
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
-        upstream_tls_context:
-          common_tls_context:
-            tls_params:
-              tls_maximum_protocol_version: TLSv1_3
-            validation_context:
-              trusted_ca:
-                inline_string: *tls_root_certs
-              trust_chain_verification: *trust_chain_verification
+    transport_socket: *base_h3_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h3_protocol_options
@@ -488,7 +493,7 @@ stats_config:
         - safe_regex:
             regex: '^pulse.*'
         - safe_regex:
-            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
+            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|[3-5][0-9][0-9]|retry.*|time|timeout|total)'
   use_all_default_tags:
     false
 watchdogs:
@@ -514,6 +519,7 @@ layered_runtime:
             allow_multiple_dns_addresses: *dns_multiple_addresses
             always_use_v6: *force_ipv6
             http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
+            skip_dns_lookup_for_proxied_requests: *skip_dns_lookup_for_proxied_requests
 )"
 // Needed due to warning in
 // https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546

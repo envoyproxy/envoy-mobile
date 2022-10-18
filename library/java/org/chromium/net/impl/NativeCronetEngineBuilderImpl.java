@@ -51,10 +51,10 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private boolean mEnableHappyEyeballs = false;
   private boolean mEnableInterfaceBinding = false;
   private boolean mEnableProxying = false;
+  private boolean mEnableSkipDNSLookupForProxiedRequests = false;
   private int mH2ConnectionKeepaliveIdleIntervalMilliseconds = 100000000;
   private int mH2ConnectionKeepaliveTimeoutSeconds = 10;
   private boolean mH2ExtendKeepaliveTimeout = false;
-  private List<String> mH2RawDomains = Collections.emptyList();
   private int mMaxConnectionsPerHost = 7;
   private int mStatsFlushSeconds = 60;
   private int mStreamIdleTimeoutSeconds = 15;
@@ -63,6 +63,8 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private String mAppId = "unspecified";
   private TrustChainVerification mTrustChainVerification = VERIFY_TRUST_CHAIN;
   private String mVirtualClusters = "[]";
+  private boolean mEnablePlatformCertificatesValidation = true;
+  
   /**
    * Builder for Native Cronet Engine. Default config enables SPDY, disables QUIC and HTTP cache.
    *
@@ -124,9 +126,10 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
         mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver, mEnableDrainPostDnsRefresh,
         quicEnabled(), mEnableGzip, brotliEnabled(), mEnableSocketTag, mEnableHappyEyeballs,
         mEnableInterfaceBinding, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
-        mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mH2RawDomains,
-        mMaxConnectionsPerHost, mStatsFlushSeconds, mStreamIdleTimeoutSeconds,
-        mPerTryIdleTimeoutSeconds, mAppVersion, mAppId, mTrustChainVerification, mVirtualClusters,
-        nativeFilterChain, platformFilterChain, stringAccessors, keyValueStores, statSinks);
+        mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mMaxConnectionsPerHost,
+        mStatsFlushSeconds, mStreamIdleTimeoutSeconds, mPerTryIdleTimeoutSeconds, mAppVersion,
+        mAppId, mTrustChainVerification, mVirtualClusters, nativeFilterChain, platformFilterChain,
+        stringAccessors, keyValueStores, statSinks, mEnableSkipDNSLookupForProxiedRequests,
+        mEnablePlatformCertificatesValidation);
   }
 }
