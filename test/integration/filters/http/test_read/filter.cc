@@ -1,9 +1,8 @@
-#include "test/common/extensions/filters/http/test_read/filter.h"
+#include "test/integration/filters/http/test_read/filter.h"
 
 #include "envoy/server/filter_config.h"
 
 namespace Envoy {
-namespace Extensions {
 namespace HttpFilters {
 namespace TestRead {
 
@@ -42,5 +41,4 @@ StreamInfo::ResponseFlag TestReadFilter::mapErrorToResponseFlag(uint64_t errorCo
 
 } // namespace TestRead
 } // namespace HttpFilters
-} // namespace Extensions
 } // namespace Envoy

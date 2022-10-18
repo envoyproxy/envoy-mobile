@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package envoymobile.extensions.filters.http.test_read;
+package envoymobile.test.integration.filters.http.test_read;
 
 import "validate/validate.proto";
 

@@ -64,7 +64,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   private TrustChainVerification mTrustChainVerification = VERIFY_TRUST_CHAIN;
   private String mVirtualClusters = "[]";
   private boolean mEnablePlatformCertificatesValidation = true;
-  
+
   /**
    * Builder for Native Cronet Engine. Default config enables SPDY, disables QUIC and HTTP cache.
    *
@@ -92,7 +92,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
   public CronetEngineBuilderImpl addUrlInterceptorsForTesting() {
     nativeFilterChain.add(new EnvoyNativeFilterConfig(
         "envoy.filters.http.test_read",
-        "{\"@type\": type.googleapis.com/envoymobile.extensions.filters.http.test_read.TestRead}"));
+        "{\"@type\": type.googleapis.com/envoymobile.test.integration.filters.http.test_read.TestRead}"));
     return this;
   }
 
