@@ -333,14 +333,14 @@ EngineSharedPtr EngineBuilder::build() {
 
   for (const auto& [name, store] : key_value_stores_) {
     // TODO(goaway): This leaks, but it's tied to the life of the engine.
-    auto* api = static_cast<envoy_kv_store*>(safe_malloc(sizeof(envoy_kv_store)));
+    auto* api = new envoy_kv_store();
     *api = store->asEnvoyKeyValueStore();
     register_platform_api(name.c_str(), api);
   }
 
   for (const auto& [name, accessor] : string_accessors_) {
     // TODO(goaway): This leaks, but it's tied to the life of the engine.
-    auto* api = static_cast<envoy_string_accessor*>(safe_malloc(sizeof(envoy_string_accessor)));
+    auto* api = new envoy_string_accessor();
     *api = StringAccessor::asEnvoyStringAccessor(accessor);
     std::cout << "registering API: " << name << std::endl;
     register_platform_api(name.c_str(), api);
