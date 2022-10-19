@@ -108,8 +108,7 @@ public class NativeCronetEngineBuilderImpl extends CronetEngineBuilderImpl {
     return new EnvoyConfiguration(
         mAdminInterfaceEnabled, mGrpcStatsDomain, mConnectTimeoutSeconds, mDnsRefreshSeconds,
         mDnsFailureRefreshSecondsBase, mDnsFailureRefreshSecondsMax, mDnsQueryTimeoutSeconds,
-        mDnsMinRefreshSeconds, mDnsPreresolveHostnames, mDnsFallbackNameservers,
-        mEnableDnsFilterUnroutableFamilies, mDnsUseSystemResolver, mEnableDrainPostDnsRefresh,
+        mDnsMinRefreshSeconds, mDnsPreresolveHostnames, mEnableDrainPostDnsRefresh,
         quicEnabled(), mEnableGzip, brotliEnabled(), mEnableSocketTag, mEnableHappyEyeballs,
         mEnableInterfaceBinding, mH2ConnectionKeepaliveIdleIntervalMilliseconds,
         mH2ConnectionKeepaliveTimeoutSeconds, mH2ExtendKeepaliveTimeout, mMaxConnectionsPerHost,
