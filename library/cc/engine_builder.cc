@@ -9,6 +9,10 @@
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
 
+template <typename T> T* safeMalloc() {
+  return static_cast<T*>(safe_malloc(sizeof(T)));
+}
+
 namespace Envoy {
 namespace Platform {
 
@@ -193,6 +197,12 @@ EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_v
   return *this;
 }
 
+EngineBuilder&
+EngineBuilder::addStringAccessor(const std::string& name, StringAccessorSharedPtr accessor) {
+  string_accessors_[name] = accessor;
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -322,14 +332,22 @@ EngineSharedPtr EngineBuilder::build() {
   } else {
     config_str = config_override_for_tests_;
   }
-  auto envoy_engine =
+  envoy_engine_t envoy_engine =
       init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
 
-  for (auto it = key_value_stores_.begin(); it != key_value_stores_.end(); ++it) {
+  for (const auto& [name, store] : key_value_stores_) {
     // TODO(goaway): This leaks, but it's tied to the life of the engine.
-    envoy_kv_store* api = static_cast<envoy_kv_store*>(safe_malloc(sizeof(envoy_kv_store)));
-    *api = it->second->asEnvoyKeyValueStore();
-    register_platform_api(it->first.c_str(), api);
+    auto api = safeMalloc<envoy_kv_store>();
+    *api = store->asEnvoyKeyValueStore();
+    register_platform_api(name.c_str(), api);
+  }
+
+  for (const auto& [name, accessor] : string_accessors_) {
+    // TODO(goaway): This leaks, but it's tied to the life of the engine.
+    auto api = safeMalloc<envoy_string_accessor>();
+    *api = StringAccessor::asEnvoyStringAccessor(accessor);
+    std::cout << "registering API: " << name << std::endl;
+    register_platform_api(name.c_str(), api);
   }
 
   run_engine(envoy_engine, config_str.c_str(), logLevelToString(this->log_level_).c_str(),
