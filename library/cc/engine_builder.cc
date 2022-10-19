@@ -15,12 +15,10 @@ namespace Platform {
 namespace {
 // Inserts `filter_config` into the "custom_filters" target in `config_template`.
 void insertCustomFilter(const std::string& filter_config, std::string& config_template) {
-    absl::StrReplaceAll(
-        {{"#{custom_filters}",
-           absl::StrCat("#{custom_filters}\n", filter_config)}},
-        &config_template);
+  absl::StrReplaceAll({{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", filter_config)}},
+                      &config_template);
 }
-}  // namespace
+} // namespace
 
 EngineBuilder::EngineBuilder(std::string config_template)
     : callbacks_(std::make_shared<EngineCallbacks>()), config_template_(config_template) {}
