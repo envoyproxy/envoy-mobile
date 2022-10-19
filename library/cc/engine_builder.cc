@@ -9,6 +9,9 @@
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
 
+#include "envoy/config/bootstrap/v3/bootstrap.pb.h"
+#include "envoy/service/runtime/v3/rtds.pb.h"
+
 namespace Envoy {
 namespace Platform {
 
@@ -151,6 +154,32 @@ EngineBuilder& EngineBuilder::enableBrotli(bool brotli_on) {
 
 EngineBuilder& EngineBuilder::enableSocketTagging(bool socket_tagging_on) {
   this->socket_tagging_filter_ = socket_tagging_on;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::setRtdsConfig(std::string yaml) {
+  this->custom_layers_ = yaml;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::setRtdsEndpoint(std::string hostname) {
+  this->hostname_ = hostname;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::enableCustomClusters(std::string port1, std::string port2) {
+  this->custom_clusters_p1_ = port1;
+  this->custom_clusters_p2_ = port2;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::setAdminConfig(std::string yaml) {
+  this->admin_yaml_ = yaml;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::disableStatsConfig(bool disable_stats) {
+  this->disable_stats_ = disable_stats;
   return *this;
 }
 
@@ -301,6 +330,41 @@ std::string EngineBuilder::generateConfigStr() const {
     insertCustomFilter(filter_config, config_template);
   }
 
+  if (!this->disable_stats_) {
+      absl::StrReplaceAll(
+        {{"#{custom_stats}", absl::StrCat("#{custom_stats}\n", default_stats_config_insert)}},
+        &config_template_);
+  }
+
+  if (this->custom_layers_ != "") {
+    absl::StrReplaceAll(
+        {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", this->custom_layers_)}},
+        &config_template_);
+  }
+  else {
+    absl::StrReplaceAll(
+        {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", default_layers_insert)}},
+        &config_template_);
+
+  }
+  
+  if (this->admin_yaml_ != "") {
+    absl::StrReplaceAll(
+        {{"#{custom_admin}", absl::StrCat("#{custom_admin}\n", this->admin_yaml_)}},
+        &config_template_);
+  }
+
+  if (this->custom_clusters_p1_ != "") {
+    absl::StrReplaceAll(
+        {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", fmt::format(rtds_clusters_insert, this->custom_clusters_p1_, this->custom_clusters_p2_))}},
+        &config_template_);
+  }
+  else {
+    absl::StrReplaceAll(
+      {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", default_clusters_insert)}},
+      &config_template_);
+  }
+
   config_builder << config_template;
 
   if (admin_interface_enabled_) {
@@ -328,6 +392,11 @@ EngineSharedPtr EngineBuilder::build() {
   } else {
     config_str = config_override_for_tests_;
   }
+  std::cout << "\n\n";
+  // envoy::config::bootstrap::v3::LayeredRuntime config;
+  // TestUtility::loadFromYaml(config_str, config);
+  std::cout << config_str;
+  std::cout << "\n\n";
   envoy_engine_t envoy_engine =
       init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
 

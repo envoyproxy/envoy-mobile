@@ -9,9 +9,19 @@
 namespace Envoy {
 namespace {
 
-envoy::config::bootstrap::v3::LayeredRuntime layeredRuntimeConfig(const std::string& api_type) {
+std::string layeredRuntimeConfig(const std::string& api_type) {
   const std::string yaml = fmt::format(R"EOF(
-    layers:
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          disallow_global_stats: true
+          reloadable_features:
+            allow_multiple_dns_addresses: true
+            always_use_v6: false
+            http2_delay_keepalive_timeout: false
+        envoy.reloadable_features.no_extension_lookup_by_name: false
+        overload:
+          global_downstream_max_connections: 4294967295
     - name: some_static_layer
       static_layer:
         foo: whatevs
@@ -32,25 +42,21 @@ envoy::config::bootstrap::v3::LayeredRuntime layeredRuntimeConfig(const std::str
             set_node_on_first_message_only: true
     - name: some_admin_layer
       admin_layer: {{}}
-  )EOF",
+)EOF",
                                        api_type, XDS_CLUSTER);
 
-  envoy::config::bootstrap::v3::LayeredRuntime config;
-  TestUtility::loadFromYaml(yaml, config);
-  return config;
+  return yaml;
 }
 
 class RtdsIntegrationTest : public XdsIntegrationTest {
 public:
   RtdsIntegrationTest() {
-    config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-      // Add the layered runtime config, which includes the RTDS layer.
-      const std::string api_type = sotw_or_delta_ == Grpc::SotwOrDelta::Sotw ||
-                                           sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw
-                                       ? "GRPC"
-                                       : "DELTA_GRPC";
-      bootstrap.mutable_layered_runtime()->MergeFrom(layeredRuntimeConfig(api_type));
-    });
+    // Add the layered runtime config, which includes the RTDS layer.
+    const std::string api_type = sotw_or_delta_ == Grpc::SotwOrDelta::Sotw ||
+                                          sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw
+                                      ? "GRPC"
+                                      : "DELTA_GRPC";
+    setRtdsConfig(layeredRuntimeConfig(api_type));
   }
 
   void initialize() override {

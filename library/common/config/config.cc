@@ -97,6 +97,189 @@ const char* socket_tag_config_insert = R"(
       "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_tag.SocketTag
 )";
 
+const char* default_layers_insert = R"(
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          # This disables envoy bug stats, which are filtered out of our stats inclusion list anyway
+          # Global stats do not play well with engines with limited lifetimes
+          disallow_global_stats: true
+          reloadable_features:
+            allow_multiple_dns_addresses: *dns_multiple_addresses
+            always_use_v6: *force_ipv6
+            http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
+)"
+// Needed due to warning in
+// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
+R"(
+        overload:
+          global_downstream_max_connections: 0xffffffff # uint32 max
+)";
+
+const char* default_stats_config_insert = R"(
+stats_sinks: *stats_sinks
+stats_config:
+  stats_matcher:
+    inclusion_list:
+      patterns:
+        - safe_regex:
+            regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
+        - safe_regex:
+            regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
+        - safe_regex:
+            regex: '^cluster\.[\w]+?\.update_(attempt|success|failure)'
+        - safe_regex:
+            regex: '^cluster\.[\w]+?\.http2.keepalive_timeout'
+        - safe_regex:
+            regex: '^dns.apple.*'
+        - safe_regex:
+            regex: '^http.client.*'
+        - safe_regex:
+            regex: '^http.dispatcher.*'
+        - safe_regex:
+            regex: '^http.hcm.decompressor.*'
+        - safe_regex:
+            regex: '^http.hcm.downstream_rq_[\w]+'
+        - safe_regex:
+            regex: '^pbf_filter.*'
+        - safe_regex:
+            regex: '^pulse.*'
+        - safe_regex:
+            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
+  use_all_default_tags:
+    false
+)";
+
+const char* default_clusters_insert = R"(
+  - *stats_cluster
+  - name: base
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: &base_cluster_type
+      name: envoy.clusters.dynamic_forward_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
+        dns_cache_config: *dns_cache_config
+    transport_socket: *base_tls_socket
+    upstream_connection_options: &upstream_opts
+      set_local_interface_name_on_upstream_connections: true
+      tcp_keepalive:
+        keepalive_interval: 5
+        keepalive_probes: 1
+        keepalive_time: 10
+    circuit_breakers: &circuit_breakers_settings
+      thresholds:
+      - priority: DEFAULT
+        # Don't impose limits on concurrent retries.
+        retry_budget:
+          budget_percent:
+            value: 100
+          min_retry_concurrency: 0xffffffff # uint32 max
+      per_host_thresholds:
+      - priority: DEFAULT
+        max_connections: *max_connections_per_host
+    typed_extension_protocol_options: *alpn_protocol_options
+  - name: base_clear
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket:
+      name: envoy.transport_sockets.http_11_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+        transport_socket:
+          name: envoy.transport_sockets.raw_buffer
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *h1_protocol_options
+  - name: base_h2
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket:
+      name: envoy.transport_sockets.http_11_proxy
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
+        transport_socket:
+          name: envoy.transport_sockets.tls
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+            common_tls_context:
+              alpn_protocols: [h2]
+              tls_params:
+                tls_maximum_protocol_version: TLSv1_3
+              validation_context:
+                trusted_ca:
+                  inline_string: *tls_root_certs
+                trust_chain_verification: *trust_chain_verification
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *h2_protocol_options
+  - name: base_h3
+    connect_timeout: *connect_timeout
+    lb_policy: CLUSTER_PROVIDED
+    cluster_type: *base_cluster_type
+    transport_socket:
+      name: envoy.transport_sockets.quic
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
+        upstream_tls_context:
+          common_tls_context:
+            tls_params:
+              tls_maximum_protocol_version: TLSv1_3
+            validation_context:
+              trusted_ca:
+                inline_string: *tls_root_certs
+              trust_chain_verification: *trust_chain_verification
+    upstream_connection_options: *upstream_opts
+    circuit_breakers: *circuit_breakers_settings
+    typed_extension_protocol_options: *h3_protocol_options
+)";
+
+const char* rtds_clusters_insert = R"(
+    - name: base_h2
+      connect_timeout: 5s
+      load_assignment:
+        cluster_name: base_h2
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: {}
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options:
+              {}
+    - name: xds_cluster.lyft.com
+      connect_timeout: 5s
+      load_assignment:
+        cluster_name: xds_cluster.lyft.com
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: {}
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options:
+              {}
+)";
+
 // clang-format off
 const std::string config_header = R"(
 !ignore default_defs:
@@ -511,22 +694,6 @@ node:
   metadata: *metadata
 layered_runtime:
   layers:
-    - name: static_layer_0
-      static_layer:
-        envoy:
-          # This disables envoy bug stats, which are filtered out of our stats inclusion list anyway
-          # Global stats do not play well with engines with limited lifetimes
-          disallow_global_stats: true
-          reloadable_features:
-            allow_multiple_dns_addresses: *dns_multiple_addresses
-            always_use_v6: *force_ipv6
-            http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
-            skip_dns_lookup_for_proxied_requests: *skip_dns_lookup_for_proxied_requests
-)"
-// Needed due to warning in
-// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
-R"(
-        overload:
-          global_downstream_max_connections: 0xffffffff # uint32 max
+#{custom_layers}
 )";
 // clang-format on

@@ -18,8 +18,9 @@ using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
 XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
-  override_builder_config_ = true; // The builder does not yet have RTDS support.
-  expect_dns_ = false;             // TODO(alyssawilk) debug.
+  std::cout << "HERE\n\n\n\n";
+  // override_builder_config_ = true; // The builder does not yet have RTDS support.
+  expect_dns_ = false; // TODO(alyssawilk) debug.
   create_xds_upstream_ = true;
   sotw_or_delta_ = sotwOrDelta();
 
@@ -29,29 +30,17 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
   }
 
   // Set up the basic bootstrap config for xDS.
-  config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-    // The default stats config has overenthusiastic filters.
-    bootstrap.clear_stats_config();
-
-    // Add two clusters by default:
-    //  - base_h2: An HTTP2 cluster with one fake upstream endpoint, for accepting requests from EM.
-    //  - xds_cluster.lyft.com: An xDS management server cluster, with one fake upstream endpoint.
-    bootstrap.mutable_static_resources()->clear_clusters();
-    bootstrap.mutable_static_resources()->add_clusters()->MergeFrom(
-        createSingleEndpointClusterConfig("base_h2"));
-    bootstrap.mutable_static_resources()->add_clusters()->MergeFrom(
-        createSingleEndpointClusterConfig(std::string(XDS_CLUSTER)));
-  });
+  enableCustomClusters(std::to_string(fake_upstreams_[0]->localAddress()->ip()->port()),
+                       std::to_string(fake_upstreams_[0]->localAddress()->ip()->port()));
+  disableStatsConfig(true);
 
   // xDS upstream is created separately in the test infra, and there's only one non-xDS cluster.
   setUpstreamCount(1);
 
-  // Add the Admin config.
-  config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-    bootstrap.mutable_admin()->MergeFrom(adminConfig());
-  });
+  setAdminConfig(adminConfig());
   admin_filename_ = TestEnvironment::temporaryPath("admin_address.txt");
   setAdminAddressPathForTests(admin_filename_);
+  std::cout << "DONE\n\n\n\n";
 }
 
 void XdsIntegrationTest::initialize() {
@@ -141,7 +130,7 @@ AssertionResult XdsIntegrationTest::waitForCounterGe(const std::string& name, ui
   return AssertionSuccess();
 }
 
-envoy::config::cluster::v3::Cluster
+envoy::config::cluster::v3::Cluster // todo delete
 XdsIntegrationTest::createSingleEndpointClusterConfig(const std::string& cluster_name) {
   envoy::config::cluster::v3::Cluster config;
   config.set_name(cluster_name);
@@ -163,18 +152,17 @@ XdsIntegrationTest::createSingleEndpointClusterConfig(const std::string& cluster
   return config;
 }
 
-envoy::config::bootstrap::v3::Admin XdsIntegrationTest::adminConfig() {
+std::string XdsIntegrationTest::adminConfig() {
   const std::string yaml = fmt::format(R"EOF(
-    address:
-      socket_address:
-        address: {}
-        port_value: 0
-  )EOF",
+admin:
+  address:
+    socket_address:
+      address: {}
+      port_value: 0
+)EOF",
                                        Network::Test::getLoopbackAddressString(ipVersion()));
 
-  envoy::config::bootstrap::v3::Admin config;
-  TestUtility::loadFromYaml(yaml, config);
-  return config;
+  return yaml;
 }
 
 } // namespace Envoy

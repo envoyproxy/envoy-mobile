@@ -61,6 +61,11 @@ public:
   EngineBuilder& enableH2ExtendKeepaliveTimeout(bool h2_extend_keepalive_timeout_on);
   EngineBuilder& enforceTrustChainVerification(bool trust_chain_verification_on);
   EngineBuilder& enablePlatformCertificatesValidation(bool platform_certificates_validation_on);
+  EngineBuilder& setRtdsConfig(std::string yaml);
+  EngineBuilder& setRtdsEndpoint(std::string hostname);
+  EngineBuilder& enableCustomClusters(std::string port1, std::string port2);
+  EngineBuilder& setAdminConfig(std::string yaml);
+  EngineBuilder& disableStatsConfig(bool disable_stats);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr() const;
@@ -101,6 +106,12 @@ private:
   std::string virtual_clusters_ = "[]";
   std::string config_override_for_tests_ = "";
   std::string admin_address_path_for_tests_ = "";
+  std::string custom_layers_ = "";
+  std::string admin_yaml_ = "";
+  std::string hostname_ = "";
+  std::string custom_clusters_p1_ = "";
+  std::string custom_clusters_p2_ = "";
+  bool disable_stats_ = false;
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;
   bool gzip_filter_ = true;

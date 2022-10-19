@@ -77,6 +77,22 @@ extern const char* brotli_config_insert;
  */
 extern const char* socket_tag_config_insert;
 
+/* Insert for default layers.
+ */
+extern const char* default_layers_insert;
+
+/* Insert that enables default stats config.
+ */
+extern const char* default_stats_config_insert;
+
+/* Insert that enables rtds clusters.
+ */
+extern const char* rtds_clusters_insert;
+
+/* Insert for default clusters.
+ */
+extern const char* default_clusters_insert;
+
 /**
  * Insert that enables the route cache reset filter in the filter chain.
  * Should only be added when the route cache should be cleared on every request

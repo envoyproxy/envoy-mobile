@@ -48,7 +48,7 @@ protected:
   envoy::config::cluster::v3::Cluster
   createSingleEndpointClusterConfig(const std::string& cluster_name);
   // Creates an admin config for being able to query various configuration values.
-  envoy::config::bootstrap::v3::Admin adminConfig();
+  std::string adminConfig();
 
   // Get the value of a Counter in the Envoy instance.
   uint64_t getCounterValue(const std::string& counter);
