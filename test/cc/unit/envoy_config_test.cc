@@ -359,9 +359,8 @@ TEST(TestConfig, EnablePlatformCertificatesValidation) {
 
 // Implementation of StringAccessor which tracks the number of times it was used.
 class TestStringAccessor : public StringAccessor {
- public:
-  explicit TestStringAccessor(std::string data)
-      : data_(data) {}
+public:
+  explicit TestStringAccessor(std::string data) : data_(data) {}
   ~TestStringAccessor() override = default;
 
   // StringAccessor
@@ -372,7 +371,7 @@ class TestStringAccessor : public StringAccessor {
 
   int count() { return count_; }
 
- private:
+private:
   std::string data_;
   mutable int count_ = 0;
 };

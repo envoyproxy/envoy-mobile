@@ -65,7 +65,8 @@ public:
 
   // TODO(crockeo): add after filter integration
   // EngineBuilder& addPlatformFilter(name: String = UUID.randomUUID().toString(), factory: () ->
-  // Filter): EngineBuilder& addNativeFilter(name: String = UUID.randomUUID().toString(),
+  // Filter):
+  // EngineBuilder& addNativeFilter(name: String = UUID.randomUUID().toString(),
   // typedConfig: String):
 
 protected:

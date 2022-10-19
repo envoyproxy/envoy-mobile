@@ -9,10 +9,6 @@
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
 
-template <typename T> T* safeMalloc() {
-  return static_cast<T*>(safe_malloc(sizeof(T)));
-}
-
 namespace Envoy {
 namespace Platform {
 
@@ -197,8 +193,8 @@ EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_v
   return *this;
 }
 
-EngineBuilder&
-EngineBuilder::addStringAccessor(const std::string& name, StringAccessorSharedPtr accessor) {
+EngineBuilder& EngineBuilder::addStringAccessor(const std::string& name,
+                                                StringAccessorSharedPtr accessor) {
   string_accessors_[name] = accessor;
   return *this;
 }
@@ -337,14 +333,14 @@ EngineSharedPtr EngineBuilder::build() {
 
   for (const auto& [name, store] : key_value_stores_) {
     // TODO(goaway): This leaks, but it's tied to the life of the engine.
-    auto api = safeMalloc<envoy_kv_store>();
+    auto* api = static_cast<envoy_kv_store*>(safe_malloc(sizeof(envoy_kv_store)));
     *api = store->asEnvoyKeyValueStore();
     register_platform_api(name.c_str(), api);
   }
 
   for (const auto& [name, accessor] : string_accessors_) {
     // TODO(goaway): This leaks, but it's tied to the life of the engine.
-    auto api = safeMalloc<envoy_string_accessor>();
+    auto* api = static_cast<envoy_string_accessor*>(safe_malloc(sizeof(envoy_string_accessor)));
     *api = StringAccessor::asEnvoyStringAccessor(accessor);
     std::cout << "registering API: " << name << std::endl;
     register_platform_api(name.c_str(), api);
