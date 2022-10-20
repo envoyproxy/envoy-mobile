@@ -23,6 +23,7 @@
 #include "source/extensions/transport_sockets/tls/cert_validator/default_validator.h"
 #include "source/extensions/transport_sockets/tls/config.h"
 #include "source/extensions/upstreams/http/generic/config.h"
+#include "source/extensions/network/dns_resolver/getaddrinfo/getaddrinfo.h"
 
 #include "extension_registry_platform_additions.h"
 #include "library/common/extensions/cert_validator/platform_bridge/config.h"
