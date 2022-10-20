@@ -17,6 +17,8 @@ routing PRs, questions, etc. to the right place.
   * iOS (swift/objective-c) platform bindings.
 * Ryan Hamilton ([RyanTheOptimist](https://github.com/ryantheoptimist)) (rch@google.com)
   * Envoy, HTTP/3, upstream connection management.
+* Ali Beyad ([RyanTheOptimist](https://github.com/abeyad)) (abeyad@google.com)
+  * XDS, SDS.
 
 # Friends of Envoy Mobile
 
