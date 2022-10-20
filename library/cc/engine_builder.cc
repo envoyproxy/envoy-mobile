@@ -207,7 +207,8 @@ EngineBuilder& EngineBuilder::addStringAccessor(const std::string& name,
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addNativeFilter(const std::string& name, const std::string& typed_config) {
+EngineBuilder& EngineBuilder::addNativeFilter(const std::string& name,
+                                              const std::string& typed_config) {
   native_filter_chain_.emplace_back(name, typed_config);
   return *this;
 }
@@ -312,19 +313,15 @@ std::string EngineBuilder::generateConfigStr() const {
   }
 
   for (const NativeFilterConfig& filter : native_filter_chain_) {
-    std::string filter_config =
-        absl::StrReplaceAll(
-            native_filter_template,
-            {{"{{ native_filter_name }}", filter.name_},
-             {"{{ native_filter_typed_config }}", filter.typed_config_}});
+    std::string filter_config = absl::StrReplaceAll(
+        native_filter_template, {{"{{ native_filter_name }}", filter.name_},
+                                 {"{{ native_filter_typed_config }}", filter.typed_config_}});
     insertCustomFilter(filter_config, config_template);
   }
 
   for (const std::string& name : platform_filters_) {
     std::string filter_config =
-        absl::StrReplaceAll(
-            platform_filter_template,
-            {{"{{ platform_filter_name }}", name}});
+        absl::StrReplaceAll(platform_filter_template, {{"{{ platform_filter_name }}", name}});
     insertCustomFilter(filter_config, config_template);
   }
 

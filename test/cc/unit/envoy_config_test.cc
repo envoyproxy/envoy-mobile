@@ -405,7 +405,7 @@ TEST(TestConfig, AddPlatformFilter) {
 
   std::string config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, Not(HasSubstr("http.platform_bridge.PlatformBridge")));
-  ASSERT_THAT(config_str, Not(HasSubstr("platform_filter_name: "+ filter_name)));
+  ASSERT_THAT(config_str, Not(HasSubstr("platform_filter_name: " + filter_name)));
   envoy::config::bootstrap::v3::Bootstrap bootstrap;
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 
@@ -413,7 +413,7 @@ TEST(TestConfig, AddPlatformFilter) {
 
   config_str = engine_builder.generateConfigStr();
   ASSERT_THAT(config_str, HasSubstr("http.platform_bridge.PlatformBridge"));
-  ASSERT_THAT(config_str, HasSubstr("platform_filter_name: "+ filter_name));
+  ASSERT_THAT(config_str, HasSubstr("platform_filter_name: " + filter_name));
   TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
 }
 

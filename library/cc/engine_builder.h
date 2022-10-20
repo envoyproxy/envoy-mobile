@@ -71,7 +71,8 @@ protected:
 
 private:
   struct NativeFilterConfig {
-    NativeFilterConfig(const std::string& name, const std::string&  typed_config) : name_(name), typed_config_(typed_config) {}
+    NativeFilterConfig(const std::string& name, const std::string& typed_config)
+        : name_(name), typed_config_(typed_config) {}
 
     std::string name_;
     std::string typed_config_;
@@ -119,7 +120,7 @@ private:
   std::vector<std::string> stat_sinks_;
 
   std::vector<NativeFilterConfig> native_filter_chain_;
-  std::vector<std::string>  platform_filters_;
+  std::vector<std::string> platform_filters_;
   absl::flat_hash_map<std::string, StringAccessorSharedPtr> string_accessors_;
 };
 
