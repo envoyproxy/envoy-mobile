@@ -9,7 +9,7 @@ namespace {
 
 envoy_data c_string_accessor_read(const void* context) {
   auto accessor = *static_cast<const StringAccessorSharedPtr*>(context);
-  return Data::Utility::copyToBridgeData(accessor->getString());
+  return Data::Utility::copyToBridgeData(accessor->get());
 }
 
 } // namespace

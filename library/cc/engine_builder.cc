@@ -339,7 +339,7 @@ EngineSharedPtr EngineBuilder::build() {
   }
 
   for (const auto& [name, accessor] : string_accessors_) {
-    // TODO(goaway): This leaks, but it's tied to the life of the engine.
+    // TODO(RyanTheOptimist): This leaks, but it's tied to the life of the engine.
     auto* api = new envoy_string_accessor();
     *api = StringAccessor::asEnvoyStringAccessor(accessor);
     register_platform_api(name.c_str(), api);

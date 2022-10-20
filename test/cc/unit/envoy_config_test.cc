@@ -364,7 +364,7 @@ public:
   ~TestStringAccessor() override = default;
 
   // StringAccessor
-  const std::string& getString() const override {
+  const std::string& get() const override {
     ++count_;
     return data_;
   }

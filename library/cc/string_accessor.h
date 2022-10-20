@@ -21,7 +21,7 @@ public:
   /**
    * Returns the string associated with this accessor.
    */
-  virtual const std::string& getString() const PURE;
+  virtual const std::string& get() const PURE;
 
   /**
    * Maps an implementation to its internal representation.
