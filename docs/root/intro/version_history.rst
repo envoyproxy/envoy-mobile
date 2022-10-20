@@ -12,7 +12,6 @@ Breaking changes:
 Bugfixes:
 
 - android: fix engine startup crash for when admin interface is enabled. (:issue:`#2520 <2520>`)
-- android: fix engine builder crash on Android 6/7 when using stats sinks. (:issue:`#2622 <2622>`)
 - android: respect system security policy when determining whether clear text requests are allowed. (:issue:`#2528 <2528>`)
 
 Features:
