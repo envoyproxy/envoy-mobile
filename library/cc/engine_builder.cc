@@ -212,6 +212,11 @@ EngineBuilder& EngineBuilder::addNativeFilter(const std::string& name, const std
   return *this;
 }
 
+EngineBuilder& EngineBuilder::addPlatformFilter(const std::string& name) {
+  platform_filters_.push_back(name);
+  return *this;
+}
+
 std::string EngineBuilder::generateConfigStr() const {
 #if defined(__APPLE__)
   std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
@@ -312,7 +317,14 @@ std::string EngineBuilder::generateConfigStr() const {
             native_filter_template,
             {{"{{ native_filter_name }}", filter.name_},
              {"{{ native_filter_typed_config }}", filter.typed_config_}});
+    insertCustomFilter(filter_config, config_template);
+  }
 
+  for (const std::string& name : platform_filters_) {
+    std::string filter_config =
+        absl::StrReplaceAll(
+            platform_filter_template,
+            {{"{{ platform_filter_name }}", name}});
     insertCustomFilter(filter_config, config_template);
   }
 
