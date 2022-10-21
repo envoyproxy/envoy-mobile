@@ -19,7 +19,6 @@
                            enableInterfaceBinding:(BOOL)enableInterfaceBinding
                         enableDrainPostDnsRefresh:(BOOL)enableDrainPostDnsRefresh
                     enforceTrustChainVerification:(BOOL)enforceTrustChainVerification
-                                        forceIPv6:(BOOL)forceIPv6
     h2ConnectionKeepaliveIdleIntervalMilliseconds:
         (UInt32)h2ConnectionKeepaliveIdleIntervalMilliseconds
               h2ConnectionKeepaliveTimeoutSeconds:(UInt32)h2ConnectionKeepaliveTimeoutSeconds
@@ -64,7 +63,6 @@
   self.enableInterfaceBinding = enableInterfaceBinding;
   self.enableDrainPostDnsRefresh = enableDrainPostDnsRefresh;
   self.enforceTrustChainVerification = enforceTrustChainVerification;
-  self.forceIPv6 = forceIPv6;
   self.h2ConnectionKeepaliveIdleIntervalMilliseconds =
       h2ConnectionKeepaliveIdleIntervalMilliseconds;
   self.h2ConnectionKeepaliveTimeoutSeconds = h2ConnectionKeepaliveTimeoutSeconds;
@@ -174,7 +172,6 @@
   [definitions appendFormat:@"- &trust_chain_verification %@\n", self.enforceTrustChainVerification
                                                                      ? @"VERIFY_TRUST_CHAIN"
                                                                      : @"ACCEPT_UNTRUSTED"];
-  [definitions appendFormat:@"- &force_ipv6 %@\n", self.forceIPv6 ? @"true" : @"false"];
   [definitions appendFormat:@"- &h2_connection_keepalive_idle_interval %.*fs\n", 3,
                             (double)self.h2ConnectionKeepaliveIdleIntervalMilliseconds / 1000.0];
   [definitions appendFormat:@"- &h2_connection_keepalive_timeout %lus\n",
