@@ -2,6 +2,7 @@ package org.chromium.net.impl;
 
 import android.util.Log;
 import androidx.annotation.LongDef;
+import io.envoyproxy.envoymobile.engine.AndroidNetworkMonitor;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
@@ -69,11 +70,15 @@ public class Errors {
    */
   public static NetError mapEnvoyMobileErrorToNetError(long responseFlag) {
     /* Todo(https://github.com/envoyproxy/envoy-mobile/issues/1594):
-     * if (EnvoyMobileError.DNS_RESOLUTION_FAILED || EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE)
-     * && NetworkChangeNotifier.isOffline return NetError.ERR_INTERNET_DISCONNECTED
-     *
      * if negotiated_protocol is quic return QUIC_PROTOCOL_FAILED
      */
+
+    // if connection fails to be established, check if user is offline
+    if ((responseFlag == EnvoyMobileError.DNS_RESOLUTION_FAILED ||
+        responseFlag == EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE) &&
+        !AndroidNetworkMonitor.getInstance().isOnline()) {
+      return NetError.ERR_INTERNET_DISCONNECTED;
+    }
     return ENVOYMOBILE_ERROR_TO_NET_ERROR.getOrDefault(responseFlag, NetError.ERR_OTHER);
   }
 

@@ -8,12 +8,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.Shadows.shadowOf;
 
+import androidx.test.annotation.UiThreadTest;
+import android.content.Context;
+import android.content.Intent;
+import android.Manifest;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.StrictMode;
 import android.util.Log;
 import androidx.test.filters.SmallTest;
+import androidx.test.rule.GrantPermissionRule;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.ByteBuffer;
@@ -28,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import io.envoyproxy.envoymobile.engine.AndroidNetworkMonitor;
 import org.chromium.net.impl.CronetUrlRequest;
 import org.chromium.net.impl.Errors.EnvoyMobileError;
 import org.chromium.net.impl.Errors.NetError;
@@ -49,8 +58,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.ShadowConnectivityManager;
 
 /**
  * Test functionality of CronetUrlRequest.
@@ -64,7 +75,11 @@ public class CronetUrlRequestTest {
   private static final String REFER_STRING = "refer";
   private static final String REFERRER_HEADER_NAME = REFER_STRING + "er";
 
-  @Rule public final CronetTestRule mTestRule = new CronetTestRule();
+  private final CronetTestRule mTestRule = new CronetTestRule();
+  private final GrantPermissionRule mRuntimePermissionRule =
+      GrantPermissionRule.grant(Manifest.permission.ACCESS_NETWORK_STATE);
+  @Rule
+  public final RuleChain chain = RuleChain.outerRule(mTestRule).around(mRuntimePermissionRule);
 
   private CronetTestFramework mTestFramework;
   private MockUrlRequestJobFactory mMockUrlRequestJobFactory;
@@ -2068,10 +2083,35 @@ public class CronetUrlRequestTest {
                            NetworkException.ERROR_TIMED_OUT, "TIMED_OUT", true);
     checkSpecificErrorCode(0x2000, NetError.ERR_OTHER, NetworkException.ERROR_OTHER, "OTHER",
                            false);
-    // Todo(colibie): https://github.com/envoyproxy/envoy-mobile/issues/1549
-    // checkSpecificErrorCode(-106, NetworkException.ERROR_INTERNET_DISCONNECTED,
-    //                        "INTERNET_DISCONNECTED", false);
-    // checkSpecificErrorCode(-21, NetworkException.ERROR_NETWORK_CHANGED, "NETWORK_CHANGED", true);
+  }
+
+  /*
+   * Verifies INTERNET_DISCONNECTED error is thrown when no network
+   */
+  @Test
+  @SmallTest
+  @Feature({"Cronet"})
+  @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
+  public void testInternetDisconnectedError() throws Exception {
+    AndroidNetworkMonitor androidNetworkMonitor = AndroidNetworkMonitor.getInstance();
+    Intent intent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
+    // save old networkInfo before overriding
+    NetworkInfo networkInfo = androidNetworkMonitor.getConnectivityManager().getActiveNetworkInfo();
+
+    // simulate no network
+    ShadowConnectivityManager connectivityManager =
+        shadowOf(androidNetworkMonitor.getConnectivityManager());
+    connectivityManager.setActiveNetworkInfo(null);
+    androidNetworkMonitor.onReceive(getContext(), intent);
+
+    // send request and confirm errorcode
+    checkSpecificErrorCode(
+        EnvoyMobileError.DNS_RESOLUTION_FAILED, NetError.ERR_INTERNET_DISCONNECTED,
+        NetworkException.ERROR_INTERNET_DISCONNECTED, "INTERNET_DISCONNECTED", false);
+
+    // bring back online since the AndroidNetworkMonitor class is a singleton
+    connectivityManager.setActiveNetworkInfo(networkInfo);
+    androidNetworkMonitor.onReceive(getContext(), intent);
   }
 
   /*
