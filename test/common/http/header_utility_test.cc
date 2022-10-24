@@ -18,7 +18,8 @@ envoy_data envoyTestString(std::string& s, uint32_t* sentinel) {
 }
 
 TEST(RequestHeaderDataConstructorTest, FromCToCppEmpty) {
-  envoy_map_entry* header_array = new envoy_map_entry[0];
+  envoy_map_entry* header_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * 0));
   envoy_headers empty_headers = {0, header_array};
 
   RequestHeaderMapPtr cpp_headers = Utility::toRequestHeaders(empty_headers);
@@ -27,7 +28,8 @@ TEST(RequestHeaderDataConstructorTest, FromCToCppEmpty) {
 }
 
 TEST(RequestTrailerDataConstructorTest, FromCToCppEmpty) {
-  envoy_map_entry* header_array = new envoy_map_entry[0];
+  envoy_map_entry* header_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * 0));
   envoy_headers empty_trailers = {0, header_array};
 
   RequestTrailerMapPtr cpp_trailers = Utility::toRequestTrailers(empty_trailers);
@@ -40,7 +42,8 @@ TEST(RequestHeaderDataConstructorTest, FromCToCpp) {
   std::vector<std::pair<std::string, std::string>> headers = {
       {":method", "GET"}, {":scheme", "https"}, {":authority", "api.lyft.com"}, {":path", "/ping"}};
 
-  envoy_map_entry* header_array = new envoy_map_entry[headers.size()];
+  envoy_map_entry* header_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * headers.size()));
 
   uint32_t* sentinel = new uint32_t;
   *sentinel = 0;
@@ -81,7 +84,8 @@ TEST(RequestTrailerDataConstructorTest, FromCToCpp) {
   std::vector<std::pair<std::string, std::string>> trailers = {
       {"processing-duration-ms", "25"}, {"response-compression-ratio", "0.61"}};
 
-  envoy_map_entry* header_array = new envoy_map_entry[trailers.size()];
+  envoy_map_entry* header_array =
+      static_cast<envoy_map_entry*>(safe_malloc(sizeof(envoy_map_entry) * trailers.size()));
 
   uint32_t* sentinel = new uint32_t;
   *sentinel = 0;
