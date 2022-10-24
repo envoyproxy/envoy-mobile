@@ -8,16 +8,29 @@ namespace TestRead {
 
 Http::FilterHeadersStatus TestReadFilter::decodeHeaders(Http::RequestHeaderMap& request_headers,
                                                         bool) {
-  // sample path is /failed?start=0x10000
+  // sample path is /failed?error=0x10000
   Http::Utility::QueryParams query_parameters =
       Http::Utility::parseQueryString(request_headers.Path()->value().getStringView());
-  uint64_t response_flag;
-  if (absl::SimpleAtoi(query_parameters.at("start"), &response_flag)) {
-    decoder_callbacks_->streamInfo().setResponseFlag(
-        TestReadFilter::mapErrorToResponseFlag(response_flag));
-    decoder_callbacks_->sendLocalReply(Http::Code::BadRequest, "test_read filter threw: ", nullptr,
-                                       absl::nullopt, "");
+  auto error = query_parameters.find("error");
+  // no error was specified, so move on
+  if (error == query_parameters.end()) {
+    return Http::FilterHeadersStatus::Continue;
   }
+
+  StreamInfo::StreamInfo& stream_info = decoder_callbacks_->streamInfo();
+  uint64_t response_flag;
+  // set response error code
+  if (absl::SimpleAtoi(error->second, &response_flag)) {
+    stream_info.setResponseFlag(TestReadFilter::mapErrorToResponseFlag(response_flag));
+    // check if we want a quic server error
+    if (query_parameters.find("quic") != query_parameters.end()) {
+      stream_info.setUpstreamInfo(std::make_shared<StreamInfo::UpstreamInfoImpl>());
+      stream_info.upstreamInfo()->setUpstreamProtocol(Http::Protocol::Http3);
+    }
+  }
+
+  decoder_callbacks_->sendLocalReply(Http::Code::BadRequest, "test_read filter threw: ", nullptr,
+                                     absl::nullopt, "");
   return Http::FilterHeadersStatus::StopIteration;
 }
 

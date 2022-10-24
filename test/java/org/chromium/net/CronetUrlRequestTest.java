@@ -45,7 +45,6 @@ import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestRule.CronetTestFramework;
 import org.chromium.net.testing.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.testing.CronetTestRule.RequiresMinApi;
-import org.chromium.net.testing.FailurePhase;
 import org.chromium.net.testing.Feature;
 import org.chromium.net.testing.MockUrlRequestJobFactory;
 import org.chromium.net.testing.NativeTestServer;
@@ -65,6 +64,9 @@ import org.robolectric.shadows.ShadowConnectivityManager;
 
 /**
  * Test functionality of CronetUrlRequest.
+ * This test makes use of 2 cronetEngines.
+ * One with request filters to throw custom errors and the other without.
+ * TODO(colibie): switch to one engine, with the filter ignoring urls with no custom errors.
  */
 @RunWith(RobolectricTestRunner.class)
 public class CronetUrlRequestTest {
@@ -721,45 +723,6 @@ public class CronetUrlRequestTest {
     assertEquals(0, callback.mRedirectCount);
     assertFalse(callback.mOnErrorCalled);
     assertEquals(callback.mResponseStep, ResponseStep.ON_SUCCEEDED);
-  }
-
-  @Test
-  @SmallTest
-  @Feature({"Cronet"})
-  @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
-  public void testMockStartAsyncError() throws Exception {
-    final int arbitraryNetError = -3;
-    TestUrlRequestCallback callback = startAndWaitForComplete(
-        mMockUrlRequestJobFactory.getCronetEngine(),
-        MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, arbitraryNetError));
-    assertNull(callback.mResponseInfo);
-    assertNotNull(callback.mError);
-    assertEquals(arbitraryNetError,
-                 ((NetworkException)callback.mError).getCronetInternalErrorCode());
-    assertEquals(0, callback.mRedirectCount);
-    assertTrue(callback.mOnErrorCalled);
-    assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
-  }
-
-  @Test
-  @SmallTest
-  @Feature({"Cronet"})
-  @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
-  public void testMockReadDataSyncError() throws Exception {
-    final int arbitraryNetError = -4;
-    TestUrlRequestCallback callback = startAndWaitForComplete(
-        mMockUrlRequestJobFactory.getCronetEngine(),
-        MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.READ_SYNC, arbitraryNetError));
-    assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-    assertEquals(15, callback.mResponseInfo.getReceivedByteCount());
-    assertNotNull(callback.mError);
-    assertEquals(arbitraryNetError,
-                 ((NetworkException)callback.mError).getCronetInternalErrorCode());
-    assertEquals(0, callback.mRedirectCount);
-    assertTrue(callback.mOnErrorCalled);
-    assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
   }
 
   /**
@@ -2139,12 +2102,11 @@ public class CronetUrlRequestTest {
   @SmallTest
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
   public void testQuicErrorCode() throws Exception {
+    long envoyMobileError = 0x2000;
     TestUrlRequestCallback callback = startAndWaitForComplete(
         mMockUrlRequestJobFactory.getCronetEngine(),
-        MockUrlRequestJobFactory.getMockUrlWithFailure(
-            FailurePhase.START, NetError.ERR_QUIC_PROTOCOL_ERROR.getErrorCode()));
+        MockUrlRequestJobFactory.getMockQuicUrlWithFailure(envoyMobileError));
     assertNull(callback.mResponseInfo);
     assertNotNull(callback.mError);
     assertEquals(NetworkException.ERROR_QUIC_PROTOCOL_FAILED,
@@ -2159,12 +2121,12 @@ public class CronetUrlRequestTest {
   @SmallTest
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1594: error removed in envoymobile")
   public void testQuicErrorCodeForNetworkChanged() throws Exception {
-    TestUrlRequestCallback callback = startAndWaitForComplete(
-        mMockUrlRequestJobFactory.getCronetEngine(),
-        MockUrlRequestJobFactory.getMockUrlWithFailure(
-            FailurePhase.START, NetError.ERR_NETWORK_CHANGED.getErrorCode()));
+    TestUrlRequestCallback callback =
+        startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
+                                MockUrlRequestJobFactory.getMockUrlWithFailure(
+                                    NetError.ERR_NETWORK_CHANGED.getErrorCode()));
     assertNull(callback.mResponseInfo);
     assertNotNull(callback.mError);
     assertEquals(NetworkException.ERROR_NETWORK_CHANGED,
@@ -2185,9 +2147,9 @@ public class CronetUrlRequestTest {
   @SmallTest
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
   public void testLegacyOnFailedCallback() throws Exception {
-    final int netError = -123;
+    final long envoyMobileError = 0x2000;
+    final int netError = NetError.ERR_OTHER.getErrorCode();
     final AtomicBoolean failedExpectation = new AtomicBoolean();
     final ConditionVariable done = new ConditionVariable();
     UrlRequest.Callback callback = new UrlRequest.Callback() {
@@ -2231,8 +2193,8 @@ public class CronetUrlRequestTest {
       }
     };
 
-    UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-        MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, netError), callback,
+    UrlRequest.Builder builder = mMockUrlRequestJobFactory.getCronetEngine().newUrlRequestBuilder(
+        MockUrlRequestJobFactory.getMockUrlWithFailure(envoyMobileError), callback,
         Executors.newSingleThreadExecutor());
     final UrlRequest urlRequest = builder.build();
     urlRequest.start();
@@ -2244,9 +2206,9 @@ public class CronetUrlRequestTest {
   private void checkSpecificErrorCode(@EnvoyMobileError long envoyMobileError, NetError netError,
                                       int errorCode, String name, boolean immediatelyRetryable)
       throws Exception {
-    TestUrlRequestCallback callback = startAndWaitForComplete(
-        mMockUrlRequestJobFactory.getCronetEngine(),
-        MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, envoyMobileError));
+    TestUrlRequestCallback callback =
+        startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
+                                MockUrlRequestJobFactory.getMockUrlWithFailure(envoyMobileError));
     assertNull(callback.mResponseInfo);
     assertNotNull(callback.mError);
     assertEquals(netError.getErrorCode(),

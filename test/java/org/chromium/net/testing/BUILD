@@ -14,7 +14,6 @@ android_library(
         "ContextUtils.java",
         "CronetTestRule.java",
         "CronetTestUtil.java",
-        "FailurePhase.java",
         "Feature.java",
         "FileUtils.java",
         "Http2TestHandler.java",

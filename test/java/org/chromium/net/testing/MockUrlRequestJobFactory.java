@@ -50,20 +50,12 @@ public final class MockUrlRequestJobFactory {
    *              org.chromium.net.test.FailurePhase.
    * @param @param envoyMobileError reported by the engine.
    */
-  public static String getMockUrlWithFailure(FailurePhase phase, long envoyMobileError) {
-    switch (phase) {
-    case START:
-    case READ_SYNC:
-    case READ_ASYNC:
-      break;
-    default:
-      throw new IllegalArgumentException("phase not in org.chromium.net.test.FailurePhase");
-    }
-    return TEST_URL + "/failed?" + phase + "=" + envoyMobileError;
+  public static String getMockUrlWithFailure(long envoyMobileError) {
+    return TEST_URL + "/failed?error=" + envoyMobileError;
   }
 
-  public static String getMockUrlWithFailure(FailurePhase phase, int netError) {
-    throw new UnsupportedOperationException("To be implemented");
+  public static String getMockQuicUrlWithFailure(long envoyMobileError) {
+    return TEST_URL + "/failed?quic=1&error=" + envoyMobileError;
   }
 
   /**

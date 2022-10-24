@@ -10,6 +10,7 @@ android_library(
         "AndroidJniLibrary.java",
         "AndroidNetworkMonitor.java",
         "AndroidProxyMonitor.java",
+        "UpstreamHttpProtocol.java",
     ],
     custom_package = "io.envoyproxy.envoymobile.engine",
     manifest = "AndroidEngineManifest.xml",
