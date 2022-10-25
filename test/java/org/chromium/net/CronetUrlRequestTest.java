@@ -64,9 +64,11 @@ import org.robolectric.shadows.ShadowConnectivityManager;
 
 /**
  * Test functionality of CronetUrlRequest.
- * This test makes use of 2 cronetEngines.
+ * This test makes use of 2 separate cronetEngines.
  * One with request filters to throw custom errors and the other without.
- * TODO(colibie): switch to one engine, with the filter ignoring urls with no custom errors.
+ * They do not run simultaneously as EM does not support this.
+ * TODO(colibie): Consider using a single engine with filter that does nothing
+ * if the url does not indicate to throw an error
  */
 @RunWith(RobolectricTestRunner.class)
 public class CronetUrlRequestTest {
@@ -90,18 +92,20 @@ public class CronetUrlRequestTest {
   public void setUp() {
     mTestFramework = mTestRule.startCronetTestFramework();
     assertTrue(NativeTestServer.startNativeTestServer(getContext()));
-    // Add url interceptors after native application context is initialized.
-    if (!mTestRule.testingJavaImpl()) {
-      mMockUrlRequestJobFactory = new MockUrlRequestJobFactory(mTestFramework.mBuilder);
-    }
   }
 
   @After
   public void tearDown() {
-    if (!mTestRule.testingJavaImpl()) {
-      mMockUrlRequestJobFactory.shutdown();
-    }
     NativeTestServer.shutdownNativeTestServer();
+  }
+
+  private void startCronetEngineForMockUrlRequestJobFactory() {
+    // Envoy doesnt support multiple concurrent engines yet so shut down the original
+    mTestFramework.shutdownEngine();
+    mTestFramework = null;
+    // Create a new engine with the url filter added.
+    mMockUrlRequestJobFactory =
+        new MockUrlRequestJobFactory(new ExperimentalCronetEngine.Builder(getContext()));
   }
 
   private TestUrlRequestCallback startAndWaitForComplete(CronetEngine engine, String url)
@@ -734,6 +738,7 @@ public class CronetUrlRequestTest {
   @OnlyRunNativeCronet
   @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
   public void testMockClientCertificateRequested() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     TestUrlRequestCallback callback =
         startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
                                 MockUrlRequestJobFactory.getMockUrlForClientCertificateRequest());
@@ -743,6 +748,7 @@ public class CronetUrlRequestTest {
     assertEquals(0, callback.mRedirectCount);
     assertNull(callback.mError);
     assertFalse(callback.mOnErrorCalled);
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   /**
@@ -754,6 +760,7 @@ public class CronetUrlRequestTest {
   @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
   @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
   public void testMockSSLCertificateError() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     TestUrlRequestCallback callback =
         startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
                                 MockUrlRequestJobFactory.getMockUrlForSSLCertificateError());
@@ -764,6 +771,7 @@ public class CronetUrlRequestTest {
     assertContains("Exception in CronetUrlRequest: net::ERR_CERT_DATE_INVALID",
                    callback.mError.getMessage());
     assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   /**
@@ -2031,6 +2039,7 @@ public class CronetUrlRequestTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
   public void testErrorCodes() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     checkSpecificErrorCode(EnvoyMobileError.DNS_RESOLUTION_FAILED, NetError.ERR_NAME_NOT_RESOLVED,
                            NetworkException.ERROR_HOSTNAME_NOT_RESOLVED, "NAME_NOT_RESOLVED",
                            false);
@@ -2046,6 +2055,7 @@ public class CronetUrlRequestTest {
                            NetworkException.ERROR_TIMED_OUT, "TIMED_OUT", true);
     checkSpecificErrorCode(0x2000, NetError.ERR_OTHER, NetworkException.ERROR_OTHER, "OTHER",
                            false);
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   /*
@@ -2056,6 +2066,7 @@ public class CronetUrlRequestTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
   public void testInternetDisconnectedError() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     AndroidNetworkMonitor androidNetworkMonitor = AndroidNetworkMonitor.getInstance();
     Intent intent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
     // save old networkInfo before overriding
@@ -2075,6 +2086,8 @@ public class CronetUrlRequestTest {
     // bring back online since the AndroidNetworkMonitor class is a singleton
     connectivityManager.setActiveNetworkInfo(networkInfo);
     androidNetworkMonitor.onReceive(getContext(), intent);
+
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   /*
@@ -2103,6 +2116,7 @@ public class CronetUrlRequestTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
   public void testQuicErrorCode() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     long envoyMobileError = 0x2000;
     TestUrlRequestCallback callback = startAndWaitForComplete(
         mMockUrlRequestJobFactory.getCronetEngine(),
@@ -2115,6 +2129,7 @@ public class CronetUrlRequestTest {
     QuicException quicException = (QuicException)callback.mError;
     // 1 is QUIC_INTERNAL_ERROR
     assertEquals(1, quicException.getQuicDetailedErrorCode());
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   @Test
@@ -2123,6 +2138,7 @@ public class CronetUrlRequestTest {
   @OnlyRunNativeCronet
   @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1594: error removed in envoymobile")
   public void testQuicErrorCodeForNetworkChanged() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     TestUrlRequestCallback callback =
         startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
                                 MockUrlRequestJobFactory.getMockUrlWithFailure(
@@ -2137,6 +2153,7 @@ public class CronetUrlRequestTest {
     // URLRequestFailedJob::PopulateNetErrorDetails for this test.
     final int quicErrorCode = 83;
     assertEquals(quicErrorCode, quicException.getQuicDetailedErrorCode());
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   /**
@@ -2148,6 +2165,7 @@ public class CronetUrlRequestTest {
   @Feature({"Cronet"})
   @OnlyRunNativeCronet
   public void testLegacyOnFailedCallback() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
     final long envoyMobileError = 0x2000;
     final int netError = NetError.ERR_OTHER.getErrorCode();
     final AtomicBoolean failedExpectation = new AtomicBoolean();
@@ -2201,6 +2219,7 @@ public class CronetUrlRequestTest {
     done.block();
     // Check that onFailed is called.
     assertFalse(failedExpectation.get());
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   private void checkSpecificErrorCode(@EnvoyMobileError long envoyMobileError, NetError netError,
