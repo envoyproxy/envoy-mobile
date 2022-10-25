@@ -6,7 +6,7 @@ import org.chromium.net.CronetEngine;
 import org.chromium.net.ExperimentalCronetEngine;
 
 /**
- * Helper class to set up url interceptors for testing purposes.
+ * Helper class to set up request filters for testing purposes.
  * TODO("https://github.com/envoyproxy/envoy-mobile/issues/1549")
  */
 public final class MockUrlRequestJobFactory {
@@ -18,19 +18,22 @@ public final class MockUrlRequestJobFactory {
   /**
    * Sets up URL interceptors.
    */
-  public MockUrlRequestJobFactory(CronetEngine cronetEngine) {
-    mCronetEngine = cronetEngine;
-
-    // Add a filter to immediately return a response
-  }
+  public MockUrlRequestJobFactory(CronetEngine cronetEngine) { mCronetEngine = cronetEngine; }
 
   /**
-   * Sets up URL interceptors.
+   * Sets up request filters.
+   * This optionally adds a request filter to the cronetEngine before building.
+   * JavaCronetEngine does not support these filters.
    */
-  public MockUrlRequestJobFactory(ExperimentalCronetEngine.Builder builder) {
-    // Add a filter to immediately return a response
-    mCronetEngine =
-        CronetTestUtil.getCronetEngineBuilderImpl(builder).addUrlInterceptorsForTesting().build();
+  public MockUrlRequestJobFactory(ExperimentalCronetEngine.Builder builder,
+                                  boolean testingJavaImpl) {
+    if (testingJavaImpl) {
+      mCronetEngine = builder.build();
+    } else {
+      // Add a filter to immediately return a response
+      mCronetEngine =
+          CronetTestUtil.getCronetEngineBuilderImpl(builder).addUrlInterceptorsForTesting().build();
+    }
   }
 
   /**
@@ -41,7 +44,9 @@ public final class MockUrlRequestJobFactory {
     mCronetEngine.shutdown();
   }
 
-  public CronetEngine getCronetEngine() { return mCronetEngine; }
+  public ExperimentalCronetEngine getCronetEngine() {
+    return (ExperimentalCronetEngine)mCronetEngine;
+  }
 
   /**
    * Constructs a mock URL that hangs or fails at certain phase.
