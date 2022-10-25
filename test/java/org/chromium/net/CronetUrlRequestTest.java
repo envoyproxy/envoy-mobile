@@ -96,15 +96,6 @@ public class CronetUrlRequestTest {
     NativeTestServer.shutdownNativeTestServer();
   }
 
-  private void startCronetEngineForMockUrlRequestJobFactory() {
-    // Envoy doesnt support multiple concurrent engines yet so shut down the original
-    // mTestFramework.shutdownEngine();
-    // mTestFramework = null;
-    // // Create a new engine with the url filter added.
-    // mMockUrlRequestJobFactory =
-    //     new MockUrlRequestJobFactory(new ExperimentalCronetEngine.Builder(getContext()));
-  }
-
   private TestUrlRequestCallback startAndWaitForComplete(CronetEngine engine, String url)
       throws Exception {
     TestUrlRequestCallback callback = new TestUrlRequestCallback();
