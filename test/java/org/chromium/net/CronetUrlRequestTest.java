@@ -45,6 +45,7 @@ import org.chromium.net.testing.CronetTestRule;
 import org.chromium.net.testing.CronetTestRule.CronetTestFramework;
 import org.chromium.net.testing.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.testing.CronetTestRule.RequiresMinApi;
+import org.chromium.net.testing.FailurePhase;
 import org.chromium.net.testing.Feature;
 import org.chromium.net.testing.MockUrlRequestJobFactory;
 import org.chromium.net.testing.NativeTestServer;
@@ -727,6 +728,49 @@ public class CronetUrlRequestTest {
     assertEquals(0, callback.mRedirectCount);
     assertFalse(callback.mOnErrorCalled);
     assertEquals(callback.mResponseStep, ResponseStep.ON_SUCCEEDED);
+  }
+
+  @Test
+  @SmallTest
+  @Feature({"Cronet"})
+  @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
+  public void testMockStartAsyncError() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
+    final int arbitraryNetError = -3;
+    TestUrlRequestCallback callback = startAndWaitForComplete(
+        mMockUrlRequestJobFactory.getCronetEngine(),
+        MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, arbitraryNetError));
+    assertNull(callback.mResponseInfo);
+    assertNotNull(callback.mError);
+    assertEquals(arbitraryNetError,
+                 ((NetworkException)callback.mError).getCronetInternalErrorCode());
+    assertEquals(0, callback.mRedirectCount);
+    assertTrue(callback.mOnErrorCalled);
+    assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+    mMockUrlRequestJobFactory.shutdown();
+  }
+
+  @Test
+  @SmallTest
+  @Feature({"Cronet"})
+  @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
+  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1549")
+  public void testMockReadDataSyncError() throws Exception {
+    startCronetEngineForMockUrlRequestJobFactory();
+    final int arbitraryNetError = -4;
+    TestUrlRequestCallback callback = startAndWaitForComplete(
+        mMockUrlRequestJobFactory.getCronetEngine(),
+        MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.READ_SYNC, arbitraryNetError));
+    assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+    assertEquals(15, callback.mResponseInfo.getReceivedByteCount());
+    assertNotNull(callback.mError);
+    assertEquals(arbitraryNetError,
+                 ((NetworkException)callback.mError).getCronetInternalErrorCode());
+    assertEquals(0, callback.mRedirectCount);
+    assertTrue(callback.mOnErrorCalled);
+    assertEquals(ResponseStep.ON_FAILED, callback.mResponseStep);
+    mMockUrlRequestJobFactory.shutdown();
   }
 
   /**
@@ -2129,30 +2173,6 @@ public class CronetUrlRequestTest {
     QuicException quicException = (QuicException)callback.mError;
     // 1 is QUIC_INTERNAL_ERROR
     assertEquals(1, quicException.getQuicDetailedErrorCode());
-    mMockUrlRequestJobFactory.shutdown();
-  }
-
-  @Test
-  @SmallTest
-  @Feature({"Cronet"})
-  @OnlyRunNativeCronet
-  @Ignore("https://github.com/envoyproxy/envoy-mobile/issues/1594: error removed in envoymobile")
-  public void testQuicErrorCodeForNetworkChanged() throws Exception {
-    startCronetEngineForMockUrlRequestJobFactory();
-    TestUrlRequestCallback callback =
-        startAndWaitForComplete(mMockUrlRequestJobFactory.getCronetEngine(),
-                                MockUrlRequestJobFactory.getMockUrlWithFailure(
-                                    NetError.ERR_NETWORK_CHANGED.getErrorCode()));
-    assertNull(callback.mResponseInfo);
-    assertNotNull(callback.mError);
-    assertEquals(NetworkException.ERROR_NETWORK_CHANGED,
-                 ((NetworkException)callback.mError).getErrorCode());
-    assertTrue(callback.mError instanceof QuicException);
-    QuicException quicException = (QuicException)callback.mError;
-    // QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK(83) is set in
-    // URLRequestFailedJob::PopulateNetErrorDetails for this test.
-    final int quicErrorCode = 83;
-    assertEquals(quicErrorCode, quicException.getQuicDetailedErrorCode());
     mMockUrlRequestJobFactory.shutdown();
   }
 

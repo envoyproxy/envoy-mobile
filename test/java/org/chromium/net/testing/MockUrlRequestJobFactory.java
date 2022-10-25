@@ -58,6 +58,10 @@ public final class MockUrlRequestJobFactory {
     return TEST_URL + "/failed?quic=1&error=" + envoyMobileError;
   }
 
+  public static String getMockUrlWithFailure(FailurePhase phase, int netError) {
+    throw new UnsupportedOperationException("To be implemented or deleted");
+  }
+
   /**
    * Constructs a mock URL that synchronously responds with data repeated many
    * times.
