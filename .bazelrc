@@ -32,6 +32,7 @@ build --copt -Wno-deprecated-declarations
 # Abseil Flag literals are compiled out by default on mobile platforms. These flags are needed for
 # Envoy's runtime system. This option prevents them from being compiled out.
 build --copt -DABSL_FLAGS_STRIP_NAMES=0
+build --@envoy//bazel:cares=False
 
 build:rules_xcodeproj --config=ios
 build:rules_xcodeproj --define=apple.experimental.tree_artifact_outputs=0
