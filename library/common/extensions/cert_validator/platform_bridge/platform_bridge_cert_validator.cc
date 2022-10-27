@@ -102,8 +102,11 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
       nullptr, const_cast<const unsigned char**>(&leaf_cert_der.bytes), leaf_cert_der.length));
   envoy_cert_validation_result result =
       platform_validator_->validate_cert(cert_chain.data(), cert_chain.size(), host_name.c_str());
+  ENVOY_LOG(trace, "Finish verifyCertChainByPlatform for host {}", host_name);
   bool success = result.result == ENVOY_SUCCESS;
+  ENVOY_LOG(trace, "Success? {}", success);
   if (!success) {
+    ENVOY_LOG(trace, "Failed");
     ENVOY_LOG(debug, result.error_details);
     pending_validation.postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_,
                                                   result.error_details, result.tls_alert,
@@ -111,10 +114,14 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
     return;
   }
 
+  ENVOY_LOG(trace, "Succeeded");
+
   absl::string_view error_details;
   // Verify that host name matches leaf cert.
+  ENVOY_LOG(trace, "Checking name");
   success = DefaultCertValidator::verifySubjectAltName(leaf_cert.get(), subject_alt_names);
   if (!success) {
+    ENVOY_LOG(trace, "failed");
     error_details = "PlatformBridgeCertValidator_verifySubjectAltName failed: SNI mismatch.";
     ENVOY_LOG(debug, error_details);
     pending_validation.postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_,
@@ -122,6 +129,7 @@ void PlatformBridgeCertValidator::verifyCertChainByPlatform(
                                                   makeOptRef(stats_.fail_verify_san_));
     return;
   }
+  ENVOY_LOG(trace, "Succeeded. cleaning up");
   pending_validation.postVerifyResultAndCleanUp(success, error_details, SSL_AD_CERTIFICATE_UNKNOWN,
                                                 {});
 }
@@ -145,20 +153,27 @@ void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
     if (weak_alive_indicator.expired()) {
       return;
     }
-    ENVOY_LOG(trace, "Get validation result for {} from platform", host_name_);
+    ENVOY_LOG(trace, "Got validation result for {} from platform", host_name_);
+    ENVOY_LOG(trace, "Joining... Joinable? {}", parent_.validation_threads_[thread_id].joinable());
     parent_.validation_threads_[thread_id].join();
+    ENVOY_LOG(trace, "Joined");
     parent_.validation_threads_.erase(thread_id);
+    ENVOY_LOG(trace, "Erased");
     if (error_counter.has_value()) {
       const_cast<Stats::Counter&>(error_counter.ref()).inc();
     }
+    ENVOY_LOG(trace, "Invoking callback: {}", static_cast<void*>(result_callback_.get()));
     result_callback_->onCertValidationResult(success, error, tls_alert);
+    ENVOY_LOG(trace, "Invoked callback");
     parent_.validations_.erase(*this);
   });
   ENVOY_LOG(trace,
             "Finished platform cert validation for {}, post result callback to network thread",
             host_name_);
 
-  parent_.platform_validator_->release_validator();
+  if (parent_.platform_validator_->release_validator) {
+    parent_.platform_validator_->release_validator();
+  }
 }
 
 } // namespace Tls
