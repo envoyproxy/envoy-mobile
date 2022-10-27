@@ -17,6 +17,7 @@ Bugfixes:
 
 Features:
 
+- java/switf: add option to support platform provided certificates validation interfaces on iOS. (:issue `#2144 <2144>`)
 - kotlin/c++: add option to support platform provided certificates validation interfaces on Android. (:issue `#2144 <2144>`)
 - api: Add a ``setPerTryIdleTimeoutSeconds()`` method to C++ EngineBuilder.
 - kotlin: add a way to tell Envoy Mobile to respect system proxy settings by calling an ``enableProxying(true)`` method on the engine builder. (:issue:`#2416 <2416>`)
