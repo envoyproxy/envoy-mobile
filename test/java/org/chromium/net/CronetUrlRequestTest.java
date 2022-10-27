@@ -2110,7 +2110,6 @@ public class CronetUrlRequestTest {
     // bring back online since the AndroidNetworkMonitor class is a singleton
     connectivityManager.setActiveNetworkInfo(networkInfo);
     androidNetworkMonitor.onReceive(getContext(), intent);
-
   }
 
   /*
