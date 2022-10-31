@@ -507,7 +507,9 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses true"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding true"))
     XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification ACCEPT_UNTRUSTED"))
-    XCTAssertTrue(resolvedYAML.contains("&validation_context\n  trusted_ca:\n    inline_string: *tls_root_certs"))
+    XCTAssertTrue(resolvedYAML.contains("&validation_context\n"
+                                        "  trusted_ca:\n"
+                                        "    inline_string: *tls_root_certs"))
     XCTAssertTrue(resolvedYAML.contains("&enable_drain_post_dns_refresh false"))
 
     // HTTP/2
@@ -589,7 +591,10 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses false"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
     XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification VERIFY_TRUST_CHAIN"))
-    XCTAssertTrue(resolvedYAML.contains("&validation_context\n  custom_validator_config:\n    name: \"envoy_mobile.cert_validator.platform_bridge_cert_validator\""))
+    XCTAssertTrue(resolvedYAML.contains(
+        "&validation_context\n"
+        "  custom_validator_config:\n"
+        "    name: \"envoy_mobile.cert_validator.platform_bridge_cert_validator\""))
     XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout false"))
     XCTAssertTrue(resolvedYAML.contains("&enable_drain_post_dns_refresh true"))
 
