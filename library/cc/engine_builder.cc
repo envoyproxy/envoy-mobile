@@ -207,28 +207,18 @@ EngineBuilder& EngineBuilder::addStringAccessor(const std::string& name,
   return *this;
 }
 
-std::string EngineBuilder::generateConfigStr() const {
-#if defined(__APPLE__)
-  std::string dns_resolver_name = "envoy.network.dns_resolver.apple";
-  std::string dns_resolver_config =
-      "{\"@type\":\"type.googleapis.com/"
-      "envoy.extensions.network.dns_resolver.apple.v3.AppleDnsResolverConfig\"}";
-#else
-  std::string dns_resolver_name = "";
-  std::string dns_resolver_config = "";
-  if (this->use_system_resolver_) {
-    dns_resolver_name = "envoy.network.dns_resolver.getaddrinfo";
-    dns_resolver_config =
-        "{\"@type\":\"type.googleapis.com/"
-        "envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig\"}";
-  } else {
-    dns_resolver_name = "envoy.network.dns_resolver.cares";
-    dns_resolver_config =
-        "{\"@type\":\"type.googleapis.com/"
-        "envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig\"}";
-  }
-#endif
+EngineBuilder& EngineBuilder::addNativeFilter(const std::string& name,
+                                              const std::string& typed_config) {
+  native_filter_chain_.emplace_back(name, typed_config);
+  return *this;
+}
 
+EngineBuilder& EngineBuilder::addPlatformFilter(const std::string& name) {
+  platform_filters_.push_back(name);
+  return *this;
+}
+
+std::string EngineBuilder::generateConfigStr() const {
   std::vector<std::pair<std::string, std::string>> replacements {
     {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
         {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
@@ -239,7 +229,6 @@ std::string EngineBuilder::generateConfigStr() const {
         {"dns_preresolve_hostnames", this->dns_preresolve_hostnames_},
         {"dns_refresh_rate", fmt::format("{}s", this->dns_refresh_seconds_)},
         {"dns_query_timeout", fmt::format("{}s", this->dns_query_timeout_seconds_)},
-        {"dns_resolver_name", dns_resolver_name}, {"dns_resolver_config", dns_resolver_config},
         {"enable_drain_post_dns_refresh", enable_drain_post_dns_refresh_ ? "true" : "false"},
         {"enable_interface_binding", enable_interface_binding_ ? "true" : "false"},
         {"h2_connection_keepalive_idle_interval",
@@ -299,6 +288,19 @@ std::string EngineBuilder::generateConfigStr() const {
   }
   if (this->enable_http3_) {
     insertCustomFilter(alternate_protocols_cache_filter_insert, config_template);
+  }
+
+  for (const NativeFilterConfig& filter : native_filter_chain_) {
+    std::string filter_config = absl::StrReplaceAll(
+        native_filter_template, {{"{{ native_filter_name }}", filter.name_},
+                                 {"{{ native_filter_typed_config }}", filter.typed_config_}});
+    insertCustomFilter(filter_config, config_template);
+  }
+
+  for (const std::string& name : platform_filters_) {
+    std::string filter_config =
+        absl::StrReplaceAll(platform_filter_template, {{"{{ platform_filter_name }}", name}});
+    insertCustomFilter(filter_config, config_template);
   }
 
   config_builder << config_template;

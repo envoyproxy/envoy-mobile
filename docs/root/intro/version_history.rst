@@ -8,6 +8,7 @@ Breaking changes:
 
 - ios/android: remove ``addH2RawDomains`` method. (:issue: `#2590 <2590>`)
 - build: building on macOS now requires Xcode 14.0. (:issue:`#2544 <2544>`)
+- kotlin: always use ``getaddrinfo`` DNS resolver. Remove ``addDNSFallbackNameservers``, ``enableDNSFilterUnroutableFamilies``, and ``enableDNSUseSystemResolver`` methods from the Kotlin engine builder. (:issue:`#2618 <2618>`)
 
 Bugfixes:
 
@@ -22,6 +23,7 @@ Features:
 - kotlin: add a ``enableSkipDNSLookupForProxiedRequests(true)`` knob for controlling whether Envoy waits on DNS response in the dynamic forward proxy filter for proxied requests. (:issue:`#2602 <2602>`)
 - api: Add various methods to C++ EngineBuilder to bring it to parity with the Java and Obj-C builders. (:issue:`#2498 <2498>`)
 - api: Add support for String Accessors to the C++ EngineBuilder. (:issue:`#2498 <2498>`)
+- api: Add support for Native Filters and Platform Filters to the C++ EngineBuilder. (:issue:`#2498 <2498>`)
 - api: added upstream protocol to final stream intel. (:issue:`#2613 <2613>`)
 
 0.5.0 (September 2, 2022)
