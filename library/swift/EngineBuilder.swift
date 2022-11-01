@@ -249,7 +249,8 @@ open class EngineBuilder: NSObject {
   ///
   /// - returns: This builder.
   @discardableResult
-  public func enablePlatformCertificateValidation(_ enablePlatformCertificateValidation: Bool) -> Self {
+  public func enablePlatformCertificateValidation(
+    _ enablePlatformCertificateValidation: Bool) -> Self {
     self.enablePlatformCertificateValidation = enablePlatformCertificateValidation
     return self
   }
