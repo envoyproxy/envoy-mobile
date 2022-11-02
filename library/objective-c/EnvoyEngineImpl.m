@@ -493,7 +493,6 @@ envoy_cert_validation_result make_result(envoy_status_t status, uint8_t tls_aler
   return result;
 }
 
-/*
 static envoy_cert_validation_result verify_cert(const envoy_data *certs, uint8_t num_certs,
                                                 const char *hostname) {
   NSLog(@"[Envoy] verify_cert for: %s", hostname);
@@ -528,12 +527,13 @@ static envoy_cert_validation_result verify_cert(const envoy_data *certs, uint8_t
   }
   return make_result(ENVOY_SUCCESS, 0, "");
 }
-*/
 
+/*
 static envoy_cert_validation_result verify_cert(const envoy_data *certs, uint8_t num_certs,
                                                 const char *hostname) {
   return make_result(ENVOY_SUCCESS, 0, "");
 }
+*/
 
 void register_platform_cert_verifier() {
   NSLog(@"[Envoy] registering platform verifier");
