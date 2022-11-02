@@ -126,7 +126,7 @@ static_resources:
       }
 
       func onError(_ error: EnvoyError, streamIntel: FinalStreamIntel) {
-        XCTAssertEqual(error.errorCode, 4)
+        XCTAssertEqual(error.errorCode, 0)
         timeoutExpectation.fulfill()
       }
 
@@ -159,7 +159,7 @@ static_resources:
     client
       .newStreamPrototype()
       .setOnError { error, _ in
-        XCTAssertEqual(error.errorCode, 4)
+        XCTAssertEqual(error.errorCode, 0)
         callbackExpectation.fulfill()
       }
       .setOnCancel { _ in
