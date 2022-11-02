@@ -598,7 +598,7 @@ final class EngineBuilderTests: XCTestCase {
 """
 &validation_context
   custom_validator_config:
-    name: \"envoy_mobile.cert_validator.platform_bridge_cert_validator
+    name: "envoy_mobile.cert_validator.platform_bridge_cert_validator"
 """
     ))
     XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout false"))

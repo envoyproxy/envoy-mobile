@@ -191,8 +191,8 @@
 
   NSString *cert_validator_template =
       self.enablePlatformCertificateValidation
-          ? [[NSString alloc] initWithUTF8String:platform_cert_validation_context_template]
-          : [[NSString alloc] initWithUTF8String:default_cert_validation_context_template];
+          ? @(platform_cert_validation_context_template)
+          : @(default_cert_validation_context_template);
 
   [definitions appendFormat:@"%@\n", cert_validator_template];
 
