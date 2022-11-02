@@ -940,7 +940,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
       if (isQuicException(javaError)) {
         enterErrorState(new QuicExceptionImpl("Exception in CronetUrlRequest: " + netError,
                                               javaError, netError.getErrorCode(),
-                                              /*nativeQuicError*/ 1));
+                                              Errors.QUIC_INTERNAL_ERROR));
         return;
       }
 

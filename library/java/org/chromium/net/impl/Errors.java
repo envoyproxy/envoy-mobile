@@ -17,6 +17,8 @@ import org.chromium.net.NetworkException;
  * from Envoymobile error to Chromium neterror and finally to the public Network Exception.
  */
 public class Errors {
+  // This represents a nativeQuicError since we don't expose individual quic errors yet.
+  public static final int QUIC_INTERNAL_ERROR = 1;
   private static final Map<Long, NetError> ENVOYMOBILE_ERROR_TO_NET_ERROR = buildErrorMap();
 
   /**Subset of errors defined in
@@ -71,17 +73,17 @@ public class Errors {
    * @return the NetError that the EnvoyMobileError maps to
    */
   public static NetError mapEnvoyMobileErrorToNetError(EnvoyFinalStreamIntel finalStreamIntel) {
-    // Check if negotiated_protocol is quic
-    if (finalStreamIntel.getUpstreamProtocol() == UpstreamHttpProtocol.HTTP3) {
-      return NetError.ERR_QUIC_PROTOCOL_ERROR;
-    }
-
     // if connection fails to be established, check if user is offline
     long responseFlag = finalStreamIntel.getResponseFlags();
     if ((responseFlag == EnvoyMobileError.DNS_RESOLUTION_FAILED ||
          responseFlag == EnvoyMobileError.UPSTREAM_CONNECTION_FAILURE) &&
         !AndroidNetworkMonitor.getInstance().isOnline()) {
       return NetError.ERR_INTERNET_DISCONNECTED;
+    }
+
+    // Check if negotiated_protocol is quic
+    if (finalStreamIntel.getUpstreamProtocol() == UpstreamHttpProtocol.HTTP3) {
+      return NetError.ERR_QUIC_PROTOCOL_ERROR;
     }
 
     return ENVOYMOBILE_ERROR_TO_NET_ERROR.getOrDefault(responseFlag, NetError.ERR_OTHER);

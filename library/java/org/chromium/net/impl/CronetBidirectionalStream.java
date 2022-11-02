@@ -659,7 +659,7 @@ public final class CronetBidirectionalStream
     if (isQuicException(javaError)) {
       mException.set(new QuicExceptionImpl("Exception in BidirectionalStream: " + netError,
                                            javaError, netError.getErrorCode(),
-                                           /*nativeQuicError*/ 1));
+                                           Errors.QUIC_INTERNAL_ERROR));
     } else {
       mException.set(new BidirectionalStreamNetworkException(
           "Exception in BidirectionalStream: " + netError, javaError, netError.getErrorCode()));
