@@ -38,13 +38,8 @@ def upstream_envoy_overrides():
         build_file_content = """filegroup(name = "all", srcs = glob(["**"]), visibility = ["//visibility:public"])""",
     )
 
-    # Patch upstream Abseil to prevent Foundation dependency from leaking into Android builds.
-    # Workaround for https://github.com/abseil/abseil-cpp/issues/326.
-    # TODO: Should be removed in https://github.com/envoyproxy/envoy-mobile/issues/136 once rules_android
-    # supports platform toolchains.
     http_archive(
         name = "com_google_absl",
-        patches = ["@envoy_mobile//bazel:abseil.patch"],
         sha256 = "3a0bb3d2e6f53352526a8d1a7e7b5749c68cd07f2401766a404fb00d2853fa49",
         strip_prefix = "abseil-cpp-4bbdb026899fea9f882a95cbd7d6a4adaf49b2dd",
         # 2022-07-05
