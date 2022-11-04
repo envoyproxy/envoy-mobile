@@ -76,3 +76,30 @@ envoy_cc_library(
         "@envoy//source/common/network:socket_interface_lib",
     ],
 )
+
+cc_library(
+    name = "ios_platform_verifier",
+    hdrs = select({
+        "@envoy//bazel:apple": ["ios_platform_verifier.h"],
+        "//conditions:default": [],
+    }),
+    srcs = select({
+        "@envoy//bazel:apple": ["ios_platform_verifier.cc"],
+        "//conditions:default": [],
+    }),
+    deps = select({
+        "@envoy//bazel:apple": ["//library/common/extensions/cert_validator/platform_bridge:c_types_lib",
+        "//library/common:envoy_main_interface_lib",
+                                "@envoy//bazel:boringssl",
+                               ],
+        "//conditions:default": [],
+    }),
+)
+
+envoy_cc_library(
+    repository = "@envoy",
+    name = "ios_platform_verifier_lib",
+    hdrs = ["ios_platform_verifier.h"],
+    srcs = ["ios_platform_verifier.cc"],
+    deps = ["//library/common/extensions/cert_validator/platform_bridge:c_types_lib"],
+)
