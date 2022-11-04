@@ -78,13 +78,13 @@ envoy_cc_library(
 )
 
 cc_library(
-    name = "ios_platform_verifier",
+    name = "apple_platform_cert_verifier",
     srcs = select({
-        "@envoy//bazel:apple": ["ios_platform_verifier.cc"],
+        "@envoy//bazel:apple": ["apple_platform_cert_verifier.cc"],
         "//conditions:default": [],
     }),
     hdrs = select({
-        "@envoy//bazel:apple": ["ios_platform_verifier.h"],
+        "@envoy//bazel:apple": ["apple_platform_cert_verifier.h"],
         "//conditions:default": [],
     }),
     deps = select({

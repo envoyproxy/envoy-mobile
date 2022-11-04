@@ -9,7 +9,7 @@ extern "C" {
 /**
  * Registers the iOS platform cert verifier API.
  */
-void register_ios_platform_verifier();
+void register_apple_platform_cert_verifier();
 
 #ifdef __cplusplus
 }

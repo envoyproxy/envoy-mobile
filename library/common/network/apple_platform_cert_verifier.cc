@@ -1,4 +1,4 @@
-#include "library/common/network/ios_platform_verifier.h"
+#include "library/common/network/apple_platform_cert_verifier.h"
 
 #include <CoreFoundation/CFArray.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -108,7 +108,7 @@ static envoy_cert_validation_result verify_cert(const envoy_data* certs, uint8_t
 extern "C" {
 #endif
 
-void register_ios_platform_verifier() {
+void register_apple_platform_cert_verifier() {
   envoy_cert_validator* api = (envoy_cert_validator*)safe_malloc(sizeof(envoy_cert_validator));
   api->validate_cert = verify_cert;
   api->release_validator = NULL;

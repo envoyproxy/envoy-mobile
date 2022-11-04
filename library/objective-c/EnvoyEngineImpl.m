@@ -5,7 +5,7 @@
 #include "library/common/api/c_types.h"
 
 #import "library/common/main_interface.h"
-#import "library/common/network/ios_platform_verifier.h"
+#import "library/common/network/apple_platform_cert_verifier.h"
 #import "library/common/types/c_types.h"
 #import "library/common/extensions/key_value/platform/c_types.h"
 
@@ -557,7 +557,7 @@ static void ios_track_event(envoy_map map, const void *context) {
   }
 
   if (config.enablePlatformCertificateValidation) {
-    register_ios_platform_verifier();
+    register_apple_platform_cert_verifier();
   }
 
   return [self runWithConfigYAML:resolvedYAML logLevel:logLevel];
