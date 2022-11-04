@@ -8,6 +8,7 @@
 
 #include "library/common/extensions/cert_validator/platform_bridge/c_types.h"
 #include "library/common/main_interface.h"
+#include "openssl/ssl.h"
 
 // NOLINT(namespace-envoy)
 
@@ -71,21 +72,23 @@ envoy_cert_validation_result make_result(envoy_status_t status, uint8_t tls_aler
 
 static envoy_cert_validation_result verify_cert(const envoy_data* certs, uint8_t num_certs,
                                                 const char* hostname) {
-  uint8_t tls_alert = /* SSL_AD_CERTIFICATE_UNKNOWN */ 46;
   CFArrayRef trust_policies = CreateTrustPolicies();
   if (!trust_policies) {
-    return make_result(ENVOY_FAILURE, tls_alert, "validation couldn't be conducted.");
+    return make_result(ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+                       "validation couldn't be conducted.");
   }
 
   CFMutableArrayRef cert_array = CreateSecCertificateArray(certs, num_certs);
   if (!cert_array) {
-    return make_result(ENVOY_FAILURE, tls_alert, "validation couldn't be conducted.");
+    return make_result(ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+                       "validation couldn't be conducted.");
   }
 
   SecTrustRef trust = NULL;
   OSStatus status = SecTrustCreateWithCertificates(cert_array, trust_policies, &trust);
   if (status) {
-    return make_result(ENVOY_FAILURE, tls_alert, "validation couldn't be conducted.");
+    return make_result(ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+                       "validation couldn't be conducted.");
   }
 
   CFErrorRef error;
@@ -95,7 +98,8 @@ static envoy_cert_validation_result verify_cert(const envoy_data* certs, uint8_t
   CFRelease(trust);
 
   if (!verified) {
-    return make_result(ENVOY_FAILURE, tls_alert, "validation couldn't be conducted.");
+    return make_result(ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
+                       "validation couldn't be conducted.");
   }
   return make_result(ENVOY_SUCCESS, 0, "");
 }

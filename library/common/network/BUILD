@@ -91,6 +91,7 @@ cc_library(
         "@envoy//bazel:apple": [
             "//library/common/extensions/cert_validator/platform_bridge:c_types_lib",
             "//library/common:envoy_main_interface_lib",
+            "@envoy//bazel:boringssl",
         ],
         "//conditions:default": [],
     }),
