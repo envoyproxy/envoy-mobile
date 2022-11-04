@@ -1,7 +1,7 @@
 #include "library/common/network/ios_platform_verifier.h"
 
-#include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFArray.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <Security/SecCertificate.h>
 #include <Security/SecPolicy.h>
 #include <Security/SecTrust.h>
@@ -9,6 +9,8 @@
 #include "library/common/extensions/cert_validator/platform_bridge/c_types.h"
 #include "library/common/main_interface.h"
 #include "openssl/ssl.h"
+
+// NOLINT(namespace-envoy)
 
 // Returns a new CFMutableArrayRef containing a series of SecPolicyRefs to be
 // added to a SecTrustRef used to validate a certificate for an SSL server,
@@ -33,7 +35,7 @@ CFMutableArrayRef CreateTrustPolicies() {
 // Returns a new CFMutableArrayRef containing the specified certificates
 // in the form expected by Security.framework and Keychain Services, or
 // NULL on failure.
-CFMutableArrayRef CreateSecCertificateArray(const envoy_data *certs, uint8_t num_certs) {
+CFMutableArrayRef CreateSecCertificateArray(const envoy_data* certs, uint8_t num_certs) {
   CFMutableArrayRef cert_array =
       CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
 
@@ -60,7 +62,7 @@ CFMutableArrayRef CreateSecCertificateArray(const envoy_data *certs, uint8_t num
 
 // Helper to create a envoy_cert_validation_result.
 envoy_cert_validation_result make_result(envoy_status_t status, uint8_t tls_alert,
-                                         const char *error_details) {
+                                         const char* error_details) {
   envoy_cert_validation_result result;
   result.result = status;
   result.tls_alert = tls_alert;
@@ -70,11 +72,8 @@ envoy_cert_validation_result make_result(envoy_status_t status, uint8_t tls_aler
 
 #include <iostream>
 
-static envoy_cert_validation_result verify_cert(const envoy_data *certs, uint8_t num_certs,
-                                                const char *hostname) {
-  std::cerr <<  "[Envoy] verify_cert for: " << hostname << std::endl;
-  exit(4);
-  //ENVOY_LOG(info, "[Envoy] verify_cert for: {}", hostname);
+static envoy_cert_validation_result verify_cert(const envoy_data* certs, uint8_t num_certs,
+                                                const char* hostname) {
   CFArrayRef trust_policies = CreateTrustPolicies();
   if (!trust_policies) {
     return make_result(ENVOY_FAILURE, SSL_AD_CERTIFICATE_UNKNOWN,
@@ -107,20 +106,12 @@ static envoy_cert_validation_result verify_cert(const envoy_data *certs, uint8_t
   return make_result(ENVOY_SUCCESS, 0, "");
 }
 
-/*
-static envoy_cert_validation_result verify_cert(const envoy_data *certs, uint8_t num_certs,
-                                                const char *hostname) {
-  return make_result(ENVOY_SUCCESS, 0, "");
-}
-*/
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void register_ios_platform_verifier() {
-  //ENVOY_LOG(info, "[Envoy] registering platform verifier");
-  envoy_cert_validator *api = (envoy_cert_validator *)safe_malloc(sizeof(envoy_cert_validator));
+  envoy_cert_validator* api = (envoy_cert_validator*)safe_malloc(sizeof(envoy_cert_validator));
   api->validate_cert = verify_cert;
   api->release_validator = NULL;
   register_platform_api("platform_cert_validator", api);
