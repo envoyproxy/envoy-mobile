@@ -63,8 +63,8 @@ PlatformKeyValueStore::PlatformKeyValueStore(Event::Dispatcher& dispatcher,
 void PlatformKeyValueStore::flush() {
   std::string output;
   for (const auto& it : store_) {
-    absl::StrAppend(&output, it.first.length(), "\n", it.first, it.second.length(), "\n",
-                    it.second);
+    absl::StrAppend(&output, it.first.length(), "\n", it.first, it.second.first.length(), "\n",
+                    it.second.first);
   }
   platform_interface_.save(key_, output);
 }
