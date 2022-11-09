@@ -11,7 +11,7 @@ public:
 
   HeadersBuilder& add(std::string name, std::string value);
   HeadersBuilder& set(std::string name, const std::vector<std::string>& values);
-  HeadersBuilder& remove(std::string name);
+  HeadersBuilder& remove(const std::string& name);
 
 protected:
   HeadersBuilder();

@@ -17,7 +17,7 @@ enum RequestMethod {
 };
 
 std::string requestMethodToString(RequestMethod method);
-RequestMethod requestMethodFromString(std::string str);
+RequestMethod requestMethodFromString(const std::string& str);
 
 } // namespace Platform
 } // namespace Envoy

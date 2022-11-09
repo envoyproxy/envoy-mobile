@@ -8,9 +8,9 @@ RequestHeadersBuilder::RequestHeadersBuilder(RequestMethod request_method,
                                              std::string authority,
                                              std::string path) {
   this->internalSet(":method", {requestMethodToString(request_method)});
-  this->internalSet(":scheme", {std::string(scheme)});
-  this->internalSet(":authority", {std::string(authority)});
-  this->internalSet(":path", {std::string(path)});
+  this->internalSet(":scheme", {std::move(scheme)});
+  this->internalSet(":authority", {std::move(authority)});
+  this->internalSet(":path", {std::move(path)});
 }
 
 RequestHeadersBuilder& RequestHeadersBuilder::addRetryPolicy(const RetryPolicy& retry_policy) {

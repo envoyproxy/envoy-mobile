@@ -10,7 +10,7 @@ namespace Platform {
 using LogLevel = Envoy::Logger::Logger::Levels;
 
 std::string logLevelToString(LogLevel method);
-LogLevel logLevelFromString(std::string str);
+LogLevel logLevelFromString(const std::string& str);
 
 } // namespace Platform
 } // namespace Envoy

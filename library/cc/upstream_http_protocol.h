@@ -11,7 +11,7 @@ enum UpstreamHttpProtocol {
 };
 
 std::string upstreamHttpProtocolToString(UpstreamHttpProtocol method);
-UpstreamHttpProtocol upstreamHttpProtocolFromString(std::string str);
+UpstreamHttpProtocol upstreamHttpProtocolFromString(const std::string& str);
 
 } // namespace Platform
 } // namespace Envoy
