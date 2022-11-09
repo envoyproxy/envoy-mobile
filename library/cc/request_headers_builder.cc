@@ -4,13 +4,13 @@ namespace Envoy {
 namespace Platform {
 
 RequestHeadersBuilder::RequestHeadersBuilder(RequestMethod request_method,
-                                             const std::string& scheme,
-                                             const std::string& authority,
-                                             const std::string& path) {
-  this->internalSet(":method", std::vector<std::string>{requestMethodToString(request_method)});
-  this->internalSet(":scheme", std::vector<std::string>{scheme});
-  this->internalSet(":authority", std::vector<std::string>{authority});
-  this->internalSet(":path", std::vector<std::string>{path});
+                                             const absl::string_view scheme,
+                                             const absl::string_view authority,
+                                             const absl::string_view path) {
+  this->internalSet(":method", {requestMethodToString(request_method)});
+  this->internalSet(":scheme", {std::string(scheme)});
+  this->internalSet(":authority", {std::string(authority)});
+  this->internalSet(":path", {std::string(path)});
 }
 
 RequestHeadersBuilder& RequestHeadersBuilder::addRetryPolicy(const RetryPolicy& retry_policy) {
