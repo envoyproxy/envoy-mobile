@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
+
 namespace Envoy {
 namespace Platform {
 
@@ -11,7 +13,7 @@ enum UpstreamHttpProtocol {
 };
 
 std::string upstreamHttpProtocolToString(UpstreamHttpProtocol method);
-UpstreamHttpProtocol upstreamHttpProtocolFromString(const std::string& str);
+UpstreamHttpProtocol upstreamHttpProtocolFromString(absl::string_view str);
 
 } // namespace Platform
 } // namespace Envoy

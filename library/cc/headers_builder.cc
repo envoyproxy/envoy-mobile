@@ -3,15 +3,15 @@
 namespace Envoy {
 namespace Platform {
 
-HeadersBuilder& HeadersBuilder::add(const std::string& name, const std::string& value) {
+HeadersBuilder& HeadersBuilder::add(absl::string_view name, absl::string_view value) {
   if (this->isRestrictedHeader(name)) {
     return *this;
   }
-  this->headers_[name].push_back(value);
+  this->headers_[name].push_back(std::string(value));
   return *this;
 }
 
-HeadersBuilder& HeadersBuilder::set(const std::string& name,
+HeadersBuilder& HeadersBuilder::set(absl::string_view name,
                                     const std::vector<std::string>& values) {
   if (this->isRestrictedHeader(name)) {
     return *this;
@@ -20,7 +20,7 @@ HeadersBuilder& HeadersBuilder::set(const std::string& name,
   return *this;
 }
 
-HeadersBuilder& HeadersBuilder::remove(const std::string& name) {
+HeadersBuilder& HeadersBuilder::remove(absl::string_view name) {
   if (this->isRestrictedHeader(name)) {
     return *this;
   }
@@ -30,7 +30,7 @@ HeadersBuilder& HeadersBuilder::remove(const std::string& name) {
 
 HeadersBuilder::HeadersBuilder() {}
 
-HeadersBuilder& HeadersBuilder::internalSet(const std::string& name,
+HeadersBuilder& HeadersBuilder::internalSet(absl::string_view name,
                                             const std::vector<std::string>& values) {
   this->headers_[name] = values;
   return *this;
@@ -38,7 +38,7 @@ HeadersBuilder& HeadersBuilder::internalSet(const std::string& name,
 
 const RawHeaderMap& HeadersBuilder::allHeaders() const { return this->headers_; }
 
-bool HeadersBuilder::isRestrictedHeader(const std::string& name) const {
+bool HeadersBuilder::isRestrictedHeader(absl::string_view name) const {
   return name.find(":") == 0 || name.find("x-envoy-mobile") == 0;
 }
 

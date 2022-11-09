@@ -4,9 +4,9 @@ namespace Envoy {
 namespace Platform {
 
 RequestHeadersBuilder::RequestHeadersBuilder(RequestMethod request_method,
-                                             const absl::string_view scheme,
-                                             const absl::string_view authority,
-                                             const absl::string_view path) {
+                                             absl::string_view scheme,
+                                             absl::string_view authority,
+                                             absl::string_view path) {
   this->internalSet(":method", {requestMethodToString(request_method)});
   this->internalSet(":scheme", {std::string(scheme)});
   this->internalSet(":authority", {std::string(authority)});

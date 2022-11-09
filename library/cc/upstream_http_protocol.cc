@@ -19,7 +19,7 @@ std::string upstreamHttpProtocolToString(UpstreamHttpProtocol protocol) {
   throw std::invalid_argument("invalid upstream http protocol");
 }
 
-UpstreamHttpProtocol upstreamHttpProtocolFromString(const std::string& str) {
+UpstreamHttpProtocol upstreamHttpProtocolFromString(absl::string_view str) {
   for (const auto& pair : UPSTREAM_HTTP_PROTOCOL_LOOKUP) {
     if (pair.second == str) {
       return pair.first;

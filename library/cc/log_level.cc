@@ -21,7 +21,7 @@ std::string logLevelToString(LogLevel method) {
   throw std::out_of_range("unknown log level type");
 }
 
-LogLevel logLevelFromString(const std::string& str) {
+LogLevel logLevelFromString(absl::string_view str) {
   for (const auto& pair : LOG_LEVEL_LOOKUP) {
     if (pair.second == str) {
       return pair.first;

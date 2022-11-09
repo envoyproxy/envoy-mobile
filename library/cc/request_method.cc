@@ -23,7 +23,7 @@ std::string requestMethodToString(RequestMethod method) {
   throw std::out_of_range("unknown request method type");
 }
 
-RequestMethod requestMethodFromString(const std::string& str) {
+RequestMethod requestMethodFromString(absl::string_view str) {
   for (const auto& pair : REQUEST_METHOD_LOOKUP) {
     if (pair.second == str) {
       return pair.first;

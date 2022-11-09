@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "engine.h"
 #include "engine_callbacks.h"
 #include "key_value_store.h"
@@ -24,13 +25,13 @@ public:
   EngineBuilder& setOnEngineRunning(std::function<void()> closure);
 
   EngineBuilder& addStatsSinks(const std::vector<std::string>& stat_sinks);
-  EngineBuilder& addGrpcStatsDomain(const std::string& stats_domain);
+  EngineBuilder& addGrpcStatsDomain(absl::string_view stats_domain);
   EngineBuilder& addConnectTimeoutSeconds(int connect_timeout_seconds);
   EngineBuilder& addDnsRefreshSeconds(int dns_refresh_seconds);
   EngineBuilder& addDnsFailureRefreshSeconds(int base, int max);
   EngineBuilder& addDnsQueryTimeoutSeconds(int dns_query_timeout_seconds);
   EngineBuilder& addDnsMinRefreshSeconds(int dns_min_refresh_seconds);
-  EngineBuilder& addDnsPreresolveHostnames(const std::string& dns_preresolve_hostnames);
+  EngineBuilder& addDnsPreresolveHostnames(absl::string_view dns_preresolve_hostnames);
   EngineBuilder& addMaxConnectionsPerHost(int max_connections_per_host);
   EngineBuilder& useDnsSystemResolver(bool use_system_resolver);
   EngineBuilder& addH2ConnectionKeepaliveIdleIntervalMilliseconds(
@@ -38,16 +39,16 @@ public:
   EngineBuilder&
   addH2ConnectionKeepaliveTimeoutSeconds(int h2_connection_keepalive_timeout_seconds);
   EngineBuilder& addStatsFlushSeconds(int stats_flush_seconds);
-  EngineBuilder& addVirtualClusters(const std::string& virtual_clusters);
-  EngineBuilder& addKeyValueStore(const std::string& name, KeyValueStoreSharedPtr key_value_store);
-  EngineBuilder& addStringAccessor(const std::string& name, StringAccessorSharedPtr accessor);
-  EngineBuilder& addNativeFilter(const std::string& name, const std::string& typed_config);
+  EngineBuilder& addVirtualClusters(absl::string_view virtual_clusters);
+  EngineBuilder& addKeyValueStore(absl::string_view name, KeyValueStoreSharedPtr key_value_store);
+  EngineBuilder& addStringAccessor(absl::string_view name, StringAccessorSharedPtr accessor);
+  EngineBuilder& addNativeFilter(absl::string_view name, absl::string_view typed_config);
   // Configures Envoy to use the PlatformBridge filter named `name`. An instance of
   // envoy_http_filter must be registered as a platform API with the same name.
-  EngineBuilder& addPlatformFilter(const std::string& name);
-  EngineBuilder& setAppVersion(const std::string& app_version);
-  EngineBuilder& setAppId(const std::string& app_id);
-  EngineBuilder& setDeviceOs(const std::string& app_id);
+  EngineBuilder& addPlatformFilter(absl::string_view name);
+  EngineBuilder& setAppVersion(absl::string_view app_version);
+  EngineBuilder& setAppId(absl::string_view app_id);
+  EngineBuilder& setDeviceOs(absl::string_view app_id);
   EngineBuilder& setStreamIdleTimeoutSeconds(int stream_idle_timeout_seconds);
   EngineBuilder& setPerTryIdleTimeoutSeconds(int per_try_idle_timeout_seconds);
   EngineBuilder& enableGzip(bool gzip_on);
@@ -73,7 +74,7 @@ protected:
 
 private:
   struct NativeFilterConfig {
-    NativeFilterConfig(const std::string& name, const std::string& typed_config)
+    NativeFilterConfig(absl::string_view name, absl::string_view typed_config)
         : name_(name), typed_config_(typed_config) {}
 
     std::string name_;
