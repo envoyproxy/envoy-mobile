@@ -2,8 +2,6 @@
 
 #include "headers.h"
 
-#include "absl/strings/string_view.h"
-
 namespace Envoy {
 namespace Platform {
 
@@ -11,17 +9,17 @@ class HeadersBuilder {
 public:
   virtual ~HeadersBuilder() {}
 
-  HeadersBuilder& add(absl::string_view name, absl::string_view value);
-  HeadersBuilder& set(absl::string_view name, const std::vector<std::string>& values);
-  HeadersBuilder& remove(absl::string_view name);
+  HeadersBuilder& add(std::string name, std::string value);
+  HeadersBuilder& set(std::string name, const std::vector<std::string>& values);
+  HeadersBuilder& remove(std::string name);
 
 protected:
   HeadersBuilder();
-  HeadersBuilder& internalSet(absl::string_view name, const std::vector<std::string>& values);
+  HeadersBuilder& internalSet(std::string name, const std::vector<std::string>& values);
   const RawHeaderMap& allHeaders() const;
 
 private:
-  bool isRestrictedHeader(absl::string_view name) const;
+  bool isRestrictedHeader(std::string name) const;
 
   RawHeaderMap headers_;
 };

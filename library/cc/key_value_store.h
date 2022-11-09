@@ -4,7 +4,6 @@
 
 #include "envoy/common/pure.h"
 
-#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "library/common/extensions/key_value/platform/c_types.h"
 
@@ -24,7 +23,7 @@ public:
    * @param key supplies a key to return the value of.
    * @return the value, if the key is in the store, absl::nullopt otherwise.
    */
-  virtual absl::optional<std::string> read(absl::string_view key) PURE;
+  virtual absl::optional<std::string> read(const std::string& key) PURE;
 
   /**
    * Adds or updates a key:value pair in the store.
@@ -37,7 +36,7 @@ public:
    * Removes a key:value pair from the store. This is a no-op if the key is not present.
    * @param key supplies a key to remove from the store.
    */
-  virtual void remove(absl::string_view key) PURE;
+  virtual void remove(const std::string& key) PURE;
 
   /**
    * Maps an implementation to its internal representation.

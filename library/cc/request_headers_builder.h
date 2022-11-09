@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include "absl/strings/string_view.h"
 #include "headers_builder.h"
 #include "request_headers.h"
 #include "request_method.h"
@@ -17,8 +16,8 @@ struct RetryPolicy;
 
 class RequestHeadersBuilder : public HeadersBuilder {
 public:
-  RequestHeadersBuilder(RequestMethod request_method, absl::string_view scheme,
-                        absl::string_view authority, absl::string_view path);
+  RequestHeadersBuilder(RequestMethod request_method, std::string scheme,
+                        std::string authority, std::string path);
 
   RequestHeadersBuilder& addRetryPolicy(const RetryPolicy& retry_policy);
   RequestHeadersBuilder& addUpstreamHttpProtocol(UpstreamHttpProtocol upstream_http_protocol);

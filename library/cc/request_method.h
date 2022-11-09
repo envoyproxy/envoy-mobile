@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "absl/strings/string_view.h"
-
 namespace Envoy {
 namespace Platform {
 
@@ -19,7 +17,7 @@ enum RequestMethod {
 };
 
 std::string requestMethodToString(RequestMethod method);
-RequestMethod requestMethodFromString(absl::string_view str);
+RequestMethod requestMethodFromString(std::string str);
 
 } // namespace Platform
 } // namespace Envoy

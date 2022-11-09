@@ -14,7 +14,7 @@ namespace Platform {
 
 namespace {
 // Inserts `filter_config` into the "custom_filters" target in `config_template`.
-void insertCustomFilter(absl::string_view filter_config, std::string& config_template) {
+void insertCustomFilter(const std::string& filter_config, std::string& config_template) {
   absl::StrReplaceAll({{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", filter_config)}},
                       &config_template);
 }
@@ -39,7 +39,7 @@ EngineBuilder& EngineBuilder::addStatsSinks(const std::vector<std::string>& stat
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addGrpcStatsDomain(absl::string_view stats_domain) {
+EngineBuilder& EngineBuilder::addGrpcStatsDomain(std::string stats_domain) {
   this->stats_domain_ = stats_domain;
   return *this;
 }
@@ -71,7 +71,7 @@ EngineBuilder& EngineBuilder::addDnsQueryTimeoutSeconds(int dns_query_timeout_se
 }
 
 EngineBuilder&
-EngineBuilder::addDnsPreresolveHostnames(absl::string_view dns_preresolve_hostnames) {
+EngineBuilder::addDnsPreresolveHostnames(std::string dns_preresolve_hostnames) {
   this->dns_preresolve_hostnames_ = dns_preresolve_hostnames;
   return *this;
 }
@@ -104,28 +104,28 @@ EngineBuilder& EngineBuilder::addStatsFlushSeconds(int stats_flush_seconds) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addVirtualClusters(absl::string_view virtual_clusters) {
+EngineBuilder& EngineBuilder::addVirtualClusters(std::string virtual_clusters) {
   this->virtual_clusters_ = virtual_clusters;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addKeyValueStore(absl::string_view name,
+EngineBuilder& EngineBuilder::addKeyValueStore(std::string name,
                                                KeyValueStoreSharedPtr key_value_store) {
   this->key_value_stores_[name] = key_value_store;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setAppVersion(absl::string_view app_version) {
+EngineBuilder& EngineBuilder::setAppVersion(std::string app_version) {
   this->app_version_ = app_version;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setAppId(absl::string_view app_id) {
+EngineBuilder& EngineBuilder::setAppId(std::string app_id) {
   this->app_id_ = app_id;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setDeviceOs(absl::string_view device_os) {
+EngineBuilder& EngineBuilder::setDeviceOs(std::string device_os) {
   this->device_os_ = device_os;
   return *this;
 }
@@ -201,20 +201,20 @@ EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_v
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addStringAccessor(absl::string_view name,
+EngineBuilder& EngineBuilder::addStringAccessor(std::string name,
                                                 StringAccessorSharedPtr accessor) {
   string_accessors_[name] = accessor;
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addNativeFilter(absl::string_view name,
-                                              absl::string_view typed_config) {
+EngineBuilder& EngineBuilder::addNativeFilter(std::string name,
+                                              std::string typed_config) {
   native_filter_chain_.emplace_back(name, typed_config);
   return *this;
 }
 
-EngineBuilder& EngineBuilder::addPlatformFilter(absl::string_view name) {
-  platform_filters_.push_back(std::string(name));
+EngineBuilder& EngineBuilder::addPlatformFilter(std::string name) {
+  platform_filters_.push_back(name);
   return *this;
 }
 
