@@ -38,6 +38,7 @@ envoy_cc_library(
         "//library/common/network:connectivity_manager_lib",
         "//library/common/stats:utility_lib",
         "//library/common/types:c_types_lib",
+        "@envoy//source/extensions/clusters/logical_dns:logical_dns_cluster_lib",
         "@envoy//envoy/server:lifecycle_notifier_interface",
         "@envoy_build_config//:extension_registry",
     ],
