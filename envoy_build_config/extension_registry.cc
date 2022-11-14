@@ -1,5 +1,6 @@
 #include "extension_registry.h"
 
+#include "envoy/source/common/upstream/static_cluster.h"
 #include "source/common/network/default_client_connection_factory.h"
 #include "source/common/network/socket_interface_impl.h"
 #include "source/common/router/upstream_codec_filter.h"
@@ -35,6 +36,7 @@
 namespace Envoy {
 
 void ExtensionRegistry::registerFactories() {
+  Envoy::Upstream::forceRegisterStaticClusterFactory();
   Envoy::Extensions::Clusters::DynamicForwardProxy::forceRegisterClusterFactory();
   Envoy::Extensions::Compression::Brotli::Decompressor::
       forceRegisterBrotliDecompressorLibraryFactory();
