@@ -457,6 +457,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: true,
       enableDrainPostDnsRefresh: false,
       enforceTrustChainVerification: false,
+      enablePlatformCertificateValidation: false,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
       h2ExtendKeepaliveTimeout: true,
@@ -491,6 +492,12 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses true"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding true"))
     XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification ACCEPT_UNTRUSTED"))
+    XCTAssertTrue(resolvedYAML.contains("""
+&validation_context
+  trusted_ca:
+    inline_string: *tls_root_certs
+"""
+        ))
     XCTAssertTrue(resolvedYAML.contains("&enable_drain_post_dns_refresh false"))
 
     // HTTP/2
@@ -543,6 +550,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: false,
       enableDrainPostDnsRefresh: true,
       enforceTrustChainVerification: true,
+      enablePlatformCertificateValidation: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 1,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
       h2ExtendKeepaliveTimeout: false,
@@ -570,6 +578,13 @@ final class EngineBuilderTests: XCTestCase {
     XCTAssertTrue(resolvedYAML.contains("&dns_multiple_addresses false"))
     XCTAssertTrue(resolvedYAML.contains("&enable_interface_binding false"))
     XCTAssertTrue(resolvedYAML.contains("&trust_chain_verification VERIFY_TRUST_CHAIN"))
+    XCTAssertTrue(resolvedYAML.contains(
+"""
+&validation_context
+  custom_validator_config:
+    name: "envoy_mobile.cert_validator.platform_bridge_cert_validator"
+"""
+    ))
     XCTAssertTrue(resolvedYAML.contains("&h2_delay_keepalive_timeout false"))
     XCTAssertTrue(resolvedYAML.contains("&enable_drain_post_dns_refresh true"))
 
@@ -595,6 +610,7 @@ final class EngineBuilderTests: XCTestCase {
       enableInterfaceBinding: false,
       enableDrainPostDnsRefresh: false,
       enforceTrustChainVerification: true,
+      enablePlatformCertificateValidation: true,
       h2ConnectionKeepaliveIdleIntervalMilliseconds: 222,
       h2ConnectionKeepaliveTimeoutSeconds: 333,
       h2ExtendKeepaliveTimeout: false,

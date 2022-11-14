@@ -6,6 +6,8 @@ build --platform_mappings=envoy/bazel/platform_mappings
 build --define=google_grpc=disabled
 build --define=hot_restart=disabled
 build --define=tcmalloc=disabled
+build --define=admin_html=disabled
+build --define=library_autolink=disabled
 build --experimental_inmemory_dotd_files
 build --experimental_inmemory_jdeps_files
 build --features=debug_prefix_map_pwd_is_dot
@@ -134,6 +136,7 @@ build:remote-ci-common --remote_executor=grpcs://envoy.cluster.engflow.com
 build:remote-ci-common --bes_backend=grpcs://envoy.cluster.engflow.com/
 build:remote-ci-common --bes_results_url=https://envoy.cluster.engflow.com/invocation/
 build:remote-ci-common --bes_lifecycle_events
+build:remote-ci-common --bes_upload_mode=fully_async
 build:remote-ci-common --jobs=40
 build:remote-ci-common --verbose_failures
 build:remote-ci-common --spawn_strategy=remote,sandboxed,local
