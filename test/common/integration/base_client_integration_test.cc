@@ -1,11 +1,13 @@
 #include "test/common/integration/base_client_integration_test.h"
 
+#include <cstdlib>
 #include <string>
 
 #include "test/common/http/common.h"
 
 #include "gtest/gtest.h"
 #include "library/cc/bridge_utility.h"
+#include "library/cc/log_level.h"
 #include "library/common/config/internal.h"
 #include "library/common/http/header_utility.h"
 
@@ -61,6 +63,10 @@ BaseClientIntegrationTest::BaseClientIntegrationTest(Network::Address::IpVersion
   use_lds_ = false;
   autonomous_upstream_ = true;
   defer_listener_finalization_ = true;
+
+  if (const char* log_level = std::getenv("LOG_LEVEL")) {
+    addLogLevel(Platform::logLevelFromString(std::string(log_level)));
+  }
 }
 
 void BaseClientIntegrationTest::initialize() {
