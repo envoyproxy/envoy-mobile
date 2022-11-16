@@ -111,7 +111,7 @@ EngineBuilder& EngineBuilder::addVirtualClusters(std::string virtual_clusters) {
 
 EngineBuilder& EngineBuilder::addKeyValueStore(std::string name,
                                                KeyValueStoreSharedPtr key_value_store) {
-  this->key_value_stores_[std::move(name)] = key_value_store;
+  this->key_value_stores_[std::move(name)] = std::move(key_value_store);
   return *this;
 }
 
@@ -203,7 +203,7 @@ EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_v
 
 EngineBuilder& EngineBuilder::addStringAccessor(std::string name,
                                                 StringAccessorSharedPtr accessor) {
-  string_accessors_[std::move(name)] = accessor;
+  string_accessors_[std::move(name)] = std::move(accessor);
   return *this;
 }
 

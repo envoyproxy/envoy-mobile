@@ -74,7 +74,7 @@ protected:
 private:
   struct NativeFilterConfig {
     NativeFilterConfig(std::string name, std::string typed_config)
-        : name_(name), typed_config_(typed_config) {}
+        : name_(std::move(name)), typed_config_(std::move(typed_config)) {}
 
     std::string name_;
     std::string typed_config_;
