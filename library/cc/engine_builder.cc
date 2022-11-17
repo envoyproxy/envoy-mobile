@@ -184,7 +184,6 @@ EngineBuilder& EngineBuilder::disableStatsConfig(bool disable_stats) {
   return *this;
 }
 
-<<<<<<< HEAD
 EngineBuilder& EngineBuilder::enableAdminInterface(bool admin_interface_on) {
   this->admin_interface_enabled_ = admin_interface_on;
   return *this;
@@ -220,9 +219,6 @@ EngineBuilder& EngineBuilder::enableH2ExtendKeepaliveTimeout(bool h2_extend_keep
   return *this;
 }
 
-EngineBuilder&
-EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_validation_on) {
-=======
 EngineBuilder& EngineBuilder::setPorts(std::vector<uint32_t> ports) {
   this->ports_ = ports;
   return *this;
@@ -238,10 +234,9 @@ EngineBuilder& EngineBuilder::enableCustomTransportSocket(bool enable_transport_
   return *this;
 }
 
-std::string EngineBuilder::generateConfigStr() {
-  std::string config_formatted = config_template_;
+EngineBuilder&
+EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_validation_on) {
 
->>>>>>> 087468a2 (working tests)
 #if defined(__APPLE__)
   if (platform_certificates_validation_on) {
     PANIC("Certificates validation using platform provided APIs is not supported in IOS.");
@@ -268,6 +263,7 @@ EngineBuilder& EngineBuilder::addPlatformFilter(std::string name) {
 }
 
 std::string EngineBuilder::generateConfigStr() const {
+  std::string config_formatted = config_template_;
   std::vector<std::pair<std::string, std::string>> replacements {
     {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
         {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
@@ -310,7 +306,6 @@ std::string EngineBuilder::generateConfigStr() const {
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
-<<<<<<< HEAD
   std::vector<std::string> stat_sinks = stat_sinks_;
   if (!stats_domain_.empty()) {
     stat_sinks.push_back("*base_metrics_service");
@@ -319,7 +314,6 @@ std::string EngineBuilder::generateConfigStr() const {
     config_builder << "- &stats_sinks [";
     config_builder << absl::StrJoin(stat_sinks, ",");
     config_builder << "] " << std::endl;
-=======
   if (this->gzip_filter_) {
     absl::StrReplaceAll(
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
@@ -329,7 +323,6 @@ std::string EngineBuilder::generateConfigStr() const {
     absl::StrReplaceAll(
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", brotli_config_insert)}},
         &config_formatted);
->>>>>>> 087468a2 (working tests)
   }
 
   const std::string& cert_validation_template =
@@ -345,29 +338,9 @@ std::string EngineBuilder::generateConfigStr() const {
     insertCustomFilter(brotli_config_insert, config_template);
   }
   if (this->socket_tagging_filter_) {
-<<<<<<< HEAD
-    insertCustomFilter(socket_tag_config_insert, config_template);
-  }
-  if (this->enable_http3_) {
-    insertCustomFilter(alternate_protocols_cache_filter_insert, config_template);
-  }
-
-  for (const NativeFilterConfig& filter : native_filter_chain_) {
-    std::string filter_config = absl::StrReplaceAll(
-        native_filter_template, {{"{{ native_filter_name }}", filter.name_},
-                                 {"{{ native_filter_typed_config }}", filter.typed_config_}});
-    insertCustomFilter(filter_config, config_template);
-  }
-
-  for (const std::string& name : platform_filters_) {
-    std::string filter_config =
-        absl::StrReplaceAll(platform_filter_template, {{"{{ platform_filter_name }}", name}});
-    insertCustomFilter(filter_config, config_template);
-=======
     absl::StrReplaceAll(
         {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", socket_tag_config_insert)}},
         &config_formatted);
->>>>>>> 087468a2 (working tests)
   }
 
   if (!this->disable_stats_) {
@@ -414,26 +387,12 @@ std::string EngineBuilder::generateConfigStr() const {
         &config_formatted);
   }
 
-<<<<<<< HEAD
-  if (this->custom_clusters_p1_ != "") {
-    absl::StrReplaceAll(
-        {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", fmt::format(rtds_clusters_insert, this->custom_clusters_p1_, this->custom_clusters_p2_))}},
-        &config_template_);
-  }
-  else {
-    absl::StrReplaceAll(
-      {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", default_clusters_insert)}},
-      &config_template_);
-  }
-
   config_builder << config_template;
 
   if (admin_interface_enabled_) {
     config_builder << "admin: *admin_interface" << std::endl;
   }
-=======
   config_builder << config_formatted;
->>>>>>> 087468a2 (working tests)
 
   auto config_str = config_builder.str();
   if (config_str.find("{{") != std::string::npos) {

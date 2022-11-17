@@ -119,14 +119,11 @@ private:
   bool gzip_filter_ = true;
   bool brotli_filter_ = false;
   bool socket_tagging_filter_ = false;
-<<<<<<< HEAD
   bool platform_certificates_validation_on_ = false;
 
-=======
   bool enable_transport_socket_ = false;
   std::vector<uint32_t> ports_;
   std::string ipv_version_ = "";
->>>>>>> 087468a2 (working tests)
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 
   bool admin_interface_enabled_ = false;
