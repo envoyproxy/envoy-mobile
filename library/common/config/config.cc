@@ -152,6 +152,7 @@ stats_config:
 
 const char* default_clusters_insert = R"(
   - *stats_cluster
+
   - name: base
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -203,22 +204,7 @@ const char* default_clusters_insert = R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket:
-      name: envoy.transport_sockets.http_11_proxy
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
-        transport_socket:
-          name: envoy.transport_sockets.tls
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
-            common_tls_context:
-              alpn_protocols: [h2]
-              tls_params:
-                tls_maximum_protocol_version: TLSv1_3
-              validation_context:
-                trusted_ca:
-                  inline_string: *tls_root_certs
-                trust_chain_verification: *trust_chain_verification
+    transport_socket: *base_h2_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
     typed_extension_protocol_options: *h2_protocol_options
@@ -226,22 +212,10 @@ const char* default_clusters_insert = R"(
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
     cluster_type: *base_cluster_type
-    transport_socket:
-      name: envoy.transport_sockets.quic
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.quic.v3.QuicUpstreamTransport
-        upstream_tls_context:
-          common_tls_context:
-            tls_params:
-              tls_maximum_protocol_version: TLSv1_3
-            validation_context:
-              trusted_ca:
-                inline_string: *tls_root_certs
-              trust_chain_verification: *trust_chain_verification
+    transport_socket: *base_h3_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h3_protocol_options
-)";
+    typed_extension_protocol_options: *h3_protocol_options)";
 
 const char* transport_socket_insert = R"(
       transport_socket:
@@ -606,70 +580,6 @@ R"(
           http_filters: *http_filters
   clusters:
 #{custom_clusters}
-  - *stats_cluster
-  - name: base
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: &base_cluster_type
-      name: envoy.clusters.dynamic_forward_proxy
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.clusters.dynamic_forward_proxy.v3.ClusterConfig
-        dns_cache_config: *dns_cache_config
-    transport_socket: *base_tls_socket
-    upstream_connection_options: &upstream_opts
-      set_local_interface_name_on_upstream_connections: true
-      tcp_keepalive:
-        keepalive_interval: 5
-        keepalive_probes: 1
-        keepalive_time: 10
-    circuit_breakers: &circuit_breakers_settings
-      thresholds:
-      - priority: DEFAULT
-        # Don't impose limits on concurrent retries.
-        retry_budget:
-          budget_percent:
-            value: 100
-          min_retry_concurrency: 0xffffffff # uint32 max
-      per_host_thresholds:
-      - priority: DEFAULT
-        max_connections: *max_connections_per_host
-    typed_extension_protocol_options: *alpn_protocol_options
-  - name: base_clear
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket:
-      name: envoy.transport_sockets.http_11_proxy
-      typed_config:
-        "@type": type.googleapis.com/envoy.extensions.transport_sockets.http_11_proxy.v3.Http11ProxyUpstreamTransport
-        transport_socket:
-          name: envoy.transport_sockets.raw_buffer
-          typed_config:
-            "@type": type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h1_protocol_options
-  - name: base_h2
-    typed_extension_protocol_options:
-      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-        explicit_http_config:
-          http2_protocol_options: {}
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_h2_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h2_protocol_options
-  - name: base_h3
-    connect_timeout: *connect_timeout
-    lb_policy: CLUSTER_PROVIDED
-    cluster_type: *base_cluster_type
-    transport_socket: *base_h3_socket
-    upstream_connection_options: *upstream_opts
-    circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h3_protocol_options
 stats_flush_interval: *stats_flush_interval
 stats_sinks: *stats_sinks
 stats_config:
