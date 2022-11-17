@@ -93,6 +93,10 @@ extern const char* rtds_clusters_insert;
  */
 extern const char* default_clusters_insert;
 
+/* Insert to add a transport socket to rtds_clusters_insert
+ */
+extern const char* transport_socket_insert;
+
 /**
  * Insert that enables the route cache reset filter in the filter chain.
  * Should only be added when the route cache should be cleared on every request

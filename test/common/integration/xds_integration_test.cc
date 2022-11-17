@@ -8,6 +8,7 @@
 #include "test/common/integration/base_client_integration_test.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/utility.h"
+#include "library/common/config/internal.h"
 
 #include "gtest/gtest.h"
 
@@ -19,8 +20,9 @@ using ::testing::AssertionSuccess;
 
 XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
   std::cout << "HERE\n\n\n\n";
-  // override_builder_config_ = true; // The builder does not yet have RTDS support.
-  expect_dns_ = false; // TODO(alyssawilk) debug.
+
+  override_builder_config_ = false; // The builder does not yet have RTDS support.
+  expect_dns_ = false;              // TODO(alyssawilk) debug.
   create_xds_upstream_ = true;
   sotw_or_delta_ = sotwOrDelta();
 
@@ -29,14 +31,18 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
     config_helper_.addRuntimeOverride("envoy.reloadable_features.unified_mux", "true");
   }
 
-  // Set up the basic bootstrap config for xDS.
-  enableCustomClusters(std::to_string(fake_upstreams_[0]->localAddress()->ip()->port()),
-                       std::to_string(fake_upstreams_[0]->localAddress()->ip()->port()));
+  // Write the engine builder config to the bootstrap.  
+  // This ensures the fake upstreams match what's been specified in the engine
+  config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+    auto config_str = this->generateConfigStr();
+    TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
+  });
+  enableCustomClusters(true);
+  this->setIpvVersion(Network::Test::getLoopbackAddressString(ipVersion()));
   disableStatsConfig(true);
 
   // xDS upstream is created separately in the test infra, and there's only one non-xDS cluster.
   setUpstreamCount(1);
-
   setAdminConfig(adminConfig());
   admin_filename_ = TestEnvironment::temporaryPath("admin_address.txt");
   setAdminAddressPathForTests(admin_filename_);

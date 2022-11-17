@@ -21,20 +21,7 @@ public:
   SdsIntegrationTest() {
     skip_tag_extraction_rule_check_ = true;
     upstream_tls_ = true;
-
-    config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-      // Change the base_h2 cluster to use SSL and SDS.
-      auto* transport_socket =
-          bootstrap.mutable_static_resources()->mutable_clusters(0)->mutable_transport_socket();
-      envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext tls_context;
-      tls_context.set_sni("lyft.com");
-      auto* secret_config =
-          tls_context.mutable_common_tls_context()->add_tls_certificate_sds_secret_configs();
-      setUpSdsConfig(secret_config, "client_cert");
-
-      transport_socket->set_name("envoy.transport_sockets.tls");
-      transport_socket->mutable_typed_config()->PackFrom(tls_context);
-    });
+    enableCustomTransportSocket(true);
   }
 
   void createUpstreams() override {

@@ -27,8 +27,11 @@ envoy_cc_library(
         "@envoy//source/extensions/filters/http/router:config",
         "@envoy//source/extensions/filters/network/http_connection_manager:config",
         "@envoy//source/extensions/http/header_formatters/preserve_case:config",
+<<<<<<< HEAD
         "@envoy//source/extensions/network/dns_resolver/getaddrinfo:config",
         "@envoy//source/extensions/network/dns_resolver/getaddrinfo:config",
+=======
+>>>>>>> 087468a2 (working tests)
         "@envoy//source/extensions/stat_sinks/metrics_service:config",
         "@envoy//source/extensions/stat_sinks/statsd:config",
         "@envoy//source/extensions/transport_sockets/http_11_proxy:upstream_config",
@@ -36,9 +39,13 @@ envoy_cc_library(
         "@envoy//source/extensions/transport_sockets/tls:config",
         "@envoy//source/extensions/transport_sockets/tls/cert_validator:cert_validator_lib",
         "@envoy//source/extensions/upstreams/http/generic:config",
+<<<<<<< HEAD
         "@envoy_mobile//library/common/extensions/cert_validator/platform_bridge:config",
         "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
 ]        "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
+=======
+        "@envoy_mobile//library/common/extensions/filters/http/assertion:config",
+>>>>>>> 087468a2 (working tests)
         "@envoy_mobile//library/common/extensions/filters/http/local_error:config",
         "@envoy_mobile//library/common/extensions/filters/http/network_configuration:config",
         "@envoy_mobile//library/common/extensions/filters/http/platform_bridge:config",

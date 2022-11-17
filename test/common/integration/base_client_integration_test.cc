@@ -182,7 +182,7 @@ void BaseClientIntegrationTest::createEnvoy() {
   }
 
   finalizeConfigWithPorts(config_helper_, ports, use_lds_);
-
+  this->setPorts(ports);
   if (override_builder_config_) {
     setOverrideConfigForTests(MessageUtil::getYamlStringFromMessage(config_helper_.bootstrap()));
   } else {

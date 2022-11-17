@@ -63,9 +63,12 @@ public:
   EngineBuilder& enablePlatformCertificatesValidation(bool platform_certificates_validation_on);
   EngineBuilder& setRtdsConfig(std::string yaml);
   EngineBuilder& setRtdsEndpoint(std::string hostname);
-  EngineBuilder& enableCustomClusters(std::string port1, std::string port2);
+  EngineBuilder& enableCustomClusters(bool enable_clusters);
   EngineBuilder& setAdminConfig(std::string yaml);
   EngineBuilder& disableStatsConfig(bool disable_stats);
+  EngineBuilder& setPorts(std::vector<uint32_t> ports);
+  EngineBuilder& setIpvVersion(std::string ipv_version);
+  EngineBuilder& enableCustomTransportSocket(bool enable_transport_socket);
 
   // this is separated from build() for the sake of testability
   std::string generateConfigStr() const;
@@ -109,16 +112,21 @@ private:
   std::string custom_layers_ = "";
   std::string admin_yaml_ = "";
   std::string hostname_ = "";
-  std::string custom_clusters_p1_ = "";
-  std::string custom_clusters_p2_ = "";
+  bool enable_clusters_;
   bool disable_stats_ = false;
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;
   bool gzip_filter_ = true;
   bool brotli_filter_ = false;
   bool socket_tagging_filter_ = false;
+<<<<<<< HEAD
   bool platform_certificates_validation_on_ = false;
 
+=======
+  bool enable_transport_socket_ = false;
+  std::vector<uint32_t> ports_;
+  std::string ipv_version_ = "";
+>>>>>>> 087468a2 (working tests)
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 
   bool admin_interface_enabled_ = false;

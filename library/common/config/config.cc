@@ -243,9 +243,30 @@ const char* default_clusters_insert = R"(
     typed_extension_protocol_options: *h3_protocol_options
 )";
 
+const char* transport_socket_insert = R"(
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          common_tls_context:
+            tls_certificate_sds_secret_configs:
+              - name: client_cert
+                sds_config:
+                  api_config_source:
+                    api_type: GRPC
+                    grpc_services:
+                      - envoy_grpc:
+                          cluster_name: xds_cluster.lyft.com
+                        timeout: 300s
+                    transport_api_version: V3
+                  resource_api_version: V3
+          sni: lyft.com
+)";
+
 const char* rtds_clusters_insert = R"(
     - name: base_h2
       connect_timeout: 5s
+#{{custom_transport_socket}}
       load_assignment:
         cluster_name: base_h2
         endpoints:
@@ -253,14 +274,14 @@ const char* rtds_clusters_insert = R"(
               - endpoint:
                   address:
                     socket_address:
-                      address: 127.0.0.1
+                      address: {}
                       port_value: {}
       typed_extension_protocol_options:
         envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
           "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
           explicit_http_config:
             http2_protocol_options:
-              {}
+              {{}}
     - name: xds_cluster.lyft.com
       connect_timeout: 5s
       load_assignment:
@@ -270,14 +291,14 @@ const char* rtds_clusters_insert = R"(
               - endpoint:
                   address:
                     socket_address:
-                      address: 127.0.0.1
+                      address: {}
                       port_value: {}
       typed_extension_protocol_options:
         envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
           "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
           explicit_http_config:
             http2_protocol_options:
-              {}
+              {{}}
 )";
 
 // clang-format off

@@ -98,6 +98,7 @@ envoy_cc_test_library(
     repository = "@envoy",
     deps = [
         ":base_client_integration_test_lib",
+        "//library/common/config:config_lib",
         "@envoy//source/common/config:api_version_lib",
         "@envoy//test/common/grpc:grpc_client_integration_lib",
         "@envoy_api//envoy/config/bootstrap/v3:pkg_cc_proto",

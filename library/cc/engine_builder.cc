@@ -1,6 +1,8 @@
 #include "engine_builder.h"
 
+#include <cstddef>
 #include <sstream>
+#include <string>
 
 #include "source/common/common/assert.h"
 
@@ -167,9 +169,8 @@ EngineBuilder& EngineBuilder::setRtdsEndpoint(std::string hostname) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::enableCustomClusters(std::string port1, std::string port2) {
-  this->custom_clusters_p1_ = port1;
-  this->custom_clusters_p2_ = port2;
+EngineBuilder& EngineBuilder::enableCustomClusters(bool enable_clusters) {
+  this->enable_clusters_ = enable_clusters;
   return *this;
 }
 
@@ -183,6 +184,7 @@ EngineBuilder& EngineBuilder::disableStatsConfig(bool disable_stats) {
   return *this;
 }
 
+<<<<<<< HEAD
 EngineBuilder& EngineBuilder::enableAdminInterface(bool admin_interface_on) {
   this->admin_interface_enabled_ = admin_interface_on;
   return *this;
@@ -220,6 +222,26 @@ EngineBuilder& EngineBuilder::enableH2ExtendKeepaliveTimeout(bool h2_extend_keep
 
 EngineBuilder&
 EngineBuilder::enablePlatformCertificatesValidation(bool platform_certificates_validation_on) {
+=======
+EngineBuilder& EngineBuilder::setPorts(std::vector<uint32_t> ports) {
+  this->ports_ = ports;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::setIpvVersion(std::string ipv_version) {
+  this->ipv_version_ = ipv_version;
+  return *this;
+}
+
+EngineBuilder& EngineBuilder::enableCustomTransportSocket(bool enable_transport_socket) {
+  this->enable_transport_socket_ = enable_transport_socket;
+  return *this;
+}
+
+std::string EngineBuilder::generateConfigStr() {
+  std::string config_formatted = config_template_;
+
+>>>>>>> 087468a2 (working tests)
 #if defined(__APPLE__)
   if (platform_certificates_validation_on) {
     PANIC("Certificates validation using platform provided APIs is not supported in IOS.");
@@ -288,6 +310,7 @@ std::string EngineBuilder::generateConfigStr() const {
   for (const auto& [key, value] : replacements) {
     config_builder << "- &" << key << " " << value << std::endl;
   }
+<<<<<<< HEAD
   std::vector<std::string> stat_sinks = stat_sinks_;
   if (!stats_domain_.empty()) {
     stat_sinks.push_back("*base_metrics_service");
@@ -296,6 +319,17 @@ std::string EngineBuilder::generateConfigStr() const {
     config_builder << "- &stats_sinks [";
     config_builder << absl::StrJoin(stat_sinks, ",");
     config_builder << "] " << std::endl;
+=======
+  if (this->gzip_filter_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
+        &config_formatted);
+  }
+  if (this->brotli_filter_) {
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", brotli_config_insert)}},
+        &config_formatted);
+>>>>>>> 087468a2 (working tests)
   }
 
   const std::string& cert_validation_template =
@@ -311,6 +345,7 @@ std::string EngineBuilder::generateConfigStr() const {
     insertCustomFilter(brotli_config_insert, config_template);
   }
   if (this->socket_tagging_filter_) {
+<<<<<<< HEAD
     insertCustomFilter(socket_tag_config_insert, config_template);
   }
   if (this->enable_http3_) {
@@ -328,32 +363,58 @@ std::string EngineBuilder::generateConfigStr() const {
     std::string filter_config =
         absl::StrReplaceAll(platform_filter_template, {{"{{ platform_filter_name }}", name}});
     insertCustomFilter(filter_config, config_template);
+=======
+    absl::StrReplaceAll(
+        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", socket_tag_config_insert)}},
+        &config_formatted);
+>>>>>>> 087468a2 (working tests)
   }
 
   if (!this->disable_stats_) {
-      absl::StrReplaceAll(
+    absl::StrReplaceAll(
         {{"#{custom_stats}", absl::StrCat("#{custom_stats}\n", default_stats_config_insert)}},
-        &config_template_);
+        &config_formatted);
   }
 
   if (this->custom_layers_ != "") {
     absl::StrReplaceAll(
         {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", this->custom_layers_)}},
-        &config_template_);
-  }
-  else {
+        &config_formatted);
+  } else {
     absl::StrReplaceAll(
         {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", default_layers_insert)}},
-        &config_template_);
-
+        &config_formatted);
   }
-  
+
   if (this->admin_yaml_ != "") {
+    absl::StrReplaceAll({{"#{custom_admin}", absl::StrCat("#{custom_admin}\n", this->admin_yaml_)}},
+                        &config_formatted);
+  }
+  if (this->enable_clusters_) {
+    std::string formatted_insert;
+    if (this->ports_.empty() || this->ipv_version_ == "") {
+      formatted_insert =
+          fmt::format(rtds_clusters_insert, "127.0.0.1", "0", "127.0.0.1", "0");
+    } else {
+      formatted_insert =
+          fmt::format(rtds_clusters_insert, this->ipv_version_, this->ports_[0], this->ipv_version_,
+                      this->ports_[1]);
+    }
+    if (this->enable_transport_socket_) {
+      absl::StrReplaceAll(
+          {{"#{custom_transport_socket}", absl::StrCat("#{custom_transport_socket}\n", transport_socket_insert)}},
+          &formatted_insert);
+    }
     absl::StrReplaceAll(
-        {{"#{custom_admin}", absl::StrCat("#{custom_admin}\n", this->admin_yaml_)}},
-        &config_template_);
+        {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", formatted_insert)}},
+        &config_formatted);
+  } else {
+    absl::StrReplaceAll(
+        {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", default_clusters_insert)}},
+        &config_formatted);
   }
 
+<<<<<<< HEAD
   if (this->custom_clusters_p1_ != "") {
     absl::StrReplaceAll(
         {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", fmt::format(rtds_clusters_insert, this->custom_clusters_p1_, this->custom_clusters_p2_))}},
@@ -370,6 +431,9 @@ std::string EngineBuilder::generateConfigStr() const {
   if (admin_interface_enabled_) {
     config_builder << "admin: *admin_interface" << std::endl;
   }
+=======
+  config_builder << config_formatted;
+>>>>>>> 087468a2 (working tests)
 
   auto config_str = config_builder.str();
   if (config_str.find("{{") != std::string::npos) {
@@ -392,9 +456,7 @@ EngineSharedPtr EngineBuilder::build() {
   } else {
     config_str = config_override_for_tests_;
   }
-  std::cout << "\n\n";
-  // envoy::config::bootstrap::v3::LayeredRuntime config;
-  // TestUtility::loadFromYaml(config_str, config);
+  std::cout << "printing engine config: \n";
   std::cout << config_str;
   std::cout << "\n\n";
   envoy_engine_t envoy_engine =
