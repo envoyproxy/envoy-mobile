@@ -263,7 +263,7 @@ EngineBuilder& EngineBuilder::addPlatformFilter(std::string name) {
 }
 
 std::string EngineBuilder::generateConfigStr() const {
-  std::string config_formatted = config_template_;
+  std::string config_template = config_template_;
   std::vector<std::pair<std::string, std::string>> replacements {
     {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
         {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
@@ -314,15 +314,6 @@ std::string EngineBuilder::generateConfigStr() const {
     config_builder << "- &stats_sinks [";
     config_builder << absl::StrJoin(stat_sinks, ",");
     config_builder << "] " << std::endl;
-  if (this->gzip_filter_) {
-    absl::StrReplaceAll(
-        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", gzip_config_insert)}},
-        &config_formatted);
-  }
-  if (this->brotli_filter_) {
-    absl::StrReplaceAll(
-        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", brotli_config_insert)}},
-        &config_formatted);
   }
 
   const std::string& cert_validation_template =
@@ -330,7 +321,6 @@ std::string EngineBuilder::generateConfigStr() const {
                                                   : default_cert_validation_context_template);
   config_builder << cert_validation_template << std::endl;
 
-  std::string config_template = config_template_;
   if (this->gzip_filter_) {
     insertCustomFilter(gzip_config_insert, config_template);
   }
@@ -338,53 +328,63 @@ std::string EngineBuilder::generateConfigStr() const {
     insertCustomFilter(brotli_config_insert, config_template);
   }
   if (this->socket_tagging_filter_) {
-    absl::StrReplaceAll(
-        {{"#{custom_filters}", absl::StrCat("#{custom_filters}\n", socket_tag_config_insert)}},
-        &config_formatted);
+    insertCustomFilter(socket_tag_config_insert, config_template);
+  }
+  if (this->enable_http3_) {
+    insertCustomFilter(alternate_protocols_cache_filter_insert, config_template);
+  }
+  for (const NativeFilterConfig& filter : native_filter_chain_) {
+    std::string filter_config = absl::StrReplaceAll(
+        native_filter_template, {{"{{ native_filter_name }}", filter.name_},
+                                 {"{{ native_filter_typed_config }}", filter.typed_config_}});
+    insertCustomFilter(filter_config, config_template);
   }
 
+  for (const std::string& name : platform_filters_) {
+    std::string filter_config =
+        absl::StrReplaceAll(platform_filter_template, {{"{{ platform_filter_name }}", name}});
+    insertCustomFilter(filter_config, config_template);
+  }
   if (!this->disable_stats_) {
     absl::StrReplaceAll(
         {{"#{custom_stats}", absl::StrCat("#{custom_stats}\n", default_stats_config_insert)}},
-        &config_formatted);
+        &config_template);
   }
 
   if (this->custom_layers_ != "") {
     absl::StrReplaceAll(
         {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", this->custom_layers_)}},
-        &config_formatted);
+        &config_template);
   } else {
     absl::StrReplaceAll(
         {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", default_layers_insert)}},
-        &config_formatted);
+        &config_template);
   }
 
   if (this->admin_yaml_ != "") {
     absl::StrReplaceAll({{"#{custom_admin}", absl::StrCat("#{custom_admin}\n", this->admin_yaml_)}},
-                        &config_formatted);
+                        &config_template);
   }
   if (this->enable_clusters_) {
     std::string formatted_insert;
     if (this->ports_.empty() || this->ipv_version_ == "") {
-      formatted_insert =
-          fmt::format(rtds_clusters_insert, "127.0.0.1", "0", "127.0.0.1", "0");
+      formatted_insert = fmt::format(rtds_clusters_insert, "127.0.0.1", "0", "127.0.0.1", "0");
     } else {
-      formatted_insert =
-          fmt::format(rtds_clusters_insert, this->ipv_version_, this->ports_[0], this->ipv_version_,
-                      this->ports_[1]);
+      formatted_insert = fmt::format(rtds_clusters_insert, this->ipv_version_, this->ports_[0],
+                                     this->ipv_version_, this->ports_[1]);
     }
     if (this->enable_transport_socket_) {
-      absl::StrReplaceAll(
-          {{"#{custom_transport_socket}", absl::StrCat("#{custom_transport_socket}\n", transport_socket_insert)}},
-          &formatted_insert);
+      absl::StrReplaceAll({{"#{custom_transport_socket}",
+                            absl::StrCat("#{custom_transport_socket}\n", transport_socket_insert)}},
+                          &formatted_insert);
     }
     absl::StrReplaceAll(
         {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", formatted_insert)}},
-        &config_formatted);
+        &config_template);
   } else {
     absl::StrReplaceAll(
         {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", default_clusters_insert)}},
-        &config_formatted);
+        &config_template);
   }
 
   config_builder << config_template;
@@ -392,7 +392,7 @@ std::string EngineBuilder::generateConfigStr() const {
   if (admin_interface_enabled_) {
     config_builder << "admin: *admin_interface" << std::endl;
   }
-  config_builder << config_formatted;
+  config_builder << config_template;
 
   auto config_str = config_builder.str();
   if (config_str.find("{{") != std::string::npos) {
