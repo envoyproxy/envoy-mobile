@@ -231,10 +231,8 @@ cc_library(
 cc_library(
     name = "android_network_utility_lib",
     srcs = [
-    ] + select({
-        "@envoy//bazel:android": ["android_network_utility.cc"],
-        "//conditions:default": [],
-    }),
+        "android_network_utility.cc",
+    ],
     hdrs = [
         "android_network_utility.h",
     ],
