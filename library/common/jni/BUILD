@@ -34,10 +34,10 @@ cc_library(
     copts = ["-std=c++17"],
     linkopts = [
         "-lm",
-        "-llog",
         "-ldl",
     ] + select({
         "@envoy//bazel:dbg_build": ["-Wl,--build-id=sha1"],
+        "@envoy//bazel:android": ["-llog"],
         "//conditions:default": [],
     }),
     deps = [
@@ -65,9 +65,9 @@ cc_binary(
     copts = ["-std=c++17"],
     linkopts = [
         "-lm",
-        "-llog",
     ] + select({
         "@envoy//bazel:dbg_build": ["-Wl,--build-id=sha1"],
+        "@envoy//bazel:android": ["-llog"],
         "//conditions:default": [],
     }) + select({
         # TODO(keith): https://github.com/rust-lang/compiler-builtins/issues/353
@@ -189,14 +189,18 @@ cc_library(
 cc_library(
     name = "ndk_jni_support",
     srcs = [
-        "ndk_jni_support.cc",
-    ],
+    ] + select({
+        "@envoy//bazel:android": ["ndk_jni_support.cc"],
+        "//conditions:default": [],
+    }),
     hdrs = ["jni_support.h"],
     copts = ["-std=c++14"],
     linkopts = [
         "-lm",
-        "-llog",
-    ],
+    ] + select({
+        "@envoy//bazel:android": ["-llog"],
+        "//conditions:default": [],
+    }),
     deps = [
         "//library/common/jni/import:jni_import_lib",
     ],
@@ -227,8 +231,10 @@ cc_library(
 cc_library(
     name = "android_network_utility_lib",
     srcs = [
-        "android_network_utility.cc",
-    ],
+    ] + select({
+        "@envoy//bazel:android": ["android_network_utility.cc"],
+        "//conditions:default": [],
+    }),
     hdrs = [
         "android_network_utility.h",
     ],
