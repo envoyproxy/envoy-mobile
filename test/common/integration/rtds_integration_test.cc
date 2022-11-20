@@ -85,6 +85,7 @@ TEST_P(RtdsIntegrationTest, RtdsReload) {
   EXPECT_EQ("yar", getRuntimeKey("bar"));
   EXPECT_EQ("", getRuntimeKey("baz"));
 
+  const uint64_t initial_load_success = getCounterValue("runtime.load_success");
   // Send a RTDS request and get back the RTDS response.
   EXPECT_TRUE(compareDiscoveryRequest(Config::TypeUrl::get().Runtime, "", {"some_rtds_layer"},
                                       {"some_rtds_layer"}, {}, true));
@@ -96,6 +97,8 @@ TEST_P(RtdsIntegrationTest, RtdsReload) {
   )EOF");
   sendDiscoveryResponse<envoy::service::runtime::v3::Runtime>(
       Config::TypeUrl::get().Runtime, {some_rtds_layer}, {some_rtds_layer}, {}, "1");
+  // Wait until the RTDS updates from the DiscoveryResponse have been applied.
+  ASSERT_TRUE(waitForCounterGe("runtime.load_success", initial_load_success + 1));
 
   // Verify that the Runtime config values are from the RTDS response.
   EXPECT_EQ("bar", getRuntimeKey("foo"));
