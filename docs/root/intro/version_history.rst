@@ -15,6 +15,7 @@ Bugfixes:
 
 - android: fix engine startup crash for when admin interface is enabled. (:issue:`#2520 <2520>`)
 - android: respect system security policy when determining whether clear text requests are allowed. (:issue:`#2528 <2528>`)
+- tls: fix a potential use-after-free with the platform cert validator. (:issue:`#2691 <2691>`)
 
 Features:
 
