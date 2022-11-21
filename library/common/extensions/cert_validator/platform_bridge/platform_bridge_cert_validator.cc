@@ -80,12 +80,11 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
   } else {
     host = host_name;
   }
-  PendingValidation validation(*this, std::move(certs), host, std::move(transport_socket_options),
-                               std::move(callback));
-  auto insert_result = validations_.insert(std::move(validation));
-  ASSERT(insert_result.second);
-  PendingValidation& ref = const_cast<PendingValidation&>(*insert_result.first);
-  std::thread verification_thread(&PendingValidation::verifyCertsByPlatform, &ref);
+  auto validation = std::make_unique<PendingValidation>(*this, std::move(certs), host, std::move(transport_socket_options),
+							std::move(callback));
+  PendingValidation* validation_ptr = validation.get();
+  validations_.insert(std::move(validation));
+  std::thread verification_thread(&PendingValidation::verifyCertsByPlatform, validation_ptr);
   std::thread::id thread_id = verification_thread.get_id();
   validation_threads_[thread_id] = std::move(verification_thread);
   return {ValidationResults::ValidationStatus::Pending, absl::nullopt, absl::nullopt};
@@ -152,7 +151,7 @@ void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
       const_cast<Stats::Counter&>(error_counter.ref()).inc();
     }
     result_callback_->onCertValidationResult(success, error, tls_alert);
-    parent_.validations_.erase(*this);
+    parent_.validations_.erase(this);
   });
   ENVOY_LOG(trace,
             "Finished platform cert validation for {}, post result callback to network thread",
