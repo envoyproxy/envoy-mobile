@@ -387,8 +387,6 @@ std::string EngineBuilder::generateConfigStr() const {
         &config_template);
   }
 
-  config_builder << config_template;
-
   if (admin_interface_enabled_) {
     config_builder << "admin: *admin_interface" << std::endl;
   }
@@ -415,9 +413,6 @@ EngineSharedPtr EngineBuilder::build() {
   } else {
     config_str = config_override_for_tests_;
   }
-  std::cout << "printing engine config: \n";
-  std::cout << config_str;
-  std::cout << "\n\n";
   envoy_engine_t envoy_engine =
       init_engine(this->callbacks_->asEnvoyEngineCallbacks(), null_logger, null_tracker);
 

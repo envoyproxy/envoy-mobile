@@ -19,8 +19,6 @@ using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
 XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
-  std::cout << "HERE\n\n\n\n";
-
   override_builder_config_ = false; // The builder does not yet have RTDS support.
   expect_dns_ = false;              // TODO(alyssawilk) debug.
   create_xds_upstream_ = true;
@@ -46,7 +44,6 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
   setAdminConfig(adminConfig());
   admin_filename_ = TestEnvironment::temporaryPath("admin_address.txt");
   setAdminAddressPathForTests(admin_filename_);
-  std::cout << "DONE\n\n\n\n";
 }
 
 void XdsIntegrationTest::initialize() {

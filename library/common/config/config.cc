@@ -145,14 +145,13 @@ stats_config:
         - safe_regex:
             regex: '^pulse.*'
         - safe_regex:
-            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|retry.*|time|timeout|total)'
+            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|[3-5][0-9][0-9]|retry.*|time|timeout|total)'
   use_all_default_tags:
     false
 )";
 
 const char* default_clusters_insert = R"(
   - *stats_cluster
-
   - name: base
     connect_timeout: *connect_timeout
     lb_policy: CLUSTER_PROVIDED
@@ -215,7 +214,8 @@ const char* default_clusters_insert = R"(
     transport_socket: *base_h3_socket
     upstream_connection_options: *upstream_opts
     circuit_breakers: *circuit_breakers_settings
-    typed_extension_protocol_options: *h3_protocol_options)";
+    typed_extension_protocol_options: *h3_protocol_options
+)";
 
 const char* transport_socket_insert = R"(
       transport_socket:
@@ -581,37 +581,7 @@ R"(
   clusters:
 #{custom_clusters}
 stats_flush_interval: *stats_flush_interval
-stats_sinks: *stats_sinks
-stats_config:
-  stats_matcher:
-    inclusion_list:
-      patterns:
-        - safe_regex:
-            regex: '^cluster\.[\w]+?\.upstream_cx_[\w]+'
-        - safe_regex:
-            regex: '^cluster\.[\w]+?\.upstream_rq_[\w]+'
-        - safe_regex:
-            regex: '^cluster\.[\w]+?\.update_(attempt|success|failure)'
-        - safe_regex:
-            regex: '^cluster\.[\w]+?\.http2.keepalive_timeout'
-        - safe_regex:
-            regex: '^dns.apple.*'
-        - safe_regex:
-            regex: '^http.client.*'
-        - safe_regex:
-            regex: '^http.dispatcher.*'
-        - safe_regex:
-            regex: '^http.hcm.decompressor.*'
-        - safe_regex:
-            regex: '^http.hcm.downstream_rq_[\w]+'
-        - safe_regex:
-            regex: '^pbf_filter.*'
-        - safe_regex:
-            regex: '^pulse.*'
-        - safe_regex:
-            regex: '^vhost\.[\w]+\.vcluster\.[\w]+?\.upstream_rq_(?:[12345]xx|[3-5][0-9][0-9]|retry.*|time|timeout|total)'
-  use_all_default_tags:
-    false
+#{custom_stats}
 watchdogs:
   main_thread_watchdog:
     megamiss_timeout: 60s
@@ -626,5 +596,6 @@ node:
 layered_runtime:
   layers:
 #{custom_layers}
+#{custom_admin}
 )";
 // clang-format on

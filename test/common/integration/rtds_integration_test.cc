@@ -70,9 +70,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersionsClientTypeDelta, RtdsIntegrationTest,
                          DELTA_SOTW_GRPC_CLIENT_INTEGRATION_PARAMS);
 
 TEST_P(RtdsIntegrationTest, RtdsReload) {
-  std::cout << "PRE";
   initialize();
-  std::cout << "POST";
 
   // Send a request on the data plane.
   stream_->sendHeaders(envoyToMobileHeaders(default_request_headers_), true);
