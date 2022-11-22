@@ -1,8 +1,6 @@
 #include "engine_builder.h"
 
-#include <cstddef>
 #include <sstream>
-#include <string>
 
 #include "source/common/common/assert.h"
 
@@ -10,9 +8,6 @@
 #include "absl/strings/str_replace.h"
 #include "fmt/core.h"
 #include "library/common/main_interface.h"
-
-#include "envoy/config/bootstrap/v3/bootstrap.pb.h"
-#include "envoy/service/runtime/v3/rtds.pb.h"
 
 namespace Envoy {
 namespace Platform {
@@ -263,7 +258,6 @@ EngineBuilder& EngineBuilder::addPlatformFilter(std::string name) {
 }
 
 std::string EngineBuilder::generateConfigStr() const {
-  std::string config_template = config_template_;
   std::vector<std::pair<std::string, std::string>> replacements {
     {"connect_timeout", fmt::format("{}s", this->connect_timeout_seconds_)},
         {"dns_fail_base_interval", fmt::format("{}s", this->dns_failure_refresh_seconds_base_)},
@@ -321,6 +315,7 @@ std::string EngineBuilder::generateConfigStr() const {
                                                   : default_cert_validation_context_template);
   config_builder << cert_validation_template << std::endl;
 
+  std::string config_template = config_template_;
   if (this->gzip_filter_) {
     insertCustomFilter(gzip_config_insert, config_template);
   }
@@ -333,6 +328,7 @@ std::string EngineBuilder::generateConfigStr() const {
   if (this->enable_http3_) {
     insertCustomFilter(alternate_protocols_cache_filter_insert, config_template);
   }
+
   for (const NativeFilterConfig& filter : native_filter_chain_) {
     std::string filter_config = absl::StrReplaceAll(
         native_filter_template, {{"{{ native_filter_name }}", filter.name_},
@@ -386,12 +382,12 @@ std::string EngineBuilder::generateConfigStr() const {
         {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", default_clusters_insert)}},
         &config_template);
   }
+  
+  config_builder << config_template;
 
   if (admin_interface_enabled_) {
     config_builder << "admin: *admin_interface" << std::endl;
   }
-  config_builder << config_template;
-
   auto config_str = config_builder.str();
   if (config_str.find("{{") != std::string::npos) {
     throw std::runtime_error("could not resolve all template keys in config");

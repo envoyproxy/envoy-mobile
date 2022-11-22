@@ -112,7 +112,7 @@ private:
   std::string custom_layers_ = "";
   std::string admin_yaml_ = "";
   std::string hostname_ = "";
-  bool enable_clusters_;
+  bool enable_clusters_ = false;
   bool disable_stats_ = false;
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;
