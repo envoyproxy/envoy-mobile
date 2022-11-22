@@ -133,7 +133,7 @@ AssertionResult XdsIntegrationTest::waitForCounterGe(const std::string& name, ui
   return AssertionSuccess();
 }
 
-envoy::config::cluster::v3::Cluster // todo delete
+envoy::config::cluster::v3::Cluster
 XdsIntegrationTest::createSingleEndpointClusterConfig(const std::string& cluster_name) {
   envoy::config::cluster::v3::Cluster config;
   config.set_name(cluster_name);
