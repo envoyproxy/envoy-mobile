@@ -80,8 +80,8 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
   } else {
     host = host_name;
   }
-  auto validation = std::make_unique<PendingValidation>(*this, std::move(certs), host, std::move(transport_socket_options),
-							std::move(callback));
+  auto validation = std::make_unique<PendingValidation>(
+      *this, std::move(certs), host, std::move(transport_socket_options), std::move(callback));
   PendingValidation* validation_ptr = validation.get();
   validations_.insert(std::move(validation));
   std::thread verification_thread(&PendingValidation::verifyCertsByPlatform, validation_ptr);
@@ -137,7 +137,16 @@ void PlatformBridgeCertValidator::PendingValidation::verifyCertsByPlatform() {
 void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
     bool success, absl::string_view error_details, uint8_t tls_alert,
     OptRef<Stats::Counter> error_counter) {
+  ENVOY_LOG(trace,
+            "Finished platform cert validation for {}, post result callback to network thread",
+            host_name_);
+
+  if (parent_.platform_validator_->release_validator) {
+    parent_.platform_validator_->release_validator();
+  }
   std::weak_ptr<size_t> weak_alive_indicator(parent_.alive_indicator_);
+
+  // Once this task runs, `this` will be deleted so this must be the last statement in the file.
   result_callback_->dispatcher().post([this, weak_alive_indicator, success,
                                        error = std::string(error_details), tls_alert, error_counter,
                                        thread_id = std::this_thread::get_id()]() {
@@ -153,13 +162,6 @@ void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
     result_callback_->onCertValidationResult(success, error, tls_alert);
     parent_.validations_.erase(this);
   });
-  ENVOY_LOG(trace,
-            "Finished platform cert validation for {}, post result callback to network thread",
-            host_name_);
-
-  if (parent_.platform_validator_->release_validator) {
-    parent_.platform_validator_->release_validator();
-  }
 }
 
 } // namespace Tls
