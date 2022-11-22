@@ -15,10 +15,10 @@ PlatformBridgeCertValidator::PlatformBridgeCertValidator(
     const Envoy::Ssl::CertificateValidationContextConfig* config, SslStats& stats,
     const envoy_cert_validator* platform_validator)
     : config_(config),
-      allow_untrusted_certificate_(
-config_ != nullptr &&
-				   config_->trustChainVerification() ==
-                                   envoy::extensions::transport_sockets::tls::v3::CertificateValidationContext::ACCEPT_UNTRUSTED),
+      allow_untrusted_certificate_(config_ != nullptr &&
+                                   config_->trustChainVerification() ==
+                                       envoy::extensions::transport_sockets::tls::v3::
+                                           CertificateValidationContext::ACCEPT_UNTRUSTED),
       stats_(stats), platform_validator_(platform_validator) {
   ENVOY_BUG(config != nullptr && config->caCert().empty() &&
                 config->certificateRevocationList().empty(),
@@ -89,7 +89,9 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
 
   auto job = std::make_unique<ValidationJob>();
   job->result_callback_ = std::move(callback);
-  job->validation_ = std::make_unique<PendingValidation>(job->result_callback_->dispatcher(), std::weak_ptr<PlatformBridgeCertValidator>(shared_this_), platform_validator_, allow_untrusted_certificate_, std::move(certs), host, subject_alt_names);
+  job->validation_ = std::make_unique<PendingValidation>(
+      job->result_callback_->dispatcher(), std::weak_ptr<PlatformBridgeCertValidator>(shared_this_),
+      platform_validator_, allow_untrusted_certificate_, std::move(certs), host, subject_alt_names);
   job->thread_ = std::thread(&PendingValidation::verifyCertChainByPlatform, job->validation_.get());
   std::thread::id thread_id = job->thread_.get_id();
   validation_jobs_[thread_id] = std::move(job);
@@ -108,9 +110,8 @@ void PlatformBridgeCertValidator::PendingValidation::verifyCertChainByPlatform()
   bool success = result.result == ENVOY_SUCCESS;
   if (!success) {
     ENVOY_LOG(debug, result.error_details);
-    postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_,
-                                                  result.error_details, result.tls_alert,
-						  ValidationFailureType::FAIL_VERIFY_ERROR);
+    postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_, result.error_details,
+                               result.tls_alert, ValidationFailureType::FAIL_VERIFY_ERROR);
     return;
   }
 
@@ -120,43 +121,35 @@ void PlatformBridgeCertValidator::PendingValidation::verifyCertChainByPlatform()
   if (!success) {
     error_details = "PlatformBridgeCertValidator_verifySubjectAltName failed: SNI mismatch.";
     ENVOY_LOG(debug, error_details);
-    postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_,
-                                                  error_details, SSL_AD_BAD_CERTIFICATE,
-						  ValidationFailureType::FAIL_VERIFY_SAN);
+    postVerifyResultAndCleanUp(/*success=*/allow_untrusted_certificate_, error_details,
+                               SSL_AD_BAD_CERTIFICATE, ValidationFailureType::FAIL_VERIFY_SAN);
     return;
   }
   postVerifyResultAndCleanUp(success, error_details, SSL_AD_CERTIFICATE_UNKNOWN,
-                                                ValidationFailureType::SUCCESS);
+                             ValidationFailureType::SUCCESS);
 }
 
 void PlatformBridgeCertValidator::PendingValidation::postVerifyResultAndCleanUp(
-										bool success, absl::string_view error_details, uint8_t tls_alert,
+    bool success, absl::string_view error_details, uint8_t tls_alert,
     ValidationFailureType failure_type) {
-  dispatcher_.post([success, tls_alert, failure_type,
-		    hostname = hostname_,
-		    weak_validator = weak_validator_,
-		    error = std::string(error_details),
-		    thread_id = std::this_thread::get_id()] {
+  dispatcher_.post([success, tls_alert, failure_type, hostname = hostname_,
+                    weak_validator = weak_validator_, error = std::string(error_details),
+                    thread_id = std::this_thread::get_id()] {
     std::shared_ptr<PlatformBridgeCertValidator> validator = weak_validator.lock();
     if (!validator) {
       return;
     }
-    validator->onVerificationComplete(thread_id, hostname, success,
-					   error,
-					   tls_alert,
-					   failure_type);
+    validator->onVerificationComplete(thread_id, hostname, success, error, tls_alert, failure_type);
   });
   if (platform_validator_->release_validator) {
     platform_validator_->release_validator();
   }
 }
 
- void PlatformBridgeCertValidator::onVerificationComplete(std::thread::id thread_id,
-							  std::string hostname,
-							  bool success,
-							  std::string error,
-							  uint8_t tls_alert,
-							  ValidationFailureType failure_type) {
+void PlatformBridgeCertValidator::onVerificationComplete(std::thread::id thread_id,
+                                                         std::string hostname, bool success,
+                                                         std::string error, uint8_t tls_alert,
+                                                         ValidationFailureType failure_type) {
   auto i = validation_jobs_.extract(thread_id);
   if (i.empty()) {
     IS_ENVOY_BUG("No job found for thread");

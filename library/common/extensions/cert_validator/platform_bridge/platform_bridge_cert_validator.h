@@ -71,10 +71,15 @@ private:
   };
   class PendingValidation {
   public:
-    PendingValidation(Event::Dispatcher& dispatcher, std::weak_ptr<PlatformBridgeCertValidator> weak_validator, const envoy_cert_validator* platform_validator, bool allow_untrusted_certificate,
-		      const std::vector<envoy_data>& certs, absl::string_view hostname,
-		      const std::vector<std::string>& subject_alt_names)
-      : dispatcher_(dispatcher), weak_validator_(weak_validator), platform_validator_(platform_validator), allow_untrusted_certificate_(allow_untrusted_certificate), certs_(std::move(certs)), hostname_(hostname), subject_alt_names_(subject_alt_names) {}
+    PendingValidation(Event::Dispatcher& dispatcher,
+                      std::weak_ptr<PlatformBridgeCertValidator> weak_validator,
+                      const envoy_cert_validator* platform_validator,
+                      bool allow_untrusted_certificate, const std::vector<envoy_data>& certs,
+                      absl::string_view hostname, const std::vector<std::string>& subject_alt_names)
+        : dispatcher_(dispatcher), weak_validator_(weak_validator),
+          platform_validator_(platform_validator),
+          allow_untrusted_certificate_(allow_untrusted_certificate), certs_(std::move(certs)),
+          hostname_(hostname), subject_alt_names_(subject_alt_names) {}
 
     // Ensure that this class is never moved or copies to guarantee pointer stability.
     PendingValidation(const PendingValidation&) = delete;
@@ -109,12 +114,9 @@ private:
   };
 
   // Called when a pending verification completes. Must be invoked on the main thread.
-  void onVerificationComplete(std::thread::id thread_id,
-			      std::string hostname,
-			      bool success,
-			      std::string error_details,
-			      uint8_t tls_alert,
-			      ValidationFailureType failure_type);
+  void onVerificationComplete(std::thread::id thread_id, std::string hostname, bool success,
+                              std::string error_details, uint8_t tls_alert,
+                              ValidationFailureType failure_type);
 
   const Envoy::Ssl::CertificateValidationContextConfig* config_;
   const bool allow_untrusted_certificate_;
