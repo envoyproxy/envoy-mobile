@@ -19,7 +19,7 @@ using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 
 XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
-  override_builder_config_ = false; // The builder does not yet have RTDS support.
+  override_builder_config_ = false;
   expect_dns_ = false;              // TODO(alyssawilk) debug.
   create_xds_upstream_ = true;
   sotw_or_delta_ = sotwOrDelta();
