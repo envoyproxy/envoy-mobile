@@ -73,7 +73,7 @@ private:
           result_callback_(std::move(result_callback)),
           transport_socket_options_(std::move(transport_socket_options)) {}
 
-    // Ensure that this class is never moved or copies to guarantee pointer stability.
+    // Ensure that this class is never moved or copied to guarantee pointer stability.
     PendingValidation(const PendingValidation&) = delete;
     PendingValidation(PendingValidation&&) = delete;
 
