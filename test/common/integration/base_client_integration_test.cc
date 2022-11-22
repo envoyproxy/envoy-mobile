@@ -1,6 +1,5 @@
 #include "test/common/integration/base_client_integration_test.h"
 
-#include <cstdlib>
 #include <string>
 
 #include "test/common/http/common.h"
