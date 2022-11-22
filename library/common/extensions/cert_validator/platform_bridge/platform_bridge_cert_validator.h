@@ -59,7 +59,7 @@ public:
                     absl::string_view hostname) override;
   // Return SSL_VERIFY_PEER so that doVerifyCertChain() will be called from the TLS stack.
   int initializeSslContexts(std::vector<SSL_CTX*> /*contexts*/,
-			    bool /*handshaker_provides_certificates*/) override {
+                            bool /*handshaker_provides_certificates*/) override {
     return SSL_VERIFY_PEER;
   }
 

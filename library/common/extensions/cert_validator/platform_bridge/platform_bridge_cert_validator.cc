@@ -15,7 +15,7 @@ PlatformBridgeCertValidator::PlatformBridgeCertValidator(
     const Envoy::Ssl::CertificateValidationContextConfig* config, SslStats& stats,
     const envoy_cert_validator* platform_validator)
     : allow_untrusted_certificate_(config != nullptr &&
-                                         config->trustChainVerification() ==
+                                   config->trustChainVerification() ==
                                        envoy::extensions::transport_sockets::tls::v3::
                                            CertificateValidationContext::ACCEPT_UNTRUSTED),
       platform_validator_(platform_validator), stats_(stats) {
