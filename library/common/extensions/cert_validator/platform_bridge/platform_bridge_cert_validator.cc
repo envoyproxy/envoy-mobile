@@ -14,15 +14,14 @@ namespace Tls {
 PlatformBridgeCertValidator::PlatformBridgeCertValidator(
     const Envoy::Ssl::CertificateValidationContextConfig* config, SslStats& stats,
     const envoy_cert_validator* platform_validator)
-    : config_(config), stats_(stats), platform_validator_(platform_validator) {
+    : allow_untrusted_certificate_(config != nullptr &&
+                                         config->trustChainVerification() ==
+                                       envoy::extensions::transport_sockets::tls::v3::
+                                           CertificateValidationContext::ACCEPT_UNTRUSTED),
+      platform_validator_(platform_validator), stats_(stats) {
   ENVOY_BUG(config != nullptr && config->caCert().empty() &&
                 config->certificateRevocationList().empty(),
             "Invalid certificate validation context config.");
-  if (config_ != nullptr) {
-    allow_untrusted_certificate_ = config_->trustChainVerification() ==
-                                   envoy::extensions::transport_sockets::tls::v3::
-                                       CertificateValidationContext::ACCEPT_UNTRUSTED;
-  }
 }
 
 PlatformBridgeCertValidator::~PlatformBridgeCertValidator() {
@@ -32,11 +31,6 @@ PlatformBridgeCertValidator::~PlatformBridgeCertValidator() {
       thread.join();
     }
   }
-}
-
-int PlatformBridgeCertValidator::initializeSslContexts(std::vector<SSL_CTX*> /*contexts*/,
-                                                       bool /*handshaker_provides_certificates*/) {
-  return SSL_VERIFY_PEER;
 }
 
 ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(

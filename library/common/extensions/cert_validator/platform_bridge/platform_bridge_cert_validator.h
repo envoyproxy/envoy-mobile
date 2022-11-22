@@ -57,10 +57,11 @@ public:
                     SSL_CTX& ssl_ctx,
                     const CertValidator::ExtraValidationContext& validation_context, bool is_server,
                     absl::string_view hostname) override;
-  // As CA path will not be configured, make sure the return value won’t be SSL_VERIFY_NONE because
-  // of that, so that doVerifyCertChain() will be called from the TLS stack.
-  int initializeSslContexts(std::vector<SSL_CTX*> contexts,
-                            bool handshaker_provides_certificates) override;
+  // Return SSL_VERIFY_PEER so that doVerifyCertChain() will be called from the TLS stack.
+  int initializeSslContexts(std::vector<SSL_CTX*> /*contexts*/,
+			    bool /*handshaker_provides_certificates*/) override {
+    return SSL_VERIFY_PEER;
+  }
 
 private:
   class PendingValidation {
@@ -89,19 +90,14 @@ private:
     Ssl::ValidateResultCallbackPtr result_callback_;
   };
 
-  // Calls into platform APIs in a stand-alone thread to verify the given certs.
-  // Once the validation is done, the result will be posted back to the current
-  // thread to trigger callback and update verify stats.
   void verifyCertChainByPlatform(const std::vector<envoy_data>& cert_chain,
                                  const std::string& hostname,
                                  const std::vector<std::string>& subject_alt_names,
                                  PendingValidation& pending_validation);
 
-  const Envoy::Ssl::CertificateValidationContextConfig* config_;
-  SslStats& stats_;
-  bool allow_untrusted_certificate_ = false;
-  // latches the platform extension API.
+  const bool allow_untrusted_certificate_;
   const envoy_cert_validator* platform_validator_;
+  SslStats& stats_;
   absl::flat_hash_map<std::thread::id, std::thread> validation_threads_;
   absl::flat_hash_set<std::unique_ptr<PendingValidation>> validations_;
   std::shared_ptr<size_t> alive_indicator_{new size_t(1)};
