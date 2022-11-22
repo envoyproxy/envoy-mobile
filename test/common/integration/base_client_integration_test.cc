@@ -64,8 +64,8 @@ BaseClientIntegrationTest::BaseClientIntegrationTest(Network::Address::IpVersion
   autonomous_upstream_ = true;
   defer_listener_finalization_ = true;
 
-  if (const char* log_level = std::getenv("LOG_LEVEL")) {
-    addLogLevel(Platform::logLevelFromString(std::string(log_level)));
+  if (auto log_level = TestEnvironment::getOptionalEnvVar("LOG_LEVEL")) {
+    addLogLevel(Platform::logLevelFromString(*log_level));
   }
 }
 
