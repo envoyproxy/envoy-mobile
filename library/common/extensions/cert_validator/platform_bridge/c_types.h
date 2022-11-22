@@ -27,7 +27,7 @@ typedef envoy_cert_validation_result (*envoy_validate_cert_f)(const envoy_data* 
 /**
  * Function signature for calling into platform APIs to clean up after validation completion.
  */
-typedef void (*envoy_release_validator_f)();
+typedef void (*envoy_validation_cleanup_f)();
 
 #ifdef __cplusplus
 } // function pointers
@@ -38,5 +38,5 @@ typedef void (*envoy_release_validator_f)();
  */
 typedef struct {
   envoy_validate_cert_f validate_cert;
-  envoy_release_validator_f release_validator;
+  envoy_validation_cleanup_f validation_cleanup;
 } envoy_cert_validator;
