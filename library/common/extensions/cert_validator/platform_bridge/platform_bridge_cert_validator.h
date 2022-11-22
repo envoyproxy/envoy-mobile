@@ -56,7 +56,7 @@ public:
                     const Network::TransportSocketOptionsConstSharedPtr& transport_socket_options,
                     SSL_CTX& ssl_ctx,
                     const CertValidator::ExtraValidationContext& validation_context, bool is_server,
-                    absl::string_view host_name) override;
+                    absl::string_view hostname) override;
   // As CA path will not be configured, make sure the return value won’t be SSL_VERIFY_NONE because
   // of that, so that doVerifyCertChain() will be called from the TLS stack.
   int initializeSslContexts(std::vector<SSL_CTX*> contexts,
@@ -66,12 +66,10 @@ private:
   class PendingValidation {
   public:
     PendingValidation(PlatformBridgeCertValidator& parent, std::vector<envoy_data> certs,
-                      absl::string_view host_name,
-                      const Network::TransportSocketOptionsConstSharedPtr transport_socket_options,
+                      absl::string_view hostname, std::vector<std::string> subject_alt_names,
                       Ssl::ValidateResultCallbackPtr result_callback)
-        : parent_(parent), certs_(std::move(certs)), host_name_(host_name),
-          result_callback_(std::move(result_callback)),
-          transport_socket_options_(std::move(transport_socket_options)) {}
+        : parent_(parent), certs_(std::move(certs)), hostname_(hostname),
+          subject_alt_names_(std::move(subject_alt_names)), result_callback_(std::move(result_callback)) {}
 
     void verifyCertsByPlatform();
 
@@ -90,18 +88,18 @@ private:
     };
 
   private:
-    Event::SchedulableCallbackPtr next_iteration_callback_;
     PlatformBridgeCertValidator& parent_;
-    std::vector<envoy_data> certs_;
-    std::string host_name_;
+    const std::vector<envoy_data> certs_;
+    const std::string hostname_;
+    const std::vector<std::string> subject_alt_names_;
     Ssl::ValidateResultCallbackPtr result_callback_;
-    const Network::TransportSocketOptionsConstSharedPtr transport_socket_options_;
   };
 
   // Calls into platform APIs in a stand-alone thread to verify the given certs.
   // Once the validation is done, the result will be posted back to the current
   // thread to trigger callback and update verify stats.
-  void verifyCertChainByPlatform(std::vector<envoy_data>& cert_chain, const std::string& host_name,
+  void verifyCertChainByPlatform(const std::vector<envoy_data>& cert_chain,
+                                 const std::string& hostname,
                                  const std::vector<std::string>& subject_alt_names,
                                  PendingValidation& pending_validation);
 
