@@ -94,7 +94,6 @@ ValidationResults PlatformBridgeCertValidator::doVerifyCertChain(
   ASSERT(insert_result.second);
   PendingValidation& ref = const_cast<PendingValidation&>(*insert_result.first);
   std::thread verification_thread(&PendingValidation::verifyCertsByPlatform, &ref);
-
   std::thread::id thread_id = verification_thread.get_id();
   validation_threads_[thread_id] = std::move(verification_thread);
   return {ValidationResults::ValidationStatus::Pending, absl::nullopt, absl::nullopt};

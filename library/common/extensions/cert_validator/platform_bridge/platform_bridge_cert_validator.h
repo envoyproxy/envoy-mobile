@@ -69,7 +69,8 @@ private:
                       absl::string_view hostname, std::vector<std::string> subject_alt_names,
                       Ssl::ValidateResultCallbackPtr result_callback)
         : parent_(parent), certs_(std::move(certs)), hostname_(hostname),
-          subject_alt_names_(std::move(subject_alt_names)), result_callback_(std::move(result_callback)) {}
+          subject_alt_names_(std::move(subject_alt_names)),
+          result_callback_(std::move(result_callback)) {}
 
     void verifyCertsByPlatform();
 
