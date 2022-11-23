@@ -57,7 +57,7 @@ public:
                     SSL_CTX& ssl_ctx,
                     const CertValidator::ExtraValidationContext& validation_context, bool is_server,
                     absl::string_view hostname) override;
-  // Return SSL_VERIFY_PEER so that doVerifyCertChain() will be called from the TLS stack.
+  // Returns SSL_VERIFY_PEER so that doVerifyCertChain() will be called from the TLS stack.
   int initializeSslContexts(std::vector<SSL_CTX*> /*contexts*/,
                             bool /*handshaker_provides_certificates*/) override {
     return SSL_VERIFY_PEER;
@@ -77,6 +77,9 @@ private:
     PendingValidation(const PendingValidation&) = delete;
     PendingValidation(PendingValidation&&) = delete;
 
+    // Calls into platform APIs in a stand-alone thread to verify the given certs.
+    // Once the validation is done, the result will be posted back to the current
+    // thread to trigger callback and update verify stats.
     void verifyCertsByPlatform();
 
     void postVerifyResultAndCleanUp(bool success, absl::string_view error_details,
