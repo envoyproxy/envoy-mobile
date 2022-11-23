@@ -25,7 +25,7 @@ typedef envoy_cert_validation_result (*envoy_validate_cert_f)(const envoy_data* 
                                                               const char* host_name);
 
 /**
- * Function signature for calling into platform APIs to clean up after validation completion.
+ * Function signature for calling into platform APIs to clean up after validation is complete.
  */
 typedef void (*envoy_validation_cleanup_f)();
 
