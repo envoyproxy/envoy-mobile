@@ -75,18 +75,18 @@ private:
   // thread to trigger callback and update verify stats.
   // Must be called on the validation thread.
   static void verifyCertChainByPlatform(const envoy_cert_validator* platform_validator,
-					Event::Dispatcher* dispatcher,
-					std::vector<envoy_data> cert_chain,
-					std::string hostname,
-					std::vector<std::string> subject_alt_names,
-					PlatformBridgeCertValidator* parent);
+                                        Event::Dispatcher* dispatcher,
+                                        std::vector<envoy_data> cert_chain, std::string hostname,
+                                        std::vector<std::string> subject_alt_names,
+                                        PlatformBridgeCertValidator* parent);
 
   // Must be called on the validation thread.
-  static void postVerifyResultAndCleanUp(bool success, std::string hostname, absl::string_view error_details,
-					 uint8_t tls_alert, ValidationFailureType failure_type,
-					 const envoy_cert_validator* platform_validator,
-					 Event::Dispatcher* dispatcher,
-					 PlatformBridgeCertValidator* parent);
+  static void postVerifyResultAndCleanUp(bool success, std::string hostname,
+                                         absl::string_view error_details, uint8_t tls_alert,
+                                         ValidationFailureType failure_type,
+                                         const envoy_cert_validator* platform_validator,
+                                         Event::Dispatcher* dispatcher,
+                                         PlatformBridgeCertValidator* parent);
 
   // Called when a pending verification completes. Must be invoked on the main thread.
   void onVerificationComplete(std::thread::id thread_id, std::string hostname, bool success,
