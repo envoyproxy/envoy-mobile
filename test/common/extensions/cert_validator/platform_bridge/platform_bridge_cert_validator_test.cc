@@ -262,12 +262,13 @@ TEST_P(PlatformBridgeCertValidatorTest, ValidCertificateSniOverride) {
   bssl::UniquePtr<STACK_OF(X509)> cert_chain = readCertChainFromFile(TestEnvironment::substitute(
       "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns2_cert.pem"));
   envoy_cert_validation_result result = {ENVOY_SUCCESS, 0, NULL};
-  EXPECT_CALL(*mock_validator_, validate(_, _, StrEq(subject_alt_names[0].c_str()))).WillOnce(Return(result));
+  EXPECT_CALL(*mock_validator_, validate(_, _, StrEq(subject_alt_names[0].c_str())))
+      .WillOnce(Return(result));
   EXPECT_CALL(*mock_validator_, cleanup());
   auto& callback_ref = *callback_;
   EXPECT_CALL(callback_ref, dispatcher()).WillRepeatedly(ReturnRef(*dispatcher_));
   transport_socket_options_ =
-    std::make_shared<Network::TransportSocketOptionsImpl>("", std::move(subject_alt_names));
+      std::make_shared<Network::TransportSocketOptionsImpl>("", std::move(subject_alt_names));
 
   ValidationResults results = validator.doVerifyCertChain(
       *cert_chain, std::move(callback_), &ssl_extended_info_, transport_socket_options_, *ssl_ctx_,
@@ -283,7 +284,8 @@ TEST_P(PlatformBridgeCertValidatorTest, ValidCertificateSniOverride) {
 
 TEST_P(PlatformBridgeCertValidatorTest, DeletedWithValidationPending) {
   initializeConfig();
-  auto validator = std::make_unique<PlatformBridgeCertValidator>(&config_, stats_, &platform_validator_);
+  auto validator =
+      std::make_unique<PlatformBridgeCertValidator>(&config_, stats_, &platform_validator_);
 
   std::string hostname = "server1.example.com";
   bssl::UniquePtr<STACK_OF(X509)> cert_chain = readCertChainFromFile(TestEnvironment::substitute(
