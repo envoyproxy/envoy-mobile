@@ -488,7 +488,7 @@ open class EngineBuilder: NSObject {
   /// your app to security vulnerabilities.
   ///
   /// Note this will not work with the default production build, as it builds with admin
-  /// functionality disasbled via --define=admin_functionality=disabled
+  /// functionality disabled via --define=admin_functionality=disabled
   ///
   /// - returns: This builder.
   @discardableResult
