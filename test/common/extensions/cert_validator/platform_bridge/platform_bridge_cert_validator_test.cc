@@ -80,9 +80,7 @@ protected:
   }
 
   ABSL_MUST_USE_RESULT bool waitForDispatcherToExit() {
-    Event::TimerPtr timer(dispatcher_->createTimer([this]() -> void {
-      dispatcher_->exit();
-    }));
+    Event::TimerPtr timer(dispatcher_->createTimer([this]() -> void { dispatcher_->exit(); }));
     timer->enableTimer(std::chrono::milliseconds(100));
     dispatcher_->run(Event::Dispatcher::RunType::RunUntilExit);
     return !timer->enabled();
