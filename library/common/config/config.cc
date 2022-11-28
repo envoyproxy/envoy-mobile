@@ -237,7 +237,7 @@ const char* transport_socket_insert = R"(
           sni: lyft.com
 )";
 
-const char* rtds_clusters_insert = R"(
+const char* xds_clusters_insert = R"(
     - name: base_h2
       connect_timeout: 5s
 #{{custom_transport_socket}}

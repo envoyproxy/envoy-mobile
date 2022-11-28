@@ -62,7 +62,6 @@ public:
   EngineBuilder& enforceTrustChainVerification(bool trust_chain_verification_on);
   EngineBuilder& enablePlatformCertificatesValidation(bool platform_certificates_validation_on);
   EngineBuilder& setRtdsConfig(std::string yaml);
-  EngineBuilder& setRtdsEndpoint(std::string hostname);
   EngineBuilder& enableCustomClusters(bool enable_clusters);
   EngineBuilder& setAdminConfig(std::string yaml);
   EngineBuilder& disableStatsConfig(bool disable_stats);

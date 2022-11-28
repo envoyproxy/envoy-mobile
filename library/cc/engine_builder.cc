@@ -159,11 +159,6 @@ EngineBuilder& EngineBuilder::setRtdsConfig(std::string yaml) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setRtdsEndpoint(std::string hostname) {
-  this->hostname_ = hostname;
-  return *this;
-}
-
 EngineBuilder& EngineBuilder::enableCustomClusters(bool enable_clusters) {
   this->enable_clusters_ = enable_clusters;
   return *this;
@@ -347,7 +342,7 @@ std::string EngineBuilder::generateConfigStr() const {
         &config_template);
   }
 
-  if (this->custom_layers_ != "") {
+  if (this->custom_layers_.empty()) {
     absl::StrReplaceAll(
         {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", this->custom_layers_)}},
         &config_template);
@@ -357,16 +352,16 @@ std::string EngineBuilder::generateConfigStr() const {
         &config_template);
   }
 
-  if (this->admin_yaml_ != "") {
+  if (this->admin_yaml_.empty()) {
     absl::StrReplaceAll({{"#{custom_admin}", absl::StrCat("#{custom_admin}\n", this->admin_yaml_)}},
                         &config_template);
   }
   if (this->enable_clusters_) {
     std::string formatted_insert;
-    if (this->ports_.empty() || this->ipv_version_ == "") {
-      formatted_insert = fmt::format(rtds_clusters_insert, "127.0.0.1", "0", "127.0.0.1", "0");
+    if (this->ports_.empty() || this->ipv_version_.empty()) {
+      formatted_insert = fmt::format(xds_clusters_insert, "127.0.0.1", "0", "127.0.0.1", "0");
     } else {
-      formatted_insert = fmt::format(rtds_clusters_insert, this->ipv_version_, this->ports_[0],
+      formatted_insert = fmt::format(xds_clusters_insert, this->ipv_version_, this->ports_[0],
                                      this->ipv_version_, this->ports_[1]);
     }
     if (this->enable_transport_socket_) {
