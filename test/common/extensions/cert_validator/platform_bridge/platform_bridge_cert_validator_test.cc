@@ -79,15 +79,13 @@ protected:
     main_thread_id_ = std::thread::id();
   }
 
-  bool waitForDispatcherToExit() {
-    bool timer_fired = false;
-    Event::TimerPtr timer(dispatcher_->createTimer([this, &timer_fired]() -> void {
-      timer_fired = true;
+  ABSL_MUST_USE_RESULT bool waitForDispatcherToExit() {
+    Event::TimerPtr timer(dispatcher_->createTimer([this]() -> void {
       dispatcher_->exit();
     }));
     timer->enableTimer(std::chrono::milliseconds(100));
     dispatcher_->run(Event::Dispatcher::RunType::RunUntilExit);
-    return timer_fired;
+    return !timer->enabled();
   }
 
   bool acceptInvalidCertificates() {
@@ -96,7 +94,7 @@ protected:
 
   static envoy_cert_validation_result validate(const envoy_data* certs, uint8_t size,
                                                const char* hostname) {
-    // Validate must be called on the worked thread, not the main thread.
+    // Validate must be called on the worker thread, not the main thread.
     EXPECT_NE(main_thread_id_, std::this_thread::get_id());
 
     // Make sure the cert was converted correctly.
@@ -107,7 +105,7 @@ protected:
   }
 
   static void cleanup() {
-    // Validate must be called on the worked thread, not the main thread.
+    // Validate must be called on the worker thread, not the main thread.
     EXPECT_NE(main_thread_id_, std::this_thread::get_id());
     mock_validator_->cleanup();
   }
