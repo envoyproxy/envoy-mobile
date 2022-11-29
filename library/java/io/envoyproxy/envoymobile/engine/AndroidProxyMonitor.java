@@ -35,10 +35,10 @@ class AndroidProxyMonitor extends BroadcastReceiver {
     this.envoyEngine = envoyEngine;
     this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-    registerReceiver(context);
     // PROXY_INFO is not guaranteed to be a sticky intent so we need to trigger
     // a manual poll of proxy settings.
     handleProxyChange(null);
+    registerReceiver(context);
   }
 
   private void registerReceiver(Context context) {
