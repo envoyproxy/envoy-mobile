@@ -109,7 +109,7 @@ envoy_netproxyconf_t ConnectivityManagerImpl::acquireProxySettingsUpdateKey() {
   Thread::LockGuard lock{proxy_state_.mutex_};
   proxy_state_.configuration_key_++;
 
-  return proxy_state_.configuration_key_++;
+  return proxy_state_.configuration_key_;
 }
 
 void ConnectivityManagerImpl::setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings, envoy_netproxyconf_t configuration_key) {
