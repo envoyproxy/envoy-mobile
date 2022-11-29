@@ -39,6 +39,13 @@
 typedef uint16_t envoy_netconf_t;
 
 /**
+ * envoy_netproxyconf_t identifies a snapshot of proxy settings state. Used to avoid races
+ * for when the application receives multiple proxy settings update events in a quick succession.
+ * 
+ */
+typedef uint16_t envoy_netproxyconf_t;
+
+/**
  * These values specify the behavior of the network connectivity_manager with respect to the
  * upstream socket options it supplies.
  */
@@ -136,7 +143,7 @@ public:
    * @param proxy_settings The proxy settings. `nullptr` if there is no proxy configured on a
    * device.
    */
-  virtual void setProxySettings(ProxySettingsConstSharedPtr proxy_settings) PURE;
+  virtual void setProxySettings(ProxySettingsConstSharedPtr proxy_settings, envoy_netproxyconf_t configuration_key) PURE;
 
   /**
    * Configure whether connections should be drained after a triggered DNS refresh. Currently this
@@ -199,6 +206,14 @@ public:
    */
   static envoy_netconf_t setPreferredNetwork(envoy_network_t network);
 
+  /**
+   * Acquires a configuration key that's used to update proxy settings. The introduction 
+   * of the configuration key removes the possibility of races for when multiple proxy settings
+   * updates are performed after dispatching code execution using an async dispatcher.
+   * @returns configuration key to associate with any related calls.
+   */
+  static envoy_netproxyconf_t acquireProxySettingsUpdateKey();
+
   ConnectivityManagerImpl(Upstream::ClusterManager& cluster_manager,
                           DnsCacheManagerSharedPtr dns_cache_manager)
       : cluster_manager_(cluster_manager), dns_cache_manager_(dns_cache_manager) {}
@@ -222,7 +237,7 @@ public:
   envoy_netconf_t getConfigurationKey() override;
   Envoy::Network::ProxySettingsConstSharedPtr getProxySettings() override;
   void reportNetworkUsage(envoy_netconf_t configuration_key, bool network_fault) override;
-  void setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) override;
+  void setProxySettings(ProxySettingsConstSharedPtr proxy_settings, envoy_netproxyconf_t configuration_key) override;
   void setDrainPostDnsRefreshEnabled(bool enabled) override;
   void setInterfaceBindingEnabled(bool enabled) override;
   void refreshDns(envoy_netconf_t configuration_key, bool drain_connections) override;
@@ -242,6 +257,12 @@ private:
     envoy_socket_mode_t socket_mode_ ABSL_GUARDED_BY(mutex_);
     Thread::MutexBasicLockable mutex_;
   };
+
+  struct ProxyState {
+    envoy_netproxyconf_t configuration_key_ ABSL_GUARDED_BY(mutex_);
+    Thread::MutexBasicLockable mutex_;
+  };
+
   Socket::OptionsSharedPtr getAlternateInterfaceSocketOptions(envoy_network_t network);
   InterfacePair getActiveAlternateInterface(envoy_network_t network, unsigned short family);
 
@@ -254,6 +275,7 @@ private:
   DnsCacheManagerSharedPtr dns_cache_manager_;
   ProxySettingsConstSharedPtr proxy_settings_;
   static NetworkState network_state_;
+  static ProxyState proxy_state_;
 };
 
 using ConnectivityManagerSharedPtr = std::shared_ptr<ConnectivityManager>;
