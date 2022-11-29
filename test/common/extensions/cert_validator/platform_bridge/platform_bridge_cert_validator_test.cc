@@ -70,9 +70,9 @@ protected:
   }
 
   void initializeConfig() {
-    EXPECT_CALL(config_, caCert()).WillOnce(ReturnRef(empty_string_));
-    EXPECT_CALL(config_, certificateRevocationList()).WillOnce(ReturnRef(empty_string_));
-    EXPECT_CALL(config_, trustChainVerification()).WillOnce(Return(GetParam()));
+    EXPECT_CALL(config_, caCert()).WillRepeatedly(ReturnRef(empty_string_));
+    EXPECT_CALL(config_, certificateRevocationList()).WillRepeatedly(ReturnRef(empty_string_));
+    EXPECT_CALL(config_, trustChainVerification()).WillRepeatedly(Return(GetParam()));
   }
 
   ~PlatformBridgeCertValidatorTest() {
