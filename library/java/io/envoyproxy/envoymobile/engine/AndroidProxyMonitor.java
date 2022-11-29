@@ -36,6 +36,9 @@ class AndroidProxyMonitor extends BroadcastReceiver {
     this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     registerReceiver(context);
+    // PROXY_INFO is not guaranteed to be a sticky intent so we need to trigger
+    // a manual poll of proxy settings.
+    handleProxyChange(null);
   }
 
   private void registerReceiver(Context context) {
@@ -76,6 +79,11 @@ class AndroidProxyMonitor extends BroadcastReceiver {
     //
     // See https://github.com/envoyproxy/envoy-mobile/issues/2531 for more details.
     if (info.getPacFileUrl() != null && info.getPacFileUrl() != Uri.EMPTY) {
+      if (intent == null) {
+        // PAC proxies are supported only when Intent is present
+        return null;
+      }
+
       Bundle extras = intent.getExtras();
       if (extras == null) {
         return null;
