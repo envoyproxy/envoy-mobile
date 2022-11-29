@@ -36,8 +36,8 @@ class AndroidProxyMonitor extends BroadcastReceiver {
     this.connectivityManager =
         (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     // PROXY_INFO is not guaranteed to be a sticky intent so we need to trigger
-    // a manual poll of proxy settings. Proxy settings received as a result of PROXY_INFO 
-    // intent updates should take precedence/override locally polled settings, 
+    // a manual poll of proxy settings. Proxy settings received as a result of PROXY_INFO
+    // intent updates should take precedence/override locally polled settings,
     // hence we trigger a manual proxy settings poll before we subscribe to PROXY_INFO intent updates.
     handleProxyChange(null);
     registerReceiver(context);
