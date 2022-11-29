@@ -68,10 +68,11 @@ protected:
     platform_validator_.validate_cert = (PlatformBridgeCertValidatorTest::validate);
     platform_validator_.validation_cleanup = (PlatformBridgeCertValidatorTest::cleanup);
   }
+
   void initializeConfig() {
     EXPECT_CALL(config_, caCert()).WillOnce(ReturnRef(empty_string_));
     EXPECT_CALL(config_, certificateRevocationList()).WillOnce(ReturnRef(empty_string_));
-    EXPECT_CALL(config_, trustChainVerification()).WillOnce(Return(GetParam()));
+    EXPECT_CALL(config_, trustChainVerification()).WillOnce(Return(acceptInvalidCertificates()));
   }
 
   ~PlatformBridgeCertValidatorTest() {
@@ -143,7 +144,8 @@ TEST_P(PlatformBridgeCertValidatorTest, NonEmptyCaCert) {
   std::string ca_cert = "xyz";
   EXPECT_CALL(config_, caCert()).WillRepeatedly(ReturnRef(ca_cert));
   EXPECT_CALL(config_, certificateRevocationList()).WillRepeatedly(ReturnRef(empty_string_));
-  EXPECT_CALL(config_, trustChainVerification()).WillRepeatedly(Return(GetParam()));
+  EXPECT_CALL(config_, trustChainVerification())
+      .WillRepeatedly(Return(acceptInvalidCertificates()));
 
   EXPECT_ENVOY_BUG(
       { PlatformBridgeCertValidator validator(&config_, stats_, &platform_validator_); },
@@ -154,7 +156,8 @@ TEST_P(PlatformBridgeCertValidatorTest, NonEmptyRevocationList) {
   std::string revocation_list = "xyz";
   EXPECT_CALL(config_, caCert()).WillRepeatedly(ReturnRef(empty_string_));
   EXPECT_CALL(config_, certificateRevocationList()).WillRepeatedly(ReturnRef(revocation_list));
-  EXPECT_CALL(config_, trustChainVerification()).WillRepeatedly(Return(GetParam()));
+  EXPECT_CALL(config_, trustChainVerification())
+      .WillRepeatedly(Return(acceptInvalidCertificates()));
 
   EXPECT_ENVOY_BUG(
       { PlatformBridgeCertValidator validator(&config_, stats_, &platform_validator_); },
