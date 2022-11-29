@@ -78,7 +78,7 @@ class AndroidProxyMonitor extends BroadcastReceiver {
     // proxy is configured.
     //
     // See https://github.com/envoyproxy/envoy-mobile/issues/2531 for more details.
-    if (info.getPacFileUrl() != null && info.getPacFileUrl() != Uri.EMPTY) {
+    if (info.getHost() == "localhost" && info.getPort() == -1) {
       if (intent == null) {
         // PAC proxies are supported only when Intent is present
         return null;
