@@ -81,9 +81,6 @@ ConnectivityManagerImpl::NetworkState ConnectivityManagerImpl::network_state_{
     1, ENVOY_NET_GENERIC, MaxFaultThreshold, DefaultPreferredNetworkMode,
     Thread::MutexBasicLockable{}};
 
-ConnectivityManagerImpl::ProxyState ConnectivityManagerImpl::proxy_state_{
-    1, Thread::MutexBasicLockable{}};
-
 envoy_netconf_t ConnectivityManagerImpl::setPreferredNetwork(envoy_network_t network) {
   Thread::LockGuard lock{network_state_.mutex_};
 
@@ -105,20 +102,7 @@ envoy_netconf_t ConnectivityManagerImpl::setPreferredNetwork(envoy_network_t net
   return network_state_.configuration_key_;
 }
 
-envoy_netproxyconf_t ConnectivityManagerImpl::acquireProxySettingsUpdateKey() {
-  Thread::LockGuard lock{proxy_state_.mutex_};
-  proxy_state_.configuration_key_++;
-
-  return proxy_state_.configuration_key_++;
-}
-
-void ConnectivityManagerImpl::setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings, envoy_netproxyconf_t configuration_key) {
-  Thread::LockGuard lock{proxy_state_.mutex_};
-
-  if (configuration_key != proxy_state_.configuration_key_) {
-    return;
-  }
-
+void ConnectivityManagerImpl::setProxySettings(ProxySettingsConstSharedPtr new_proxy_settings) {
   if (proxy_settings_ == nullptr && new_proxy_settings != nullptr) {
     ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
     proxy_settings_ = new_proxy_settings;
@@ -130,6 +114,8 @@ void ConnectivityManagerImpl::setProxySettings(ProxySettingsConstSharedPtr new_p
     ENVOY_LOG_EVENT(info, "netconf_proxy_change", new_proxy_settings->asString());
     proxy_settings_ = new_proxy_settings;
   }
+
+  return;
 }
 
 ProxySettingsConstSharedPtr ConnectivityManagerImpl::getProxySettings() { return proxy_settings_; }
