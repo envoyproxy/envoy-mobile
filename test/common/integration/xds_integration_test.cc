@@ -35,7 +35,7 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
     auto config_str = this->generateConfigStr();
     TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   });
-  enableCustomClusters(true);
+  enableXdsClusters(true);
   this->setLoopbackAddress(Network::Test::getLoopbackAddressString(ipVersion()));
   disableStatsConfig(true);
 
