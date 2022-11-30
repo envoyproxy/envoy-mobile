@@ -19,11 +19,6 @@ PlatformBridgeCertValidator::PlatformBridgeCertValidator(
                                        envoy::extensions::transport_sockets::tls::v3::
                                            CertificateValidationContext::ACCEPT_UNTRUSTED),
       platform_validator_(platform_validator), stats_(stats) {
-  std::cout << "Has config? " << (config != nullptr) << "\n";
-  if (config != nullptr) {
-    std::cout << "Has caCert? " << (!config->caCert().empty()) << "\n";
-    std::cout << "Has certificateRevocationList? " << (!config->certificateRevocationList().empty()) << "\n";
-  }
   ENVOY_BUG(config != nullptr && config->caCert().empty() &&
                 config->certificateRevocationList().empty(),
             "Invalid certificate validation context config.");

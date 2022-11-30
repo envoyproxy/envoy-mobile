@@ -39,8 +39,8 @@ jobs:
           echo "build --remote_header=\"Authorization=Bearer ${{ secrets.GITHUB_TOKEN }}\"" > ~/.bazelrc
           BAZEL_BUILD_OPTIONS="--config=remote-ci-linux-coverage" \
             PATH=/opt/llvm/bin:${PATH} \
-            COVERAGE_THRESHOLD=94 \
-            ./envoy/test/run_envoy_bazel_coverage.sh //test/common/... || cat /github/home/.cache/bazel/_bazel_root/*/execroot/envoy_mobile/bazel-out/k8-fastbuild/testlogs/test/common/extensions/cert_validator/platform_bridge/platform_bridge_cert_validator_test/test_attempts/attempt_1.log
+            COVERAGE_THRESHOLD=95 \
+            ./envoy/test/run_envoy_bazel_coverage.sh //test/common/...
       - name: 'Package coverage'
         if: steps.check_context.outputs.run_coverage == 'true'
         run: |

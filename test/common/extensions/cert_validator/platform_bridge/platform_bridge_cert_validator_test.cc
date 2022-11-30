@@ -70,14 +70,15 @@ protected:
   }
 
   void initializeConfig() {
-    EXPECT_CALL(config_, caCert()).WillRepeatedly(ReturnRef(empty_string_));
-    EXPECT_CALL(config_, certificateRevocationList()).WillRepeatedly(ReturnRef(empty_string_));
-    EXPECT_CALL(config_, trustChainVerification()).WillRepeatedly(Return(GetParam()));
+    EXPECT_CALL(config_, caCert()).WillOnce(ReturnRef(empty_string_));
+    EXPECT_CALL(config_, certificateRevocationList()).WillOnce(ReturnRef(empty_string_));
+    EXPECT_CALL(config_, trustChainVerification()).WillOnce(Return(GetParam()));
   }
 
   ~PlatformBridgeCertValidatorTest() {
     mock_validator_.reset();
     main_thread_id_ = std::thread::id();
+    Envoy::Assert::resetEnvoyBugCountersForTest();
   }
 
   ABSL_MUST_USE_RESULT bool waitForDispatcherToExit() {
