@@ -20,7 +20,7 @@ using ::testing::AssertionSuccess;
 
 XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()) {
   override_builder_config_ = false;
-  expect_dns_ = false;              // TODO(alyssawilk) debug.
+  expect_dns_ = false; // TODO(alyssawilk) debug.
   create_xds_upstream_ = true;
   sotw_or_delta_ = sotwOrDelta();
 
@@ -29,7 +29,7 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
     config_helper_.addRuntimeOverride("envoy.reloadable_features.unified_mux", "true");
   }
 
-  // Write the engine builder config to the bootstrap.  
+  // Write the engine builder config to the bootstrap.
   // This ensures the fake upstreams match what's been specified in the engine
   config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
     auto config_str = this->generateConfigStr();

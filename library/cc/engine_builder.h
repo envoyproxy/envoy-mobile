@@ -65,12 +65,13 @@ public:
   EngineBuilder& useXdsLayers(std::string api_type, std::string xds_cluster,
                               std::string initial_fetch_timeout = "1");
   // Replaces default clusters with xds_clusters_insert
-  EngineBuilder& enableCustomClusters(bool enable_clusters);
+  EngineBuilder& enableXdsClusters(bool enable_xds_clusters);
   // Sets up an admin cluster with the given address
   EngineBuilder& useXdsAdmin(std::string loopback_address);
   // Disables the stats config
   EngineBuilder& disableStatsConfig(bool disable_stats);
-  // Sets upstream ports for the XDS clusters. Not needed for the default clusters because their ports are set in the bootstrap config.
+  // Sets upstream ports for the XDS clusters. Not needed for the default clusters because their
+  // ports are set in the bootstrap config.
   EngineBuilder& setPorts(std::vector<uint32_t> ports);
   // Sets loopback address for the XDS clusters
   EngineBuilder& setLoopbackAddress(std::string loopback_address);
@@ -121,7 +122,7 @@ private:
   std::string initial_fetch_timeout_ = "";
   std::string admin_loopback_address_ = "";
   std::string hostname_ = "";
-  bool enable_clusters_ = false;
+  bool enable_xds_clusters_ = false;
   bool disable_stats_ = false;
   int stream_idle_timeout_seconds_ = 15;
   int per_try_idle_timeout_seconds_ = 15;

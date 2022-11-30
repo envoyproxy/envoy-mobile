@@ -14,9 +14,9 @@ public:
   RtdsIntegrationTest() {
     // Add the layered runtime config, which includes the RTDS layer.
     const std::string api_type = sotw_or_delta_ == Grpc::SotwOrDelta::Sotw ||
-                                          sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw
-                                      ? "GRPC"
-                                      : "DELTA_GRPC";
+                                         sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw
+                                     ? "GRPC"
+                                     : "DELTA_GRPC";
     useXdsLayers(api_type, std::string(XDS_CLUSTER));
   }
 

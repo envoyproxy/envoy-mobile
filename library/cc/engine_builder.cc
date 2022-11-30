@@ -162,8 +162,8 @@ EngineBuilder& EngineBuilder::useXdsLayers(std::string api_type, std::string xds
   return *this;
 }
 
-EngineBuilder& EngineBuilder::enableCustomClusters(bool enable_clusters) {
-  this->enable_clusters_ = enable_clusters;
+EngineBuilder& EngineBuilder::enableXdsClusters(bool enable_xds_clusters) {
+  this->enable_xds_clusters_ = enable_xds_clusters;
   return *this;
 }
 
@@ -364,7 +364,7 @@ std::string EngineBuilder::generateConfigStr() const {
                        fmt::format(xds_admin_insert, this->admin_loopback_address_))}},
         &config_template);
   }
-  if (this->enable_clusters_) {
+  if (this->enable_xds_clusters_) {
     std::string formatted_insert;
     if (this->ports_.empty() || this->loopback_address_.empty()) {
       // In XDS tests, the engine builder is used as the bootstrap config to create fake upstreams.
