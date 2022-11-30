@@ -61,12 +61,20 @@ public:
   EngineBuilder& enableH2ExtendKeepaliveTimeout(bool h2_extend_keepalive_timeout_on);
   EngineBuilder& enforceTrustChainVerification(bool trust_chain_verification_on);
   EngineBuilder& enablePlatformCertificatesValidation(bool platform_certificates_validation_on);
-  EngineBuilder& setRtdsConfig(std::string yaml);
+  // Sets up custom layers for RTDS
+  EngineBuilder& useXdsLayers(std::string api_type, std::string xds_cluster,
+                              std::string initial_fetch_timeout = "1");
+  // Replaces default clusters with xds_clusters_insert
   EngineBuilder& enableCustomClusters(bool enable_clusters);
-  EngineBuilder& setAdminConfig(std::string yaml);
+  // Sets up an admin cluster with the given address
+  EngineBuilder& useXdsAdmin(std::string loopback_address);
+  // Disables the stats config
   EngineBuilder& disableStatsConfig(bool disable_stats);
+  // Sets upstream ports for the XDS clusters. Not needed for the default clusters because their ports are set in the bootstrap config.
   EngineBuilder& setPorts(std::vector<uint32_t> ports);
-  EngineBuilder& setIpvVersion(std::string ipv_version);
+  // Sets loopback address for the XDS clusters
+  EngineBuilder& setLoopbackAddress(std::string loopback_address);
+  // Optionally sets a transport socket for the XDS clusters
   EngineBuilder& enableCustomTransportSocket(bool enable_transport_socket);
 
   // this is separated from build() for the sake of testability
@@ -108,8 +116,10 @@ private:
   std::string virtual_clusters_ = "[]";
   std::string config_override_for_tests_ = "";
   std::string admin_address_path_for_tests_ = "";
-  std::string custom_layers_ = "";
-  std::string admin_yaml_ = "";
+  std::string api_type_ = "";
+  std::string xds_cluster_ = "";
+  std::string initial_fetch_timeout_ = "";
+  std::string admin_loopback_address_ = "";
   std::string hostname_ = "";
   bool enable_clusters_ = false;
   bool disable_stats_ = false;
@@ -122,7 +132,7 @@ private:
 
   bool enable_transport_socket_ = false;
   std::vector<uint32_t> ports_;
-  std::string ipv_version_ = "";
+  std::string loopback_address_ = "";
   absl::flat_hash_map<std::string, KeyValueStoreSharedPtr> key_value_stores_{};
 
   bool admin_interface_enabled_ = false;

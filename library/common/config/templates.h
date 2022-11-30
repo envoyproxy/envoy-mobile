@@ -77,6 +77,10 @@ extern const char* brotli_config_insert;
  */
 extern const char* socket_tag_config_insert;
 
+/* Insert for custom layers in XDS tests.
+ */
+extern const char* xds_layers_insert;
+
 /* Insert for default layers.
  */
 extern const char* default_layers_insert;
@@ -85,17 +89,22 @@ extern const char* default_layers_insert;
  */
 extern const char* default_stats_config_insert;
 
-/* Insert that enables rtds clusters.
+/* Insert that enables xds clusters.
  */
-extern const char* rtds_clusters_insert;
+extern const char* xds_clusters_insert;
 
 /* Insert for default clusters.
  */
 extern const char* default_clusters_insert;
 
-/* Insert to add a transport socket to rtds_clusters_insert
+/* Insert to add a transport socket to xds_clusters_insert
  */
+
 extern const char* transport_socket_insert;
+
+/* Insert that enables xds admin.
+ */
+extern const char* xds_admin_insert;
 
 /**
  * Insert that enables the route cache reset filter in the filter chain.

@@ -36,12 +36,12 @@ XdsIntegrationTest::XdsIntegrationTest() : BaseClientIntegrationTest(ipVersion()
     TestUtility::loadFromYaml(absl::StrCat(config_header, config_str), bootstrap);
   });
   enableCustomClusters(true);
-  this->setIpvVersion(Network::Test::getLoopbackAddressString(ipVersion()));
+  this->setLoopbackAddress(Network::Test::getLoopbackAddressString(ipVersion()));
   disableStatsConfig(true);
 
   // xDS upstream is created separately in the test infra, and there's only one non-xDS cluster.
   setUpstreamCount(1);
-  setAdminConfig(adminConfig());
+  useXdsAdmin(Network::Test::getLoopbackAddressString(ipVersion()));
   admin_filename_ = TestEnvironment::temporaryPath("admin_address.txt");
   setAdminAddressPathForTests(admin_filename_);
 }
@@ -153,19 +153,6 @@ XdsIntegrationTest::createSingleEndpointClusterConfig(const std::string& cluster
       ["envoy.extensions.upstreams.http.v3.HttpProtocolOptions"]
           .PackFrom(options);
   return config;
-}
-
-std::string XdsIntegrationTest::adminConfig() {
-  const std::string yaml = fmt::format(R"EOF(
-admin:
-  address:
-    socket_address:
-      address: {}
-      port_value: 0
-)EOF",
-                                       Network::Test::getLoopbackAddressString(ipVersion()));
-
-  return yaml;
 }
 
 } // namespace Envoy

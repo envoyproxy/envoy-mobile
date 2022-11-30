@@ -9,46 +9,6 @@
 namespace Envoy {
 namespace {
 
-std::string layeredRuntimeConfig(const std::string& api_type) {
-  const std::string yaml = fmt::format(R"EOF(
-    - name: static_layer_0
-      static_layer:
-        envoy:
-          disallow_global_stats: true
-          reloadable_features:
-            allow_multiple_dns_addresses: true
-            always_use_v6: false
-            http2_delay_keepalive_timeout: false
-        envoy.reloadable_features.no_extension_lookup_by_name: false
-        overload:
-          global_downstream_max_connections: 4294967295
-    - name: some_static_layer
-      static_layer:
-        foo: whatevs
-        bar: yar
-    - name: some_rtds_layer
-      rtds_layer:
-        name: some_rtds_layer
-        rtds_config:
-          initial_fetch_timeout:
-            seconds: 1
-          resource_api_version: V3
-          api_config_source:
-            api_type: {}
-            transport_api_version: V3
-            grpc_services:
-              envoy_grpc:
-                cluster_name: {}
-            set_node_on_first_message_only: true
-    - name: some_admin_layer
-      admin_layer: {{}}
-)EOF",
-                                       api_type, XDS_CLUSTER);
-
-  return yaml;
-}
-
-
 class RtdsIntegrationTest : public XdsIntegrationTest {
 public:
   RtdsIntegrationTest() {
@@ -57,7 +17,7 @@ public:
                                           sotw_or_delta_ == Grpc::SotwOrDelta::UnifiedSotw
                                       ? "GRPC"
                                       : "DELTA_GRPC";
-    setRtdsConfig(layeredRuntimeConfig(api_type));
+    useXdsLayers(api_type, std::string(XDS_CLUSTER));
   }
 
   void initialize() override {

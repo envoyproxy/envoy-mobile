@@ -154,8 +154,11 @@ EngineBuilder& EngineBuilder::enableSocketTagging(bool socket_tagging_on) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setRtdsConfig(std::string yaml) {
-  this->custom_layers_ = yaml;
+EngineBuilder& EngineBuilder::useXdsLayers(std::string api_type, std::string xds_cluster,
+                                           std::string initial_fetch_timeout) {
+  this->api_type_ = api_type;
+  this->xds_cluster_ = xds_cluster;
+  this->initial_fetch_timeout_ = initial_fetch_timeout;
   return *this;
 }
 
@@ -164,8 +167,8 @@ EngineBuilder& EngineBuilder::enableCustomClusters(bool enable_clusters) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setAdminConfig(std::string yaml) {
-  this->admin_yaml_ = yaml;
+EngineBuilder& EngineBuilder::useXdsAdmin(std::string loopback_address) {
+  this->admin_loopback_address_ = loopback_address;
   return *this;
 }
 
@@ -214,8 +217,8 @@ EngineBuilder& EngineBuilder::setPorts(std::vector<uint32_t> ports) {
   return *this;
 }
 
-EngineBuilder& EngineBuilder::setIpvVersion(std::string ipv_version) {
-  this->ipv_version_ = ipv_version;
+EngineBuilder& EngineBuilder::setLoopbackAddress(std::string loopback_address) {
+  this->loopback_address_ = loopback_address;
   return *this;
 }
 
@@ -336,15 +339,17 @@ std::string EngineBuilder::generateConfigStr() const {
         absl::StrReplaceAll(platform_filter_template, {{"{{ platform_filter_name }}", name}});
     insertCustomFilter(filter_config, config_template);
   }
-  if (!this->disable_stats_) {
+  if (true || !this->disable_stats_) {
     absl::StrReplaceAll(
         {{"#{custom_stats}", absl::StrCat("#{custom_stats}\n", default_stats_config_insert)}},
         &config_template);
   }
 
-  if (this->custom_layers_.empty()) {
+  if (!this->api_type_.empty()) {
     absl::StrReplaceAll(
-        {{"#{custom_layers}", absl::StrCat("#{custom_layers}\n", this->custom_layers_)}},
+        {{"#{custom_layers}",
+          absl::StrCat("#{custom_layers}\n", fmt::format(xds_layers_insert, initial_fetch_timeout_,
+                                                         api_type_, xds_cluster_))}},
         &config_template);
   } else {
     absl::StrReplaceAll(
@@ -352,17 +357,22 @@ std::string EngineBuilder::generateConfigStr() const {
         &config_template);
   }
 
-  if (this->admin_yaml_.empty()) {
-    absl::StrReplaceAll({{"#{custom_admin}", absl::StrCat("#{custom_admin}\n", this->admin_yaml_)}},
-                        &config_template);
+  if (!this->admin_loopback_address_.empty()) {
+    absl::StrReplaceAll(
+        {{"#{custom_admin}",
+          absl::StrCat("#{custom_admin}\n",
+                       fmt::format(xds_admin_insert, this->admin_loopback_address_))}},
+        &config_template);
   }
   if (this->enable_clusters_) {
     std::string formatted_insert;
-    if (this->ports_.empty() || this->ipv_version_.empty()) {
+    if (this->ports_.empty() || this->loopback_address_.empty()) {
+      // In XDS tests, the engine builder is used as the bootstrap config to create fake upstreams.
+      // So we use dummy addresses because the real ones are not known yet.
       formatted_insert = fmt::format(xds_clusters_insert, "127.0.0.1", "0", "127.0.0.1", "0");
     } else {
-      formatted_insert = fmt::format(xds_clusters_insert, this->ipv_version_, this->ports_[0],
-                                     this->ipv_version_, this->ports_[1]);
+      formatted_insert = fmt::format(xds_clusters_insert, this->loopback_address_, this->ports_[0],
+                                     this->loopback_address_, this->ports_[1]);
     }
     if (this->enable_transport_socket_) {
       absl::StrReplaceAll({{"#{custom_transport_socket}",
@@ -377,7 +387,6 @@ std::string EngineBuilder::generateConfigStr() const {
         {{"#{custom_clusters}", absl::StrCat("#{custom_clusters}\n", default_clusters_insert)}},
         &config_template);
   }
-  
   config_builder << config_template;
 
   if (admin_interface_enabled_) {

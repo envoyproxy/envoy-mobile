@@ -97,7 +97,50 @@ const char* socket_tag_config_insert = R"(
       "@type": type.googleapis.com/envoymobile.extensions.filters.http.socket_tag.SocketTag
 )";
 
-const char* default_layers_insert = R"(
+const char* xds_admin_insert = R"EOF(
+admin:
+  address:
+    socket_address:
+      address: {}
+      port_value: 0
+)EOF";
+
+const char* xds_layers_insert = R"EOF(
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          disallow_global_stats: true
+          reloadable_features:
+            allow_multiple_dns_addresses: true
+            always_use_v6: false
+            http2_delay_keepalive_timeout: false
+        envoy.reloadable_features.no_extension_lookup_by_name: false
+        overload:
+          global_downstream_max_connections: 4294967295
+    - name: some_static_layer
+      static_layer:
+        foo: whatevs
+        bar: yar
+    - name: some_rtds_layer
+      rtds_layer:
+        name: some_rtds_layer
+        rtds_config:
+          initial_fetch_timeout:
+            seconds: {}
+          resource_api_version: V3
+          api_config_source:
+            api_type: {}
+            transport_api_version: V3
+            grpc_services:
+              envoy_grpc:
+                cluster_name: {}
+            set_node_on_first_message_only: true
+    - name: some_admin_layer
+      admin_layer: {{}}
+)EOF";
+
+const char* default_layers_insert =
+    R"(
     - name: static_layer_0
       static_layer:
         envoy:
@@ -109,9 +152,9 @@ const char* default_layers_insert = R"(
             always_use_v6: *force_ipv6
             http2_delay_keepalive_timeout: *h2_delay_keepalive_timeout
 )"
-// Needed due to warning in
-// https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
-R"(
+    // Needed due to warning in
+    // https://github.com/envoyproxy/envoy/blob/6eb7e642d33f5a55b63c367188f09819925fca34/source/server/server.cc#L546
+    R"(
         overload:
           global_downstream_max_connections: 0xffffffff # uint32 max
 )";
