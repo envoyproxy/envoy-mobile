@@ -1,4 +1,6 @@
-# Envoy Mobile
+# Envoy Mobile (Archived)
+
+**Important: This project has now moved to [github.com/envoyproxy/envoy](https://github.com/envoyproxy/envoy/blob/main/mobile/README.md)**
 
 Multiplatform client HTTP/networking library built on the [Envoy](https://www.envoyproxy.io) project's core networking layer.
 
