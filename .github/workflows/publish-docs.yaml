@@ -1,0 +1,53 @@
+name: Publish docs
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    if: |
+      ${{
+          !contains(github.actor, '[bot]')
+          || github.actor == 'sync-envoy[bot]'
+      }}
+    steps:
+    - id: appauth
+      if: ${{ github.action_name == "DOES_NOT_EXIST" }}
+      uses: envoyproxy/toolshed/gh-actions/appauth@actions-v0.0.1
+      with:
+        key: ${{ secrets.ENVOY_CI_UPDATE_BOT_KEY }}
+        app_id: ${{ secrets.ENVOY_CI_UPDATE_APP_ID }}
+
+    # Checkout the repo
+    - name: 'Checkout Repository'
+      uses: actions/checkout@v3
+      with:
+        ref: main
+        fetch-depth: 0
+        # token: ${{ steps.appauth.outputs.token }}
+
+    # Checkout the Envoy repo
+    - name: 'Checkout Repository'
+      uses: actions/checkout@v3
+      with:
+        repository: envoyproxy/envoy
+        ref: main
+        fetch-depth: 0
+        path: upstream
+
+    - run: mv upstream ../envoy
+    - run: ci/publish_docs.sh
+      env:
+        ENVOY_SRC_DIR: ../envoy
+        # NO_BUILD_SETUP: 1
