@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   kotlintestsmac:
     # revert to //test/kotlin/... once fixed
